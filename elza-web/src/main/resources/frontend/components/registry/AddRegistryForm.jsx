@@ -11,7 +11,7 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, DropDownTree, Scope} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
+import {decorateFormField, submitReduxForm, submitReduxFormWithProp} from 'components/form/FormUtils'
 import {getRegistryRecordTypesIfNeeded, getRegistry} from 'actions/registry/registryRegionList'
 import {WebApi} from 'actions'
 
@@ -100,7 +100,8 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     render() {
         const {fields: { nameMain, characteristics, registerTypeId, scopeId}, handleSubmit, onClose} = this.props;
 
-        var submitForm = submitReduxForm.bind(this, validate)
+        var okSubmitForm = submitReduxFormWithProp.bind(this, validate, 'store')
+        var okAndDetailSubmitForm = submitReduxFormWithProp.bind(this, validate, 'storeAndViewDetail')
 
         var itemsForDropDownTree = [];
         if (this.props.registryRegionRecordTypes.item) {
@@ -131,7 +132,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
         return (
             <div key={this.props.key}>
                 <Modal.Body>
-                    <form onSubmit={handleSubmit(submitForm)}>
+                    <form onSubmit={handleSubmit(okSubmitForm)}>
                         <Scope disabled={this.state.disabled} versionId={this.props.versionId} label={i18n('registry.scope.class')} {...scopeId} value={scopeIdValue} {...decorateFormField(scopeId)}/>
                         <DropDownTree
                             label={i18n('registry.add.typ.rejstriku')}
@@ -147,7 +148,8 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.create')}</Button>
+                    <Button onClick={handleSubmit(okSubmitForm)}>{i18n('global.action.store')}</Button>
+                    {this.props.showSubmitTypes && <Button onClick={handleSubmit(okAndDetailSubmitForm)}>{i18n('global.action.storeAndViewDetail')}</Button>}
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>

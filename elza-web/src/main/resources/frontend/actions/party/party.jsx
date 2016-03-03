@@ -266,7 +266,7 @@ export function deleteRelation(relationId, partyId) {
 }
 
 
-export function partyAdd(partyTypeId, versionId, callback) {
+export function partyAdd(partyTypeId, versionId, callback, showSubmitTypes = false) {
     return (dispatch, getState) => {
         var state = getState();
         var partyTypeCode = getPartyTypeById(partyTypeId, state.refTables.partyTypes.items).code;
@@ -293,12 +293,11 @@ export function partyAdd(partyTypeId, versionId, callback) {
             default: label = i18n('party.addParty');
         }
 
-        dispatch(modalDialogShow(this, label, <AddPartyForm initData={data} versionId={versionId} onSave={partyAddSubmit.bind(null, callback, dispatch)} />));
+        dispatch(modalDialogShow(this, label, <AddPartyForm initData={data} showSubmitTypes={showSubmitTypes} versionId={versionId} onSave={partyAddSubmit.bind(null, callback, dispatch)} />));
     }
 }
 
-function partyAddSubmit(callback, dispatch, data) {
-
+function partyAddSubmit(callback, dispatch, data, submitType) {
     var partyType = '';                                     // typ osoby - je potreba uvest i jako specialni klivcove slovo
     switch(data.partyTypeId){
         case 1: partyType = '.ParPersonVO'; break;          // typ osoby osoba
@@ -343,7 +342,7 @@ function partyAddSubmit(callback, dispatch, data) {
 
     WebApi.insertParty(party).then((json) => {
         dispatch(modalDialogHide());
-        callback && callback(json);
+        callback && callback(json, submitType);
     });
 }
 

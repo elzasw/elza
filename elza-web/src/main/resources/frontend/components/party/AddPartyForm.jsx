@@ -249,14 +249,14 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
      * *********************************************
      * Odeslání formuláře
      */
-    handleSubmit(e){
+    handleSubmit(submitType){
         var errors = this.validate();               // seznam  chyb ve vyplněných datech
         if(errors.length > 0){                      // pokud je formulář chybně vyplnění
             this.setState({             
                 errors : errors                     // seznam chyb se uloží do state => dojde s přerenderování, při kterém budou chyby vypsany
             });
         }else{                                      // formulář je vyplněn dobře
-            this.props.onSave(this.state.data);     // vyplněná data se pošlou do funkce definované nadřazenou komponentou v proměnné onSave 
+            this.props.onSave(this.state.data, submitType);     // vyplněná data se pošlou do funkce definované nadřazenou komponentou v proměnné onSave 
         }
     }
 
@@ -322,7 +322,8 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
+                    <Button onClick={this.handleSubmit.bind(this, 'store')}>{i18n('global.action.store')}</Button>
+                    {this.props.showSubmitTypes && <Button onClick={this.handleSubmit.bind(this, 'storeAndViewDetail')}>{i18n('global.action.storeAndViewDetail')}</Button>}
                     <Button bsStyle="link" onClick={this.handleClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
