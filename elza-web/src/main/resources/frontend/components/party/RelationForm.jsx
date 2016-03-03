@@ -27,10 +27,7 @@ require ('./PartyFormStyles.less');
 var RelationForm = class RelationForm extends AbstractReactComponent {
     constructor(props) {
         super(props);                                       
-        this.dispatch(calendarTypesFetchIfNeeded());        // budeme potřebovat seznam typů kaledáře, tj pokud není ještě načtený, se načte
-        this.dispatch(refPartyTypesFetchIfNeeded());        // budeme potřebovt také seznam typů osob 
-        this.dispatch(refRegistryListFetchIfNeeded());      // a budeme potřebovat potřebovat seznam rejstříkových položek
-        
+
         this.state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
             data : this.props.initData,                     // předvyplněná data formuláře
             errors: [],                                      // sezn chyb k vypsání uživateli
@@ -46,8 +43,37 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
             'handleSubmit',                                 // funkce pro odeslání formuláře
             'validate',                                      // funkce pro kontrolu zadaných dat formuláře
             'handleSearchChange',
-            'renderRecord'
+            'renderRecord',
+            'initRelationTypes'
         );
+    }
+
+
+    componentWillReceiveProps(nextProps) {
+        this.dispatch(calendarTypesFetchIfNeeded());        // budeme potřebovat seznam typů kaledáře, tj pokud není ještě načtený, se načte
+        this.dispatch(refPartyTypesFetchIfNeeded());        // budeme potřebovt také seznam typů osob
+        this.dispatch(refRegistryListFetchIfNeeded());      // a budeme potřebovat potřebovat seznam rejstříkových položek
+
+        var data = this.state.data;
+        var types = this.initRelationTypes(nextProps.initData.relationTypeId, nextProps);
+        data =  Object.assign({}, data, {...types});
+        this.setState({
+            data: data
+        });
+    }
+
+    componentDidMount() {
+        this.dispatch(calendarTypesFetchIfNeeded());        // budeme potřebovat seznam typů kaledáře, tj pokud není ještě načtený, se načte
+        this.dispatch(refPartyTypesFetchIfNeeded());        // budeme potřebovt také seznam typů osob
+        this.dispatch(refRegistryListFetchIfNeeded());      // a budeme potřebovat potřebovat seznam rejstříkových položek
+
+
+        var data = this.state.data;
+        var types = this.initRelationTypes(this.props.initData.relationTypeId, this.props);
+        data =  Object.assign({}, data, {...types});
+        this.setState({
+            data: data
+        });
     }
 
      /**
@@ -64,6 +90,50 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
         this.setState({
             data : data                                     // uložení výsledku do state
         });
+    }
+
+    /**
+     * Vrací možné typy vztahů a typ rolí. Provede prvotní předvybrání typu vztahu.
+     * @param relationTypeId vybraný typ vztahu
+     * @param nextProps properties
+     * @returns {{roleTypes: Array, relationTypes: Array, relationTypeId: *}}
+     */
+    initRelationTypes(relationTypeId, nextProps){
+        var allRelationTypes = [];
+        for(var i=0; i<nextProps.refTables.partyTypes.items.length; i++){
+            if(nextProps.refTables.partyTypes.items[i].partyTypeId == nextProps.initData.partyTypeId){
+                allRelationTypes = nextProps.refTables.partyTypes.items[i].relationTypes;
+            }
+        }
+
+        var roleTypes = [];
+        var relationTypes = [];
+
+        if(allRelationTypes){
+            var classType = nextProps.initData.classType;
+            for(var i=0; i<allRelationTypes.length; i++){
+                if(allRelationTypes[i].classType === classType){
+                    relationTypes.push(allRelationTypes[i]);
+                }
+            }
+        }
+
+        var selectedRelationTypeId = relationTypeId;
+        if(selectedRelationTypeId == undefined){
+            selectedRelationTypeId = relationTypes && relationTypes[0] ? relationTypes[0].relationTypeId : null;
+        }
+
+        relationTypes.map(rt => {
+           if(rt.relationTypeId == selectedRelationTypeId){
+               roleTypes = rt.relationRoleTypes;
+           }
+        });
+
+        return {
+            roleTypes: roleTypes,
+            relationTypes: relationTypes,
+            relationTypeId: selectedRelationTypeId
+        };
     }
 
      /**
@@ -104,6 +174,10 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
                     data.entities[index].roleTypeId = null;
                     data.entities[index].record = null;
                 });
+
+                var types = this.initRelationTypes(data.relationTypeId, this.props);
+                data.roleTypes = types.roleTypes;
+                data.relationTypes = types.relationTypes;
 
                 break;
             }
@@ -256,28 +330,10 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
      * Vykreslení formuláře
      */
     render() {
-        var allRelationTypes = [];
-        for(var i=0; i<this.props.refTables.partyTypes.items.length; i++){
-            if(this.props.refTables.partyTypes.items[i].partyTypeId == this.props.initData.partyTypeId){
-                allRelationTypes = this.props.refTables.partyTypes.items[i].relationTypes;
-            }
-        }
 
-        var roleTypes = [];
-        var relationTypes = [];
+        var roleTypes = this.state.data.roleTypes;
+        var relationTypes = this.state.data.relationTypes;
 
-        if(allRelationTypes){
-            var classType = this.props.initData.classType;
-            for(var i=0; i<allRelationTypes.length; i++){
-                if(allRelationTypes[i].classType === classType){
-                    relationTypes.push(allRelationTypes[i]);
-
-                    if(allRelationTypes[i].relationTypeId == this.state.data.relationTypeId){
-                        roleTypes = allRelationTypes[i].relationRoleTypes;
-                    }
-                }
-            }
-        }
         // zaznamy pro autocomplate
         var records = [];
         for(var i = 0; i<this.props.refTables.registryRegionList.items.recordList.length; i++){
@@ -288,10 +344,6 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
         }
 
         var selectedRelationTypeId = this.state.data.relationTypeId;
-        if(selectedRelationTypeId == undefined){
-            selectedRelationTypeId = relationTypes && relationTypes[0] ? relationTypes[0].relationTypeId : null;
-        }
-
         var typeUnselected = this.state.data.relationTypeId == undefined;
 
         return (
