@@ -736,19 +736,21 @@ public class XmlImportService {
             });
         }
 
-        level.getDescItems().forEach(descItem -> {
-            if (descItem instanceof DescItemRecordRef) {
-                DescItemRecordRef recordRefItem = (DescItemRecordRef) descItem;
-                usedRecords.add(recordRefItem.getRecord().getRecordId());
-            } else if (descItem instanceof DescItemPartyRef) {
-                DescItemPartyRef partyRefItem = (DescItemPartyRef) descItem;
-                usedParties.add(partyRefItem.getParty().getPartyId());
-                addPartyRecords(usedRecords, partyRefItem.getParty());
-            } else if (descItem instanceof DescItemPacketRef) {
-                DescItemPacketRef packetRefItem = (DescItemPacketRef) descItem;
-                usedPackets.add(packetRefItem.getPacket().getStorageNumber());
-            }
-        });
+        if (level.getDescItems() != null) {
+            level.getDescItems().forEach(descItem -> {
+                if (descItem instanceof DescItemRecordRef) {
+                    DescItemRecordRef recordRefItem = (DescItemRecordRef) descItem;
+                    usedRecords.add(recordRefItem.getRecord().getRecordId());
+                } else if (descItem instanceof DescItemPartyRef) {
+                    DescItemPartyRef partyRefItem = (DescItemPartyRef) descItem;
+                    usedParties.add(partyRefItem.getParty().getPartyId());
+                    addPartyRecords(usedRecords, partyRefItem.getParty());
+                } else if (descItem instanceof DescItemPacketRef) {
+                    DescItemPacketRef packetRefItem = (DescItemPacketRef) descItem;
+                    usedPackets.add(packetRefItem.getPacket().getStorageNumber());
+                }
+            });
+        }
 
         if (level.getSubLevels() != null) {
             level.getSubLevels().forEach(l -> {
