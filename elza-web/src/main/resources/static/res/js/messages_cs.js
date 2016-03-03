@@ -9,6 +9,8 @@ var messages = {
     "global.title.yes": "Ano",
     "global.title.no": "Ne",
     
+    "global.title.moreRows": "Existují další záznamy ({0}).",
+    
     "global.title.processAction": "Opravdu chcete provést vybranou akci?",
 
     "global.error.ajax": "Při komunikaci nastala chyba",

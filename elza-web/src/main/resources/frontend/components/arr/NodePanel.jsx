@@ -2,6 +2,9 @@
  * Komponenta panelu formuláře jedné JP.
  */
 
+// Konstance kolik se má maximálně zobrazit v seznamu parents a children záznamů
+const PARENT_CHILD_MAX_LENGTH = 250
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -397,10 +400,21 @@ return true
      * @return {Object} view
      */
     renderRow(items, key, myClass, onClick) {
+        var usedItems = [...items]
+        if (items.length > PARENT_CHILD_MAX_LENGTH) {
+            usedItems = [
+                ...usedItems.slice(0, PARENT_CHILD_MAX_LENGTH),
+                {
+                    name: i18n('global.title.moreRows', items.length - PARENT_CHILD_MAX_LENGTH)
+                }
+            ]
+        }
+
         return (
             <ListBox key={key} className={myClass}
-                items={items}
+                items={usedItems}
                 renderItemContent={this.renderRowItem.bind(this, onClick)}
+                canSelectItem={(item, index) => typeof item.id !== 'undefined'}
                 onSelect={(item, index) => onClick(item)}
             />
         )
@@ -412,15 +426,17 @@ return true
      * item {Object} položka pro renderování
      */
     renderRowItem(onClick, item) {
-        var icon = <Icon className="node-icon" glyph={getGlyph(item.icon)} />
+        var icon = item.icon ? <Icon className="node-icon" glyph={getGlyph(item.icon)} /> : ''
         var levels = <span className="reference-mark">{createReferenceMarkString(item)}</span>
         var name = item.name ? item.name : <i>{i18n('faTree.node.name.undefined', item.id)}</i>;
         name = <span title={name} className="name">{name}</span>
 
+        const click = typeof item.id !== 'undefined' ? onClick.bind(this, item) : null
+
         return (
-                <div key={item.id} className='node' onClick={onClick.bind(this, item)}>
-                    {icon} {levels} {name}
-                </div>
+            <div key={item.id} className='node' onClick={click}>
+                {icon} {levels} {name}
+            </div>
         )
     }
 

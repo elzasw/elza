@@ -27,10 +27,14 @@ var keyDownHandlers = {
         e.stopPropagation()
 
         const {activeIndex} = this.state
-        const {items} = this.props
+        const {items, canSelectItem} = this.props
 
         if (items.length > 0) {
-            const newActiveIndex = 0
+            var newActiveIndex = 0
+            if (!canSelectItem(items[newActiveIndex], newActiveIndex)) {
+                newActiveIndex = this.getNextSelectableItemIndex(newActiveIndex)
+            }
+
             this.setState({activeIndex: newActiveIndex}, this.ensureItemVisible.bind(this, newActiveIndex))
             this.props.onFocus && this.props.onFocus(items[newActiveIndex], newActiveIndex)
         }
@@ -40,10 +44,14 @@ var keyDownHandlers = {
         e.stopPropagation()
 
         const {activeIndex} = this.state
-        const {items} = this.props
+        const {items, canSelectItem} = this.props
 
         if (items.length > 0) {
-            const newActiveIndex = items.length - 1
+            var newActiveIndex = items.length - 1
+            if (!canSelectItem(items[newActiveIndex], newActiveIndex)) {
+                newActiveIndex = this.getPrevSelectableItemIndex(newActiveIndex)
+            }
+
             this.setState({activeIndex: newActiveIndex}, this.ensureItemVisible.bind(this, newActiveIndex))
             this.props.onFocus && this.props.onFocus(items[newActiveIndex], newActiveIndex)
         }
@@ -61,9 +69,7 @@ var keyDownHandlers = {
             if (activeIndex === null) {
                 newActiveIndex = 0
             } else {
-                if (activeIndex > 0) {
-                    newActiveIndex = activeIndex - 1
-                }
+                newActiveIndex = this.getPrevSelectableItemIndex(activeIndex)
             }
             if (newActiveIndex !== null) {
                 this.setState({activeIndex: newActiveIndex}, this.ensureItemVisible.bind(this, newActiveIndex))
@@ -84,9 +90,7 @@ var keyDownHandlers = {
             if (activeIndex === null) {
                 newActiveIndex = 0
             } else {
-                if (activeIndex + 1 < items.length) {
-                    newActiveIndex = activeIndex + 1
-                }
+                newActiveIndex = this.getNextSelectableItemIndex(activeIndex)
             }
             if (newActiveIndex !== null) {
                 this.setState({activeIndex: newActiveIndex}, this.ensureItemVisible.bind(this, newActiveIndex))
@@ -100,7 +104,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleKeyDown', 'ensureItemVisible')
+        this.bindMethods('handleKeyDown', 'ensureItemVisible', 'getNextSelectableItemIndex', 'getPrevSelectableItemIndex')
 
         this.state = {
             activeIndex: this.getActiveIndexForUse(props, {}),
@@ -111,6 +115,32 @@ var ListBox = class ListBox extends AbstractReactComponent {
         this.setState({
             activeIndex: this.getActiveIndexForUse(nextProps, this.state),
         })
+    }
+
+    getNextSelectableItemIndex(index) {
+        const {items, canSelectItem} = this.props
+
+        var i = index + 1
+        while (i < items.length) {
+            if (canSelectItem(items[i], i)) {
+                return i
+            }
+            i++
+        }
+        return null
+    }
+
+    getPrevSelectableItemIndex(index) {
+        const {items, canSelectItem} = this.props
+
+        var i = index - 1
+        while (i >= 0) {
+            if (canSelectItem(items[i], i)) {
+                return i
+            }
+            i--
+        }
+        return null
     }
 
     getActiveIndexForUse(props, state) {
@@ -172,6 +202,9 @@ ListBox.defaultProps = {
         return (
             <div>{item.name}</div>
         )
+    },
+    canSelectItem: (item, index) => {
+        return true
     }
 }
 
