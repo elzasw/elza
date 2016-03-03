@@ -120,9 +120,15 @@
     overflow-y: auto;
 
     .registry {
-        .registry-title {
-            padding: 10px;
-            border: 1px solid transparent;
+        height: 100%;
+        shortcuts {
+            display: block;
+            height: 100%;
+            .registry-title {
+                height: 100%;
+                padding: 10px;
+                border: 1px solid transparent;
+            }
         }
     }
     
@@ -136,9 +142,10 @@
         margin-bottom: 10px;
         label {
             font-weight: bold;
+            display: block;
         }
         .btn {
-            display: block;
+            //display: block;
             margin-left: 1px;
         }
     }
