@@ -98,7 +98,10 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
         var variable = event.target.name;                           // políčko (název hodnoty) změny
         var p = this.props.partyRegion.selectedPartyData;           // původní osoba
         var party = this.mergePartyChanges(p, variable, value);     // osoba po změne 
-        this.setState({party: party});                              // znovuvykresleni formuláře se změnou
+        this.setState({
+            needUpdate: true,
+            party: party
+        });                              // znovuvykresleni formuláře se změnou
     }
 
     /**
@@ -108,28 +111,33 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
      * @param event - událost, která změnu vyvolala
      */ 
     updateValue(event){
-        var value = event.target.value;                             // hodnota změna         
-        var variable = event.target.name;                           // políčko (název hodnoty) změny
-        var party = this.props.partyRegion.selectedPartyData;       // původní osoba
-        party = this.mergePartyChanges(party, variable, value);     // osoba po změne 
-        if(
-            !party.from ||
-            party.from.textDate == "" || 
-            party.from.textDate == null || 
-            party.from.textDate == undefined
-        ){  
-            party.from = null;                                      // pokud není zadaný textová část data, celý fatum se ruší
+        if(this.state.needUpdate){
+            var value = event.target.value;                             // hodnota změna
+            var variable = event.target.name;                           // políčko (název hodnoty) změny
+            var party = this.props.partyRegion.selectedPartyData;       // původní osoba
+
+            party = this.mergePartyChanges(party, variable, value);     // osoba po změne
+            if(
+                !party.from ||
+                party.from.textDate == "" ||
+                party.from.textDate == null ||
+                party.from.textDate == undefined
+            ){
+                party.from = null;                                      // pokud není zadaný textová část data, celý fatum se ruší
+            }
+            if(
+                !party.to ||
+                party.to.textDate == "" ||
+                party.to.textDate == null ||
+                party.to.textDate == undefined
+            ){
+                party.to = null;                                        // pokud není zadaný textová část data, celý fatum se ruší
+            }
+            this.dispatch(updateParty(party));                          // uložení změn a znovu načtení dat osoby
+            this.setState({
+                needUpdate: false,
+                party:null});
         }
-        if(
-            !party.to || 
-            party.to.textDate == "" || 
-            party.to.textDate == null || 
-            party.to.textDate == undefined
-        ){  
-            party.to = null;                                        // pokud není zadaný textová část data, celý fatum se ruší
-        }
-        this.dispatch(updateParty(party));                          // uložení změn a znovu načtení dat osoby   
-        this.setState({party:null});
     }
 
     /**
