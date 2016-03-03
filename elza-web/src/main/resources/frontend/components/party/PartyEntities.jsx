@@ -11,7 +11,7 @@ import {RelationForm, AbstractReactComponent, i18n, Icon} from 'components'
 import {AppActions} from 'stores';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {updateRelation, deleteRelation} from 'actions/party/party'
-
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
 /**
 * PARTY ENTITIES
@@ -26,8 +26,30 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
             'deleteRelation', 
             'handleUpdateRelation',
             'handleDeleteRelation', 
-            'handleDeleteRelation'
+            'handleDeleteRelation',
+            'trySetFocus'
         );
+    }
+
+    componentDidMount() {
+        this.trySetFocus(this.props)
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.trySetFocus(nextProps)
+    }
+
+    trySetFocus(props) {
+        var {focus} = props
+
+        if (canSetFocus()) {
+            if (isFocusFor(focus, 'party', 3) || isFocusFor(focus, 'party', 3, 'list')) {
+                this.setState({}, () => {
+                    this.refs.relationsList.focus()
+                    focusWasSet()
+                })
+            }
+        }
     }
 
     /**
@@ -213,10 +235,17 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
                        </div>
                 })
         };
-        return  <div className="relations">
+        return  <div className="relations" ref='relationsList' tabIndex={0}>
                     {entities}
                 </div>
     }
 }
 
-module.exports = connect()(PartyEntities);
+function mapStateToProps(state) {
+    const {focus} = state
+    return {
+        focus
+    }
+}
+
+module.exports = connect(mapStateToProps)(PartyEntities);

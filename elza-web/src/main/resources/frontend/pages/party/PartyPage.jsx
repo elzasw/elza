@@ -9,7 +9,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap'; 
 import {Link, IndexLink} from 'react-router';
-import {Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, PartyEntities, i18n, ImportForm} from 'components';
+import {ControllableDropdownButton, Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, PartyEntities, i18n, ImportForm} from 'components';
 import {RelationForm, AddPartyForm} from 'components';
 import {ButtonGroup, MenuItem, DropdownButton, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -20,6 +20,23 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {partyDetailFetch, findPartyFetch, findPartyFetchIfNeeded} from 'actions/party/party'
 import {partyAdd, insertParty, insertRelation, deleteParty} from 'actions/party/party'
+var ShortcutsManager = require('react-shortcuts');
+var Shortcuts = require('react-shortcuts/component');
+import {Utils} from 'components'
+import {setFocus} from 'actions/global/focus'
+
+var keyModifier = Utils.getKeyModifier()
+
+var keymap = {
+    Party: {
+        addParty: keyModifier + 'n',
+        addRelation: keyModifier + 't',
+        area1: keyModifier + '1',
+        area2: keyModifier + '2',
+        area3: keyModifier + '3',
+    },
+}
+var shortcutManager = new ShortcutsManager(keymap)
 
 /**
  * PARTY PAGE
@@ -39,7 +56,8 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             'addParty',                                 // vytvoření osoby
             'deleteParty',                              // smazání osoby
             'addRelation',                              // vytvoření relace
-            'handleImport'                              // Import dialog
+            'handleImport',                              // Import dialog
+            'handleShortcuts'
         );
     }
 
@@ -53,6 +71,30 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         this.dispatch(findPartyFetchIfNeeded(nextProps.partyRegion.filterText, nextProps.partyRegion.panel.versionId));
     }
 
+    handleShortcuts(action) {
+        console.log("#handleShortcuts", '[' + action + ']', this);
+        switch (action) {
+            case 'addParty':
+                this.refs.addParty.setOpen(true)
+                break
+            case 'addRelation':
+                this.refs.addRelation.setOpen(true)
+                break
+            case 'area1':
+                this.dispatch(setFocus('party', 1))
+                break
+            case 'area2':
+                this.dispatch(setFocus('party', 2))
+                break
+            case 'area3':
+                this.dispatch(setFocus('party', 3))
+                break
+        }
+    }
+
+    getChildContext() {
+        return { shortcuts: shortcutManager };
+    }
 
     /**
      * ADD PARTY
@@ -184,6 +226,11 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
                 {this.props.refTables.partyTypes.items.map(i=> {return <MenuItem key={i.partyTypeId} eventKey="{i.partyTypeId}" onClick={this.handleAddParty.bind(this, i.partyTypeId)}>{i.name}</MenuItem>})}
             </DropdownButton>
         );
+        altActions.push(
+            <ControllableDropdownButton ref='addParty' title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
+                {this.props.refTables.partyTypes.items.map(i=> {return <MenuItem key={i.partyTypeId} eventKey="{i.partyTypeId}" onClick={this.handleAddParty.bind(this, i.partyTypeId)}>{i.name}</MenuItem>})}
+            </ControllableDropdownButton>
+        );
 
         altActions.push(
             <Button onClick={this.handleImport}><Icon glyph='fa-download'/>
@@ -193,12 +240,12 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         var itemActions = [];
         if (isSelected) {
             itemActions.push(
-                <DropdownButton title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.relation.add')}</span></div></span>}>
+                <ControllableDropdownButton ref='addRelation' title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.relation.add')}</span></div></span>}>
                     {["B","E","R"].map(i =>{
                         var name = i18n('party.relation.classType.'+i).toUpperCase();
                         return <MenuItem key={"classType"+i} onClick={this.handleAddRelation.bind(this,i)}>{name}</MenuItem>
                     })}
-                </DropdownButton>
+                </ControllableDropdownButton>
 
                 //<Button onClick={this.handleAddRelation}><Icon glyph="fa-link" /><div><span className="btnText">{i18n('party.relation.add')}</span></div></Button>
             );
@@ -237,7 +284,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
                 panel={this.props.partyRegion.panel}
             />
         )
-        
+
         var centerPanel = (
             <PartyDetail 
                 refTables={this.props.refTables} 
@@ -251,14 +298,16 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         )
 
         return (
-            <PageLayout
-                splitter={splitter}
-                className='party-page'
-                ribbon={this.buildRibbon()}
-                leftPanel={leftPanel}
-                centerPanel={centerPanel}
-                rightPanel={rightPanel}
-            />
+            <Shortcuts name='Party' handler={this.handleShortcuts}>
+                <PageLayout
+                    splitter={splitter}
+                    className='party-page'
+                    ribbon={this.buildRibbon()}
+                    leftPanel={leftPanel}
+                    centerPanel={centerPanel}
+                    rightPanel={rightPanel}
+                />
+            </Shortcuts>
         )
     }
 }
@@ -272,6 +321,11 @@ function mapStateToProps(state) {
         refTables
     }
 }
+
+PartyPage.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
+}
+
 
 module.exports = connect(mapStateToProps)(PartyPage);
 

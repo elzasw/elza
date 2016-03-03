@@ -7,18 +7,43 @@ require('./PartySearch.less');
 import React from 'react';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
-import {AbstractReactComponent, Search, i18n, ArrPanel} from 'components';
+import {ListBox, AbstractReactComponent, Search, i18n, ArrPanel} from 'components';
 import {AppActions} from 'stores';
-
+import {indexById} from 'stores/app/utils.jsx'
 import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded, partyArrReset} from 'actions/party/party.jsx'
-
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
 var PartySearch = class PartySearch extends AbstractReactComponent {
     constructor(props) {
         super(props);
+
+        this.bindMethods('trySetFocus')
+
         this.handleSearch = this.handleSearch.bind(this);               // funkce pro akci spoustící vyhledávání
         this.handlePartyDetail = this.handlePartyDetail.bind(this);     // funkce vyberu osoby zobrazeni detailu
         this.handleClearSearch = this.handleClearSearch.bind(this);
+        this.renderListItem = this.renderListItem.bind(this);
+    }
+
+    componentDidMount() {
+        this.trySetFocus(this.props)
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.trySetFocus(nextProps)
+    }
+
+    trySetFocus(props) {
+        var {focus} = props
+
+        if (canSetFocus()) {
+            if (isFocusFor(focus, 'party', 1) || isFocusFor(focus, 'party', 1, 'list')) {
+                this.setState({}, () => {
+                    this.refs.partyList.focus()
+                    focusWasSet()
+                })
+            }
+        }
     }
 
     handleSearch(filterText){
@@ -39,10 +64,21 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
         this.dispatch(partyArrReset());
     }
 
+    renderListItem(item) {
+        return (
+            <div className='search-result-row' onClick={this.handlePartyDetail.bind(this, item)}>
+                <span className="name">{item.record.record}</span>
+                <span>{item.partyType.description + " | " + item.partyId}</span>
+                <span title={item.record.description}>{item.record.description}</span>
+            </div>
+        )
+    }
+
     render() {
         const {partyRegion} = this.props;
 
         var partyList = this.props.items;
+        var partyListRows
         if(partyList && partyList.length>0){
             var description = '';
             for(var i = 0; i<partyList.length; i++){                                                            // projdu vsechny polozky abych jim nastavil popisek
@@ -59,23 +95,22 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
                 }
 
             }
-            
-            var partyList = partyList.map((item) => {                                                           // přidání všech nazelených osob
 
-                    return  <li 
-                                key={item.partyId} 
-                                eventKey={item.partyId} 
-                                className={item.partyId==this.props.selectedPartyID ? 'active' : ''} 
-                                onClick={this.handlePartyDetail.bind(this,item)}
-                            >                                          
-                                <span className="name">{item.record.record}</span>
-                                <span>{item.partyType.description + " | " + item.partyId}</span>
-                                <span title={item.record.description}>{item.record.description}</span>
-                            </li>                          
-            });
+            var activeIndex = indexById(partyList, this.props.selectedPartyID, 'partyId')
+            partyListRows = (
+                <ListBox
+                    className='party-listbox'
+                    ref='partyList'
+                    items={partyList}
+                    activeIndex={activeIndex}
+                    renderItemContent={this.renderListItem}
+                    onFocus={this.handlePartyDetail}
+                    onSelect={this.handlePartyDetail}
+                    />
+            )            
         }else{
             var label = i18n('search.action.noResult'); ;
-            var partyList = <li className="noResult">{label}</li>
+            partyListRows = <li className="noResult">{label}</li>
         }
 
         var arrPanel = null;
@@ -89,17 +124,18 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
                         {arrPanel}
                         <Search placeholder={i18n('search.input.search')} onSearch={this.handleSearch} filterText={this.props.filterText} onClear={this.handleClearSearch}/>
                     </div>
-                    <ul className="partySearch">
-                        {partyList}
-                    </ul>
+                    <div className="partySearch">
+                        {partyListRows}
+                    </div>
                 </div>
     }
 }
 
 function mapStateToProps(state) {
-    const {partyRegion} = state
+    const {partyRegion, focus} = state
     return {
-        partyRegion
+        partyRegion,
+        focus,
     }
 }
 

@@ -26,6 +26,7 @@ exports.ModalDialogWrapper = require('./shared/dialog/ModalDialogWrapper');
 exports.Autocomplete = require('./shared/autocomplete/Autocomplete');
 exports.Splitter = require('./shared/splitter/Splitter');
 exports.Scope = require('./shared/scope/Scope');
+exports.ControllableDropdownButton = require('./shared/dropdown-button/ControllableDropdownButton');
 
 exports.FormUtils = require('./form/FormUtils');
 exports.ImportForm = require('./form/ImportForm');

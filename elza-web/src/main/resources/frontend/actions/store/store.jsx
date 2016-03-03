@@ -90,6 +90,7 @@ export function storeLoadData(type, data, switchView = true) {
                 dispatch(storeLoad({partyRegion: data}));
                 if (switchView) {
                     dispatch(routerNavigate('/party'));
+                    dispatch(setFocus('party', 1, 'list'))
 
                 }
                 break;

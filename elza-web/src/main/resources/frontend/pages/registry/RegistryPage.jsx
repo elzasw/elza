@@ -287,7 +287,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleDoubleClick(item, event) {
-console.log(item, event)
         if (!item.hierarchical) {
             return
         }
@@ -520,6 +519,7 @@ console.log(item, event)
         )
     }
 }
+
 function mapStateToProps(state) {
     const {splitter, registryRegion, refTables, focus} = state
     return {

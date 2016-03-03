@@ -5,6 +5,7 @@
 require ('./PartyFormStyles.less');
 
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button, Input, SplitButton} from 'react-bootstrap';
 import {PartyDetailCreators, PartyDetailIdentifiers, PartyDetailNames, AbstractReactComponent, Search, i18n} from 'components';
@@ -13,6 +14,20 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {updateParty} from 'actions/party/party'
 import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party'
+import {Utils} from 'components'
+import {setInputFocus} from 'components/Utils'
+var ShortcutsManager = require('react-shortcuts');
+var Shortcuts = require('react-shortcuts/component');
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
+
+var keyModifier = Utils.getKeyModifier()
+
+var keymap = {
+    PartyDetail: {
+        xxx: keyModifier + 'e',
+    },
+}
+var shortcutManager = new ShortcutsManager(keymap)
 
 /**
  * PARTY DETAIL
@@ -25,8 +40,8 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
 
         this.bindMethods(                               // pripojením funkcím "this"
             'updateValue',                              // aktualizace nějaké hodnoty
-            'changeValue'                               // změna nějakéh políčka ve formuláři
-
+            'changeValue',                               // změna nějakéh políčka ve formuláři
+            'trySetFocus'
         );
         this.state={
             dynastyId: 2,
@@ -37,12 +52,40 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
     componentDidMount() {
         this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
         this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+        this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(partyDetailFetchIfNeeded(nextProps.partyRegion.selectedPartyID));
+        this.trySetFocus(nextProps)
     }
 
+    trySetFocus(props) {
+        var {focus} = props
+
+        if (canSetFocus()) {
+            if (isFocusFor(focus, 'party', 2)) {
+                this.setState({}, () => {
+                    var el = ReactDOM.findDOMNode(this.refs.partyDetail)
+                    setInputFocus(el, false)
+                    focusWasSet()
+                })
+            }
+        }
+    }
+
+    getChildContext() {
+        return { shortcuts: shortcutManager };
+    }
+
+    handleShortcuts(action) {
+        console.log("#handleShortcuts", '[' + action + ']', this);
+
+        switch (action) {
+            case 'xxx':
+                break
+        }
+    }
 
     /**
      * CHANGE VALUE
@@ -146,7 +189,9 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
         }
 
 
-        return <div className={"partyDetail"}>
+        return (
+            <Shortcuts name='PartyDetail' handler={this.handleShortcuts}>
+                <div ref='partyDetail' className={"partyDetail"}>
                     <h1>{party.record.record}</h1>
                     <div className="line">
                     <Input type="textarea" label={i18n('party.detail.characteristics')} name="characteristics" value={party.characteristics != undefined ? party.characteristics : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
@@ -204,22 +249,27 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                         <Input type="text" label={i18n('party.detail.groupScopeNorm')} name="scopeNorm" value={party.scopeNorm != undefined ? party.scopeNorm : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
                         <Input type="text" label={i18n('party.detail.groupScope')} name="scope" value={party.scope != undefined ? party.scope : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
                     </div> :  ''}
-    
+
                     <div className="line party-creators">
                         <label>{i18n('party.detail.creators')}</label>
                         <PartyDetailCreators partyRegion={this.props.partyRegion} refTables={this.props.refTables}/> 
                     </div>
-
                 </div>
+            </Shortcuts>
+        )
     }
 }
 
 function mapStateToProps(state) {
-    const {partyRegion} = state
+    const {partyRegion, focus} = state
     return {
-        partyRegion: partyRegion
+        partyRegion,
+        focus
     }
 }
 
+PartyDetail.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
+}
 
 module.exports = connect(mapStateToProps)(PartyDetail);
