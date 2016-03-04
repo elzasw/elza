@@ -1,5 +1,12 @@
+/**
+ * Akce pro nastavení focusu na různé prvky.
+ * Focus funguje následovně: ve store je informace, kam se má focus nastavit, jestli se má ale opravdu nastavit je řízeno globální proměnnou _setFocus,
+ * je to z důvodu, aby po nastavení focusu nebyl měněn store a nepřekreslovaly se komponenty.
+ */
+
 import * as types from 'actions/constants/ActionTypes';
 
+// Vnitřní proměnná, které určuje, zda je nutné focus nastavit
 var _setFocus = false
 
 /**
@@ -9,6 +16,9 @@ export function focusWasSet() {
     _setFocus = false
 }
 
+/**
+ * Test, zda je pro předané parametry focus určen. Pokud jsou některé parametry null, nejsou pro test uvažovány.
+ */
 export function isFocusFor(focusState, region, area = null, component = null, item = null) {
     if (region && focusState.region !== region) {
         return false;
@@ -25,6 +35,9 @@ export function isFocusFor(focusState, region, area = null, component = null, it
     return true;
 }
 
+/**
+ * Test, zda je pro předané parametry focus určen, musí PŘESNĚ odpovídat předaným parametrům včetně např. null hodnot atp.
+ */
 export function isFocusExactFor(focusState, region, area, component, item) {
     if (focusState.region !== region) {
         return false;
@@ -50,6 +63,10 @@ export function canSetFocus() {
 
 /**
  * Vyvolání akce pro nastavení focusu.
+ * @param {Object} region region, např. 'arr', 'party' atp.
+ * @param {Object} area oblast v regionu, např. 0, 1, 2, 3, atp.
+ * @param {Object} component komponenta, např. 'tree', 'list', atp.
+ * @param {Object} item doplňující identifikace v komponentě, většinou objekt s dalšími atributy, např. {descItemTypeId: 123}, atp.
  */
 export function setFocus(region, area, component, item) {
     return (dispatch, getState) => {
@@ -70,5 +87,4 @@ export function setFocus(region, area, component, item) {
             item
         })
     }
-
 }

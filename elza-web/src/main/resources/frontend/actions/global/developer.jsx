@@ -1,3 +1,7 @@
+/**
+ * Akce pro developer mode.
+ */
+
 import {WebApi} from 'actions';
 import * as types from 'actions/constants/ActionTypes';
 import {barrier} from 'components/Utils';
