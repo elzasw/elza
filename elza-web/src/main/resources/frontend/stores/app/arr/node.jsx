@@ -196,7 +196,7 @@ export function node(state = nodeInitialState, action) {
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
         case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
-        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE_RESPONSE:
+        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
             var result = {
                 ...state, 
                 subNodeForm: subNodeForm(state.subNodeForm, action),

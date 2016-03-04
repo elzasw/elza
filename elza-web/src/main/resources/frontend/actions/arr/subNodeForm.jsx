@@ -140,7 +140,7 @@ export function faSubNodeFormValuesCopyFromPrev(versionId, nodeId, nodeVersionId
         dispatch(faSubNodeFormDescItemTypeDeleteInStore(versionId, nodeId, nodeKey, valueLocation, true));
         WebApi.copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId)
             .then(json => {
-                dispatch(faSubNodeFormDescItemTypeDeleteResponse(versionId, nodeId, nodeKey, valueLocation, json));
+                dispatch(faSubNodeFormDescItemTypeCopyFromPrevResponse(versionId, nodeId, nodeKey, valueLocation, json));
             })
     }
 }
@@ -214,6 +214,11 @@ export function faSubNodeFormValueChangeSpec(versionId, nodeId, nodeKey, valueLo
     }
 }
 
+/**
+ * Test, zda je nutné hodnotu atributu uložit, např. pokud byla změněna nebo pokud ještě nebyla založena na serveru.
+ * @param {Object} descItem hodnota atributu
+ * @param {Object} refType ref typ atributu
+ */
 export function descItemNeedStore(descItem, refType) {
     if (!descItem.error.hasError && descItem.touched) {
         if (typeof descItem.id !== 'undefined') {
@@ -237,6 +242,15 @@ export function descItemNeedStore(descItem, refType) {
     return false
 }
 
+/**
+ * Odeslání hodnoty atributu na server - buď vytvoření nebo aktualizace.
+ * @param {Object} dispatch odkaz na funkci dispatch
+ * @param {Object} getState odkaz na funkci pro načtení store
+ * @param {int} versionId verze AP
+ * @param {int} nodeId id node záložky, které se to týká
+ * @param {int} nodeKey klíč záložky
+ * @param {Object} valueLocation konkrétní umístění hodnoty
+ */
 function formValueStore(dispatch, getState, versionId, nodeId, nodeKey, valueLocation) {
     var state = getState();
     var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
@@ -257,35 +271,15 @@ function formValueStore(dispatch, getState, versionId, nodeId, nodeKey, valueLoc
                 })
         }
     }
-/*
-    if (!loc.descItem.error.hasError && loc.descItem.touched) {
-        if (typeof loc.descItem.id !== 'undefined') {
-            // Jen pokud se hodnota nebo specifikace změnila
-            var needUpdate = false;
-            if (refType.useSpecification && !valuesEquals(loc.descItem.descItemSpecId, loc.descItem.prevDescItemSpecId)) {
-                needUpdate = true;
-            }
-            if (!valuesEquals(loc.descItem.value, loc.descItem.prevValue)) {
-                needUpdate = true;
-            }
-            if (!valuesEquals(loc.descItem.calendarTypeId, loc.descItem.prevCalendarTypeId)) {
-                needUpdate = true;
-            }
-            if (needUpdate) {
-                faSubNodeFormUpdateDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
-                    .then(json => {
-                        dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'UPDATE'));
-                    })
-            }
-        } else {
-            faSubNodeFormCreateDescItem(versionId, nodeId, subNodeForm.data.node.version, loc.descItemType.id, loc.descItem)
-                .then(json => {
-                    dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'CREATE'));
-                })
-        }
-    }*/
 }
 
+/**
+ * Blur na hodnotě atributu.
+ * @param {int} versionId verze AP
+ * @param {int} nodeId id node záložky, které se to týká
+ * @param {int} nodeKey klíč záložky
+ * @param {Object} valueLocation konkrétní umístění hodnoty
+ */
 export function faSubNodeFormValueBlur(versionId, nodeId, nodeKey, valueLocation) {
     return (dispatch, getState) => {
         dispatch({
@@ -301,6 +295,13 @@ export function faSubNodeFormValueBlur(versionId, nodeId, nodeKey, valueLocation
     }
 }
 
+/**
+ * Smazání hodnoty atributu.
+ * @param {int} versionId verze AP
+ * @param {int} nodeId id node záložky, které se to týká
+ * @param {int} nodeKey klíč záložky
+ * @param {Object} valueLocation konkrétní umístění hodnoty
+ */
 export function faSubNodeFormValueDelete(versionId, nodeId, nodeKey, valueLocation) {
     return (dispatch, getState) => {
         var state = getState();
@@ -324,6 +325,13 @@ export function faSubNodeFormValueDelete(versionId, nodeId, nodeKey, valueLocati
     }
 }
 
+/**
+ * Přidání atributu na formulář.
+ * @param {int} versionId verze AP
+ * @param {int} nodeId id node záložky, které se to týká
+ * @param {int} nodeKey klíč záložky
+ * @param {int} descItemTypeId id atributu
+ */
 export function faSubNodeFormDescItemTypeAdd(versionId, nodeId, nodeKey, descItemTypeId) {
     return (dispatch, getState) => {
         dispatch({
@@ -340,7 +348,15 @@ export function faSubNodeFormDescItemTypeAdd(versionId, nodeId, nodeKey, descIte
     }
 }
 
-export function faSubNodeFormDescItemTypeDeleteInStore(versionId, nodeId, nodeKey, valueLocation, onlyDescItems) {
+/**
+ * Smazání atributu POUZE z formuláře, nikoli na serveru!
+ * @param {int} versionId verze AP
+ * @param {int} nodeId id node záložky, které se to týká
+ * @param {int} nodeKey klíč záložky
+ * @param {Object} valueLocation konkrétní umístění atributu
+ * @param {bool} onlyDescItems pokud je true, pouze se odeberou hodnoty atributu, ale daný atribut na formuláři zůstane, pokud je false, odebere se i atribut
+ */
+function faSubNodeFormDescItemTypeDeleteInStore(versionId, nodeId, nodeKey, valueLocation, onlyDescItems) {
     return {
         type: types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE,
         versionId,
@@ -351,6 +367,13 @@ export function faSubNodeFormDescItemTypeDeleteInStore(versionId, nodeId, nodeKe
     }
 }
 
+/**
+ * Smazání atributu.
+ * @param {int} versionId verze AP
+ * @param {int} nodeId id node záložky, které se to týká
+ * @param {int} nodeKey klíč záložky
+ * @param {Object} valueLocation konkrétní umístění atributu
+ */
 export function faSubNodeFormDescItemTypeDelete(versionId, nodeId, nodeKey, valueLocation) {
     return (dispatch, getState) => {
         var state = getState();
@@ -375,7 +398,15 @@ export function faSubNodeFormDescItemTypeDelete(versionId, nodeId, nodeKey, valu
     }
 }
 
-export function faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, descItemResult, operationType) {
+/**
+ * Informační akce o provedené operaci na serveru.
+ * @param {int} versionId verze AP
+ * @param {int} nodeId id node záložky, které se to týká
+ * @param {int} nodeKey klíč záložky
+ * @param {Object} valueLocation konkrétní umístění atributu nebo hodnoty
+ * @param {string} operationType typ operace, jedna z hodnot: hodnota atributu['UPDATE', 'CREATE', 'DELETE'], atribut['DELETE_DESC_ITEM_TYPE']
+ */
+function faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, descItemResult, operationType) {
     return {
         type: types.FA_SUB_NODE_FORM_VALUE_RESPONSE,
         versionId,
@@ -387,9 +418,9 @@ export function faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueL
     }
 }
 
-export function faSubNodeFormDescItemTypeDeleteResponse(versionId, nodeId, nodeKey, valueLocation, copySiblingResult) {
+export function faSubNodeFormDescItemTypeCopyFromPrevResponse(versionId, nodeId, nodeKey, valueLocation, copySiblingResult) {
     return {
-        type: types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE_RESPONSE,
+        type: types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE,
         versionId,
         nodeId,
         nodeKey,
@@ -398,6 +429,13 @@ export function faSubNodeFormDescItemTypeDeleteResponse(versionId, nodeId, nodeK
     }
 }
 
+/**
+ * Focus na hodnotě atributu.
+ * @param {int} versionId verze AP
+ * @param {int} nodeId id node záložky, které se to týká
+ * @param {int} nodeKey klíč záložky
+ * @param {Object} valueLocation konkrétní umístění hodnoty
+ */
 export function faSubNodeFormValueFocus(versionId, nodeId, nodeKey, valueLocation) {
     return {
         type: types.FA_SUB_NODE_FORM_VALUE_FOCUS,

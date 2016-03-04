@@ -221,7 +221,7 @@ export default function subNodeForm(state = initialState, action) {
             return {...state};
         case types.CHANGE_NODES:
             return {...state, dirty: true}
-        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE_RESPONSE:
+        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
             state.data.node = action.copySiblingResult.node;
 
             var currentDescItemMap = {}
@@ -235,7 +235,10 @@ export default function subNodeForm(state = initialState, action) {
                 return newDescItem;
             })
 
-            // Upravení a opravení seznamu hodnot, případně přidání rázdných
+            var refType = state.refTypesMap[loc.descItemType.id]
+            var infoType = state.infoTypesMap[loc.descItemType.id]
+
+            // Upravení a opravení seznamu hodnot, případně přidání prázdných
             consolidateDescItems(loc.descItemType, infoType, refType, false)
 
             state.formData = {...state.formData};
@@ -318,7 +321,7 @@ export default function subNodeForm(state = initialState, action) {
             var refType = state.refTypesMap[descItemType.id]
             var infoType = state.infoTypesMap[descItemType.id]
 
-            // Upravení a opravení seznamu hodnot, případně přidání rázdných
+            // Upravení a opravení seznamu hodnot, případně přidání prázdných
             consolidateDescItems(descItemType, infoType, refType, true)
 
             descItemGroup.descItemTypes.sort((a, b) => {
@@ -340,7 +343,7 @@ export default function subNodeForm(state = initialState, action) {
                     // Hodnoty odebereme
                     loc.descItemType.descItems = [];
 
-                    // Upravení a opravení seznamu hodnot, případně přidání rázdných
+                    // Upravení a opravení seznamu hodnot, případně přidání prázdných
                     consolidateDescItems(loc.descItemType, infoType, refType, true)
                 } else { // kompletně odebereme
                     loc.descItemGroup.descItemTypes = [
@@ -361,7 +364,7 @@ export default function subNodeForm(state = initialState, action) {
             var infoType = state.infoTypesMap[loc.descItemType.id]
             var refType = state.refTypesMap[loc.descItemType.id]
 
-            // Upravení a opravení seznamu hodnot, případně přidání rázdných
+            // Upravení a opravení seznamu hodnot, případně přidání prázdných
             consolidateDescItems(loc.descItemType, infoType, refType, true)
             
             state.formData = {...state.formData};
