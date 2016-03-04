@@ -123,20 +123,15 @@ export function faNodeSubNodeFulltextSearch(filterText) {
     }
 }
 
-export function addJPBefore(node) {
-    return {
-        type: types.NODE_JP_ADD_BEFORE,
-        data: {node}
-    }
-}
-
-export function addJPAfter(node) {
-    return {
-        type: types.NODE_ADD_AFTER,
-        data: {node}
-    }
-}
-
+/**
+ * Přidání uzlu před, za na konec a pod.
+ * @param {Object} indexNode uzel, pro který je volána akce - před, za a pod který se akce volá
+ * @param {Object} parentNode nadřazený uzel k indexNode, pokud je přidáváno jako 'CHILD', je stejný jako indexNode
+ * @param {int} versionId verze AP
+ * @param {string} direction směr přidání, řetězec 'BEFORE', 'AFTER' nebo 'CHILD'
+ * @param {Array} descItemCopyTypes seznam id atributů, pro které se mají zkopírovat hodnoty z bezprostředně předcházejícího uzlu, který je před aktuálně přidávaným
+ * @param {string} scenarioName název scénáře, který má být použit
+ */
 export function addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes = null, scenarioName = null) {
     return (dispatch) => {
         parentNode = {
@@ -150,12 +145,18 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
             version: indexNode.version
         };
         return WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName).then((json) => {
-            dispatch(faNodeChange(versionId, {newNode: json.node, indexNode: indexNode, parentNode: json.parentNode, direction: direction, action: "ADD"}));
+            dispatch(faNodeChangeAdd(versionId, json.node, indexNode, json.parentNode, direction));
             dispatch(faSelectSubNode(json.node.id, json.parentNode));
         });
     }
 }
 
+/**
+ * Akce smazání uzlu.
+ * @param {Object} node uzel, který se má smazat
+ * @param {Object} parentNode nadřazený uzel k mazanému
+ * @param {int} versionId vezer AP
+ */
 export function deleteNode(node, parentNode, versionId) {
     return (dispatch) => {
         parentNode = {
@@ -169,14 +170,42 @@ export function deleteNode(node, parentNode, versionId) {
             version: node.version
         };
         return WebApi.deleteNode(node, parentNode, versionId).then((json) => {
-            dispatch(faNodeChange(versionId, {node: json.node, parentNode: json.parentNode, action: "DELETE"}));
+            dispatch(faNodeChangeDelete(versionId, json.node, json.parentNode));
         });
     }
 }
 
-export function faNodeChange(versionId, data) {
+/**
+ * Informační akce o přidání uzlu.
+ * @param {int} versionId verze AP
+ * @param {Object} newNode nově přidaný uzel
+ * @param {Object} indexNode uzel, pro který je volána akce - před, za a pod který se akce volá
+ * @param {Object} parentNode nadřazený uzel k indexNode, pokud je přidáváno jako 'CHILD', je stejný jako indexNode
+ * @param {string} direction 'BEFORE', 'AFTER' nebo 'CHILD'
+ */
+function faNodeChangeAdd(versionId, newNode, indexNode, parentNode, direction) {
     return {
-        ...data,
+        newNode,
+        indexNode,
+        parentNode,
+        direction,
+        action: 'ADD',
+        type: types.FA_NODE_CHANGE,
+        versionId
+    }
+}
+
+/**
+ * Informační akce o smazání uzlu.
+ * @param {int} versionId verze AP
+ * @param {Object} node smazaný uzel
+ * @param {Object} parentNode nadřazený uzel k mazanému
+ */
+function faNodeChangeDelete(versionId, node, parentNode) {
+    return {
+        node,
+        parentNode,
+        action: 'DELETE',
         type: types.FA_NODE_CHANGE,
         versionId
     }

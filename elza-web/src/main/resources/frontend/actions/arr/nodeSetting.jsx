@@ -1,6 +1,14 @@
+/**
+ * Akce pro různá nastavení pro konkrétní uzel, např. zamykání atributů atp.
+ */
+
 import * as types from 'actions/constants/ActionTypes';
 
-
+/**
+ * Zamčení atributu.
+ * @param {int} nodeId id uzlu
+ * @param {int} descItemTypeId id atributu
+ */
 export function lockDescItemType(nodeId, descItemTypeId) {
     return {
         type: types.NODE_DESC_ITEM_TYPE_LOCK,
@@ -9,6 +17,11 @@ export function lockDescItemType(nodeId, descItemTypeId) {
     }
 }
 
+/**
+ * Odemčení atributu.
+ * @param {int} nodeId id uzlu
+ * @param {int} descItemTypeId id atributu
+ */
 export function unlockDescItemType(nodeId, descItemTypeId) {
     return {
         type: types.NODE_DESC_ITEM_TYPE_UNLOCK,
@@ -17,6 +30,10 @@ export function unlockDescItemType(nodeId, descItemTypeId) {
     }
 }
 
+/**
+ * Odemčení všech atributů pro konkrétní uzel.
+ * @param {int} nodeId id uzlu
+ */
 export function unlockAllDescItemType(nodeId) {
     return {
         type: types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL,
@@ -24,6 +41,11 @@ export function unlockAllDescItemType(nodeId) {
     }
 }
 
+/**
+ * Zapnutí opakovaného kopírování hodnoty atributu.
+ * @param {int} nodeId id uzlu
+ * @param {int} descItemTypeId id atributu
+ */
 export function copyDescItemType(nodeId, descItemTypeId) {
     return {
         type: types.NODE_DESC_ITEM_TYPE_COPY,
@@ -32,6 +54,11 @@ export function copyDescItemType(nodeId, descItemTypeId) {
     }
 }
 
+/**
+ * Vypnutí opakovaného kopírování hodnoty atributu.
+ * @param {int} nodeId id uzlu
+ * @param {int} descItemTypeId id atributu
+ */
 export function nocopyDescItemType(nodeId, descItemTypeId) {
     return {
         type: types.NODE_DESC_ITEM_TYPE_NOCOPY,

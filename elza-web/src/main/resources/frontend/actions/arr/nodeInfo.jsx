@@ -10,9 +10,9 @@ import * as types from 'actions/constants/ActionTypes';
 
 /**
  * Dohledání store node pro předané parametry.
- * {state} kořenový store
- * {int} versionId verze AP
- * {string} nodeKey klíč záložky NODE
+ * @param {state} kořenový store
+ * @param {int} versionId verze AP
+ * @param {string} nodeKey klíč záložky NODE
  */
 function getNode(state, versionId, nodeKey) {
     var r = findByNodeKeyInGlobalState(state, versionId, nodeKey);

@@ -32,7 +32,7 @@ export function faSelectNodeTab(index) {
  * Zavření záložky JP.
  * @param index {int} index záložky
  */
-export function _faCloseNodeTab(index) {
+function _faCloseNodeTab(index) {
     return {
         type: types.FA_FA_CLOSE_NODE_TAB,
         index
@@ -85,11 +85,11 @@ export function faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab=fals
 /**
  * Akce vybrání záložky NODE v Accordion v aktuální záložce NODE pod aktuální vybranou záložkou AP. V případě, že neexsituje aktuální záložka NODE
  * je vytvořena nová na základě parametru subNodeParentNode, který bude reprezentovat záložku.
- * {int} subNodeId id node, který má být vzbrán v Accordion
- * {Object} subNodeParentNode nadřazený node k subNodeId
- * {boolean} openNewTab pokud je true, je vždy vytvářena nová záložka. pokud je false, je nová záložka vytvářena pouze pokud žádná není
- * {int} newFilterCurrentIndex nový index ve výsledcích hledání ve stromu, pokud daná akce je vyvolána akcí skuku na jinou vyhledanou položku vy výsledcích hledání ve stromu
- * {boolean} ensureItemVisible true, pokud má být daná položka vidět - má se odscrolovat
+ * @param {int} subNodeId id node, který má být vzbrán v Accordion
+ * @param {Object} subNodeParentNode nadřazený node k subNodeId
+ * @param {boolean} openNewTab pokud je true, je vždy vytvářena nová záložka. pokud je false, je nová záložka vytvářena pouze pokud žádná není
+ * @param {int} newFilterCurrentIndex nový index ve výsledcích hledání ve stromu, pokud daná akce je vyvolána akcí skuku na jinou vyhledanou položku vy výsledcích hledání ve stromu
+ * @param {boolean} ensureItemVisible true, pokud má být daná položka vidět - má se odscrolovat
  */
 export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
     return (dispatch, getState) => {
@@ -181,7 +181,7 @@ export function faSubNodesPrevPage() {
 /**
  * Stránkování v Accordion - předchozí stránka.
  */
-export function _faSubNodesPrevPage() {
+function _faSubNodesPrevPage() {
     return {
         type: types.FA_FA_SUBNODES_PREV_PAGE,
     }
@@ -189,11 +189,11 @@ export function _faSubNodesPrevPage() {
 
 /**
  * Akce přesunu uzlů ve stromu.
- * {int} versionId verze AP
- * {Array} nodes seznam uzlů pro akci
- * {Object} nodesParent nadřazený uzel k nodes
- * {Object} dest cílový uzel, kterého se akce týká
- * {Object} destParent nadřazený uzel pro dest
+ * @param {int} versionId verze AP
+ * @param {Array} nodes seznam uzlů pro akci
+ * @param {Object} nodesParent nadřazený uzel k nodes
+ * @param {Object} dest cílový uzel, kterého se akce týká
+ * @param {Object} destParent nadřazený uzel pro dest
  */
 export function moveNodesUnder(versionId, nodes, nodesParent, dest, destParent) {
     return (dispatch, getState) => {
@@ -203,11 +203,11 @@ export function moveNodesUnder(versionId, nodes, nodesParent, dest, destParent) 
 
 /**
  * Akce přesunu uzlů ve stromu.
- * {int} versionId verze AP
- * {Array} nodes seznam uzlů pro akci
- * {Object} nodesParent nadřazený uzel k nodes
- * {Object} dest cílový uzel, kterého se akce týká
- * {Object} destParent nadřazený uzel pro dest
+ * @param {int} versionId verze AP
+ * @param {Array} nodes seznam uzlů pro akci
+ * @param {Object} nodesParent nadřazený uzel k nodes
+ * @param {Object} dest cílový uzel, kterého se akce týká
+ * @param {Object} destParent nadřazený uzel pro dest
  */
 export function moveNodesBefore(versionId, nodes, nodesParent, dest, destParent) {
     return (dispatch, getState) => {
@@ -217,11 +217,11 @@ export function moveNodesBefore(versionId, nodes, nodesParent, dest, destParent)
 
 /**
  * Akce přesunu uzlů ve stromu.
- * {int} versionId verze AP
- * {Array} nodes seznam uzlů pro akci
- * {Object} nodesParent nadřazený uzel k nodes
- * {Object} dest cílový uzel, kterého se akce týká
- * {Object} destParent nadřazený uzel pro dest
+ * @param {int} versionId verze AP
+ * @param {Array} nodes seznam uzlů pro akci
+ * @param {Object} nodesParent nadřazený uzel k nodes
+ * @param {Object} dest cílový uzel, kterého se akce týká
+ * @param {Object} destParent nadřazený uzel pro dest
  */
 export function moveNodesAfter(versionId, nodes, nodesParent, dest, destParent) {
     return (dispatch, getState) => {
