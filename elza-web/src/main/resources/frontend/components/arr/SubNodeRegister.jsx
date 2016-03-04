@@ -30,7 +30,7 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
      */
     handleCreateRecord(index) {
         const {versionId} = this.props;
-        this.dispatch(registryAdd(null, versionId, this.handleCreatedRecord.bind(this, index)));
+        this.dispatch(registryAdd(null, versionId, this.handleCreatedRecord.bind(this, index), '', true));
     }
 
     /**
@@ -39,7 +39,7 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
      * @param valueLocation pozice hodnoty atributu
      * @param form {Object} data z formuláře
      */
-    handleCreatedRecord(index, data) {
+    handleCreatedRecord(index, data, submitType) {
         const {versionId, selectedSubNodeId, nodeKey, fa} = this.props;
 
         // TODO: sjednoceni od Pavla - ELZA-591
@@ -47,8 +47,12 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
         this.dispatch(faSubNodeRegisterValueChange(versionId, selectedSubNodeId, nodeKey, index, data.recordId));
         this.dispatch(faSubNodeRegisterValueBlur(versionId, selectedSubNodeId, nodeKey, index));
 
-        this.dispatch(registrySelect(data.recordId, fa));
-        this.dispatch(routerNavigate('registry'));
+        // Akce po vytvoření
+        if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
+            this.dispatch(registrySelect(data.recordId, fa));
+            this.dispatch(routerNavigate('registry'));
+        } else {    // nastavení focus zpět na prvek
+        }
     }
 
     handleAddClick() {
