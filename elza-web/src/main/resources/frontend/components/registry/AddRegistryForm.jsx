@@ -148,8 +148,8 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit(okSubmitForm)}>{i18n('global.action.store')}</Button>
                     {this.props.showSubmitTypes && <Button onClick={handleSubmit(okAndDetailSubmitForm)}>{i18n('global.action.storeAndViewDetail')}</Button>}
+                    <Button onClick={handleSubmit(okSubmitForm)}>{i18n('global.action.store')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>

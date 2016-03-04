@@ -322,8 +322,8 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.handleSubmit.bind(this, 'store')}>{i18n('global.action.store')}</Button>
                     {this.props.showSubmitTypes && <Button onClick={this.handleSubmit.bind(this, 'storeAndViewDetail')}>{i18n('global.action.storeAndViewDetail')}</Button>}
+                    <Button onClick={this.handleSubmit.bind(this, 'store')}>{i18n('global.action.store')}</Button>
                     <Button bsStyle="link" onClick={this.handleClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
