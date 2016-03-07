@@ -1,3 +1,7 @@
+/**
+ * Akce pro zobrazení a skrytí modálního dialogu.
+ */
+
 import * as types from 'actions/constants/ActionTypes';
 
 export function modalDialogShow(component, title, content) {

@@ -1,3 +1,7 @@
+/**
+ * Abstraktní předek pro všechny komponenty.
+ */
+
 import React from 'react';
 import {stateEquals} from 'components/Utils'
 
@@ -14,6 +18,9 @@ var AbstractReactComponent = class AbstractReactComponent extends React.Componen
     //console.log(this);
     }
 
+    /**
+     * Bind metod pro předné názvy metod v parametru.
+     */
     bindMethods(...methods) {
         methods.forEach( (method) => {
             if (!this[method]) {
