@@ -119,8 +119,11 @@ var TabContent = class TabContent extends React.Component {
         if (this.props.className) {
             cls += " " + this.props.className;
         }
+
+        const key = this.props.key || 'tab-content'
+
         return (
-            <div className={cls}>
+            <div key={key} className={cls}>
                 {this.props.children}   
             </div>
         );

@@ -154,9 +154,10 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         }
 
         var scroll = false;
-        if (!this.props.node.nodeInfoFetched && nextProps.node.nodeInfoFetched) {
+        if (
+            (!this.props.node.nodeInfoFetched || !this.props.node.subNodeForm.fetched)
+            && (nextProps.node.nodeInfoFetched && nextProps.node.subNodeForm.fetched)) {    // předchozí stav byl, že něco nebylo načteno, nový je, že je vše načteno
             scroll = true;
-        } else if (nextProps.node.selectedSubNodeId !== null && this.props.node.selectedSubNodeId !== nextProps.node.selectedSubNodeId) {
             scroll = true;
         }
         if (scroll) {
@@ -300,7 +301,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             var itemNode = ReactDOM.findDOMNode(this.refs['accheader-' + this.props.node.selectedSubNodeId])
             if (itemNode !== null) {
                 var contentNode = ReactDOM.findDOMNode(this.refs.accordionContent)
-                scrollIntoView(itemNode, contentNode, { onlyScrollIfNeeded: true, alignWithTop:true })
+                scrollIntoView(itemNode, contentNode, { onlyScrollIfNeeded: true, alignWithTop:false })
             }
         }
     }
@@ -690,7 +691,7 @@ return true
         }
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
         var actions = (
-            <div className='actions-container'>
+            <div key='actions' className='actions-container'>
                 <div key='actions' className='actions'>
                     {
                         node.nodeInfoFetched && !isFaRootId(node.id) && !closed &&
@@ -781,8 +782,8 @@ return true
         })
 
         return (
-            <Shortcuts name='NodePanel' key={'node-panel-' + node.selectedSubNodeId} className={cls} handler={this.handleShortcuts}>
-                <div className='main'>
+            <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts}>
+                <div key='main' className='main'>
                     {actions}
                     {parents}
                     {this.renderAccordion(form, record)}

@@ -9,6 +9,7 @@
 var _logCalls = true;
 var _logErrors = true;
 var _logResults = false;
+var _logDuration = false;    // moznost logovani delky volani
 
 var React = require('react');
 import {i18n, Toastr, LongText} from 'components';
@@ -49,6 +50,11 @@ function ajaxCallRaw(url, params, method, data, contentType = false) {
     return new Promise(function (resolve, reject) {
         var callStr = requestCounter(method, url, data);
 
+        var tStart
+        if (_logDuration) {
+            tStart = new Date().getTime()
+        }
+
         if (_logCalls) {
             console.info("->", callStr);
         }
@@ -64,7 +70,12 @@ function ajaxCallRaw(url, params, method, data, contentType = false) {
                                xhr) {   // xhr - responseText, responseJSON, status a statusText
                 if (_logResults) {
                     var lenStr = '(' + lenToBytesStr(roughSizeOfObject(data)) + ')';
-                    console.info("<-", callStr, lenStr, data);
+                    if (_logDuration) {
+                        const t = new Date().getTime() - tStart
+                        console.info("<-", callStr, lenStr, data, t + ' ms');
+                    } else {
+                        console.info("<-", callStr, lenStr, data);
+                    }
                 }
                 resolve(data);
             },
@@ -138,6 +149,11 @@ function ajaxCall(url, params, method, data) {
     return new Promise(function (resolve, reject) {
         var callStr = requestCounter(method, url, data);
 
+        var tStart
+        if (_logDuration) {
+            tStart = new Date().getTime()
+        }
+
         if (_logCalls) {
             console.info("->", callStr, data);
         }
@@ -158,7 +174,13 @@ function ajaxCall(url, params, method, data) {
                  if (_logResults) {
                     var len = JSON.stringify(data).length;
                     var lenStr = '(' + lenToBytesStr(len) + ')';
-                    console.info("<-", callStr, lenStr, data);
+
+                    if (_logDuration) {
+                        const t = new Date().getTime() - tStart
+                        console.info("<-", callStr, lenStr, data, t + ' ms');
+                    } else {
+                        console.info("<-", callStr, lenStr, data);
+                    }
                  }
                 resolve(data);
             },
