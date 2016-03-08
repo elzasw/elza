@@ -14,6 +14,9 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MapperFactory;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
@@ -54,8 +57,6 @@ import cz.tacr.elza.controller.vo.nodes.DescItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTypeGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
@@ -98,8 +99,6 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
 
 
 /**
@@ -222,22 +221,19 @@ public class ClientFactoryVO {
 
 
             List<ParPartyName> partyNames = partyNameMap.get(party.getPartyId());
-            List<ParPartyNameVO> partyNamesVo = new ArrayList<>(partyNames.size());
+            if (partyNames != null) {
+                List<ParPartyNameVO> partyNamesVo = new ArrayList<>(partyNames.size());
 
-            for (ParPartyName partyName : partyNames) {
-                ParPartyNameVO partyNameVo = mapper.map(partyName, ParPartyNameVO.class);
-                if (partyName.equals(party.getPreferredName())) {
-                    partyNameVo.setPrefferedName(true);
+                for (ParPartyName partyName : partyNames) {
+                    ParPartyNameVO partyNameVo = mapper.map(partyName, ParPartyNameVO.class);
+                    if (partyName.equals(party.getPreferredName())) {
+                        partyNameVo.setPrefferedName(true);
+                    }
+                    partyNamesVo.add(partyNameVo);
                 }
-                partyNamesVo.add(partyNameVo);
+                partyVO.setPartyNames(partyNamesVo);
             }
-            partyVO.setPartyNames(partyNamesVo);
         }
-
-//        for (final ParPartyName partyName : partyNames) {
-//            ParPartyNameVO partyNameVO = mapper.map(partyName, ParPartyNameVO.class);
-//            partyMap.get(partyNameVO.getPartyId()).addPartyName(partyNameVO);
-//        }
 
         return new ArrayList<>(partyMap.values());
     }
