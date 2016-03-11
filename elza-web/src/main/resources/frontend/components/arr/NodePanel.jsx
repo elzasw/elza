@@ -56,6 +56,26 @@ var keymap = {
 var shortcutManager = new ShortcutsManager(keymap)
 
 var accordionKeyDownHandlers = {
+    Home: function(e) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        const {node} = this.props
+        if (node.selectedSubNodeId === null) {
+            const index = node.viewStartIndex
+            this.setState({focusItemIndex: index}, () => {this.ensureItemVisibleNoForm(index)})
+        }
+    },
+    End: function(e) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        const {node} = this.props
+        if (node.selectedSubNodeId === null) {
+            const index = Math.min(node.viewStartIndex + node.pageSize - 1, node.childNodes.length - 1)
+            this.setState({focusItemIndex: index}, () => {this.ensureItemVisibleNoForm(index)})
+        }
+    },
     ArrowUp: function(e) {
         e.preventDefault()
         e.stopPropagation()
@@ -63,8 +83,8 @@ var accordionKeyDownHandlers = {
         const {node} = this.props
         if (node.selectedSubNodeId === null) {
             const {focusItemIndex} = this.state
-            if (focusItemIndex > 0) {
-                this.setState({focusItemIndex: focusItemIndex - 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex + 1)})
+            if (focusItemIndex > node.viewStartIndex) {
+                this.setState({focusItemIndex: focusItemIndex - 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex - 1)})
             }
         }
     },
@@ -75,7 +95,8 @@ var accordionKeyDownHandlers = {
         const {node} = this.props
         if (node.selectedSubNodeId === null) {
             const {focusItemIndex} = this.state
-            if (focusItemIndex + 1 < node.childNodes.length) {
+            const max = Math.min(node.viewStartIndex + node.pageSize, node.childNodes.length)
+            if (focusItemIndex + 1 < max) {
                 this.setState({focusItemIndex: focusItemIndex + 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex + 1)})
             }
         }
@@ -301,7 +322,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             var itemNode = ReactDOM.findDOMNode(this.refs['accheader-' + this.props.node.selectedSubNodeId])
             if (itemNode !== null) {
                 var contentNode = ReactDOM.findDOMNode(this.refs.accordionContent)
-                scrollIntoView(itemNode, contentNode, { onlyScrollIfNeeded: true, alignWithTop:false })
+                //scrollIntoView(itemNode, contentNode, { onlyScrollIfNeeded: true, alignWithTop:false })
+                contentNode.scrollTop = itemNode.offsetTop - contentNode.offsetHeight/2
             }
         }
     }
