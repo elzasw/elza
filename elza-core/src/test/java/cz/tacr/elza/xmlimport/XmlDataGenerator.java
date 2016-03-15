@@ -33,7 +33,7 @@ import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemString;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemText;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitDate;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitId;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.FindingAid;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.Fund;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Level;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Packet;
 import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
@@ -102,8 +102,8 @@ public class XmlDataGenerator {
         xmlImport.setPackets(packets);
 
         if (config.getTreeDepth() > 0) {
-            FindingAid findingAid = createFindingAid(config, records, parties, packets);
-            xmlImport.setFindingAid(findingAid);
+            Fund fund = createFund(config, records, parties, packets);
+            xmlImport.setFund(fund);
         }
 
         System.out.println(nodes);
@@ -153,9 +153,9 @@ public class XmlDataGenerator {
      *
      * @return archivní pomůcka
      */
-    private FindingAid createFindingAid(final XmlDataGeneratorConfig config, List<Record> records, List<AbstractParty> parties,
-            List<Packet> packets) {
-        FindingAid fa = new FindingAid();
+    private Fund createFund(final XmlDataGeneratorConfig config, List<Record> records, List<AbstractParty> parties,
+                            List<Packet> packets) {
+        Fund fa = new Fund();
         fa.setName("Import z XML");
         fa.setArrangementTypeCode("arr type code");
         fa.setRuleSetCode("rule set code");

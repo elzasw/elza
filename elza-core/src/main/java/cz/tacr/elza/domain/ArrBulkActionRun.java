@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity(name = "arr_bulk_action_run")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrChange, ArrFindingAidVersion> {
+public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrChange, ArrFundVersion> {
 
     @Id
     @GeneratedValue
@@ -28,9 +28,9 @@ public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrCh
     @Column(nullable = false)
     private String bulkActionCode;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAidVersion.class)
-    @JoinColumn(name = "versionId", nullable = false)
-    private ArrFindingAidVersion version;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFundVersion.class)
+    @JoinColumn(name = "fundVersionId", nullable = false)
+    private ArrFundVersion fundVersion;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "changeId", nullable = false)
@@ -58,13 +58,13 @@ public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrCh
     }
 
     @Override
-    public ArrFindingAidVersion getFindingAidVersion() {
-        return version;
+    public ArrFundVersion getFundVersion() {
+        return fundVersion;
     }
 
     @Override
-    public void setFindingAidVersion(final ArrFindingAidVersion findingAidVersion) {
-        this.version = findingAidVersion;
+    public void setFundVersion(final ArrFundVersion fundVersion) {
+        this.fundVersion = fundVersion;
     }
 
     @Override

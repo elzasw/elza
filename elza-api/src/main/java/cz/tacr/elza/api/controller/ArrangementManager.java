@@ -2,15 +2,8 @@ package cz.tacr.elza.api.controller;
 
 import java.util.List;
 
-import cz.tacr.elza.api.ArrDescItem;
-import cz.tacr.elza.api.ArrFindingAid;
-import cz.tacr.elza.api.ArrFindingAidVersion;
-import cz.tacr.elza.api.ArrLevel;
-import cz.tacr.elza.api.ArrLevelExt;
-import cz.tacr.elza.api.ArrNode;
-import cz.tacr.elza.api.ArrNodeRegister;
-import cz.tacr.elza.api.ArrPacket;
-import cz.tacr.elza.api.RulPacketType;
+import cz.tacr.elza.api.*;
+import cz.tacr.elza.api.ArrFund;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.ArrCalendarTypes;
 import cz.tacr.elza.api.vo.ArrDescItemSavePack;
@@ -27,8 +20,8 @@ import cz.tacr.elza.api.vo.ScenarioOfNewLevel;
 /**
  * Rozhraní operací pro archivní pomůcku a hierarchický přehled včetně atributů.
  *
- * @param <FA> {@link ArrFindingAid} archivní pomůcka
- * @param <FV> {@link ArrFindingAidVersion} verze archivní pomůcky
+ * @param <FA> {@link ArrFund} archivní pomůcka
+ * @param <FV> {@link ArrFundVersion} verze archivní pomůcky
  * @param <DI> {@link ArrDescItem} archivní popis
  * @param <DISP> {@link ArrDescItemSavePack} zapouzdřuje archivní popisy k uložení spolu s těmi ke smazání,
  *              id archivní pomůcky a příznakem, zdali vytvářet novou změnu
@@ -41,7 +34,7 @@ import cz.tacr.elza.api.vo.ScenarioOfNewLevel;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
-public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFindingAidVersion, DI extends ArrDescItem,
+public interface ArrangementManager<FA extends ArrFund, FV extends ArrFundVersion, DI extends ArrDescItem,
         DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode,
         DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack, CTL extends ArrCalendarTypes, ANR extends ArrNodeRegister,
         ANRP extends ArrNodeRegisterPack, AP extends ArrPacket, APT extends RulPacketType,
@@ -62,46 +55,46 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param ruleSetId         id pravidel podle kterých se vytváří popis
      * @return nová archivní pomůcka
      */
-    ArrFindingAid createFindingAid(String name, Integer arrangementTypeId, Integer ruleSetId);
+    ArrFund createFund(String name, Integer arrangementTypeId, Integer ruleSetId);
 
     /**
      * Smaže archivní pomůcku se zadaným id. Maže kompletní strukturu se všemi závislostmi.
      *
-     * @param findingAidId id archivní pomůcky
+     * @param fundId id archivní pomůcky
      */
-    void deleteFindingAid(Integer findingAidId);
+    void deleteFund(Integer fundId);
 
     /**
      * Vrátí všechny archivní pomůcky.
      *
      * @return všechny archivní pomůcky
      */
-    List<? extends ArrFindingAid> getFindingAids();
+    List<? extends ArrFund> getFunds();
 
     /**
      * Aktualizace archivní pomůcky.
      *
-     * @param findingAid archivní pomůcka s vyplěnými údaji a ID
+     * @param fund archivní pomůcka s vyplěnými údaji a ID
      * @return aktualizovaná archivní pomůcka
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli.
      */
-    ArrFindingAid updateFindingAid(FA findingAid) throws ConcurrentUpdateException;
+    ArrFund updateFund(FA fund) throws ConcurrentUpdateException;
 
     /**
      * Vrátí seznam verzí pro danou archivní pomůcku seřazený od nejnovější k nejstarší.
      *
-     * @param findingAidId id archivní pomůcky
+     * @param fundId id archivní pomůcky
      * @return seznam verzí pro danou archivní pomůcku seřazený od nejnovější k nejstarší
      */
-    List<? extends ArrFindingAidVersion> getFindingAidVersions(Integer findingAidId);
+    List<? extends ArrFundVersion> getFundVersions(Integer fundId);
 
     /**
      * Vrátí archivní pomůcku.
      *
-     * @param findingAidId id archivní pomůcky
+     * @param fundId id archivní pomůcky
      * @return archivní pomůcka
      */
-    ArrFindingAid getFindingAid(Integer findingAidId);
+    ArrFund getFund(Integer fundId);
 
     /**
      * Uzavře otevřenou verzi archivní pomůcky a otevře novou verzi.
@@ -112,7 +105,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @return nová verze archivní pomůcky
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
      */
-    ArrFindingAidVersion approveVersion(FV version, Integer arrangementTypeId, Integer ruleSetId) throws ConcurrentUpdateException;
+    ArrFundVersion approveVersion(FV version, Integer arrangementTypeId, Integer ruleSetId) throws ConcurrentUpdateException;
 
     /**
      * Vytvoří novou úroveň (level) před předanou úrovní (level).
@@ -173,18 +166,18 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
     /**
      * Načte neuzavřenou verzi archivní pomůcky.
      *
-     * @param findingAidId      id archivní pomůcky
+     * @param fundId      id archivní pomůcky
      * @return                  verze
      */
-    ArrFindingAidVersion getOpenVersionByFindingAidId(Integer findingAidId);
+    ArrFundVersion getOpenVersionByFundId(Integer fundId);
 
     /**
      * Načte verzi podle identifikátoru.
      *
-     * @param versionId      id verze
+     * @param fundVersionId      id verze
      * @return               verze s daným identifikátorem
      */
-    ArrFindingAidVersion getFaVersionById(Integer versionId);
+    ArrFundVersion getFundVersionById(Integer fundVersionId);
 
     /**
      * Načte potomky daného uzlu v konkrétní verzi. Pokud není identifikátor verze předaný načítají se potomci
@@ -222,29 +215,29 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * Přidá atribut archivního popisu včetně hodnoty k existující jednotce archivního popisu.
      *
      * @param descItemExt       atribut archivního popisu k vytvoření
-     * @param faVersionId       id verze
+     * @param fundVersionId       id verze
      * @return                  vytvořený atribut archivního popisu
      */
-    RNDWDI createDescriptionItem(DI descItemExt, Integer faVersionId);
+    RNDWDI createDescriptionItem(DI descItemExt, Integer fundVersionId);
 
     /**
      * Upraví hodnotu existujícího atributu archivního popisu.
      *
      * @param descItemExt       atribut archivního popisu k upravení
-     * @param faVersionId       id verze
+     * @param fundVersionId       id verze
      * @param createNewVersion  zda-li se má vytvářet nová verze
      * @return                  upravený atribut archivního popisu
      */
-    RNDWDI updateDescriptionItem(DI descItemExt, Integer faVersionId, Boolean createNewVersion);
+    RNDWDI updateDescriptionItem(DI descItemExt, Integer fundVersionId, Boolean createNewVersion);
 
     /**
      * Vymaže atribut archivního popisu.
      *
      * @param descItemExt       atribut archivního popisu ke smazání
-     * @param faVersionId       id verze
+     * @param fundVersionId       id verze
      * @return                  upravený(smazaný) atribut archivního popisu
      */
-    RNDWDI deleteDescriptionItem(DI descItemExt, Integer faVersionId);
+    RNDWDI deleteDescriptionItem(DI descItemExt, Integer fundVersionId);
 
 
     /**
@@ -257,21 +250,21 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
 
     /**
      * Vrátí všechny hodnoty atributu archivního popisu k uzlu.
-     * @param faVersionId       Identifikátor verze
+     * @param fundVersionId       Identifikátor verze
      * @param nodeId            Identifikátor uzlu
      * @param rulDescItemTypeId Identifikátor typu atributu
      * @return  Seznam hodnot atrubutu
      */
-    List<DI> getDescriptionItemsForAttribute(Integer faVersionId, Integer nodeId, Integer rulDescItemTypeId);
+    List<DI> getDescriptionItemsForAttribute(Integer fundVersionId, Integer nodeId, Integer rulDescItemTypeId);
 
 
     /**
      * Vrátí seznam změn uzlů a atributů v jednotlivých verzích.
      * @param nodeId        Identifikátor uzlu
-     * @param findingAidId  Identifikátor archivní pomůcky
+     * @param fundId  Identifikátor archivní pomůcky
      * @return              Seznam změn
      */
-    NHP getHistoryForNode(Integer nodeId, Integer findingAidId);
+    NHP getHistoryForNode(Integer nodeId, Integer fundId);
 
 
     /**
@@ -347,28 +340,28 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * Informace o možných scénářích založení nového uzlu - před.
      *
      * @param nodeId      id uzlu
-     * @param faVersionId id verze
+     * @param fundVersionId id verze
      * @return seznam možných scénařů
      */
-    List<SONL> getDescriptionItemTypesForNewLevelBefore(Integer nodeId, Integer faVersionId);
+    List<SONL> getDescriptionItemTypesForNewLevelBefore(Integer nodeId, Integer fundVersionId);
 
 
     /**
      * Informace o možných scénářích založení nového uzlu - po.
      *
      * @param nodeId      id uzlu
-     * @param faVersionId id verze
+     * @param fundVersionId id verze
      * @return seznam možných scénařů
      */
-    List<SONL> getDescriptionItemTypesForNewLevelAfter(Integer nodeId, Integer faVersionId);
+    List<SONL> getDescriptionItemTypesForNewLevelAfter(Integer nodeId, Integer fundVersionId);
 
 
     /**
      * Informace o možných scénářích založení nového uzlu - pod.
      *
      * @param nodeId      id uzlu
-     * @param faVersionId id verze
+     * @param fundVersionId id verze
      * @return seznam možných scénařů
      */
-    List<SONL> getDescriptionItemTypesForNewLevelChild(Integer nodeId, Integer faVersionId);
+    List<SONL> getDescriptionItemTypesForNewLevelChild(Integer nodeId, Integer fundVersionId);
 }

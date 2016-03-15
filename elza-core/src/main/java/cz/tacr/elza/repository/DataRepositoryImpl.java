@@ -7,10 +7,10 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+import cz.tacr.elza.domain.ArrFundVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.utils.ObjectListIterator;
 
@@ -28,7 +28,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
     @Override
     public List<ArrData> findDescItemsByNodeIds(final Set<Integer> nodeIds,
                                                 final Set<RulDescItemType> descItemTypes,
-                                                final ArrFindingAidVersion version) {
+                                                final ArrFundVersion version) {
 
 
         String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH d.dataType dt WHERE ";
@@ -62,7 +62,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
 
     @Override
-    public List<ArrData> findByDataIdsAndVersionFetchSpecification(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFindingAidVersion version) {
+    public List<ArrData> findByDataIdsAndVersionFetchSpecification(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFundVersion version) {
         String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH di.descItemSpec dis JOIN FETCH d.dataType dt WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";

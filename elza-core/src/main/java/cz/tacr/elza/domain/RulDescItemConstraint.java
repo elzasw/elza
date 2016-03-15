@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RulDescItemConstraint implements cz.tacr.elza.api.RulDescItemConstraint<RulDescItemType, RulDescItemSpec,
-        ArrFindingAidVersion, RulPackage> {
+        ArrFundVersion, RulPackage> {
 
     @Id
     @GeneratedValue
@@ -45,9 +45,9 @@ public class RulDescItemConstraint implements cz.tacr.elza.api.RulDescItemConstr
     @JoinColumn(name = "descItemSpecId", nullable = true)
     private RulDescItemSpec descItemSpec;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAidVersion.class)
-    @JoinColumn(name = "findingAidVersionId", nullable = true)
-    private ArrFindingAidVersion version;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFundVersion.class)
+    @JoinColumn(name = "fundVersionId", nullable = true)
+    private ArrFundVersion fundVersion;
 
     @Column(nullable = true)
     private Boolean repeatable;
@@ -103,13 +103,13 @@ public class RulDescItemConstraint implements cz.tacr.elza.api.RulDescItemConstr
     }
 
     @Override
-    public ArrFindingAidVersion getVersion() {
-        return version;
+    public ArrFundVersion getFundVersion() {
+        return fundVersion;
     }
 
     @Override
-    public void setVersion(final ArrFindingAidVersion version) {
-        this.version = version;
+    public void setFundVersion(final ArrFundVersion fundVersion) {
+        this.fundVersion = fundVersion;
     }
 
     @Override

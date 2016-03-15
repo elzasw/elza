@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.domain.ArrFundVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -23,15 +24,14 @@ import cz.tacr.elza.api.vo.BulkActionState.State;
 import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
 import cz.tacr.elza.bulkaction.generator.BulkAction;
 import cz.tacr.elza.bulkaction.generator.CleanDescriptionItemBulkAction;
-import cz.tacr.elza.bulkaction.generator.FindingAidValidationBulkAction;
+import cz.tacr.elza.bulkaction.generator.FundValidationBulkAction;
 import cz.tacr.elza.bulkaction.generator.SerialNumberBulkAction;
 import cz.tacr.elza.bulkaction.generator.UnitIdBulkAction;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -54,7 +54,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private ThreadPoolTaskExecutor taskExecutor;
 
     @Autowired
-    private FindingAidVersionRepository findingAidVersionRepository;
+    private FundVersionRepository fundVersionRepository;
 
     @Autowired
     private BulkActionConfigManager bulkActionConfigManager;
@@ -63,7 +63,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private BulkActionFactory bulkActionFactory;
 
     @Autowired
-    private BulkActionRunRepository faBulkActionRepository;
+    private BulkActionRunRepository bulkActionRepository;
 
     @Autowired
     private RuleService ruleService;
@@ -87,7 +87,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         bulkActionTypes.add(CleanDescriptionItemBulkAction.TYPE);
         bulkActionTypes.add(SerialNumberBulkAction.TYPE);
         bulkActionTypes.add(UnitIdBulkAction.TYPE);
-        bulkActionTypes.add(FindingAidValidationBulkAction.TYPE);
+        bulkActionTypes.add(FundValidationBulkAction.TYPE);
         bulkActionConfigManager.load();
     }
 
@@ -146,17 +146,17 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * Spuštění instance hromadné akce ve verzi archivní pomůcky.
      *
      * @param bulkActionConfig    nastavení hromadné akce
-     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @param fundVersionId identifikátor verze archivní pomůcky
      * @return stav instance hromadné akce
      */
-    public BulkActionState run(final BulkActionConfig bulkActionConfig, final Integer findingAidVersionId) {
+    public BulkActionState run(final BulkActionConfig bulkActionConfig, final Integer fundVersionId) {
         BulkActionConfig bulkActionConfigOrig = bulkActionConfigManager.get(bulkActionConfig.getCode());
 
         if (bulkActionConfigOrig == null) {
             throw new IllegalArgumentException("Hromadná akce neexistuje!");
         }
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(findingAidVersionId);
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         if (version == null) {
             throw new IllegalArgumentException("Verze archivní neexistuje!");
@@ -175,7 +175,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
         BulkAction bulkAction = bulkActionFactory
                 .getByCode((String) bulkActionConfigOrig.getProperty("code_type_bulk_action"));
-        BulkActionWorker bulkActionWorker = new BulkActionWorker(bulkAction, bulkActionConfigOrig, findingAidVersionId);
+        BulkActionWorker bulkActionWorker = new BulkActionWorker(bulkAction, bulkActionConfigOrig, fundVersionId);
         addWorker(bulkActionWorker);
 
         runNextWorker();
@@ -319,10 +319,10 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @param bulkActionWorker úloha, podle které se provede úklid
      */
     private void removeOldFaBulkAction(final BulkActionWorker bulkActionWorker) {
-        List<ArrBulkActionRun> bulkActions = faBulkActionRepository.findByFaVersionIdAndBulkActionCode(
+        List<ArrBulkActionRun> bulkActions = bulkActionRepository.findByFundVersionIdAndBulkActionCode(
                 bulkActionWorker.getVersionId(),
                 bulkActionWorker.getBulkActionConfig().getCode());
-        faBulkActionRepository.delete(bulkActions);
+        bulkActionRepository.delete(bulkActions);
     }
 
     /**
@@ -330,21 +330,21 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      *
      * - hledá se v seznamu úloh i v databázi
      *
-     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @param fundVersionId identifikátor verze archivní pomůcky
      * @return seznam stavů hromadných akcí
      */
-    public List<BulkActionState> getBulkActionState(final Integer findingAidVersionId) {
+    public List<BulkActionState> getBulkActionState(final Integer fundVersionId) {
         List<BulkActionState> bulkActionStates = new ArrayList<>();
         for (BulkActionWorker worker : workers) {
-            if (worker.getVersionId().equals(findingAidVersionId)) {
+            if (worker.getVersionId().equals(fundVersionId)) {
                 bulkActionStates.add(worker.getBulkActionState());
             }
         }
-        for (ArrBulkActionRun arrFaBulkAction : faBulkActionRepository.findByFaVersionId(findingAidVersionId)) {
+        for (ArrBulkActionRun bulkAction : bulkActionRepository.findByFundVersionId(fundVersionId)) {
             boolean add = true;
             for (BulkActionWorker worker : workers) {
-                if (worker.getVersionId().equals(findingAidVersionId) && worker.getBulkActionConfig().getCode()
-                        .equals(arrFaBulkAction.getBulkActionCode())) {
+                if (worker.getVersionId().equals(fundVersionId) && worker.getBulkActionConfig().getCode()
+                        .equals(bulkAction.getBulkActionCode())) {
                     add = false;
                     break;
                 }
@@ -352,8 +352,8 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             if (add) {
                 BulkActionState state = new BulkActionState();
                 state.setState(State.FINISH);
-                state.setRunChange(arrFaBulkAction.getChange());
-                state.setBulkActionCode(arrFaBulkAction.getBulkActionCode());
+                state.setRunChange(bulkAction.getChange());
+                state.setBulkActionCode(bulkAction.getBulkActionCode());
                 bulkActionStates.add(state);
             }
         }
@@ -369,8 +369,8 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
     @Override
     public void onSuccess(final BulkActionWorker result) {
-        ArrFindingAidVersion findingAidVersion = findingAidVersionRepository.findOne(result.getVersionId());
-        if (findingAidVersion == null) {
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(result.getVersionId());
+        if (fundVersion == null) {
             logger.warn("Neexistuje verze archivní pomůcky s identifikátorem " + result.getVersionId());
             return;
         }
@@ -379,9 +379,9 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
         arrFaBulkAction.setBulkActionCode(result.getBulkActionConfig().getCode());
         arrFaBulkAction.setChange(result.getBulkActionState().getRunChange());
-        arrFaBulkAction.setFindingAidVersion(findingAidVersion);
+        arrFaBulkAction.setFundVersion(fundVersion);
 
-        faBulkActionRepository.save(arrFaBulkAction);
+        bulkActionRepository.save(arrFaBulkAction);
 
         runNextWorker();
     }
@@ -389,12 +389,12 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     /**
      * Vrací seznam nastavení hromadných akcí podle verze archivní pomůcky.
      *
-     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @param fundVersionId identifikátor verze archivní pomůcky
      * @param mandatory           true - vrací se pouze seznam povinných, false - vrací se seznam všech
      * @return seznam nastavení hromadných akcí
      */
-    public List<BulkActionConfig> getBulkActions(final Integer findingAidVersionId, final boolean mandatory) {
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(findingAidVersionId);
+    public List<BulkActionConfig> getBulkActions(final Integer fundVersionId, final boolean mandatory) {
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         if (version == null) {
             throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
@@ -457,11 +457,11 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     /**
      * Spustí validaci verze AP.
      *
-     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @param fundVersionId identifikátor verze archivní pomůcky
      * @return seznam konfigurací hromadných akcí, které je nutné ještě spustit před uzavřením verze
      */
-    public List<BulkActionConfig> runValidation(final Integer findingAidVersionId) {
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(findingAidVersionId);
+    public List<BulkActionConfig> runValidation(final Integer fundVersionId) {
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         if (version == null) {
             throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
@@ -475,13 +475,13 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
         List<BulkActionConfig> bulkActionConfigReturnList = new ArrayList<>();
 
-        List<BulkActionConfig> bulkActionConfigMandatoryList = getBulkActions(findingAidVersionId, true);
-        List<ArrBulkActionRun> faBulkActions = faBulkActionRepository.findByFaVersionId(findingAidVersionId);
+        List<BulkActionConfig> bulkActionConfigMandatoryList = getBulkActions(fundVersionId, true);
+        List<ArrBulkActionRun> bulkActions = bulkActionRepository.findByFundVersionId(fundVersionId);
 
         for (BulkActionConfig bulkActionConfig : bulkActionConfigMandatoryList) {
 
             boolean isValidate = false;
-            for (ArrBulkActionRun bulkAction : faBulkActions) {
+            for (ArrBulkActionRun bulkAction : bulkActions) {
                 if (bulkAction.getBulkActionCode().equals(bulkActionConfig.getCode())) {
                     if (bulkAction.getChange().getChangeId() > lastUserChange.getChangeId()) {
                         isValidate = true;
@@ -501,11 +501,11 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     /**
      * Ukončí běžící akce pro danou verzi.
      *
-     * @param findingAidVersionId id verze archivní pomůcky
+     * @param fundVersionId id verze archivní pomůcky
      */
-    public void terminateBulkActions(Integer findingAidVersionId) {
+    public void terminateBulkActions(Integer fundVersionId) {
         for (BulkActionWorker worker : workers) {
-            if (worker.getVersionId().equals(findingAidVersionId) && worker.getBulkActionState().getState() == State.RUNNING) {
+            if (worker.getVersionId().equals(fundVersionId) && worker.getBulkActionState().getState() == State.RUNNING) {
                 worker.terminate();
             }
         }
@@ -516,13 +516,13 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * Zvaliduje uzel v nové transakci.
      *
      * @param faLevelId   id uzlu
-     * @param faVersionId id verze
+     * @param fundVersionId id verze
      * @param strategies  strategie
      * @return výsledek validace
      */
     @Transactional(value = Transactional.TxType.REQUIRES_NEW)
-    public ArrNodeConformityExt setConformityInfoInNewTransaction(final Integer faLevelId, final Integer faVersionId,
+    public ArrNodeConformityExt setConformityInfoInNewTransaction(final Integer faLevelId, final Integer fundVersionId,
                                                                   final Set<String> strategies) {
-        return ruleService.setConformityInfo(faLevelId, faVersionId, strategies);
+        return ruleService.setConformityInfo(faLevelId, fundVersionId, strategies);
     }
 }

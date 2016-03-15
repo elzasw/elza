@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemInt;
 import cz.tacr.elza.domain.ArrDescItemPacketRef;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -52,7 +52,7 @@ public class ModelFactory {
      * @param version verze levelu
      * @return vo level
      */
-    static public Level createLevel(final ArrLevel level, final ArrFindingAidVersion version) {
+    static public Level createLevel(final ArrLevel level, final ArrFundVersion version) {
 
         Level result = new Level();
         result.setNodeId(level.getNode().getNodeId());

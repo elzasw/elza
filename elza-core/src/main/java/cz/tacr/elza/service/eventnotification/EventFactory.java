@@ -1,6 +1,6 @@
 package cz.tacr.elza.service.eventnotification;
 
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.service.eventnotification.events.*;
@@ -31,18 +31,18 @@ public class EventFactory {
     }
 
     public static EventIdsInVersion createIdsInVersionEvent(final EventType eventType,
-                                                            final ArrFindingAidVersion version,
+                                                            final ArrFundVersion version,
                                                             final Integer... entityIds) {
         Assert.notNull(version);
-        return new EventIdsInVersion(eventType, version.getFindingAidVersionId(), entityIds);
+        return new EventIdsInVersion(eventType, version.getFundVersionId(), entityIds);
     }
 
     public static EventIdInVersion createIdInVersionEvent(final EventType eventType,
-                                                          final ArrFindingAidVersion version,
+                                                          final ArrFundVersion version,
                                                           final Integer entityId) {
         Assert.notNull(version);
 
-        return new EventIdInVersion(eventType, version.getFindingAidVersionId(), entityId);
+        return new EventIdInVersion(eventType, version.getFundVersionId(), entityId);
     }
 
     public static EventStringInVersion createStringInVersionEvent(final EventType eventType,
@@ -66,13 +66,13 @@ public class EventFactory {
     public static EventNodeMove createMoveEvent(final EventType eventType,
                                                 final ArrLevel staticLevel,
                                                 final List<ArrLevel> transportLevels,
-                                                final ArrFindingAidVersion version) {
-        return new EventNodeMove(eventType, version.getFindingAidVersionId(), createNodeInfo(staticLevel),
+                                                final ArrFundVersion version) {
+        return new EventNodeMove(eventType, version.getFundVersionId(), createNodeInfo(staticLevel),
                 createNodesInfo(transportLevels));
     }
 
     public static EventAddNode createAddNodeEvent(final EventType eventType,
-                                                  final ArrFindingAidVersion version,
+                                                  final ArrFundVersion version,
                                                   final ArrLevel staticLevel,
                                                   final ArrLevel addLevel) {
         Assert.notNull(eventType);
@@ -83,7 +83,7 @@ public class EventFactory {
         NodeInfo staticParentNode = staticLevel.getNodeParent() == null ? null
                                                                         : createNodeInfo(staticLevel.getNodeParent());
 
-        return new EventAddNode(eventType, version.getFindingAidVersionId(), createNodeInfo(staticLevel.getNode()),
+        return new EventAddNode(eventType, version.getFundVersionId(), createNodeInfo(staticLevel.getNode()),
                 staticParentNode, createNodeInfo(addLevel));
     }
 

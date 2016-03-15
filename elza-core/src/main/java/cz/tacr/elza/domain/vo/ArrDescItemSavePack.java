@@ -19,7 +19,7 @@ public class ArrDescItemSavePack implements cz.tacr.elza.api.vo.ArrDescItemSaveP
 
     private List<ArrDescItem> deleteDescItems;
 
-    private Integer faVersionId;
+    private Integer fundVersionId;
 
     private Boolean createNewVersion;
 
@@ -46,13 +46,13 @@ public class ArrDescItemSavePack implements cz.tacr.elza.api.vo.ArrDescItemSaveP
     }
 
     @Override
-    public Integer getFaVersionId() {
-        return faVersionId;
+    public Integer getFundVersionId() {
+        return fundVersionId;
     }
 
     @Override
-    public void setFaVersionId(Integer faVersionId) {
-        this.faVersionId = faVersionId;
+    public void setFundVersionId(Integer fundVersionId) {
+        this.fundVersionId = fundVersionId;
     }
 
     @Override

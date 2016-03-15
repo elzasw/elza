@@ -31,7 +31,7 @@ public class RulDescItemConstraintVO {
     /**
      * identifikátor verze archivní pomůcky
      */
-    private Integer findingAidVersionId;
+    private Integer fundVersionId;
 
     /**
      * je opakovatelný?
@@ -81,12 +81,12 @@ public class RulDescItemConstraintVO {
         this.descItemSpecId = descItemSpecId;
     }
 
-    public Integer getFindingAidVersionId() {
-        return findingAidVersionId;
+    public Integer getFundVersionId() {
+        return fundVersionId;
     }
 
-    public void setFindingAidVersionId(final Integer findingAidVersionId) {
-        this.findingAidVersionId = findingAidVersionId;
+    public void setFundVersionId(final Integer fundVersionId) {
+        this.fundVersionId = fundVersionId;
     }
 
     public Boolean getRepeatable() {

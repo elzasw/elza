@@ -6,30 +6,30 @@ package cz.tacr.elza.api;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 27.01.2016
  */
-public interface ArrFaRegisterScope<FA extends ArrFindingAid, RS extends RegScope> {
+public interface ArrFundRegisterScope<FA extends ArrFund, RS extends RegScope> {
 
     /**
      * @return Id
      */
-    Integer getFaRegisterScopeId();
+    Integer getFundRegisterScopeId();
 
 
     /**
-     * @param faRegisterScopeId Id
+     * @param fundRegisterScopeId Id
      */
-    void setFaRegisterScopeId(Integer faRegisterScopeId);
+    void setFundRegisterScopeId(Integer fundRegisterScopeId);
 
 
     /**
      * @return archivní pomůcka
      */
-    FA getFindingAid();
+    FA getFund();
 
 
     /**
-     * @param findingAid archivní pomůcka
+     * @param fund archivní pomůcka
      */
-    void setFindingAid(FA findingAid);
+    void setFund(FA fund);
 
 
     /**

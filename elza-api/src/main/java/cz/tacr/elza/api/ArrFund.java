@@ -4,16 +4,16 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * Archivní pomůcka. Archivní pomůcka je lineárně verzována pomocí {@link ArrFindingAidVersion}.
+ * Archivní pomůcka. Archivní pomůcka je lineárně verzována pomocí {@link ArrFundVersion}.
 
  * @author vavrejn
  *
  */
-public interface ArrFindingAid extends Versionable, Serializable {
+public interface ArrFund extends Versionable, Serializable {
 
-    Integer getFindingAidId();
+    Integer getFundId();
 
-    void setFindingAidId(Integer findingAidId);
+    void setFundId(Integer fundId);
 
     /**
      * 

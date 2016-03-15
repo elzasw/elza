@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-public interface RulDescItemConstraint<RIT extends RulDescItemType, RIS extends RulDescItemSpec, AV extends ArrFindingAidVersion,
+public interface RulDescItemConstraint<RIT extends RulDescItemType, RIS extends RulDescItemSpec, AV extends ArrFundVersion,
         P extends RulPackage>
         extends
             Serializable {
@@ -46,10 +46,10 @@ public interface RulDescItemConstraint<RIT extends RulDescItemType, RIS extends 
     void setDescItemSpec(final RIS descItemSpec);
 
 
-    AV getVersion();
+    AV getFundVersion();
 
 
-    void setVersion(final AV version);
+    void setFundVersion(final AV fundVersion);
 
 
     /**

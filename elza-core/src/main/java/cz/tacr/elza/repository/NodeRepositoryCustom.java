@@ -3,7 +3,7 @@ package cz.tacr.elza.repository;
 import java.util.List;
 
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 
 
@@ -23,7 +23,7 @@ public interface NodeRepositoryCustom {
      * @param direction směr, kterým prohledáváme strom
      * @return všechny uzly v daném směru prohledávání
      */
-    List<ArrNode> findNodesByDirection(ArrNode node, ArrFindingAidVersion version,
+    List<ArrNode> findNodesByDirection(ArrNode node, ArrFundVersion version,
                                        RelatedNodeDirection direction);
 
     List<ArrNode> findByFulltextAndVersionLockChangeId(String text, Integer lockChangeId);

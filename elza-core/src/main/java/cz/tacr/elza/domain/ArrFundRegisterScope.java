@@ -20,37 +20,37 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 27.01.2016
  */
-@Entity(name = "arr_fa_register_scope")
+@Entity(name = "arr_fund_register_scope")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFaRegisterScope implements cz.tacr.elza.api.ArrFaRegisterScope<ArrFindingAid, RegScope> {
+public class ArrFundRegisterScope implements cz.tacr.elza.api.ArrFundRegisterScope<ArrFund, RegScope> {
 
     @Id
     @GeneratedValue
-    private Integer faRegisterScopeId;
+    private Integer fundRegisterScopeId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAid.class)
-    @JoinColumn(name = "findingAidId", nullable = false)
-    private ArrFindingAid findingAid;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
+    @JoinColumn(name = "fundId", nullable = false)
+    private ArrFund fund;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegScope.class)
     @JoinColumn(name = "scopeId", nullable = false)
     private RegScope scope;
 
-    public Integer getFaRegisterScopeId() {
-        return faRegisterScopeId;
+    public Integer getFundRegisterScopeId() {
+        return fundRegisterScopeId;
     }
 
-    public void setFaRegisterScopeId(final Integer faRegisterScopeId) {
-        this.faRegisterScopeId = faRegisterScopeId;
+    public void setFundRegisterScopeId(final Integer fundRegisterScopeId) {
+        this.fundRegisterScopeId = fundRegisterScopeId;
     }
 
-    public ArrFindingAid getFindingAid() {
-        return findingAid;
+    public ArrFund getFund() {
+        return fund;
     }
 
-    public void setFindingAid(final ArrFindingAid findingAid) {
-        this.findingAid = findingAid;
+    public void setFund(final ArrFund fund) {
+        this.fund = fund;
     }
 
     public RegScope getScope() {
@@ -71,25 +71,25 @@ public class ArrFaRegisterScope implements cz.tacr.elza.api.ArrFaRegisterScope<A
             return false;
         }
 
-        ArrFaRegisterScope that = (ArrFaRegisterScope) o;
+        cz.tacr.elza.domain.ArrFundRegisterScope that = (cz.tacr.elza.domain.ArrFundRegisterScope) o;
 
         return new EqualsBuilder()
-                .append(faRegisterScopeId, that.faRegisterScopeId)
+                .append(fundRegisterScopeId, that.fundRegisterScopeId)
                 .isEquals();
     }
 
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
-                .append(faRegisterScopeId)
+                .append(fundRegisterScopeId)
                 .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "ArrFaRegisterScope{" +
-                "faRegisterScopeId=" + faRegisterScopeId +
-                ", findingAid=" + findingAid +
+        return "ArrFundRegisterScope{" +
+                "fundRegisterScopeId=" + fundRegisterScopeId +
+                ", fund=" + fund +
                 ", scope=" + scope +
                 '}';
     }

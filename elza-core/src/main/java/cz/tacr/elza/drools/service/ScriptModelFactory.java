@@ -18,7 +18,7 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemEnum;
 import cz.tacr.elza.domain.ArrDescItemInt;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDescItemSpec;
@@ -116,7 +116,7 @@ public class ScriptModelFactory {
      * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a prvky popisu.
      */
     public Level createLevelModel(final ArrLevel level,
-                                        final ArrFindingAidVersion version) {
+                                        final ArrFundVersion version) {
         Assert.notNull(level);
         Assert.notNull(version);
 
@@ -211,7 +211,7 @@ public class ScriptModelFactory {
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	public List<Level> createFactsForNewLevel(
                                    final ArrLevel level,
-                                   final DirectionLevel directionLevel, final ArrFindingAidVersion version) 
+                                   final DirectionLevel directionLevel, final ArrFundVersion version)
     {
     	Level srcModelLevel = createLevelModel(level, version);
             	
@@ -314,7 +314,7 @@ public class ScriptModelFactory {
      */
     public ActiveLevel createActiveLevel(Level modelLevel,
                                          final ArrLevel level,
-                                         final ArrFindingAidVersion version) {
+                                         final ArrFundVersion version) {
         DescItemReader descItemReader = new DescItemReader(descItemRepository, descItemTypeRepository, descItemFactory);
 
         ActiveLevel activeLevel = new ActiveLevel(modelLevel);

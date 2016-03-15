@@ -2,10 +2,10 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrFund;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrPacket;
 
 
@@ -16,7 +16,7 @@ import cz.tacr.elza.domain.ArrPacket;
 @Repository
 public interface PacketRepository extends JpaRepository<ArrPacket, Integer>, PacketRepositoryCustom {
 
-    ArrPacket findByFindingAidAndStorageNumber(ArrFindingAid findingAid, String storageNumber);
+    ArrPacket findByFundAndStorageNumber(ArrFund fund, String storageNumber);
 
-    List<ArrPacket> findByFindingAid(ArrFindingAid findingAid);
+    List<ArrPacket> findByFund(ArrFund fund);
 }

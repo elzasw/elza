@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -30,16 +31,8 @@ import cz.tacr.elza.controller.vo.RegRecordWithCount;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
@@ -83,7 +76,7 @@ public class RegistryController {
     private VariantRecordRepository variantRecordRepository;
 
     @Autowired
-    private FindingAidVersionRepository findingAidVersionRepository;
+    private FundVersionRepository fundVersionRepository;
 
     @Autowired
     private ScopeRepository scopeRepository;
@@ -124,13 +117,13 @@ public class RegistryController {
             registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
         }
 
-        ArrFindingAid findingAid;
+        ArrFund fund;
         if(versionId == null){
-            findingAid = null;
+            fund = null;
         }else{
-            ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+            ArrFundVersion version = fundVersionRepository.findOne(versionId);
             Assert.notNull(version, "Nebyla nalezena verze archivní pomůcky s id "+versionId);
-            findingAid = version.getFindingAid();
+            fund = version.getFund();
         }
 
 
@@ -142,10 +135,10 @@ public class RegistryController {
         }
 
         final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdTree,
-                parentRecordId, findingAid);
+                parentRecordId, fund);
 
         List<RegRecord> foundRecords = registryService
-                .findRegRecordByTextAndType(search, registerTypeIdTree, from, count, parentRecordId, findingAid);
+                .findRegRecordByTextAndType(search, registerTypeIdTree, from, count, parentRecordId, fund);
 
 
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords);
@@ -429,20 +422,20 @@ public class RegistryController {
     @RequestMapping(value = "/faScopes", method = RequestMethod.GET)
     public List<RegScopeVO> getScopeIdsByVersion(@RequestParam(required = false) @Nullable final Integer versionId) {
 
-        ArrFindingAid findingAid;
+        ArrFund fund;
         if (versionId == null) {
-            findingAid = null;
+            fund = null;
         } else {
-            ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+            ArrFundVersion version = fundVersionRepository.findOne(versionId);
             Assert.notNull(version, "Nebyla nalezena verze s id " + versionId);
-            findingAid = version.getFindingAid();
+            fund = version.getFund();
         }
 
-        Set<Integer> scopeIdsByFindingAid = registryService.getScopeIdsByFindingAid(findingAid);
-        if (scopeIdsByFindingAid.isEmpty()) {
+        Set<Integer> scopeIdsByFund = registryService.getScopeIdsByFund(fund);
+        if (scopeIdsByFund.isEmpty()) {
             return Collections.EMPTY_LIST;
         } else {
-            List<RegScopeVO> result = factoryVo.createScopes(scopeRepository.findAll(scopeIdsByFindingAid));
+            List<RegScopeVO> result = factoryVo.createScopes(scopeRepository.findAll(scopeIdsByFund));
             result.sort((a, b) -> a.getCode().compareTo(b.getCode()));
             return result;
         }

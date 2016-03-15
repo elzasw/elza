@@ -28,7 +28,7 @@ public class ValidationController {
      * @return objekt s validní nebo nevalidní zprávou
      */
     @RequestMapping(value = "/unitDate", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ValidationResult getFindingAidVersions(@RequestParam(value = "value", required = true) final String value) {
+    public ValidationResult getFundVersions(@RequestParam(value = "value", required = true) final String value) {
 
         try {
             UnitDateConvertor.convertToUnitDate(value, new ArrDescItemUnitdate());

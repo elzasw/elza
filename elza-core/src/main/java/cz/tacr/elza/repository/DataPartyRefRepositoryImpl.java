@@ -10,7 +10,7 @@ import javax.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.utils.ObjectListIterator;
 
@@ -20,7 +20,7 @@ public class DataPartyRefRepositoryImpl implements DataPartyRefRepositoryCustom 
     private EntityManager entityManager;
 
     @Override
-    public List<ArrDataPartyRef> findByDataIdsAndVersionFetchPartyRecord(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFindingAidVersion version) {
+    public List<ArrDataPartyRef> findByDataIdsAndVersionFetchPartyRecord(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFundVersion version) {
         String hql = "SELECT d FROM arr_data_party_ref d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH d.party party JOIN FETCH party.record r WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";

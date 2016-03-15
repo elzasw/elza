@@ -25,7 +25,7 @@ public interface ArrDescItem<FC extends ArrChange, RT extends RulDescItemType,
      *
      * @param descItemId identifikátor hodnoty atributu
      */
-    void setDescItemId(final Integer descItemId);
+    void setDescItemId(Integer descItemId);
 
     /**
      * @return Číslo změny založení hodnoty.
@@ -38,7 +38,7 @@ public interface ArrDescItem<FC extends ArrChange, RT extends RulDescItemType,
      *
      * @param createChange číslo změny založení hodnoty.
      */
-    void setCreateChange(final FC createChange);
+    void setCreateChange(FC createChange);
 
     /**
      * @return Číslo změny smazání hodnoty.
@@ -46,7 +46,7 @@ public interface ArrDescItem<FC extends ArrChange, RT extends RulDescItemType,
     FC getDeleteChange();
 
 
-    void setDeleteChange(final FC deleteChange);
+    void setDeleteChange(FC deleteChange);
 
     /**
      * @return identifikátor hodnoty atrributu, který se nemění při verzované změně hodnoty.
@@ -58,7 +58,7 @@ public interface ArrDescItem<FC extends ArrChange, RT extends RulDescItemType,
      *
      * @param descItemObjectId identifikátor hodnoty atrributu, který se nemění při verzované změně hodnoty.
      */
-    void setDescItemObjectId(final Integer descItemObjectId);
+    void setDescItemObjectId(Integer descItemObjectId);
 
 
     /**
@@ -72,7 +72,7 @@ public interface ArrDescItem<FC extends ArrChange, RT extends RulDescItemType,
      *
      * @param descItemType odkaz na typ atributu.
      */
-    void setDescItemType(final RT descItemType);
+    void setDescItemType(RT descItemType);
 
     /**
      * @return Odkaz na podtyp atributu.
@@ -84,7 +84,7 @@ public interface ArrDescItem<FC extends ArrChange, RT extends RulDescItemType,
      *
      * @param descItemSpec odkaz na podtyp atributu.
      */
-    void setDescItemSpec(final RS descItemSpec);
+    void setDescItemSpec(RS descItemSpec);
 
     /**
      * @return nod.
@@ -96,7 +96,7 @@ public interface ArrDescItem<FC extends ArrChange, RT extends RulDescItemType,
      *
      * @param node nod.
      */
-    void setNode(final N node);
+    void setNode(N node);
 
     /**
      *
@@ -111,6 +111,6 @@ public interface ArrDescItem<FC extends ArrChange, RT extends RulDescItemType,
      *
      * @param position pořadí atributu v rámci shodného typu a specifikace atributu.
      */
-    void setPosition(final Integer position);
+    void setPosition(Integer position);
 
 }

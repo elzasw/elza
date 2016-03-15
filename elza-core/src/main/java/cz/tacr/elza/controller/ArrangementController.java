@@ -34,7 +34,7 @@ import java.util.*;
 public class ArrangementController {
 
     @Autowired
-    private FindingAidVersionRepository findingAidVersionRepository;
+    private FundVersionRepository fundVersionRepository;
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
@@ -97,107 +97,107 @@ public class ArrangementController {
     /**
      * Seznam obalů pro AP.
      *
-     * @param findingAidId identifikátor AP
+     * @param fundId identifikátor AP
      * @return obaly pro AP
      */
-    @RequestMapping(value = "/packets/{findingAidId}",
+    @RequestMapping(value = "/packets/{fundId}",
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ArrPacketVO> getPackets(@PathVariable(value = "findingAidId") final Integer findingAidId) {
-        Assert.notNull(findingAidId);
-        List<ArrPacket> packets = packetService.getPackets(findingAidId);
+    public List<ArrPacketVO> getPackets(@PathVariable(value = "fundId") final Integer fundId) {
+        Assert.notNull(fundId);
+        List<ArrPacket> packets = packetService.getPackets(fundId);
         return factoryVo.createPacketList(packets);
     }
 
     /**
      * Vložení nového obalu pro AP.
      *
-     * @param findingAidId  identifikátor AP
+     * @param fundId  identifikátor AP
      * @param packetVO      obal
      * @return obal
      */
     @Transactional
-    @RequestMapping(value = "/packets/{findingAidId}",
+    @RequestMapping(value = "/packets/{fundId}",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrPacketVO insertPacket(@PathVariable(value = "findingAidId") final Integer findingAidId,
+    public ArrPacketVO insertPacket(@PathVariable(value = "fundId") final Integer fundId,
                                           @RequestBody final ArrPacketVO packetVO) {
-        Assert.notNull(findingAidId);
+        Assert.notNull(fundId);
         Assert.notNull(packetVO);
 
-        ArrPacket packet = factoryDO.createPacket(packetVO, findingAidId);
+        ArrPacket packet = factoryDO.createPacket(packetVO, fundId);
         return factoryVo.createPacket(packetService.insertPacket(packet));
     }
 
     /**
      * Smazání obalu.
      *
-     * @param findingAidId  identifikátor AP
+     * @param fundId  identifikátor AP
      * @param packetId      identfikátor obalu pro smazání
      * @return obal
      */
     @Transactional
-    @RequestMapping(value = "/packets/{findingAidId}/{packetId}",
+    @RequestMapping(value = "/packets/{fundId}/{packetId}",
             method = RequestMethod.DELETE,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrPacketVO deactivatePacket(@PathVariable(value = "findingAidId") final Integer findingAidId,
+    public ArrPacketVO deactivatePacket(@PathVariable(value = "fundId") final Integer fundId,
                                         @PathVariable(value = "packetId") final Integer packetId) {
-        Assert.notNull(findingAidId);
+        Assert.notNull(fundId);
         Assert.notNull(packetId);
 
-        ArrPacket packet = packetService.getPacket(findingAidId, packetId);
+        ArrPacket packet = packetService.getPacket(fundId, packetId);
         return factoryVo.createPacket(packetService.deactivatePacket(packet));
     }
 
     /**
      * Upravení obalu.
      *
-     * @param findingAidId identifikátor AP
+     * @param fundId identifikátor AP
      * @param packetVO     obal
      * @return obal
      */
     @Transactional
-    @RequestMapping(value = "/packets/{findingAidId}",
+    @RequestMapping(value = "/packets/{fundId}",
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrPacketVO updatePacket(@PathVariable(value = "findingAidId") final Integer findingAidId,
+    public ArrPacketVO updatePacket(@PathVariable(value = "fundId") final Integer fundId,
                                     @RequestBody final ArrPacketVO packetVO) {
-        Assert.notNull(findingAidId);
+        Assert.notNull(fundId);
         Assert.notNull(packetVO);
 
-        ArrPacket packet = factoryDO.createPacket(packetVO, findingAidId);
+        ArrPacket packet = factoryDO.createPacket(packetVO, fundId);
         return factoryVo.createPacket(packetService.updatePacket(packet));
     }
 
     /**
      * Smazání hodnot atributu podle typu.
      *
-     * @param findingAidVersionId   identfikátor verze AP
+     * @param fundVersionId   identfikátor verze AP
      * @param nodeId                identfikátor JP
      * @param nodeVersion           verze JP
      * @param descItemTypeId        identfikátor typu hodnoty atributu
      */
     @Transactional
-    @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}",
+    @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}",
             method = RequestMethod.DELETE,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public DescItemResult deleteDescItemsByType(@PathVariable(value = "findingAidVersionId") final Integer findingAidVersionId,
+    public DescItemResult deleteDescItemsByType(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                 @PathVariable(value = "nodeId") final Integer nodeId,
                                                 @PathVariable(value = "nodeVersion") final Integer nodeVersion,
                                                 @PathVariable(value = "descItemTypeId") final Integer descItemTypeId) {
 
-        Assert.notNull(findingAidVersionId);
+        Assert.notNull(fundVersionId);
         Assert.notNull(nodeVersion);
         Assert.notNull(descItemTypeId);
         Assert.notNull(nodeId);
 
         ArrNode node = descriptionItemService
-                .deleteDescriptionItemsByType(findingAidVersionId, nodeId, nodeVersion, descItemTypeId);
+                .deleteDescriptionItemsByType(fundVersionId, nodeId, nodeVersion, descItemTypeId);
 
         DescItemResult descItemResult = new DescItemResult();
         descItemResult.setDescItem(null);
@@ -210,23 +210,23 @@ public class ArrangementController {
      * Smazání hodnoty atributu.
      *
      * @param descItemVO            hodnota atributu
-     * @param findingAidVersionId   identfikátor verze AP
+     * @param fundVersionId   identfikátor verze AP
      * @param nodeVersion           verze JP
      */
     @Transactional
-    @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeVersion}/delete",
+    @RequestMapping(value = "/descItems/{fundVersionId}/{nodeVersion}/delete",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DescItemResult deleteDescItem(@RequestBody final ArrDescItemVO descItemVO,
-                                         @PathVariable(value = "findingAidVersionId") final Integer findingAidVersionId,
+                                         @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
         Assert.notNull(descItemVO);
-        Assert.notNull(findingAidVersionId);
+        Assert.notNull(fundVersionId);
         Assert.notNull(nodeVersion);
 
         ArrDescItem descItemDeleted = descriptionItemService
-                .deleteDescriptionItem(descItemVO.getDescItemObjectId(), nodeVersion, findingAidVersionId);
+                .deleteDescriptionItem(descItemVO.getDescItemObjectId(), nodeVersion, fundVersionId);
 
         DescItemResult descItemResult = new DescItemResult();
         descItemResult.setDescItem(null);
@@ -239,28 +239,28 @@ public class ArrangementController {
      * Aktualizace hodnoty atributu.
      *
      * @param descItemVO            hodnota atributu
-     * @param findingAidVersionId   identfikátor verze AP
+     * @param fundVersionId   identfikátor verze AP
      * @param nodeVersion           verze JP
      * @param createNewVersion      vytvořit novou verzi?
      */
     @Transactional
-    @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeVersion}/update/{createNewVersion}",
+    @RequestMapping(value = "/descItems/{fundVersionId}/{nodeVersion}/update/{createNewVersion}",
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DescItemResult updateDescItem(@RequestBody final ArrDescItemVO descItemVO,
-                                         @PathVariable(value = "findingAidVersionId") final Integer findingAidVersionId,
+                                         @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "nodeVersion") final Integer nodeVersion,
                                          @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
         Assert.notNull(descItemVO);
-        Assert.notNull(findingAidVersionId);
+        Assert.notNull(fundVersionId);
         Assert.notNull(nodeVersion);
         Assert.notNull(createNewVersion);
 
         ArrDescItem descItem = factoryDO.createDescItem(descItemVO);
 
         ArrDescItem descItemUpdated = descriptionItemService
-                .updateDescriptionItem(descItem, nodeVersion, findingAidVersionId, createNewVersion);
+                .updateDescriptionItem(descItem, nodeVersion, fundVersionId, createNewVersion);
 
         DescItemResult descItemResult = new DescItemResult();
         descItemResult.setDescItem(factoryVo.createDescItem(descItemUpdated));
@@ -273,24 +273,24 @@ public class ArrangementController {
      * Vytvoření hodnoty atributu.
      *
      * @param descItemVO            hodnota atributu
-     * @param findingAidVersionId   identfikátor verze AP
+     * @param fundVersionId   identfikátor verze AP
      * @param descItemTypeId        identfikátor typu hodnoty atributu
      * @param nodeId                identfikátor JP
      * @param nodeVersion           verze JP
      * @return hodnota atributu
      */
     @Transactional
-    @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create",
+    @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create",
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DescItemResult createDescItem(@RequestBody final ArrDescItemVO descItemVO,
-                                         @PathVariable(value = "findingAidVersionId") final Integer findingAidVersionId,
+                                         @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "descItemTypeId") final Integer descItemTypeId,
                                          @PathVariable(value = "nodeId") final Integer nodeId,
                                          @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
         Assert.notNull(descItemVO);
-        Assert.notNull(findingAidVersionId);
+        Assert.notNull(fundVersionId);
         Assert.notNull(descItemTypeId);
         Assert.notNull(nodeId);
         Assert.notNull(nodeVersion);
@@ -298,7 +298,7 @@ public class ArrangementController {
         ArrDescItem descItem = factoryDO.createDescItem(descItemVO, descItemTypeId);
 
         ArrDescItem descItemCreated = descriptionItemService.createDescriptionItem(descItem, nodeId, nodeVersion,
-                findingAidVersionId);
+                fundVersionId);
 
         DescItemResult descItemResult = new DescItemResult();
         descItemResult.setDescItem(factoryVo.createDescItem(descItemCreated));
@@ -312,18 +312,18 @@ public class ArrangementController {
      *
      * @return seznam AP
      */
-    @RequestMapping(value = "/getFindingAids", method = RequestMethod.GET)
-    public List<ArrFindingAidVO> getFindingAids() {
-        Map<Integer, ArrFindingAidVO> findingAids = new LinkedHashMap<>();
-        findingAidVersionRepository.findAllFetchFindingAids().forEach(version -> {
-            ArrFindingAid findingAid = version.getFindingAid();
-            ArrFindingAidVO findingAidVO = factoryVo
-                    .getOrCreateVo(findingAid.getFindingAidId(), findingAid, findingAids, ArrFindingAidVO.class);
-            findingAidVO.getVersions().add(factoryVo.createFindingAidVersion(version));
+    @RequestMapping(value = "/getFunds", method = RequestMethod.GET)
+    public List<ArrFundVO> getFunds() {
+        Map<Integer, ArrFundVO> funds = new LinkedHashMap<>();
+        fundVersionRepository.findAllFetchFunds().forEach(version -> {
+            ArrFund fund = version.getFund();
+            ArrFundVO fundVO = factoryVo
+                    .getOrCreateVo(fund.getFundId(), fund, funds, ArrFundVO.class);
+            fundVO.getVersions().add(factoryVo.createFundVersion(version));
         });
 
 
-        return new ArrayList<ArrFindingAidVO>(findingAids.values());
+        return new ArrayList<ArrFundVO>(funds.values());
     }
 
     /**
@@ -333,23 +333,23 @@ public class ArrangementController {
      * @return seznam FA, každá obsahuje pouze jednu verzi, jinak je vrácená víckrát
      */
     @RequestMapping(value = "/getVersions", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public List<ArrFindingAidVO> getFindingAidsByVersionIds(@RequestBody final IdsParam idsParam) {
+    public List<ArrFundVO> getFundsByVersionIds(@RequestBody final IdsParam idsParam) {
 
         if (CollectionUtils.isEmpty(idsParam.getIds())) {
             return Collections.EMPTY_LIST;
         }
 
 
-        List<ArrFindingAidVersion> versions = findingAidVersionRepository.findAll(idsParam.getIds());
+        List<ArrFundVersion> versions = fundVersionRepository.findAll(idsParam.getIds());
 
 
-        List<ArrFindingAidVO> result = new LinkedList<>();
-        for (ArrFindingAidVersion version : versions) {
-            ArrFindingAidVO findingAid = factoryVo.createArrFindingAidVO(version.getFindingAid(), false);
-            ArrFindingAidVersionVO versionVo = factoryVo.createFindingAidVersion(version);
-            findingAid.setVersions(Arrays.asList(versionVo));
+        List<ArrFundVO> result = new LinkedList<>();
+        for (ArrFundVersion version : versions) {
+            ArrFundVO fund = factoryVo.createFundVO(version.getFund(), false);
+            ArrFundVersionVO versionVo = factoryVo.createFundVersion(version);
+            fund.setVersions(Arrays.asList(versionVo));
 
-            result.add(findingAid);
+            result.add(fund);
         }
 
         return result;
@@ -416,14 +416,14 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/approveVersion", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrFindingAidVersionVO approveVersion(@RequestParam("versionId") final Integer versionId,
-                                                 @RequestParam("arrangementTypeId") final Integer arrangementTypeId,
-                                                 @RequestParam("ruleSetId") final Integer ruleSetId) {
+    public ArrFundVersionVO approveVersion(@RequestParam("versionId") final Integer versionId,
+                                           @RequestParam("arrangementTypeId") final Integer arrangementTypeId,
+                                           @RequestParam("ruleSetId") final Integer ruleSetId) {
         Assert.notNull(versionId);
         Assert.notNull(arrangementTypeId);
         Assert.notNull(ruleSetId);
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        ArrFundVersion version = fundVersionRepository.findOne(versionId);
         RulArrangementType arrangementType = arrangementTypeRepository.findOne(arrangementTypeId);
         RulRuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
 
@@ -432,9 +432,9 @@ public class ArrangementController {
         Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + ruleSetId);
 
 
-        ArrFindingAidVersion nextVersion = arrangementService
+        ArrFundVersion nextVersion = arrangementService
                 .approveVersion(version, arrangementType, ruleSet);
-        return factoryVo.createFindingAidVersion(nextVersion);
+        return factoryVo.createFundVersion(nextVersion);
     }
 
     /**
@@ -450,7 +450,7 @@ public class ArrangementController {
         Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
         Assert.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        ArrFundVersion version = fundVersionRepository.findOne(versionId);
         ArrNode node = nodeRepository.findOne(nodeId);
 
         Assert.notNull(version, "Verze AP neexistuje");
@@ -464,13 +464,13 @@ public class ArrangementController {
             descItemTypes = new ArrayList<>();
         }
 
-        Integer findingAidId = version.getFindingAid().getFindingAidId();
+        Integer fundId = version.getFund().getFundId();
         String ruleCode = version.getRuleSet().getCode();
 
         ArrNodeVO nodeVO = factoryVo.createArrNode(node);
-        List<DescItemGroupVO> descItemGroupsVO = factoryVo.createDescItemGroupsNew(ruleCode, findingAidId, descItems);
+        List<DescItemGroupVO> descItemGroupsVO = factoryVo.createDescItemGroupsNew(ruleCode, fundId, descItems);
         List<DescItemTypeGroupVO> descItemTypeGroupsVO = factoryVo
-                .createDescItemTypeGroupsNew(ruleCode, findingAidId, descItemTypes);
+                .createDescItemTypeGroupsNew(ruleCode, fundId, descItemTypes);
         return new NodeFormDataNewVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
     }
 
@@ -511,7 +511,7 @@ public class ArrangementController {
         Assert.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
         Assert.notNull(around, "Velikost okolí musí být vyplněno");
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        ArrFundVersion version = fundVersionRepository.findOne(versionId);
         ArrNode node = nodeRepository.findOne(nodeId);
 
         Assert.notNull(version, "Verze AP neexistuje");
@@ -547,11 +547,11 @@ public class ArrangementController {
      * @return nová archivní pomůcka
      */
     @Transactional
-    @RequestMapping(value = "/findingAids", method = RequestMethod.POST,
+    @RequestMapping(value = "/funds", method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrFindingAidVO createFindingAid(@RequestParam(value = "name") final String name,
-                                            @RequestParam(value = "arrangementTypeId") final Integer arrangementTypeId,
-                                            @RequestParam(value = "ruleSetId") final Integer ruleSetId) {
+    public ArrFundVO createFund(@RequestParam(value = "name") final String name,
+                                @RequestParam(value = "arrangementTypeId") final Integer arrangementTypeId,
+                                @RequestParam(value = "ruleSetId") final Integer ruleSetId) {
 
         Assert.hasText(name);
         Assert.notNull(arrangementTypeId);
@@ -564,26 +564,26 @@ public class ArrangementController {
         Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + ruleSetId);
 
 
-        ArrFindingAid newFindingAid = arrangementService
-                .createFindingAidWithScenario(name, ruleSet, arrangementType);
+        ArrFund newFund = arrangementService
+                .createFundWithScenario(name, ruleSet, arrangementType);
 
-        return factoryVo.createArrFindingAidVO(newFindingAid, true);
+        return factoryVo.createFundVO(newFund, true);
     }
 
     /**
      * Úprava archivní pomůcky
      *
-     * @param arrFindingAidVO Archivní pomůcka k úpravě
+     * @param arrFundVO Archivní pomůcka k úpravě
      * @return
      */
     @Transactional
-    @RequestMapping(value = "/updateFindingAid", method = RequestMethod.POST)
-    public ArrFindingAidVO updateFindingAid(@RequestBody ArrFindingAidVO arrFindingAidVO) {
-        Assert.notNull(arrFindingAidVO);
-        return factoryVo.createArrFindingAidVO(
-                arrangementService.updateFindingAid(
-                        factoryDO.createArrFindingAid(arrFindingAidVO),
-                        factoryDO.createScopeList(arrFindingAidVO.getRegScopes()
+    @RequestMapping(value = "/updateFund", method = RequestMethod.POST)
+    public ArrFundVO updateFund(@RequestBody ArrFundVO arrFundVO) {
+        Assert.notNull(arrFundVO);
+        return factoryVo.createFundVO(
+                arrangementService.updateFund(
+                        factoryDO.createFund(arrFundVO),
+                        factoryDO.createScopeList(arrFundVO.getRegScopes()
                         )
                 ),
                 false
@@ -602,7 +602,7 @@ public class ArrangementController {
         Assert.notNull(moveParam);
 
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(moveParam.getVersionId());
+        ArrFundVersion version = fundVersionRepository.findOne(moveParam.getVersionId());
 
         ArrNode staticNode = factoryDO.createNode(moveParam.getStaticNode());
         ArrNode staticNodeParent = factoryDO.createNode(moveParam.getStaticNodeParent());
@@ -624,7 +624,7 @@ public class ArrangementController {
         Assert.notNull(moveParam);
 
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(moveParam.getVersionId());
+        ArrFundVersion version = fundVersionRepository.findOne(moveParam.getVersionId());
 
         ArrNode staticNode = factoryDO.createNode(moveParam.getStaticNode());
         ArrNode staticNodeParent = factoryDO.createNode(moveParam.getStaticNodeParent());
@@ -646,7 +646,7 @@ public class ArrangementController {
     public void moveLevelUnder(@RequestBody LevelMoveParam moveParam) {
         Assert.notNull(moveParam);
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(moveParam.getVersionId());
+        ArrFundVersion version = fundVersionRepository.findOne(moveParam.getVersionId());
 
         ArrNode staticNode = factoryDO.createNode(moveParam.getStaticNode());
         List<ArrNode> transportNodes = factoryDO.createNodes(moveParam.getTransportNodes());
@@ -668,15 +668,15 @@ public class ArrangementController {
             @RequestParam(required = false, value = "withGroups") final Boolean withGroups,
             @RequestBody final DescriptionItemParam param) {
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(param.getVersionId());
+        ArrFundVersion version = fundVersionRepository.findOne(param.getVersionId());
         Assert.notNull(version, "Neplatná verze AP");
 
-        Integer findingAidId = version.getFindingAid().getFindingAidId();
+        Integer fundId = version.getFund().getFundId();
         String ruleCode = version.getRuleSet().getCode();
 
         return factoryVo.createScenarioOfNewLevelList(descriptionItemService
                 .getDescriptionItemTypesForNewLevel(param.getNode().getId(), param.getDirection(),
-                        param.getVersionId()), withGroups, ruleCode, findingAidId);
+                        param.getVersionId()), withGroups, ruleCode, fundId);
     }
 
 
@@ -713,7 +713,7 @@ public class ArrangementController {
         Assert.notNull(addLevelParam.getVersionId());
         Assert.notNull(addLevelParam.getDirection());
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(addLevelParam.getVersionId());
+        ArrFundVersion version = fundVersionRepository.findOne(addLevelParam.getVersionId());
 
         ArrNode staticNode = factoryDO.createNode(addLevelParam.getStaticNode());
         ArrNode staticParentNode = addLevelParam.getStaticNodeParent() == null ? null : factoryDO
@@ -730,7 +730,7 @@ public class ArrangementController {
                 descItemCopyTypes);
 
         Collection<TreeNodeClient> nodeClients = levelTreeCacheService
-                .getNodesByIds(Arrays.asList(newLevel.getNodeParent().getNodeId()), version.getFindingAidVersionId());
+                .getNodesByIds(Arrays.asList(newLevel.getNodeParent().getNodeId()), version.getFundVersionId());
         Assert.notEmpty(nodeClients);
         return new NodeWithParent(factoryVo.createArrNode(newLevel.getNode()), nodeClients.iterator().next());
     }
@@ -750,13 +750,13 @@ public class ArrangementController {
         ArrNode deleteParent = nodeParam.getStaticNodeParent() == null ? null : factoryDO
                 .createNode(nodeParam.getStaticNodeParent());
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(nodeParam.getVersionId());
+        ArrFundVersion version = fundVersionRepository.findOne(nodeParam.getVersionId());
 
         ArrLevel deleteLevel = moveLevelService.deleteLevel(version, deleteNode, deleteParent);
 
         Collection<TreeNodeClient> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
-                        version.getFindingAidVersionId());
+                        version.getFundVersionId());
         Assert.notEmpty(nodeClients);
         return new NodeWithParent(factoryVo.createArrNode(deleteLevel.getNode()), nodeClients.iterator().next());
     }
@@ -777,7 +777,7 @@ public class ArrangementController {
             @RequestParam(required = true) final Integer descItemTypeId,
             @RequestBody final ArrNodeVO nodeVO) {
 
-        ArrFindingAidVersion version = findingAidVersionRepository.getOneCheckExist(versionId);
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
         RulDescItemType descItemType = descItemTypeRepository.getOneCheckExist(descItemTypeId);
         ArrNode node = factoryDO.createNode(nodeVO);
         ArrLevel level = arrangementService.lockNode(node, version);
@@ -805,7 +805,7 @@ public class ArrangementController {
         Assert.notNull(input);
         Assert.notNull(input.getVersionId());
 
-        ArrFindingAidVersion version = findingAidVersionRepository.getOne(input.getVersionId());
+        ArrFundVersion version = fundVersionRepository.getOne(input.getVersionId());
 
         Set<Integer> nodeIds = arrangementService.findNodeIdsByFulltext(version, input.getNodeId(),
                 input.getSearchValue(), input.getDepth());
@@ -922,14 +922,14 @@ public class ArrangementController {
     public List<VersionValidationItem> validateVersion(@PathVariable("versionId") final Integer versionId) {
         Assert.notNull(versionId);
 
-        ArrFindingAidVersion findingAidVersion = findingAidVersionRepository.findOne(versionId);
-        if (findingAidVersion == null) {
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(versionId);
+        if (fundVersion == null) {
             throw new IllegalStateException("Neexistuje verze archivní pomůcky s id " + versionId);
         }
 
-        List<ArrNodeConformity> validationErrors = arrangementService.findConformityErrors(findingAidVersion);
+        List<ArrNodeConformity> validationErrors = arrangementService.findConformityErrors(fundVersion);
 
-        return arrangementService.createVersionValidationItems(validationErrors, findingAidVersion);
+        return arrangementService.createVersionValidationItems(validationErrors, fundVersion);
     }
 
     /**
@@ -943,12 +943,12 @@ public class ArrangementController {
     public Integer validateVersionCount(@PathVariable("versionId") final Integer versionId) {
         Assert.notNull(versionId);
 
-        ArrFindingAidVersion findingAidVersion = findingAidVersionRepository.findOne(versionId);
-        if (findingAidVersion == null) {
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(versionId);
+        if (fundVersion == null) {
             throw new IllegalStateException("Neexistuje verze archivní pomůcky s id " + versionId);
         }
 
-        return arrangementService.getVersionErrorCount(findingAidVersion);
+        return arrangementService.getVersionErrorCount(fundVersion);
     }
 
     public static class VersionValidationItem {

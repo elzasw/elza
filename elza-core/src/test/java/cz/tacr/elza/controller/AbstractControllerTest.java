@@ -34,8 +34,8 @@ import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFindingAidVO;
-import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
@@ -103,9 +103,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String REINDEX_STATUS = ADMIN_CONTROLLER_URL + "/reindexStatus";
 
     // ARRANGEMENT
-    protected static final String CREATE_FINDING_AID = ARRANGEMENT_CONTROLLER_URL + "/findingAids";
-    protected static final String UPDATE_FINDING_AID = ARRANGEMENT_CONTROLLER_URL + "/updateFindingAid";
-    protected static final String FINDING_AIDS = ARRANGEMENT_CONTROLLER_URL + "/getFindingAids";
+    protected static final String CREATE_FUND = ARRANGEMENT_CONTROLLER_URL + "/funds";
+    protected static final String UPDATE_FUND = ARRANGEMENT_CONTROLLER_URL + "/updateFund";
+    protected static final String FUNDS = ARRANGEMENT_CONTROLLER_URL + "/getFunds";
     protected static final String APPROVE_VERSION = ARRANGEMENT_CONTROLLER_URL + "/approveVersion";
     protected static final String ADD_LEVEL = ARRANGEMENT_CONTROLLER_URL + "/levels";
     protected static final String DELETE_LEVEL = ARRANGEMENT_CONTROLLER_URL + "/levels";
@@ -116,18 +116,18 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String MOVE_LEVEL_BEFORE = ARRANGEMENT_CONTROLLER_URL + "/moveLevelBefore";
     protected static final String MOVE_LEVEL_UNDER = ARRANGEMENT_CONTROLLER_URL + "/moveLevelUnder";
     protected static final String CREATE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
-            + "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create";
+            + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create";
     protected static final String UPDATE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
-            + "/descItems/{findingAidVersionId}/{nodeVersion}/update/{createNewVersion}";
+            + "/descItems/{fundVersionId}/{nodeVersion}/update/{createNewVersion}";
     protected static final String DELETE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
-            + "/descItems/{findingAidVersionId}/{nodeVersion}/delete";
+            + "/descItems/{fundVersionId}/{nodeVersion}/delete";
     protected static final String DELETE_DESC_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL
-            + "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}";
+            + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}";
     protected static final String PACKET_TYPES = ARRANGEMENT_CONTROLLER_URL + "/packets/types";
-    protected static final String PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{findingAidId}";
-    protected static final String INSERT_PACKET = ARRANGEMENT_CONTROLLER_URL + "/packets/{findingAidId}";
-    protected static final String DEACTIVATE_PACKET = ARRANGEMENT_CONTROLLER_URL + "/packets/{findingAidId}/{packetId}";
-    protected static final String UPDATE_PACKET = ARRANGEMENT_CONTROLLER_URL + "/packets/{findingAidId}";
+    protected static final String PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}";
+    protected static final String INSERT_PACKET = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}";
+    protected static final String DEACTIVATE_PACKET = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}/{packetId}";
+    protected static final String UPDATE_PACKET = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}";
     protected static final String FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fulltext";
     protected static final String FIND_REGISTER_LINKS = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}";
     protected static final String FIND_REGISTER_LINKS_FORM = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/form";
@@ -333,14 +333,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param ruleSetId         identifikátor pravidel
      * @return ap
      */
-    protected ArrFindingAidVO createFindingAid(final String name,
-                                               final Integer arrangementTypeId,
-                                               final Integer ruleSetId) {
+    protected ArrFundVO createFund(final String name,
+                                   final Integer arrangementTypeId,
+                                   final Integer ruleSetId) {
         Response response = post(spec -> spec
                 .queryParameter("name", name)
                 .queryParameter("arrangementTypeId", arrangementTypeId)
-                .queryParameter("ruleSetId", ruleSetId), CREATE_FINDING_AID);
-        return response.getBody().as(ArrFindingAidVO.class);
+                .queryParameter("ruleSetId", ruleSetId), CREATE_FUND);
+        return response.getBody().as(ArrFundVO.class);
     }
 
     /**
@@ -349,34 +349,34 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param name název AP
      * @return ap
      */
-    protected ArrFindingAidVO createFindingAid(final String name) {
+    protected ArrFundVO createFund(final String name) {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
         RulArrangementTypeVO arrangementType = ruleSet.getArrangementTypes().get(0);
-        return createFindingAid(name, arrangementType.getId(), ruleSet.getId());
+        return createFund(name, arrangementType.getId(), ruleSet.getId());
     }
 
     /**
      * Úprava archivní pomůcky.
      *
-     * @param findingAid ap k úpravě
+     * @param fund ap k úpravě
      * @return ap
      */
-    protected ArrFindingAidVO updateFindingAid(final ArrFindingAidVO findingAid) {
-        Response response = post(spec -> spec.body(findingAid), UPDATE_FINDING_AID);
-        return response.getBody().as(ArrFindingAidVO.class);
+    protected ArrFundVO fundAid(final ArrFundVO fund) {
+        Response response = post(spec -> spec.body(fund), UPDATE_FUND);
+        return response.getBody().as(ArrFundVO.class);
     }
 
     /**
      * Uzavření verze archivní pomůcky.
      *
-     * @param findingAidVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      * @param arrangementType   typ výstupu
      * @return nová verze ap
      */
-    protected ArrFindingAidVersionVO approveVersion(final ArrFindingAidVersionVO findingAidVersion,
-                                                    final RulArrangementTypeVO arrangementType) {
-        return approveVersion(findingAidVersion.getId(), arrangementType.getId(), arrangementType.getRuleSetId());
+    protected ArrFundVersionVO approveVersion(final ArrFundVersionVO fundVersion,
+                                              final RulArrangementTypeVO arrangementType) {
+        return approveVersion(fundVersion.getId(), arrangementType.getId(), arrangementType.getRuleSetId());
     }
 
     /**
@@ -387,14 +387,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param ruleSetId         identifikátor pravidel
      * @return nová verze ap
      */
-    protected ArrFindingAidVersionVO approveVersion(final Integer versionId,
-                                                    final Integer arrangementTypeId,
-                                                    final Integer ruleSetId) {
+    protected ArrFundVersionVO approveVersion(final Integer versionId,
+                                              final Integer arrangementTypeId,
+                                              final Integer ruleSetId) {
         Response response = put(spec -> spec
                 .queryParameter("versionId", versionId)
                 .queryParameter("arrangementTypeId", arrangementTypeId)
                 .queryParameter("ruleSetId", ruleSetId), APPROVE_VERSION);
-        return response.getBody().as(ArrFindingAidVersionVO.class);
+        return response.getBody().as(ArrFundVersionVO.class);
     }
 
     /**
@@ -402,9 +402,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @return archivní pomůcky
      */
-    protected List<ArrFindingAidVO> getFindingAids() {
-        Response response = get(FINDING_AIDS);
-        return Arrays.asList(response.getBody().as(ArrFindingAidVO[].class));
+    protected List<ArrFundVO> getFunds() {
+        Response response = get(FUNDS);
+        return Arrays.asList(response.getBody().as(ArrFundVO[].class));
     }
 
     /**
@@ -433,18 +433,18 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Přidání nového uzlu.
      *
      * @param direction         směr přidání
-     * @param findingAidVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      * @param staticNode        uzel vůči kterému přidávám
      * @param parentStaticNode  rodič uzlu vůči kterému přidávám
      * @return vytvořený uzel
      */
     protected ArrangementController.NodeWithParent addLevel(final ArrMoveLevelService.AddLevelDirection direction,
-                                                            final ArrFindingAidVersionVO findingAidVersion,
+                                                            final ArrFundVersionVO fundVersion,
                                                             final ArrNodeVO staticNode,
                                                             final ArrNodeVO parentStaticNode,
                                                             final String scenarioName) {
         ArrangementController.AddLevelParam addLevelParam = new ArrangementController.AddLevelParam();
-        addLevelParam.setVersionId(findingAidVersion.getId());
+        addLevelParam.setVersionId(fundVersion.getId());
         addLevelParam.setDirection(direction);
         addLevelParam.setStaticNode(staticNode);
         addLevelParam.setStaticNodeParent(parentStaticNode);
@@ -470,18 +470,18 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Přesun uzlu - před.
      *
-     * @param findingAidVersion   verze archivní pomůcky
+     * @param fundVersion   verze archivní pomůcky
      * @param staticNode          uzel vůči kterému přesouvám
      * @param staticNodeParent    rodič uzlu vůči kterému přesouvám
      * @param transportNodes      přesouvaný uzly
      * @param transportNodeParent rodič přesouvaných uzlů
      */
-    protected void moveLevelBefore(final ArrFindingAidVersionVO findingAidVersion,
+    protected void moveLevelBefore(final ArrFundVersionVO fundVersion,
                                    final ArrNodeVO staticNode,
                                    final ArrNodeVO staticNodeParent,
                                    final List<ArrNodeVO> transportNodes,
                                    final ArrNodeVO transportNodeParent) {
-        ArrangementController.LevelMoveParam moveParam = createMoveParam(findingAidVersion, staticNode,
+        ArrangementController.LevelMoveParam moveParam = createMoveParam(fundVersion, staticNode,
                 staticNodeParent, transportNodes, transportNodeParent);
         moveLevelBefore(moveParam);
     }
@@ -498,18 +498,18 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Přesun uzlu - za.
      *
-     * @param findingAidVersion   verze archivní pomůcky
+     * @param fundVersion   verze archivní pomůcky
      * @param staticNode          uzel vůči kterému přesouvám
      * @param staticNodeParent    rodič uzlu vůči kterému přesouvám
      * @param transportNodes      přesouvaný uzly
      * @param transportNodeParent rodič přesouvaných uzlů
      */
-    protected void moveLevelAfter(final ArrFindingAidVersionVO findingAidVersion,
+    protected void moveLevelAfter(final ArrFundVersionVO fundVersion,
                                   final ArrNodeVO staticNode,
                                   final ArrNodeVO staticNodeParent,
                                   final List<ArrNodeVO> transportNodes,
                                   final ArrNodeVO transportNodeParent) {
-        ArrangementController.LevelMoveParam moveParam = createMoveParam(findingAidVersion, staticNode,
+        ArrangementController.LevelMoveParam moveParam = createMoveParam(fundVersion, staticNode,
                 staticNodeParent, transportNodes, transportNodeParent);
         moveLevelAfter(moveParam);
     }
@@ -526,18 +526,18 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Přesun uzlu - pod.
      *
-     * @param findingAidVersion   verze archivní pomůcky
+     * @param fundVersion   verze archivní pomůcky
      * @param staticNode          uzel vůči kterému přesouvám
      * @param staticNodeParent    rodič uzlu vůči kterému přesouvám
      * @param transportNodes      přesouvaný uzly
      * @param transportNodeParent rodič přesouvaných uzlů
      */
-    protected void moveLevelUnder(final ArrFindingAidVersionVO findingAidVersion,
+    protected void moveLevelUnder(final ArrFundVersionVO fundVersion,
                                   final ArrNodeVO staticNode,
                                   final ArrNodeVO staticNodeParent,
                                   final List<ArrNodeVO> transportNodes,
                                   final ArrNodeVO transportNodeParent) {
-        ArrangementController.LevelMoveParam moveParam = createMoveParam(findingAidVersion, staticNode,
+        ArrangementController.LevelMoveParam moveParam = createMoveParam(fundVersion, staticNode,
                 staticNodeParent, transportNodes, transportNodeParent);
         moveLevelUnder(moveParam);
     }
@@ -545,20 +545,20 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vytvoření parametrů pro přesun.
      *
-     * @param findingAidVersion   verze archivní pomůcky
+     * @param fundVersion   verze archivní pomůcky
      * @param staticNode          uzel vůči kterému přesouvám
      * @param staticNodeParent    rodič uzlu vůči kterému přesouvám
      * @param transportNodes      přesouvaný uzly
      * @param transportNodeParent rodič přesouvaných uzlů
      * @return parametry přesunu
      */
-    private ArrangementController.LevelMoveParam createMoveParam(final ArrFindingAidVersionVO findingAidVersion,
+    private ArrangementController.LevelMoveParam createMoveParam(final ArrFundVersionVO fundVersion,
                                                                  final ArrNodeVO staticNode,
                                                                  final ArrNodeVO staticNodeParent,
                                                                  final List<ArrNodeVO> transportNodes,
                                                                  final ArrNodeVO transportNodeParent) {
         ArrangementController.LevelMoveParam moveParam = new ArrangementController.LevelMoveParam();
-        moveParam.setVersionId(findingAidVersion.getId());
+        moveParam.setVersionId(fundVersion.getId());
         moveParam.setStaticNode(staticNode);
         moveParam.setStaticNodeParent(staticNodeParent);
         moveParam.setTransportNodes(transportNodes);
@@ -569,16 +569,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Smazání uzlu.
      *
-     * @param findingAidVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      * @param staticNode        uzel který mažu
      * @param staticNodeParent  rodič uzlu který mažu
      * @return smazaný uzel s rodičem
      */
-    protected ArrangementController.NodeWithParent deleteLevel(final ArrFindingAidVersionVO findingAidVersion,
+    protected ArrangementController.NodeWithParent deleteLevel(final ArrFundVersionVO fundVersion,
                                                                final ArrNodeVO staticNode,
                                                                final ArrNodeVO staticNodeParent) {
         ArrangementController.NodeParam nodeParam = new ArrangementController.NodeParam();
-        nodeParam.setVersionId(findingAidVersion.getId());
+        nodeParam.setVersionId(fundVersion.getId());
         nodeParam.setStaticNode(staticNode);
         nodeParam.setStaticNodeParent(staticNodeParent);
         return deleteLevel(nodeParam);
@@ -661,16 +661,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Vytvoření hodnoty atributu.
      *
      * @param descItem          hodnota atributu
-     * @param findingAidVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      * @param node              uzel
      * @param descItemType      typ atributu
      * @return vytvořená hodnota atributu
      */
     protected ArrangementController.DescItemResult createDescItem(final ArrDescItemVO descItem,
-                                                                  final ArrFindingAidVersionVO findingAidVersion,
+                                                                  final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node,
                                                                   final RulDescItemTypeVO descItemType) {
-        return createDescItem(descItem, findingAidVersion.getId(), descItemType.getId(), node.getId(),
+        return createDescItem(descItem, fundVersion.getId(), descItemType.getId(), node.getId(),
                 node.getVersion());
     }
 
@@ -678,20 +678,20 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Vytvoření hodnoty atributu.
      *
      * @param descItem            hodnota atributu
-     * @param findingAidVersionId identifikátor verze AP
+     * @param fundVersionId identifikátor verze AP
      * @param descItemTypeId      identifikátor typu hodnoty atributu
      * @param nodeId              identfikátor uzlu
      * @param nodeVersion         verze uzlu
      * @return vytvořená hodnota atributu
      */
     protected ArrangementController.DescItemResult createDescItem(final ArrDescItemVO descItem,
-                                                                  final Integer findingAidVersionId,
+                                                                  final Integer fundVersionId,
                                                                   final Integer descItemTypeId,
                                                                   final Integer nodeId,
                                                                   final Integer nodeVersion) {
         Response response = put(spec -> spec
                 .body(descItem)
-                .pathParameter("findingAidVersionId", findingAidVersionId)
+                .pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("descItemTypeId", descItemTypeId)
                 .pathParameter("nodeId", nodeId)
                 .pathParameter("nodeVersion", nodeVersion), CREATE_DESC_ITEM);
@@ -702,34 +702,34 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Upravení hodnoty atributu.
      *
      * @param descItem          hodnota atributu
-     * @param findingAidVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      * @param node              uzel
      * @param createNewVersion  vytvořit novou verzi?
      * @return upravená hodnota atributu
      */
     protected ArrangementController.DescItemResult updateDescItem(final ArrDescItemVO descItem,
-                                                                  final ArrFindingAidVersionVO findingAidVersion,
+                                                                  final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node,
                                                                   final Boolean createNewVersion) {
-        return updateDescItem(descItem, findingAidVersion.getId(), node.getVersion(), createNewVersion);
+        return updateDescItem(descItem, fundVersion.getId(), node.getVersion(), createNewVersion);
     }
 
     /**
      * Upravení hodnoty atributu.
      *
      * @param descItem            hodnota atributu
-     * @param findingAidVersionId identifikátor verze AP
+     * @param fundVersionId identifikátor verze AP
      * @param nodeVersion         verze uzlu
      * @param createNewVersion    vytvořit novou verzi?
      * @return upravená hodnota atributu
      */
     protected ArrangementController.DescItemResult updateDescItem(final ArrDescItemVO descItem,
-                                                                  final Integer findingAidVersionId,
+                                                                  final Integer fundVersionId,
                                                                   final Integer nodeVersion,
                                                                   final Boolean createNewVersion) {
         Response response = put(spec -> spec
                 .body(descItem)
-                .pathParameter("findingAidVersionId", findingAidVersionId)
+                .pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("nodeVersion", nodeVersion)
                 .pathParameter("createNewVersion", createNewVersion), UPDATE_DESC_ITEM);
         return response.getBody().as(ArrangementController.DescItemResult.class);
@@ -739,30 +739,30 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Smazání hodnoty atributu.
      *
      * @param descItem          hodnota atributu
-     * @param findingAidVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      * @param node              uzel
      * @return smazaná hodnota atributu
      */
     protected ArrangementController.DescItemResult deleteDescItem(final ArrDescItemVO descItem,
-                                                                  final ArrFindingAidVersionVO findingAidVersion,
+                                                                  final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node) {
-        return deleteDescItem(descItem, findingAidVersion.getId(), node.getVersion());
+        return deleteDescItem(descItem, fundVersion.getId(), node.getVersion());
     }
 
     /**
      * Smazání hodnoty atributu.
      *
      * @param descItem            hodnota atributu
-     * @param findingAidVersionId identifikátor verze AP
+     * @param fundVersionId identifikátor verze AP
      * @param nodeVersion         verze uzlu
      * @return smazaná hodnota atributu
      */
     protected ArrangementController.DescItemResult deleteDescItem(final ArrDescItemVO descItem,
-                                                                  final Integer findingAidVersionId,
+                                                                  final Integer fundVersionId,
                                                                   final Integer nodeVersion) {
         Response response = post(spec -> spec
                 .body(descItem)
-                .pathParameter("findingAidVersionId", findingAidVersionId)
+                .pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("nodeVersion", nodeVersion), DELETE_DESC_ITEM);
         return response.getBody().as(ArrangementController.DescItemResult.class);
     }
@@ -938,113 +938,113 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Seznam obalů pro AP.
      *
-     * @param findingAid AP
+     * @param fund AP
      * @return obaly pro AP
      */
-    protected List<ArrPacketVO> getPackets(final ArrFindingAidVO findingAid) {
-        return getPackets(findingAid.getId());
+    protected List<ArrPacketVO> getPackets(final ArrFundVO fund) {
+        return getPackets(fund.getId());
     }
 
     /**
      * Seznam obalů pro AP.
      *
-     * @param findingAidId identifikátor AP
+     * @param fundId identifikátor AP
      * @return obaly pro AP
      */
-    protected List<ArrPacketVO> getPackets(final Integer findingAidId) {
+    protected List<ArrPacketVO> getPackets(final Integer fundId) {
         return Arrays.asList(get(spec ->
-                spec.pathParameter("findingAidId", findingAidId), PACKETS).getBody().as(ArrPacketVO[].class));
+                spec.pathParameter("fundId", fundId), PACKETS).getBody().as(ArrPacketVO[].class));
     }
 
     /**
      * Vložení nového obalu pro AP.
      *
-     * @param findingAid    ap
+     * @param fund    ap
      * @param packetVO      obal
      * @return obal
      */
-    protected ArrPacketVO insertPacket(final ArrFindingAidVO findingAid, final ArrPacketVO packetVO) {
-        return insertPacket(findingAid.getId(), packetVO);
+    protected ArrPacketVO insertPacket(final ArrFundVO fund, final ArrPacketVO packetVO) {
+        return insertPacket(fund.getId(), packetVO);
     }
 
     /**
      * Vložení nového obalu pro AP.
      *
-     * @param findingAidId  identifikátor AP
+     * @param fundId  identifikátor AP
      * @param packetVO      obal
      * @return obal
      */
-    protected ArrPacketVO insertPacket(final Integer findingAidId, final ArrPacketVO packetVO) {
+    protected ArrPacketVO insertPacket(final Integer fundId, final ArrPacketVO packetVO) {
         return post(spec -> spec
-                .pathParameter("findingAidId", findingAidId)
+                .pathParameter("fundId", fundId)
                 .body(packetVO), INSERT_PACKET).getBody().as(ArrPacketVO.class);
     }
 
     /**
      * Smazání obalu.
      *
-     * @param findingAid    AP
+     * @param fund    AP
      * @param packet        obal pro smazání
      * @return obal
      */
-    protected ArrPacketVO deactivatePacket(final ArrFindingAidVO findingAid, final ArrPacketVO packet) {
-        return deactivatePacket(findingAid.getId(), packet.getId());
+    protected ArrPacketVO deactivatePacket(final ArrFundVO fund, final ArrPacketVO packet) {
+        return deactivatePacket(fund.getId(), packet.getId());
     }
 
     /**
      * Smazání obalu.
      *
-     * @param findingAidId  identifikátor AP
+     * @param fundId  identifikátor AP
      * @param packetId      identfikátor obalu pro smazání
      * @return obal
      */
-    protected ArrPacketVO deactivatePacket(final Integer findingAidId, final Integer packetId) {
+    protected ArrPacketVO deactivatePacket(final Integer fundId, final Integer packetId) {
         return delete(spec -> spec
-                .pathParameter("findingAidId", findingAidId)
+                .pathParameter("fundId", fundId)
                 .pathParameter("packetId", packetId), DEACTIVATE_PACKET).getBody().as(ArrPacketVO.class);
     }
 
     /**
      * Upravení obalu.
      *
-     * @param findingAid   AP
+     * @param fund   AP
      * @param packet     obal
      * @return obal
      */
-    protected ArrPacketVO updatePacket(final ArrFindingAidVO findingAid,
+    protected ArrPacketVO updatePacket(final ArrFundVO fund,
                                        final ArrPacketVO packet) {
-        return updatePacket(findingAid.getId(), packet);
+        return updatePacket(fund.getId(), packet);
     }
 
     /**
      * Upravení obalu.
      *
-     * @param findingAidId identifikátor AP
+     * @param fundId identifikátor AP
      * @param packetVO     obal
      * @return obal
      */
-    protected ArrPacketVO updatePacket(final Integer findingAidId,
+    protected ArrPacketVO updatePacket(final Integer fundId,
                                        final ArrPacketVO packetVO) {
         return put(spec -> spec
-                .pathParameter("findingAidId", findingAidId)
+                .pathParameter("fundId", fundId)
                 .body(packetVO), UPDATE_PACKET).getBody().as(ArrPacketVO.class);
     }
 
     /**
      * Provede načtení stromu uzlů. Uzly mohou být rozbaleny.
      *
-     * @param version     verze AP
+     * @param fundVersion     verze AP
      * @param node        uzel
      * @param searchValue hledaný text
      * @param depth       hloubka vyhledávání
      * @return seznam výsledků
      */
-    protected List<ArrangementController.TreeNodeFulltext> fulltext(final ArrFindingAidVersionVO version,
+    protected List<ArrangementController.TreeNodeFulltext> fulltext(final ArrFundVersionVO fundVersion,
                                                                     final ArrNodeVO node,
                                                                     final String searchValue,
                                                                     final ArrangementController.Depth depth) {
         ArrangementController.FaFulltextParam input = new ArrangementController.FaFulltextParam();
-        input.setVersionId(version.getId());
+        input.setVersionId(fundVersion.getId());
         input.setNodeId(node.getId());
         input.setSearchValue(searchValue);
         input.setDepth(depth);
@@ -1065,19 +1065,19 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Nalezení otevřené verze AP.
      *
-     * @param findingAid archivní pomůcka
+     * @param fund archivní pomůcka
      * @return otevřená verze AP
      */
-    protected ArrFindingAidVersionVO getOpenVersion(final ArrFindingAidVO findingAid) {
-        org.springframework.util.Assert.notNull(findingAid);
+    protected ArrFundVersionVO getOpenVersion(final ArrFundVO fund) {
+        org.springframework.util.Assert.notNull(fund);
 
-        List<ArrFindingAidVO> findingAids = getFindingAids();
+        List<ArrFundVO> funds = getFunds();
 
-        for (ArrFindingAidVO findingAidFound : findingAids) {
-            if (findingAidFound.getId().equals(findingAid.getId())) {
-                for (ArrFindingAidVersionVO findingAidVersion : findingAidFound.getVersions()) {
-                    if (findingAidVersion.getLockDate() == null) {
-                        return findingAidVersion;
+        for (ArrFundVO fundFound : funds) {
+            if (fundFound.getId().equals(fund.getId())) {
+                for (ArrFundVersionVO fundVersion : fundFound.getVersions()) {
+                    if (fundVersion.getLockDate() == null) {
+                        return fundVersion;
                     }
                 }
             }
@@ -1341,24 +1341,24 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param idsParam id verzí
      * @return seznam FA, každá obsahuje pouze jednu verzi, jinak je vrácená víckrát
      */
-    protected List<ArrFindingAidVO> getFindingAidsByVersionIds(final ArrangementController.IdsParam idsParam) {
-        return Arrays.asList(post(spec -> spec.body(idsParam), VERSIONS).getBody().as(ArrFindingAidVO[].class));
+    protected List<ArrFundVO> getFundsByVersionIds(final ArrangementController.IdsParam idsParam) {
+        return Arrays.asList(post(spec -> spec.body(idsParam), VERSIONS).getBody().as(ArrFundVO[].class));
     }
 
     /**
      * Smazání hodnot atributu podle typu.
      *
-     * @param findingAidVersionId   identfikátor verze AP
+     * @param fundVersionId   identfikátor verze AP
      * @param nodeId                identfikátor JP
      * @param nodeVersion           verze JP
      * @param descItemTypeId        identfikátor typu hodnoty atributu
      */
-    protected ArrangementController.DescItemResult deleteDescItemsByType(final Integer findingAidVersionId,
+    protected ArrangementController.DescItemResult deleteDescItemsByType(final Integer fundVersionId,
                                                 final Integer nodeId,
                                                 final Integer nodeVersion,
                                                 final Integer descItemTypeId) {
         return delete(spec -> spec
-                        .pathParameter("findingAidVersionId", findingAidVersionId)
+                        .pathParameter("fundVersionId", fundVersionId)
                         .pathParameter("nodeId", nodeId)
                         .pathParameter("nodeVersion", nodeVersion)
                         .pathParameter("descItemTypeId", descItemTypeId),

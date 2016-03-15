@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "arr_version_conformity")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrVersionConformity
-        implements cz.tacr.elza.api.ArrVersionConformity<ArrFindingAidVersion> {
+        implements cz.tacr.elza.api.ArrVersionConformity<ArrFundVersion> {
 
     @Id
     @GeneratedValue
@@ -32,9 +32,9 @@ public class ArrVersionConformity
     private String stateDescription;
 
     @RestResource(exported = false)
-    @OneToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAidVersion.class)
-    @JoinColumn(name = "versionId", nullable = false)
-    private ArrFindingAidVersion version;
+    @OneToOne(fetch = FetchType.LAZY, targetEntity = ArrFundVersion.class)
+    @JoinColumn(name = "fundVersionId", nullable = false)
+    private ArrFundVersion fundVersion;
 
     @Override
     public Integer getVersionConformityId() {
@@ -47,13 +47,13 @@ public class ArrVersionConformity
     }
 
     @Override
-    public ArrFindingAidVersion getVersion() {
-        return version;
+    public ArrFundVersion getFundVersion() {
+        return fundVersion;
     }
 
     @Override
-    public void setVersion(final ArrFindingAidVersion version) {
-        this.version = version;
+    public void setFundVersion(final ArrFundVersion fundVersion) {
+        this.fundVersion = fundVersion;
     }
 
     @Override

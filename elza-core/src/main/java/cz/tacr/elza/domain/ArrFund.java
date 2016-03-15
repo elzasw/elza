@@ -14,18 +14,18 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Archivní pomůcka. Archivní pomůcka je lineárně verzována pomocí {@link ArrFindingAidVersion}.
+ * Archivní pomůcka. Archivní pomůcka je lineárně verzována pomocí {@link ArrFundVersion}.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
-@Entity(name = "arr_finding_aid")
+@Entity(name = "arr_fund")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrFindingAid extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrFindingAid, Serializable {
+public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrFund, Serializable {
 
     @Id
     @GeneratedValue
-    private Integer findingAidId;
+    private Integer fundId;
 
     @Column(length = 255, nullable = false)
     private String name;
@@ -34,13 +34,13 @@ public class ArrFindingAid extends AbstractVersionableEntity implements cz.tacr.
     private LocalDateTime createDate;
 
     @Override
-    public Integer getFindingAidId() {
-        return findingAidId;
+    public Integer getFundId() {
+        return fundId;
     }
 
     @Override
-    public void setFindingAidId(final Integer findingAidId) {
-        this.findingAidId = findingAidId;
+    public void setFundId(final Integer fundId) {
+        this.fundId = fundId;
     }
 
     @Override
@@ -65,6 +65,6 @@ public class ArrFindingAid extends AbstractVersionableEntity implements cz.tacr.
 
     @Override
     public String toString() {
-        return "ArrFindingAid pk=" + findingAidId;
+        return "ArrFund pk=" + fundId;
     }
 }

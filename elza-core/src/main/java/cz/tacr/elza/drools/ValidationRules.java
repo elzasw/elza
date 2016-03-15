@@ -7,11 +7,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.domain.ArrFundVersion;
 import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulRule;
@@ -60,7 +60,7 @@ public class ValidationRules extends Rules {
 	 *            strategie vyhodnocování
 	 * @return seznam validačních chyb nebo prázdný seznam
 	 */
-	public synchronized List<DataValidationResult> execute(final ArrLevel level, final ArrFindingAidVersion version,
+	public synchronized List<DataValidationResult> execute(final ArrLevel level, final ArrFundVersion version,
 			final Set<String> strategies) throws Exception {
 
 		LinkedList<Object> facts = new LinkedList<>();

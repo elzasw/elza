@@ -4,11 +4,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.domain.ArrFund;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.RegScope;
 
 
@@ -34,11 +34,11 @@ public interface ScopeRepository extends JpaRepository<RegScope, Integer> {
     /**
      * Najde id tříd pro FA.
      *
-     * @param findingAid archivní pomůcka
+     * @param fund archivní pomůcka
      * @return id tříd dané fa
      */
-    @Query("SELECT s.scopeId FROM arr_fa_register_scope fs JOIN fs.scope s WHERE fs.findingAid = ?1")
-    Set<Integer> findIdsByFindingAid(final ArrFindingAid findingAid);
+    @Query("SELECT s.scopeId FROM arr_fund_register_scope fs JOIN fs.scope s WHERE fs.fund = ?1")
+    Set<Integer> findIdsByFund(final ArrFund fund);
 
 
     /**

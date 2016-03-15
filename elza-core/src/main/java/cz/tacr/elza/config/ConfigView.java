@@ -4,7 +4,6 @@ package cz.tacr.elza.config;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -30,25 +29,25 @@ public class ConfigView {
     /**
      * Nastavení zobrazení v UI.
      */
-    private Map<String, Map<String, ViewTitles>> findingAidView;
+    private Map<String, Map<String, ViewTitles>> fundView;
 
-    public ViewTitles getViewTitles(final String code, final Integer findingAidId) {
+    public ViewTitles getViewTitles(final String code, final Integer fundId) {
         Assert.notNull(code);
-        Assert.notNull(findingAidId);
+        Assert.notNull(fundId);
 
-        if (findingAidView == null) {
+        if (fundView == null) {
             logger.warn("Nejsou definována pravidla pro zobrazení popisků v UI");
             return new ViewTitles();
         }
 
-        Map<String, ViewTitles> viewByCode = findingAidView.get(code);
+        Map<String, ViewTitles> viewByCode = fundView.get(code);
 
         if (viewByCode == null) {
             logger.warn("Nejsou definována pravidla pro zobrazení popisků v UI s kódem " + code);
             return new ViewTitles();
         }
 
-        ViewTitles viewByFa = viewByCode.get(FA_PREFIX + findingAidId);
+        ViewTitles viewByFa = viewByCode.get(FA_PREFIX + fundId);
 
         if (viewByFa == null) {
             viewByFa = viewByCode.get(DEFAULT);
@@ -61,12 +60,12 @@ public class ConfigView {
         return viewByFa;
     }
 
-    public Map<String, Map<String, ViewTitles>> getFindingAidView() {
-        return findingAidView;
+    public Map<String, Map<String, ViewTitles>> getFundView() {
+        return fundView;
     }
 
-    public void setFindingAidView(final Map<String, Map<String, ViewTitles>> findingAidView) {
-        this.findingAidView = findingAidView;
+    public void setFundView(final Map<String, Map<String, ViewTitles>> fundView) {
+        this.fundView = fundView;
     }
 
     public static class ConfigViewTitlesHierarchy {

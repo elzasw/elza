@@ -19,8 +19,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.repository.FundVersionRepository;
 
 
 /**
@@ -39,7 +39,7 @@ public class ConfigRules {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private FindingAidVersionRepository findingAidVersionRepository;
+    private FundVersionRepository fundVersionRepository;
 
     private Group defaultGroup = new Group("DEFAULT");
 
@@ -67,7 +67,7 @@ public class ConfigRules {
         this.typeGroups = typeGroups;
     }
 
-    public List<String> getTypeGroupCodes(final String code, final Integer findingAidId) {
+    public List<String> getTypeGroupCodes(final String code, final Integer fundId) {
         List<String> list = new ArrayList<>();
         list.add(defaultGroup.getCode());
 
@@ -75,15 +75,15 @@ public class ConfigRules {
             return list;
         }
 
-        Map<String, Map<String, TypesGroupConf>> findingsAidGroups = typeGroups.get(code);
-        if (findingsAidGroups == null) {
+        Map<String, Map<String, TypesGroupConf>> fundGroups = typeGroups.get(code);
+        if (fundGroups == null) {
             return list;
         }
 
-        Map<String, TypesGroupConf> groups = findingsAidGroups.get(FA_PREFIX + findingAidId);
+        Map<String, TypesGroupConf> groups = fundGroups.get(FA_PREFIX + fundId);
 
         if (groups == null) {
-            groups = findingsAidGroups.get(DEFAULT);
+            groups = fundGroups.get(DEFAULT);
 
             if (groups == null) {
                 return list;
@@ -94,14 +94,14 @@ public class ConfigRules {
         return list;
     }
 
-    public Group getGroupByType(final String code, final Integer findingAidId, final String typeCode) {
+    public Group getGroupByType(final String code, final Integer fundId, final String typeCode) {
 
         if (typeGroups != null) {
-            Map<String, Map<String, TypesGroupConf>> findingsAidGroups = typeGroups.get(code);
-            if (findingsAidGroups != null) {
-                Map<String, TypesGroupConf> groups = findingsAidGroups.get(FA_PREFIX + findingAidId);
+            Map<String, Map<String, TypesGroupConf>> fundGroups = typeGroups.get(code);
+            if (fundGroups != null) {
+                Map<String, TypesGroupConf> groups = fundGroups.get(FA_PREFIX + fundId);
                 if (groups == null) {
-                    groups = findingsAidGroups.get(DEFAULT);
+                    groups = fundGroups.get(DEFAULT);
                 }
                 if (groups != null) {
                     for (Map.Entry<String, TypesGroupConf> entry : groups.entrySet()) {
@@ -121,17 +121,17 @@ public class ConfigRules {
         return defaultGroup;
     }
 
-    public List<String> getTypeCodesByGroupCode(final String code, final Integer findingAidId, final String groupCode) {
+    public List<String> getTypeCodesByGroupCode(final String code, final Integer fundId, final String groupCode) {
         if (typeGroups == null) {
             return new ArrayList<>();
         }
 
         if (typeGroups != null) {
-            Map<String, Map<String, TypesGroupConf>> findingsAidGroups = typeGroups.get(code);
-            if (findingsAidGroups != null) {
-                Map<String, TypesGroupConf> groups = findingsAidGroups.get(FA_PREFIX + findingAidId);
+            Map<String, Map<String, TypesGroupConf>> fundGroups = typeGroups.get(code);
+            if (fundGroups != null) {
+                Map<String, TypesGroupConf> groups = fundGroups.get(FA_PREFIX + fundId);
                 if (groups == null) {
-                    groups = findingsAidGroups.get(DEFAULT);
+                    groups = fundGroups.get(DEFAULT);
                 }
                 if (groups != null) {
                     TypesGroupConf typesGroupConf = groups.get(groupCode);
@@ -146,15 +146,15 @@ public class ConfigRules {
         return new ArrayList<>();
     }
 
-    public Integer getTypeWidthByCode(final String code, final Integer findingAidId, final String typeCode) {
+    public Integer getTypeWidthByCode(final String code, final Integer fundId, final String typeCode) {
         if (typeGroups != null) {
-            Map<String, Map<String, TypesGroupConf>> findingsAidGroups = typeGroups.get(code);
-            if (findingsAidGroups != null) {
+            Map<String, Map<String, TypesGroupConf>> fundGroups = typeGroups.get(code);
+            if (fundGroups != null) {
 
-                Map<String, TypesGroupConf> groups = findingsAidGroups.get(FA_PREFIX + findingAidId);
+                Map<String, TypesGroupConf> groups = fundGroups.get(FA_PREFIX + fundId);
 
                 if (groups == null) {
-                    groups = findingsAidGroups.get(DEFAULT);
+                    groups = fundGroups.get(DEFAULT);
                 }
 
                 if (groups != null) {
@@ -180,7 +180,7 @@ public class ConfigRules {
     public Set<String> getStrategies(final Integer versionId) {
         Assert.notNull(versionId);
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        ArrFundVersion version = fundVersionRepository.findOne(versionId);
 
         Assert.notNull(version, "Verzev s ID:" + versionId + " neexistuje");
 

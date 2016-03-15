@@ -1,16 +1,13 @@
 package cz.tacr.elza.drools;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import liquibase.util.file.FilenameUtils;
+import cz.tacr.elza.domain.ArrFundVersion;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +19,6 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.vo.DataValidationResult;
@@ -76,7 +72,7 @@ public class RulesExecutor implements InitializingBean {
      */
     public List<RulDescItemTypeExt> executeDescItemTypesRules(final ArrLevel level,
                                                               final List<RulDescItemTypeExt> rulDescItemTypeExtList,
-                                                              final ArrFindingAidVersion version,
+                                                              final ArrFundVersion version,
                                                               final Set<String> strategies) {
 
         try {
@@ -104,7 +100,7 @@ public class RulesExecutor implements InitializingBean {
                                                                            final List<ArrDescItem> updateDescItem,
                                                                            final List<ArrDescItem> deleteDescItem,
                                                                            final NodeTypeOperation nodeTypeOperation,
-                                                                           final ArrFindingAidVersion version) {
+                                                                           final ArrFundVersion version) {
         try {
             return impactOfChangesLevelStateRules
                     .execute(createDescItem, updateDescItem, deleteDescItem, nodeTypeOperation, version.getRuleSet());
@@ -125,7 +121,7 @@ public class RulesExecutor implements InitializingBean {
      * @return seznam validačních chyb nebo prázdný seznam
      */
     public List<DataValidationResult> executeDescItemValidationRules(final ArrLevel level,
-                                                                     final ArrFindingAidVersion version,
+                                                                     final ArrFundVersion version,
                                                                      final Set<String> strategies) {
         try {
             return descItemValidationRules.execute(level, version, strategies);
@@ -139,7 +135,7 @@ public class RulesExecutor implements InitializingBean {
 
     public List<ScenarioOfNewLevel> executeScenarioOfNewLevelRules(final ArrLevel level,
                                                                    final DirectionLevel directionLevel,
-                                                                   final ArrFindingAidVersion version) {
+                                                                   final ArrFundVersion version) {
         try {
             return scenarioOfNewLevelRules.execute(level, directionLevel, version);
         } catch (NoSuchFileException e) {

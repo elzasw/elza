@@ -72,7 +72,7 @@ public class XmlImportTest extends AbstractTest implements ApplicationContextAwa
     public void importNativeData() throws XmlImportException {
         XmlImportConfig config = new XmlImportConfig();
         config.setStopOnError(false);
-        config.setXmlImportType(XmlImportType.FINDING_AID);
+        config.setXmlImportType(XmlImportType.FUND);
         //        config.setXmlFile(new File("d:\\xml-export1.xml"));
 
         xmlImportService.importData(config);

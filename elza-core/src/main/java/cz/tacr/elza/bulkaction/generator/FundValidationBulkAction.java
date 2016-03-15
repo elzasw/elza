@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -19,10 +20,6 @@ import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.BulkActionState;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -37,17 +34,17 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  */
 @Component
 @Scope("prototype")
-public class FindingAidValidationBulkAction extends BulkAction {
+public class FundValidationBulkAction extends BulkAction {
 
     /**
      * Identifikátor hromadné akce
      */
-    public static final String TYPE = "FINDING_AID_VALIDATION";
+    public static final String TYPE = "FUND_VALIDATION";
 
     /**
      * Verze archivní pomůcky
      */
-    private ArrFindingAidVersion version;
+    private ArrFundVersion version;
 
     /**
      * Změna
@@ -121,7 +118,7 @@ public class FindingAidValidationBulkAction extends BulkAction {
 
         try {
             nodeConformityInfoExt = bulkActionService
-                    .setConformityInfoInNewTransaction(level.getLevelId(), version.getFindingAidVersionId(),
+                    .setConformityInfoInNewTransaction(level.getLevelId(), version.getFundVersionId(),
                             strategies);
             stateLevel = nodeConformityInfoExt.getState();
         }catch (Exception e){
@@ -146,17 +143,17 @@ public class FindingAidValidationBulkAction extends BulkAction {
 
     @Override
     @Transactional
-    public void run(final Integer faVersionId,
+    public void run(final Integer fundVersionId,
                     final BulkActionConfig bulkAction,
                     final BulkActionState bulkActionState) {
         this.bulkActionState = bulkActionState;
         init(bulkAction);
 
         eventNotificationService.publishEvent(EventFactory
-                .createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, faVersionId, bulkAction.getCode()),
+                .createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, fundVersionId, bulkAction.getCode()),
                 true);
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         Assert.notNull(version);
         checkVersion(version);
@@ -170,7 +167,9 @@ public class FindingAidValidationBulkAction extends BulkAction {
 
         ArrVersionConformity.State state;
         try {
-            state = generate(version.getRootLevel());
+            ArrNode rootNode = version.getRootNode();
+            ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
+            state = generate(rootLevel);
         } catch (Exception e) {
             state = ArrVersionConformity.State.ERR;
         }
@@ -187,7 +186,7 @@ public class FindingAidValidationBulkAction extends BulkAction {
 
     @Override
     public String toString() {
-        return "FindingAidValidationBulkAction{" +
+        return "FundValidationBulkAction{" +
                 "version=" + version +
                 ", change=" + change +
                 '}';

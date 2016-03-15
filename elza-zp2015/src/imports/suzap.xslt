@@ -322,7 +322,7 @@
 <!-- Main match -->
 <xsl:template match="/ap:dokumentArchPomucky">
 <elza:xml-import xmlns:elza="http://v1_0_0.import.elza.tacr.cz">
-    <finding-aid>
+    <fund>
     	<xsl:attribute name="arr-type-code">INV</xsl:attribute>
     	<xsl:attribute name="rule-set-code">ZP2015</xsl:attribute>
     	<name><xsl:value-of select="./ap:metaData/ap:oPomucce/ap:nazevPomucky[@aTyp='nazev']"/></name>
@@ -341,7 +341,7 @@
 	          <xsl:apply-templates select="./ap:pomucka/ap:inventSeznam/ap:castIS" mode="root"/>
           </xsl:otherwise>
         </xsl:choose>
-    </finding-aid>
+    </fund>
     <record-list>
 	<xsl:apply-templates select="./ap:pomucka/ap:rejstrik"/>
     </record-list>

@@ -40,7 +40,7 @@ public class ClientFactoryDO {
     private DescItemSpecRepository descItemSpecRepository;
 
     @Autowired
-    private FindingAidRepository findingAidRepository;
+    private FundRepository fundRepository;
 
     @Autowired
     private PacketTypeRepository packetTypeRepository;
@@ -211,15 +211,15 @@ public class ClientFactoryDO {
         return descItem;
     }
 
-    public ArrPacket createPacket(final ArrPacketVO packetVO, final Integer findingAidId) {
-        Assert.notNull(findingAidId);
+    public ArrPacket createPacket(final ArrPacketVO packetVO, final Integer fundId) {
+        Assert.notNull(fundId);
         Assert.notNull(packetVO);
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrPacket packet = mapper.map(packetVO, ArrPacket.class);
 
-        ArrFindingAid findingAid = findingAidRepository.findOne(findingAidId);
-        Assert.notNull(findingAid, "Archivní pomůcka neexistuje (ID=" + findingAidId + ")");
+        ArrFund fund = fundRepository.findOne(fundId);
+        Assert.notNull(fund, "Archivní pomůcka neexistuje (ID=" + fundId + ")");
 
         if (packetVO.getPacketTypeId() != null) {
             RulPacketType packetType = packetTypeRepository.findOne(packetVO.getPacketTypeId());
@@ -227,7 +227,7 @@ public class ClientFactoryDO {
             packet.setPacketType(packetType);
         }
 
-        packet.setFindingAid(findingAid);
+        packet.setFund(fund);
 
         return packet;
     }
@@ -268,13 +268,13 @@ public class ClientFactoryDO {
     /**
      * Vytvoří DO archivní pomůcky
      *
-     * @param findingAidVO VO archivní pomůcka
+     * @param fundVO VO archivní pomůcka
      * @return DO
      */
-    public ArrFindingAid createArrFindingAid(ArrFindingAidVO findingAidVO) {
-        Assert.notNull(findingAidVO);
+    public ArrFund createFund(ArrFundVO fundVO) {
+        Assert.notNull(fundVO);
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(findingAidVO, ArrFindingAid.class);
+        return mapper.map(fundVO, ArrFund.class);
     }
 
     public ArrNodeRegister createRegisterLink(final ArrNodeRegisterVO nodeRegisterVO) {

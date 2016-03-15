@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.factory.DescItemFactory;
@@ -39,7 +39,7 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
 
     @Override
     public List<DataValidationResult> postValidateNodeDescItems(final ArrLevel level,
-                                                            final ArrFindingAidVersion version,
+                                                            final ArrFundVersion version,
                                                                 final Set<String> strategies) {    	
 
         List<ArrData> levelData;

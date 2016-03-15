@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,22 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegExternalSource;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
-import cz.tacr.elza.repository.FaRegisterScopeRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.FundRegisterScopeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
@@ -87,10 +77,10 @@ public class RegistryService {
     private ScopeRepository scopeRepository;
 
     @Autowired
-    private FaRegisterScopeRepository faRegisterScopeRepository;
+    private FundRegisterScopeRepository fundRegisterScopeRepository;
 
     @Autowired
-    private FindingAidVersionRepository findingAidVersionRepository;
+    private FundVersionRepository fundVersionRepository;
 
     @Autowired
     private NodeRepository nodeRepository;
@@ -118,7 +108,7 @@ public class RegistryService {
      * @param firstResult     index prvního záznamu, začíná od 0
      * @param maxResults      počet výsledků k vrácení
      * @param parentRecordId  id rodičovského rejstříku
-     * @param findingAid   AP, ze které se použijí třídy rejstříků
+     * @param fund   AP, ze které se použijí třídy rejstříků
      * @return vybrané záznamy dle popisu seřazené za record, nbeo prázdná množina
      */
     public List<RegRecord> findRegRecordByTextAndType(@Nullable final String searchRecord,
@@ -126,9 +116,9 @@ public class RegistryService {
                                                       final Integer firstResult,
                                                       final Integer maxResults,
                                                       final Integer parentRecordId,
-                                                      @Nullable final ArrFindingAid findingAid) {
+                                                      @Nullable final ArrFund fund) {
 
-        Set<Integer> scopeIdsForRecord = getScopeIdsByFindingAid(findingAid);
+        Set<Integer> scopeIdsForRecord = getScopeIdsByFund(fund);
 
         RegRecord parentRecord = null;
         if (parentRecordId != null) {
@@ -144,18 +134,18 @@ public class RegistryService {
 
 
     /**
-     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Integer, Integer, Integer, ArrFindingAid)}
+     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Integer, Integer, Integer, ArrFund)}
      *
      * @param searchRecord    hledaný řetězec, může být null
      * @param registerTypeIds typ záznamu
      * @param parentRecordId  id rodičovského rejstříku
-     * @param findingAid   AP, ze které se použijí třídy rejstříků
+     * @param fund   AP, ze které se použijí třídy rejstříků
      * @return celkový počet záznamů, který je v db za dané parametry
      */
     public long findRegRecordByTextAndTypeCount(@Nullable final String searchRecord,
-            @Nullable final Collection<Integer> registerTypeIds, final Integer parentRecordId, @Nullable final ArrFindingAid findingAid) {
+            @Nullable final Collection<Integer> registerTypeIds, final Integer parentRecordId, @Nullable final ArrFund fund) {
 
-        Set<Integer> scopeIdsForRecord = getScopeIdsByFindingAid(findingAid);
+        Set<Integer> scopeIdsForRecord = getScopeIdsByFund(fund);
 
         RegRecord parentRecord = null;
         if (parentRecordId != null) {
@@ -479,7 +469,7 @@ public class RegistryService {
             throw new IllegalStateException("Nelze smazat třídu rejstříku, která je nastavena na rejstříku.");
         }
 
-        faRegisterScopeRepository.delete(faRegisterScopeRepository.findByScope(scope));
+        fundRegisterScopeRepository.delete(fundRegisterScopeRepository.findByScope(scope));
         scopeRepository.delete(scope);
     }
 
@@ -518,32 +508,32 @@ public class RegistryService {
     /**
      * Načte seznam id tříd pro archivní pomůcku. Pokud není AP nastavena, vrací výchozí třídy.
      *
-     * @param findingAid AP, podle jejíž tříd se má hledat (pokud je null, hledá se podle výchozích)
+     * @param fund AP, podle jejíž tříd se má hledat (pokud je null, hledá se podle výchozích)
      * @return množina id tříd, podle kterých se bude hledat
      */
-    public Set<Integer> getScopeIdsByFindingAid(@Nullable final ArrFindingAid findingAid){
-        if(findingAid == null){
+    public Set<Integer> getScopeIdsByFund(@Nullable final ArrFund fund){
+        if(fund == null){
             return defaultScopeIds;
         }else{
-            return scopeRepository.findIdsByFindingAid(findingAid);
+            return scopeRepository.findIdsByFund(fund);
         }
     }
 
     /**
      * Vrátí vazby mezi uzlem a rejstříkovými hesly za danou verzi.
      *
-     * @param findingAidVersionId   identifikátor verze AP
+     * @param fundVersionId   identifikátor verze AP
      * @param nodeId                identifikátor JP
      * @return  seznam vazeb, může být prázdný
      */
-    public List<ArrNodeRegister> findRegisterLinks(final Integer findingAidVersionId,
+    public List<ArrNodeRegister> findRegisterLinks(final Integer fundVersionId,
                                                    final Integer nodeId) {
-        Assert.notNull(findingAidVersionId);
+        Assert.notNull(fundVersionId);
         Assert.notNull(nodeId);
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(findingAidVersionId);
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         Assert.notNull(version, "Verze AP neexistuje");
 
@@ -592,11 +582,11 @@ public class RegistryService {
 
         validateNodeRegisterLink(nodeRegister);
 
-        arrangementService.saveLastChangeFaVersion(change, versionId);
+        arrangementService.saveLastChangeFundVersion(change, versionId);
 
         nodeRegister.setNode(node);
         nodeRegister.setCreateChange(change);
-        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FINDING_AID_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
+        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
         return nodeRegisterRepository.save(nodeRegister);
     }
 
@@ -630,13 +620,13 @@ public class RegistryService {
         nodeRegisterRepository.save(nodeRegisterDB);
 
 
-        arrangementService.saveLastChangeFaVersion(change, versionId);
+        arrangementService.saveLastChangeFundVersion(change, versionId);
 
         nodeRegister.setNodeRegisterId(null);
         nodeRegister.setNode(node);
         nodeRegister.setRecord(nodeRegister.getRecord());
         nodeRegister.setCreateChange(change);
-        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FINDING_AID_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
+        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
         return nodeRegisterRepository.save(nodeRegister);
     }
 
@@ -667,8 +657,8 @@ public class RegistryService {
 
         nodeRegisterDB.setDeleteChange(change);
 
-        arrangementService.saveLastChangeFaVersion(change, versionId);
-        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FINDING_AID_RECORD_CHANGE, versionId, node.getNodeId(), node.getVersion()));
+        arrangementService.saveLastChangeFundVersion(change, versionId);
+        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_RECORD_CHANGE, versionId, node.getNodeId(), node.getVersion()));
         return nodeRegisterRepository.save(nodeRegisterDB);
     }
 

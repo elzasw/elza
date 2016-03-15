@@ -13,11 +13,11 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 @Repository
 public interface BulkActionRunRepository extends JpaRepository<ArrBulkActionRun, Integer> {
 
-    @Query(value = "SELECT ba FROM arr_bulk_action_run ba JOIN ba.version v WHERE v.findingAidVersionId = :faVersionId")
-    List<ArrBulkActionRun> findByFaVersionId(@Param(value = "faVersionId") Integer faVersionId);
+    @Query(value = "SELECT ba FROM arr_bulk_action_run ba JOIN ba.fundVersion v WHERE v.fundVersionId = :fundVersionId")
+    List<ArrBulkActionRun> findByFundVersionId(@Param(value = "fundVersionId") Integer fundVersionId);
 
 
-    @Query(value = "SELECT ba FROM arr_bulk_action_run ba JOIN ba.version v WHERE v.findingAidVersionId = :faVersionId AND ba.bulkActionCode = :code")
-    List<ArrBulkActionRun> findByFaVersionIdAndBulkActionCode(@Param(value = "faVersionId") final Integer faVersionId,
-                                                             @Param(value = "code") final String code);
+    @Query(value = "SELECT ba FROM arr_bulk_action_run ba JOIN ba.fundVersion v WHERE v.fundVersionId = :fundVersionId AND ba.bulkActionCode = :code")
+    List<ArrBulkActionRun> findByFundVersionIdAndBulkActionCode(@Param(value = "fundVersionId") final Integer fundVersionId,
+                                                                @Param(value = "code") final String code);
 }

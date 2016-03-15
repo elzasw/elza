@@ -2,11 +2,11 @@ package cz.tacr.elza.doc;
 
 import java.time.LocalDateTime;
 
+import cz.tacr.elza.domain.ArrFund;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.FundRepository;
 
 /**
  * Popis vygenerování identifikátoru při uložení objektu.
@@ -17,18 +17,18 @@ import cz.tacr.elza.repository.FindingAidRepository;
 public class IdentifierGeneration {
 
     @Autowired
-    private FindingAidRepository findingAidRepository;
+    private FundRepository fundRepository;
 
     /**
      * Identifikátory se přidělují podle tabulky db_hibernate_sequences. V tabulce je pro každou entitu uložen
      * další volný identifikátor. Při ukládání nového objektu Hibernate načte volné id a zároveň zvýší hodnotu v tabulce o 1.
      */
     public void identifierGeneration() {
-        ArrFindingAid findingAid = new ArrFindingAid();
-        findingAid.setCreateDate(LocalDateTime.now());
-        findingAid.setName("Archiv 1");
+        ArrFund fund = new ArrFund();
+        fund.setCreateDate(LocalDateTime.now());
+        fund.setName("Archiv 1");
 
-        ArrFindingAid savedFindingAid = findingAidRepository.save(findingAid);
-        Assert.notNull(savedFindingAid.getFindingAidId());
+        ArrFund savedFund = fundRepository.save(fund);
+        Assert.notNull(savedFund.getFundId());
     }
 }

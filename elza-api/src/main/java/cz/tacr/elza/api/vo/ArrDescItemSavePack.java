@@ -29,10 +29,10 @@ public interface ArrDescItemSavePack<DI extends ArrDescItem, N extends ArrNode> 
     void setDeleteDescItems(List<DI> descItems);
 
 
-    Integer getFaVersionId();
+    Integer getFundVersionId();
 
 
-    void setFaVersionId(Integer faVersionId);
+    void setFundVersionId(Integer fundVersionId);
 
 
     Boolean getCreateNewVersion();

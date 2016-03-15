@@ -5,9 +5,8 @@ import java.util.List;
 import java.util.Set;
 
 import cz.tacr.elza.api.ArrDescItem;
-import cz.tacr.elza.api.ArrFindingAidVersion;
+import cz.tacr.elza.api.ArrFundVersion;
 import cz.tacr.elza.api.ArrVersionConformity;
-import cz.tacr.elza.api.ArrNodeConformityExt;
 import cz.tacr.elza.api.RulArrangementType;
 import cz.tacr.elza.api.RulDataType;
 import cz.tacr.elza.api.RulDescItemSpec;
@@ -33,7 +32,7 @@ import cz.tacr.elza.api.vo.RelatedNodeDirection;
  */
 public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec,
         RFV extends RulFaView, NTO extends NodeTypeOperation, RND extends RelatedNodeDirection, DI extends ArrDescItem,
-        FAV extends ArrFindingAidVersion, FAVCI extends ArrVersionConformity, P extends RulPackage> {
+        FAV extends ArrFundVersion, FAVCI extends ArrVersionConformity, P extends RulPackage> {
 
     /**
      * Najde specifikaci podle id.
@@ -68,11 +67,11 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
 
     /**
      * Vrátí všechny typy hodnot atributů archivního popisu k uzlu.
-     * @param faVersionId   Identifikátor verze
+     * @param fundVersionId   Identifikátor verze
      * @param nodeId        Identifikátor uzlu
      * @return  Seznam typů hodnot atributů
      */
-    List<? extends RulDescItemType> getDescriptionItemTypesForNode(Integer faVersionId,
+    List<? extends RulDescItemType> getDescriptionItemTypesForNode(Integer fundVersionId,
                                                                    Integer nodeId,
                                                                    Set<String> strategies);
 
@@ -93,10 +92,10 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
     /**
      * Vrátí seznam identifikátorů typů atributů archivního popisu,
      * které se mají pro verzi archivní pomůcky zobrazovat v hierarchickém seznamu uzlů.
-     * @param faVersionId id verze
+     * @param fundVersionId id verze
      * @return Zapouzdření {@link RulFaView} a {@link FaViewDescItemTypes}.
      */
-    FaViewDescItemTypes getFaViewDescItemTypes(Integer faVersionId);
+    FaViewDescItemTypes getFaViewDescItemTypes(Integer fundVersionId);
 
     /**
      * Pro soubor pravidel a typ výstupu uloží seznam identifikátorů typů atributů archivního popisu,

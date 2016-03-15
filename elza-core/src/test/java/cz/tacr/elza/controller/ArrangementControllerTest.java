@@ -39,41 +39,41 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     public void arrangementTest() {
 
         // vytvoření
-        ArrFindingAidVO findingAid = createdFindingAid();
+        ArrFundVO fund = createdFund();
 
         // přejmenování
-        findingAid = updatedFindingAid(findingAid);
+        fund = updatedFund(fund);
 
-        ArrFindingAidVersionVO findingAidVersion = getOpenVersion(findingAid);
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
         // uzavření verze
-        findingAidVersion = approvedVersion(findingAidVersion);
+        fundVersion = approvedVersion(fundVersion);
 
         // vytvoření uzlů
-        List<ArrNodeVO> nodes = createLevels(findingAidVersion);
+        List<ArrNodeVO> nodes = createLevels(fundVersion);
 
         // přesunutí && smazání uzlů
-        moveAndDeleteLevels(nodes, findingAidVersion);
+        moveAndDeleteLevels(nodes, fundVersion);
 
         // atributy
-        attributeValues(findingAidVersion);
+        attributeValues(fundVersion);
 
         // validace
-        validateVersion(findingAidVersion);
+        validateVersion(fundVersion);
 
         // všechny formuláře / stromy / ...
-        forms(findingAidVersion);
+        forms(fundVersion);
 
     }
 
     /**
      * Zavolání metod pro formuláře atd...
      *
-     * @param findingAidVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      */
-    private void forms(final ArrFindingAidVersionVO findingAidVersion) {
+    private void forms(final ArrFundVersionVO fundVersion) {
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
-        input.setVersionId(findingAidVersion.getId());
+        input.setVersionId(fundVersion.getId());
         TreeData treeData = getFaTree(input);
 
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
@@ -81,58 +81,58 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
 
         ArrangementController.FaTreeNodesParam inputFa = new ArrangementController.FaTreeNodesParam();
-        inputFa.setVersionId(findingAidVersion.getId());
+        inputFa.setVersionId(fundVersion.getId());
         inputFa.setNodeIds(Arrays.asList(rootNode.getId()));
         List<TreeNodeClient> faTreeNodes = getFaTreeNodes(inputFa);
         Assert.notEmpty(faTreeNodes);
 
-        List<TreeNodeClient> nodeParents = getNodeParents(rootNode.getId(), findingAidVersion.getId());
+        List<TreeNodeClient> nodeParents = getNodeParents(rootNode.getId(), fundVersion.getId());
         Assert.notNull(nodeParents);
 
         ArrangementController.NodeFormDataNewVO nodeFormData = getNodeFormData(rootNode.getId(),
-                findingAidVersion.getId());
+                fundVersion.getId());
         Assert.notNull(nodeFormData.getNode());
         Assert.notEmpty(nodeFormData.getGroups());
         Assert.notEmpty(nodeFormData.getTypeGroups());
 
-        ArrangementController.NodeFormsDataVO nodeFormsData = getNodeFormsData(findingAidVersion.getId(), rootNode.getId());
+        ArrangementController.NodeFormsDataVO nodeFormsData = getNodeFormsData(fundVersion.getId(), rootNode.getId());
         Assert.notEmpty(nodeFormsData.getForms());
 
-        nodeFormsData = getNodeWithAroundFormsData(findingAidVersion.getId(), nodes.get(1).getId(), 5);
+        nodeFormsData = getNodeWithAroundFormsData(fundVersion.getId(), nodes.get(1).getId(), 5);
         Assert.notEmpty(nodeFormsData.getForms());
 
         ArrangementController.IdsParam idsParamNodes = new ArrangementController.IdsParam();
-        idsParamNodes.setVersionId(findingAidVersion.getId());
+        idsParamNodes.setVersionId(fundVersion.getId());
         idsParamNodes.setIds(Arrays.asList(nodes.get(1).getId()));
         List<TreeNodeClient> treeNodeClients = getNodes(idsParamNodes);
         Assert.notEmpty(treeNodeClients);
 
         ArrangementController.IdsParam idsParamFa = new ArrangementController.IdsParam();
-        idsParamFa.setIds(Arrays.asList(findingAidVersion.getId()));
+        idsParamFa.setIds(Arrays.asList(fundVersion.getId()));
 
-        List<ArrFindingAidVO> findingAidsByVersionIds = getFindingAidsByVersionIds(idsParamFa);
-        Assert.notEmpty(findingAidsByVersionIds);
+        List<ArrFundVO> fundsByVersionIds = getFundsByVersionIds(idsParamFa);
+        Assert.notEmpty(fundsByVersionIds);
     }
 
     /**
      * Zavolání metod pro zjištění validací.
      *
-     * @param findingAidVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      */
-    protected void validateVersion(final ArrFindingAidVersionVO findingAidVersion) {
-        List<ArrangementController.VersionValidationItem> items = validateVersion(findingAidVersion.getId());
+    protected void validateVersion(final ArrFundVersionVO fundVersion) {
+        List<ArrangementController.VersionValidationItem> items = validateVersion(fundVersion.getId());
         Assert.notNull(items);
-        validateVersionCount(findingAidVersion.getId());
+        validateVersionCount(fundVersion.getId());
     }
 
     /**
      * Operace s atributy.
      *
-     * @param findingAidVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      */
-    private void attributeValues(final ArrFindingAidVersionVO findingAidVersion) {
+    private void attributeValues(final ArrFundVersionVO fundVersion) {
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
-        input.setVersionId(findingAidVersion.getId());
+        input.setVersionId(fundVersion.getId());
         TreeData treeData = getFaTree(input);
 
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
@@ -141,7 +141,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // vytvoření hodnoty
         RulDescItemTypeExtVO type = findDescItemTypeByCode("ZP2015_TITLE");
         ArrDescItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null);
-        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, findingAidVersion, rootNode,
+        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, rootNode,
                 type);
         rootNode = descItemResult.getNode();
         ArrDescItemVO descItemCreated = descItemResult.getDescItem();
@@ -153,7 +153,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // aktualizace hodnoty
         ((ArrDescItemTextVO) descItemCreated).setValue("update value");
-        descItemResult = updateDescItem(descItemCreated, findingAidVersion, rootNode, true);
+        descItemResult = updateDescItem(descItemCreated, fundVersion, rootNode, true);
         rootNode = descItemResult.getNode();
         ArrDescItemVO descItemUpdated = descItemResult.getDescItem();
 
@@ -164,27 +164,27 @@ public class ArrangementControllerTest extends AbstractControllerTest {
                 .equals(((ArrDescItemTextVO) descItemCreated).getValue()));
 
         // odstranění hodnoty
-        descItemResult = deleteDescItem(descItemUpdated, findingAidVersion, rootNode);
+        descItemResult = deleteDescItem(descItemUpdated, fundVersion, rootNode);
         rootNode = descItemResult.getNode();
 
         // vytvoření další hodnoty
         type = findDescItemTypeByCode("ZP2015_TITLE");
         descItem = buildDescItem(type.getCode(), null, "value", null, null);
-        descItemResult = createDescItem(descItem, findingAidVersion, rootNode, type);
+        descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
         rootNode = descItemResult.getNode();
         descItemCreated = descItemResult.getDescItem();
 
         // fulltext
-        fulltextTest(findingAidVersion);
+        fulltextTest(fundVersion);
 
-        descItemResult = deleteDescItemsByType(findingAidVersion.getId(),
+        descItemResult = deleteDescItemsByType(fundVersion.getId(),
                 rootNode.getId(), rootNode.getVersion(), type.getId());
         rootNode = descItemResult.getNode();
 
         ArrNodeVO node = nodes.get(1);
 
         ArrangementController.DescriptionItemParam param = new ArrangementController.DescriptionItemParam();
-        param.setVersionId(findingAidVersion.getId());
+        param.setVersionId(fundVersion.getId());
         param.setNode(node);
         param.setDirection(DirectionLevel.ROOT);
         getDescriptionItemTypesForNewLevel(false, param);
@@ -193,44 +193,44 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         type = findDescItemTypeByCode("ZP2015_OTHER_ID");
         RulDescItemSpecExtVO spec = findDescItemSpecByCode("ZP2015_OTHERID_CJ", type);
         descItem = buildDescItem(type.getCode(), spec.getCode(), "1", 1, null);
-        descItemResult = createDescItem(descItem, findingAidVersion, node, type);
+        descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getNode();
 
         descItem = buildDescItem(type.getCode(), spec.getCode(), "2", 1, null);
-        descItemResult = createDescItem(descItem, findingAidVersion, node, type);
+        descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getNode();
 
         descItem = buildDescItem(type.getCode(), spec.getCode(), "3", 1, null);
-                descItemResult = createDescItem(descItem, findingAidVersion, node, type);
+                descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getNode();
         descItemCreated = descItemResult.getDescItem();
 
         ((ArrDescItemStringVO) descItemCreated).setValue("3x");
         descItemCreated.setPosition(5);
-        descItemResult = updateDescItem(descItemCreated, findingAidVersion, node, true);
+        descItemResult = updateDescItem(descItemCreated, fundVersion, node, true);
         node = descItemResult.getNode();
 
         ArrangementController.CopySiblingResult copySiblingResult =
-                copyOlderSiblingAttribute(findingAidVersion.getId(), type.getId(), nodes.get(2));
+                copyOlderSiblingAttribute(fundVersion.getId(), type.getId(), nodes.get(2));
 
         type = findDescItemTypeByCode("ZP2015_UNIT_DATE");
         descItem = buildDescItem(type.getCode(), null, "1920", 1, null);
-        descItemResult = createDescItem(descItem, findingAidVersion, node, type);
+        descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getNode();
 
         type = findDescItemTypeByCode("ZP2015_LEGEND");
         descItem = buildDescItem(type.getCode(), null, "legenda", 1, null);
-        descItemResult = createDescItem(descItem, findingAidVersion, node, type);
+        descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getNode();
 
         type = findDescItemTypeByCode("ZP2015_POSITION");
         descItem = buildDescItem(type.getCode(), null, "1e;20x", 1, null);
-        descItemResult = createDescItem(descItem, findingAidVersion, node, type);
+        descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getNode();
 
         type = findDescItemTypeByCode("ZP2015_COLL_EXTENT_LENGTH");
         descItem = buildDescItem(type.getCode(), null, BigDecimal.valueOf(20.5), 1, null);
-        descItemResult = createDescItem(descItem, findingAidVersion, node, type);
+        descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getNode();
 
 }
@@ -239,17 +239,17 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      * Přesunutí a smazání levelů
      *
      * @param nodes             založené uzly (1. je root)
-     * @param findingAidVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      */
     private void moveAndDeleteLevels(final List<ArrNodeVO> nodes,
-                                     final ArrFindingAidVersionVO findingAidVersion) {
+                                     final ArrFundVersionVO fundVersion) {
         ArrNodeVO rootNode = nodes.get(0);
         TreeNodeClient parentNode;
         // přesun druhého uzlu před první
-        moveLevelBefore(findingAidVersion, nodes.get(1), rootNode, Arrays.asList(nodes.get(2)), rootNode);
+        moveLevelBefore(fundVersion, nodes.get(1), rootNode, Arrays.asList(nodes.get(2)), rootNode);
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
-        input.setVersionId(findingAidVersion.getId());
+        input.setVersionId(fundVersion.getId());
         input.setNodeId(rootNode.getId());
         TreeData treeData = getFaTree(input);
         List<ArrNodeVO> newNodes = convertTreeNodes(treeData.getNodes());
@@ -264,10 +264,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         rootNode.setVersion(rootNode.getVersion() + 1); // zvýšení verze root
 
         // přesun druhého uzlu pod první
-        moveLevelUnder(findingAidVersion, newNodes.get(0), rootNode, Arrays.asList(newNodes.get(1)), rootNode);
+        moveLevelUnder(fundVersion, newNodes.get(0), rootNode, Arrays.asList(newNodes.get(1)), rootNode);
 
         input = new ArrangementController.FaTreeParam();
-        input.setVersionId(findingAidVersion.getId());
+        input.setVersionId(fundVersion.getId());
         input.setNodeId(newNodes.get(0).getId());
         treeData = getFaTree(input);
         List<ArrNodeVO> newNodes2 = convertTreeNodes(treeData.getNodes());
@@ -279,13 +279,13 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         rootNode.setVersion(rootNode.getVersion() + 1); // zvýšení verze root
 
         // smazání druhého uzlu v první úrovni
-        ArrangementController.NodeWithParent nodeWithParent = deleteLevel(findingAidVersion, newNodes.get(2), rootNode);
+        ArrangementController.NodeWithParent nodeWithParent = deleteLevel(fundVersion, newNodes.get(2), rootNode);
 
         Assert.isTrue(nodeWithParent.getNode().getId().equals(newNodes.get(2).getId()));
         Assert.isTrue(nodeWithParent.getParentNode().getId().equals(rootNode.getId()));
 
         input = new ArrangementController.FaTreeParam();
-        input.setVersionId(findingAidVersion.getId());
+        input.setVersionId(fundVersion.getId());
         input.setNodeId(rootNode.getId());
         treeData = getFaTree(input);
         List<ArrNodeVO> newNodes3 = convertTreeNodes(treeData.getNodes());
@@ -298,14 +298,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přidání třetího levelu na první pozici pod root
         ArrangementController.NodeWithParent newLevel5 = addLevel(ArrMoveLevelService.AddLevelDirection.CHILD,
-                findingAidVersion, rootNode, rootNode, null);
+                fundVersion, rootNode, rootNode, null);
 
         parentNode = newLevel5.getParentNode();
         rootNode.setId(parentNode.getId());
         rootNode.setVersion(parentNode.getVersion());
 
         input = new ArrangementController.FaTreeParam();
-        input.setVersionId(findingAidVersion.getId());
+        input.setVersionId(fundVersion.getId());
         input.setNodeId(rootNode.getId());
         treeData = getFaTree(input);
         List<ArrNodeVO> newNodes4 = convertTreeNodes(treeData.getNodes());
@@ -313,19 +313,19 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Assert.isTrue(newNodes4.size() == 3);
 
         // přesun posledního za první
-        moveLevelAfter(findingAidVersion, newNodes4.get(2), rootNode, Arrays.asList(newNodes4.get(0)), rootNode);
+        moveLevelAfter(fundVersion, newNodes4.get(2), rootNode, Arrays.asList(newNodes4.get(0)), rootNode);
     }
 
     /**
      * Vytvoření levelů v archivní pomůcce.
      *
-     * @param findingAidVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      * @return vytvořené levely
      */
-    private List<ArrNodeVO> createLevels(final ArrFindingAidVersionVO findingAidVersion) {
+    private List<ArrNodeVO> createLevels(final ArrFundVersionVO fundVersion) {
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
-        input.setVersionId(findingAidVersion.getId());
+        input.setVersionId(fundVersion.getId());
         TreeData treeData = getFaTree(input);
         TreeNodeClient parentNode;
 
@@ -337,7 +337,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přidání prvního levelu pod root
         ArrangementController.NodeWithParent newLevel1 = addLevel(ArrMoveLevelService.AddLevelDirection.CHILD,
-                findingAidVersion, rootNode, rootNode, "Série");
+                fundVersion, rootNode, rootNode, "Série");
 
         Assert.isTrue(newLevel1.getParentNode().getId().equals(rootNode.getId()),
                 "Rodič nového uzlu musí být root");
@@ -350,7 +350,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přidání druhého levelu pod root
         ArrangementController.NodeWithParent newLevel2 = addLevel(ArrMoveLevelService.AddLevelDirection.CHILD,
-                findingAidVersion, rootNode, rootNode, null);
+                fundVersion, rootNode, rootNode, null);
 
         Assert.isTrue(newLevel2.getParentNode().getId().equals(rootNode.getId()),
                 "Rodič nového uzlu musí být root");
@@ -363,7 +363,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přidání třetího levelu na první pozici pod root
         ArrangementController.NodeWithParent newLevel3 = addLevel(ArrMoveLevelService.AddLevelDirection.BEFORE,
-                findingAidVersion, newLevel1.getNode(), rootNode, null);
+                fundVersion, newLevel1.getNode(), rootNode, null);
 
         Assert.isTrue(newLevel3.getParentNode().getId().equals(rootNode.getId()),
                 "Rodič nového uzlu musí být root");
@@ -376,7 +376,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přidání uzlu za první uzel pod root (za child3)
         ArrangementController.NodeWithParent newLevel4 = addLevel(ArrMoveLevelService.AddLevelDirection.AFTER,
-                findingAidVersion, newLevel3.getNode(), rootNode, null);
+                fundVersion, newLevel3.getNode(), rootNode, null);
 
         Assert.isTrue(newLevel4.getParentNode().getId().equals(rootNode.getId()),
                 "Rodič nového uzlu musí být root");
@@ -388,7 +388,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         rootNode.setVersion(parentNode.getVersion());
 
         input = new ArrangementController.FaTreeParam();
-        input.setVersionId(findingAidVersion.getId());
+        input.setVersionId(fundVersion.getId());
         input.setNodeId(rootNode.getId());
         treeData = getFaTree(input);
 
@@ -415,48 +415,48 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     /**
      * Uzavření verze archivní pomůcky.
      *
-     * @param findingAidVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      * @return nová verze archivní pomůcky
      */
-    private ArrFindingAidVersionVO approvedVersion(final ArrFindingAidVersionVO findingAidVersion) {
-        Assert.notNull(findingAidVersion);
+    private ArrFundVersionVO approvedVersion(final ArrFundVersionVO fundVersion) {
+        Assert.notNull(fundVersion);
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulArrangementTypeVO arrangementType = ruleSets.get(0).getArrangementTypes().get(1);
-        ArrFindingAidVersionVO newFindingAidVersion = approveVersion(findingAidVersion, arrangementType);
+        ArrFundVersionVO newFundVersion = approveVersion(fundVersion, arrangementType);
 
-        Assert.isTrue(!findingAidVersion.getId().equals(newFindingAidVersion.getId()),
+        Assert.isTrue(!fundVersion.getId().equals(newFundVersion.getId()),
                 "Musí být odlišné identifikátory");
-        Assert.isTrue(!findingAidVersion.getArrangementType().getId().equals(
-                newFindingAidVersion.getArrangementType().getId()), "Musí být odlišné typy výstupu");
+        Assert.isTrue(!fundVersion.getArrangementType().getId().equals(
+                newFundVersion.getArrangementType().getId()), "Musí být odlišné typy výstupu");
 
-        return newFindingAidVersion;
+        return newFundVersion;
     }
 
     /**
      * Upravení AP.
      *
-     * @param findingAid archivní pomůcka
+     * @param fund archivní pomůcka
      */
-    private ArrFindingAidVO updatedFindingAid(final ArrFindingAidVO findingAid) {
-        findingAid.setName(RENAME_AP);
-        ArrFindingAidVO updatedFindingAid = updateFindingAid(findingAid);
-        Assert.isTrue(RENAME_AP.equals(updatedFindingAid.getName()), "Jméno AP musí být stejné");
-        return updatedFindingAid;
+    private ArrFundVO updatedFund(final ArrFundVO fund) {
+        fund.setName(RENAME_AP);
+        ArrFundVO updatedFund = fundAid(fund);
+        Assert.isTrue(RENAME_AP.equals(updatedFund.getName()), "Jméno AP musí být stejné");
+        return updatedFund;
     }
 
     /**
      * Vytvoření AP.
      */
-    private ArrFindingAidVO createdFindingAid() {
-        ArrFindingAidVO findingAid = createFindingAid(NAME_AP);
-        Assert.notNull(findingAid);
-        return findingAid;
+    private ArrFundVO createdFund() {
+        ArrFundVO fund = createFund(NAME_AP);
+        Assert.notNull(fund);
+        return fund;
     }
 
     @Test
     public void packetsTest() {
 
-        ArrFindingAidVO findingAid = createFindingAid("Packet Test AP");
+        ArrFundVO fund = createFund("Packet Test AP");
 
         List<RulPacketTypeVO> packetTypes = getPacketTypes();
 
@@ -468,7 +468,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         packet.setStorageNumber(STORAGE_NUMBER);
         packet.setInvalidPacket(false);
 
-        ArrPacketVO insertedPacket = insertPacket(findingAid, packet);
+        ArrPacketVO insertedPacket = insertPacket(fund, packet);
 
         Assert.notNull(insertedPacket);
         Assert.notNull(insertedPacket.getId());
@@ -476,18 +476,18 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Assert.isTrue(packet.getPacketTypeId().equals(insertedPacket.getPacketTypeId()));
         Assert.isTrue(packet.getStorageNumber().equals(insertedPacket.getStorageNumber()));
 
-        List<ArrPacketVO> packets = getPackets(findingAid);
+        List<ArrPacketVO> packets = getPackets(fund);
         Assert.isTrue(packets.size() == 1);
         packet = packets.get(0);
 
         Assert.isTrue(packet.getId().equals(insertedPacket.getId()));
 
         packet.setStorageNumber(STORAGE_NUMBER_CHANGE);
-        ArrPacketVO updatedPacket = updatePacket(findingAid, packet);
+        ArrPacketVO updatedPacket = updatePacket(fund, packet);
 
         Assert.isTrue(packet.getId().equals(updatedPacket.getId()));
 
-        ArrPacketVO deactivatePacket = deactivatePacket(findingAid, updatedPacket);
+        ArrPacketVO deactivatePacket = deactivatePacket(fund, updatedPacket);
 
         Assert.notNull(deactivatePacket);
         Assert.isTrue(deactivatePacket.getInvalidPacket().equals(true));
@@ -499,16 +499,16 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Assert.notEmpty(calendarTypes);
     }
 
-    private void fulltextTest(final ArrFindingAidVersionVO findingAidVersion) {
+    private void fulltextTest(final ArrFundVersionVO fundVersion) {
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
-        input.setVersionId(findingAidVersion.getId());
+        input.setVersionId(fundVersion.getId());
         TreeData treeData = getFaTree(input);
 
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
         ArrNodeVO rootNode = nodes.get(0);
 
-        List<ArrangementController.TreeNodeFulltext> fulltext = fulltext(findingAidVersion, rootNode, "value",
+        List<ArrangementController.TreeNodeFulltext> fulltext = fulltext(fundVersion, rootNode, "value",
                 ArrangementController.Depth.SUBTREE);
 
         // test
@@ -525,12 +525,12 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     @Test
     public void registerLinksTest() {
 
-        ArrFindingAidVO findingAid = createFindingAid("RegisterLinks Test AP");
+        ArrFundVO fund = createFund("RegisterLinks Test AP");
 
-        ArrFindingAidVersionVO findingAidVersion = getOpenVersion(findingAid);
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
-        input.setVersionId(findingAidVersion.getId());
+        input.setVersionId(fundVersion.getId());
         TreeData treeData = getFaTree(input);
 
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
@@ -561,24 +561,24 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         nodeRegister.setNodeId(rootNode.getId());
         nodeRegister.setNode(rootNode);
 
-        ArrNodeRegisterVO createdLink = createRegisterLinks(findingAidVersion.getId(), rootNode.getId(), nodeRegister);
+        ArrNodeRegisterVO createdLink = createRegisterLinks(fundVersion.getId(), rootNode.getId(), nodeRegister);
 
         Assert.notNull(createdLink);
 
-        List<ArrNodeRegisterVO> registerLinks = findRegisterLinks(findingAidVersion.getId(), rootNode.getId());
+        List<ArrNodeRegisterVO> registerLinks = findRegisterLinks(fundVersion.getId(), rootNode.getId());
         Assert.notEmpty(registerLinks);
 
-        ArrangementController.NodeRegisterDataVO registerLinksForm = findRegisterLinksForm(findingAidVersion.getId(),
+        ArrangementController.NodeRegisterDataVO registerLinksForm = findRegisterLinksForm(fundVersion.getId(),
                 rootNode.getId());
 
         Assert.notNull(registerLinksForm.getNode());
         Assert.notEmpty(registerLinksForm.getNodeRegisters());
 
-        ArrNodeRegisterVO updatedLink = updateRegisterLinks(findingAidVersion.getId(), rootNode.getId(), createdLink);
+        ArrNodeRegisterVO updatedLink = updateRegisterLinks(fundVersion.getId(), rootNode.getId(), createdLink);
 
         Assert.isTrue(!createdLink.getId().equals(updatedLink.getId()));
 
-        ArrNodeRegisterVO deletedLink = deleteRegisterLinks(findingAidVersion.getId(), rootNode.getId(), updatedLink);
+        ArrNodeRegisterVO deletedLink = deleteRegisterLinks(fundVersion.getId(), rootNode.getId(), updatedLink);
 
         Assert.isTrue(updatedLink.getId().equals(deletedLink.getId()));
     }

@@ -2,6 +2,7 @@ package cz.tacr.elza.bulkaction.generator;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -12,12 +13,6 @@ import cz.tacr.elza.api.vo.BulkActionState.State;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
 import cz.tacr.elza.bulkaction.BulkActionState;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
@@ -45,7 +40,7 @@ public class CleanDescriptionItemBulkAction extends BulkAction {
     /**
      * Verze archivní pomůcky
      */
-    private ArrFindingAidVersion version;
+    private ArrFundVersion version;
 
     /**
      * Změna
@@ -160,13 +155,13 @@ public class CleanDescriptionItemBulkAction extends BulkAction {
 
     @Override
     @Transactional
-    public void run(final Integer faVersionId,
+    public void run(final Integer fundVersionId,
                     final BulkActionConfig bulkActionConfig,
                     final BulkActionState bulkActionState) {
         this.bulkActionState = bulkActionState;
         init(bulkActionConfig);
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
         Assert.notNull(version);
         this.version = version;
         checkVersion(version);
@@ -174,8 +169,10 @@ public class CleanDescriptionItemBulkAction extends BulkAction {
         this.change = createChange();
         this.bulkActionState.setRunChange(this.change);
 
-        generate(version.getRootLevel());
-        eventNotificationService.publishEvent(EventFactory.createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, faVersionId, bulkActionConfig.getCode()), true);
+        ArrNode rootNode = version.getRootNode();
+        ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
+        generate(rootLevel);
+        eventNotificationService.publishEvent(EventFactory.createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, fundVersionId, bulkActionConfig.getCode()), true);
     }
 
     @Override

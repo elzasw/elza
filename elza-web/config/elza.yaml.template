@@ -19,7 +19,7 @@ elza:
 
 #zobrazování popisků
 #
-#  finding-aid-view:
+#  fund-view:
 #      ZP2015:
 #        default:
 #          tree-item:

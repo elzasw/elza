@@ -9,6 +9,7 @@ import java.util.concurrent.Executor;
 
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.domain.ArrFundVersion;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,7 +26,6 @@ import org.springframework.util.Assert;
 import com.google.common.eventbus.EventBus;
 
 import cz.tacr.elza.config.ConfigRules;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.events.ConformityInfoUpdatedEvent;
@@ -62,7 +62,7 @@ public class UpdateConformityInfoService {
     /**
      * Mapa workerů pro dané verze.
      */
-    private final Map<ArrFindingAidVersion, UpdateConformityInfoWorker> versionWorkers = new HashMap<>();
+    private final Map<ArrFundVersion, UpdateConformityInfoWorker> versionWorkers = new HashMap<>();
 
     /**
      * Zapamatuje se uzly k přepočítání stavu a po dokončení transakce spustí jejich přepočet.
@@ -71,7 +71,7 @@ public class UpdateConformityInfoService {
      * @param version     verze, ve které probíhá výpočet
      */
     public void updateInfoForNodesAfterCommit(final Collection<ArrNode> updateNodes,
-                                              final ArrFindingAidVersion version) {
+                                              final ArrFundVersion version) {
 
         if (CollectionUtils.isEmpty(updateNodes)) {
             return;
@@ -100,7 +100,7 @@ public class UpdateConformityInfoService {
      * @param version      verze, do které spadají nody
      */
     synchronized private void updateInfoForNodes(final Collection<ArrNode> updatedNodes,
-                                                final ArrFindingAidVersion version) {
+                                                final ArrFundVersion version) {
 
         if (CollectionUtils.isEmpty(updatedNodes)) {
             return;
@@ -136,7 +136,7 @@ public class UpdateConformityInfoService {
     /**
      * Provede ukončení běhu vlákna. (dopočítá poslední stav a ukončí se)
      */
-    synchronized public void terminateWorkerInVersion(final ArrFindingAidVersion version) {
+    synchronized public void terminateWorkerInVersion(final ArrFundVersion version) {
         UpdateConformityInfoWorker worker = versionWorkers.get(version);
         if (worker != null) {
             worker.terminate();
@@ -147,7 +147,7 @@ public class UpdateConformityInfoService {
     /**
      * Provede ukončení běhu vlákna.
      */
-    synchronized public void terminateWorkerInVersionAndWait(final ArrFindingAidVersion version) {
+    synchronized public void terminateWorkerInVersionAndWait(final ArrFundVersion version) {
         UpdateConformityInfoWorker worker = versionWorkers.get(version);
         if (worker != null && worker.isRunning()) {
             worker.terminateAndWait();
@@ -161,11 +161,11 @@ public class UpdateConformityInfoService {
      * @param updatedNodes seznam nodů k aktualizaci
      * @param version      verze, do které nody spadají
      */
-    synchronized private void startNewWorker(Collection<ArrNode> updatedNodes, ArrFindingAidVersion version) {
+    synchronized private void startNewWorker(Collection<ArrNode> updatedNodes, ArrFundVersion version) {
         Assert.notNull(version);
 
         UpdateConformityInfoWorker updateConformityInfoWorker = createConformityInfoWorker(
-                version.getFindingAidVersionId());
+                version.getFundVersionId());
         updateConformityInfoWorker.addNodes(updatedNodes);
         versionWorkers.put(version, updateConformityInfoWorker);
 

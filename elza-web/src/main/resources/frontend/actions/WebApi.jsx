@@ -26,7 +26,7 @@ class WebApi{
     }
 
     getFaFileTree() {
-        return AjaxUtils.ajaxGet('/api/arrangementManager/getFindingAids')
+        return AjaxUtils.ajaxGet('/api/arrangementManager/getFunds')
             .then(json=>{
                 return json.map(i=>{return {id:i.findingAidId, name:i.name}});
             });
@@ -229,7 +229,7 @@ class WebApi{
     }
 
     getFaFileTree() {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFindingAids');
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFunds');
     }
 
     findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null){
@@ -550,14 +550,14 @@ class WebApi{
 
 
     createFindingAid(name, ruleSetId, arrangementTypeId) {
-        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/findingAids', {name: name, arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId})
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/funds', {name: name, arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId})
             .then(json=>{
                 return json;
             });
     }
 
     updateFindingAid(data) {
-        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/updateFindingAid', null, data)
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/updateFund', null, data)
     }
 
     approveVersion(versionId, ruleSetId, arrangementTypeId) {

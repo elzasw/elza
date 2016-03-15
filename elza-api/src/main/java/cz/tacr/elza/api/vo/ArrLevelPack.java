@@ -73,13 +73,13 @@ public interface ArrLevelPack<FL extends ArrLevel, N extends ArrNode, DI extends
      * ID archivní pomůcky.
      * @return id archivní pomůcky
      */
-    Integer getFaVersionId();
+    Integer getFundVersionId();
 
     /**
      * ID archivní pomůcky.
-     * @param faVersionId id archivní pomůcky
+     * @param fundVersionId id archivní pomůcky
      */
-    void  setFaVersionId(Integer faVersionId);
+    void setFundVersionId(Integer fundVersionId);
 
 
     /**

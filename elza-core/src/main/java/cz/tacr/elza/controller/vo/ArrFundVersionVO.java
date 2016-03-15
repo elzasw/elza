@@ -1,30 +1,27 @@
 package cz.tacr.elza.controller.vo;
 
+import java.time.LocalDateTime;
+import java.util.Date;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-
 /**
- * VO pro archivní pomůcku.
+ * VO pro verzi archivní pomůcky.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 7. 1. 2016
  */
-public class ArrFindingAidVO {
+public class ArrFundVersionVO {
 
     private Integer id;
 
-    private String name;
-
     private Date createDate;
 
-    private List<ArrFindingAidVersionVO> versions = new LinkedList<>();
+    private Date lockDate;
 
-    private List<RegScopeVO> regScopes;
+    private RulArrangementTypeVO arrangementType;
 
     public Integer getId() {
         return id;
@@ -32,14 +29,6 @@ public class ArrFindingAidVO {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Date getCreateDate() {
@@ -50,20 +39,20 @@ public class ArrFindingAidVO {
         this.createDate = createDate;
     }
 
-    public List<ArrFindingAidVersionVO> getVersions() {
-        return versions;
+    public Date getLockDate() {
+        return lockDate;
     }
 
-    public void setVersions(List<ArrFindingAidVersionVO> versions) {
-        this.versions = versions;
+    public void setLockDate(Date lockDate) {
+        this.lockDate = lockDate;
     }
 
-    public List<RegScopeVO> getRegScopes() {
-        return regScopes;
+    public RulArrangementTypeVO getArrangementType() {
+        return arrangementType;
     }
 
-    public void setRegScopes(List<RegScopeVO> regScopes) {
-        this.regScopes = regScopes;
+    public void setArrangementType(RulArrangementTypeVO arrangementType) {
+        this.arrangementType = arrangementType;
     }
 
     @Override

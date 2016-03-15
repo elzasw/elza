@@ -11,7 +11,7 @@ import java.util.Date;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 19.11.2015
  */
-public interface ArrNodeConformity<AN extends ArrNode, AFAV extends ArrFindingAidVersion> {
+public interface ArrNodeConformity<AN extends ArrNode, AFAV extends ArrFundVersion> {
 
     /**
      * Stav uzlu.
@@ -49,13 +49,13 @@ public interface ArrNodeConformity<AN extends ArrNode, AFAV extends ArrFindingAi
     /**
      * @return verze archivní pomůcky
      */
-    AFAV getFaVersion();
+    AFAV getFundVersion();
 
 
     /**
-     * @param faVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      */
-    void setFaVersion(AFAV faVersion);
+    void setFundVersion(AFAV fundVersion);
 
 
     /**

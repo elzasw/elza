@@ -23,15 +23,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
-@Entity(name = "arr_finding_aid_version")
+@Entity(name = "arr_fund_version")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFindingAidVersion extends AbstractVersionableEntity implements
-        cz.tacr.elza.api.ArrFindingAidVersion<ArrFindingAid, ArrChange, ArrLevel, RulArrangementType, RulRuleSet> {
+public class ArrFundVersion extends AbstractVersionableEntity implements
+        cz.tacr.elza.api.ArrFundVersion<ArrFund, ArrChange, ArrNode, RulArrangementType, RulRuleSet> {
 
     @Id
     @GeneratedValue
-    private Integer findingAidVersionId;
+    private Integer fundVersionId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
@@ -44,14 +44,14 @@ public class ArrFindingAidVersion extends AbstractVersionableEntity implements
     private ArrChange lockChange;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrLevel.class)
-    @JoinColumn(name = "rootLevelId", nullable = false)
-    private ArrLevel rootLevel;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
+    @JoinColumn(name = "rootNodeId", nullable = false)
+    private ArrNode rootNode;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAid.class)
-    @JoinColumn(name = "findingAidId", nullable = false)
-    private ArrFindingAid findingAid;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
+    @JoinColumn(name = "fundId", nullable = false)
+    private ArrFund fund;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulArrangementType.class)
@@ -65,17 +65,17 @@ public class ArrFindingAidVersion extends AbstractVersionableEntity implements
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "lastArrFaChangeId", nullable = false)
+    @JoinColumn(name = "lastChangeId", nullable = false)
     private ArrChange lastChange;
 
     @Override
-    public Integer getFindingAidVersionId() {
-        return findingAidVersionId;
+    public Integer getFundVersionId() {
+        return fundVersionId;
     }
 
     @Override
-    public void setFindingAidVersionId(final Integer findingAidVersionId) {
-        this.findingAidVersionId = findingAidVersionId;
+    public void setFundVersionId(final Integer fundVersionId) {
+        this.fundVersionId = fundVersionId;
     }
 
     @Override
@@ -99,23 +99,23 @@ public class ArrFindingAidVersion extends AbstractVersionableEntity implements
     }
 
     @Override
-    public ArrLevel getRootLevel() {
-        return rootLevel;
+    public ArrNode getRootNode() {
+        return rootNode;
     }
 
     @Override
-    public void setRootLevel(final ArrLevel rootFaLevel) {
-        this.rootLevel = rootFaLevel;
+    public void setRootNode(final ArrNode rootNode) {
+        this.rootNode = rootNode;
     }
 
     @Override
-    public ArrFindingAid getFindingAid() {
-        return findingAid;
+    public ArrFund getFund() {
+        return fund;
     }
 
     @Override
-    public void setFindingAid(final ArrFindingAid findingAid) {
-        this.findingAid = findingAid;
+    public void setFund(final ArrFund fund) {
+        this.fund = fund;
     }
 
     @Override
@@ -144,13 +144,13 @@ public class ArrFindingAidVersion extends AbstractVersionableEntity implements
     }
 
     @Override
-    public void setLastChange(final ArrChange change) {
-        this.lastChange = change;
+    public void setLastChange(final ArrChange lastChange) {
+        this.lastChange = lastChange;
     }
 
     @Override
     public String toString() {
-        return "ArrFindingAidVersion pk=" + findingAidVersionId;
+        return "ArrFundVersion pk=" + fundVersionId;
     }
 
     @Override
@@ -162,9 +162,9 @@ public class ArrFindingAidVersion extends AbstractVersionableEntity implements
             return false;
         }
 
-        cz.tacr.elza.domain.ArrFindingAidVersion version = (cz.tacr.elza.domain.ArrFindingAidVersion) obj;
+        cz.tacr.elza.domain.ArrFundVersion version = (cz.tacr.elza.domain.ArrFundVersion) obj;
 
-        if (findingAidVersionId != null ? !findingAidVersionId.equals(version.findingAidVersionId) : version.findingAidVersionId != null) {
+        if (fundVersionId != null ? !fundVersionId.equals(version.fundVersionId) : version.fundVersionId != null) {
             return false;
         }
 
@@ -173,6 +173,6 @@ public class ArrFindingAidVersion extends AbstractVersionableEntity implements
 
     @Override
     public int hashCode() {
-        return findingAidVersionId != null ? findingAidVersionId.hashCode() : 0;
+        return fundVersionId != null ? fundVersionId.hashCode() : 0;
     }
 }

@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,27 +27,14 @@ import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ArrVersionConformity;
-import cz.tacr.elza.domain.RulDescItemConstraint;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemSpecExt;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
@@ -84,7 +72,7 @@ public class RuleService {
     @Autowired
     private NodeRepository nodeRepository;
     @Autowired
-    private FindingAidVersionRepository findingAidVersionRepository;
+    private FundVersionRepository fundVersionRepository;
     @Autowired
     private ArrDescItemsPostValidator descItemsPostValidator;
     @Autowired
@@ -111,16 +99,16 @@ public class RuleService {
      */
     public void setVersionConformityInfo(final ArrVersionConformity.State state,
                                          final String stateDescription,
-                                         final ArrFindingAidVersion version) {
+                                         final ArrFundVersion version) {
         Assert.notNull(version);
         ArrVersionConformity conformityInfo = versionConformityRepository
-                .findByVersion(version);
+                .findByFundVersion(version);
 
         if (conformityInfo == null) {
             conformityInfo = new ArrVersionConformity();
         }
 
-        conformityInfo.setVersion(version);
+        conformityInfo.setFundVersion(version);
         conformityInfo.setState(state);
         conformityInfo.setStateDescription(stateDescription);
         versionConformityRepository.save(conformityInfo);
@@ -131,14 +119,14 @@ public class RuleService {
      * Provede validaci atributů vybraného uzlu a nastaví jejich validační hodnoty.
      *
      * @param faLevelId   id uzlu
-     * @param faVersionId id verze
+     * @param fundVersionId id verze
      * @param strategies  strategie vyhodnocovani
      * @return stav validovaného uzlu
      */
-    public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer faVersionId,
+    public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId,
                                                   final Set<String> strategies) {
         Assert.notNull(faLevelId);
-        Assert.notNull(faVersionId);
+        Assert.notNull(fundVersionId);
         Assert.notNull(strategies);
 
         ArrLevel level = levelRepository.findOne(faLevelId);
@@ -147,10 +135,10 @@ public class RuleService {
         ArrNode nodeBeforeValidation = nodeRepository.getOne(nodeId);
         Integer nodeVersionBeforeValidation = nodeBeforeValidation.getVersion();
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         if (!arrangementService.validLevelInVersion(level, version)) {
-            throw new IllegalArgumentException("Level s id " + faLevelId + " nespadá do verze s id " + faVersionId);
+            throw new IllegalArgumentException("Level s id " + faLevelId + " nespadá do verze s id " + fundVersionId);
         }
 
         List<DataValidationResult> validationResults = descItemsPostValidator
@@ -181,11 +169,11 @@ public class RuleService {
      * @param validationResults seznam validačních chyb
      */
     private ArrNodeConformityExt updateNodeConformityInfo(final ArrLevel level,
-                                                          final ArrFindingAidVersion version,
+                                                          final ArrFundVersion version,
                                                           final List<DataValidationResult> validationResults) {
 
         ArrNodeConformity conformityInfo = nodeConformityInfoRepository
-                .findByNodeAndFaVersion(level.getNode(), version);
+                .findByNodeAndFundVersion(level.getNode(), version);
 
         if (conformityInfo != null && conformityInfo.getState().equals(ArrNodeConformity.State.OK)) {
             conformityInfo.setDate(new Date());
@@ -195,7 +183,7 @@ public class RuleService {
             }
             conformityInfo = new ArrNodeConformity();
             conformityInfo.setNode(level.getNode());
-            conformityInfo.setFaVersion(version);
+            conformityInfo.setFundVersion(version);
             conformityInfo.setDate(new Date());
         }
 
@@ -242,7 +230,7 @@ public class RuleService {
      * @return  stavy JP
      */
     public Map<Integer, ArrNodeConformityExt> getNodeConformityInfoForNodes(final Collection<Integer> nodeIds,
-                                                                           final ArrFindingAidVersion version) {
+                                                                           final ArrFundVersion version) {
         Map<Integer, ArrNodeConformityExt> result = new HashMap<>();
 
         if (nodeIds.size() == 0) {
@@ -255,7 +243,7 @@ public class RuleService {
             List<Integer> partNodeIds = iteratorNodeIds.next();
 
             List<ArrNodeConformity> conformityInfos = nodeConformityInfoRepository
-                    .findByNodeIdsAndFaVersion(partNodeIds, version);
+                    .findByNodeIdsAndFundVersion(partNodeIds, version);
 
             ArrayList<Integer> conformityInfoIds = conformityInfos.stream().map(ArrNodeConformity::getNodeConformityId)
                     .collect(Collectors.toCollection(ArrayList::new));
@@ -317,7 +305,7 @@ public class RuleService {
     /**
      * Provede úpravů (smazání) stavů uzlů podle pravidel.
      *
-     * @param faVersionId       verze nodů
+     * @param fundVersionId       verze nodů
      * @param nodeIds           seznam id nodů, od kterých se má prohledávat
      * @param nodeTypeOperation typ operace
      * @param createDescItems   hodnoty atributů k vytvoření
@@ -325,17 +313,17 @@ public class RuleService {
      * @param deleteDescItems   hodnoty atributů ke smazání
      * @return seznam dopadů
      */
-    public Set<RelatedNodeDirection> conformityInfo(final Integer faVersionId,
+    public Set<RelatedNodeDirection> conformityInfo(final Integer fundVersionId,
                                                     final Collection<Integer> nodeIds,
                                                     final NodeTypeOperation nodeTypeOperation,
                                                     final List<ArrDescItem> createDescItems,
                                                     final List<ArrDescItem> updateDescItems,
                                                     final List<ArrDescItem> deleteDescItems) {
 
-        Set<RelatedNodeDirection> impactOnConformityInfo = getImpactOnConformityInfo(faVersionId, nodeTypeOperation,
+        Set<RelatedNodeDirection> impactOnConformityInfo = getImpactOnConformityInfo(fundVersionId, nodeTypeOperation,
                 createDescItems, updateDescItems, deleteDescItems);
 
-        deleteConformityInfo(faVersionId, nodeIds, impactOnConformityInfo);
+        deleteConformityInfo(fundVersionId, nodeIds, impactOnConformityInfo);
 
         return impactOnConformityInfo;
     }
@@ -343,39 +331,39 @@ public class RuleService {
     /**
      * Provede vytvoření stavů uzlů podle pravidel u nové verze AP.
      *
-     * @param findingAidVersion verze AP
+     * @param fundVersion verze AP
      */
-    public void conformityInfoAll(final ArrFindingAidVersion findingAidVersion) {
+    public void conformityInfoAll(final ArrFundVersion fundVersion) {
 
-        ArrNode rootNode = findingAidVersion.getRootLevel().getNode();
+        ArrNode rootNode = fundVersion.getRootNode();
 
         List<ArrNode> nodes = nodeRepository
-                .findNodesByDirection(rootNode, findingAidVersion, RelatedNodeDirection.ALL);
+                .findNodesByDirection(rootNode, fundVersion, RelatedNodeDirection.ALL);
 
         nodes.add(rootNode);
 
         if (!nodes.isEmpty()) {
-            updateConformityInfoService.updateInfoForNodesAfterCommit(nodes, findingAidVersion);
+            updateConformityInfoService.updateInfoForNodesAfterCommit(nodes, fundVersion);
         }
     }
 
     /**
      * Zjistí podle pravidel dopad na změnu stavů uzlů.
      *
-     * @param faVersionId       verze nodů
+     * @param fundVersionId       verze nodů
      * @param nodeTypeOperation typ operace
      * @param createDescItems   hodnoty atributů k vytvoření
      * @param updateDescItems   hodnoty atributů k upravení
      * @param deleteDescItems   hodnoty atributů ke smazání
      * @return seznam dopadů
      */
-    private Set<RelatedNodeDirection> getImpactOnConformityInfo(final Integer faVersionId,
+    private Set<RelatedNodeDirection> getImpactOnConformityInfo(final Integer fundVersionId,
                                                                 final NodeTypeOperation nodeTypeOperation,
                                                                 final List<ArrDescItem> createDescItems,
                                                                 final List<ArrDescItem> updateDescItems,
                                                                 final List<ArrDescItem> deleteDescItems) {
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         if (version == null) {
             throw new IllegalArgumentException("Verze archivni pomucky neexistuje");
@@ -389,18 +377,18 @@ public class RuleService {
     /**
      * Pro vybrané nody s danou verzí smaže všechny stavy v daných směrech od nodů.
      *
-     * @param faVersionId      verze nodů
+     * @param fundVersionId      verze nodů
      * @param nodeIds          seznam id nodů, od kterých se má prohledávat
      * @param deleteDirections směry prohledávání (null pokud se mají smazat stavy zadaných nodů .
      */
-    private void deleteConformityInfo(final Integer faVersionId,
+    private void deleteConformityInfo(final Integer fundVersionId,
                                       final Collection<Integer> nodeIds,
                                       final Collection<RelatedNodeDirection> deleteDirections) {
-        Assert.notNull(faVersionId);
+        Assert.notNull(fundVersionId);
         Assert.notEmpty(nodeIds);
 
         List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         Set<ArrNode> deleteNodes = new HashSet<>();
 
@@ -418,7 +406,7 @@ public class RuleService {
 
         if (!deleteNodes.isEmpty()) {
             List<ArrNodeConformity> deleteInfos = nodeConformityInfoRepository
-                    .findByNodesAndVersion(deleteNodes, version);
+                    .findByNodesAndFundVersion(deleteNodes, version);
 
             deleteConformityInfo(deleteInfos);
             setVersionConformityInfo(null, null, version);
@@ -453,18 +441,18 @@ public class RuleService {
      * Získání rozšířených typů hodnot atributů se specifikacemi.
      * Používá výchozí strategie
      *
-     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @param fundVersionId identifikátor verze archivní pomůcky
      * @param nodeId              identifikátor uzlu
      * @return seznam typů hodnot atributů se specifikacemi
      */
-    public List<RulDescItemTypeExt> getDescriptionItemTypes(final Integer findingAidVersionId,
+    public List<RulDescItemTypeExt> getDescriptionItemTypes(final Integer fundVersionId,
                                                             final Integer nodeId) {
-        Assert.notNull(findingAidVersionId);
+        Assert.notNull(fundVersionId);
         Assert.notNull(nodeId);
 
-        Set<String> strategies = elzaRules.getStrategies(findingAidVersionId);
+        Set<String> strategies = elzaRules.getStrategies(fundVersionId);
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(findingAidVersionId);
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         if (version == null) {
             throw new IllegalArgumentException("Verze archivni pomucky neexistuje");
@@ -487,11 +475,11 @@ public class RuleService {
      * @param strategies seznam strategií
      * @return seznam typů hodnot atributů se specifikacemi
      */
-    public List<RulDescItemTypeExt> getDescriptionItemTypes(final ArrFindingAidVersion version,
+    public List<RulDescItemTypeExt> getDescriptionItemTypes(final ArrFundVersion version,
                                                             final ArrNode node,
                                                             final Set<String> strategies) {
 
-        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootLevel().getNode(),
+        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
                 version.getLockChange());
 
         Assert.notNull(strategies);

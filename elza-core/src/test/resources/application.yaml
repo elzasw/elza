@@ -28,7 +28,7 @@ elza:
   groovy:
     groovyDir: ${elza.workingDir}/groovy
 
-  finding-aid-view:
+  fund:
       ZP2015:
         default:
           tree-item:

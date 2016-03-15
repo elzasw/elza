@@ -1,6 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,6 +12,7 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,16 +21,11 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -58,7 +53,7 @@ public class ArrMoveLevelService {
     @Autowired
     private RuleService ruleService;
     @Autowired
-    private FindingAidVersionRepository findingAidVersionRepository;
+    private FundVersionRepository fundVersionRepository;
     @Autowired
     private DescItemRepository descItemRepository;
     @Autowired
@@ -76,7 +71,7 @@ public class ArrMoveLevelService {
      * @param transportNodes      seznam uzlů, které přesouváme
      * @param transportParentNode rodič přesouvaných uzlů
      */
-    public void moveLevelsBefore(final ArrFindingAidVersion version,
+    public void moveLevelsBefore(final ArrFundVersion version,
                                  final ArrNode staticNode,
                                  final ArrNode staticParentNode,
                                  final Collection<ArrNode> transportNodes,
@@ -88,7 +83,7 @@ public class ArrMoveLevelService {
         ArrLevel transportLevelParent = transportParentNode.equals(staticParentNode)
                                         ? staticLevelParent: arrangementService.lockNode(transportParentNode, version);
         ArrLevel staticLevel = levelRepository
-                .findNodeInRootTreeByNodeId(staticNode, version.getRootLevel().getNode(), version.getLockChange());
+                .findNodeInRootTreeByNodeId(staticNode, version.getRootNode(), version.getLockChange());
         Assert.notNull(staticLevel);
 
 
@@ -123,12 +118,12 @@ public class ArrMoveLevelService {
      * @param transportLevels      seznam uzlů, které přesouváme
      * @param transportLevelParent rodič přesouvaných uzlů
      */
-    private void moveLevelBefore(final ArrFindingAidVersion version,
+    private void moveLevelBefore(final ArrFundVersion version,
                                  final ArrLevel staticLevel,
                                  final List<ArrLevel> transportLevels,
                                  final ArrLevel transportLevelParent) {
 
-        Integer versionId = version.getFindingAidVersionId();
+        Integer versionId = version.getFundVersionId();
         arrangementService.isValidAndOpenVersion(version);
 
         Set<Integer> transportNodeIds = new HashSet<>();
@@ -170,7 +165,7 @@ public class ArrMoveLevelService {
         }
 
 
-        arrangementService.saveLastChangeFaVersion(change, versionId);
+        arrangementService.saveLastChangeFundVersion(change, versionId);
 
         if (transportLevelParent.getNode().equals(staticLevel.getNodeParent())) {
             ruleService.conformityInfo(versionId, transportNodeIds, NodeTypeOperation.CONNECT_NODE_LOCAL,
@@ -196,7 +191,7 @@ public class ArrMoveLevelService {
      * @param transportNodes      seznam uzlů, které přesouváme
      * @param transportParentNode rodič přesouvaných uzlů
      */
-    public void moveLevelsAfter(final ArrFindingAidVersion version,
+    public void moveLevelsAfter(final ArrFundVersion version,
                                 final ArrNode staticNode,
                                 final ArrNode staticParentNode,
                                 final List<ArrNode> transportNodes,
@@ -207,7 +202,7 @@ public class ArrMoveLevelService {
         ArrLevel transportLevelParent = transportParentNode.equals(staticParentNode)
                                         ? staticLevelParent : arrangementService.lockNode(transportParentNode, version);
         ArrLevel staticLevel = levelRepository
-                .findNodeInRootTreeByNodeId(staticNode, version.getRootLevel().getNode(), version.getLockChange());
+                .findNodeInRootTreeByNodeId(staticNode, version.getRootNode(), version.getLockChange());
         Assert.notNull(staticLevel);
 
 
@@ -243,12 +238,12 @@ public class ArrMoveLevelService {
      * @param transportLevels      seznam uzlů, které přesouváme
      * @param transportLevelParent rodič přesouvaných uzlů
      */
-    private void moveLevelAfter(final ArrFindingAidVersion version,
+    private void moveLevelAfter(final ArrFundVersion version,
                                 final ArrLevel staticLevel,
                                 final List<ArrLevel> transportLevels,
                                 final ArrLevel transportLevelParent) {
 
-        Integer versionId = version.getFindingAidVersionId();
+        Integer versionId = version.getFundVersionId();
         arrangementService.isValidAndOpenVersion(version);
 
         Set<Integer> transportNodeIds = new HashSet<>();
@@ -288,7 +283,7 @@ public class ArrMoveLevelService {
         }
 
 
-        arrangementService.saveLastChangeFaVersion(change, versionId);
+        arrangementService.saveLastChangeFundVersion(change, versionId);
 
         if (transportLevelParent.getNode().equals(staticLevel.getNodeParent())) {
             ruleService.conformityInfo(versionId, transportNodeIds, NodeTypeOperation.CONNECT_NODE_LOCAL,
@@ -312,7 +307,7 @@ public class ArrMoveLevelService {
      * @param transportNodes      seznam uzlů, které přesouváme
      * @param transportParentNode rodič přesouvaných uzlů
      */
-    public void moveLevelsUnder(final ArrFindingAidVersion version,
+    public void moveLevelsUnder(final ArrFundVersion version,
                                 final ArrNode staticNode,
                                 final Collection<ArrNode> transportNodes,
                                 final ArrNode transportParentNode) {
@@ -352,11 +347,11 @@ public class ArrMoveLevelService {
      * @param staticLevel     statický uzel (za, před, pod který přesouváme)
      * @param transportLevels seznam uzlů, které přesouváme
      */
-    private void moveLevelUnder(final ArrFindingAidVersion version,
+    private void moveLevelUnder(final ArrFundVersion version,
                                 final ArrLevel staticLevel,
                                 final List<ArrLevel> transportLevels) {
 
-        Integer versionId = version.getFindingAidVersionId();
+        Integer versionId = version.getFundVersionId();
         arrangementService.isValidAndOpenVersion(version);
 
         Set<Integer> transportNodeIds = new HashSet<>();
@@ -383,7 +378,7 @@ public class ArrMoveLevelService {
         placeLevels(transportLevels, staticLevel.getNode(), change, maxPosition + 1);
 
 
-        arrangementService.saveLastChangeFaVersion(change, versionId);
+        arrangementService.saveLastChangeFundVersion(change, versionId);
 
         ruleService.conformityInfo(versionId, transportNodeIds, NodeTypeOperation.CONNECT_NODE, null, null, null);
 
@@ -401,7 +396,7 @@ public class ArrMoveLevelService {
      * @param deleteNode       node ke smazání
      * @param deleteNodeParent rodič nodu ke smazání
      */
-    public ArrLevel deleteLevel(final ArrFindingAidVersion version,
+    public ArrLevel deleteLevel(final ArrFundVersion version,
                             final ArrNode deleteNode,
                             final ArrNode deleteNodeParent) {
         Assert.notNull(version);
@@ -420,7 +415,7 @@ public class ArrMoveLevelService {
 
 
 
-        ruleService.conformityInfo(version.getFindingAidVersionId(), Arrays.asList(deleteNode.getNodeId()),
+        ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(deleteNode.getNodeId()),
                 NodeTypeOperation.DELETE_NODE, null, null, null);
 
         ArrChange change = arrangementService.createChange();
@@ -429,7 +424,7 @@ public class ArrMoveLevelService {
         ArrLevel level = arrangementService.deleteLevelCascade(deleteLevel, change);
 
         eventNotificationService.publishEvent(new EventDeleteNode(EventType.DELETE_LEVEL,
-                version.getFindingAidVersionId(),
+                version.getFundVersionId(),
                 deleteNode.getNodeId(),deleteNodeParent.getNodeId()));
 
         return level;
@@ -513,7 +508,7 @@ public class ArrMoveLevelService {
      * @param descItemCopyTypes id typů atributl, které budou zkopírovány z uzlu přímo nadřazeným nad přidaným uzlem
      *                          (jeho mladší sourozenec).
      */
-    public ArrLevel addNewLevel(final ArrFindingAidVersion version,
+    public ArrLevel addNewLevel(final ArrFundVersion version,
                                 final ArrNode staticNode,
                                 final ArrNode staticNodeParent,
                                 final AddLevelDirection direction,
@@ -523,7 +518,7 @@ public class ArrMoveLevelService {
         Assert.notNull(staticNode);
         Assert.notNull(staticNodeParent);
         final ArrLevel staticLevel = levelRepository
-                .findNodeInRootTreeByNodeId(staticNode, version.getRootLevel().getNode(), version.getLockChange());
+                .findNodeInRootTreeByNodeId(staticNode, version.getRootNode(), version.getLockChange());
 
 
         ArrLevel newLevel;
@@ -570,9 +565,9 @@ public class ArrMoveLevelService {
         }
 
 
-        arrangementService.saveLastChangeFaVersion(change, version.getFindingAidVersionId());
+        arrangementService.saveLastChangeFundVersion(change, version.getFundVersionId());
 
-        ruleService.conformityInfo(version.getFindingAidVersionId(), Arrays.asList(newLevel.getNode().getNodeId()),
+        ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(newLevel.getNode().getNodeId()),
                 NodeTypeOperation.CREATE_NODE, null, null, null);
 
         entityManager.flush(); //aktualizace verzí v nodech
@@ -591,7 +586,7 @@ public class ArrMoveLevelService {
      * @param direction        směr přidání uzlu
      * @return přidaný uzel
      */
-    private ArrLevel addLevelBeforeAfter(final ArrFindingAidVersion version,
+    private ArrLevel addLevelBeforeAfter(final ArrFundVersion version,
                                          final ArrNode staticNode,
                                          final ArrNode staticNodeParent,
                                          final AddLevelDirection direction) {
@@ -606,7 +601,7 @@ public class ArrMoveLevelService {
         Assert.notNull(staticLevelParent);
 
         final ArrLevel staticLevel = levelRepository
-                .findNodeInRootTreeByNodeId(staticNode, version.getRootLevel().getNode(), version.getLockChange());
+                .findNodeInRootTreeByNodeId(staticNode, version.getRootNode(), version.getLockChange());
 
 
         int newLevelPosition = direction.equals(AddLevelDirection.AFTER) ? staticLevel.getPosition() + 1
@@ -631,7 +626,7 @@ public class ArrMoveLevelService {
      * @param staticNode statický uzel (pod který přidáváme)
      * @return přidaný uzel
      */
-    private ArrLevel addLevelUnder(final ArrFindingAidVersion version,
+    private ArrLevel addLevelUnder(final ArrFundVersion version,
                                    final ArrNode staticNode) {
         Assert.notNull(version);
         Assert.notNull(staticNode);

@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.FindingAid;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.Fund;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Packet;
 import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Dynasty;
@@ -34,8 +34,8 @@ import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 public class XmlImport {
 
     /** Archivní pomůcka. */
-    @XmlElement(name = "finding-aid")
-    private FindingAid findingAid;
+    @XmlElement(name = "fund")
+    private Fund fund;
 
     /** Seznam rejstříkových hesel. */
     @XmlElement(name = "record")
@@ -57,12 +57,12 @@ public class XmlImport {
     @XmlElementWrapper(name = "packet-list")
     private List<Packet> packets;
 
-    public FindingAid getFindingAid() {
-        return findingAid;
+    public Fund getFund() {
+        return fund;
     }
 
-    public void setFindingAid(FindingAid findingAid) {
-        this.findingAid = findingAid;
+    public void setFund(Fund fund) {
+        this.fund = fund;
     }
 
     public List<Record> getRecords() {

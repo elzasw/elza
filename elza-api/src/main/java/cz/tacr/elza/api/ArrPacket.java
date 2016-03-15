@@ -2,7 +2,7 @@ package cz.tacr.elza.api;
 
 import java.io.Serializable;
 
-public interface ArrPacket <PT extends RulPacketType, FA extends ArrFindingAid> extends Serializable {
+public interface ArrPacket <PT extends RulPacketType, FA extends ArrFund> extends Serializable {
 
     Integer getPacketId();
 
@@ -12,9 +12,9 @@ public interface ArrPacket <PT extends RulPacketType, FA extends ArrFindingAid> 
 
     void setPacketType(PT packetType);
 
-    FA getFindingAid();
+    FA getFund();
 
-    void setFindingAid(FA findingAid);
+    void setFund(FA fund);
 
     String getStorageNumber();
 

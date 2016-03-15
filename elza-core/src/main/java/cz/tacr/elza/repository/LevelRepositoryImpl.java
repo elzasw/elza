@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.utils.ObjectListIterator;
@@ -80,7 +80,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     }
 
     @Override
-    public List<ArrLevel> findAllParentsByNodeAndVersion(final ArrNode node, final ArrFindingAidVersion version) {
+    public List<ArrLevel> findAllParentsByNodeAndVersion(final ArrNode node, final ArrFundVersion version) {
         Assert.notNull(node);
         Assert.notNull(version);
 
@@ -91,7 +91,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
         boolean found = false;
         for (ArrLevel arrLevel : findByNode(node, lockChange)) {
-            if (findParentNodesToRootByNodeId(parents, arrLevel, version.getRootLevel().getNode(), lockChange)) {
+            if (findParentNodesToRootByNodeId(parents, arrLevel, version.getRootNode(), lockChange)) {
                 found = true;
                 break;
             }
@@ -235,7 +235,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
     @Override
     public List<ArrLevel> findLevelsByDirection(final ArrLevel level,
-                                                final ArrFindingAidVersion version,
+                                                final ArrFundVersion version,
                                                 final RelatedNodeDirection direction) {
         Assert.notNull(level);
         Assert.notNull(version);
@@ -247,12 +247,12 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
             case PARENT:
 
                 // pokud je to root level, nemuze mit rodice
-                if (level.getNode().equals(version.getRootLevel().getNode())) {
+                if (level.getNode().equals(version.getRootNode())) {
                     return Arrays.asList();
                 }
 
                 return Arrays.asList(levelRepository
-                        .findNodeInRootTreeByNodeId(level.getNodeParent(), version.getRootLevel().getNode(),
+                        .findNodeInRootTreeByNodeId(level.getNodeParent(), version.getRootNode(),
                                 version.getLockChange()));
             case ASCENDANTS:
                 return levelRepository.findAllParentsByNodeAndVersion(level.getNode(), version);
@@ -282,7 +282,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
                 return siblings;
             }
             case ALL:
-                return levelRepository.findAllChildrenByNode(version.getRootLevel().getNode(), version.getLockChange());
+                return levelRepository.findAllChildrenByNode(version.getRootNode(), version.getLockChange());
             default:
                 throw new NotImplementedException(
                         "Chybi implementace pro smer prohledavani stromu " + direction.name());
@@ -291,9 +291,9 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
 
     @Override
-    public List<LevelInfo> readTree(final ArrFindingAidVersion version){
+    public List<LevelInfo> readTree(final ArrFundVersion version){
         Set<Integer> leaves = new HashSet<>();
-        leaves.add(version.getRootLevel().getNode().getNodeId());
+        leaves.add(version.getRootNode().getNodeId());
 
         Set<Integer> allIds = new HashSet<>();
         while (!leaves.isEmpty()){
@@ -326,7 +326,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
      * @param rootIds seznam id uzlů, pro které se mají načíst potomci
      * @return 4 generace potomků
      */
-    private List<Object[]> subTree(final ArrFindingAidVersion version, final Set<Integer> rootIds) {
+    private List<Object[]> subTree(final ArrFundVersion version, final Set<Integer> rootIds) {
 
         List<Object[]> result = new LinkedList<>();
 

@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParCreator;
@@ -196,13 +196,13 @@ public class PartyService {
      * @param partyTypeId  typ záznamu
      * @param firstResult  první vrácená osoba
      * @param maxResults   max počet vrácených osob
-     * @param findingAid   AP, ze které se použijí třídy rejstříků
+     * @param fund   AP, ze které se použijí třídy rejstříků
      */
     public List<ParParty> findPartyByTextAndType(final String searchRecord, final Integer partyTypeId,
                                                  final Integer firstResult, final Integer maxResults,
-                                                 @Nullable final ArrFindingAid findingAid) {
+                                                 @Nullable final ArrFund fund) {
 
-        Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFindingAid(findingAid);
+        Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFund(fund);
         return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, firstResult, maxResults,
                 scopeIdsForRecord);
     }
@@ -211,13 +211,13 @@ public class PartyService {
      * Vrátí počet osob vyhovující zadané frázi. Osobu vyhledává podle hesla v rejstříku včetně variantních hesel.
      * @param searchRecord hledaný řetězec, může být null
      * @param registerTypeId typ záznamu
-     * @param findingAid   AP, ze které se použijí třídy rejstříků
+     * @param fund   AP, ze které se použijí třídy rejstříků
      * @return
      */
     public long findPartyByTextAndTypeCount(final String searchRecord, final Integer registerTypeId,
-                                            @Nullable final ArrFindingAid findingAid){
+                                            @Nullable final ArrFund fund){
 
-        Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFindingAid(findingAid);
+        Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFund(fund);
         return partyRepository.findPartyByTextAndTypeCount(searchRecord, registerTypeId, scopeIdsForRecord);
     }
 

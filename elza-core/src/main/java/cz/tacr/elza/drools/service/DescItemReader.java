@@ -8,7 +8,7 @@ import java.util.Set;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
@@ -55,9 +55,9 @@ public class DescItemReader {
 
 	/**
 	 * Read description items for all levels in the reader
-	 * @param version Version of the finding aid
+	 * @param version Version of the fund
 	 */
-	public void read(ArrFindingAidVersion version) {
+	public void read(ArrFundVersion version) {
         Set<RulDescItemType> descItemTypesForPackets = descItemTypeRepository.findDescItemTypesForPackets();
         Set<RulDescItemType> descItemTypesForIntegers = descItemTypeRepository.findDescItemTypesForIntegers();		
 		

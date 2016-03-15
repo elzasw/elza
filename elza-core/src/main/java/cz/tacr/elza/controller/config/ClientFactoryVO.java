@@ -14,6 +14,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.*;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
@@ -30,8 +31,8 @@ import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFindingAidVO;
-import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.BulkActionStateVO;
@@ -60,36 +61,11 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulArrangementType;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulDescItemTypeExt;
-import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
@@ -145,7 +121,7 @@ public class ClientFactoryVO {
     private DescItemConstraintRepository descItemConstraintRepository;
 
     @Autowired
-    private FindingAidVersionRepository findingAidVersionRepository;
+    private FundVersionRepository fundVersionRepository;
 
     @Autowired
     private RegisterTypeRepository registerTypeRepository;
@@ -635,54 +611,54 @@ public class ClientFactoryVO {
     }
 
     /**
-     * Vytvoření ArrFindingAid a načtení verzí.
+     * Vytvoření ArrFund a načtení verzí.
      *
-     * @param findingAid      DO
+     * @param fund      DO
      * @param includeVersions true - budou do objektu donačteny všechny jeho verze, false- verze nebudou donačteny
      * @return VO
      */
-    public ArrFindingAidVO createArrFindingAidVO(final ArrFindingAid findingAid, final boolean includeVersions) {
-        Assert.notNull(findingAid);
+    public ArrFundVO createFundVO(final ArrFund fund, final boolean includeVersions) {
+        Assert.notNull(fund);
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrFindingAidVO findingAidVO = mapper.map(findingAid, ArrFindingAidVO.class);
+        ArrFundVO fundVO = mapper.map(fund, ArrFundVO.class);
         if (includeVersions) {
 
-            List<ArrFindingAidVersion> versions = findingAidVersionRepository
-                    .findVersionsByFindingAidIdOrderByCreateDateAsc(findingAid.getFindingAidId());
+            List<ArrFundVersion> versions = fundVersionRepository
+                    .findVersionsByFundIdOrderByCreateDateAsc(fund.getFundId());
 
-            List<ArrFindingAidVersionVO> versionVOs = new ArrayList<>(versions.size());
-            for (ArrFindingAidVersion version : versions) {
-                versionVOs.add(createFindingAidVersion(version));
+            List<ArrFundVersionVO> versionVOs = new ArrayList<>(versions.size());
+            for (ArrFundVersion version : versions) {
+                versionVOs.add(createFundVersion(version));
             }
-            findingAidVO.setVersions(versionVOs);
+            fundVO.setVersions(versionVOs);
         }
-        return findingAidVO;
+        return fundVO;
     }
 
     /**
      * Vytvoří verzi archivní pomůcky.
      *
-     * @param version verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      * @return VO verze archivní pomůcky
      */
-    public ArrFindingAidVersionVO createFindingAidVersion(ArrFindingAidVersion version) {
-        Assert.notNull(version);
+    public ArrFundVersionVO createFundVersion(ArrFundVersion fundVersion) {
+        Assert.notNull(fundVersion);
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrFindingAidVersionVO findingAidVersionVO = mapper.map(version, ArrFindingAidVersionVO.class);
+        ArrFundVersionVO fundVersionVO = mapper.map(fundVersion, ArrFundVersionVO.class);
         Date createDate = Date.from(
-                version.getCreateChange().getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
-        findingAidVersionVO.setCreateDate(createDate);
+                fundVersion.getCreateChange().getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
+        fundVersionVO.setCreateDate(createDate);
 
-        ArrChange lockChange = version.getLockChange();
+        ArrChange lockChange = fundVersion.getLockChange();
         if (lockChange != null) {
             Date lockDate = Date.from(lockChange.getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
-            findingAidVersionVO.setLockDate(lockDate);
+            fundVersionVO.setLockDate(lockDate);
         }
-        findingAidVersionVO.setArrangementType(createArrangementType(version.getArrangementType()));
+        fundVersionVO.setArrangementType(createArrangementType(fundVersion.getArrangementType()));
 
-        return findingAidVersionVO;
+        return fundVersionVO;
     }
 
     /**
@@ -760,7 +736,7 @@ public class ClientFactoryVO {
      * @param descItems seznam hodnot atributů
      * @return VO skupin zabalených atributů
      */
-    public List<DescItemGroupVO> createDescItemGroupsNew(final String ruleCode, final Integer findingAidId, final List<ArrDescItem> descItems) {
+    public List<DescItemGroupVO> createDescItemGroupsNew(final String ruleCode, final Integer fundId, final List<ArrDescItem> descItems) {
         Map<String, DescItemGroupVO> descItemGroupVOMap = new HashMap<>();
         Map<RulDescItemType, List<ArrDescItemVO>> descItemByType = new HashMap<>();
         List<DescItemTypeDescItemsLiteVO> descItemTypeVOList = new ArrayList<>();
@@ -790,7 +766,7 @@ public class ClientFactoryVO {
 
         // rozřazení do skupin podle konfigurace
         for (DescItemTypeDescItemsLiteVO descItemTypeVO : descItemTypeVOList) {
-            ConfigRules.Group group = elzaRules.getGroupByType(ruleCode, findingAidId, codeToId.get(descItemTypeVO.getId()));
+            ConfigRules.Group group = elzaRules.getGroupByType(ruleCode, fundId, codeToId.get(descItemTypeVO.getId()));
             DescItemGroupVO descItemGroupVO = descItemGroupVOMap.get(group.getCode());
 
             if (descItemGroupVO == null) {
@@ -809,7 +785,7 @@ public class ClientFactoryVO {
 
         ArrayList<DescItemGroupVO> descItemGroupVOList = new ArrayList<>(descItemGroupVOMap.values());
 
-        List<String> typeGroupCodes = elzaRules.getTypeGroupCodes(ruleCode, findingAidId);
+        List<String> typeGroupCodes = elzaRules.getTypeGroupCodes(ruleCode, fundId);
 
         // seřazení skupin
         Collections.sort(descItemGroupVOList, (left, right) -> Integer
@@ -817,7 +793,7 @@ public class ClientFactoryVO {
 
         // seřazení položek ve skupinách
         for (DescItemGroupVO descItemGroupVO : descItemGroupVOList) {
-            List<String> typeInfos = elzaRules.getTypeCodesByGroupCode(ruleCode, findingAidId, descItemGroupVO.getCode());
+            List<String> typeInfos = elzaRules.getTypeCodesByGroupCode(ruleCode, fundId, descItemGroupVO.getCode());
             if (typeInfos.isEmpty()) {
 
                 // seřazení typů atributů podle viewOrder
@@ -870,7 +846,7 @@ public class ClientFactoryVO {
      * @param descItemTypes seznam typů hodnot atributů
      * @return seznam skupin s typy hodnot atributů
      */
-    public List<DescItemTypeGroupVO> createDescItemTypeGroupsNew(final String ruleCode, final Integer findingAidId, final List<RulDescItemTypeExt> descItemTypes) {
+    public List<DescItemTypeGroupVO> createDescItemTypeGroupsNew(final String ruleCode, final Integer fundId, final List<RulDescItemTypeExt> descItemTypes) {
 
         List<DescItemTypeLiteVO> descItemTypeExtList = createList(descItemTypes, DescItemTypeLiteVO.class,
                 this::createDescItemTypeLite);
@@ -882,7 +858,7 @@ public class ClientFactoryVO {
         Map<String, DescItemTypeGroupVO> descItemTypeGroupVOMap = new HashMap<>();
 
         for (DescItemTypeLiteVO descItemTypeVO : descItemTypeExtList) {
-            ConfigRules.Group group = elzaRules.getGroupByType(ruleCode, findingAidId, codeToId.get(descItemTypeVO.getId()));
+            ConfigRules.Group group = elzaRules.getGroupByType(ruleCode, fundId, codeToId.get(descItemTypeVO.getId()));
             DescItemTypeGroupVO descItemTypeGroupVO = descItemTypeGroupVOMap.get(group.getCode());
 
             if (descItemTypeGroupVO == null) {
@@ -896,7 +872,7 @@ public class ClientFactoryVO {
                 descItemTypeGroupVO.setTypes(descItemTypeList);
             }
 
-            descItemTypeVO.setWidth(elzaRules.getTypeWidthByCode(ruleCode, findingAidId, codeToId.get(descItemTypeVO.getId())));
+            descItemTypeVO.setWidth(elzaRules.getTypeWidthByCode(ruleCode, fundId, codeToId.get(descItemTypeVO.getId())));
             descItemTypeList.add(descItemTypeVO);
         }
 
@@ -1096,9 +1072,9 @@ public class ClientFactoryVO {
     public List<ScenarioOfNewLevelVO> createScenarioOfNewLevelList(final List<ScenarioOfNewLevel> scenarioOfNewLevels,
                                                                    final Boolean withGroups,
                                                                    final String ruleCode,
-                                                                   final Integer findingAidId) {
+                                                                   final Integer fundId) {
         List<ScenarioOfNewLevelVO> scenarios = new ArrayList<>(scenarioOfNewLevels.size());
-        scenarioOfNewLevels.forEach(scenario -> scenarios.add(createScenarioOfNewLevel(scenario, withGroups, ruleCode, findingAidId)));
+        scenarioOfNewLevels.forEach(scenario -> scenarios.add(createScenarioOfNewLevel(scenario, withGroups, ruleCode, fundId)));
         return scenarios;
     }
 
@@ -1112,12 +1088,12 @@ public class ClientFactoryVO {
     public ScenarioOfNewLevelVO createScenarioOfNewLevel(final ScenarioOfNewLevel scenarioOfNewLevel,
                                                          final Boolean withGroups,
                                                          final String ruleCode,
-                                                         final Integer findingAidId) {
+                                                         final Integer fundId) {
         Assert.notNull(scenarioOfNewLevel);
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ScenarioOfNewLevelVO scenarioVO = mapper.map(scenarioOfNewLevel, ScenarioOfNewLevelVO.class);
         if (BooleanUtils.isTrue(withGroups)) {
-            scenarioVO.setGroups(createDescItemGroupsNew(ruleCode, findingAidId, scenarioOfNewLevel.getDescItems()));
+            scenarioVO.setGroups(createDescItemGroupsNew(ruleCode, fundId, scenarioOfNewLevel.getDescItems()));
         }
         return scenarioVO;
     }

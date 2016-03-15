@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -31,7 +31,7 @@ public class PacketService {
     private PacketRepository packetRepository;
 
     @Autowired
-    private FindingAidRepository findingAidRepository;
+    private FundRepository fundRepository;
 
     @Autowired
     private PacketTypeRepository packetTypeRepository;
@@ -51,16 +51,16 @@ public class PacketService {
     /**
      * Vyhledá obaly podle archivní pomůcky.
      *
-     * @param findingAidId identifikátor archivní pomůcky
+     * @param fundId identifikátor archivní pomůcky
      * @return seznam obalů
      */
-    public List<ArrPacket> getPackets(final Integer findingAidId) {
-        Assert.notNull(findingAidId);
+    public List<ArrPacket> getPackets(final Integer fundId) {
+        Assert.notNull(fundId);
 
-        ArrFindingAid findingAid = findingAidRepository.findOne(findingAidId);
-        Assert.notNull(findingAid, "Archivní pomůcka neexistuje (ID=" + findingAidId + ")");
+        ArrFund fund = fundRepository.findOne(fundId);
+        Assert.notNull(fund, "Archivní pomůcka neexistuje (ID=" + fundId + ")");
 
-        return packetRepository.findByFindingAid(findingAid);
+        return packetRepository.findByFund(fund);
     }
 
     /**
@@ -82,7 +82,7 @@ public class PacketService {
      */
     private void checkPacketDuplicate(final ArrPacket packet) {
         ArrPacket packetDb = packetRepository
-                .findByFindingAidAndStorageNumber(packet.getFindingAid(), packet.getStorageNumber());
+                .findByFundAndStorageNumber(packet.getFund(), packet.getStorageNumber());
 
         if (packetDb != null && !packetDb.getPacketId().equals(packet.getPacketId())) {
             throw new IllegalArgumentException(
@@ -102,7 +102,7 @@ public class PacketService {
         checkPacketDuplicate(packet);
 
         EventId event = EventFactory
-                .createIdEvent(EventType.PACKETS_CHANGE, packet.getFindingAid().getFindingAidId());
+                .createIdEvent(EventType.PACKETS_CHANGE, packet.getFund().getFundId());
         eventNotificationService.publishEvent(event);
 
         return packetRepository.save(packet);
@@ -111,14 +111,14 @@ public class PacketService {
     /**
      * Vrací obal podle identifikátoru archivní pomůcky a identifikátoru obalu.
      *
-     * @param findingAidId identifikátor archivní pomůcky
+     * @param fundId identifikátor archivní pomůcky
      * @param packetId     identifikátor obalu
      * @return obal
      */
-    public ArrPacket getPacket(final Integer findingAidId, final Integer packetId) {
+    public ArrPacket getPacket(final Integer fundId, final Integer packetId) {
         ArrPacket packet = packetRepository.findOne(packetId);
         Assert.notNull(packet, "Obal neexistuje (ID=" + packetId + ")");
-        if (!packet.getFindingAid().getFindingAidId().equals(findingAidId)) {
+        if (!packet.getFund().getFundId().equals(fundId)) {
             throw new IllegalStateException("Obal nepatří pod archivní pomůcku");
         }
         return packet;

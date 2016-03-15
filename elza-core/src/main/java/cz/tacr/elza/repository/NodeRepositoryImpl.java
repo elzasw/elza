@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.queries.ChainedFilter;
 import org.apache.lucene.search.Filter;
@@ -22,11 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.utils.NodeUtils;
 
 
@@ -45,14 +42,14 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Override
     public List<ArrNode> findNodesByDirection(final ArrNode node,
-                                              final ArrFindingAidVersion version,
+                                              final ArrFundVersion version,
                                               final RelatedNodeDirection direction) {
         Assert.notNull(node);
         Assert.notNull(version);
         Assert.notNull(direction);
 
 
-        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootLevel().getNode(),
+        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
                 version.getLockChange());
         List<ArrLevel> levels = levelRepository.findLevelsByDirection(level, version, direction);
 

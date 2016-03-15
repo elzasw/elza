@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 
@@ -25,7 +25,7 @@ public interface LevelRepositoryCustom {
      * @param version verze stromu
      * @return všechny rodiče seřazeny od listu ke kořenu
      */
-    List<ArrLevel> findAllParentsByNodeAndVersion(ArrNode node, ArrFindingAidVersion version);
+    List<ArrLevel> findAllParentsByNodeAndVersion(ArrNode node, ArrFundVersion version);
 
 
     /**
@@ -83,7 +83,7 @@ public interface LevelRepositoryCustom {
      * @param direction směr, kterým prohledáváme strom
      * @return všechny uzly v daném směru prohledávání
      */
-    List<ArrLevel> findLevelsByDirection(ArrLevel level, ArrFindingAidVersion version,
+    List<ArrLevel> findLevelsByDirection(ArrLevel level, ArrFundVersion version,
                                          RelatedNodeDirection direction);
 
     /**
@@ -115,7 +115,7 @@ public interface LevelRepositoryCustom {
      * @param version verze stromu
      * @return seznam všech uzlů ve stromu
      */
-    List<LevelInfo> readTree(ArrFindingAidVersion version);
+    List<LevelInfo> readTree(ArrFundVersion version);
 
 
     /**

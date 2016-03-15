@@ -51,7 +51,7 @@ public class XmlImportController {
         config.setTransformationName(transformationName);
         config.setStopOnError(stopOnError == null ? false : stopOnError);
 
-        if (type == XmlImportType.FINDING_AID && transformationName != null) {
+        if (type == XmlImportType.FUND && transformationName != null) {
             Assert.notNull(ruleSetId);
             Assert.notNull(arrangementTypeId);
 

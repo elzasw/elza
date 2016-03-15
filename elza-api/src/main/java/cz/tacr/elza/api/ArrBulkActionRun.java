@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @author Martin Šlapa
  * @since 10.11.2015
  */
-public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFindingAidVersion> extends Serializable {
+public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFundVersion> extends Serializable {
 
     /**
      * Vrací identifikátor záznamu.
@@ -48,15 +48,15 @@ public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFindingAi
      *
      * @return verze archivní pomůcky
      */
-    FAV getFindingAidVersion();
+    FAV getFundVersion();
 
 
     /**
      * Nastavuje verzi archivní pomůcky.
      *
-     * @param findingAidVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      */
-    void setFindingAidVersion(FAV findingAidVersion);
+    void setFundVersion(FAV fundVersion);
 
 
     /**

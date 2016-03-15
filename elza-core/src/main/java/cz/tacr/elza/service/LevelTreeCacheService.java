@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -40,24 +41,7 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataPacketRef;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataPacketRefRepository;
@@ -65,7 +49,7 @@ import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LevelRepositoryCustom;
 import cz.tacr.elza.repository.NodeRepository;
@@ -100,7 +84,7 @@ public class LevelTreeCacheService {
     private LevelRepository levelRepository;
 
     @Autowired
-    private FindingAidVersionRepository findingAidVersionRepository;
+    private FundVersionRepository fundVersionRepository;
 
     @Autowired
     private DataRepository dataRepository;
@@ -163,14 +147,14 @@ public class LevelTreeCacheService {
             nodesToExpandIDs.addAll(expandedIds);
         }
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        ArrFundVersion version = fundVersionRepository.findOne(versionId);
 
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(version);
         Set<Integer> expandedIdsExtended = createExpandedIdsExtension(includeIds, treeMap);
 
 
         if (nodeId == null) {
-            expandedIdsExtended.add(version.getRootLevel().getNode().getNodeId());
+            expandedIdsExtended.add(version.getRootNode().getNodeId());
         } else {
             //pokud vracíme podstrom, přidáme pro jistotu nodeid do otevřených uzlů
             nodesToExpandIDs.add(nodeId);
@@ -215,7 +199,7 @@ public class LevelTreeCacheService {
             }
         }
 
-        TreeNode rootNode = nodeId == null ? treeMap.get(version.getRootLevel().getNode().getNodeId())
+        TreeNode rootNode = nodeId == null ? treeMap.get(version.getRootNode().getNodeId())
                                            : treeMap.get(nodeId);
 
         TreeData treeData = new TreeData(createNodesWithTitles(nodesMap, null, rootNode, version).values(), expandedIdsExtended);
@@ -234,7 +218,7 @@ public class LevelTreeCacheService {
      */
     public List<TreeNodeClient> getNodesByIds(final Collection<Integer> nodeIds, final Integer versionId) {
 
-        ArrFindingAidVersion version = findingAidVersionRepository.getOneCheckExist(versionId);
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
 
         Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
 
@@ -256,7 +240,7 @@ public class LevelTreeCacheService {
         Map<Integer, TreeNodeClient> clientMap = createNodesWithTitles(subMap, valuesMap, null, version);
 
         List<TreeNodeClient> result = new LinkedList<>();
-        ViewTitles viewTitles = configView.getViewTitles(version.getRuleSet().getCode(), version.getFindingAid().getFindingAidId());
+        ViewTitles viewTitles = configView.getViewTitles(version.getRuleSet().getCode(), version.getFund().getFundId());
 
         String levelTypeCode = viewTitles.getHierarchyLevelType();
 
@@ -279,7 +263,7 @@ public class LevelTreeCacheService {
      * @param nodes     uzly pro vyplnění conformity info
      * @param version   verze stromu
      */
-    private void addConformityInfo(final Collection<TreeNodeClient> nodes, final ArrFindingAidVersion version) {
+    private void addConformityInfo(final Collection<TreeNodeClient> nodes, final ArrFundVersion version) {
 
         ArrayList<Integer> nodeIds = nodes.stream().map(TreeNodeClient::getId)
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -307,7 +291,7 @@ public class LevelTreeCacheService {
         Assert.notNull(nodeId);
         Assert.notNull(versionId);
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        ArrFundVersion version = fundVersionRepository.findOne(versionId);
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(version);
 
         TreeNode node = treeMap.get(nodeId);
@@ -417,10 +401,10 @@ public class LevelTreeCacheService {
      * @param version verze stromu
      * @return mapu všech uzlů stromu (nodeid uzlu --> uzel)
      */
-    private Map<Integer, TreeNode> createVersionTreeCache(final ArrFindingAidVersion version) {
+    private Map<Integer, TreeNode> createVersionTreeCache(final ArrFundVersion version) {
         Assert.notNull(version);
 
-        Integer rootId = version.getRootLevel().getNode().getNodeId();
+        Integer rootId = version.getRootNode().getNodeId();
 
         //kořen
         LevelRepositoryCustom.LevelInfo rootInfo = new LevelRepositoryCustom.LevelInfo(rootId, 0, null);
@@ -555,8 +539,8 @@ public class LevelTreeCacheService {
      * @param version verze stromu
      * @return mapa všech uzlů stromu (nodeid uzlu -> uzel)
      */
-    synchronized private Map<Integer, TreeNode> getVersionTreeCache(final ArrFindingAidVersion version) {
-        Map<Integer, TreeNode> versionTreeMap = versionCache.get(version.getFindingAidVersionId());
+    synchronized private Map<Integer, TreeNode> getVersionTreeCache(final ArrFundVersion version) {
+        Map<Integer, TreeNode> versionTreeMap = versionCache.get(version.getFundVersionId());
 
         if (versionTreeMap == null) {
             versionTreeMap = createVersionTreeCache(version);
@@ -564,8 +548,8 @@ public class LevelTreeCacheService {
 
         //při každém přístupu vyjmeme verzi a vložíme na začátek,
         //aby při překročení kapacity byla vyhozena z mapy vždy ta nejstarší (viz inicializace mapy - CapacityMap)
-        versionCache.remove(version.getFindingAidVersionId());
-        versionCache.put(version.getFindingAidVersionId(), versionTreeMap);
+        versionCache.remove(version.getFundVersionId());
+        versionCache.put(version.getFundVersionId(), versionTreeMap);
 
 
         return versionTreeMap;
@@ -580,7 +564,7 @@ public class LevelTreeCacheService {
             //projdeme všechny změny, které jsou změny ve stromu uzlů verze a smažeme cache verzí
             if (EventVersion.class.isAssignableFrom(event.getClass())) {
                 Integer changedVersionId = ((EventVersion) event).getVersionId();
-                ArrFindingAidVersion version = findingAidVersionRepository.findOne(changedVersionId);
+                ArrFundVersion version = fundVersionRepository.findOne(changedVersionId);
 
                 switch (event.getEventType()) {
                     case NODE_DELETE:
@@ -621,7 +605,7 @@ public class LevelTreeCacheService {
      *
      * @return id všech nodů ve verzi
      */
-    public Set<Integer> getAllNodeIdsByVersionAndParent(final ArrFindingAidVersion version, final Integer nodeId, Depth depth) {
+    public Set<Integer> getAllNodeIdsByVersionAndParent(final ArrFundVersion version, final Integer nodeId, Depth depth) {
         Assert.notNull(version);
 
         Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
@@ -664,7 +648,7 @@ public class LevelTreeCacheService {
      *
      * @return mapu id nodů a jejich rodičů
      */
-    public Map<Integer, TreeNodeClient> findParentsWithTitles(Set<Integer> nodeIds, ArrFindingAidVersion version) {
+    public Map<Integer, TreeNodeClient> findParentsWithTitles(Set<Integer> nodeIds, ArrFundVersion version) {
         Assert.notNull(nodeIds);
         Assert.notNull(version);
 
@@ -709,7 +693,7 @@ public class LevelTreeCacheService {
     private Map<Integer, TreeNodeClient> createNodesWithTitles(final Map<Integer, TreeNode> treeNodeMap,
                                                                @Nullable final Map<Integer, Map<String, TitleValue>> valuesMapParam,
                                                                final TreeNode subtreeRoot,
-                                                               final ArrFindingAidVersion version) {
+                                                               final ArrFundVersion version) {
         Assert.notNull(treeNodeMap);
         Assert.notNull(version);
 
@@ -727,7 +711,7 @@ public class LevelTreeCacheService {
         }
 
         ViewTitles viewTitles = configView
-                .getViewTitles(version.getRuleSet().getCode(), version.getFindingAid().getFindingAidId());
+                .getViewTitles(version.getRuleSet().getCode(), version.getFund().getFundId());
         Map<Integer, Map<String, TitleValue>> valuesMap = valuesMapParam;
         if (valuesMap == null) {
             valuesMap = createValuesMap(treeNodeMap, version, subtreeRoot);
@@ -898,11 +882,11 @@ public class LevelTreeCacheService {
      * @return hodnoty atributů pro uzly
      */
     private Map<Integer, Map<String, TitleValue>> createValuesMap(final Map<Integer, TreeNode> treeNodeMap,
-                                                                  final ArrFindingAidVersion version,
+                                                                  final ArrFundVersion version,
                                                                   final TreeNode subtreeRoot) {
 
         ViewTitles viewTitles = configView
-                .getViewTitles(version.getRuleSet().getCode(), version.getFindingAid().getFindingAidId());
+                .getViewTitles(version.getRuleSet().getCode(), version.getFund().getFundId());
         Set<RulDescItemType> descItemTypes = getDescriptionItemTypes(viewTitles);
         return createValuesMap(treeNodeMap, subtreeRoot, descItemTypes, version);
     }
@@ -910,7 +894,7 @@ public class LevelTreeCacheService {
     private Map<Integer, Map<String, TitleValue>> createValuesMap(Map<Integer, TreeNode> treeNodeMap,
                                                                   final TreeNode subtreeRoot,
                                                                   Set<RulDescItemType> descItemTypes,
-                                                                  ArrFindingAidVersion version) {
+                                                                  ArrFundVersion version) {
         Map<Integer, Map<String, TitleValue>> valueMap = new HashMap<>();
 
         if (descItemTypes.isEmpty()) {
@@ -1090,7 +1074,7 @@ public class LevelTreeCacheService {
      * @param nodeId
      * @param version
      */
-    synchronized private void actionDeleteLevel(final Integer nodeId, final ArrFindingAidVersion version) {
+    synchronized private void actionDeleteLevel(final Integer nodeId, final ArrFundVersion version) {
         Map<Integer, TreeNode> versionTreeMap = getVersionTreeCache(version);
 
 
@@ -1134,7 +1118,7 @@ public class LevelTreeCacheService {
      */
     synchronized private void actionAddLevel(final Integer newNodeId,
                                              final Integer staticId,
-                                             final ArrFindingAidVersion version,
+                                             final ArrFundVersion version,
                                              final EventType addLevelType) {
         Map<Integer, TreeNode> versionTreeMap = getVersionTreeCache(version);
         if (versionTreeMap != null) {
@@ -1186,7 +1170,7 @@ public class LevelTreeCacheService {
      */
     synchronized private void actionMoveLevel(final Integer staticId,
                                               final List<Integer> nodeIds,
-                                              final ArrFindingAidVersion version,
+                                              final ArrFundVersion version,
                                               final EventType moveLevelType) {
         if (CollectionUtils.isEmpty(nodeIds)) {
             return;
@@ -1320,7 +1304,7 @@ public class LevelTreeCacheService {
      * @return informace
      */
     public Collection<TreeNodeClient> getFaTreeNodes(final Integer versionId, final List<Integer> nodeIds) {
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        ArrFundVersion version = fundVersionRepository.findOne(versionId);
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(version);
         LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
 
@@ -1371,8 +1355,8 @@ public class LevelTreeCacheService {
         }
     }
 
-    public List<Integer> sortNodesByTreePosition(Set<Integer> nodeIds, ArrFindingAidVersion version) {
-        List<TreeNodeClient> nodes = getNodesByIds(nodeIds, version.getFindingAidVersionId());
+    public List<Integer> sortNodesByTreePosition(Set<Integer> nodeIds, ArrFundVersion version) {
+        List<TreeNodeClient> nodes = getNodesByIds(nodeIds, version.getFundVersionId());
 
         nodes.sort((node1, node2) -> {
             Integer[] referenceMark1 = node1.getReferenceMarkInt();

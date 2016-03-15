@@ -36,33 +36,33 @@ public class BulkActionController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    List<BulkActionVO> getBulkActions(final @PathVariable(value = "versionId") Integer findingAidVersionId,
+    List<BulkActionVO> getBulkActions(final @PathVariable(value = "versionId") Integer fundVersionId,
                                       final @PathVariable(value = "mandatory") Boolean mandatory) {
-        return factoryVo.createBulkActionList(bulkActionService.getBulkActions(findingAidVersionId, mandatory));
+        return factoryVo.createBulkActionList(bulkActionService.getBulkActions(fundVersionId, mandatory));
     }
 
     @RequestMapping(value = "/validate/{versionId}",
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    List<BulkActionVO> validate(final @PathVariable("versionId") Integer findingAidVersionId) {
-        return factoryVo.createBulkActionList(bulkActionService.runValidation(findingAidVersionId));
+    List<BulkActionVO> validate(final @PathVariable("versionId") Integer fundVersionId) {
+        return factoryVo.createBulkActionList(bulkActionService.runValidation(fundVersionId));
     }
 
     @RequestMapping(value = "/run/{versionId}/{code}",
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    BulkActionStateVO run(final @PathVariable("versionId") Integer findingAidVersionId, final @PathVariable("code") String code) {
+    BulkActionStateVO run(final @PathVariable("versionId") Integer fundVersionId, final @PathVariable("code") String code) {
         BulkActionConfig action = bulkActionService.getBulkAction(code);
-        return factoryVo.createBulkActionState(bulkActionService.run(action, findingAidVersionId));
+        return factoryVo.createBulkActionState(bulkActionService.run(action, fundVersionId));
     }
 
     @RequestMapping(value = "/states/{versionId}",
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    List<BulkActionStateVO> getBulkActionState(final @PathVariable("versionId") Integer findingAidVersionId) {
-        return factoryVo.createBulkActionStateList(bulkActionService.getBulkActionState(findingAidVersionId));
+    List<BulkActionStateVO> getBulkActionState(final @PathVariable("versionId") Integer fundVersionId) {
+        return factoryVo.createBulkActionStateList(bulkActionService.getBulkActionState(fundVersionId));
     }
 }

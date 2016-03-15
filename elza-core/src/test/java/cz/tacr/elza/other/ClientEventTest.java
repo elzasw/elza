@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.controller.AbstractControllerTest;
-import cz.tacr.elza.controller.vo.ArrFindingAidVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.service.IClientDataChangesService;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import cz.tacr.elza.service.eventnotification.events.EventId;
@@ -28,7 +28,7 @@ public class ClientEventTest extends AbstractControllerTest {
 
     @Test
     public void testEventPublish() {
-        ArrFindingAidVO test_publish = createFindingAid("test_publish");
+        ArrFundVO test_publish = createFund("test_publish");
 
 
         Collection<AbstractEventSimple> lastEvents = ((ClientDataChangesServiceTest) clientDataChangesService)
@@ -38,7 +38,7 @@ public class ClientEventTest extends AbstractControllerTest {
 
         EventId createFAevent = null;
         for (AbstractEventSimple lastEvent : lastEvents) {
-            if (lastEvent.getEventType().equals(EventType.FINDING_AID_CREATE)) {
+            if (lastEvent.getEventType().equals(EventType.FUND_CREATE)) {
                 createFAevent = (EventId) lastEvent;
                 break;
             }

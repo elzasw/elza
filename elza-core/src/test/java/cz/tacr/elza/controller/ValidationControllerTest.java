@@ -14,7 +14,7 @@ import org.springframework.util.Assert;
 public class ValidationControllerTest extends AbstractControllerTest {
 
     @Test
-    public void getFindingAidVersionsTest() {
+    public void getFundVersionsTest() {
         this.valid(new String[]{
                 "20.st.",
                 "1968",

@@ -18,8 +18,8 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
  * @since 27. 10. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "finding-aid", namespace = NamespaceInfo.NAMESPACE)
-public class FindingAid {
+@XmlType(name = "fund", namespace = NamespaceInfo.NAMESPACE)
+public class Fund {
 
     /** Název archivní pomůcky. */
     @XmlElement(name = "name", required = true)

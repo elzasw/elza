@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulDescItemType;
 
 
@@ -16,9 +16,9 @@ public interface DataRepositoryCustom {
 
     List<ArrData> findDescItemsByNodeIds(Set<Integer> nodeIds,
                                          Set<RulDescItemType> descItemTypes,
-                                         ArrFindingAidVersion version);
+                                         ArrFundVersion version);
 
     List<ArrData> findByDataIdsAndVersionFetchSpecification(Set<Integer> nodeIds,
             Set<RulDescItemType> descItemTypes,
-            ArrFindingAidVersion version);
+            ArrFundVersion version);
 }

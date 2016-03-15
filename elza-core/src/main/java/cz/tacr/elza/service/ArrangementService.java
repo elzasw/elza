@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -37,41 +39,11 @@ import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFaRegisterScope;
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ArrVersionConformity;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RulArrangementType;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
-import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FaRegisterScopeRepository;
-import cz.tacr.elza.repository.FindingAidRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVersion;
@@ -110,10 +82,10 @@ public class ArrangementService {
     private DescriptionItemService descriptionItemService;
 
     @Autowired
-    private FindingAidVersionRepository findingAidVersionRepository;
+    private FundVersionRepository fundVersionRepository;
 
     @Autowired
-    private FindingAidRepository findingAidRepository;
+    private FundRepository fundRepository;
 
     @Autowired
     private ChangeRepository changeRepository;
@@ -143,7 +115,7 @@ public class ArrangementService {
     private NodeConformityMissingRepository nodeConformityMissingRepository;
 
     @Autowired
-    private VersionConformityRepository findingAidVersionConformityInfoRepository;
+    private VersionConformityRepository fundVersionConformityInfoRepository;
 
     @Autowired
     private BulkActionRunRepository faBulkActionRepository;
@@ -155,52 +127,50 @@ public class ArrangementService {
     private DescItemFactory descItemFactory;
 
     @Autowired
-    private FaRegisterScopeRepository faRegisterRepository;
+    private FundRegisterScopeRepository faRegisterRepository;
 
     @Autowired
     private ScopeRepository scopeRepository;
 
     //TODO smazat závislost až bude DescItemService
     @Autowired
-    protected FaRegisterScopeRepository faRegisterScopeRepository;
+    protected FundRegisterScopeRepository fundRegisterScopeRepository;
 
     @Autowired
     private RegistryService registryService;
 
+    public ArrFund createFund(String name, RulRuleSet ruleSet, RulArrangementType arrangementType,
+                              ArrChange change, String uuid) {
+        ArrFund fund = new ArrFund();
+        fund.setCreateDate(LocalDateTime.now());
+        fund.setName(name);
 
-
-    public ArrFindingAid createFindingAid(String name, RulRuleSet ruleSet, RulArrangementType arrangementType,
-                                          ArrChange change, String uuid) {
-        ArrFindingAid findingAid = new ArrFindingAid();
-        findingAid.setCreateDate(LocalDateTime.now());
-        findingAid.setName(name);
-
-        findingAid = findingAidRepository.save(findingAid);
+        fund = fundRepository.save(fund);
 
         eventNotificationService
-                .publishEvent(EventFactory.createIdEvent(EventType.FINDING_AID_CREATE, findingAid.getFindingAidId()));
+                .publishEvent(EventFactory.createIdEvent(EventType.FUND_CREATE, fund.getFundId()));
 
         //        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
-        ArrLevel rootNode = createLevel(change, null, uuid);
-        createVersion(change, findingAid, arrangementType, ruleSet, rootNode);
+        ArrLevel rootLevel = createLevel(change, null, uuid);
+        createVersion(change, fund, arrangementType, ruleSet, rootLevel.getNode());
 
-        return findingAid;
+        return fund;
     }
 
     /**
-     * @param findingAid
+     * @param fund
      * @param scopes
      * @return Upravená archivní pomůcka
      */
     @Transactional
-    public ArrFindingAid updateFindingAid(final ArrFindingAid findingAid, final List<RegScope> scopes) {
-        Assert.notNull(findingAid);
-        ArrFindingAid originalFindingAid = findingAidRepository.findOne(findingAid.getFindingAidId());
-        Assert.notNull(originalFindingAid);
-        originalFindingAid.setName(findingAid.getName());
+    public ArrFund updateFund(final ArrFund fund, final List<RegScope> scopes) {
+        Assert.notNull(fund);
+        ArrFund originalFund = fundRepository.findOne(fund.getFundId());
+        Assert.notNull(originalFund);
+        originalFund.setName(fund.getName());
 
-        findingAidRepository.save(originalFindingAid);
+        fundRepository.save(originalFund);
 
         for (RegScope scope : scopes) {
             if (scope.getScopeId() == null) {
@@ -209,32 +179,32 @@ public class ArrangementService {
             }
         }
 
-        synchRegScopes(originalFindingAid, scopes);
+        synchRegScopes(originalFund, scopes);
 
         eventNotificationService
-                .publishEvent(EventFactory.createIdEvent(EventType.FINDING_AID_UPDATE, originalFindingAid.getFindingAidId()));
+                .publishEvent(EventFactory.createIdEvent(EventType.FUND_UPDATE, originalFund.getFundId()));
 
-        return originalFindingAid;
+        return originalFund;
     }
 
     /**
      * Pokud se jedná o typ osoby group, dojde k synchronizaci identifikátorů osoby. CRUD.
      */
-    private void synchRegScopes(final ArrFindingAid findingAid,
+    private void synchRegScopes(final ArrFund fund,
                                 final Collection<RegScope> newRegScopes) {
-        Assert.notNull(findingAid);
+        Assert.notNull(fund);
 
-        Map<Integer, ArrFaRegisterScope> dbIdentifiersMap = Collections.EMPTY_MAP; /// Redundantní initializer
-        dbIdentifiersMap = ElzaTools.createEntityMap(faRegisterRepository.findByFindingAid(findingAid), i -> i.getScope().getScopeId());
-        Set<ArrFaRegisterScope> removeScopes = new HashSet<>(dbIdentifiersMap.values());
+        Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = Collections.EMPTY_MAP; /// Redundantní initializer
+        dbIdentifiersMap = ElzaTools.createEntityMap(faRegisterRepository.findByFund(fund), i -> i.getScope().getScopeId());
+        Set<ArrFundRegisterScope> removeScopes = new HashSet<>(dbIdentifiersMap.values());
 
 
         for (RegScope newScope : newRegScopes) {
-            ArrFaRegisterScope oldScope = dbIdentifiersMap.get(newScope.getScopeId());
+            ArrFundRegisterScope oldScope = dbIdentifiersMap.get(newScope.getScopeId());
 
             if (oldScope == null) {
-                oldScope = new ArrFaRegisterScope();
-                oldScope.setFindingAid(findingAid);
+                oldScope = new ArrFundRegisterScope();
+                oldScope.setFund(fund);
                 oldScope.setScope(newScope);
             } else {
                 removeScopes.remove(oldScope);
@@ -255,22 +225,23 @@ public class ArrangementService {
      * @param ruleSet         id pravidel podle kterých se vytváří popis
      * @return nová archivní pomůcka
      */
-    public ArrFindingAid createFindingAidWithScenario(String name,
-                                                      RulRuleSet ruleSet,
-                                                      RulArrangementType arrangementType) {
+    public ArrFund createFundWithScenario(String name,
+                                          RulRuleSet ruleSet,
+                                          RulArrangementType arrangementType) {
         ArrChange change = createChange();
 
-        ArrFindingAid findingAid = createFindingAid(name, ruleSet, arrangementType, change, null);
+        ArrFund fund = createFund(name, ruleSet, arrangementType, change, null);
 
         List<RegScope> defaultScopes = registryService.findDefaultScopes();
         if (!defaultScopes.isEmpty()) {
-            addScopeToFindingAid(findingAid, defaultScopes.get(0));
+            addScopeToFund(fund, defaultScopes.get(0));
         }
 
-        ArrFindingAidVersion version = findingAidVersionRepository
-                .findByFindingAidIdAndLockChangeIsNull(findingAid.getFindingAidId());
+        ArrFundVersion version = fundVersionRepository
+                .findByFundIdAndLockChangeIsNull(fund.getFundId());
 
-        ArrLevel rootLevel = version.getRootLevel();
+        ArrNode rootNode = version.getRootNode();
+        ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
 
         // vyhledání scénářů
         List<ScenarioOfNewLevel> scenarioOfNewLevels = descriptionItemService.getDescriptionItemTypesForNewLevel(
@@ -288,26 +259,26 @@ public class ArrangementService {
             logger.error("Při založení AP bylo nalezeno více scénařů (" + scenarioOfNewLevels.size() + ")");
         }
 
-        ruleService.conformityInfo(version.getFindingAidVersionId(), Arrays.asList(rootLevel.getNode().getNodeId()),
+        ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(rootLevel.getNode().getNodeId()),
                 NodeTypeOperation.CREATE_NODE, null, null, null);
 
-        return findingAid;
+        return fund;
     }
 
 
-    public ArrFindingAidVersion createVersion(final ArrChange createChange,
-                                              final ArrFindingAid findingAid,
-                                              final RulArrangementType arrangementType,
-                                              final RulRuleSet ruleSet,
-                                              final ArrLevel rootNode) {
-        ArrFindingAidVersion version = new ArrFindingAidVersion();
+    public ArrFundVersion createVersion(final ArrChange createChange,
+                                        final ArrFund fund,
+                                        final RulArrangementType arrangementType,
+                                        final RulRuleSet ruleSet,
+                                        final ArrNode rootNode) {
+        ArrFundVersion version = new ArrFundVersion();
         version.setCreateChange(createChange);
         version.setArrangementType(arrangementType);
-        version.setFindingAid(findingAid);
+        version.setFund(fund);
         version.setRuleSet(ruleSet);
-        version.setRootLevel(rootNode);
+        version.setRootNode(rootNode);
         version.setLastChange(createChange);
-        return findingAidVersionRepository.save(version);
+        return fundVersionRepository.save(version);
     }
 
     public ArrLevel createLevel(final ArrChange createChange, final ArrNode parentNode, final String uuid) {
@@ -368,21 +339,23 @@ public class ArrangementService {
     /**
      * Smaže archivní pomůcku se zadaným id. Maže kompletní strukturu se všemi závislostmi.
      *
-     * @param findingAidId id archivní pomůcky
+     * @param fundId id archivní pomůcky
      */
-    public void deleteFindingAid(final Integer findingAidId) {
-        Assert.notNull(findingAidId);
+    public void deleteFund(final Integer fundId) {
+        Assert.notNull(fundId);
 
-        if (!findingAidRepository.exists(findingAidId)) {
+        if (!fundRepository.exists(fundId)) {
             return;
         }
 
-        ArrFindingAidVersion version = getOpenVersionByFindingAidId(findingAidId);
+        ArrFundVersion version = getOpenVersionByFundId(fundId);
 
-        ArrLevel rootLevel = version.getRootLevel();
+
+        ArrNode rootNode = version.getRootNode();
+        ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
         ArrNode node = rootLevel.getNode();
 
-        findingAidVersionRepository.findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId)
+        fundVersionRepository.findVersionsByFundIdOrderByCreateDateAsc(fundId)
                 .forEach(deleteVersion ->
                                 deleteVersion(deleteVersion)
                 );
@@ -391,15 +364,15 @@ public class ArrangementService {
         nodeRepository.delete(node);
 
 
-        packetRepository.findByFindingAid(version.getFindingAid()).forEach(packet -> packetRepository.delete(packet));
-        ArrFindingAid findingAid = findingAidRepository.findOne(findingAidId);
-        faRegisterRepository.findByFindingAid(findingAid).forEach(
+        packetRepository.findByFund(version.getFund()).forEach(packet -> packetRepository.delete(packet));
+        ArrFund fund = fundRepository.findOne(fundId);
+        faRegisterRepository.findByFund(fund).forEach(
                 faScope -> faRegisterRepository.delete(faScope)
         );
 
 
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FINDING_AID_DELETE, findingAidId));
-        findingAidRepository.delete(findingAidId);
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FUND_DELETE, fundId));
+        fundRepository.delete(fundId);
     }
 
 
@@ -413,25 +386,25 @@ public class ArrangementService {
      * @return nová verze archivní pomůcky
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
      */
-    public ArrFindingAidVersion approveVersion(final ArrFindingAidVersion version,
-                                               final RulArrangementType arrangementType,
-                                               final RulRuleSet ruleSet) {
+    public ArrFundVersion approveVersion(final ArrFundVersion version,
+                                         final RulArrangementType arrangementType,
+                                         final RulRuleSet ruleSet) {
         Assert.notNull(version);
         Assert.notNull(arrangementType);
         Assert.notNull(ruleSet);
 
-        ArrFindingAid findingAid = version.getFindingAid();
+        ArrFund fund = version.getFund();
 
-        if (!findingAidRepository.exists(findingAid.getFindingAidId())) {
+        if (!fundRepository.exists(fund.getFundId())) {
             throw new ConcurrentUpdateException(
-                    "Archivní pomůcka s identifikátorem " + findingAid.getFindingAidId() + " již neexistuje.");
+                    "Archivní pomůcka s identifikátorem " + fund.getFundId() + " již neexistuje.");
         }
 
         if (version.getLockChange() != null) {
             throw new ConcurrentUpdateException("Verze byla již uzavřena");
         }
 
-        List<BulkActionConfig> bulkActionConfigs = bulkActionService.runValidation(version.getFindingAidVersionId());
+        List<BulkActionConfig> bulkActionConfigs = bulkActionService.runValidation(version.getFundVersionId());
         if (bulkActionConfigs.size() > 0) {
             List<String> codes = new LinkedList<>();
 
@@ -445,41 +418,41 @@ public class ArrangementService {
 
         ArrChange change = createChange();
         version.setLockChange(change);
-        findingAidVersionRepository.save(version);
+        fundVersionRepository.save(version);
 
 
         Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
-        ArrFindingAidVersion newVersion = createVersion(change, findingAid, arrangementType, ruleSet, version.getRootLevel());
+        ArrFundVersion newVersion = createVersion(change, fund, arrangementType, ruleSet, version.getRootNode());
         ruleService.conformityInfoAll(newVersion);
 
         eventNotificationService.publishEvent(
-                new EventVersion(EventType.APPROVE_VERSION, version.getFindingAidVersionId()));
+                new EventVersion(EventType.APPROVE_VERSION, version.getFundVersionId()));
 
         return newVersion;
     }
 
-    private void deleteVersion(ArrFindingAidVersion version) {
+    private void deleteVersion(ArrFundVersion version) {
         Assert.notNull(version);
 
         updateConformityInfoService.terminateWorkerInVersionAndWait(version);
 
-        bulkActionService.terminateBulkActions(version.getFindingAidVersionId());
+        bulkActionService.terminateBulkActions(version.getFundVersionId());
 
-        faBulkActionRepository.findByFaVersionId(version.getFindingAidVersionId()).forEach(action ->
+        faBulkActionRepository.findByFundVersionId(version.getFundVersionId()).forEach(action ->
                         faBulkActionRepository.delete(action)
         );
 
-        nodeConformityInfoRepository.findByFaVersion(version).forEach(conformityInfo -> {
+        nodeConformityInfoRepository.findByFundVersion(version).forEach(conformityInfo -> {
             deleteConformityInfo(conformityInfo);
         });
 
-        ArrVersionConformity versionConformityInfo = findingAidVersionConformityInfoRepository.findByVersion(version);
+        ArrVersionConformity versionConformityInfo = fundVersionConformityInfoRepository.findByFundVersion(version);
         if (versionConformityInfo != null) {
-            findingAidVersionConformityInfoRepository.delete(versionConformityInfo);
+            fundVersionConformityInfoRepository.delete(versionConformityInfo);
         }
 
-        findingAidVersionRepository.delete(version);
+        fundVersionRepository.delete(version);
     }
 
     private void deleteConformityInfo(ArrNodeConformity conformityInfo) {
@@ -536,15 +509,15 @@ public class ArrangementService {
     /**
      * Načte neuzavřenou verzi archivní pomůcky.
      *
-     * @param findingAidId id archivní pomůcky
+     * @param fundId id archivní pomůcky
      * @return verze
      */
-    public ArrFindingAidVersion getOpenVersionByFindingAidId(@RequestParam(value = "findingAidId") Integer findingAidId) {
-        Assert.notNull(findingAidId);
-        ArrFindingAidVersion faVersion = findingAidVersionRepository
-                .findByFindingAidIdAndLockChangeIsNull(findingAidId);
+    public ArrFundVersion getOpenVersionByFundId(@RequestParam(value = "fundId") Integer fundId) {
+        Assert.notNull(fundId);
+        ArrFundVersion fundVersion = fundVersionRepository
+                .findByFundIdAndLockChangeIsNull(fundId);
 
-        return faVersion;
+        return fundVersion;
     }
 
     public ArrLevel deleteLevelCascade(final ArrLevel level, final ArrChange deleteChange) {
@@ -617,7 +590,7 @@ public class ArrangementService {
      * @param node    uzel
      * @return seznam hodnot atributů
      */
-    public List<ArrDescItem> getDescItems(final ArrFindingAidVersion version, final ArrNode node) {
+    public List<ArrDescItem> getDescItems(final ArrFundVersion version, final ArrNode node) {
 
         List<ArrDescItem> itemList;
 
@@ -639,7 +612,7 @@ public class ArrangementService {
      * @param level        uzel, na který nastavíme hodnoty ze staršího bratra
      * @return vytvořené hodnoty
      */
-    public List<ArrDescItem> copyOlderSiblingAttribute(final ArrFindingAidVersion version,
+    public List<ArrDescItem> copyOlderSiblingAttribute(final ArrFundVersion version,
                                                        final RulDescItemType descItemType,
                                                        final ArrLevel level) {
         Assert.notNull(version);
@@ -686,7 +659,7 @@ public class ArrangementService {
      * @param version verze
      * @return true pokud patří uzel do verze, jinak false
      */
-    public boolean validLevelInVersion(final ArrLevel level, final ArrFindingAidVersion version) {
+    public boolean validLevelInVersion(final ArrLevel level, final ArrFundVersion version) {
            Assert.notNull(level);
            Assert.notNull(version);
            Integer lockChange = version.getLockChange() == null
@@ -706,29 +679,29 @@ public class ArrangementService {
      * Uložení poslední uživatelské změny nad AP k verzi AP
      *
      * @param change    ukládaná změna
-     * @param versionId identifikátor verze AP
+     * @param fundVersionId identifikátor verze AP
      * @return aktuální verze AP
      */
-    public ArrFindingAidVersion saveLastChangeFaVersion(final ArrChange change, final Integer versionId) {
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
-        return saveLastChangeFaVersion(change, version);
+    public ArrFundVersion saveLastChangeFundVersion(final ArrChange change, final Integer fundVersionId) {
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        return saveLastChangeFundVersion(change, version);
     }
 
     /**
      * Uložení poslední uživatelské změny nad AP k verzi AP
      *
      * @param change  ukládaná změna
-     * @param version verze AP
+     * @param fundVersion verze AP
      * @return aktuální verze AP
      */
-    public ArrFindingAidVersion saveLastChangeFaVersion(final ArrChange change, final ArrFindingAidVersion version) {
+    public ArrFundVersion saveLastChangeFundVersion(final ArrChange change, final ArrFundVersion fundVersion) {
 
         if (!bulkActionService.existsChangeInWorkers(change)) {
-            version.setLastChange(change);
-            return findingAidVersionRepository.save(version);
+            fundVersion.setLastChange(change);
+            return fundVersionRepository.save(fundVersion);
         }
 
-        return version;
+        return fundVersion;
 
     }
 
@@ -742,7 +715,7 @@ public class ArrangementService {
      *
      * @return seznam id uzlů které vyhovují parametrům
      */
-    public Set<Integer> findNodeIdsByFulltext(ArrFindingAidVersion version, Integer nodeId, String searchValue, Depth depth) {
+    public Set<Integer> findNodeIdsByFulltext(ArrFundVersion version, Integer nodeId, String searchValue, Depth depth) {
         Assert.notNull(version);
         Assert.notNull(depth);
 
@@ -762,7 +735,7 @@ public class ArrangementService {
      *
      * @param version verze
      */
-    public void isValidAndOpenVersion(final ArrFindingAidVersion version) {
+    public void isValidAndOpenVersion(final ArrFundVersion version) {
         Assert.notNull(version);
         if (version == null) {
             throw new IllegalArgumentException("Verze neexistuje");
@@ -780,9 +753,9 @@ public class ArrangementService {
      * @param version  verze stromu, do které patří uzel
      * @return level nodu
      */
-    public ArrLevel lockNode(final ArrNode lockNode, final ArrFindingAidVersion version) {
+    public ArrLevel lockNode(final ArrNode lockNode, final ArrFundVersion version) {
         ArrLevel lockLevel = levelRepository
-                .findNodeInRootTreeByNodeId(lockNode, version.getRootLevel().getNode(), version.getLockChange());
+                .findNodeInRootTreeByNodeId(lockNode, version.getRootNode(), version.getLockChange());
         Assert.notNull(lockLevel);
         ArrNode staticNodeDb = lockLevel.getNode();
 
@@ -796,22 +769,22 @@ public class ArrangementService {
     /**
      * Načte počet chyb verze archivní pomůcky.
      *
-     * @param findingAidVersion verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      *
      * @return počet chyb
      */
-    public Integer getVersionErrorCount(ArrFindingAidVersion findingAidVersion) {
-        return nodeConformityInfoRepository.findCountByVersionAndState(findingAidVersion, State.ERR);
+    public Integer getVersionErrorCount(ArrFundVersion fundVersion) {
+        return nodeConformityInfoRepository.findCountByFundVersionAndState(fundVersion, State.ERR);
     }
 
-    public List<ArrNodeConformity> findConformityErrors(ArrFindingAidVersion findingAidVersion) {
-        List<ArrNodeConformity> conformity = nodeConformityInfoRepository.findFirst20ByFaVersionAndStateOrderByNodeConformityIdAsc(findingAidVersion, State.ERR);
+    public List<ArrNodeConformity> findConformityErrors(ArrFundVersion fundVersion) {
+        List<ArrNodeConformity> conformity = nodeConformityInfoRepository.findFirst20ByFundVersionAndStateOrderByNodeConformityIdAsc(fundVersion, State.ERR);
 
         if (conformity.isEmpty()) {
             return new ArrayList<>();
         }
 
-        return nodeConformityInfoRepository.fetchErrorAndMissingConformity(conformity, findingAidVersion, State.ERR);
+        return nodeConformityInfoRepository.fetchErrorAndMissingConformity(conformity, fundVersion, State.ERR);
     }
 
 
@@ -823,7 +796,7 @@ public class ArrangementService {
      *
      * @return seznam id nodů a jejich rodičů
      */
-    public List<TreeNodeFulltext> createTreeNodeFulltextList(Set<Integer> nodeIds, ArrFindingAidVersion version) {
+    public List<TreeNodeFulltext> createTreeNodeFulltextList(Set<Integer> nodeIds, ArrFundVersion version) {
         Assert.notNull(nodeIds);
         Assert.notNull(version);
 
@@ -844,7 +817,7 @@ public class ArrangementService {
         return result;
     }
 
-    public List<VersionValidationItem> createVersionValidationItems(List<ArrNodeConformity> validationErrors, ArrFindingAidVersion version) {
+    public List<VersionValidationItem> createVersionValidationItems(List<ArrNodeConformity> validationErrors, ArrFundVersion version) {
         Map<Integer, String> validations = new LinkedHashMap<Integer, String>();
         for (ArrNodeConformity conformity : validationErrors) {
             String description = validations.get(conformity.getNode().getNodeId());
@@ -883,21 +856,21 @@ public class ArrangementService {
         return versionValidationItems;
     }
 
-    public ArrFaRegisterScope addScopeToFindingAid(ArrFindingAid findingAid, RegScope scope) {
-        Assert.notNull(findingAid);
+    public ArrFundRegisterScope addScopeToFund(ArrFund fund, RegScope scope) {
+        Assert.notNull(fund);
         Assert.notNull(scope);
 
-        ArrFaRegisterScope faRegisterScope = faRegisterScopeRepository.findByFindingAidAndScope(findingAid, scope);
+        ArrFundRegisterScope faRegisterScope = fundRegisterScopeRepository.findByFundAndScope(fund, scope);
         if (faRegisterScope != null) {
-            logger.info("Vazbe mezi archivní pomůckou " + findingAid + " a třídou rejstříku " + scope + " již existuje.");
+            logger.info("Vazbe mezi archivní pomůckou " + fund + " a třídou rejstříku " + scope + " již existuje.");
             return faRegisterScope;
         }
 
-        faRegisterScope = new ArrFaRegisterScope();
-        faRegisterScope.setFindingAid(findingAid);
+        faRegisterScope = new ArrFundRegisterScope();
+        faRegisterScope.setFund(fund);
         faRegisterScope.setScope(scope);
 
-        return faRegisterScopeRepository.save(faRegisterScope);
+        return fundRegisterScopeRepository.save(faRegisterScope);
     }
 
     /**
@@ -908,7 +881,7 @@ public class ArrangementService {
      * @param around    velikost okolí
      * @return  okolní uzly (včetně původního)
      */
-    public List<ArrNode> findSiblingsAroundOfNode(final ArrFindingAidVersion version, final ArrNode node, final Integer around) {
+    public List<ArrNode> findSiblingsAroundOfNode(final ArrFundVersion version, final ArrNode node, final Integer around) {
         List<ArrNode> siblings = nodeRepository.findNodesByDirection(node, version, RelatedNodeDirection.ALL_SIBLINGS);
 
         if (around <= 0) {

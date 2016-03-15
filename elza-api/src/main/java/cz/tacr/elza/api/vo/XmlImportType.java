@@ -12,5 +12,5 @@ public enum XmlImportType {
 
     RECORD,
 
-    FINDING_AID;
+    FUND;
 }

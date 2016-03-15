@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.bulkaction.generator.BulkAction;
 import cz.tacr.elza.bulkaction.generator.CleanDescriptionItemBulkAction;
-import cz.tacr.elza.bulkaction.generator.FindingAidValidationBulkAction;
+import cz.tacr.elza.bulkaction.generator.FundValidationBulkAction;
 import cz.tacr.elza.bulkaction.generator.SerialNumberBulkAction;
 import cz.tacr.elza.bulkaction.generator.UnitIdBulkAction;
 
@@ -42,8 +42,8 @@ public class BulkActionFactory {
             case CleanDescriptionItemBulkAction.TYPE:
                 return new CleanDescriptionItemBulkAction();
 
-            case FindingAidValidationBulkAction.TYPE:
-                return new FindingAidValidationBulkAction();
+            case FundValidationBulkAction.TYPE:
+                return new FundValidationBulkAction();
 
             default:
                 throw new IllegalStateException("Hromadna akce " + code + " neexistuje");

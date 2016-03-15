@@ -10,7 +10,7 @@ import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -35,7 +35,7 @@ public class ScenarioOfNewLevelRules extends Rules {
 
     public synchronized List<ScenarioOfNewLevel> execute(final ArrLevel level,
                                                          final DirectionLevel directionLevel,
-                                                         final ArrFindingAidVersion version)
+                                                         final ArrFundVersion version)
             throws Exception {
 
         NewLevelApproaches newLevelApproaches = new NewLevelApproaches();

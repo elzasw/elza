@@ -25,8 +25,8 @@ import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrChangeVO;
-import cz.tacr.elza.controller.vo.ArrFindingAidVO;
-import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.BulkActionStateVO;
@@ -97,8 +97,8 @@ import cz.tacr.elza.domain.ArrDescItemString;
 import cz.tacr.elza.domain.ArrDescItemText;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrDescItemUnitid;
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
@@ -649,9 +649,9 @@ public class ConfigMapperConfiguration {
                             descItemConstraintVO
                                     .setDescItemSpecId(descItemConstraint.getDescItemSpec().getDescItemSpecId());
                         }
-                        if (descItemConstraint.getVersion() != null) {
+                        if (descItemConstraint.getFundVersion() != null) {
                             descItemConstraintVO
-                                    .setFindingAidVersionId(descItemConstraint.getVersion().getFindingAidVersionId());
+                                    .setFundVersionId(descItemConstraint.getFundVersion().getFundVersionId());
                         }
                     }
                 }).byDefault().register();
@@ -700,9 +700,9 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(ScenarioOfNewLevel.class, ScenarioOfNewLevelVO.class).byDefault().register();
 
-        mapperFactory.classMap(ArrFindingAid.class, ArrFindingAidVO.class).byDefault().field("findingAidId", "id").register();
-        mapperFactory.classMap(ArrFindingAidVersion.class, ArrFindingAidVersionVO.class).byDefault().field(
-                "findingAidVersionId", "id").
+        mapperFactory.classMap(ArrFund.class, ArrFundVO.class).byDefault().field("fundId", "id").register();
+        mapperFactory.classMap(ArrFundVersion.class, ArrFundVersionVO.class).byDefault().field(
+                "fundVersionId", "id").
                 exclude("arrangementType").register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
 

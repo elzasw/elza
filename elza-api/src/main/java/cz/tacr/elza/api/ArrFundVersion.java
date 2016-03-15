@@ -10,20 +10,20 @@ import java.io.Serializable;
  * 
  * @author vavrejn
  *
- * @param <FA> {@link ArrFindingAid}
+ * @param <FA> {@link ArrFund}
  * @param <FC> {@link ArrChange}
- * @param <FL> {@link ArrLevel}
+ * @param <FN> {@link ArrNode}
  * @param <AT> {@link RulArrangementType}
  * @param <RS> {@link RulRuleSet}
  */
-public interface ArrFindingAidVersion<FA extends ArrFindingAid, FC extends ArrChange, FL extends ArrLevel, AT extends RulArrangementType, RS extends RulRuleSet>
+public interface ArrFundVersion<FA extends ArrFund, FC extends ArrChange, FN extends ArrNode, AT extends RulArrangementType, RS extends RulRuleSet>
         extends
             Versionable,
             Serializable {
 
-    Integer getFindingAidVersionId();
+    Integer getFundVersionId();
 
-    void setFindingAidVersionId(Integer versionId);
+    void setFundVersionId(Integer fundVersionId);
 
     /**
      * @return číslo změny vytvoření pomůcky.
@@ -48,22 +48,22 @@ public interface ArrFindingAidVersion<FA extends ArrFindingAid, FC extends ArrCh
     /**
      * @return odkaz na root uzel struktury archivního popisu.
      */
-    FL getRootLevel();
+    FN getRootNode();
 
     /**
      * @param rootNode odkaz na root uzel struktury archivního popisu .
      */
-    void setRootLevel(FL rootNode);
+    void setRootNode(FN rootNode);
 
     /**
      * @return identifikátor archívní pomůcky.
      */
-    FA getFindingAid();
+    FA getFund();
 
     /**
-     * @param findingAid identifikátor archívní pomůcky.
+     * @param fund identifikátor archívní pomůcky.
      */
-    void setFindingAid(FA findingAid);
+    void setFund(FA fund);
 
     /**
      * @return odkaz na pravidla výstupu.
@@ -91,8 +91,8 @@ public interface ArrFindingAidVersion<FA extends ArrFindingAid, FC extends ArrCh
     FC getLastChange();
 
     /**
-     * @param change poslední uživatelská změna nad verzí AP
+     * @param lastChange poslední uživatelská změna nad verzí AP
      */
-    void setLastChange(FC change);
+    void setLastChange(FC lastChange);
 
 }

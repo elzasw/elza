@@ -11,7 +11,7 @@ import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
@@ -45,7 +45,7 @@ public class DescItemTypesRules extends Rules {
      */
     // TODO: je nutné používat synchronized?
     public synchronized List<RulDescItemTypeExt> execute(final ArrLevel level,
-                                                         final ArrFindingAidVersion version,
+                                                         final ArrFundVersion version,
                                                          final List<RulDescItemTypeExt> rulDescItemTypeExtList,
                                                          final Set<String> strategies)
             throws Exception

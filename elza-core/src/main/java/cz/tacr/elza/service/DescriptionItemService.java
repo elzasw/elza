@@ -8,20 +8,14 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.vo.NodeTypeOperation;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
@@ -30,7 +24,7 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -57,7 +51,7 @@ public class DescriptionItemService {
     private DescItemRepository descItemRepository;
 
     @Autowired
-    private FindingAidVersionRepository findingAidVersionRepository;
+    private FundVersionRepository fundVersionRepository;
 
     @Autowired
     private DataRepository dataRepository;
@@ -86,10 +80,10 @@ public class DescriptionItemService {
     /**
      * Kontrola otevřené verze.
      *
-     * @param version verze
+     * @param fundVersion verze
      */
-    private void checkFindingAidVersionLock(final ArrFindingAidVersion version) {
-        if (version.getLockChange() != null) {
+    private void checkFundVersionLock(final ArrFundVersion fundVersion) {
+        if (fundVersion.getLockChange() != null) {
             throw new IllegalArgumentException("Nelze provést verzovanou změnu v uzavřené verzi.");
         }
     }
@@ -114,18 +108,18 @@ public class DescriptionItemService {
      *
      * @param descItemObjectId    identifikátor hodnoty atributu
      * @param nodeVersion         verze uzlu (optimistické zámky)
-     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @param fundVersionId identifikátor verze archivní pomůcky
      * @return smazaná hodnota atributu
      */
     public ArrDescItem deleteDescriptionItem(final Integer descItemObjectId,
                                              final Integer nodeVersion,
-                                             final Integer findingAidVersionId) {
+                                             final Integer fundVersionId) {
         Assert.notNull(descItemObjectId);
         Assert.notNull(nodeVersion);
-        Assert.notNull(findingAidVersionId);
+        Assert.notNull(fundVersionId);
 
         ArrChange change = arrangementService.createChange();
-        ArrFindingAidVersion findingAidVersion = findingAidVersionRepository.findOne(findingAidVersionId);
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemObjectId);
 
         if (descItems.size() > 1) {
@@ -140,13 +134,13 @@ public class DescriptionItemService {
         // uložení uzlu (kontrola optimistických zámků)
         saveNode(descItem.getNode());
 
-        ArrDescItem descItemDeleted = deleteDescriptionItem(descItem, findingAidVersion, change, true);
+        ArrDescItem descItemDeleted = deleteDescriptionItem(descItem, fundVersion, change, true);
 
         // uložení poslední uživatelské změny nad AP k verzi AP
-        arrangementService.saveLastChangeFaVersion(change, findingAidVersion);
+        arrangementService.saveLastChangeFundVersion(change, fundVersion);
 
         // validace uzlu
-        ruleService.conformityInfo(findingAidVersionId, Arrays.asList(descItem.getNode().getNodeId()),
+        ruleService.conformityInfo(fundVersionId, Arrays.asList(descItem.getNode().getNodeId()),
                 NodeTypeOperation.SAVE_DESC_ITEM, null, null, Arrays.asList(descItem));
 
         return descItemDeleted;
@@ -158,22 +152,22 @@ public class DescriptionItemService {
      * - s kontrolou verze uzlu
      * - se spuštěním validace uzlu
      *
-     * @param findingAidVersionId   identifikátor verze archivní pomůcky
+     * @param fundVersionId   identifikátor verze archivní pomůcky
      * @param nodeId                identifikátor uzlu
      * @param nodeVersion           verze uzlu (optimistické zámky)
      * @param descItemTypeId        identifikátor typu hodnoty atributu
      * @return  upravený uzel
      */
-    public ArrNode deleteDescriptionItemsByType(final Integer findingAidVersionId,
+    public ArrNode deleteDescriptionItemsByType(final Integer fundVersionId,
                                                 final Integer nodeId,
                                                 final Integer nodeVersion,
                                                 final Integer descItemTypeId) {
 
         ArrChange change = arrangementService.createChange();
-        ArrFindingAidVersion findingAidVersion = findingAidVersionRepository.findOne(findingAidVersionId);
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
 
-        Assert.notNull(findingAidVersion, "Verze archivní pomůcky neexistuje");
+        Assert.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
         Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         ArrNode node = nodeRepository.findOne(nodeId);
@@ -190,14 +184,14 @@ public class DescriptionItemService {
 
         List<ArrDescItem> descItemsDeleted = new ArrayList<>(descItems.size());
         for (ArrDescItem descItem : descItems) {
-            descItemsDeleted.add(deleteDescriptionItem(descItem, findingAidVersion, change, false));
+            descItemsDeleted.add(deleteDescriptionItem(descItem, fundVersion, change, false));
         }
 
         // uložení poslední uživatelské změny nad AP k verzi AP
-        arrangementService.saveLastChangeFaVersion(change, findingAidVersion);
+        arrangementService.saveLastChangeFundVersion(change, fundVersion);
 
         // validace uzlu
-        ruleService.conformityInfo(findingAidVersionId, Arrays.asList(node.getNodeId()),
+        ruleService.conformityInfo(fundVersionId, Arrays.asList(node.getNodeId()),
                 NodeTypeOperation.SAVE_DESC_ITEM, null, null, descItemsDeleted);
 
         return node;
@@ -211,19 +205,19 @@ public class DescriptionItemService {
      * @param descItem              hodnota atributu
      * @param nodeId                identifikátor uzlu
      * @param nodeVersion           verze uzlu (optimistické zámky)
-     * @param findingAidVersionId   identifikátor verze archivní pomůcky
+     * @param fundVersionId   identifikátor verze archivní pomůcky
      * @return vytvořená hodnota atributu
      */
     public ArrDescItem createDescriptionItem(final ArrDescItem descItem,
                                              final Integer nodeId,
                                              final Integer nodeVersion,
-                                             final Integer findingAidVersionId) {
+                                             final Integer fundVersionId) {
         Assert.notNull(descItem);
         Assert.notNull(nodeId);
         Assert.notNull(nodeVersion);
-        Assert.notNull(findingAidVersionId);
+        Assert.notNull(fundVersionId);
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(findingAidVersionId);
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         ArrNode node = nodeRepository.findOne(nodeId);
         Assert.notNull(node);
@@ -246,7 +240,7 @@ public class DescriptionItemService {
      */
     public ArrDescItem createDescriptionItem(final ArrDescItem descItem,
                                              final ArrNode node,
-                                             final ArrFindingAidVersion version,
+                                             final ArrFundVersion version,
                                              @Nullable final ArrChange createChange) {
 
         ArrChange change = createChange == null ? arrangementService.createChange() : createChange;
@@ -259,10 +253,10 @@ public class DescriptionItemService {
         ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, version, change);
 
         // uložení poslední uživatelské změny nad AP k verzi AP
-        arrangementService.saveLastChangeFaVersion(change, version.getFindingAidVersionId());
+        arrangementService.saveLastChangeFundVersion(change, version.getFundVersionId());
 
         // validace uzlu
-        ruleService.conformityInfo(version.getFindingAidVersionId(), Arrays.asList(descItem.getNode().getNodeId()),
+        ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(descItem.getNode().getNodeId()),
                 NodeTypeOperation.SAVE_DESC_ITEM, Arrays.asList(descItem), null, null);
 
         // sockety
@@ -280,14 +274,14 @@ public class DescriptionItemService {
      * @return vytvořená hodnota atributu
      */
     public ArrDescItem createDescriptionItemWithData(final ArrDescItem descItem,
-                                                     final ArrFindingAidVersion version,
+                                                     final ArrFundVersion version,
                                                      final ArrChange change) {
         Assert.notNull(descItem);
         Assert.notNull(version);
         Assert.notNull(change);
 
         // pro vytváření musí být verze otevřená
-        checkFindingAidVersionLock(version);
+        checkFundVersionLock(version);
 
         // kontrola validity typu a specifikace
         checkValidTypeAndSpec(descItem);
@@ -360,7 +354,7 @@ public class DescriptionItemService {
      * @return smazaná hodnota atributu
      */
     public ArrDescItem deleteDescriptionItem(final ArrDescItem descItem,
-                                             final ArrFindingAidVersion version,
+                                             final ArrFundVersion version,
                                              final ArrChange change,
                                              final boolean moveAfter) {
         Assert.notNull(descItem);
@@ -368,7 +362,7 @@ public class DescriptionItemService {
         Assert.notNull(change);
 
         // pro mazání musí být verze otevřená
-        checkFindingAidVersionLock(version);
+        checkFundVersionLock(version);
 
         if (moveAfter) {
             // načtení hodnot, které je potřeba přesunout výš
@@ -396,7 +390,7 @@ public class DescriptionItemService {
      * @param diff      počet a směr posunu
      */
     private void copyDescItemsWithData(final ArrChange change, final List<ArrDescItem> descItems, final Integer diff,
-                                       final ArrFindingAidVersion version) {
+                                       final ArrFundVersion version) {
         for (ArrDescItem descItemMove : descItems) {
 
             descItemMove.setDeleteChange(change);
@@ -430,7 +424,7 @@ public class DescriptionItemService {
     public void copyDescItemWithDataToNode(final ArrNode node,
                                            final List<ArrDescItem> sourceDescItems,
                                            final ArrChange createChange,
-                                           final ArrFindingAidVersion version) {
+                                           final ArrFundVersion version) {
         for (ArrDescItem sourceDescItem : sourceDescItems) {
             ArrDescItem descItemNew = new ArrDescItem();
 
@@ -458,9 +452,9 @@ public class DescriptionItemService {
      * @param version   verze archivní pomůcky
      * @param descItem  hodnota atributu
      */
-    private void publishChangeDescItem(final ArrFindingAidVersion version, final ArrDescItem descItem) {
+    private void publishChangeDescItem(final ArrFundVersion version, final ArrDescItem descItem) {
         notificationService.publishEvent(
-                new EventChangeDescItem(EventType.DESC_ITEM_CHANGE, version.getFindingAidVersionId(),
+                new EventChangeDescItem(EventType.DESC_ITEM_CHANGE, version.getFundVersionId(),
                         descItem.getDescItemObjectId(), descItem.getNode().getNodeId(), descItem.getNode().getVersion()));
     }
 
@@ -497,23 +491,23 @@ public class DescriptionItemService {
      *
      * @param descItem              hodnota atributu (změny)
      * @param nodeVersion           verze uzlu (optimistické zámky)
-     * @param findingAidVersionId   identifikátor verze archivní pomůcky
+     * @param fundVersionId   identifikátor verze archivní pomůcky
      * @param createNewVersion      vytvořit novou verzi?
      * @return  upravená výsledná hodnota atributu
      */
     public ArrDescItem updateDescriptionItem(final ArrDescItem descItem,
                                              final Integer nodeVersion,
-                                             final Integer findingAidVersionId,
+                                             final Integer fundVersionId,
                                              final Boolean createNewVersion) {
         Assert.notNull(descItem);
         Assert.notNull(descItem.getPosition());
         Assert.notNull(descItem.getDescItemObjectId());
         Assert.notNull(nodeVersion);
-        Assert.notNull(findingAidVersionId);
+        Assert.notNull(fundVersionId);
         Assert.notNull(createNewVersion);
 
         ArrChange change = null;
-        ArrFindingAidVersion findingAidVersion = findingAidVersionRepository.findOne(findingAidVersionId);
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
 
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
 
@@ -537,13 +531,13 @@ public class DescriptionItemService {
             change = arrangementService.createChange();
 
             // uložení poslední uživatelské změny nad AP k verzi AP
-            arrangementService.saveLastChangeFaVersion(change, findingAidVersion);
+            arrangementService.saveLastChangeFundVersion(change, fundVersion);
         }
 
-        ArrDescItem descItemUpdated = updateDescriptionItemWithData(descItem, descItemDB, findingAidVersion, change, createNewVersion);
+        ArrDescItem descItemUpdated = updateDescriptionItemWithData(descItem, descItemDB, fundVersion, change, createNewVersion);
 
         // validace uzlu
-        ruleService.conformityInfo(findingAidVersionId, Arrays.asList(descItemUpdated.getNode().getNodeId()),
+        ruleService.conformityInfo(fundVersionId, Arrays.asList(descItemUpdated.getNode().getNodeId()),
                 NodeTypeOperation.SAVE_DESC_ITEM, null, Arrays.asList(descItemUpdated), null);
 
         return descItemUpdated;
@@ -561,7 +555,7 @@ public class DescriptionItemService {
      */
     public ScenarioOfNewLevel getDescriptionItamsOfScenario(final String scenarionName, final ArrLevel level,
                                                             final DirectionLevel directionLevel,
-                                                            final ArrFindingAidVersion version) {
+                                                            final ArrFundVersion version) {
         Assert.notNull(scenarionName);
         Assert.notNull(level);
         Assert.notNull(directionLevel);
@@ -589,7 +583,7 @@ public class DescriptionItemService {
      */
     public List<ScenarioOfNewLevel> getDescriptionItemTypesForNewLevel(final ArrLevel level,
                                                                        final DirectionLevel directionLevel,
-                                                                       final ArrFindingAidVersion version
+                                                                       final ArrFundVersion version
     ) {
         Assert.notNull(version);
         Assert.notNull(level);
@@ -601,14 +595,14 @@ public class DescriptionItemService {
      * Informace o možných scénářích založení nového uzlu
      * @param nodeId            id uzlu
      * @param directionLevel    typ vladani
-     * @param faVersionId       id verze
+     * @param fundVersionId       id verze
      * @return seznam možných scénařů
      */
-    public List<ScenarioOfNewLevel> getDescriptionItemTypesForNewLevel(final Integer nodeId, final DirectionLevel directionLevel, final Integer faVersionId) {
+    public List<ScenarioOfNewLevel> getDescriptionItemTypesForNewLevel(final Integer nodeId, final DirectionLevel directionLevel, final Integer fundVersionId) {
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
         ArrNode node = nodeRepository.findOne(nodeId);
-        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootLevel().getNode(),
+        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
                 version.getLockChange());
 
         return getDescriptionItemTypesForNewLevel(level, directionLevel, version);
@@ -619,19 +613,19 @@ public class DescriptionItemService {
      *  - se spuštěním validace uzlu
      *
      * @param descItem              hodnota atributu (změny)
-     * @param findingAidVersion     verze archivní pomůcky
+     * @param fundVersion     verze archivní pomůcky
      * @param change                změna
      * @param createNewVersion      vytvořit novou verzi?
      * @return  upravená výsledná hodnota atributu
      */
     public ArrDescItem updateDescriptionItem(final ArrDescItem descItem,
-                                             final ArrFindingAidVersion findingAidVersion,
+                                             final ArrFundVersion fundVersion,
                                              final ArrChange change,
                                              final boolean createNewVersion) {
         Assert.notNull(descItem);
         Assert.notNull(descItem.getPosition());
         Assert.notNull(descItem.getDescItemObjectId());
-        Assert.notNull(findingAidVersion);
+        Assert.notNull(fundVersion);
         Assert.notNull(change);
 
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
@@ -643,10 +637,10 @@ public class DescriptionItemService {
         }
         ArrDescItem descItemDB = descItems.get(0);
 
-        ArrDescItem descItemUpdated = updateDescriptionItemWithData(descItem, descItemDB, findingAidVersion, change, createNewVersion);
+        ArrDescItem descItemUpdated = updateDescriptionItemWithData(descItem, descItemDB, fundVersion, change, createNewVersion);
 
         // validace uzlu
-        ruleService.conformityInfo(findingAidVersion.getFindingAidVersionId(), Arrays.asList(descItemUpdated.getNode().getNodeId()),
+        ruleService.conformityInfo(fundVersion.getFundVersionId(), Arrays.asList(descItemUpdated.getNode().getNodeId()),
                 NodeTypeOperation.SAVE_DESC_ITEM, null, Arrays.asList(descItemUpdated), null);
 
         return descItemUpdated;
@@ -664,7 +658,7 @@ public class DescriptionItemService {
      */
     public ArrDescItem updateDescriptionItemWithData(final ArrDescItem descItem,
                                                       final ArrDescItem descItemDB,
-                                                      final ArrFindingAidVersion version,
+                                                      final ArrFundVersion version,
                                                       final ArrChange change,
                                                       final Boolean createNewVersion) {
 

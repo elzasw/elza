@@ -3,7 +3,7 @@ package cz.tacr.elza.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrVersionConformity;
 
 
@@ -15,6 +15,6 @@ import cz.tacr.elza.domain.ArrVersionConformity;
 public interface VersionConformityRepository
         extends JpaRepository<ArrVersionConformity, Integer> {
 
-    ArrVersionConformity findByVersion(ArrFindingAidVersion version);
+    ArrVersionConformity findByFundVersion(ArrFundVersion fundVersion);
 
 }

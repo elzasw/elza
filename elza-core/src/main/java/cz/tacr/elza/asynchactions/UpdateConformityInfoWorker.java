@@ -13,11 +13,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.LockVersionChangeException;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -40,7 +40,7 @@ public class UpdateConformityInfoWorker implements Runnable {
     private LevelRepository levelRepository;
 
     @Autowired
-    private FindingAidVersionRepository findingAidVersionRepository;
+    private FundVersionRepository fundVersionRepository;
 
     @Autowired
     private UpdateConformityInfoService updateConformityInfoService;
@@ -72,7 +72,7 @@ public class UpdateConformityInfoWorker implements Runnable {
     public void run() {
         logger.info("Spusteno nove vlakno pro aktualizaci stavu ve verzi " + versionId);
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        ArrFundVersion version = fundVersionRepository.findOne(versionId);
 
         Set<Integer> nodeIdsToFlush = new HashSet<>();
 
@@ -92,7 +92,7 @@ public class UpdateConformityInfoWorker implements Runnable {
                 }
 
                 //bylo by lepší přepsat metodu setConformityInfo, aby brala node
-                ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootLevel().getNode(),
+                ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
                         version.getLockChange());
                 try {
                     updateConformityInfoService.updateConformityInfo(node.getNodeId(), level.getLevelId(), versionId);

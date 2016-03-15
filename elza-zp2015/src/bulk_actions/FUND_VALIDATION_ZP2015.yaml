@@ -1,4 +1,4 @@
-code_type_bulk_action: FINDING_AID_VALIDATION
+code_type_bulk_action: FUND_VALIDATION
 rule_code: ZP2015
 mandatory_arrangement_type: INV|MAN|KAT
 name: generátor pro kontrolu validace (stavů popisu) celé archivní pomůcky

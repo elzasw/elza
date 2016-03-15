@@ -8,9 +8,9 @@ package cz.tacr.elza.service.eventnotification.events;
  */
 public enum EventType {
 
-    FINDING_AID_CREATE(EventId.class),
-    FINDING_AID_UPDATE(EventId.class),
-    FINDING_AID_DELETE(EventId.class),
+    FUND_CREATE(EventId.class),
+    FUND_UPDATE(EventId.class),
+    FUND_DELETE(EventId.class),
 
     APPROVE_VERSION(EventVersion.class),
 
@@ -37,7 +37,7 @@ public enum EventType {
     NODES_CHANGE(EventIdsInVersion.class),
 
     DESC_ITEM_CHANGE(EventChangeDescItem.class),
-    FINDING_AID_RECORD_CHANGE(EventNodeIdVersionInVersion.class),
+    FUND_RECORD_CHANGE(EventNodeIdVersionInVersion.class),
 
     INDEXING_FINISHED(ActionEvent.class),
 

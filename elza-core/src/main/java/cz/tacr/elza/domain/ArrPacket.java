@@ -27,11 +27,11 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  */
 @Entity(name = "arr_packet")
 @Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"findingAidId"}),
+        @UniqueConstraint(columnNames = {"fundId"}),
         @UniqueConstraint(columnNames = {"storageNumber"})})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrFindingAid> {
+public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrFund> {
     public final static String PACKET_ID = "packetId";
     public final static String PACKET_TYPE = "packetType";
     public final static String STORAGE_NUMBER = "storageNumber";
@@ -47,9 +47,9 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrF
     private RulPacketType packetType;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAid.class)
-    @JoinColumn(name = "findingAidId", nullable = false)
-    private ArrFindingAid findingAid;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
+    @JoinColumn(name = "fundId", nullable = false)
+    private ArrFund fund;
 
     @Column(length = StringLength.LENGTH_50, nullable = false)
     private String storageNumber;
@@ -78,13 +78,13 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrF
     }
 
     @Override
-    public ArrFindingAid getFindingAid() {
-        return findingAid;
+    public ArrFund getFund() {
+        return fund;
     }
 
     @Override
-    public void setFindingAid(ArrFindingAid findingAid) {
-        this.findingAid = findingAid;
+    public void setFund(ArrFund fund) {
+        this.fund = fund;
     }
 
     @Override

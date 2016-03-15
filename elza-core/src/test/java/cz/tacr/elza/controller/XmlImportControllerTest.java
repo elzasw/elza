@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller;
 
 import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.controller.vo.ArrFindingAidVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
@@ -55,16 +55,16 @@ public class XmlImportControllerTest extends AbstractControllerTest {
      */
     @Test
     public void scenarioTest() {
-        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_FA, XmlImportType.FINDING_AID, null);
+        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_FA, XmlImportType.FUND, null);
         List<RegScopeVO> allScopes = getAllScopes();
-        importFile(getFile(ALL_IN_ONE_XML), null, XmlImportType.FINDING_AID, allScopes.get(0).getId());
+        importFile(getFile(ALL_IN_ONE_XML), null, XmlImportType.FUND, allScopes.get(0).getId());
 
-        List<ArrFindingAidVO> findingAids = getFindingAids();
-        Assert.assertTrue("Očekáváme 1 archivní pomůcku", findingAids.size() == 1);
+        List<ArrFundVO> funds = getFunds();
+        Assert.assertTrue("Očekáváme 1 archivní pomůcku", funds.size() == 1);
 
-        Assert.assertTrue("Očekáváme jméno FA z importu", findingAids.get(0).getName().equals("Import z XML"));
+        Assert.assertTrue("Očekáváme jméno FA z importu", funds.get(0).getName().equals("Import z XML"));
 
-        int versionId = findingAids.get(0).getVersions().get(0).getId();
+        int versionId = funds.get(0).getVersions().get(0).getId();
 
         ArrangementController.FaTreeParam faTreeParam = new ArrangementController.FaTreeParam();
         faTreeParam.setVersionId(versionId);

@@ -29,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "arr_node_conformity")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrNodeConformity implements cz.tacr.elza.api.ArrNodeConformity<ArrNode, ArrFindingAidVersion> {
+public class ArrNodeConformity implements cz.tacr.elza.api.ArrNodeConformity<ArrNode, ArrFundVersion> {
 
     @Id
     @GeneratedValue
@@ -41,9 +41,9 @@ public class ArrNodeConformity implements cz.tacr.elza.api.ArrNodeConformity<Arr
     private ArrNode node;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAidVersion.class)
-    @JoinColumn(name = "faVersionId", nullable = false)
-    private ArrFindingAidVersion faVersion;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFundVersion.class)
+    @JoinColumn(name = "fundVersionId", nullable = false)
+    private ArrFundVersion fundVersion;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 3, nullable = false)
@@ -83,14 +83,12 @@ public class ArrNodeConformity implements cz.tacr.elza.api.ArrNodeConformity<Arr
         this.node = node;
     }
 
-    @Override
-    public ArrFindingAidVersion getFaVersion() {
-        return faVersion;
+    public ArrFundVersion getFundVersion() {
+        return fundVersion;
     }
 
-    @Override
-    public void setFaVersion(final ArrFindingAidVersion faVersion) {
-        this.faVersion = faVersion;
+    public void setFundVersion(final ArrFundVersion fundVersion) {
+        this.fundVersion = fundVersion;
     }
 
     @Override

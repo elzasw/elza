@@ -3,6 +3,7 @@ package cz.tacr.elza.bulkaction.generator;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import cz.tacr.elza.repository.LevelRepositoryCustom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
@@ -10,10 +11,10 @@ import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.DescriptionItemService;
 
@@ -27,13 +28,13 @@ import cz.tacr.elza.service.DescriptionItemService;
 public abstract class BulkAction {
 
     @Autowired
-    protected FindingAidVersionRepository findingAidVersionRepository;
+    protected FundVersionRepository fundVersionRepository;
 
     @Autowired
     private ChangeRepository changeRepository;
 
     @Autowired
-    private LevelRepository levelRepository;
+    protected LevelRepository levelRepository;
 
     @Autowired
     private DescriptionItemService descriptionItemService;
@@ -41,11 +42,11 @@ public abstract class BulkAction {
     /**
      * Abstrakní metoda pro spuštění hromadné akce.
      *
-     * @param faVersionId      identifikátor verze archivní pomůcky
+     * @param fundVersionId      identifikátor verze archivní pomůcky
      * @param bulkActionConfig nastavení hromadné akce
      * @param bulkActionState  stav hromadné akce
      */
-    abstract public void run(final Integer faVersionId,
+    abstract public void run(final Integer fundVersionId,
                              final BulkActionConfig bulkActionConfig,
                              final BulkActionState bulkActionState);
 
@@ -73,7 +74,7 @@ public abstract class BulkAction {
      * @return finální atribut
      */
     protected ArrDescItem saveDescItem(final ArrDescItem descItem,
-                                       final ArrFindingAidVersion version,
+                                       final ArrFundVersion version,
                                        final ArrChange change) {
         if (descItem.getDescItemObjectId() == null) {
             return descriptionItemService.createDescriptionItem(descItem, descItem.getNode(), version, change);
@@ -91,7 +92,7 @@ public abstract class BulkAction {
      * @return finální atribut
      */
     protected ArrDescItem deleteDescItem(final ArrDescItem descItem,
-                                         final ArrFindingAidVersion version,
+                                         final ArrFundVersion version,
                                          final ArrChange change) {
         return descriptionItemService.deleteDescriptionItem(descItem, version, change, true);
     }
@@ -112,7 +113,7 @@ public abstract class BulkAction {
      *
      * @param version verze archivní pomůcky
      */
-    protected void checkVersion(ArrFindingAidVersion version) {
+    protected void checkVersion(ArrFundVersion version) {
         Assert.notNull(version);
         if (version.getLockChange() != null) {
             throw new IllegalStateException("Nelze aplikovat na uzavřenou verzi archivní pomůcky");

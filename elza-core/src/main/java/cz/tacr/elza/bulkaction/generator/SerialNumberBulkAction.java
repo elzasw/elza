@@ -39,7 +39,7 @@ public class SerialNumberBulkAction extends BulkAction {
     /**
      * Verze archivní pomůcky
      */
-    private ArrFindingAidVersion version;
+    private ArrFundVersion version;
 
     /**
      * Změna
@@ -207,13 +207,13 @@ public class SerialNumberBulkAction extends BulkAction {
 
     @Override
     @Transactional
-    public void run(final Integer faVersionId,
+    public void run(final Integer fundVersionId,
                     final BulkActionConfig bulkAction,
                     final BulkActionState bulkActionState) {
         this.bulkActionState = bulkActionState;
         init(bulkAction);
 
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         Assert.notNull(version);
         checkVersion(version);
@@ -223,8 +223,10 @@ public class SerialNumberBulkAction extends BulkAction {
         this.bulkActionState.setRunChange(this.change);
         this.serialNumber = new SerialNumber();
 
-        generate(version.getRootLevel());
-        eventNotificationService.publishEvent(EventFactory.createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, faVersionId, bulkAction.getCode()), true);
+        ArrNode rootNode = version.getRootNode();
+        ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
+        generate(rootLevel);
+        eventNotificationService.publishEvent(EventFactory.createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, fundVersionId, bulkAction.getCode()), true);
     }
 
     /**

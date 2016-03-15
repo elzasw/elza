@@ -54,10 +54,10 @@ public interface BulkActionManager<BAC extends BulkActionConfig, BAS extends Bul
     /**
      * Vrací seznam stavů hromadných akcí podle verze archivní pomůcky.
      *
-     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @param fundVersionId identifikátor verze archivní pomůcky
      * @return seznam stavů hromadných akcí
      */
-    List<BAS> getBulkActionState(Integer findingAidVersionId);
+    List<BAS> getBulkActionState(Integer fundVersionId);
 
 
     /**
@@ -77,34 +77,34 @@ public interface BulkActionManager<BAC extends BulkActionConfig, BAS extends Bul
     /**
      * Vrací seznam všech konfigurací hromadných akcí podle verze archivní pomůcky.
      *
-     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @param fundVersionId identifikátor verze archivní pomůcky
      */
-    List<BAC> getBulkActions(Integer findingAidVersionId);
+    List<BAC> getBulkActions(Integer fundVersionId);
 
 
     /**
      * Vrací seznam povinných konfigurací hromadných akcí podle verze archivní pomůcky.
      *
-     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @param fundVersionId identifikátor verze archivní pomůcky
      */
-    List<BAC> getMandatoryBulkActions(Integer findingAidVersionId);
+    List<BAC> getMandatoryBulkActions(Integer fundVersionId);
 
 
     /**
      * Spustí hromadnou akci ve zvolené verze archivní pomůcce.
      *
      * @param bulkActionConfig    konfigurace hromadné akce
-     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @param fundVersionId identifikátor verze archivní pomůcky
      */
-    void run(BAC bulkActionConfig, Integer findingAidVersionId);
+    void run(BAC bulkActionConfig, Integer fundVersionId);
 
 
     /**
      * Spustí validaci verze AP.
      *
-     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @param fundVersionId identifikátor verze archivní pomůcky
      * @return seznam konfigurací hromadných akcí, které je nutné ještě spustit před uzavřením verze
      */
-    List<BAC> runValidation(Integer findingAidVersionId);
+    List<BAC> runValidation(Integer fundVersionId);
 
 }

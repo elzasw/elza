@@ -35,7 +35,7 @@ public abstract class AbstractTest {
     @Autowired
     protected LevelRepository levelRepository;
     @Autowired
-    protected FindingAidRepository findingAidRepository;
+    protected FundRepository fundRepository;
     @Autowired
     protected DescItemRepository descItemRepository;
     @Autowired
@@ -79,7 +79,7 @@ public abstract class AbstractTest {
     @Autowired
     protected NodeConformityMissingRepository nodeConformityMissingRepository;
     @Autowired
-    protected VersionConformityRepository findingAidVersionConformityInfoRepository;
+    protected VersionConformityRepository versionConformityInfoRepository;
     @Autowired
     protected PackageRepository packageRepository;
     @Autowired
@@ -107,9 +107,9 @@ public abstract class AbstractTest {
     @Autowired
     protected ScopeRepository scopeRepository;
     @Autowired
-    protected FaRegisterScopeRepository faRegisterScopeRepository;
+    protected FundRegisterScopeRepository fundRegisterScopeRepository;
     @Autowired
-    protected FindingAidVersionRepository findingAidVersionRepository;
+    protected FundVersionRepository fundVersionRepository;
     @Autowired
     protected PartyCreatorRepository partyCreatorRepository;
     @Autowired
@@ -159,10 +159,10 @@ public abstract class AbstractTest {
         nodeConformityInfoRepository.deleteAll();
         descItemConstraintRepository.deleteAll();
         faViewRepository.deleteAll();
-        findingAidVersionConformityInfoRepository.deleteAll();
-        findingAidVersionRepository.deleteAll();
-        faRegisterScopeRepository.deleteAll();
-        findingAidRepository.deleteAll();
+        versionConformityInfoRepository.deleteAll();
+        fundVersionRepository.deleteAll();
+        fundRegisterScopeRepository.deleteAll();
+        fundRepository.deleteAll();
         levelRepository.deleteAll();
         descItemRepository.deleteAll();
         descItemSpecRegisterRepository.deleteAll();

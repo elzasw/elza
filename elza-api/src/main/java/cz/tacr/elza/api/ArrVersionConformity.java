@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @author Martin Šlapa
  * @since 2.12.2015
  */
-public interface ArrVersionConformity<FAV extends ArrFindingAidVersion> extends Serializable {
+public interface ArrVersionConformity<FAV extends ArrFundVersion> extends Serializable {
 
     enum State {
         OK,
@@ -32,13 +32,13 @@ public interface ArrVersionConformity<FAV extends ArrFindingAidVersion> extends 
     /**
      * @return verze archivní pomůcky
      */
-    FAV getVersion();
+    FAV getFundVersion();
 
 
     /**
-     * @param version verze archivní pomůcky
+     * @param fundVersion verze archivní pomůcky
      */
-    void setVersion(FAV version);
+    void setFundVersion(FAV fundVersion);
 
 
     /**

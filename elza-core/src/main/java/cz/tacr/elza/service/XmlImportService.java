@@ -30,6 +30,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamSource;
 
+import cz.tacr.elza.domain.*;
 import liquibase.util.file.FilenameUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -43,53 +44,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
 import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPacketRef;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParCreator;
-import cz.tacr.elza.domain.ParDynasty;
-import cz.tacr.elza.domain.ParEvent;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyGroupIdentifier;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPerson;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegExternalSource;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulArrangementType;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
@@ -100,7 +55,7 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
-import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
@@ -144,7 +99,7 @@ import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemString;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemText;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitDate;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitId;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.FindingAid;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.Fund;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Level;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Packet;
 import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
@@ -190,7 +145,7 @@ public class XmlImportService {
     private VariantRecordRepository variantRecordRepository;
 
     @Autowired
-    private FindingAidRepository findingAidRepository;
+    private FundRepository fundRepository;
 
     @Autowired
     private PartyRepository partyRepository;
@@ -290,24 +245,24 @@ public class XmlImportService {
         Set<String> usedPackets = new HashSet<>();
         boolean stopOnError = config.isStopOnError();
 
-        boolean importFindingAid;
+        boolean importFund;
         boolean importAllRecords;
         boolean importAllParties;
 
         XmlImportType xmlImportType = config.getXmlImportType();
         switch (xmlImportType) {
-            case FINDING_AID:
-                importFindingAid = true;
+            case FUND:
+                importFund = true;
                 importAllRecords = false;
                 importAllParties = false;
                 break;
             case PARTY:
-                importFindingAid = false;
+                importFund = false;
                 importAllRecords = false;
                 importAllParties = true;
                 break;
             case RECORD:
-                importFindingAid = false;
+                importFund = false;
                 importAllRecords = true;
                 importAllParties = false;
                 break;
@@ -315,7 +270,7 @@ public class XmlImportService {
                 throw new FatalXmlImportException("Neznánmý typ importu: " + xmlImportType);
         }
 
-        checkData(xmlImport, usedRecords, usedParties, usedPackets, importAllRecords, importAllParties, importFindingAid);
+        checkData(xmlImport, usedRecords, usedParties, usedPackets, importAllRecords, importAllParties, importFund);
 
         // rejstříky - párovat podle ext id a ext systému
         Map<String, RegRecord> xmlIdIntIdRecordMap = importRecords(xmlImport, usedRecords, stopOnError, config.getRegScope());
@@ -326,43 +281,43 @@ public class XmlImportService {
 
         // párování - podle uuid root uzlu pokud existuje
         // smazat fa
-        if  (importFindingAid) {
-            Level rootLevel = xmlImport.getFindingAid().getRootLevel();
+        if  (importFund) {
+            Level rootLevel = xmlImport.getFund().getRootLevel();
 
             // najít fa, smazat
-            deleteFindingAidIfExists(rootLevel);
+            deleteFundIfExists(rootLevel);
 
             // založit fa
             ArrChange change = arrangementService.createChange();
-            ArrFindingAid findingAid = createFindingAid(xmlImport.getFindingAid(), change, config, stopOnError);
+            ArrFund fund = createFund(xmlImport.getFund(), change, config, stopOnError);
 
             // importovat
-            ArrFindingAidVersion findingAidVersion = arrangementService.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
-            ArrNode rootNode = findingAidVersion.getRootLevel().getNode();
+            ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fund.getFundId());
+            ArrNode rootNode = fundVersion.getRootNode();
 
-            Map<String, ArrPacket> xmlIdIntIdPacketMap = importPackets(xmlImport, usedPackets, stopOnError, findingAid);
-            importFindingAid(xmlImport.getFindingAid(), change, rootNode, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap,
+            Map<String, ArrPacket> xmlIdIntIdPacketMap = importPackets(xmlImport, usedPackets, stopOnError, fund);
+            importFund(xmlImport.getFund(), change, rootNode, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap,
                     config);
         }
     }
 
-    private void deleteFindingAidIfExists(Level rootLevel) {
-        ArrFindingAid findingAid;
+    private void deleteFundIfExists(Level rootLevel) {
+        ArrFund fund;
         String rootUuid = rootLevel.getUuid();
         if (StringUtils.isNotBlank(rootUuid)) {
-            findingAid = findingAidRepository.findFindingAidByRootNodeUUID(rootUuid);
-            if (findingAid != null) {
-                arrangementService.deleteFindingAid(findingAid.getFindingAidId());
-                findingAidRepository.flush();
+            fund = fundRepository.findFundByRootNodeUUID(rootUuid);
+            if (fund != null) {
+                arrangementService.deleteFund(fund.getFundId());
+                fundRepository.flush();
             }
         }
     }
 
     private Map<String, ArrPacket> importPackets(XmlImport xmlImport, Set<String> usedPackets, boolean stopOnError,
-            ArrFindingAid findingAid) throws NonFatalXmlImportException {
+            ArrFund fund) throws NonFatalXmlImportException {
         Map<String, ArrPacket> xmlIdIntIdPacketMap;
         try {
-            xmlIdIntIdPacketMap = importPackets(xmlImport.getPackets(), usedPackets, findingAid, stopOnError);
+            xmlIdIntIdPacketMap = importPackets(xmlImport.getPackets(), usedPackets, fund, stopOnError);
         } catch (NonFatalXmlImportException e) {
             if (stopOnError) {
                 throw e;
@@ -400,9 +355,9 @@ public class XmlImportService {
         return xmlIdIntIdRecordMap;
     }
 
-    private void importFindingAid(FindingAid findingAid, ArrChange change, ArrNode rootNode, Map<String, RegRecord> xmlIdIntIdRecordMap,
-            Map<String, ParParty> xmlIdIntIdPartyMap, Map<String, ArrPacket> xmlIdIntIdPacketMap, XmlImportConfig config) throws LevelImportException, InvalidDataException {
-        Level rootLevel = findingAid.getRootLevel();
+    private void importFund(Fund fund, ArrChange change, ArrNode rootNode, Map<String, RegRecord> xmlIdIntIdRecordMap,
+                            Map<String, ParParty> xmlIdIntIdPartyMap, Map<String, ArrPacket> xmlIdIntIdPacketMap, XmlImportConfig config) throws LevelImportException, InvalidDataException {
+        Level rootLevel = fund.getRootLevel();
         int position = 1;
 
         if (rootLevel.getSubLevels() != null) {
@@ -632,16 +587,16 @@ public class XmlImportService {
         return arrDescItem;
     }
 
-    private ArrFindingAid createFindingAid(FindingAid findingAid, ArrChange change, XmlImportConfig config, boolean stopOnError) throws FatalXmlImportException, InvalidDataException {
+    private ArrFund createFund(Fund fund, ArrChange change, XmlImportConfig config, boolean stopOnError) throws FatalXmlImportException, InvalidDataException {
         RulArrangementType arrangementType;
         RulRuleSet ruleSet;
         if (StringUtils.isBlank(config.getTransformationName())) {
-            String arrangementTypeCode = findingAid.getArrangementTypeCode();
+            String arrangementTypeCode = fund.getArrangementTypeCode();
             arrangementType = arrangementTypeRepository.findByCode(arrangementTypeCode);
             if (arrangementType == null) {
                 throw new FatalXmlImportException("Nebyl nalezen typ výstupu s kódem " + arrangementTypeCode);
             }
-            String ruleSetCode = findingAid.getRuleSetCode();
+            String ruleSetCode = fund.getRuleSetCode();
             ruleSet = ruleSetRepository.findByCode(ruleSetCode);
             if (ruleSet == null) {
                 throw new FatalXmlImportException("Nebyla nalezena pravidla s kódem " + ruleSetCode);
@@ -651,24 +606,24 @@ public class XmlImportService {
             ruleSet = ruleSetRepository.findOne(config.getRuleSetId());
         }
 
-        String uuid = XmlImportUtils.trimStringValue(findingAid.getRootLevel().getUuid(), StringLength.LENGTH_36, stopOnError);
-        ArrFindingAid arrFindingAid = arrangementService.createFindingAid(findingAid.getName(), ruleSet, arrangementType, change, uuid);
-        arrangementService.addScopeToFindingAid(arrFindingAid, config.getRegScope());
+        String uuid = XmlImportUtils.trimStringValue(fund.getRootLevel().getUuid(), StringLength.LENGTH_36, stopOnError);
+        ArrFund arrFund = arrangementService.createFund(fund.getName(), ruleSet, arrangementType, change, uuid);
+        arrangementService.addScopeToFund(arrFund, config.getRegScope());
 
-        return arrFindingAid;
+        return arrFund;
     }
 
     private void checkData(XmlImport xmlImport, Set<String> usedRecords, Set<String> usedParties, Set<String> usedPackets,
-            boolean importAllRecords, boolean importAllParties, boolean importFindingAid) throws FatalXmlImportException {
-        FindingAid findingAid = xmlImport.getFindingAid();
+            boolean importAllRecords, boolean importAllParties, boolean importFund) throws FatalXmlImportException {
+        Fund fund = xmlImport.getFund();
         List<AbstractParty> parties = xmlImport.getParties();
 
-        if (importFindingAid) {
-            if (findingAid == null) {
+        if (importFund) {
+            if (fund == null) {
                 throw new FatalXmlImportException("V datech chybí archivní pomůcka.");
             }
 
-            Level rootLevel = findingAid.getRootLevel();
+            Level rootLevel = fund.getRootLevel();
             checkLevel(rootLevel, usedRecords, usedParties, usedPackets);
         }
 
@@ -759,7 +714,7 @@ public class XmlImportService {
         }
     }
 
-    private Map<String, ArrPacket> importPackets(List<Packet> packets, Set<String> usedPackets, ArrFindingAid findingAid,
+    private Map<String, ArrPacket> importPackets(List<Packet> packets, Set<String> usedPackets, ArrFund fund,
             boolean stopOnError) throws InvalidDataException {
         Map<String, ArrPacket> xmlIdIntIdPacketMap = new HashMap<>();
         if (CollectionUtils.isEmpty(packets)) {
@@ -769,7 +724,7 @@ public class XmlImportService {
         for (Packet packet : packets) {
             if (usedPackets.contains(packet.getStorageNumber())) {
                 try {
-                    ArrPacket arrPacket = importPacket(packet, findingAid, stopOnError);
+                    ArrPacket arrPacket = importPacket(packet, fund, stopOnError);
                     xmlIdIntIdPacketMap.put(packet.getStorageNumber(), arrPacket);
                 } catch (NonFatalXmlImportException e) {
                     if (stopOnError) {
@@ -782,9 +737,9 @@ public class XmlImportService {
         return xmlIdIntIdPacketMap;
     }
 
-    private ArrPacket importPacket(Packet packet, ArrFindingAid findingAid, boolean stopOnError) throws InvalidDataException {
+    private ArrPacket importPacket(Packet packet, ArrFund fund, boolean stopOnError) throws InvalidDataException {
         ArrPacket arrPacket = new ArrPacket();
-        arrPacket.setFindingAid(findingAid);
+        arrPacket.setFund(fund);
         arrPacket.setInvalidPacket(packet.isInvalid());
 
         String packetTypeCode = packet.getPacketTypeCode();

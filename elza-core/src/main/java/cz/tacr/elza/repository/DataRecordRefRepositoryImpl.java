@@ -7,10 +7,10 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+import cz.tacr.elza.domain.ArrFundVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.utils.ObjectListIterator;
 
@@ -26,7 +26,7 @@ public class DataRecordRefRepositoryImpl implements DataRecordRefRepositoryCusto
     private EntityManager entityManager;
 
     @Override
-    public List<ArrDataRecordRef> findByDataIdsAndVersionFetchRecord(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFindingAidVersion version) {
+    public List<ArrDataRecordRef> findByDataIdsAndVersionFetchRecord(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFundVersion version) {
         String hql = "SELECT d FROM arr_data_record_ref d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH d.record r WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";

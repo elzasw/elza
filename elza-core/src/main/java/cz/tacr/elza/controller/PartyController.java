@@ -72,7 +72,7 @@ public class PartyController {
     private ValidationVOService validationVOService;
 
     @Autowired
-    private FindingAidVersionRepository findingAidVersionRepository;
+    private FundVersionRepository fundVersionRepository;
 
     /**
      * Načte osobu podle id.
@@ -209,21 +209,21 @@ public class PartyController {
                                        @Nullable @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId,
                                        @RequestParam(required = false) @Nullable final Integer versionId) {
 
-        ArrFindingAid findingAid;
+        ArrFund fund;
         if(versionId == null){
-            findingAid = null;
+            fund = null;
         }else{
-            ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+            ArrFundVersion version = fundVersionRepository.findOne(versionId);
             Assert.notNull(version, "Nebyla nalezena verze archivní pomůcky s id "+versionId);
-            findingAid = version.getFindingAid();
+            fund = version.getFund();
         }
 
 
         List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, from, count,
-                findingAid);
+                fund);
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, findingAid);
+        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, fund);
         return new ParPartyWithCount(resultVo, countAll);
     }
 
