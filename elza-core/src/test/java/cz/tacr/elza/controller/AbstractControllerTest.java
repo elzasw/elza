@@ -111,7 +111,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_LEVEL = ARRANGEMENT_CONTROLLER_URL + "/levels";
     protected static final String SCENARIOS = ARRANGEMENT_CONTROLLER_URL + "/scenarios";
     protected static final String CALENDAR_TYPES = ARRANGEMENT_CONTROLLER_URL + "/calendarTypes";
-    protected static final String FA_TREE = ARRANGEMENT_CONTROLLER_URL + "/faTree";
+    protected static final String FA_TREE = ARRANGEMENT_CONTROLLER_URL + "/fundTree";
     protected static final String MOVE_LEVEL_AFTER = ARRANGEMENT_CONTROLLER_URL + "/moveLevelAfter";
     protected static final String MOVE_LEVEL_BEFORE = ARRANGEMENT_CONTROLLER_URL + "/moveLevelBefore";
     protected static final String MOVE_LEVEL_UNDER = ARRANGEMENT_CONTROLLER_URL + "/moveLevelUnder";
@@ -136,7 +136,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_REGISTER_LINK = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/delete";
     protected static final String VALIDATE_VERSION = ARRANGEMENT_CONTROLLER_URL + "/validateVersion/{versionId}";
     protected static final String VALIDATE_VERSION_COUNT = ARRANGEMENT_CONTROLLER_URL + "/validateVersionCount/{versionId}";
-    protected static final String FA_TREE_NODES = ARRANGEMENT_CONTROLLER_URL + "/faTree/nodes";
+    protected static final String FA_TREE_NODES = ARRANGEMENT_CONTROLLER_URL + "/fundTree/nodes";
     protected static final String NODE_PARENTS = ARRANGEMENT_CONTROLLER_URL + "/nodeParents";
     protected static final String NODE_FORM_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodes/{nodeId}/{versionId}/form";
     protected static final String NODE_FORMS_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodes/{versionId}/forms";
@@ -424,7 +424,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param input vstupní data pro načtení
      * @return data stromu
      */
-    protected TreeData getFaTree(final ArrangementController.FaTreeParam input) {
+    protected TreeData getFundTree(final ArrangementController.FaTreeParam input) {
         Response response = post(spec -> spec.body(input), FA_TREE);
         return response.getBody().as(TreeData.class);
     }
@@ -1260,7 +1260,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param input vstupní data pro načtení
      * @return data stromu
      */
-    protected List<TreeNodeClient> getFaTreeNodes(final ArrangementController.FaTreeNodesParam input) {
+    protected List<TreeNodeClient> getFundTreeNodes(final ArrangementController.FaTreeNodesParam input) {
         return Arrays.asList(post(spec -> spec
                 .body(input), FA_TREE_NODES).getBody().as(TreeNodeClient[].class));
     }

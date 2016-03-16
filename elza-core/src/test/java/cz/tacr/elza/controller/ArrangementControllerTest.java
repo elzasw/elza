@@ -74,7 +74,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     private void forms(final ArrFundVersionVO fundVersion) {
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
-        TreeData treeData = getFaTree(input);
+        TreeData treeData = getFundTree(input);
 
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
         ArrNodeVO rootNode = nodes.get(0);
@@ -83,7 +83,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.FaTreeNodesParam inputFa = new ArrangementController.FaTreeNodesParam();
         inputFa.setVersionId(fundVersion.getId());
         inputFa.setNodeIds(Arrays.asList(rootNode.getId()));
-        List<TreeNodeClient> faTreeNodes = getFaTreeNodes(inputFa);
+        List<TreeNodeClient> faTreeNodes = getFundTreeNodes(inputFa);
         Assert.notEmpty(faTreeNodes);
 
         List<TreeNodeClient> nodeParents = getNodeParents(rootNode.getId(), fundVersion.getId());
@@ -133,7 +133,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     private void attributeValues(final ArrFundVersionVO fundVersion) {
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
-        TreeData treeData = getFaTree(input);
+        TreeData treeData = getFundTree(input);
 
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
         ArrNodeVO rootNode = nodes.get(0);
@@ -251,7 +251,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
         input.setNodeId(rootNode.getId());
-        TreeData treeData = getFaTree(input);
+        TreeData treeData = getFundTree(input);
         List<ArrNodeVO> newNodes = convertTreeNodes(treeData.getNodes());
 
         // kontrola přesunu
@@ -269,7 +269,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
         input.setNodeId(newNodes.get(0).getId());
-        treeData = getFaTree(input);
+        treeData = getFundTree(input);
         List<ArrNodeVO> newNodes2 = convertTreeNodes(treeData.getNodes());
 
         // kontrola přesunu
@@ -287,7 +287,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
         input.setNodeId(rootNode.getId());
-        treeData = getFaTree(input);
+        treeData = getFundTree(input);
         List<ArrNodeVO> newNodes3 = convertTreeNodes(treeData.getNodes());
 
         Assert.isTrue(newNodes3.size() == 2);
@@ -307,7 +307,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
         input.setNodeId(rootNode.getId());
-        treeData = getFaTree(input);
+        treeData = getFundTree(input);
         List<ArrNodeVO> newNodes4 = convertTreeNodes(treeData.getNodes());
 
         Assert.isTrue(newNodes4.size() == 3);
@@ -326,7 +326,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
-        TreeData treeData = getFaTree(input);
+        TreeData treeData = getFundTree(input);
         TreeNodeClient parentNode;
 
         Assert.notNull(treeData.getNodes(), "Musí existovat root node");
@@ -390,7 +390,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
         input.setNodeId(rootNode.getId());
-        treeData = getFaTree(input);
+        treeData = getFundTree(input);
 
         // Kontrola pořadí uzlů
         Iterator<TreeNodeClient> nodeClientIterator = treeData.getNodes().iterator();
@@ -503,7 +503,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
-        TreeData treeData = getFaTree(input);
+        TreeData treeData = getFundTree(input);
 
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
         ArrNodeVO rootNode = nodes.get(0);
@@ -531,7 +531,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
-        TreeData treeData = getFaTree(input);
+        TreeData treeData = getFundTree(input);
 
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
         ArrNodeVO rootNode = nodes.get(0);

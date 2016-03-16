@@ -68,7 +68,7 @@ public class XmlImportControllerTest extends AbstractControllerTest {
 
         ArrangementController.FaTreeParam faTreeParam = new ArrangementController.FaTreeParam();
         faTreeParam.setVersionId(versionId);
-        TreeData faTree = getFaTree(faTreeParam);
+        TreeData faTree = getFundTree(faTreeParam);
 
         Assert.assertTrue("Očekáváme 3 JP + parent", faTree.getNodes().size() == 4);
         ArrangementController.IdsParam idsParam = new ArrangementController.IdsParam();
