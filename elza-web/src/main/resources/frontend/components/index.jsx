@@ -27,6 +27,8 @@ exports.Autocomplete = require('./shared/autocomplete/Autocomplete');
 exports.Splitter = require('./shared/splitter/Splitter');
 exports.Scope = require('./shared/scope/Scope');
 exports.ControllableDropdownButton = require('./shared/dropdown-button/ControllableDropdownButton');
+exports.DataGrid = require('./shared/datagrid/DataGrid');
+exports.Resizer = require('./shared/resizer/Resizer');
 
 exports.FormUtils = require('./form/FormUtils');
 exports.ImportForm = require('./form/ImportForm');

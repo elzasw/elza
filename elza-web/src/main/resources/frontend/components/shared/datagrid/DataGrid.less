@@ -1,0 +1,82 @@
+@emptyColWidth: 8000px;
+@focus-background: #f9f9f9;
+@selected-index-background: #f0f0f0;
+@selected-background: #EAECF5;
+@selected-both-background: #DEE2F5;
+@header-background: #ececec;
+@header-height: 40px;
+
+.datagrid-container {
+    border: 1px solid silver;
+    width: 600px;
+    height: 500px;
+    
+    .header-container {
+        overflow: hidden;
+        height: @header-height;
+        background: @header-background;
+        
+        table {
+            height: 100%;
+            border-bottom: 1px solid silver;
+            th {
+                border: 1px solid silver;
+                border-bottom: none;
+
+                &.th-empty-scroll {
+                    width: @emptyColWidth;
+                }
+                
+                .cell-container {
+                    width: 100%;
+                    height: @header-height;
+                    float: left;
+                }
+                
+                .Resizer {
+                    float: right;
+                    height: @header-height;
+                }
+            }
+        }
+    }
+    .body-container {
+        height: calc(~"100% - 40px");
+        overflow: scroll;
+        
+        table {
+            tr {
+                &.focus {
+                    //background: @focus-background;
+                }
+                &.selected {
+                    background: @selected-background;
+                }
+                &.selected-index {
+                    background: @selected-index-background;
+                }
+                &.selected.selected-index {
+                    background: @selected-both-background;
+                }
+                
+                td {
+                    padding: 4px;
+                    border: 1px solid #D0D7E5;
+                    cursor: default;
+
+                    &.focus {
+                        //background: @focus-background;
+                    }
+                    &.cell-focus {
+                        outline: 1px solid black;
+                    }
+                    
+                    .cell-container {
+                        width: 100%;
+                        height: 100%;
+                    }                
+                }
+            }
+        }
+    }
+}
