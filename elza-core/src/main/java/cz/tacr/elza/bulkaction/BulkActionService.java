@@ -2,6 +2,7 @@ package cz.tacr.elza.bulkaction;
 
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Set;
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.repository.ChangeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -80,6 +82,9 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
     @Autowired
     private EventNotificationService eventNotificationService;
+
+    @Autowired
+    private ChangeRepository changeRepository;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -524,5 +529,17 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     public ArrNodeConformityExt setConformityInfoInNewTransaction(final Integer faLevelId, final Integer fundVersionId,
                                                                   final Set<String> strategies) {
         return ruleService.setConformityInfo(faLevelId, fundVersionId, strategies);
+    }
+
+    /**
+     * Vytvoření nové změny.
+     *
+     * @return vytvořená změna
+     */
+    @Transactional(value = javax.transaction.Transactional.TxType.REQUIRES_NEW)
+    public ArrChange createChange() {
+        ArrChange change = new ArrChange();
+        change.setChangeDate(LocalDateTime.now());
+        return changeRepository.save(change);
     }
 }

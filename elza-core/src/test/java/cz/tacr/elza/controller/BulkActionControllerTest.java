@@ -94,7 +94,6 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @Ignore // TODO: slapa -> zjistit problem, proc to visi na validaci u FOUND_VALIDATION
     public void getBulkActionStateTest() throws InterruptedException {
         int fundVersionId = importAndGetVersionId();
         List<BulkActionVO> actionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId), BULK_ACTION_VALIDATE).getBody().as(BulkActionVO[].class));

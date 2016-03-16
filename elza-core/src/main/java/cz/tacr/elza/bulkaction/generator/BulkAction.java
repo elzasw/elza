@@ -1,9 +1,8 @@
 package cz.tacr.elza.bulkaction.generator;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
-import cz.tacr.elza.repository.LevelRepositoryCustom;
+import cz.tacr.elza.bulkaction.BulkActionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
@@ -13,7 +12,6 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.DescriptionItemService;
@@ -31,13 +29,13 @@ public abstract class BulkAction {
     protected FundVersionRepository fundVersionRepository;
 
     @Autowired
-    private ChangeRepository changeRepository;
-
-    @Autowired
     protected LevelRepository levelRepository;
 
     @Autowired
     private DescriptionItemService descriptionItemService;
+
+    @Autowired
+    private BulkActionService bulkActionService;
 
     /**
      * Abstrakní metoda pro spuštění hromadné akce.
@@ -55,17 +53,6 @@ public abstract class BulkAction {
     abstract public String toString();
 
     /**
-     * Vytvoření nové změny.
-     *
-     * @return vytvořená změna
-     */
-    protected ArrChange createChange() {
-        ArrChange change = new ArrChange();
-        change.setChangeDate(LocalDateTime.now());
-        return changeRepository.save(change);
-    }
-
-    /**
      * Uložení nového/existující atributu.
      *
      * @param descItem ukládaný atribut
@@ -81,6 +68,15 @@ public abstract class BulkAction {
         } else {
             return descriptionItemService.updateDescriptionItem(descItem, version, change, true);
         }
+    }
+
+    /**
+     * Vytvoření nové změny.
+     *
+     * @return vytvořená změna
+     */
+    protected ArrChange createChange() {
+        return bulkActionService.createChange();
     }
 
     /**
