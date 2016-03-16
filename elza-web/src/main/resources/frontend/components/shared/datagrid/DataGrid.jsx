@@ -16,6 +16,10 @@ var keyDownHandlers = {
     changeFocus: function(newFocus) {
         this.setState({ focus: newFocus, selectedRowIndexes: {[newFocus.row]: true} }, this.ensureFocusVisible(newFocus))
     },
+    'F2': function(e) {
+        const {focus} = this.state
+        this.handleEdit(focus.row, focus.col)
+    },
     ' ': function(e) {
         const {focus} = this.state
         const {rows} = this.props
@@ -60,8 +64,20 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         this.bindMethods('handleScroll', 'renderHeaderCol', 'renderCell',
             'handleKeyDown', 'ensureFocusVisible', 'handleResizerMouseDown',
             'handleMouseUp', 'handleMouseMove', 'unFocus', 'handleCellClick',
-            'handleCheckboxChange');
+            'handleCheckboxChange', 'getExtColumnIndex', 'handleEdit');
 
+        var state = this.getStateFromProps(props, {})
+        state.columnSizeDragged = false
+        state.selectedRowIndexes = {[state.focus.row]: true}   // označené řádky v aktuálním zobrazení - pouze klientské označení
+
+        this.state = state
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.setState(this.getStateFromProps(nextProps, this.state))
+    }
+
+    getStateFromProps(props, currState) {
         var cols = []
         cols.push({_rowCheck: true, width: 32, resizeable: false})
         props.cols.forEach((col, colIndex) => {
@@ -73,17 +89,19 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             colWidths[colIndex] = col.width
         })
 
-        this.state = {
-            focus: {row: 2, col: 3},
-            cols: cols,
-            columnSizeDragged: false,
-            colWidths: colWidths,
-            selectedIds: {1: true, 2:true},    // označené řádky podle id - napříč stránkami - jedná se o reálné označení řádku, např. pro akce atp.
-            selectedRowIndexes: {3: true, 4:true, 6:true, 7:true}, // označené řádky v aktuálním zobrazení - pouze klientské označení
-        }
-    }
+        var selectedIds = {}
+        props.selectedIds.forEach(id => {
+            selectedIds[id] = true
+        })
 
-    componentWillReceiveProps(nextProps) {
+        var focus = currState.focus || props.focus || {row: 0, col: 0}
+
+        return {
+            focus: focus,
+            cols: cols,
+            colWidths: colWidths,
+            selectedIds: selectedIds,    // označené řádky podle id - napříč stránkami - jedná se o reálné označení řádku, např. pro akce atp.
+        }
     }
 
     componentDidMount() {
@@ -97,7 +115,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
     }
 
     handleCellClick(rowIndex, colIndex, e) {
-        if (colIndex === 0) {   // první sloupec - označování řádků, zde neřešíme
+        if (colIndex === 0 && e.target.tagName === 'INPUT') {   // první sloupec - označování řádků, zde neřešíme, pokud klikne na checkbox
             return
         }
 
@@ -171,8 +189,16 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             });
 
             const {columnSizeDraggedIndex, colWidths} = this.state
+            this.props.onColumnResize(this.getExtColumnIndex(columnSizeDraggedIndex), colWidths[columnSizeDraggedIndex])
+        }
+    }
 
-            this.props.onColumnResize(columnSizeDraggedIndex, colWidths[columnSizeDraggedIndex])
+    getExtColumnIndex(index) {
+        const {cols} = this.state
+        if (cols[0]._rowCheck) {
+            return index -1
+        } else {
+            return index
         }
     }
 
@@ -228,7 +254,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             }
         }
 
-        this.setState({ selectedIds: newSelectedIds })
+        this.props.onSelectedIdsChange(Object.keys(newSelectedIds))
     }
 
     renderCell(row, rowIndex, col, colIndex, colFocus, cellFocus) {
@@ -260,10 +286,17 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
                 className={colCls + cellCls}
                 style={{width: colWidths[colIndex]}}
                 onClick={this.handleCellClick.bind(this, rowIndex, colIndex)}
+                onDoubleClick={this.handleEdit.bind(this, rowIndex, colIndex)}
             >
                 {content}
             </td>
         )
+    }
+
+    handleEdit(rowIndex, colIndex) {
+        const {rows} = this.props
+        const {cols} = this.state
+        this.props.onEdit(rows[rowIndex], cols[colIndex])
     }
 
     renderHeaderCol(col, colIndex, colFocus) {
@@ -309,7 +342,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         var cls = this.props.className ? 'datagrid-container ' + this.props.className : 'datagrid-container'
 
         const {rows} = this.props
-        const {focus, cols, colWidths, selectedRowIndexes} = this.state
+        const {focus, cols, colWidths, selectedRowIndexes, selectedIds} = this.state
 
         var fullWidth = 0
         cols.forEach((col, colIndex) => {
@@ -337,6 +370,9 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
                                 var rowCls = rowWasFocus ? 'focus' : ''
                                 if (selectedRowIndexes[rowIndex]) {
                                     rowCls += ' selected-index'
+                                }
+                                if (selectedIds[row.id]) {
+                                    rowCls += ' selected'
                                 }
 
                                 const cells = cols.map((col, colIndex) => this.renderCell(row, rowIndex, col, colIndex, focus.col === colIndex, rowWasFocus && focus.col === colIndex))

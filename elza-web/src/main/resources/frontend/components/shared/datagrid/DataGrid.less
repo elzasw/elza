@@ -1,6 +1,8 @@
 @scrollWidth: 48px;
 @focus-background: #f9f9f9;
-@selected-index-background: #e9e9e9;
+@selected-index-background: #f0f0f0;
+@selected-background: #EAECF5;
+@selected-both-background: #DEE2F5;
 @header-background: #ececec;
 @header-height: 40px;
 
@@ -47,8 +49,14 @@
                 &.focus {
                     //background: @focus-background;
                 }
+                &.selected {
+                    background: @selected-background;
+                }
                 &.selected-index {
                     background: @selected-index-background;
+                }
+                &.selected.selected-index {
+                    background: @selected-both-background;
                 }
                 
                 td {
