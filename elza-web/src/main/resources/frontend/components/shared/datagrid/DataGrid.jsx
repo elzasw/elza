@@ -1,0 +1,357 @@
+/**
+ * Data grid komponent - typu tabulka excel.
+ */
+
+require ('./DataGrid.less');
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {connect} from 'react-redux'
+import {AbstractReactComponent, i18n, Resizer} from 'components';
+const scrollIntoView = require('dom-scroll-into-view')
+
+const __scrollWidth = 48
+
+var keyDownHandlers = {
+    changeFocus: function(newFocus) {
+        this.setState({ focus: newFocus, selectedRowIndexes: {[newFocus.row]: true} }, this.ensureFocusVisible(newFocus))
+    },
+    ' ': function(e) {
+        const {focus} = this.state
+        const {rows} = this.props
+        
+        this.handleCheckboxChange(rows[focus.row], focus.row, e)
+    },
+    ArrowUp: function(e) {
+        const {focus} = this.state
+        if (focus.row > 0) {
+            keyDownHandlers.changeFocus.bind(this)({ row: focus.row - 1, col: focus.col })
+        }
+    },
+    ArrowDown: function(e) {
+        const {focus} = this.state
+        const {rows} = this.props
+
+        if (focus.row + 1 < rows.length) {
+            keyDownHandlers.changeFocus.bind(this)({ row: focus.row + 1, col: focus.col })
+        }
+    },
+    ArrowLeft: function(e) {
+        const {focus} = this.state
+
+        if (focus.col > 0) {
+            keyDownHandlers.changeFocus.bind(this)({ row: focus.row, col: focus.col - 1 })
+        }
+    },
+    ArrowRight: function(e) {
+        const {focus} = this.state
+        const {cols} = this.props
+
+        if (focus.col + 1 < cols.length) {
+            keyDownHandlers.changeFocus.bind(this)({ row: focus.row, col: focus.col + 1 })
+        }
+    },
+}
+
+var DataGrid = class DataGrid extends AbstractReactComponent {
+    constructor(props) {
+        super(props);
+
+        this.bindMethods('handleScroll', 'renderHeaderCol', 'renderCell',
+            'handleKeyDown', 'ensureFocusVisible', 'handleResizerMouseDown',
+            'handleMouseUp', 'handleMouseMove', 'unFocus', 'handleCellClick',
+            'handleCheckboxChange');
+
+        var cols = []
+        cols.push({_rowCheck: true, width: 32, resizeable: false})
+        props.cols.forEach((col, colIndex) => {
+            cols.push(col)
+        })
+
+        var colWidths = {}
+        cols.forEach((col, colIndex) => {
+            colWidths[colIndex] = col.width
+        })
+
+        this.state = {
+            focus: {row: 2, col: 3},
+            cols: cols,
+            columnSizeDragged: false,
+            colWidths: colWidths,
+            selectedIds: {1: true, 2:true},    // označené řádky podle id - napříč stránkami - jedná se o reálné označení řádku, např. pro akce atp.
+            selectedRowIndexes: {3: true, 4:true, 6:true, 7:true}, // označené řádky v aktuálním zobrazení - pouze klientské označení
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+    }
+
+    componentDidMount() {
+        document.addEventListener('mouseup', this.handleMouseUp);
+        document.addEventListener('mousemove', this.handleMouseMove);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('mouseup', this.handleMouseUp);
+        document.removeEventListener('mousemove', this.handleMouseMove);
+    }
+
+    handleCellClick(rowIndex, colIndex, e) {
+        if (colIndex === 0) {   // první sloupec - označování řádků, zde neřešíme
+            return
+        }
+
+        this.unFocus()
+
+        const {focus, selectedRowIndexes} = this.state
+        const {rows} = this.props
+        var newFocus = {row: rowIndex, col: colIndex}
+        var newSelectedRowIndexes = selectedRowIndexes
+
+        if (e.ctrlKey) {
+            if (selectedRowIndexes[rowIndex]) { // je označená, odznačíme, ji, ale jen pokud není jediná
+                if (Object.keys(selectedRowIndexes).length > 1) {
+                    newSelectedRowIndexes = {...selectedRowIndexes}
+                    delete newSelectedRowIndexes[rowIndex]
+                }
+            } else {    // není označená, přidáme ji o označení
+                newSelectedRowIndexes = {...selectedRowIndexes, [rowIndex]: true}
+            }
+        } else if (e.shiftKey) {
+            var x1 = focus.row
+            var x2 = rowIndex
+            if (x1 > x2) {
+                var x3 = x1
+                x1 = x2
+                x2 = x3
+            }
+            newSelectedRowIndexes = {}
+            for (var a=x1; a<=x2; a++) {
+                newSelectedRowIndexes[a] = true
+            }
+        } else {
+            newSelectedRowIndexes = {[rowIndex]: true}
+        }
+
+        this.setState({ focus: newFocus, selectedRowIndexes: newSelectedRowIndexes }, this.ensureFocusVisible(newFocus))
+    }
+
+    unFocus() {
+        if (document.selection) {
+            document.selection.empty();
+        } else {
+            window.getSelection().removeAllRanges()
+        }
+    }
+
+    handleKeyDown(event) {
+        if (keyDownHandlers[event.key]) {
+            keyDownHandlers[event.key].call(this, event)
+        }
+    }
+
+    handleScroll(e) {
+        ReactDOM.findDOMNode(this.refs.header).scrollLeft = e.target.scrollLeft
+    }
+
+    handleResizerMouseDown(colIndex, e) {
+        this.unFocus();
+
+        this.setState({
+            position: e.clientX,
+            columnSizeDragged: true,
+            columnSizeDraggedIndex: colIndex,
+        });
+    }
+
+    handleMouseUp() {
+        if (this.state.columnSizeDragged) {
+            this.setState({
+                columnSizeDragged: false,
+            });
+
+            const {columnSizeDraggedIndex, colWidths} = this.state
+
+            this.props.onColumnResize(columnSizeDraggedIndex, colWidths[columnSizeDraggedIndex])
+        }
+    }
+
+    handleMouseMove(e) {
+        if (this.state.columnSizeDragged) {
+            this.unFocus();
+            const ref = this.refs['col' + this.state.columnSizeDraggedIndex];
+            if (ref) {
+                const node = ReactDOM.findDOMNode(ref);
+                if (node.getBoundingClientRect) {
+                    const width = node.getBoundingClientRect().width;
+                    const height = node.getBoundingClientRect().height;
+                    const current = e.clientX;
+                    const size = this.state.cols[this.state.columnSizeDraggedIndex].width;
+                    const position = this.state.position;
+
+                    let newSize = size - (position - current);
+                    var {colWidths} = this.state
+                    colWidths[this.state.columnSizeDraggedIndex] = newSize
+
+                    this.setState({
+                        colWidths: colWidths,
+                    })
+                }
+            }
+        }
+    }
+
+    handleCheckboxChange(row, rowIndex, e) {
+        const {rows} = this.props
+        const {selectedIds, selectedRowIndexes} = this.state
+
+        let currentChecked = selectedIds[row.id] ? true : false
+
+        var newSelectedIds = {...selectedIds}
+
+        // Pokud kliknul na řádek, který je označený podle indexu, bude pro další označené řádky podle indexu provedena stejná akce
+        if (selectedRowIndexes[rowIndex]) {
+            if (currentChecked) {   // odznačení
+                Object.keys(selectedRowIndexes).forEach(index => {
+                    delete newSelectedIds[rows[index].id]
+                })
+            } else {    // označení
+                Object.keys(selectedRowIndexes).forEach(index => {
+                    newSelectedIds[rows[index].id] = true
+                })
+            }
+        } else {    // kliknul na jiný řádek, upravíme jen tuto položku
+            if (currentChecked) {   // odznačení
+                delete newSelectedIds[row.id]
+            } else {    // označení
+                newSelectedIds[row.id] = true
+            }
+        }
+
+        this.setState({ selectedIds: newSelectedIds })
+    }
+
+    renderCell(row, rowIndex, col, colIndex, colFocus, cellFocus) {
+        const {colWidths, selectedIds} = this.state
+
+        var content
+        if (col._rowCheck) {    // speciální slupeček pro označování řádků
+            const checked = selectedIds[row.id] === true
+
+            content = (
+                <div className='cell-container'>
+                    <input type='checkbox' checked={checked} onChange={this.handleCheckboxChange.bind(this, row, rowIndex)} />
+                </div>
+            )
+        } else {
+            if (col.cellRenderer) {
+                content = col.cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus)
+            } else {
+                content = <div className='cell-container'>{row[col.dataName]}</div>
+            }
+        }
+
+        var colCls = colFocus ? 'focus' : ''
+        var cellCls = cellFocus ? ' cell-focus' : ''
+
+        return (
+            <td
+                ref={rowIndex + '-' + colIndex}
+                className={colCls + cellCls}
+                style={{width: colWidths[colIndex]}}
+                onClick={this.handleCellClick.bind(this, rowIndex, colIndex)}
+            >
+                {content}
+            </td>
+        )
+    }
+
+    renderHeaderCol(col, colIndex, colFocus) {
+        const {colWidths} = this.state
+
+        var content
+
+        if (col._rowCheck) {    // speciální slupeček pro označování řádků
+            content = <div className='cell-container'></div>
+        } else {
+            if (col.headerColRenderer) {
+                content = col.headerColRenderer(col)
+            } else {
+                content = <div className='cell-container' title={col.desc}>{col.title}</div>
+            }
+        }
+
+        var colCls = colFocus ? 'focus' : ''
+
+        var resizer
+        if (typeof col.resizeable === 'undefined'
+            || col.resizeable !== false) {
+            resizer = <Resizer onMouseDown={this.handleResizerMouseDown.bind(this, colIndex)} />
+        }
+
+        return (
+            <th ref={'col' + colIndex} className={colCls} style={{width: colWidths[colIndex]}}>
+                {content}
+                {resizer}
+            </th>
+        )
+    }
+
+    ensureFocusVisible(focus) {
+        var cellNode = ReactDOM.findDOMNode(this.refs[focus.row + '-' + focus.col])
+        if (cellNode !== null) {
+            var bodyNode = ReactDOM.findDOMNode(this.refs.body)
+            scrollIntoView(cellNode, bodyNode, { onlyScrollIfNeeded: true })
+        }
+    }
+
+    render() {
+        var cls = this.props.className ? 'datagrid-container ' + this.props.className : 'datagrid-container'
+
+        const {rows} = this.props
+        const {focus, cols, colWidths, selectedRowIndexes} = this.state
+
+        var fullWidth = 0
+        cols.forEach((col, colIndex) => {
+            fullWidth += colWidths[colIndex]
+        })
+
+        return (
+            <div className={cls} onKeyDown={this.handleKeyDown} tabIndex={0}>
+                <div ref='header' className='header-container'>
+                    <table style={{width: fullWidth + __scrollWidth}}>
+                        <thead>
+                            <tr>
+                                {cols.map((col, colIndex) => this.renderHeaderCol(col, colIndex, focus.col === colIndex))}
+                                <th className='th-empty-scroll'></th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+                <div ref='body' className='body-container' onScroll={this.handleScroll}>
+                    <table style={{width: fullWidth}}>
+                        <tbody>
+                            {rows.map((row, rowIndex) => {
+                                const rowWasFocus = focus.row === rowIndex
+
+                                var rowCls = rowWasFocus ? 'focus' : ''
+                                if (selectedRowIndexes[rowIndex]) {
+                                    rowCls += ' selected-index'
+                                }
+
+                                const cells = cols.map((col, colIndex) => this.renderCell(row, rowIndex, col, colIndex, focus.col === colIndex, rowWasFocus && focus.col === colIndex))
+                                return (
+                                    <tr className={rowCls}>
+                                        {cells}
+                                    </tr>
+                                )
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        )
+    }
+}
+
+module.exports = connect()(DataGrid);

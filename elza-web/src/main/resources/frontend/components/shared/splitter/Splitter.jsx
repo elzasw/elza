@@ -1,10 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent} from 'components';
+import {AbstractReactComponent, Resizer} from 'components';
 
 require ('./Splitter.less')
-var Resizer = require ('./Resizer')
 var Pane = require ('./Pane')
 
 var Splitter = class Splitter extends AbstractReactComponent {
