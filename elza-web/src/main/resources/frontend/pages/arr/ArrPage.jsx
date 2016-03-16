@@ -11,13 +11,13 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Tabs, Icon, Ribbon, i18n} from 'components';
-import {FaExtendedView, FaForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs, ImportForm} from 'components';
+import {FundExtendedView, FundForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FundFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs, ImportForm} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {approveFa, showRegisterJp} from 'actions/arr/fa'
+import {approveFund, showRegisterJp} from 'actions/arr/fund'
 import {scopesDirty} from 'actions/refTables/scopesData'
 import {versionValidate} from 'actions/arr/versionValidation'
 import {packetsFetchIfNeeded} from 'actions/arr/packets'
@@ -27,7 +27,7 @@ var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components'
 import {barrier} from 'components/Utils';
-import {isFaRootId} from 'components/arr/ArrUtils';
+import {isFundRootId} from 'components/arr/ArrUtils';
 import {setFocus} from 'actions/global/focus'
 
 var _developerSelectedTab = 0
@@ -36,7 +36,7 @@ var keyModifier = Utils.getKeyModifier()
 
 var keymap = {
     Arr: {
-        approveFaVersion: keyModifier + 'z',
+        approveFundVersion: keyModifier + 'z',
         bulkActions: keyModifier + 'h',
         registerJp: keyModifier + 'j',
         area0: keyModifier + '0',
@@ -52,36 +52,36 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
-            'handleApproveFaVersion', 'handleCallApproveFaVersion', 'getActiveFindingAidId', 'handleBulkActionsDialog',
-            'handleValidationDialog', 'handleEditFaVersion', 'handleCallEditFaVersion', 'handleShortcuts', 'handleImport',
+            'handleApproveFundVersion', 'handleCallApproveFundVersion', 'getActiveFundId', 'handleBulkActionsDialog',
+            'handleValidationDialog', 'handleEditFundVersion', 'handleCallEditFundVersion', 'handleShortcuts', 'handleImport',
             'renderDeveloperPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs');
 
-        this.state = {faFileTreeOpened: false, developerExpandedSpecsIds: {}};
+        this.state = {fundFileTreeOpened: false, developerExpandedSpecsIds: {}};
     }
 
     componentDidMount() {
         this.dispatch(packetTypesFetchIfNeeded());
-        var findingAidId = this.getActiveFindingAidId();
-        if (findingAidId !== null) {
-            this.dispatch(packetsFetchIfNeeded(findingAidId));
+        var fundId = this.getActiveFundId();
+        if (fundId !== null) {
+            this.dispatch(packetsFetchIfNeeded(fundId));
         }
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(packetTypesFetchIfNeeded());
-        var findingAidId = this.getActiveFindingAidId();
-        if (findingAidId !== null) {
-            this.dispatch(packetsFetchIfNeeded(findingAidId));
+        var fundId = this.getActiveFundId();
+        if (fundId !== null) {
+            this.dispatch(packetsFetchIfNeeded(fundId));
         }
-        var activeFa = this.getActiveInfo(nextProps.arrRegion).activeFa;
-        if (activeFa) {
-            var validation = activeFa.versionValidation;
-            this.requestValidationData(validation.isDirty, validation.isFetching, activeFa.versionId);
+        var activeFund = this.getActiveInfo(nextProps.arrRegion).activeFund;
+        if (activeFund) {
+            var validation = activeFund.versionValidation;
+            this.requestValidationData(validation.isDirty, validation.isFetching, activeFund.versionId);
 
             if (nextProps.developer.enabled) {
                 var node;
-                if (activeFa.nodes && activeFa.nodes.activeIndex !== null) {
-                    node = activeFa.nodes.nodes[activeFa.nodes.activeIndex]
+                if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
+                    node = activeFund.nodes.nodes[activeFund.nodes.activeIndex]
                 }
                 if (!node) {
                     return
@@ -94,7 +94,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                         id: node.selectedSubNodeId,
                         key: node.nodeKey,
                         version: node.subNodeForm.data.node.version
-                    }, activeFa.versionId));
+                    }, activeFund.versionId));
                 }
             }
         }
@@ -107,8 +107,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     handleShortcuts(action) {
         console.log("#handleShortcuts", '[' + action + ']', this);
         switch (action) {
-            case 'approveFaVersion':
-                this.handleApproveFaVersion()
+            case 'approveFundVersion':
+                this.handleApproveFundVersion()
                 break
             case 'bulkActions':
                 this.handleBulkActionsDialog()
@@ -135,43 +135,43 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         return { shortcuts: shortcutManager };
     }
 
-    getActiveFindingAidId() {
+    getActiveFundId() {
         var arrRegion = this.props.arrRegion;
-        var activeFa = arrRegion.activeIndex != null ? arrRegion.fas[arrRegion.activeIndex] : null;
-        if (activeFa) {
-            return activeFa.faId;
+        var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+        if (activeFund) {
+            return activeFund.fundId;
         } else {
             return null;
         }
     }
 
     /**
-     * Vyvolání akce uzavření verze AP.
+     * Vyvolání akce uzavření verze AS.
      * @param data {Object} data pro uzavření - z formuláře
      */
-    handleCallApproveFaVersion(data) {
+    handleCallApproveFundVersion(data) {
         var activeInfo = this.getActiveInfo();
-        this.dispatch(approveFa(activeInfo.activeFa.versionId, data.ruleSetId, data.rulArrTypeId));
+        this.dispatch(approveFund(activeInfo.activeFund.versionId, data.ruleSetId, data.rulArrTypeId));
     }
 
     /**
-     * Zobrazení dualogu uzavření verze AP.
+     * Zobrazení dualogu uzavření verze AS.
      */
-    handleApproveFaVersion() {
+    handleApproveFundVersion() {
         var activeInfo = this.getActiveInfo();
         var data = {
-            name_: activeInfo.activeFa.name,
-            ruleSetId: activeInfo.activeFa.activeVersion.arrangementType.ruleSetId,
-            rulArrTypeId: activeInfo.activeFa.activeVersion.arrangementType.id
+            name_: activeInfo.activeFund.name,
+            ruleSetId: activeInfo.activeFund.activeVersion.arrangementType.ruleSetId,
+            rulArrTypeId: activeInfo.activeFund.activeVersion.arrangementType.id
         }
         this.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.fa.title.approve'),
-                <FaForm
+                i18n('arr.fund.title.approve'),
+                <FundForm
                     approve
                     initData={data}
-                    onSubmitForm={this.handleCallApproveFaVersion}/>
+                    onSubmitForm={this.handleCallApproveFundVersion}/>
             )
         );
     }
@@ -182,13 +182,13 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
      */
     getActiveInfo(from = this.props.arrRegion) {
         var arrRegion = from;
-        var activeFa = null;
+        var activeFund = null;
         var activeNode = null;
         var activeSubNode = null;
         if (arrRegion.activeIndex != null) {
-            activeFa = arrRegion.fas[arrRegion.activeIndex];
-            if (activeFa.nodes.activeIndex != null) {
-                activeNode = activeFa.nodes.nodes[activeFa.nodes.activeIndex];
+            activeFund = arrRegion.funds[arrRegion.activeIndex];
+            if (activeFund.nodes.activeIndex != null) {
+                activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
                 if (activeNode.selectedSubNodeId != null) {
                     var i = indexById(activeNode.childNodes, activeNode.selectedSubNodeId);
                     if (i != null) {
@@ -198,7 +198,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             }
         }
         return {
-            activeFa,
+            activeFund,
             activeNode,
             activeSubNode,
         }
@@ -213,21 +213,21 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
 
     handleBulkActionsDialog() {
-        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.bulkActions'),
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.title.bulkActions'),
             <BulkActionsDialog mandatory={false}/>
             )
         );
     }
 
     handleValidationDialog() {
-        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.versionValidation'), <VersionValidationDialog />));
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.title.versionValidation'), <VersionValidationDialog />));
     }
 
-    handleEditFaVersion() {
+    handleEditFundVersion() {
         var activeInfo = this.getActiveInfo();
         var that = this;
         barrier(
-            WebApi.getScopes(activeInfo.activeFa.versionId),
+            WebApi.getScopes(activeInfo.activeFund.versionId),
             WebApi.getAllScopes()
         )
             .then(data => {
@@ -238,20 +238,20 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             })
             .then(json => {
                 var data = {
-                    name: activeInfo.activeFa.name,
+                    name: activeInfo.activeFund.name,
                     regScopes: json.scopes
                 };
-                that.dispatch(modalDialogShow(that, i18n('arr.fa.title.update'),
-                    <FaForm update initData={data} scopeList={json.scopeList}
-                            onSubmitForm={that.handleCallEditFaVersion}/>));
+                that.dispatch(modalDialogShow(that, i18n('arr.fund.title.update'),
+                    <FundForm update initData={data} scopeList={json.scopeList}
+                            onSubmitForm={that.handleCallEditFundVersion}/>));
             });
     }
 
-    handleCallEditFaVersion(data) {
-        let activeFa = this.getActiveInfo().activeFa;
-        data.id = activeFa.faId;
-        this.dispatch(scopesDirty(activeFa.versionId));
-        WebApi.updateFindingAid(data).then((json) => {
+    handleCallEditFundVersion(data) {
+        let activeFund = this.getActiveInfo().activeFund;
+        data.id = activeFund.fundId;
+        this.dispatch(scopesDirty(activeFund.versionId));
+        WebApi.updateFund(data).then((json) => {
             this.dispatch(modalDialogHide());
             this.dispatch(modalDialogHide());
         })
@@ -260,8 +260,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     handleImport() {
         this.dispatch(
             modalDialogShow(this,
-                i18n('import.title.fa'),
-                <ImportForm fa={true}/>
+                i18n('import.title.fund'),
+                <ImportForm fund={true}/>
             )
         );
     }
@@ -278,27 +278,27 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var itemActions = [];
         altActions.push(
             <Button key="fa-import" onClick={this.handleImport}><Icon glyph='fa-download'/>
-                <div><span className="btnText">{i18n('ribbon.action.arr.fa.import')}</span></div>
+                <div><span className="btnText">{i18n('ribbon.action.arr.fund.import')}</span></div>
             </Button>
         );
-        if (activeInfo.activeFa && !activeInfo.activeFa.closed) {
+        if (activeInfo.activeFund && !activeInfo.activeFund.closed) {
             itemActions.push(
-                <Button key="edit-version" onClick={this.handleEditFaVersion}><Icon glyph="fa-pencil"/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fa.update')}</span></div>
+                <Button key="edit-version" onClick={this.handleEditFundVersion}><Icon glyph="fa-pencil"/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.update')}</span></div>
                 </Button>,
-                <Button key="approve-version" onClick={this.handleApproveFaVersion}><Icon glyph="fa-calendar-check-o"/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fa.approve')}</span></div>
+                <Button key="approve-version" onClick={this.handleApproveFundVersion}><Icon glyph="fa-calendar-check-o"/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.approve')}</span></div>
                 </Button>,
                 <Button key="bulk-actions" onClick={this.handleBulkActionsDialog}><Icon glyph="fa-cogs"/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fa.bulkActions')}</span></div>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span></div>
                 </Button>,
                 <Button key="validation" onClick={this.handleValidationDialog}>
-                    <Icon className={activeInfo.activeFa.versionValidation.isFetching ? "fa-spin" : ""} glyph={
-                    activeInfo.activeFa.versionValidation.isFetching ? "fa-refresh" : (
-                        activeInfo.activeFa.versionValidation.count > 0 ? "fa-exclamation-triangle" : "fa-check"
+                    <Icon className={activeInfo.activeFund.versionValidation.isFetching ? "fa-spin" : ""} glyph={
+                    activeInfo.activeFund.versionValidation.isFetching ? "fa-refresh" : (
+                        activeInfo.activeFund.versionValidation.count > 0 ? "fa-exclamation-triangle" : "fa-check"
                     )
                 }/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fa.validation')}</span></div>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.validation')}</span></div>
                 </Button>
             )
         }
@@ -339,7 +339,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
     }
 
-    renderDeveloperDescItems(activeFa, node) {
+    renderDeveloperDescItems(activeFund, node) {
         var rows = []
         if (node.subNodeForm.fetched) {
             node.subNodeForm.infoGroups.forEach(group => {
@@ -403,12 +403,12 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         return <div className='desc-items-container'>{rows}</div>
     }
 
-    renderDeveloperScenarios(activeFa, node) {
+    renderDeveloperScenarios(activeFund, node) {
         if (node.developerScenarios.isFetching) {
             return <Loading />
         }
 
-        let isRootNode = isFaRootId(node.id);
+        let isRootNode = isFundRootId(node.id);
 
         var rows = [];
         for (var key in node.developerScenarios.data) {
@@ -465,15 +465,15 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
     renderDeveloperPanel() {
         const {arrRegion} = this.props;
-        var fas = arrRegion.fas;
-        var activeFa = arrRegion.activeIndex != null ? arrRegion.fas[arrRegion.activeIndex] : null;
-        if (!activeFa) {
+        var funds = arrRegion.funds;
+        var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+        if (!activeFund) {
             return
         }
 
         var node
-        if (activeFa.nodes && activeFa.nodes.activeIndex !== null) {
-            node = activeFa.nodes.nodes[activeFa.nodes.activeIndex]
+        if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
+            node = activeFund.nodes.nodes[activeFund.nodes.activeIndex]
         }
         if (!node) {
             return
@@ -486,8 +486,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                                onSelect={(item)=>{_developerSelectedTab = item.id;this.setState({})}}
                     />
                     <Tabs.Content>
-                        {_developerSelectedTab === 0 && this.renderDeveloperDescItems(activeFa, node)}
-                        {_developerSelectedTab === 1 && this.renderDeveloperScenarios(activeFa, node)}
+                        {_developerSelectedTab === 0 && this.renderDeveloperDescItems(activeFund, node)}
+                        {_developerSelectedTab === 1 && this.renderDeveloperScenarios(activeFund, node)}
                     </Tabs.Content>
                 </Tabs.Container>
             </div>
@@ -495,53 +495,53 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     render() {
-        const {developer, focus, splitter, arrRegion, faFileTree, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+        const {developer, focus, splitter, arrRegion, fundFileTree, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
 
         var showRegisterJp = arrRegion.showRegisterJp;
 
-        var fas = arrRegion.fas;
-        var activeFa = arrRegion.activeIndex != null ? arrRegion.fas[arrRegion.activeIndex] : null;
+        var funds = arrRegion.funds;
+        var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
         var leftPanel;
-        if (arrRegion.extendedView) {   // rozšířené zobrazení stromu AP
+        if (arrRegion.extendedView) {   // rozšířené zobrazení stromu AS
         } else {
             leftPanel = (
-                <FaTreeTabs
-                    fas={fas}
-                    activeFa={activeFa}
+                <FundTreeTabs
+                    funds={funds}
+                    activeFund={activeFund}
                     focus={focus}
                 />
             )
         }
 
         var packets = [];
-        var findingAidId = this.getActiveFindingAidId();
-        if (findingAidId && arrRegion.packets[findingAidId]) {
-            packets = arrRegion.packets[findingAidId].items;
+        var fundId = this.getActiveFundId();
+        if (fundId && arrRegion.packets[fundId]) {
+            packets = arrRegion.packets[fundId].items;
         }
 
         var centerPanel;
-        if (activeFa) {
-            if (arrRegion.extendedView) {   // rozšířené zobrazení stromu AP
+        if (activeFund) {
+            if (arrRegion.extendedView) {   // rozšířené zobrazení stromu AS
                 centerPanel = (
-                    <FaExtendedView
-                        fa={activeFa}
-                        versionId={activeFa.versionId}
+                    <FundExtendedView
+                        fund={activeFund}
+                        versionId={activeFund.versionId}
                     />
                 )
-            } else if (activeFa.nodes) {
+            } else if (activeFund.nodes) {
                 centerPanel = (
                     <NodeTabs
-                        versionId={activeFa.versionId}
-                        fa={activeFa}
-                        closed={activeFa.closed}
-                        nodes={activeFa.nodes.nodes}
-                        activeIndex={activeFa.nodes.activeIndex}
+                        versionId={activeFund.versionId}
+                        fund={activeFund}
+                        closed={activeFund.closed}
+                        nodes={activeFund.nodes.nodes}
+                        activeIndex={activeFund.nodes.activeIndex}
                         rulDataTypes={rulDataTypes}
                         calendarTypes={calendarTypes}
                         descItemTypes={descItemTypes}
                         packetTypes={packetTypes}
                         packets={packets}
-                        findingAidId={findingAidId}
+                        fundId={fundId}
                         showRegisterJp={showRegisterJp}
                     />
                 )
@@ -555,10 +555,10 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         )
 
         var appContentExt = (
-            <ToggleContent className="fa-file-toggle-container" alwaysRender opened={this.state.faFileTreeOpened}
-                           onShowHide={(opened)=>this.setState({faFileTreeOpened: opened})}
+            <ToggleContent className="fa-file-toggle-container" alwaysRender opened={this.state.fundFileTreeOpened}
+                           onShowHide={(opened)=>this.setState({fundFileTreeOpened: opened})}
                            closedIcon="fa-chevron-right" openedIcon="fa-chevron-left">
-                <FaFileTree {...faFileTree} onSelect={()=>this.setState({faFileTreeOpened: false})}/>
+                <FundFileTree {...fundFileTree} onSelect={()=>this.setState({fundFileTreeOpened: false})}/>
             </ToggleContent>
         )
 
@@ -579,11 +579,11 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, faFileTree, refTables, form, focus, developer} = state
+    const {splitter, arrRegion, fundFileTree, refTables, form, focus, developer} = state
     return {
         splitter,
         arrRegion,
-        faFileTree,
+        fundFileTree,
         focus,
         developer,
         rulDataTypes: refTables.rulDataTypes,
@@ -596,7 +596,7 @@ function mapStateToProps(state) {
 ArrPage.propTypes = {
     splitter: React.PropTypes.object.isRequired,
     arrRegion: React.PropTypes.object.isRequired,
-    faFileTree: React.PropTypes.object.isRequired,
+    fundFileTree: React.PropTypes.object.isRequired,
     developer: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,

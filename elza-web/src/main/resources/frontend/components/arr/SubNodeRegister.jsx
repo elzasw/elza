@@ -5,8 +5,8 @@ import ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, Loading, NoFocusButton} from 'components';
 import {connect} from 'react-redux'
 
-import {faSubNodeRegisterValueDelete, faSubNodeRegisterValueAdd,
-        faSubNodeRegisterValueFocus, faSubNodeRegisterValueBlur, faSubNodeRegisterValueChange} from 'actions/arr/subNodeRegister'
+import {fundSubNodeRegisterValueDelete, fundSubNodeRegisterValueAdd,
+        fundSubNodeRegisterValueFocus, fundSubNodeRegisterValueBlur, fundSubNodeRegisterValueChange} from 'actions/arr/subNodeRegister'
 import {registrySelect, registryAdd} from 'actions/registry/registryRegionList'
 import NodeRegister from './registerForm/NodeRegister'
 import {routerNavigate} from 'actions/router'
@@ -40,45 +40,45 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
      * @param form {Object} data z formuláře
      */
     handleCreatedRecord(index, data, submitType) {
-        const {versionId, selectedSubNodeId, nodeKey, fa} = this.props;
+        const {versionId, selectedSubNodeId, nodeKey, fund} = this.props;
 
         // TODO: sjednoceni od Pavla - ELZA-591
-        this.dispatch(faSubNodeRegisterValueFocus(versionId, selectedSubNodeId, nodeKey, index));
-        this.dispatch(faSubNodeRegisterValueChange(versionId, selectedSubNodeId, nodeKey, index, data.recordId));
-        this.dispatch(faSubNodeRegisterValueBlur(versionId, selectedSubNodeId, nodeKey, index));
+        this.dispatch(fundSubNodeRegisterValueFocus(versionId, selectedSubNodeId, nodeKey, index));
+        this.dispatch(fundSubNodeRegisterValueChange(versionId, selectedSubNodeId, nodeKey, index, data.recordId));
+        this.dispatch(fundSubNodeRegisterValueBlur(versionId, selectedSubNodeId, nodeKey, index));
 
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
-            this.dispatch(registrySelect(data.recordId, fa));
+            this.dispatch(registrySelect(data.recordId, fund));
             this.dispatch(routerNavigate('registry'));
         } else {    // nastavení focus zpět na prvek
         }
     }
 
     handleAddClick() {
-        this.dispatch(faSubNodeRegisterValueAdd(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey));
+        this.dispatch(fundSubNodeRegisterValueAdd(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey));
     }
 
     handleChange(index, recordId) {
-        this.dispatch(faSubNodeRegisterValueChange(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, index, recordId));
+        this.dispatch(fundSubNodeRegisterValueChange(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, index, recordId));
     }
 
     handleDetail(index, recordId) {
-        const {fa} = this.props;
-        this.dispatch(registrySelect(recordId, fa));
+        const {fund} = this.props;
+        this.dispatch(registrySelect(recordId, fund));
         this.dispatch(routerNavigate('registry'));
     }
 
     handleFocus(index) {
-        this.dispatch(faSubNodeRegisterValueFocus(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, index));
+        this.dispatch(fundSubNodeRegisterValueFocus(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, index));
     }
 
     handleBlur(index) {
-        this.dispatch(faSubNodeRegisterValueBlur(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, index));
+        this.dispatch(fundSubNodeRegisterValueBlur(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, index));
     }
 
     handleRemove(index) {
-        this.dispatch(faSubNodeRegisterValueDelete(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, index));
+        this.dispatch(fundSubNodeRegisterValueDelete(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, index));
     }
 
     renderLink(link, index) {
@@ -136,13 +136,13 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
 
 function mapStateToProps(state) {
     const {arrRegion} = state
-    var fa = null;
+    var fund = null;
     if (arrRegion.activeIndex != null) {
-        fa = arrRegion.fas[arrRegion.activeIndex];
+        fund = arrRegion.funds[arrRegion.activeIndex];
     }
 
     return {
-        fa: fa
+        fund: fund
     }
 }
 

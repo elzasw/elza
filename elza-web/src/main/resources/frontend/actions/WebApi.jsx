@@ -5,7 +5,7 @@
 import {AjaxUtils} from 'components';
 
 /*
-AjaxUtils.ajaxGet('/api/arrangementManager/getFindingAids')
+AjaxUtils.ajaxGet('/api/arrangementManager/getFunds')
     .then(json=>{
         console.log(1111, json);
     });
@@ -15,7 +15,7 @@ class WebApi{
     constructor() {
     }
 
-    findInFaTree(versionId, nodeId, searchText, type) {
+    findInFundTree(versionId, nodeId, searchText, type) {
         var data = {
             versionId: versionId,
             nodeId: nodeId,
@@ -25,14 +25,14 @@ class WebApi{
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/fulltext', null,  data);
     }
 
-    getFaFileTree() {
+    getFundFileTree() {
         return AjaxUtils.ajaxGet('/api/arrangementManager/getFunds')
             .then(json=>{
-                return json.map(i=>{return {id:i.findingAidId, name:i.name}});
+                return json.map(i=>{return {id:i.fundId, name:i.name}});
             });
     }
 
-    getFindingAidsByVersionIds(versionIds) {
+    getFundsByVersionIds(versionIds) {
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/getVersions', null, {ids: versionIds});
     }
 
@@ -228,7 +228,7 @@ class WebApi{
         });
     }
 
-    getFaFileTree() {
+    getFundFileTree() {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFunds');
     }
 
@@ -308,7 +308,7 @@ class WebApi{
 
 
     getScopes(versionId = null) {
-        return AjaxUtils.ajaxGet('/api/registryManagerV2/faScopes', {versionId: versionId})
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/fundScopes', {versionId: versionId})
             .then(json=>{
                 return json
             });
@@ -383,44 +383,44 @@ class WebApi{
         return this.getData(data, 1);
     }
 
-    getFaNodeForm(versionId, nodeId) {
+    getFundNodeForm(versionId, nodeId) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/form');
     }
 
-    getFaNodeForms(versionId, nodeIds) {
+    getFundNodeForms(versionId, nodeIds) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + versionId + '/forms', {nodeIds: nodeIds})
     }
 
-    getFaNodeForms(versionId, nodeIds) {
+    getFundNodeForms(versionId, nodeIds) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + versionId + '/forms', {nodeIds: nodeIds})
     }
 
-    getFaNodeFormsWithAround(versionId, nodeId, around) {
+    getFundNodeFormsWithAround(versionId, nodeId, around) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + versionId + '/' + nodeId + '/' + around + '/forms')
     }
 
-    getFaNodeRegister(versionId, nodeId) {
+    getFundNodeRegister(versionId, nodeId) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/registerLinks/' + nodeId + '/' + versionId + '/form')
                 .then(json=>{
                     return json
                 });
     }
 
-    deleteFaNodeRegister(versionId, nodeId, data) {
+    deleteFundNodeRegister(versionId, nodeId, data) {
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/registerLinks/' + nodeId + '/' + versionId + '/delete', null, data)
                 .then(json=>{
                     return json
                 });
     }
 
-    createFaNodeRegister(versionId, nodeId, data) {
+    createFundNodeRegister(versionId, nodeId, data) {
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/registerLinks/' + nodeId + '/' + versionId + '/create', null, data)
                 .then(json=>{
                     return json
                 });
     }
 
-    updateFaNodeRegister(versionId, nodeId, data) {
+    updateFundNodeRegister(versionId, nodeId, data) {
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/registerLinks/' + nodeId + '/' + versionId + '/update', null, data)
                 .then(json=>{
                     return json
@@ -459,24 +459,24 @@ class WebApi{
                 });
     }
 
-    getPackets(findingAidId) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/packets/' + findingAidId)
+    getPackets(fundId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/packets/' + fundId)
                 .then(json=>{
                     return json
                 });
     }
 
-    insertPacket(findingAidId, storageNumber, packetTypeId, invalidPacket) {
+    insertPacket(fundId, storageNumber, packetTypeId, invalidPacket) {
 
         var data = {packetTypeId: packetTypeId, storageNumber: storageNumber, invalidPacket: invalidPacket};
 
-        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/packets/' + findingAidId, {}, data)
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/packets/' + fundId, {}, data)
                 .then(json=>{
                     return json
                 });
     }
 
-    getFaNodeForm1(versionId, nodeId) {
+    getFundNodeForm1(versionId, nodeId) {
         var node = findNodeById(_faRootNode, nodeId);
         var data = {
             node: node,
@@ -505,7 +505,7 @@ class WebApi{
             });
     }
 
-    getFaTree(versionId, nodeId, expandedIds={}, includeIds=[]) {
+    getFundTree(versionId, nodeId, expandedIds={}, includeIds=[]) {
         var data = {
             versionId,
             nodeId,
@@ -517,18 +517,18 @@ class WebApi{
                 data.expandedIds.push(prop);
             }
         }
-        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/faTree', null, data)
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/fundTree', null, data)
             .then(json=>{
                 return json
             });
     }
 
-    getFaTreeNodes(versionId, nodeIds) {
+    getFundTreeNodes(versionId, nodeIds) {
         var data = {
             versionId,
             nodeIds
         };
-        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/faTree/nodes', null, data);
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/fundTree/nodes', null, data);
     }
 
     getPartyNameFormTypes() {
@@ -549,14 +549,14 @@ class WebApi{
 
 
 
-    createFindingAid(name, ruleSetId, arrangementTypeId) {
+    createFund(name, ruleSetId, arrangementTypeId) {
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/funds', {name: name, arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId})
             .then(json=>{
                 return json;
             });
     }
 
-    updateFindingAid(data) {
+    updateFund(data) {
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/updateFund', null, data)
     }
 

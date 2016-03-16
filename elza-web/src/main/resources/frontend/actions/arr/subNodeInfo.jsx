@@ -10,7 +10,7 @@ import * as types from 'actions/constants/ActionTypes';
 /**
  * Načtení subNodeInfo store pro předaná data.
  * @param {Object} state globální store
- * @param {int} versionId verze AP
+ * @param {int} versionId verze AS
  * @param {int} nodeKey klíč záložky
  * @return subNodeInfo store
  */
@@ -25,18 +25,18 @@ function getSubNodeInfoStore(state, versionId, nodeKey) {
 
 /**
  * Vyžádání dat - aby byla ve store k dispozici.
- * @param {int} versionId verze AP
+ * @param {int} versionId verze AS
  * @param {int} nodeId id node záložky, které se to týká
  * @param {int} nodeKey klíč záložky
  */
-export function faSubNodeInfoFetchIfNeeded(versionId, nodeId, nodeKey) {
+export function fundSubNodeInfoFetchIfNeeded(versionId, nodeId, nodeKey) {
     return (dispatch, getState) => {
         var state = getState();
         var subNodeInfo = getSubNodeInfoStore(state, versionId, nodeKey);
 
         if (subNodeInfo != null) {
             if (!subNodeInfo.fetched && !subNodeInfo.isFetching) {
-                return dispatch(faSubNodeInfoFetch(versionId, nodeId, nodeKey));
+                return dispatch(fundSubNodeInfoFetch(versionId, nodeId, nodeKey));
             }
         }
     }
@@ -44,28 +44,28 @@ export function faSubNodeInfoFetchIfNeeded(versionId, nodeId, nodeKey) {
 
 /**
  * Nové načtení dat.
- * @param {int} versionId verze AP
+ * @param {int} versionId verze AS
  * @param {int} nodeId id node záložky, které se to týká
  * @param {int} nodeKey klíč záložky
  */
-export function faSubNodeInfoFetch(versionId, nodeId, nodeKey) {
+export function fundSubNodeInfoFetch(versionId, nodeId, nodeKey) {
     return dispatch => {
-        dispatch(faSubNodeInfoRequest(versionId, nodeId, nodeKey))
-        return WebApi.getFaTree(versionId, nodeId)
-            .then(json => dispatch(faSubNodeInfoReceive(versionId, nodeId, nodeKey, json)))
+        dispatch(fundSubNodeInfoRequest(versionId, nodeId, nodeKey))
+        return WebApi.getFundTree(versionId, nodeId)
+            .then(json => dispatch(fundSubNodeInfoReceive(versionId, nodeId, nodeKey, json)))
     };
 }
 
 /**
  * Nová data byla načtena.
- * @param {int} versionId verze AP
+ * @param {int} versionId verze AS
  * @param {int} nodeId id node záložky, které se to týká
  * @param {int} nodeKey klíč záložky
  * @param {Object} json objekt s daty
  */
-export function faSubNodeInfoReceive(versionId, nodeId, nodeKey, json) {
+export function fundSubNodeInfoReceive(versionId, nodeId, nodeKey, json) {
     return {
-        type: types.FA_SUB_NODE_INFO_RECEIVE,
+        type: types.FUND_SUB_NODE_INFO_RECEIVE,
         versionId,
         nodeId,
         nodeKey,
@@ -76,13 +76,13 @@ export function faSubNodeInfoReceive(versionId, nodeId, nodeKey, json) {
 
 /**
  * Bylo zahájeno nové načítání dat.
- * @param {int} versionId verze AP
+ * @param {int} versionId verze AS
  * @param {int} nodeId id node záložky, které se to týká
  * @param {int} nodeKey klíč záložky
  */
-export function faSubNodeInfoRequest(versionId, nodeId, nodeKey) {
+export function fundSubNodeInfoRequest(versionId, nodeId, nodeKey) {
     return {
-        type: types.FA_SUB_NODE_INFO_REQUEST,
+        type: types.FUND_SUB_NODE_INFO_REQUEST,
         versionId,
         nodeId,
         nodeKey,

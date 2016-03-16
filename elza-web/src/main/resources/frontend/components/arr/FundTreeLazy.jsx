@@ -2,7 +2,7 @@
  * Strom archivních souborů.
  */
 
-require ('./FaTreeLazy.less');
+require ('./FundTreeLazy.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -80,7 +80,7 @@ var keyDownHandlers = {
     }
 }
 
-var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
+var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -156,7 +156,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
 
         var levels = createReferenceMark(node, onNodeClick.bind(this, node));
 
-        var name = node.name ? node.name : i18n('faTree.node.name.undefined', node.id);
+        var name = node.name ? node.name : i18n('fundTree.node.name.undefined', node.id);
         var title = name
         if (this.props.cutLongLabels) {
             if (name.length > TREE_NAME_MAX_CHARS) {
@@ -285,11 +285,11 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     }
 }
 
-FaTreeLazy.defaultProps = {
+FundTreeLazy.defaultProps = {
     rowHeight: 16
 }
 
-FaTreeLazy.propTypes = {
+FundTreeLazy.propTypes = {
     expandedIds: React.PropTypes.object.isRequired,
     cutLongLabels: React.PropTypes.bool.isRequired,
     selectedId: React.PropTypes.number,
@@ -308,4 +308,4 @@ FaTreeLazy.propTypes = {
     onContextMenu: React.PropTypes.func,
 }
 
-module.exports = connect(null, null, null, { withRef: true })(FaTreeLazy);
+module.exports = connect(null, null, null, { withRef: true })(FundTreeLazy);

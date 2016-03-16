@@ -89,7 +89,7 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
             relation.from.textDate == null || 
             relation.from.textDate == undefined
         ){  
-            relation.from = null;                                                   // pokud není zadaný textová část data, celý fatum se ruší
+            relation.from = null;                                                   // pokud není zadaný textová část data, celý datum se ruší
         }
         if(
             !relation.to || 
@@ -97,7 +97,7 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
             relation.to.textDate == null || 
             relation.to.textDate == undefined
         ){  
-            relation.to = null;                                                     // pokud není zadaný textová část data, celý fatum se ruší
+            relation.to = null;                                                     // pokud není zadaný textová část data, celý datum se ruší
         }
 
         this.dispatch(updateRelation(relation,partyId));                            // uložení změn a znovu načtení dat osoby              

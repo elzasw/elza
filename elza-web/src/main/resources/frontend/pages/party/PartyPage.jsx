@@ -143,10 +143,10 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             complementType:{relationTypeId:data.relationTypeId}                     // typ vztahu
         };   
         if(relation.from.textDate == "" || relation.from.textDate == null || relation.from.textDate == undefined){  
-            relation.from = null;                                                   // pokud není zadaný textová část data, celý fatum se ruší
+            relation.from = null;                                                   // pokud není zadaný textová část data, celý datum se ruší
         }
         if(relation.to.textDate == "" || relation.to.textDate == null || relation.to.textDate == undefined){  
-            relation.to = null;                                                   // pokud není zadaný textová část data, celý fatum se ruší
+            relation.to = null;                                                   // pokud není zadaný textová část data, celý datum se ruší
         }
         this.dispatch(insertRelation(relation, this.props.partyRegion.selectedPartyID));  //uložení vztahu a znovunačtení osoby             
     }

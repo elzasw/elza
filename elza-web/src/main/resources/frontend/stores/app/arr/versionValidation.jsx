@@ -15,12 +15,12 @@ export default function versionValidation(state = initialState, action) {
                 ...state,
                 isDirty: true
             };
-        case types.FA_VERSION_VALIDATION_LOAD:
+        case types.FUND_VERSION_VALIDATION_LOAD:
             return {
                 ...state,
                 isFetching: true
             };
-        case types.FA_VERSION_VALIDATION_RECEIVED:
+        case types.FUND_VERSION_VALIDATION_RECEIVED:
             return {
                 ...state,
                 ...action.data,

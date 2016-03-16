@@ -63,16 +63,16 @@ export default function stateRegion(state = initialState, action) {
 
                 // Aktivní index dáme do fronty jako poslední, takže bude umístěn na začátek
                 var activeIndex = action.arrRegion.activeIndex
-                action.arrRegion.fas.forEach((faobj, i) => {
+                action.arrRegion.funds.forEach((fundobj, i) => {
                     if (i !== activeIndex) {
-                        var index = indexById(result.arrRegionFront, faobj.versionId, 'versionId');
-                        result.arrRegionFront = updateFront(result.arrRegionFront, faobj, index);
+                        var index = indexById(result.arrRegionFront, fundobj.versionId, 'versionId');
+                        result.arrRegionFront = updateFront(result.arrRegionFront, fundobj, index);
                     }
                 })
                 if (activeIndex !== null) {
-                    var faobj = action.arrRegion.fas[activeIndex]
-                    var index = indexById(result.arrRegionFront, faobj.versionId, 'versionId');
-                    result.arrRegionFront = updateFront(result.arrRegionFront, faobj, index);
+                    var fundobj = action.arrRegion.funds[activeIndex]
+                    var index = indexById(result.arrRegionFront, fundobj.versionId, 'versionId');
+                    result.arrRegionFront = updateFront(result.arrRegionFront, fundobj, index);
                 }
             }
 

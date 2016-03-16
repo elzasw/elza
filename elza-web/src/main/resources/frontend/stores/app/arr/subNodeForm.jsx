@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes';
 import {i18n} from 'components'
 import {indexById} from 'stores/app/utils.jsx'
-import {faSubNodeFormValueValidate} from 'actions/arr/subNodeForm'
+import {fundSubNodeFormValueValidate} from 'actions/arr/subNodeForm'
 import {createDescItemFromDb, getDescItemType, updateFormData, createDescItem, consolidateDescItems} from './subNodeFormUtils'
 var subNodeFormUtils = require('./subNodeFormUtils.jsx')
 import {validateInt, validateDouble} from 'components/validate'
@@ -122,7 +122,7 @@ export default function subNodeForm(state = initialState, action) {
     }
 
     switch (action.type) {
-        case types.FA_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
+        case types.FUND_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
             var refType = state.refTypesMap[loc.descItemType.id]
 
             var valueServerError;
@@ -133,7 +133,7 @@ export default function subNodeForm(state = initialState, action) {
 
             state.formData = {...state.formData};
             return {...state};
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
             var descItems = loc.descItemType.descItems;
 
             // Odebrání přesouvané
@@ -153,9 +153,9 @@ export default function subNodeForm(state = initialState, action) {
 
             state.formData = {...state.formData};
             return {...state};
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
             var refType = state.refTypesMap[loc.descItemType.id]
             switch (refType.dataType.code) {
                 case 'PARTY_REF':
@@ -174,7 +174,7 @@ export default function subNodeForm(state = initialState, action) {
                     if (loc.descItem.validateTimer) {
                         clearTimeout(loc.descItem.validateTimer);
                     }
-                    var fc = () => action.dispatch(faSubNodeFormValueValidate(action.versionId, action.nodeId, action.nodeKey, action.valueLocation));
+                    var fc = () => action.dispatch(fundSubNodeFormValueValidate(action.versionId, action.nodeId, action.nodeKey, action.valueLocation));
                     loc.descItem.validateTimer = setTimeout(fc, 250);
                     break;
                 default:
@@ -186,7 +186,7 @@ export default function subNodeForm(state = initialState, action) {
 
             state.formData = {...state.formData};
             return {...state};
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
             var refType = state.refTypesMap[loc.descItemType.id]
             
             loc.descItem.descItemSpecId = action.value;
@@ -195,14 +195,14 @@ export default function subNodeForm(state = initialState, action) {
 
             state.formData = {...state.formData};
             return {...state};
-        case types.FA_SUB_NODE_FORM_VALUE_BLUR:
+        case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
             loc.descItem.hasFocus = false;
             loc.descItemType.hasFocus = false;
             loc.descItemGroup.hasFocus = false;
 
             state.formData = {...state.formData};
             return {...state};
-        case types.FA_SUB_NODE_FORM_VALUE_FOCUS:
+        case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
             loc.descItem.visited = true;
             loc.descItem.hasFocus = true;
             loc.descItemType.hasFocus = true;
@@ -210,7 +210,7 @@ export default function subNodeForm(state = initialState, action) {
             
             state.formData = {...state.formData};
             return {...state};
-        case types.FA_SUB_NODE_FORM_VALUE_ADD:
+        case types.FUND_SUB_NODE_FORM_VALUE_ADD:
             var refType = state.refTypesMap[loc.descItemType.id]
 
             var descItem = createDescItem(loc.descItemType, refType, true);
@@ -221,7 +221,7 @@ export default function subNodeForm(state = initialState, action) {
             return {...state};
         case types.CHANGE_NODES:
             return {...state, dirty: true}
-        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
             state.data.node = action.copySiblingResult.node;
 
             var currentDescItemMap = {}
@@ -243,7 +243,7 @@ export default function subNodeForm(state = initialState, action) {
 
             state.formData = {...state.formData};
             return {...state};
-        case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
+        case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
             state.data.node = action.descItemResult.node;
 
             switch (action.operationType) {
@@ -285,7 +285,7 @@ export default function subNodeForm(state = initialState, action) {
 
             state.formData = {...state.formData};
             return {...state};
-        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
             // Dohledání skupiny a desc item type
             var addGroup, addItemType;
             state.infoGroups.forEach(group => {
@@ -331,7 +331,7 @@ export default function subNodeForm(state = initialState, action) {
 
             state.formData = {...state.formData};
             return {...state};
-        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
             if (action.onlyDescItems) { // jen desc items, nic víc
                 loc.descItemType.descItems = []
             } else {
@@ -355,7 +355,7 @@ export default function subNodeForm(state = initialState, action) {
 
             state.formData = {...state.formData};
             return {...state};
-        case types.FA_SUB_NODE_FORM_VALUE_DELETE:
+        case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
             loc.descItemType.descItems = [
                 ...loc.descItemType.descItems.slice(0, action.valueLocation.descItemIndex),
                 ...loc.descItemType.descItems.slice(action.valueLocation.descItemIndex + 1)
@@ -369,12 +369,12 @@ export default function subNodeForm(state = initialState, action) {
             
             state.formData = {...state.formData};
             return {...state};
-        case types.FA_SUB_NODE_FORM_REQUEST:
+        case types.FUND_SUB_NODE_FORM_REQUEST:
             return Object.assign({}, state, {
                 fetchingId: action.nodeId,
                 isFetching: true,
             })
-        case types.FA_SUB_NODE_FORM_RECEIVE:
+        case types.FUND_SUB_NODE_FORM_RECEIVE:
             // ##
             // # Inicializace dat
             // ##
@@ -406,7 +406,7 @@ export default function subNodeForm(state = initialState, action) {
             updateFormData(result, action.data, refTypesMap);
 
             return result;
-        case types.CHANGE_FA_RECORD:
+        case types.CHANGE_FUND_RECORD:
             return {
                 ...state,
                 data: {

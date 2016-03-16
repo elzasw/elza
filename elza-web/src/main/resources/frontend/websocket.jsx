@@ -7,7 +7,7 @@ import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
         changeNodes, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
-    changeMoveLevel, changeRegistryRecord, changeFa, changeFaRecord} from 'actions/global/change';
+    changeMoveLevel, changeRegistryRecord, changeFund, changeFundRecord} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -27,7 +27,7 @@ function stompConnect() {
 
     client.heartbeat.outgoing = 5000;
     client.heartbeat.incoming = 0;
-    client.connect('guest', 'guest', stompSuccessCallback, stompFailureCallback);
+    client.connect('guest', 'guest', stompSuccessCallback, stompFundilureCallback);
 }
 
 /**
@@ -65,7 +65,7 @@ function stompSuccessCallback(frame) {
  *
  * @param error {string} text chyby
  */
-function stompFailureCallback(error) {
+function stompFundilureCallback(error) {
     store.dispatch(webSocketDisconnect());
     console.error('WebSocket: ' + error);
     setTimeout(stompConnect, 5000);
@@ -148,10 +148,10 @@ function processEvents(values) {
                 break;
 
             case 'FINDING_AID_UPDATE':
-                faChange(value);
+                fundChange(value);
                 break;
             case 'FINDING_AID_RECORD_CHANGE':
-                faRecordChange(value);
+                fundRecordChange(value);
                 break;
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
@@ -193,12 +193,12 @@ function registryChange(value) {
     store.dispatch(changeRegistryRecord(value.ids));
 }
 
-function faChange(value) {
-    store.dispatch(changeFa(value.ids[0]));
+function fundChange(value) {
+    store.dispatch(changeFund(value.ids[0]));
 }
 
-function faRecordChange(value) {
-    store.dispatch(changeFaRecord(value.versionId, value.nodeId, value.version));
+function fundRecordChange(value) {
+    store.dispatch(changeFundRecord(value.versionId, value.nodeId, value.version));
 }
 /**
  * Validace uzlu.

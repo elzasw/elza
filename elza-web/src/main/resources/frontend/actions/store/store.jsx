@@ -107,8 +107,8 @@ export function storeLoadData(type, data, switchView = true) {
                     dispatch(routerNavigate('/arr'));
                 }
                 break;
-            case 'ARR_REGION_FA':
-                dispatch(storeLoad({arrRegionFa: data}));
+            case 'ARR_REGION_FUND':
+                dispatch(storeLoad({arrRegionFund: data}));
                 if (switchView) {
                     dispatch(routerNavigate('/arr'));
                     dispatch(setFocus('arr', 1, 'tree'))

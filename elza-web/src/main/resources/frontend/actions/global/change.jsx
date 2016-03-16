@@ -3,10 +3,10 @@ import * as types from 'actions/constants/ActionTypes';
 import {i18n} from 'components';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions'
 
-export function changeConformityInfo(findingAidVersionId, nodeIds) {
+export function changeConformityInfo(fundVersionId, nodeIds) {
     return {
         type: types.CHANGE_CONFORMITY_INFO,
-        findingAidVersionId: findingAidVersionId,
+        fundVersionId: fundVersionId,
         nodeIds: nodeIds
     }
 }
@@ -27,11 +27,11 @@ export function changePackage() {
     }
 }
 
-export function changePackets(findingAidId) {
+export function changePackets(fundId) {
 
     return {
         type: types.CHANGE_PACKETS,
-        findingAidId: findingAidId
+        fundId: fundId
     }
 }
 
@@ -94,16 +94,16 @@ export function changeRegistryRecord(changedIds){
     }
 }
 
-export function changeFa(versionId) {
+export function changeFund(versionId) {
     return {
-        type: types.CHANGE_FA,
+        type: types.CHANGE_FUND,
         versionId
     }
 }
 
-export function changeFaRecord(versionId, nodeId, version) {
+export function changeFundRecord(versionId, nodeId, version) {
     return {
-        type: types.CHANGE_FA_RECORD,
+        type: types.CHANGE_FUND_RECORD,
         versionId,
         nodeId,
         version

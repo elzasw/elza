@@ -1,26 +1,26 @@
 /**
- * Strom AP.
+ * Strom AS.
  */
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Tabs, FaTreeLazy} from 'components';
+import {AbstractReactComponent, i18n, Tabs, FundTreeLazy} from 'components';
 import * as types from 'actions/constants/ActionTypes';
 import {AppActions} from 'stores';
 import {MenuItem} from 'react-bootstrap';
-import {faTreeFulltextChange, faTreeFulltextSearch, faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeFulltextNextItem, faTreeFulltextPrevItem, faTreeNodeCollapse, faTreeCollapse} from 'actions/arr/faTree'
-import {faSelectSubNode} from 'actions/arr/nodes'
-import {createFaRoot, getParentNode} from './ArrUtils.jsx'
+import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeNodeCollapse, fundTreeCollapse} from 'actions/arr/fundTree'
+import {fundSelectSubNode} from 'actions/arr/nodes'
+import {createFundRoot, getParentNode} from './ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
 import {propsEquals} from 'components/Utils'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
-var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
+var FundTreeMain = class FundTreeMain extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('callFaSelectSubNode', 'handleNodeClick', 'handleSelectInNewTab',
+        this.bindMethods('callFundSelectSubNode', 'handleNodeClick', 'handleSelectInNewTab',
         'handleContextMenu', 'handleFulltextChange', 'handleFulltextSearch',
         'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleCollapse',
         'trySetFocus');
@@ -28,13 +28,13 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
 
     componentDidMount() {
         const {versionId, expandedIds, selectedId} = this.props;
-        this.requestFaTreeData(versionId, expandedIds, selectedId);
+        this.requestFundTreeData(versionId, expandedIds, selectedId);
         this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
         const {versionId, expandedIds, selectedId} = nextProps;
-        this.requestFaTreeData(versionId, expandedIds, selectedId);
+        this.requestFundTreeData(versionId, expandedIds, selectedId);
         this.trySetFocus(nextProps)
     }
 
@@ -64,12 +64,12 @@ return true
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['focus', 'ensureItemVisible', 'dirty', 'expandedIds', 'fa', 'fetched', 'searchedIds', 'nodes', 'selectedId', 'selectedIds', 'fetchingIncludeIds', 'filterCurrentIndex', 'filterText', 'focusId', 'isFetching']
+        var eqProps = ['focus', 'ensureItemVisible', 'dirty', 'expandedIds', 'fund', 'fetched', 'searchedIds', 'nodes', 'selectedId', 'selectedIds', 'fetchingIncludeIds', 'filterCurrentIndex', 'filterText', 'focusId', 'isFetching']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
-    requestFaTreeData(versionId, expandedIds, selectedId) {
-        this.dispatch(faTreeFetchIfNeeded(types.FA_TREE_AREA_MAIN, versionId, expandedIds, selectedId));
+    requestFundTreeData(versionId, expandedIds, selectedId) {
+        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, versionId, expandedIds, selectedId));
     }
 
     /**
@@ -83,11 +83,11 @@ return true
 
         var menu = (
             <ul className="dropdown-menu">
-                <MenuItem onClick={this.handleSelectInNewTab.bind(this, node)}>{i18n('faTree.action.openInNewTab')}</MenuItem>
+                <MenuItem onClick={this.handleSelectInNewTab.bind(this, node)}>{i18n('fundTree.action.openInNewTab')}</MenuItem>
             </ul>
         )
 
-        this.dispatch(faTreeFocusNode(types.FA_TREE_AREA_MAIN, node));
+        this.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MAIN, node));
         this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
     }
 
@@ -98,7 +98,7 @@ return true
     handleSelectInNewTab(node) {
         this.dispatch(contextMenuHide());
 
-        this.callFaSelectSubNode(node, true);
+        this.callFundSelectSubNode(node, true);
     }
 
     /**
@@ -106,12 +106,12 @@ return true
      * @param node {Object} uzel
      * @param openNewTab {Boolean} true, pokud se má otevřít v nové záložce
      */
-    callFaSelectSubNode(node, openNewTab) {
+    callFundSelectSubNode(node, openNewTab) {
         var parentNode = getParentNode(node, this.props.nodes);
         if (parentNode == null) {   // root
-            parentNode = createFaRoot(this.props.fa);
+            parentNode = createFundRoot(this.props.fund);
         }
-        this.dispatch(faSelectSubNode(node.id, parentNode, openNewTab, null, false));
+        this.dispatch(fundSelectSubNode(node.id, parentNode, openNewTab, null, false));
     }
 
     /**
@@ -120,41 +120,41 @@ return true
      * @param e {Object} event
      */
     handleNodeClick(node, e) {
-        this.callFaSelectSubNode(node, false);
+        this.callFundSelectSubNode(node, false);
     }
 
     handleFulltextChange(value) {
-        this.dispatch(faTreeFulltextChange(types.FA_TREE_AREA_MAIN, this.props.versionId, value));
+        this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, this.props.versionId, value));
     }
 
     handleFulltextSearch() {
-        this.dispatch(faTreeFulltextSearch(types.FA_TREE_AREA_MAIN, this.props.versionId));
+        this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, this.props.versionId));
     }
 
     handleFulltextPrevItem() {
-        this.dispatch(faTreeFulltextPrevItem(types.FA_TREE_AREA_MAIN, this.props.versionId));
+        this.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_MAIN, this.props.versionId));
     }
 
     handleFulltextNextItem() {
-        this.dispatch(faTreeFulltextNextItem(types.FA_TREE_AREA_MAIN, this.props.versionId));
+        this.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_MAIN, this.props.versionId));
     }
 
     /**
      * Zabalení stromu
      */
     handleCollapse() {
-        this.dispatch(faTreeCollapse(types.FA_TREE_AREA_MAIN, this.props.fa))
+        this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MAIN, this.props.fund))
     }
 
     render() {
-        const {fa, cutLongLabels} = this.props;
+        const {fund, cutLongLabels} = this.props;
 
         return (
-            <FaTreeLazy 
+            <FundTreeLazy 
                 ref='tree'
                 {...this.props}
                 cutLongLabels={cutLongLabels}
-                onOpenCloseNode={(node, expand) => {expand ? this.dispatch(faTreeNodeExpand(types.FA_TREE_AREA_MAIN, node)) : this.dispatch(faTreeNodeCollapse(types.FA_TREE_AREA_MAIN, node))}}
+                onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MAIN, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MAIN, node))}}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onFulltextChange={this.handleFulltextChange}
@@ -167,5 +167,5 @@ return true
     }
 }
 
-module.exports = connect()(FaTreeMain);
+module.exports = connect()(FundTreeMain);
 

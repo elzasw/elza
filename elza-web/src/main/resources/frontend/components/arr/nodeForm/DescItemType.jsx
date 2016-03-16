@@ -280,7 +280,7 @@ return true;
     }
 
     handleDragStart(e) {
-        // Pokud je AP uzavřené, nelze dělat DND
+        // Pokud je AS uzavřené, nelze dělat DND
         if (this.props.closed) {
             return this.cancelDragging(e)
         }

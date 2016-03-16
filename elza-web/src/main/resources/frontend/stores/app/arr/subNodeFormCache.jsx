@@ -27,12 +27,12 @@ export default function subNodeFormCache(state = subNodeFormCacheInitialState, a
             } else {
                 return state
             }
-        case types.FA_SUB_NODE_FORM_CACHE_REQUEST:
+        case types.FUND_SUB_NODE_FORM_CACHE_REQUEST:
             return {
                 ...state,
                 isFetching: true,
             }
-        case types.FA_SUB_NODE_FORM_CACHE_RESPONSE:
+        case types.FUND_SUB_NODE_FORM_CACHE_RESPONSE:
             var dataCache = {...state.dataCache}
 
             Object.keys(action.formsMap).forEach(nodeId => {

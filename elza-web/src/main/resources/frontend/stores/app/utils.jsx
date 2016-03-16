@@ -11,12 +11,12 @@ function findByNodeKeyInNodes(nodesState, versionId, nodeKey) {
 exports.findByNodeKeyInNodes = findByNodeKeyInNodes
 
 function findByNodeKeyInGlobalState(globalState, versionId, nodeKey) {
-    var faIndex = indexById(globalState.arrRegion.fas, versionId, "versionId");
-    if (faIndex != null) {
-        var nodes = globalState.arrRegion.fas[faIndex].nodes.nodes;
+    var fundIndex = indexById(globalState.arrRegion.funds, versionId, "versionId");
+    if (fundIndex != null) {
+        var nodes = globalState.arrRegion.funds[fundIndex].nodes.nodes;
         for (var a=0; a<nodes.length; a++) {
             if (nodes[a].nodeKey == nodeKey) {
-                return {faIndex: faIndex, node: nodes[a], nodeIndex: a};
+                return {fundIndex: fundIndex, node: nodes[a], nodeIndex: a};
             }
         }
     }

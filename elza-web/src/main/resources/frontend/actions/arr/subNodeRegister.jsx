@@ -3,29 +3,29 @@ import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 
 import * as types from 'actions/constants/ActionTypes';
 
-export function faSubNodeRegisterFetchIfNeeded(versionId, nodeId, nodeKey) {
+export function fundSubNodeRegisterFetchIfNeeded(versionId, nodeId, nodeKey) {
     return (dispatch, getState) => {
         var state = getState();
         var subNodeRegister = getSubNodeRegister(state, versionId, nodeKey);
         if (subNodeRegister != null) {
             if ((!subNodeRegister.fetched || subNodeRegister.dirty) && !subNodeRegister.isFetching) {
-                return dispatch(faSubNodeRegisterFetch(versionId, nodeId, nodeKey));
+                return dispatch(fundSubNodeRegisterFetch(versionId, nodeId, nodeKey));
             }
         }
     }
 }
 
-export function faSubNodeRegisterFetch(versionId, nodeId, nodeKey) {
+export function fundSubNodeRegisterFetch(versionId, nodeId, nodeKey) {
     return (dispatch, getState) => {
-        dispatch(faSubNodeRegisterRequest(versionId, nodeId, nodeKey))
-        return WebApi.getFaNodeRegister(versionId, nodeId)
-                .then(json => dispatch(faSubNodeRegisterReceive(versionId, nodeId, nodeKey, json)))
+        dispatch(fundSubNodeRegisterRequest(versionId, nodeId, nodeKey))
+        return WebApi.getFundNodeRegister(versionId, nodeId)
+                .then(json => dispatch(fundSubNodeRegisterReceive(versionId, nodeId, nodeKey, json)))
     };
 }
 
-export function faSubNodeRegisterReceive(versionId, nodeId, nodeKey, json) {
+export function fundSubNodeRegisterReceive(versionId, nodeId, nodeKey, json) {
     return {
-        type: types.FA_SUB_NODE_REGISTER_RECEIVE,
+        type: types.FUND_SUB_NODE_REGISTER_RECEIVE,
         versionId,
         nodeId,
         nodeKey,
@@ -34,9 +34,9 @@ export function faSubNodeRegisterReceive(versionId, nodeId, nodeKey, json) {
     }
 }
 
-export function faSubNodeRegisterRequest(versionId, nodeId, nodeKey) {
+export function fundSubNodeRegisterRequest(versionId, nodeId, nodeKey) {
     return {
-        type: types.FA_SUB_NODE_REGISTER_REQUEST,
+        type: types.FUND_SUB_NODE_REGISTER_REQUEST,
         versionId,
         nodeId,
         nodeKey,
@@ -61,19 +61,19 @@ function getNode(state, versionId, nodeKey) {
     return null;
 }
 
-export function faSubNodeRegisterValueAdd(versionId, nodeId, nodeKey) {
+export function fundSubNodeRegisterValueAdd(versionId, nodeId, nodeKey) {
     return {
-        type: types.FA_SUB_NODE_REGISTER_VALUE_ADD,
+        type: types.FUND_SUB_NODE_REGISTER_VALUE_ADD,
         versionId,
         nodeId,
         nodeKey
     }
 }
 
-export function faSubNodeRegisterValueChange(versionId, nodeId, nodeKey, index, value) {
+export function fundSubNodeRegisterValueChange(versionId, nodeId, nodeKey, index, value) {
     return (dispatch, getState) => {
         dispatch({
-            type: types.FA_SUB_NODE_REGISTER_VALUE_CHANGE,
+            type: types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE,
             versionId,
             nodeId,
             nodeKey,
@@ -84,14 +84,14 @@ export function faSubNodeRegisterValueChange(versionId, nodeId, nodeKey, index, 
     }
 }
 
-export function faSubNodeRegisterValueDelete(versionId, nodeId, nodeKey, index) {
+export function fundSubNodeRegisterValueDelete(versionId, nodeId, nodeKey, index) {
     return (dispatch, getState) => {
         var state = getState();
         var subNodeRegister = getSubNodeRegister(state, versionId, nodeKey);
         var loc = subNodeRegister.getLoc(subNodeRegister, index);
 
         dispatch({
-            type: types.FA_SUB_NODE_REGISTER_VALUE_DELETE,
+            type: types.FUND_SUB_NODE_REGISTER_VALUE_DELETE,
             versionId,
             nodeId,
             nodeKey,
@@ -99,17 +99,17 @@ export function faSubNodeRegisterValueDelete(versionId, nodeId, nodeKey, index) 
         })
 
         if (typeof loc.link.id !== 'undefined') {
-            faSubNodeRegisterDelete(versionId, nodeId, loc.link)
+            fundSubNodeRegisterDelete(versionId, nodeId, loc.link)
                     .then(json => {
-                        dispatch(faSubNodeRegisterResponse(versionId, nodeId, nodeKey, index, json, 'DELETE'));
+                        dispatch(fundSubNodeRegisterResponse(versionId, nodeId, nodeKey, index, json, 'DELETE'));
                     })
         }
     }
 }
 
-export function faSubNodeRegisterResponse(versionId, nodeId, nodeKey, index, data, operationType) {
+export function fundSubNodeRegisterResponse(versionId, nodeId, nodeKey, index, data, operationType) {
     return {
-        type: types.FA_SUB_NODE_REGISTER_VALUE_RESPONSE,
+        type: types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE,
         versionId,
         nodeId,
         nodeKey,
@@ -119,21 +119,21 @@ export function faSubNodeRegisterResponse(versionId, nodeId, nodeKey, index, dat
     }
 }
 
-export function faSubNodeRegisterDelete(versionId, nodeId, data) {
-    return WebApi.deleteFaNodeRegister(versionId, nodeId, data);
+export function fundSubNodeRegisterDelete(versionId, nodeId, data) {
+    return WebApi.deleteFundNodeRegister(versionId, nodeId, data);
 }
 
-export function faSubNodeRegisterCreate(versionId, nodeId, data) {
-    return WebApi.createFaNodeRegister(versionId, nodeId, data);
+export function fundSubNodeRegisterCreate(versionId, nodeId, data) {
+    return WebApi.createFundNodeRegister(versionId, nodeId, data);
 }
 
-export function faSubNodeRegisterUpdate(versionId, nodeId, data) {
-    return WebApi.updateFaNodeRegister(versionId, nodeId, data);
+export function fundSubNodeRegisterUpdate(versionId, nodeId, data) {
+    return WebApi.updateFundNodeRegister(versionId, nodeId, data);
 }
 
-export function faSubNodeRegisterValueFocus(versionId, nodeId, nodeKey, index) {
+export function fundSubNodeRegisterValueFocus(versionId, nodeId, nodeKey, index) {
     return {
-        type: types.FA_SUB_NODE_REGISTER_VALUE_FOCUS,
+        type: types.FUND_SUB_NODE_REGISTER_VALUE_FOCUS,
         versionId,
         nodeId,
         nodeKey,
@@ -141,10 +141,10 @@ export function faSubNodeRegisterValueFocus(versionId, nodeId, nodeKey, index) {
     }
 }
 
-export function faSubNodeRegisterValueBlur(versionId, nodeId, nodeKey, index) {
+export function fundSubNodeRegisterValueBlur(versionId, nodeId, nodeKey, index) {
     return (dispatch, getState) => {
         dispatch({
-            type: types.FA_SUB_NODE_REGISTER_VALUE_BLUR,
+            type: types.FUND_SUB_NODE_REGISTER_VALUE_BLUR,
             versionId,
             nodeId,
             nodeKey,
@@ -166,15 +166,15 @@ export function faSubNodeRegisterValueBlur(versionId, nodeId, nodeKey, index) {
                 }
 
                 if (needUpdate) {
-                    faSubNodeRegisterUpdate(versionId, nodeId, loc.link)
+                    fundSubNodeRegisterUpdate(versionId, nodeId, loc.link)
                         .then(json => {
-                            dispatch(faSubNodeRegisterResponse(versionId, nodeId, nodeKey, index, json, 'UPDATE'));
+                            dispatch(fundSubNodeRegisterResponse(versionId, nodeId, nodeKey, index, json, 'UPDATE'));
                         })
                 }
             } else {
-                faSubNodeRegisterCreate(versionId, nodeId, loc.link)
+                fundSubNodeRegisterCreate(versionId, nodeId, loc.link)
                     .then(json => {
-                        dispatch(faSubNodeRegisterResponse(versionId, nodeId, nodeKey, index, json, 'CREATE'));
+                        dispatch(fundSubNodeRegisterResponse(versionId, nodeId, nodeKey, index, json, 'CREATE'));
                     })
             }
         }

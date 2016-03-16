@@ -7,9 +7,9 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Icon, VersionValidationState} from 'components';
 import {Button, Modal} from 'react-bootstrap';
-import {faSelectSubNode} from 'actions/arr/nodes';
+import {fundSelectSubNode} from 'actions/arr/nodes';
 import {versionValidate} from 'actions/arr/versionValidation';
-import {createFaRoot} from 'components/arr/ArrUtils';
+import {createFundRoot} from 'components/arr/ArrUtils';
 
 var VersionValidationDialog = class VersionValidationDialog extends AbstractReactComponent {
     constructor(props) {
@@ -30,7 +30,7 @@ var VersionValidationDialog = class VersionValidationDialog extends AbstractReac
     }
 
     handleSelectNode(id, parent) {
-        this.dispatch(faSelectSubNode(id, parent ? parent : createFaRoot(this.props.fa)));
+        this.dispatch(fundSelectSubNode(id, parent ? parent : createFundRoot(this.props.fund)));
         this.props.onClose();
     }
 
@@ -61,9 +61,9 @@ var VersionValidationDialog = class VersionValidationDialog extends AbstractReac
 VersionValidationDialog.propTypes = {};
 
 module.exports = connect((state) => ({
-    store: state.arrRegion.fas[state.arrRegion.activeIndex].versionValidation,
-    versionId: state.arrRegion.fas[state.arrRegion.activeIndex].versionId,
-    fa: state.arrRegion.fas[state.arrRegion.activeIndex]
+    store: state.arrRegion.funds[state.arrRegion.activeIndex].versionValidation,
+    versionId: state.arrRegion.funds[state.arrRegion.activeIndex].versionId,
+    fund: state.arrRegion.funds[state.arrRegion.activeIndex]
 }))(VersionValidationDialog);
 
 

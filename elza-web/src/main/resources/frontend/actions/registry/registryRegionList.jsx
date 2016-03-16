@@ -160,7 +160,7 @@ function registryAddSubmit(parentId, callback, dispatch, data, submitType) {
     });
 }
 
-export function registrySelect(recordId, fa = null) {
+export function registrySelect(recordId, fund = null) {
     return (dispatch) => {
         // pokud chceme otevřít složku
         //dispatch(registryClickNavigation(recordId));
@@ -168,14 +168,14 @@ export function registrySelect(recordId, fa = null) {
         dispatch(registryUnsetParents(null));
         var registry = Object.assign({}, registry,{selectedId: recordId});
         dispatch(registryRegionData(registry));
-        dispatch(registrySelectDo(recordId, fa));
+        dispatch(registrySelectDo(recordId, fund));
     }
 }
 
-export function registrySelectDo(recordId, fa = null){
+export function registrySelectDo(recordId, fund = null){
     return {
         recordId: recordId,
-        fa: fa,
+        fund,
         type: types.REGISTRY_SELECT
     }
 }

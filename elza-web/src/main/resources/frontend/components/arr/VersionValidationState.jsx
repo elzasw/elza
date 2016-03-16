@@ -16,11 +16,11 @@ var VersionValidationState = class VersionValidationState extends AbstractReactC
         var msg = null;
 
         if (this.props.isFetching) {
-            msg = <span><Icon glyph="fa-refresh"/>{i18n('arr.fa.versionValidation.running')}</span>
+            msg = <span><Icon glyph="fa-refresh"/>{i18n('arr.fund.versionValidation.running')}</span>
         } else if (this.props.errExist) {
-            msg = <span className="err"><Icon glyph="fa-exclamation-triangle"/>{i18n('arr.fa.versionValidation.count', this.props.count)}</span>
+            msg = <span className="err"><Icon glyph="fa-exclamation-triangle"/>{i18n('arr.fund.versionValidation.count', this.props.count)}</span>
         } else {
-            msg = <span className="ok"><Icon glyph="fa-check"/>{i18n('arr.fa.versionValidation.ok')}</span>
+            msg = <span className="ok"><Icon glyph="fa-check"/>{i18n('arr.fund.versionValidation.ok')}</span>
         }
 
         return (

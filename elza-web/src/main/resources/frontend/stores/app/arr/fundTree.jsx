@@ -58,7 +58,7 @@ function removeChildren(nodes, node, selectedId) {
         ]
     }
 }
-export default function faTree(state = initialState, action) {
+export default function fundTree(state = initialState, action) {
     switch (action.type) {
         case types.STORE_LOAD:
             return {
@@ -91,7 +91,7 @@ export default function faTree(state = initialState, action) {
 
             return state;
 
-        case types.FA_NODE_CHANGE:
+        case types.FUND_NODE_CHANGE:
             var index = indexById(state.nodes, action.parentNode.id);
             if (index != null) {
                 state.nodes[index].version = action.parentNode.version;
@@ -113,7 +113,7 @@ export default function faTree(state = initialState, action) {
                 focusId: null
             }
             return consolidateState(state, result);
-        case types.FA_FA_TREE_FULLTEXT_CHANGE:
+        case types.FUND_FUND_TREE_FULLTEXT_CHANGE:
             return {
                 ...state,
                 filterResult: false,
@@ -122,7 +122,7 @@ export default function faTree(state = initialState, action) {
                 searchedIds: [],
                 searchedParents: []
             }
-        case types.FA_FA_TREE_FULLTEXT_RESULT:
+        case types.FUND_FUND_TREE_FULLTEXT_RESULT:
             if (state.filterText == action.filterText) {    // jen pokud výsledek odpovídá aktuálnímu stavu v hledací komponentě
                 var searchedIds = [];
                 var searchedParents = {};
@@ -142,7 +142,7 @@ export default function faTree(state = initialState, action) {
             } else {
                 return state;
             }
-        case types.FA_FA_TREE_SELECT_NODE:
+        case types.FUND_FUND_TREE_SELECT_NODE:
             if (state.multipleSelection) {
                 var newCurrentIndex = state.filterCurrentIndex;
                 if (action.newFilterCurrentIndex != null) {
@@ -228,7 +228,7 @@ export default function faTree(state = initialState, action) {
                     return state;
                 }
             }
-        case types.FA_FA_SELECT_SUBNODE:
+        case types.FUND_FUND_SELECT_SUBNODE:
             if (state.selectedId !== action.subNodeId || (action.newFilterCurrentIndex != null && state.filterCurrentIndex != action.newFilterCurrentIndex)) {
                 var newCurrentIndex = state.filterCurrentIndex;
                 if (action.newFilterCurrentIndex != null) {
@@ -244,7 +244,7 @@ export default function faTree(state = initialState, action) {
             } else {
                 return state;
             }
-        case types.FA_FA_TREE_FOCUS_NODE:
+        case types.FUND_FUND_TREE_FOCUS_NODE:
             if (state.focusId !== action.node.id) {
                 return {
                     ...state,
@@ -254,7 +254,7 @@ export default function faTree(state = initialState, action) {
             } else {
                 return state;
             }
-        case types.FA_FA_TREE_EXPAND_NODE:
+        case types.FUND_FUND_TREE_EXPAND_NODE:
             if (action.addWaitingNode) {
                 var index = indexById(state.nodes, action.node.id);
                 return Object.assign({}, state, {
@@ -272,7 +272,7 @@ export default function faTree(state = initialState, action) {
                     expandedIds: {...state.expandedIds, [action.node.id]: true}
                 });
             }
-        case types.FA_FA_TREE_COLLAPSE:
+        case types.FUND_FUND_TREE_COLLAPSE:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
@@ -284,7 +284,7 @@ export default function faTree(state = initialState, action) {
                 selectedId: initialState.selectedId,
                 selectedIds: initialState.selectedIds
             });
-        case types.FA_FA_TREE_COLLAPSE_NODE:
+        case types.FUND_FUND_TREE_COLLAPSE_NODE:
             var expandedIds = {...state.expandedIds};
             delete expandedIds[action.node.id];
 
@@ -303,7 +303,7 @@ export default function faTree(state = initialState, action) {
                 selectedId: newSelectedId,
             });
             return ret;
-        case types.FA_FA_TREE_REQUEST:
+        case types.FUND_FUND_TREE_REQUEST:
             var fetchingIncludeIds = [];
             if (action.includeIds != null) {
                 action.includeIds.forEach(id => {
@@ -315,7 +315,7 @@ export default function faTree(state = initialState, action) {
                 ensureItemVisible: false,
                 fetchingIncludeIds: fetchingIncludeIds
             })
-        case types.FA_FA_TREE_RECEIVE:
+        case types.FUND_FUND_TREE_RECEIVE:
             if (action.nodeId !== null && typeof action.nodeId !== 'undefined') {
                 if (state.expandedIds[action.nodeId]) { // ještě je stále rozbalený
                     var index = indexById(state.nodes, action.nodeId);

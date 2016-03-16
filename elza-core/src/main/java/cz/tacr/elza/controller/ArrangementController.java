@@ -327,10 +327,10 @@ public class ArrangementController {
     }
 
     /**
-     * Načte FA pro dané verze.
+     * Načte AS pro dané verze.
      *
      * @param idsParam id verzí
-     * @return seznam FA, každá obsahuje pouze jednu verzi, jinak je vrácená víckrát
+     * @return seznam AS, každá obsahuje pouze jednu verzi, jinak je vrácená víckrát
      */
     @RequestMapping(value = "/getVersions", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     public List<ArrFundVO> getFundsByVersionIds(@RequestBody final IdsParam idsParam) {
@@ -362,9 +362,9 @@ public class ArrangementController {
      * @param input vstupní data pro načtení
      * @return data stromu
      */
-    @RequestMapping(value = "/faTree", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
+    @RequestMapping(value = "/fundTree", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public TreeData getFaTree(final @RequestBody FaTreeParam input) {
+    public TreeData getFundTree(final @RequestBody FaTreeParam input) {
         Assert.notNull(input);
         Assert.notNull(input.getVersionId());
 
@@ -378,9 +378,9 @@ public class ArrangementController {
      * @param input vstupní data pro načtení
      * @return data stromu
      */
-    @RequestMapping(value = "/faTree/nodes", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
+    @RequestMapping(value = "/fundTree/nodes", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Collection<TreeNodeClient> getFaTreeNodes(final @RequestBody FaTreeNodesParam input) {
+    public Collection<TreeNodeClient> getFundTreeNodes(final @RequestBody FaTreeNodesParam input) {
         Assert.notNull(input);
         Assert.notNull(input.getVersionId());
         Assert.notNull(input.getNodeIds());

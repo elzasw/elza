@@ -10,12 +10,12 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components';
-import {DataGrid, Splitter, Autocomplete, FaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
-import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
+import {DataGrid, Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
+import {ModalDialog, NodeTabs, FundTreeTabs} from 'components';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {modalDialogShow} from 'actions/global/modalDialog'
-import {createFa} from 'actions/arr/fa'
+import {createFund} from 'actions/arr/fund'
 import {storeLoadData, storeSave, storeLoad} from 'actions/store/store'
 import {Combobox} from 'react-input-enhancements'
 import {WebApi} from 'actions'
@@ -83,8 +83,8 @@ cols.push({
 var HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleAddFa', 'handleCallAddFa', 'renderHistory',
-            'renderHistoryItem', 'getFaDesc', 'trySetFocus');
+        this.bindMethods('handleAddFund', 'handleCallAddFund', 'renderHistory',
+            'renderHistoryItem', 'getFundDesc', 'trySetFocus');
 
         this.buildRibbon = this.buildRibbon.bind(this);
     }
@@ -119,19 +119,19 @@ var HomePage = class HomePage extends AbstractReactComponent {
         }
     }
 
-    handleAddFa() {
-        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.add'), <FaForm create
-                                                                              onSubmitForm={this.handleCallAddFa}/>));
+    handleAddFund() {
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.title.add'), <FundForm create
+                                                                              onSubmitForm={this.handleCallAddFund}/>));
     }
 
-    handleCallAddFa(data) {
-        this.dispatch(createFa(data));
+    handleCallAddFund(data) {
+        this.dispatch(createFund(data));
     }
 
     buildRibbon() {
         var altActions = [];
         altActions.push(
-            <Button key="add-fa" onClick={this.handleAddFa}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.add')}</span></div></Button>
+            <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div></Button>
         );
 
         var altSection;
@@ -156,7 +156,7 @@ var HomePage = class HomePage extends AbstractReactComponent {
             case 'ARR_REGION':
                 glyph = 'fa-file-text';
                 break;
-            case 'ARR_REGION_FA':
+            case 'ARR_REGION_FUND':
                 glyph = 'fa-file-text';
                 break;            
         }
@@ -192,8 +192,8 @@ var HomePage = class HomePage extends AbstractReactComponent {
         })
     }
 
-    getFaDesc(fa) {
-        var descs = fa.nodes.nodes.map(nodeobj => nodeobj.name);
+    getFundDesc(fund) {
+        var descs = fund.nodes.nodes.map(nodeobj => nodeobj.name);
         return this.arrToString(descs);
     }
 
@@ -216,8 +216,8 @@ var HomePage = class HomePage extends AbstractReactComponent {
         })
         var arrItems = stateRegion.arrRegionFront.map(x => {
             var name = x.name + (x.lockDate ? ' ' + dateToString(new Date(x.lockDate)) : '');
-            var desc = this.getFaDesc(x)
-            return this.renderHistoryItem(name, desc, 'ARR_REGION_FA', x)
+            var desc = this.getFundDesc(x)
+            return this.renderHistoryItem(name, desc, 'ARR_REGION_FUND', x)
         })
 
         return (

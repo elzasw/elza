@@ -35,7 +35,7 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.dispatch(packetsFetchIfNeeded(this.props.findingAidId));
+        this.dispatch(packetsFetchIfNeeded(this.props.fundId));
         this.props.load(this.props.initData);
     }
 

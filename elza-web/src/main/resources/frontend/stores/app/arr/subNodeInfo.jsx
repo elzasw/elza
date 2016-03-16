@@ -8,11 +8,11 @@ const initialState = {
 
 export default function subNodeInfo(state = initialState, action) {
     switch (action.type) {
-        case types.FA_SUB_NODE_INFO_REQUEST:
+        case types.FUND_SUB_NODE_INFO_REQUEST:
             return Object.assign({}, state, {
                 isFetching: true,
             })
-        case types.FA_SUB_NODE_INFO_RECEIVE:
+        case types.FUND_SUB_NODE_INFO_RECEIVE:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,

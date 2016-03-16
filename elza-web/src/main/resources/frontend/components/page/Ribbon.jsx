@@ -9,7 +9,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components';
 import {RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FindindAidFileTree} from 'components';
-import {AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
+import {AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'

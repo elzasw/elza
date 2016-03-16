@@ -5,13 +5,13 @@
 import {WebApi} from 'actions'
 import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 import {barrier} from 'components/Utils'
-import {isFaRootId} from 'components/arr/ArrUtils'
+import {isFundRootId} from 'components/arr/ArrUtils'
 import * as types from 'actions/constants/ActionTypes';
 
 /**
  * Dohledání store node pro předané parametry.
  * @param {state} kořenový store
- * @param {int} versionId verze AP
+ * @param {int} versionId verze AS
  * @param {string} nodeKey klíč záložky NODE
  */
 function getNode(state, versionId, nodeKey) {
@@ -26,12 +26,12 @@ function getNode(state, versionId, nodeKey) {
 /**
  * Vyžádání dat - aby byla ve store k dispozici.
  */
-export function faNodeInfoFetchIfNeeded(versionId, nodeId, nodeKey) {
+export function fundNodeInfoFetchIfNeeded(versionId, nodeId, nodeKey) {
     return (dispatch, getState) => {
         var state = getState();
         var node = getNode(state, versionId, nodeKey);
         if (node != null && (!node.nodeInfoFetched || node.nodeInfoDirty ) && !node.isNodeInfoFetching) {
-            return dispatch(faNodeInfoFetch(versionId, nodeId, nodeKey));
+            return dispatch(fundNodeInfoFetch(versionId, nodeId, nodeKey));
         }
     }
 }
@@ -39,28 +39,28 @@ export function faNodeInfoFetchIfNeeded(versionId, nodeId, nodeKey) {
 /**
  * Nové načtení dat.
  */
-export function faNodeInfoFetch(versionId, nodeId, nodeKey) {
+export function fundNodeInfoFetch(versionId, nodeId, nodeKey) {
     return dispatch => {
-        dispatch(faNodeInfoRequest(versionId, nodeId, nodeKey))
+        dispatch(fundNodeInfoRequest(versionId, nodeId, nodeKey))
 
-        var isRoot = isFaRootId(nodeId);
+        var isRoot = isFundRootId(nodeId);
 
-        var getFaTree, getNodeParents;
+        var getFundTree, getNodeParents;
         if (isRoot) {
             getNodeParents = new Promise(function (resolve, reject) {
                 resolve([]);
             })
-            getFaTree = WebApi.getFaTree(versionId, null)
+            getFundTree = WebApi.getFundTree(versionId, null)
                 .then(json => {
                     return {nodes: [json.nodes[0]]}
                 })
         } else {
             getNodeParents = WebApi.getNodeParents(versionId, nodeId);
-            getFaTree = WebApi.getFaTree(versionId, nodeId);
+            getFundTree = WebApi.getFundTree(versionId, nodeId);
         }
 
         return barrier(
-            getFaTree,
+            getFundTree,
             getNodeParents
         )
         .then(data => {
@@ -69,7 +69,7 @@ export function faNodeInfoFetch(versionId, nodeId, nodeKey) {
                 parentNodes: data[1].data
             }
         })
-        .then(json => dispatch(faNodeInfoReceive(versionId, nodeId, nodeKey, json)));
+        .then(json => dispatch(fundNodeInfoReceive(versionId, nodeId, nodeKey, json)));
     }
 }
 
@@ -77,9 +77,9 @@ export function faNodeInfoFetch(versionId, nodeId, nodeKey) {
  * Nová data byla načtena.
  * @param {Object} json objekt s daty
  */
-export function faNodeInfoReceive(versionId, nodeId, nodeKey, json) {
+export function fundNodeInfoReceive(versionId, nodeId, nodeKey, json) {
     return {
-        type: types.FA_NODE_INFO_RECEIVE,
+        type: types.FUND_NODE_INFO_RECEIVE,
         versionId,
         nodeId,
         nodeKey,
@@ -92,11 +92,11 @@ export function faNodeInfoReceive(versionId, nodeId, nodeKey, json) {
 /**
  * Bylo zahájeno nové načítání dat.
  */
-export function faNodeInfoRequest(versionId, nodeId, nodeKey) {
+export function fundNodeInfoRequest(versionId, nodeId, nodeKey) {
     return {
         versionId,
         nodeId,
         nodeKey,
-        type: types.FA_NODE_INFO_REQUEST
+        type: types.FUND_NODE_INFO_REQUEST
     }
 }

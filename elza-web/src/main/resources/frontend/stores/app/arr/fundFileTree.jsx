@@ -6,13 +6,13 @@ const initialState = {
     items: []
 }
 
-export default function faFileTree(state = initialState, action) {
+export default function fundFileTree(state = initialState, action) {
     switch (action.type) {
-        case types.FA_FA_FILE_TREE_REQUEST:
+        case types.FUND_FUND_FILE_TREE_REQUEST:
             return Object.assign({}, state, {
                 isFetching: true,
             })
-        case types.FA_FA_FILE_TREE_RECEIVE:
+        case types.FUND_FUND_FILE_TREE_RECEIVE:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,

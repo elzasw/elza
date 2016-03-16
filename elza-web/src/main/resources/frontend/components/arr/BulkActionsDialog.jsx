@@ -1,5 +1,5 @@
 /**
- * Formulář přidání nebo uzavření AP.
+ * Formulář přidání nebo uzavření AS.
  */
 
 import React from 'react';

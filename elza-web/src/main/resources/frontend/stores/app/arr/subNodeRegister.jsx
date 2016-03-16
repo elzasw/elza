@@ -38,12 +38,12 @@ function updateFormData(state) {
 export default function subNodeRegister(state = initialState, action) {
     switch (action.type) {
 
-        case types.FA_SUB_NODE_REGISTER_REQUEST:
+        case types.FUND_SUB_NODE_REGISTER_REQUEST:
             return Object.assign({}, state, {
                 isFetching: true,
             })
 
-        case types.FA_SUB_NODE_REGISTER_RECEIVE:
+        case types.FUND_SUB_NODE_REGISTER_RECEIVE:
             var result = Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
@@ -55,7 +55,7 @@ export default function subNodeRegister(state = initialState, action) {
 
             return result;
 
-        case types.FA_SUB_NODE_REGISTER_VALUE_RESPONSE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:
 
             var loc = getLoc(state, action.index);
 
@@ -77,7 +77,7 @@ export default function subNodeRegister(state = initialState, action) {
             state.formData = {...state.formData};
             return {...state};
 
-        case types.FA_SUB_NODE_REGISTER_VALUE_DELETE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_DELETE:
 
             state.formData.nodeRegisters = [
                 ...state.formData.nodeRegisters.slice(0, action.index),
@@ -86,7 +86,7 @@ export default function subNodeRegister(state = initialState, action) {
 
             return {...state};
 
-        case types.FA_SUB_NODE_REGISTER_VALUE_CHANGE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
             var link = state.formData.nodeRegisters[action.index];
             link.value = action.value;
             link.touched = true;
@@ -94,7 +94,7 @@ export default function subNodeRegister(state = initialState, action) {
             state.formData.nodeRegisters = [...state.formData.nodeRegisters];
             return {...state};
 
-        case types.FA_SUB_NODE_FORM_VALUE_BLUR:
+        case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
 
             var link = state.formData.nodeRegisters[action.index];
 
@@ -105,7 +105,7 @@ export default function subNodeRegister(state = initialState, action) {
 
             return {...state}
 
-        case types.FA_SUB_NODE_FORM_VALUE_FOCUS:
+        case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
 
             var link = state.formData.nodeRegisters[action.index];
 
@@ -118,7 +118,7 @@ export default function subNodeRegister(state = initialState, action) {
 
             return {...state}
 
-        case types.FA_SUB_NODE_REGISTER_VALUE_ADD:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_ADD:
 
             var formItem = {
                 node: state.formData.node,

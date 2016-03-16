@@ -17,11 +17,11 @@ const validate = (values, props) => {
     }
 
     if (!values.position) {
-        errors.position = i18n('arr.fa.subNodes.findPositionNumber.error.required', props.maxPosition);
+        errors.position = i18n('arr.fund.subNodes.findPositionNumber.error.required', props.maxPosition);
     } else if (!isNormalInteger(values.position)) {
-        errors.position = i18n('arr.fa.subNodes.findPositionNumber.error.type', props.maxPosition);
+        errors.position = i18n('arr.fund.subNodes.findPositionNumber.error.type', props.maxPosition);
     } else if (values.position > props.maxPosition || values.position <= 0) {
-        errors.position = i18n('arr.fa.subNodes.findPositionNumber.error.interval', props.maxPosition);
+        errors.position = i18n('arr.fund.subNodes.findPositionNumber.error.interval', props.maxPosition);
     }
 
     return errors;
@@ -48,7 +48,7 @@ var GoToPositionForm = class GoToPositionForm extends AbstractReactComponent {
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit(submitForm)}>
-                        <Input type="text" label={i18n('arr.fa.subNodes.findPositionNumber', maxPosition)} {...position} {...decorateFormField(position)} />
+                        <Input type="text" label={i18n('arr.fund.subNodes.findPositionNumber', maxPosition)} {...position} {...decorateFormField(position)} />
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

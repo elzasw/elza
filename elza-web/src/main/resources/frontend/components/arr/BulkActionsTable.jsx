@@ -35,7 +35,7 @@ var BulkActionsTable = class BulkActionsTable extends AbstractReactComponent {
     }
 
     handleRun(code, name) {
-        window.confirm(i18n('arr.fa.bulkActions.runAction', name)) && this.dispatch(bulkActionsRun(this.props.versionId, code));
+        window.confirm(i18n('arr.fund.bulkActions.runAction', name)) && this.dispatch(bulkActionsRun(this.props.versionId, code));
     }
 
     render() {
@@ -48,21 +48,21 @@ var BulkActionsTable = class BulkActionsTable extends AbstractReactComponent {
                 let indexExist = (index != null);
                 switch (indexExist ? this.props.store.states[index].state : null) {
                     case "RUNNING":
-                        innerState = <div><Icon glyph="fa-play-circle-o"/>{i18n('arr.fa.bulkActions.running')}</div>;
+                        innerState = <div><Icon glyph="fa-play-circle-o"/>{i18n('arr.fund.bulkActions.running')}</div>;
                         break;
                     case "WAITING":
                     case "PLANNED":
-                        innerState = <div><Icon glyph="fa-pause-circle-o"/>{i18n('arr.fa.bulkActions.planned')}</div>;
+                        innerState = <div><Icon glyph="fa-pause-circle-o"/>{i18n('arr.fund.bulkActions.planned')}</div>;
                         break;
                     case "ERROR":
-                        innerState = <div><Icon glyph="fa-exclamation-triangle"/>{i18n('arr.fa.bulkActions.err')}</div>;
+                        innerState = <div><Icon glyph="fa-exclamation-triangle"/>{i18n('arr.fund.bulkActions.err')}</div>;
                         break;
                     case null:
                         lastRun = 'Nikdy';
                     //case "FINISH":
                     default:
                         canRun = true;
-                        innerState = <div><Icon glyph="fa-times"/>{i18n('arr.fa.bulkActions.idle')}</div>;
+                        innerState = <div><Icon glyph="fa-times"/>{i18n('arr.fund.bulkActions.idle')}</div>;
                 }
                 state = <td className="no-wrap">{innerState}</td>
                 if (indexExist && this.props.store.states[index].runChange) {
@@ -73,24 +73,24 @@ var BulkActionsTable = class BulkActionsTable extends AbstractReactComponent {
                     <td title={item.description}>{item.name}</td>
                     <td>{lastRun}</td>
                     <td>{canRun && <Button
-                        onClick={() => (this.handleRun(item.code, item.name))}>{i18n('arr.fa.bulkActions.run')}</Button>}</td>
+                        onClick={() => (this.handleRun(item.code, item.name))}>{i18n('arr.fund.bulkActions.run')}</Button>}</td>
                 </tr>
             });
         } else {
             table = null;
         }
 
-        let okText = this.props.okText ? this.props.okText : <div>i18n('arr.fa.bulkActions.noActions')</div>;
+        let okText = this.props.okText ? this.props.okText : <div>i18n('arr.fund.bulkActions.noActions')</div>;
 
         return (
             table === null ? okText :
             <Table striped bordered condensed >
                 <thead>
                 <tr>
-                    <th>{i18n('arr.fa.bulkActions.state')}</th>
-                    <th>{i18n('arr.fa.bulkActions.name')}</th>
-                    <th>{i18n('arr.fa.bulkActions.runChange')}</th>
-                    <th>{i18n('arr.fa.bulkActions.tools')}</th>
+                    <th>{i18n('arr.fund.bulkActions.state')}</th>
+                    <th>{i18n('arr.fund.bulkActions.name')}</th>
+                    <th>{i18n('arr.fund.bulkActions.runChange')}</th>
+                    <th>{i18n('arr.fund.bulkActions.tools')}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -113,8 +113,8 @@ BulkActionsTable.propTypes = {
 };
 
 module.exports = connect((state) => ({
-    store: state.arrRegion.fas[state.arrRegion.activeIndex].bulkActions,
-    versionId: state.arrRegion.fas[state.arrRegion.activeIndex].versionId
+    store: state.arrRegion.funds[state.arrRegion.activeIndex].bulkActions,
+    versionId: state.arrRegion.funds[state.arrRegion.activeIndex].versionId
 }))(BulkActionsTable);
 
 

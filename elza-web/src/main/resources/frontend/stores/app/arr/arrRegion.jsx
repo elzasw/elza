@@ -2,8 +2,8 @@ import * as types from 'actions/constants/ActionTypes';
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 
 import nodes from './nodes'
-import {fa, faInitState} from './fa'
-import faTree from './faTree'
+import {fund, fundInitState} from './fund'
+import fundTree from './fundTree'
 import nodeSetting from './nodeSetting'
 import {consolidateState} from 'components/Utils'
 import {Toastr, i18n} from 'components';
@@ -14,19 +14,19 @@ const initialState = {
     extendedView: false,
     showRegisterJp: false,
     packets: {},
-    fas: [],
+    funds: [],
 }
 
-function selectFaTab(state, action) {
-    var index = indexById(state.fas, action.fa.id);
+function selectFundTab(state, action) {
+    var index = indexById(state.funds, action.fund.id);
     if (index == null) {    // není zatím v seznamu, přidáme jí tam
         return {
             ...state,
-            fas: [
-                ...state.fas,
-                faInitState(action.fa)
+            funds: [
+                ...state.funds,
+                fundInitState(action.fund)
             ],
-            activeIndex: state.fas.length
+            activeIndex: state.funds.length
         }
     } else if (index !== state.activeIndex) {
         return {
@@ -38,16 +38,16 @@ function selectFaTab(state, action) {
     }
 }
 
-function processFa(state, action, index) {
+function processFund(state, action, index) {
     if (index != null) {
-        var newFa = fa(state.fas[index], action);
-        if (newFa !== state.fas[index]) {
+        var newFund = fund(state.funds[index], action);
+        if (newFund !== state.funds[index]) {
             var result = {
                 ...state,
-                fas: [
-                    ...state.fas.slice(0, index),
-                    newFa,
-                    ...state.fas.slice(index + 1)
+                funds: [
+                    ...state.funds.slice(0, index),
+                    newFund,
+                    ...state.funds.slice(index + 1)
                 ]
             }
             return consolidateState(state, result);
@@ -75,27 +75,27 @@ export default function arrRegion(state = initialState, action) {
                     ...state,
                     packets: {},
                     ...action.arrRegion,
-                    fas: action.arrRegion.fas.map(faobj => fa(faobj, action))
+                    funds: action.arrRegion.funds.map(fundobj => fund(fundobj, action))
                 }
-            } else if (action.arrRegionFa) {
-                var index = indexById(state.fas, action.arrRegionFa.versionId, "versionId");
+            } else if (action.arrRegionFund) {
+                var index = indexById(state.funds, action.arrRegionFund.versionId, "versionId");
                 if (index !== null) {   // existuje, nahradí se
                     return {
                         ...state,
                         activeIndex: index,
-                        fas: [
-                            ...state.fas.slice(0, index),
-                            fa(action.arrRegionFa, action),
-                            ...state.fas.slice(index + 1)
+                        funds: [
+                            ...state.funds.slice(0, index),
+                            fund(action.arrRegionFund, action),
+                            ...state.funds.slice(index + 1)
                         ]
                     }
                 } else {    // přidáme novou
                     return {
                         ...state,
-                        activeIndex: state.fas.length,
-                        fas: [
-                            ...state.fas,
-                            fa(action.arrRegionFa, action),
+                        activeIndex: state.funds.length,
+                        funds: [
+                            ...state.funds,
+                            fund(action.arrRegionFund, action),
                         ]
                     }
                 }
@@ -108,99 +108,99 @@ export default function arrRegion(state = initialState, action) {
                 activeIndex,
                 nodeSettings,
                 extendedView,
-                fas: state.fas.map(faobj => fa(faobj, action))
+                funds: state.funds.map(fundobj => fund(fundobj, action))
             }
-        case types.FA_EXTENDED_VIEW:
+        case types.FUND_EXTENDED_VIEW:
             var result = {...state, extendedView: action.enable}
             return consolidateState(state, result);
-        case types.FA_FA_TREE_REQUEST:
-        case types.FA_FA_TREE_RECEIVE:
-        case types.FA_FA_TREE_FULLTEXT_RESULT:
-        case types.FA_NODE_INFO_REQUEST:
-        case types.FA_NODE_INFO_RECEIVE:
-        case types.FA_SUB_NODE_FORM_REQUEST:
-        case types.FA_SUB_NODE_FORM_RECEIVE:
-        case types.FA_SUB_NODE_FORM_CACHE_RESPONSE:
-        case types.FA_SUB_NODE_FORM_CACHE_REQUEST:
-        case types.FA_SUB_NODE_REGISTER_REQUEST:
-        case types.FA_SUB_NODE_REGISTER_RECEIVE:
-        case types.FA_SUB_NODE_REGISTER_VALUE_RESPONSE:
-        case types.FA_SUB_NODE_REGISTER_VALUE_DELETE:
-        case types.FA_SUB_NODE_REGISTER_VALUE_ADD:
-        case types.FA_SUB_NODE_REGISTER_VALUE_CHANGE:
-        case types.FA_SUB_NODE_REGISTER_VALUE_FOCUS:
-        case types.FA_SUB_NODE_REGISTER_VALUE_BLUR:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
-        case types.FA_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
-        case types.FA_SUB_NODE_FORM_VALUE_BLUR:
-        case types.FA_SUB_NODE_FORM_VALUE_FOCUS:
-        case types.FA_SUB_NODE_FORM_VALUE_ADD:
-        case types.FA_SUB_NODE_FORM_VALUE_DELETE:
-        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
-        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
-        case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
-        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
-        case types.FA_SUB_NODE_INFO_REQUEST:
-        case types.FA_SUB_NODE_INFO_RECEIVE:
-        case types.FA_FA_SUBNODES_FULLTEXT_RESULT:
-        case types.FA_NODE_CHANGE:
-        case types.FA_NODES_RECEIVE:
-        case types.FA_NODES_REQUEST:
+        case types.FUND_FUND_TREE_REQUEST:
+        case types.FUND_FUND_TREE_RECEIVE:
+        case types.FUND_FUND_TREE_FULLTEXT_RESULT:
+        case types.FUND_NODE_INFO_REQUEST:
+        case types.FUND_NODE_INFO_RECEIVE:
+        case types.FUND_SUB_NODE_FORM_REQUEST:
+        case types.FUND_SUB_NODE_FORM_RECEIVE:
+        case types.FUND_SUB_NODE_FORM_CACHE_RESPONSE:
+        case types.FUND_SUB_NODE_FORM_CACHE_REQUEST:
+        case types.FUND_SUB_NODE_REGISTER_REQUEST:
+        case types.FUND_SUB_NODE_REGISTER_RECEIVE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_DELETE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_ADD:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_FOCUS:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_BLUR:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
+        case types.FUND_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
+        case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
+        case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
+        case types.FUND_SUB_NODE_FORM_VALUE_ADD:
+        case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
+        case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
+        case types.FUND_SUB_NODE_INFO_REQUEST:
+        case types.FUND_SUB_NODE_INFO_RECEIVE:
+        case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT:
+        case types.FUND_NODE_CHANGE:
+        case types.FUND_NODES_RECEIVE:
+        case types.FUND_NODES_REQUEST:
         case types.CHANGE_NODES:
         case types.BULK_ACTIONS_STATE_CHANGE:
         case types.CHANGE_DELETE_LEVEL:
         case types.CHANGE_ADD_LEVEL:
         case types.CHANGE_MOVE_LEVEL:
-        case types.FA_VERSION_VALIDATION_LOAD:
-        case types.FA_VERSION_VALIDATION_RECEIVED:
-        case types.FA_FA_APPROVE_VERSION:
-        case types.CHANGE_FA:
-        case types.CHANGE_FA_RECORD:
+        case types.FUND_VERSION_VALIDATION_LOAD:
+        case types.FUND_VERSION_VALIDATION_RECEIVED:
+        case types.FUND_FUND_APPROVE_VERSION:
+        case types.CHANGE_FUND:
+        case types.CHANGE_FUND_RECORD:
         case types.DEVELOPER_SCENARIOS_RECEIVED:
         case types.DEVELOPER_SCENARIOS_FETCHING:
         case types.DEVELOPER_SCENARIOS_DIRTY:
-            var index = indexById(state.fas, action.versionId, "versionId");
-            return processFa(state, action, index);
-        case types.FA_FAS_RECEIVE:
+            var index = indexById(state.funds, action.versionId, "versionId");
+            return processFund(state, action, index);
+        case types.FUND_FUNDS_RECEIVE:
             var changed = false;
-            var newFas = state.fas.map(faObj => {
-                if (action.faMap[faObj.versionId]) {
-                    var newFa = fa(faObj, action);
-                    if (faObj !== newFa) {
+            var newFunds = state.funds.map(fundObj => {
+                if (action.fundMap[fundObj.versionId]) {
+                    var newFund = fund(fundObj, action);
+                    if (fundObj !== newFund) {
                         changed = true;
                     }
-                    return newFa;
+                    return newFund;
                 } else {
-                    return faObj;
+                    return fundObj;
                 }
             })
             if (changed) {
                 return {
                     ...state,
-                    fas: newFas
+                    funds: newFunds
                 }
             } else {
                 return state
             }
-        case types.FA_FA_TREE_FULLTEXT_CHANGE:
-        case types.FA_FA_TREE_FOCUS_NODE:
-        case types.FA_FA_TREE_EXPAND_NODE:
-        case types.FA_FA_TREE_COLLAPSE:
-        case types.FA_FA_TREE_COLLAPSE_NODE:
-        case types.FA_FA_TREE_SELECT_NODE:
+        case types.FUND_FUND_TREE_FULLTEXT_CHANGE:
+        case types.FUND_FUND_TREE_FOCUS_NODE:
+        case types.FUND_FUND_TREE_EXPAND_NODE:
+        case types.FUND_FUND_TREE_COLLAPSE:
+        case types.FUND_FUND_TREE_COLLAPSE_NODE:
+        case types.FUND_FUND_TREE_SELECT_NODE:
         case types.GLOBAL_CONTEXT_MENU_HIDE:
-        case types.FA_FA_SELECT_SUBNODE:
-        case types.FA_FA_SUBNODES_NEXT:
-        case types.FA_FA_SUBNODES_PREV:
-        case types.FA_FA_SUBNODES_NEXT_PAGE:
-        case types.FA_FA_SUBNODES_PREV_PAGE:
-        case types.FA_FA_SUBNODES_FULLTEXT_SEARCH:
-        case types.FA_FA_CLOSE_NODE_TAB:
-        case types.FA_FA_SELECT_NODE_TAB:
+        case types.FUND_FUND_SELECT_SUBNODE:
+        case types.FUND_FUND_SUBNODES_NEXT:
+        case types.FUND_FUND_SUBNODES_PREV:
+        case types.FUND_FUND_SUBNODES_NEXT_PAGE:
+        case types.FUND_FUND_SUBNODES_PREV_PAGE:
+        case types.FUND_FUND_SUBNODES_FULLTEXT_SEARCH:
+        case types.FUND_FUND_CLOSE_NODE_TAB:
+        case types.FUND_FUND_SELECT_NODE_TAB:
         case types.BULK_ACTIONS_DATA_LOADING:
         case types.BULK_ACTIONS_DATA_LOADED:
         case types.BULK_ACTIONS_RECEIVED_DATA:
@@ -210,25 +210,25 @@ export default function arrRegion(state = initialState, action) {
         case types.BULK_ACTIONS_RECEIVED_STATE:
         case types.BULK_ACTIONS_STATE_IS_DIRTY:
             var index = state.activeIndex;
-            return processFa(state, action, index);
-        case types.FA_CLOSE_FA_TAB:
-            var index = indexById(state.fas, action.fa.id);
+            return processFund(state, action, index);
+        case types.FUND_CLOSE_FUND_TAB:
+            var index = indexById(state.funds, action.fund.id);
             var newActiveIndex = state.activeIndex;
             if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
-                newActiveIndex = selectedAfterClose(state.fas, index);
+                newActiveIndex = selectedAfterClose(state.funds, index);
             } else if (index < state.activeIndex) {
                 newActiveIndex--;
             }
             return {
                 ...state,
-                fas: [
-                    ...state.fas.slice(0, index),
-                    ...state.fas.slice(index + 1)
+                funds: [
+                    ...state.funds.slice(0, index),
+                    ...state.funds.slice(index + 1)
                 ],
                 activeIndex: newActiveIndex
             }
-        case types.FA_SELECT_FA_TAB:
-            return selectFaTab(state, action);
+        case types.FUND_SELECT_FUND_TAB:
+            return selectFundTab(state, action);
         case types.NODE_DESC_ITEM_TYPE_LOCK:
         case types.NODE_DESC_ITEM_TYPE_UNLOCK:
         case types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL:
@@ -241,20 +241,20 @@ export default function arrRegion(state = initialState, action) {
             return consolidateState(state, result);
         case types.PACKETS_REQUEST:
             var packets = state.packets;
-            var faPackets = packets[action.findingAidId];
+            var fundPackets = packets[action.fundId];
 
-            if (faPackets == null) {
-                faPackets = {
+            if (fundPackets == null) {
+                fundPackets = {
                         isFetching: true,
                         fetched: false,
                         dirty: false,
                         items: []
                 }
             } else {
-                faPackets.isFetching = true
+                fundPackets.isFetching = true
             }
 
-            packets[action.findingAidId] = faPackets;
+            packets[action.fundId] = fundPackets;
 
             return {
                 ...state,
@@ -263,15 +263,15 @@ export default function arrRegion(state = initialState, action) {
 
         case types.CHANGE_PACKETS:
             var packets = state.packets;
-            var faPackets = packets[action.findingAidId];
+            var fundPackets = packets[action.fundId];
 
-            if (faPackets == null) {
+            if (fundPackets == null) {
                 return state;
             } else {
-                faPackets.dirty = true;
+                fundPackets.dirty = true;
             }
 
-            packets[action.findingAidId] = faPackets;
+            packets[action.fundId] = fundPackets;
 
             return {
                 ...state,
@@ -279,14 +279,14 @@ export default function arrRegion(state = initialState, action) {
             }
         case types.PACKETS_RECEIVE:
             var packets = state.packets;
-            var faPackets = packets[action.findingAidId];
+            var fundPackets = packets[action.fundId];
 
-            faPackets.isFetching = false;
-            faPackets.fetched = true;
-            faPackets.dirty = false;
-            faPackets.items = action.items;
+            fundPackets.isFetching = false;
+            fundPackets.fetched = true;
+            fundPackets.dirty = false;
+            fundPackets.items = action.items;
 
-            packets[action.findingAidId] = faPackets;
+            packets[action.fundId] = fundPackets;
 
             return {
                 ...state,
@@ -295,14 +295,14 @@ export default function arrRegion(state = initialState, action) {
         case types.CREATE_PACKET_RECEIVE:
             var packets = Object.assign({}, state.packets);
 
-            packets[action.findingAidId].items.push(action.data);
+            packets[action.fundId].items.push(action.data);
 
             return {
                 ...state,
                 packets: packets
             }
         case types.CHANGE_CONFORMITY_INFO:
-            var index = indexById(state.fas, action.findingAidVersionId);
+            var index = indexById(state.funds, action.fundVersionId);
 
             // změna se ho netýká, vracím původní stav
             if (index == null) {
@@ -311,22 +311,22 @@ export default function arrRegion(state = initialState, action) {
 
             return {
                 ...state,
-                fas: [
-                    ...state.fas.slice(0, index),
-                    fa(state.fas[index], action),
-                    ...state.fas.slice(index + 1)
+                funds: [
+                    ...state.funds.slice(0, index),
+                    fund(state.funds[index], action),
+                    ...state.funds.slice(index + 1)
                 ]
             }
 
         case types.CHANGE_APPROVE_VERSION:
 
-            var fas = state.fas;
+            var funds = state.funds;
             var update = false;
 
-            fas.forEach(fa => {if (fa.id == action.versionId) {
-                if (fa.closed == false) {
+            funds.forEach(fund => {if (fund.id == action.versionId) {
+                if (fund.closed == false) {
                     update = true;
-                    fa.closed = true;
+                    fund.closed = true;
                 }
             }});
 

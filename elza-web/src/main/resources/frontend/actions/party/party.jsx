@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom';
 import {WebApi} from 'actions'
 import * as types from 'actions/constants/ActionTypes'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {faSubNodeFormValueChangeParty, faSubNodeFormValueBlur} from 'actions/arr/subNodeForm'
+import {fundSubNodeFormValueChangeParty, fundSubNodeFormValueBlur} from 'actions/arr/subNodeForm'
 import {routerNavigate} from 'actions/router'
 import {i18n, AddPartyForm} from 'components';
 import {getPartyTypeById} from 'actions/refTables/partyTypes';
@@ -334,10 +334,10 @@ function partyAddSubmit(callback, dispatch, data, submitType) {
         }]
     }
     if(party.from.textDate == "" || party.from.textDate == null || party.from.textDate == undefined){
-        party.from = null;                                  // pokud není zadaný textová část data, celý fatum se ruší
+        party.from = null;                                  // pokud není zadaný textová část data, celý datum se ruší
     }
     if(party.to.textDate == "" || party.to.textDate == null || party.to.textDate == undefined){
-        party.to = null;                                    // pokud není zadaný textová část data, celý fatum se ruší
+        party.to = null;                                    // pokud není zadaný textová část data, celý datum se ruší
     }
 
     WebApi.insertParty(party).then((json) => {
@@ -346,10 +346,10 @@ function partyAddSubmit(callback, dispatch, data, submitType) {
     });
 }
 
-export function partySelect(partyId, fa = null) {
+export function partySelect(partyId, fund = null) {
     return {
         partyId: partyId,
-        fa: fa,
+        fund,
         type: types.PARTY_SELECT
     }
 }

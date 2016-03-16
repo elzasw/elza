@@ -1,20 +1,20 @@
 /**
- * Strom AP.
+ * Strom AS.
  */
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Tabs, FaTreeLazy} from 'components';
+import {AbstractReactComponent, i18n, Tabs, FundTreeLazy} from 'components';
 import * as types from 'actions/constants/ActionTypes';
 import {AppActions} from 'stores';
 import {MenuItem} from 'react-bootstrap';
-import {selectFaTab, closeFaTab} from 'actions/arr/fa'
-import {faTreeFulltextChange, faTreeFulltextSearch, faTreeFulltextNextItem, faTreeFulltextPrevItem, faTreeSelectNode, faTreeCollapse, faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
-import {faSelectSubNode} from 'actions/arr/nodes'
-import {createFaRoot, getParentNode} from './ArrUtils.jsx'
+import {selectFundTab, closeFundTab} from 'actions/arr/fund'
+import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeSelectNode, fundTreeCollapse, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeNodeCollapse} from 'actions/arr/fundTree'
+import {fundSelectSubNode} from 'actions/arr/nodes'
+import {createFundRoot, getParentNode} from './ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
 
-var FaTreeMovementsLeft = class FaTreeMovementsLeft extends AbstractReactComponent {
+var FundTreeMovementsLeft = class FundTreeMovementsLeft extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -24,37 +24,37 @@ var FaTreeMovementsLeft = class FaTreeMovementsLeft extends AbstractReactCompone
 
     componentDidMount() {
         const {versionId, expandedIds, selectedIds} = this.props;
-        this.requestFaTreeData(versionId, expandedIds, selectedIds);
+        this.requestFundTreeData(versionId, expandedIds, selectedIds);
     }
 
     componentWillReceiveProps(nextProps) {
         const {versionId, expandedIds, selectedIds} = nextProps;
-        this.requestFaTreeData(versionId, expandedIds, selectedIds);
+        this.requestFundTreeData(versionId, expandedIds, selectedIds);
     }
 
-    requestFaTreeData(versionId, expandedIds, selectedIds) {
+    requestFundTreeData(versionId, expandedIds, selectedIds) {
         var selectedId = null;
         if (Object.keys(selectedIds).length == 1) {
             selectedId = Object.keys(selectedIds)[0];
         }
 
-        this.dispatch(faTreeFetchIfNeeded(types.FA_TREE_AREA_MOVEMENTS_LEFT, versionId, expandedIds, selectedId));
+        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MOVEMENTS_LEFT, versionId, expandedIds, selectedId));
     }
 
     handleFulltextChange(value) {
-        this.dispatch(faTreeFulltextChange(types.FA_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, value));
+        this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, value));
     }
 
     handleFulltextSearch() {
-        this.dispatch(faTreeFulltextSearch(types.FA_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId));
+        this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId));
     }
 
     handleFulltextPrevItem() {
-        this.dispatch(faTreeFulltextPrevItem(types.FA_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId));
+        this.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId));
     }
 
     handleFulltextNextItem() {
-        this.dispatch(faTreeFulltextNextItem(types.FA_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId));
+        this.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId));
     }
 
     /**
@@ -71,7 +71,7 @@ var FaTreeMovementsLeft = class FaTreeMovementsLeft extends AbstractReactCompone
             </ul>
         )
 
-        this.dispatch(faTreeFocusNode(types.FA_TREE_AREA_MOVEMENTS_LEFT, node));
+        this.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MOVEMENTS_LEFT, node));
         this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
     }
 
@@ -81,24 +81,22 @@ var FaTreeMovementsLeft = class FaTreeMovementsLeft extends AbstractReactCompone
      * @param e {Object} event
      */
     handleNodeClick(node, e) {
-        this.dispatch(faTreeSelectNode(types.FA_TREE_AREA_MOVEMENTS_LEFT, node.id, e.ctrlKey, e.shiftKey));
+        this.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_MOVEMENTS_LEFT, node.id, e.ctrlKey, e.shiftKey));
     }
 
     /**
      * Zabalení stromu
      */
     handleCollapse() {
-        this.dispatch(faTreeCollapse(types.FA_TREE_AREA_MOVEMENTS_LEFT, this.props.fa))
+        this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.fund))
     }
 
     render() {
-        const {fa} = this.props;
-
         return (
-            <FaTreeLazy 
+            <FundTreeLazy 
                 {...this.props}
                 cutLongLabels={true}
-                onOpenCloseNode={(node, expand) => {expand ? this.dispatch(faTreeNodeExpand(types.FA_TREE_AREA_MOVEMENTS_LEFT, node)) : this.dispatch(faTreeNodeCollapse(types.FA_TREE_AREA_MOVEMENTS_LEFT, node))}}
+                onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MOVEMENTS_LEFT, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MOVEMENTS_LEFT, node))}}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onCollapse={this.handleCollapse}
@@ -111,5 +109,5 @@ var FaTreeMovementsLeft = class FaTreeMovementsLeft extends AbstractReactCompone
     }
 }
 
-module.exports = connect()(FaTreeMovementsLeft);
+module.exports = connect()(FundTreeMovementsLeft);
 

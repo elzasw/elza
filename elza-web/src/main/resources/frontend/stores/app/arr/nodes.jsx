@@ -42,8 +42,8 @@ export default function nodes(state = nodesInitialState, action) {
                 activeIndex,
                 nodes: state.nodes.map(nodeobj => node(nodeobj, action))
             }
-        case types.FA_NODES_RECEIVE:
-        case types.FA_NODES_REQUEST:
+        case types.FUND_NODES_RECEIVE:
+        case types.FUND_NODES_REQUEST:
         case types.CHANGE_NODES:
             var changed = false;
             var newNodes = state.nodes.map(nodeObj => {
@@ -61,37 +61,37 @@ export default function nodes(state = nodesInitialState, action) {
             } else {
                 return state
             }
-        case types.FA_NODE_INFO_REQUEST:
-        case types.FA_NODE_INFO_RECEIVE:
-        case types.FA_SUB_NODE_REGISTER_REQUEST:
-        case types.FA_SUB_NODE_REGISTER_RECEIVE:
-        case types.FA_SUB_NODE_REGISTER_VALUE_RESPONSE:
-        case types.FA_SUB_NODE_REGISTER_VALUE_DELETE:
-        case types.FA_SUB_NODE_REGISTER_VALUE_ADD:
-        case types.FA_SUB_NODE_REGISTER_VALUE_CHANGE:
-        case types.FA_SUB_NODE_REGISTER_VALUE_FOCUS:
-        case types.FA_SUB_NODE_REGISTER_VALUE_BLUR:
-        case types.FA_SUB_NODE_FORM_REQUEST:
-        case types.FA_SUB_NODE_FORM_RECEIVE:
-        case types.FA_SUB_NODE_FORM_CACHE_RESPONSE:
-        case types.FA_SUB_NODE_FORM_CACHE_REQUEST:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
-        case types.FA_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
-        case types.FA_SUB_NODE_FORM_VALUE_BLUR:
-        case types.FA_SUB_NODE_FORM_VALUE_FOCUS:
-        case types.FA_SUB_NODE_FORM_VALUE_ADD:
-        case types.FA_SUB_NODE_FORM_VALUE_DELETE:
-        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
-        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
-        case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
-        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
-        case types.FA_SUB_NODE_INFO_REQUEST:
-        case types.FA_SUB_NODE_INFO_RECEIVE:
-        case types.FA_FA_SUBNODES_FULLTEXT_RESULT:
+        case types.FUND_NODE_INFO_REQUEST:
+        case types.FUND_NODE_INFO_RECEIVE:
+        case types.FUND_SUB_NODE_REGISTER_REQUEST:
+        case types.FUND_SUB_NODE_REGISTER_RECEIVE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_DELETE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_ADD:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_FOCUS:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_BLUR:
+        case types.FUND_SUB_NODE_FORM_REQUEST:
+        case types.FUND_SUB_NODE_FORM_RECEIVE:
+        case types.FUND_SUB_NODE_FORM_CACHE_RESPONSE:
+        case types.FUND_SUB_NODE_FORM_CACHE_REQUEST:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
+        case types.FUND_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
+        case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
+        case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
+        case types.FUND_SUB_NODE_FORM_VALUE_ADD:
+        case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
+        case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
+        case types.FUND_SUB_NODE_INFO_REQUEST:
+        case types.FUND_SUB_NODE_INFO_RECEIVE:
+        case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT:
         case types.DEVELOPER_SCENARIOS_RECEIVED:
         case types.DEVELOPER_SCENARIOS_FETCHING:
         case types.DEVELOPER_SCENARIOS_DIRTY:
@@ -102,14 +102,14 @@ export default function nodes(state = nodesInitialState, action) {
             } else {
                 return state;
             }
-        case types.FA_FA_SUBNODES_NEXT:
-        case types.FA_FA_SUBNODES_PREV:
-        case types.FA_FA_SUBNODES_NEXT_PAGE:
-        case types.FA_FA_SUBNODES_PREV_PAGE:
-        case types.FA_FA_SUBNODES_FULLTEXT_SEARCH:
+        case types.FUND_FUND_SUBNODES_NEXT:
+        case types.FUND_FUND_SUBNODES_PREV:
+        case types.FUND_FUND_SUBNODES_NEXT_PAGE:
+        case types.FUND_FUND_SUBNODES_PREV_PAGE:
+        case types.FUND_FUND_SUBNODES_FULLTEXT_SEARCH:
             var index = state.activeIndex;
             return processNode(state, action, index);
-        case types.FA_FA_SELECT_SUBNODE:
+        case types.FUND_FUND_SELECT_SUBNODE:
             var newState;
 
             if (action.subNodeParentNode == null) { // jen nulování
@@ -158,7 +158,7 @@ export default function nodes(state = nodesInitialState, action) {
             } else {
                 return consolidateState(state, newState);
             }
-        case types.FA_FA_CLOSE_NODE_TAB:
+        case types.FUND_FUND_CLOSE_NODE_TAB:
             var index = action.index;
             var newActiveIndex = state.activeIndex;
             if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
@@ -174,7 +174,7 @@ export default function nodes(state = nodesInitialState, action) {
                 ],
                 activeIndex: newActiveIndex
             }
-        case types.FA_FA_SELECT_NODE_TAB:
+        case types.FUND_FUND_SELECT_NODE_TAB:
             if (state.activeIndex !== action.index) {
                 return {
                     ...state,
@@ -227,7 +227,7 @@ export default function nodes(state = nodesInitialState, action) {
             }
 
             return state;
-        case types.FA_NODE_CHANGE:
+        case types.FUND_NODE_CHANGE:
 
             var changed = false;
             var nodes = [...state.nodes];
@@ -257,7 +257,7 @@ export default function nodes(state = nodesInitialState, action) {
                 return {...state, nodes}
             }
             return state;
-        case types.CHANGE_FA_RECORD:
+        case types.CHANGE_FUND_RECORD:
             var index = indexById(state.nodes, action.nodeId, 'selectedSubNodeId');
             if (index !== null) {
                 var nodes = [...state.nodes];

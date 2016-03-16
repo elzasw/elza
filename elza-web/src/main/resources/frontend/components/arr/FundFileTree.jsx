@@ -1,19 +1,19 @@
 /**
- * Strom AP s jednotlivými verzemi.
+ * Strom AS s jednotlivými verzemi.
  */
 
-require ('./FaFileTree.less');
+require ('./FundFileTree.less');
 
 import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Icon, Loading} from 'components';
 import {Nav, NavItem} from 'react-bootstrap';
-import {faFileTreeFetchIfNeeded} from 'actions/arr/faFileTree'
-import {selectFaTab} from 'actions/arr/fa'
+import {fundFileTreeFetchIfNeeded} from 'actions/arr/fundFileTree'
+import {selectFundTab} from 'actions/arr/fund'
 import {propsEquals, dateToString} from 'components/Utils'
-import {getFaFromFaAndVersion} from 'components/arr/ArrUtils'
+import {getFundFromFundAndVersion} from 'components/arr/ArrUtils'
 
-var FaFileTree = class FaFileTree extends AbstractReactComponent {
+var FundFileTree = class FundFileTree extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -22,13 +22,13 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.opened) {
-            this.dispatch(faFileTreeFetchIfNeeded());
+            this.dispatch(fundFileTreeFetchIfNeeded());
         }
     }
 
     componentDidMount() {
         if (this.props.opened) {
-            this.dispatch(faFileTreeFetchIfNeeded());
+            this.dispatch(fundFileTreeFetchIfNeeded());
         }
     }
 
@@ -41,15 +41,15 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
     }
 
     /**
-     * Vybrání verze AP pro zobrazení.
-     * @param fa {Object} AP
-     * @param version {Object} verze AP
+     * Vybrání verze AS pro zobrazení.
+     * @param fund {Object} AS
+     * @param version {Object} verze AS
      */
-    handleSelect(fa, version) {
-        var fa = getFaFromFaAndVersion(fa, version);
+    handleSelect(fund, version) {
+        var fund = getFundFromFundAndVersion(fund, version);
 
-        this.dispatch(selectFaTab(fa));
-        this.props.onSelect(fa);
+        this.dispatch(selectFundTab(fund));
+        this.props.onSelect(fund);
     }
 
     /**
@@ -81,7 +81,7 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
                 rows.push(
                     <NavItem className='version' key={item.id + '_' + ver.id} onClick={this.handleSelect.bind(this, item, ver)}>
                         <Icon glyph={glyph}/>
-                        {ver.lockDate ? dateToString(new Date(ver.lockDate)) : i18n('arr.fa.currentVersion')}
+                        {ver.lockDate ? dateToString(new Date(ver.lockDate)) : i18n('arr.fund.currentVersion')}
                     </NavItem>
                 )
             });
@@ -118,7 +118,7 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
     }
 }
 
-FaFileTree.propTypes = {
+FundFileTree.propTypes = {
     opened: React.PropTypes.bool.isRequired,
     onSelect: React.PropTypes.func.isRequired,
     items: React.PropTypes.array.isRequired,
@@ -126,4 +126,4 @@ FaFileTree.propTypes = {
     fetched: React.PropTypes.bool.isRequired,
 }
 
-module.exports = connect()(FaFileTree);
+module.exports = connect()(FundFileTree);

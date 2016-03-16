@@ -1,6 +1,6 @@
 /**
  * Formulář importu rejstříkových hesel
- * <ImportForm fa onSubmit={this.handleCallImportRegistry} />
+ * <ImportForm fund onSubmit={this.handleCallImportRegistry} />
  */
 
 import React from 'react';
@@ -50,7 +50,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(refRuleSetFetchIfNeeded());
-        if (this.props.fa) {
+        if (this.props.fund) {
             WebApi.getAllScopes().then(json => {
                 this.setState({
                     defaultScopes: json
@@ -77,7 +77,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
         });
         var data = Object.assign({}, {
             xmlFile: values.xmlFile[0],
-            importDataFormat: this.props.fa ? 'FINDING_AID' : this.props.record ? 'RECORD' : 'PARTY',
+            importDataFormat: this.props.fund ? 'FINDING_AID' : this.props.record ? 'RECORD' : 'PARTY',
             stopOnError: values.stopOnError && values.stopOnError == 1 ? values.stopOnError : false
         });
 
@@ -110,7 +110,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
             }
         }
         WebApi.xmlImport(formData).then(() => {
-            const messageType = this.props.fa ? 'Fa' : this.props.record ? 'Record' : 'Party';
+            const messageType = this.props.fund ? 'Fund' : this.props.record ? 'Record' : 'Party';
             this.dispatch(modalDialogHide());
             this.dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.success' + messageType)));
         }).catch(() => {
@@ -150,7 +150,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                                         <Autocomplete
                                             {...recordScope}
                                             {...decorateFormField(recordScope)}
-                                            tags={this.props.fa == true}
+                                            tags={this.props.fund == true}
                                             label={i18n('import.registryScope')}
                                             items={this.state.defaultScopes}
                                             getItemId={(item) => item ? item : null}
@@ -175,15 +175,15 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                                     </div>
                                 }
                                 {
-                                    this.props.fa && transformationName.value && <div>
-                                        <Input type="select" label={i18n('arr.fa.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
+                                    this.props.fund && transformationName.value && <div>
+                                        <Input type="select" label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
                                             <option key='-ruleSetId'/>
                                             {ruleSets.map(i=> {
                                                 return <option value={i.id}>{i.name}</option>
                                             })}
                                         </Input>
                                         <Input type="select" disabled={ruleSetId.invalid}
-                                               label={i18n('arr.fa.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
+                                               label={i18n('arr.fund.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
                                             <option key='-rulArrTypeId'/>
                                             {ruleSetOptions}
                                         </Input>
@@ -215,7 +215,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
 ImportForm.propTypes = {
     party: React.PropTypes.bool,
     record: React.PropTypes.bool,
-    fa: React.PropTypes.bool
+    fund: React.PropTypes.bool
 };
 
 

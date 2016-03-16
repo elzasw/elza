@@ -17,7 +17,7 @@ const _logCollapsed = true;
  */
 import arrRegion from './arr/arrRegion';
 import refTables from './refTables/refTables';
-import faFileTree from './arr/faFileTree';
+import fundFileTree from './arr/fundFileTree';
 import registryRegion from './registry/registryRegion';
 import registryRegionData from './registry/registryRegionData';
 import registryRegionRecordTypes from './registry/registryRegionRecordTypes';
@@ -30,7 +30,7 @@ import splitter from './global/splitter';
 import developer from './global/developer';
 import focus from './global/focus';
 import adminRegion from './admin/adminRegion';
-import faForm from './arr/form/faForm';
+import fundForm from './arr/form/fundForm';
 import addPacketForm from './arr/form/addPacketForm';
 import stateRegion from './state/stateRegion';
 import router from './router';
@@ -48,7 +48,7 @@ import editRegistryForm from './registry/form/editRegistryForm';
 let reducer = combineReducers({
     arrRegion,
     refTables,
-    faFileTree,
+    fundFileTree,
     registryRegion,
     registryRegionData,
     registryRegionRecordTypes,
@@ -64,7 +64,7 @@ let reducer = combineReducers({
     stateRegion,
     router,
     form: formReducer.plugin({
-        faForm: faForm,
+        fundForm: fundForm,
         addPacketForm: addPacketForm,
         addPartyForm: addPartyForm,
         partyNameForm: partyNameForm,
@@ -111,9 +111,9 @@ var store = function configureStore(initialState) {
   const _store = finalCreateStore(reducer, initialState);
 */
 /*
-import {selectFaTab} from 'actions/arr/fa'
-var fa = Object.assign({id: 1, versionId: 1});
-store.dispatch(selectFaTab(fa));
+import {selectFundTab} from 'actions/arr/fund'
+var fund = Object.assign({id: 1, versionId: 1});
+store.dispatch(selectFundTab(fund));
 */
 
 if (_logStoreSize) {

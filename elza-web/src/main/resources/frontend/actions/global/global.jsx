@@ -5,10 +5,10 @@ import * as types from 'actions/constants/ActionTypes';
 var ObjectInfo = class ObjectInfo {
     constructor() {
         this.nodeIds = new Utils.StringSet();
-        this.faIds = new Utils.StringSet();
+        this.fundIds = new Utils.StringSet();
 
         this.addNode = this.addNode.bind(this);
-        this.addFa = this.addFa.bind(this);
+        this.addFund = this.addFund.bind(this);
     }
 
     addNode(node) {
@@ -16,9 +16,9 @@ var ObjectInfo = class ObjectInfo {
         this.nodeIds.add(node.id);
     }
 
-    addFa(fa) {
-        console.log('addFa', fa);
-        this.faIds.add(fa.id);
+    addFund(fund) {
+        console.log('addFund', fund);
+        this.fundIds.add(fund.id);
     }
 }
 export const ObjectInfo

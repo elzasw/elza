@@ -5,10 +5,10 @@ import {indexById} from 'stores/app/utils.jsx'
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-export function getFaFromFaAndVersion(fa, version) {
-    var faVersionClosed = version.lockDate != null;
-    var fa = Object.assign({}, fa, {faId: fa.id, versionId: version.id, lockDate: version.lockDate, id: version.id, activeVersion: version, closed: faVersionClosed});
-    return fa;
+export function getFundFromFundAndVersion(fund, version) {
+    var fundVersionClosed = version.lockDate != null;
+    var fund = Object.assign({}, fund, {fundId: fund.id, versionId: version.id, lockDate: version.lockDate, id: version.id, activeVersion: version, closed: fundVersionClosed});
+    return fund;
 }
 
 export function getNodeParent(nodes, nodeId) {
@@ -109,20 +109,20 @@ export function getNodeParents(nodes, nodeId) {
 }
 
 /**
- * Vytvoření virtuálního kořenového uzlu pro kořenový uzel FA.
- * @param {Object} fa fa
- * @return {Object} virtuální kořenový uzel pro kořenový uzel FA
+ * Vytvoření virtuálního kořenového uzlu pro kořenový uzel AS.
+ * @param {Object} fund fund
+ * @return {Object} virtuální kořenový uzel pro kořenový uzel AS
  */
-export function createFaRoot(fa) {
-    return {id: 'ROOT_' + fa.versionId, name: fa.name, root: true};
+export function createFundRoot(fund) {
+    return {id: 'ROOT_' + fund.versionId, name: fund.name, root: true};
 }
 
 /**
- * Zjištění, že id je id virtuálního kořenového uzlu pro kořenový uzel FA.
+ * Zjištění, že id je id virtuálního kořenového uzlu pro kořenový uzel AS.
  * @param {Integer} nodeId node id
- * @return {Boolean} true, pokud se jedná o id virtuálního kořenového uzlu pro kořenový uzel FA
+ * @return {Boolean} true, pokud se jedná o id virtuálního kořenového uzlu pro kořenový uzel AS
  */
-export function isFaRootId(nodeId) {
+export function isFundRootId(nodeId) {
     var isRoot = false;
     if (typeof nodeId == 'string') {    // pravděpodobně root
         if (nodeId.substring(0, 5) == 'ROOT_') {
@@ -136,14 +136,14 @@ export function isFaRootId(nodeId) {
 /**
  * Načtení nadřazeného uzlu k předanému.
  * @param node {Object} uzel, pro který chceme vrátit nadřazený
- * @param faTreeNodes {Array} seznam načtených uzlů pro data stromu
+ * @param fundTreeNodes {Array} seznam načtených uzlů pro data stromu
  * @return {Object} parent nebo null, pokud je předaný uzel kořenový
  */
-export function getParentNode(node, faTreeNodes) {
-    var index = indexById(faTreeNodes, node.id);
+export function getParentNode(node, fundTreeNodes) {
+    var index = indexById(fundTreeNodes, node.id);
     while (--index >= 0) {
-        if (faTreeNodes[index].depth < node.depth) {
-            return faTreeNodes[index];
+        if (fundTreeNodes[index].depth < node.depth) {
+            return fundTreeNodes[index];
         }
     }
     return null;

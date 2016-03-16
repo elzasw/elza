@@ -4,26 +4,26 @@
 
 import {WebApi} from 'actions'
 import {indexById} from 'stores/app/utils.jsx'
-import {faExtendedView} from './fa'
+import {fundExtendedView} from './fund'
 import * as types from 'actions/constants/ActionTypes';
 import {developerNodeScenariosDirty} from 'actions/global/developer';
 
 /**
  * Změna vybrané záložky JP.
- * Pokud má daná záložka vybraný podřízený JP, je poslána nová akce s vybrání podřízené JP {@link faSelectSubNode}.
+ * Pokud má daná záložka vybraný podřízený JP, je poslána nová akce s vybrání podřízené JP {@link fundSelectSubNode}.
  * @param {int} index index vybrané záložky
  */
-export function faSelectNodeTab(index) {
+export function fundSelectNodeTab(index) {
     return (dispatch, getState) => {
         var state = getState();
-        var activeFa = state.arrRegion.fas[state.arrRegion.activeIndex];
-        var nodeTab = activeFa.nodes.nodes[index];
+        var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
+        var nodeTab = activeFund.nodes.nodes[index];
         dispatch({
-            type: types.FA_FA_SELECT_NODE_TAB,
+            type: types.FUND_FUND_SELECT_NODE_TAB,
             index,
         });
         if (nodeTab.selectedSubNodeId != null) {    // musíme poslat akci vybrání subnode (aby se řádek vybral např. ve stromu)
-            dispatch(faSelectSubNodeInt(nodeTab.selectedSubNodeId, nodeTab, false, null, true));
+            dispatch(fundSelectSubNodeInt(nodeTab.selectedSubNodeId, nodeTab, false, null, true));
         }
     }
 }
@@ -32,9 +32,9 @@ export function faSelectNodeTab(index) {
  * Zavření záložky JP.
  * @param index {int} index záložky
  */
-function _faCloseNodeTab(index) {
+function _fundCloseNodeTab(index) {
     return {
-        type: types.FA_FA_CLOSE_NODE_TAB,
+        type: types.FUND_FUND_CLOSE_NODE_TAB,
         index
     }
 }
@@ -43,22 +43,22 @@ function _faCloseNodeTab(index) {
  * Zavření záložky JP.
  * @param index {int} index záložky
  */
-export function faCloseNodeTab(index) {
+export function fundCloseNodeTab(index) {
     return (dispatch, getState) => {
         var state = getState();
-        var activeFa = state.arrRegion.fas[state.arrRegion.activeIndex];
+        var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
         var wasSelected = false;
-        if (activeFa.nodes.activeIndex == index) {  // zavíráme aktuálně vybranou
+        if (activeFund.nodes.activeIndex == index) {  // zavíráme aktuálně vybranou
             wasSelected = true;
         }
-        dispatch(_faCloseNodeTab(index));
+        dispatch(_fundCloseNodeTab(index));
         var newState = getState();
-        var newActiveFa = newState.arrRegion.fas[newState.arrRegion.activeIndex];
+        var newActiveFund = newState.arrRegion.funds[newState.arrRegion.activeIndex];
         if (wasSelected) { 
-            if (newActiveFa.nodes.nodes.length > 0) {    // je vybraná nějaká jiná, protože ještě nějaké záložky existují
-                dispatch(faSelectNodeTab(newActiveFa.nodes.activeIndex));
+            if (newActiveFund.nodes.nodes.length > 0) {    // je vybraná nějaká jiná, protože ještě nějaké záložky existují
+                dispatch(fundSelectNodeTab(newActiveFund.nodes.activeIndex));
             } else {    // není žádná záložka
-                dispatch(faSelectSubNodeInt(null, null, false, null, false));
+                dispatch(fundSelectSubNodeInt(null, null, false, null, false));
             }
         }
     }
@@ -70,10 +70,10 @@ export function faCloseNodeTab(index) {
  * @param {Object} subNodeParentNode nadřazený JP pro vybíranou JP, předáváno kvůli případnému otevření nové záložky, pokud neexistuje
  * @param {boolean} openNewTab má se otevřít nová záložka? Pokud je false, bude použita existující  aktuálně vybraná, pokud žádná neexistuje, bude nová vytvořena
  */
-export function faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
+export function fundSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
     return {
-        type: types.FA_FA_SELECT_SUBNODE,
-        area: types.FA_TREE_AREA_MAIN,
+        type: types.FUND_FUND_SELECT_SUBNODE,
+        area: types.FUND_TREE_AREA_MAIN,
         subNodeId,
         subNodeParentNode,
         openNewTab,
@@ -83,7 +83,7 @@ export function faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab=fals
 }
 
 /**
- * Akce vybrání záložky NODE v Accordion v aktuální záložce NODE pod aktuální vybranou záložkou AP. V případě, že neexsituje aktuální záložka NODE
+ * Akce vybrání záložky NODE v Accordion v aktuální záložce NODE pod aktuální vybranou záložkou AS. V případě, že neexsituje aktuální záložka NODE
  * je vytvořena nová na základě parametru subNodeParentNode, který bude reprezentovat záložku.
  * @param {int} subNodeId id node, který má být vzbrán v Accordion
  * @param {Object} subNodeParentNode nadřazený node k subNodeId
@@ -91,55 +91,55 @@ export function faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab=fals
  * @param {int} newFilterCurrentIndex nový index ve výsledcích hledání ve stromu, pokud daná akce je vyvolána akcí skuku na jinou vyhledanou položku vy výsledcích hledání ve stromu
  * @param {boolean} ensureItemVisible true, pokud má být daná položka vidět - má se odscrolovat
  */
-export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
+export function fundSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
     return (dispatch, getState) => {
-        dispatch(faExtendedView(false));
-        dispatch(faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible));
+        dispatch(fundExtendedView(false));
+        dispatch(fundSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible));
         let state = getState();
-        dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.nodeKey, state.arrRegion.fas[state.arrRegion.activeIndex].versionId));
+        dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.nodeKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
     }
 }
 
 /**
  * Stránkování v Accordion - další část.
  */
-export function faSubNodesNext() {
+export function fundSubNodesNext() {
     return {
-        type: types.FA_FA_SUBNODES_NEXT,
+        type: types.FUND_FUND_SUBNODES_NEXT,
     }
 }
 
 /**
  * Stránkování v Accordion - předchozí část.
  */
-export function faSubNodesPrev() {
+export function fundSubNodesPrev() {
     return {
-        type: types.FA_FA_SUBNODES_PREV,
+        type: types.FUND_FUND_SUBNODES_PREV,
     }
 }
 
 /**
  * Stránkování v Accordion - další stránka.
  */
-export function faSubNodesNextPage() {
+export function fundSubNodesNextPage() {
     return (dispatch, getState) => {
         let state = getState();
-        let activeFa = state.arrRegion.fas[state.arrRegion.activeIndex];
-        let node = activeFa.nodes.nodes[activeFa.nodes.activeIndex];
+        let activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
+        let node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
         let viewIndex = node.viewStartIndex;
         let index = indexById(node.childNodes, node.selectedSubNodeId);
-        dispatch(_faSubNodesNextPage());
+        dispatch(_fundSubNodesNextPage());
 
         if (index != null) {
             let newState = getState();
-            let newActiveFa = newState.arrRegion.fas[newState.arrRegion.activeIndex];
-            let newNode = newActiveFa.nodes.nodes[newActiveFa.nodes.activeIndex];
+            let newActiveFund = newState.arrRegion.funds[newState.arrRegion.activeIndex];
+            let newNode = newActiveFund.nodes.nodes[newActiveFund.nodes.activeIndex];
             let newViewIndex = newNode.viewStartIndex;
             let newIndex = newViewIndex - viewIndex + index;
             let count = newNode.childNodes.length;
             let subNodeId = newIndex < count ? newNode.childNodes[newIndex].id : newNode.childNodes[count - 1].id;
             let subNodeParentNode = newNode;
-            dispatch(faSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
+            dispatch(fundSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
         }
     }
 }
@@ -147,33 +147,33 @@ export function faSubNodesNextPage() {
 /**
  * Stránkování v Accordion - předchozí stránka.
  */
-export function _faSubNodesNextPage() {
+export function _fundSubNodesNextPage() {
     return {
-        type: types.FA_FA_SUBNODES_NEXT_PAGE,
+        type: types.FUND_FUND_SUBNODES_NEXT_PAGE,
     }
 }
 
 /**
  * Stránkování v Accordion - předchozí stránka.
  */
-export function faSubNodesPrevPage() {
+export function fundSubNodesPrevPage() {
     return (dispatch, getState) => {
         let state = getState();
-        let activeFa = state.arrRegion.fas[state.arrRegion.activeIndex];
-        let node = activeFa.nodes.nodes[activeFa.nodes.activeIndex];
+        let activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
+        let node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
         let viewIndex = node.viewStartIndex;
         let index = indexById(node.childNodes, node.selectedSubNodeId);
-        dispatch(_faSubNodesPrevPage());
+        dispatch(_fundSubNodesPrevPage());
 
         if (index != null) {
             let newState = getState();
-            let newActiveFa = newState.arrRegion.fas[newState.arrRegion.activeIndex];
-            let newNode = newActiveFa.nodes.nodes[newActiveFa.nodes.activeIndex];
+            let newActiveFund = newState.arrRegion.funds[newState.arrRegion.activeIndex];
+            let newNode = newActiveFund.nodes.nodes[newActiveFund.nodes.activeIndex];
             let newViewIndex = newNode.viewStartIndex;
             let newIndex = newViewIndex - viewIndex + index;
             let subNodeId = newIndex < 0 ? newNode.childNodes[0].id : newNode.childNodes[newIndex].id;
             let subNodeParentNode = newNode;
-            dispatch(faSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
+            dispatch(fundSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
         }
     }
 }
@@ -181,15 +181,15 @@ export function faSubNodesPrevPage() {
 /**
  * Stránkování v Accordion - předchozí stránka.
  */
-function _faSubNodesPrevPage() {
+function _fundSubNodesPrevPage() {
     return {
-        type: types.FA_FA_SUBNODES_PREV_PAGE,
+        type: types.FUND_FUND_SUBNODES_PREV_PAGE,
     }
 }
 
 /**
  * Akce přesunu uzlů ve stromu.
- * @param {int} versionId verze AP
+ * @param {int} versionId verze AS
  * @param {Array} nodes seznam uzlů pro akci
  * @param {Object} nodesParent nadřazený uzel k nodes
  * @param {Object} dest cílový uzel, kterého se akce týká
@@ -203,7 +203,7 @@ export function moveNodesUnder(versionId, nodes, nodesParent, dest, destParent) 
 
 /**
  * Akce přesunu uzlů ve stromu.
- * @param {int} versionId verze AP
+ * @param {int} versionId verze AS
  * @param {Array} nodes seznam uzlů pro akci
  * @param {Object} nodesParent nadřazený uzel k nodes
  * @param {Object} dest cílový uzel, kterého se akce týká
@@ -217,7 +217,7 @@ export function moveNodesBefore(versionId, nodes, nodesParent, dest, destParent)
 
 /**
  * Akce přesunu uzlů ve stromu.
- * @param {int} versionId verze AP
+ * @param {int} versionId verze AS
  * @param {Array} nodes seznam uzlů pro akci
  * @param {Object} nodesParent nadřazený uzel k nodes
  * @param {Object} dest cílový uzel, kterého se akce týká

@@ -12,7 +12,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components';
 import {Splitter, RibbonMenu, ToggleContent, FindindAidFileTree} from 'components';
-import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
+import {ModalDialog, NodeTabs, FundTreeTabs} from 'components';
 import {ButtonGroup, Button} from 'react-bootstrap';
 import {splitterResize} from 'actions/global/splitter';
 

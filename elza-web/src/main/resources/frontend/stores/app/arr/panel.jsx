@@ -13,11 +13,11 @@ export function panel(state = panelInitialState, action = {}) {
         case types.PARTY_SELECT:
         case types.REGISTRY_SELECT:
             var result = {...state};
-            var fa = action.fa;
-            if (fa != null) {
-                result.id = fa.faId;
-                result.name = fa.name;
-                result.versionId = fa.id;
+            var fund = action.fa;
+            if (fund != null) {
+                result.id = fund.fundId;
+                result.name = fund.name;
+                result.versionId = fund.id;
             }
             return consolidateState(state, result);
 

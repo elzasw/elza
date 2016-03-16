@@ -35,14 +35,14 @@ export function versionValidate(versionId, loadErrors = false) {
 export function versionValidationLoad(versionId) {
     return {
         versionId,
-        type: types.FA_VERSION_VALIDATION_LOAD
+        type: types.FUND_VERSION_VALIDATION_LOAD
     }
 }
 
 export function versionValidationReceived(versionId, data, isErrorListDirty) {
     return {
         versionId,
-        type: types.FA_VERSION_VALIDATION_RECEIVED,
+        type: types.FUND_VERSION_VALIDATION_RECEIVED,
         data,
         isErrorListDirty
     }

@@ -161,7 +161,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                 party.from.textDate == null ||
                 party.from.textDate == undefined
             ){
-                party.from = null;                                      // pokud není zadaný textová část data, celý fatum se ruší
+                party.from = null;                                      // pokud není zadaný textová část data, celý datum se ruší
             }
             if(
                 !party.to ||
@@ -169,7 +169,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                 party.to.textDate == null ||
                 party.to.textDate == undefined
             ){
-                party.to = null;                                        // pokud není zadaný textová část data, celý fatum se ruší
+                party.to = null;                                        // pokud není zadaný textová část data, celý datum se ruší
             }
             this.dispatch(updateParty(party));                          // uložení změn a znovu načtení dat osoby
             this.setState({

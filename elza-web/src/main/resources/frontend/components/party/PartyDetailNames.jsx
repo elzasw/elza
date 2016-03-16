@@ -210,7 +210,7 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
                 party.partyNames[i].validFrom.textDate == null || 
                 party.partyNames[i].validFrom.textDate == undefined
             ){  
-                party.partyNames[i].validFrom = null;                                            // pokud není zadaný textová část data, celý fatum se ruší
+                party.partyNames[i].validFrom = null;                                            // pokud není zadaný textová část data, celý datum se ruší
             }
             if(
                 !party.partyNames[i].validTo || 
@@ -218,7 +218,7 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
                 party.partyNames[i].validTo.textDate == null || 
                 party.partyNames[i].validTo.textDate == undefined
             ){  
-                party.partyNames[i].validTo = null;                                              // pokud není zadaný textová část data, celý fatum se ruší
+                party.partyNames[i].validTo = null;                                              // pokud není zadaný textová část data, celý datum se ruší
             }
         }
         this.dispatch(updateParty(party));                                              // uložení změn a znovu načtení dat osoby              

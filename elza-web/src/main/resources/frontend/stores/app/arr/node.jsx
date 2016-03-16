@@ -155,7 +155,7 @@ export function node(state = nodeInitialState, action) {
                 selectedSubNodeId,
                 viewStartIndex,
             }
-        case types.FA_NODES_REQUEST:
+        case types.FUND_NODES_REQUEST:
             if (action.nodeMap[state.id]) {
                 return {
                     ...state,
@@ -164,7 +164,7 @@ export function node(state = nodeInitialState, action) {
             } else {
                 return state
             }        
-        case types.FA_NODES_RECEIVE:
+        case types.FUND_NODES_RECEIVE:
             if (action.nodeMap[state.id]) {
                 return {
                     ...state,
@@ -175,35 +175,35 @@ export function node(state = nodeInitialState, action) {
             } else {
                 return state
             }        
-        case types.FA_SUB_NODE_FORM_CACHE_RESPONSE:
-        case types.FA_SUB_NODE_FORM_CACHE_REQUEST:
+        case types.FUND_SUB_NODE_FORM_CACHE_RESPONSE:
+        case types.FUND_SUB_NODE_FORM_CACHE_REQUEST:
             return {
                 ...state, 
                 subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
             }
-        case types.FA_SUB_NODE_FORM_REQUEST:
-        case types.FA_SUB_NODE_FORM_RECEIVE:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
-        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
-        case types.FA_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
-        case types.FA_SUB_NODE_FORM_VALUE_BLUR:
-        case types.FA_SUB_NODE_FORM_VALUE_FOCUS:
-        case types.FA_SUB_NODE_FORM_VALUE_ADD:
-        case types.FA_SUB_NODE_FORM_VALUE_DELETE:
-        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
-        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
-        case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
-        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
+        case types.FUND_SUB_NODE_FORM_REQUEST:
+        case types.FUND_SUB_NODE_FORM_RECEIVE:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
+        case types.FUND_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
+        case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
+        case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
+        case types.FUND_SUB_NODE_FORM_VALUE_ADD:
+        case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
+        case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
             var result = {
                 ...state, 
                 subNodeForm: subNodeForm(state.subNodeForm, action),
             };
             return consolidateState(state, result);
         case types.CHANGE_NODES:
-        case types.CHANGE_FA_RECORD:
+        case types.CHANGE_FUND_RECORD:
             var result = {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),
@@ -211,7 +211,7 @@ export function node(state = nodeInitialState, action) {
                 subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
             }
             return consolidateState(state, result);
-        case types.FA_FA_SUBNODES_NEXT:
+        case types.FUND_FUND_SUBNODES_NEXT:
             if ((state.viewStartIndex + state.pageSize/2) < state.allChildNodes.length) {
                 return {
                     ...state,
@@ -220,7 +220,7 @@ export function node(state = nodeInitialState, action) {
             } else {
                 return state;
             }
-        case types.FA_FA_SUBNODES_PREV:
+        case types.FUND_FUND_SUBNODES_PREV:
             if (state.viewStartIndex > 0) {
                 return {
                     ...state,
@@ -229,7 +229,7 @@ export function node(state = nodeInitialState, action) {
             } else {
                 return state;
             }
-        case types.FA_FA_SUBNODES_NEXT_PAGE:
+        case types.FUND_FUND_SUBNODES_NEXT_PAGE:
             if ((state.viewStartIndex + state.pageSize) < state.allChildNodes.length) {
                 return {
                     ...state,
@@ -238,7 +238,7 @@ export function node(state = nodeInitialState, action) {
             } else {
                 return state;
             }
-        case types.FA_FA_SUBNODES_PREV_PAGE:
+        case types.FUND_FUND_SUBNODES_PREV_PAGE:
             if (state.viewStartIndex > 0) {
                 return {
                     ...state,
@@ -247,12 +247,12 @@ export function node(state = nodeInitialState, action) {
             } else {
                 return state;
             }
-        case types.FA_FA_SUBNODES_FULLTEXT_SEARCH:
+        case types.FUND_FUND_SUBNODES_FULLTEXT_SEARCH:
             return {
                 ...state,
                 filterText: action.filterText
             }
-        case types.FA_FA_SUBNODES_FULLTEXT_RESULT:
+        case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT:
             if (state.filterText === '') {
                 var result = {
                     ...state,
@@ -284,32 +284,32 @@ export function node(state = nodeInitialState, action) {
             }
             result.viewStartIndex = getViewStartIndex(result, state.selectedSubNodeId);
             return result;
-        case types.FA_SUB_NODE_INFO_REQUEST:
-        case types.FA_SUB_NODE_INFO_RECEIVE:
+        case types.FUND_SUB_NODE_INFO_REQUEST:
+        case types.FUND_SUB_NODE_INFO_RECEIVE:
             var result = {
                 ...state,
                 subNodeInfo: subNodeInfo(state.subNodeInfo, action),
             }
             return consolidateState(state, result);
-        case types.FA_SUB_NODE_REGISTER_REQUEST:
-        case types.FA_SUB_NODE_REGISTER_RECEIVE:
-        case types.FA_SUB_NODE_REGISTER_VALUE_RESPONSE:
-        case types.FA_SUB_NODE_REGISTER_VALUE_DELETE:
-        case types.FA_SUB_NODE_REGISTER_VALUE_ADD:
-        case types.FA_SUB_NODE_REGISTER_VALUE_CHANGE:
-        case types.FA_SUB_NODE_REGISTER_VALUE_FOCUS:
-        case types.FA_SUB_NODE_REGISTER_VALUE_BLUR:
+        case types.FUND_SUB_NODE_REGISTER_REQUEST:
+        case types.FUND_SUB_NODE_REGISTER_RECEIVE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_DELETE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_ADD:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_FOCUS:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_BLUR:
             var result = {
                 ...state,
                 subNodeRegister: subNodeRegister(state.subNodeRegister, action),
             }
             return consolidateState(state, result);
-        case types.FA_NODE_INFO_REQUEST:
+        case types.FUND_NODE_INFO_REQUEST:
             return {
                 ...state,
                 isNodeInfoFetching: true,
             }
-        case types.FA_NODE_INFO_RECEIVE:
+        case types.FUND_NODE_INFO_RECEIVE:
             var result = {
                 ...state,
                 isNodeInfoFetching: false,
@@ -327,7 +327,7 @@ export function node(state = nodeInitialState, action) {
             }
 
             return result;
-        case types.FA_FA_SELECT_SUBNODE:
+        case types.FUND_FUND_SELECT_SUBNODE:
             if (state.selectedSubNodeId === action.subNodeId) {
                 return state;
             }
@@ -363,7 +363,7 @@ export function node(state = nodeInitialState, action) {
         case types.CHANGE_ADD_LEVEL:
             return Object.assign({}, state, { dirty: true });
 
-        case types.FA_NODE_CHANGE:
+        case types.FUND_NODE_CHANGE:
             switch (action.action) {
                 // Přidání SubNode
                 case "ADD":

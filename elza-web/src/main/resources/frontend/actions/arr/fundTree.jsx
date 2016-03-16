@@ -1,0 +1,365 @@
+/**
+ * Akce pro strom AS.
+ * Vysvětlení pojmů:
+ * uzel - JP
+ */
+
+import {WebApi} from 'actions'
+import * as types from 'actions/constants/ActionTypes';
+import {indexById} from 'stores/app/utils.jsx'
+import {fundSelectSubNode} from './nodes'
+
+// jen vyber polozky, vyuzite jen v presunech JP
+export function fundTreeSelectNode(area, nodeId, ctrl, shift, newFilterCurrentIndex = null) {
+    return {
+        type: types.FUND_FUND_TREE_SELECT_NODE,
+        area,
+        nodeId,
+        ctrl,
+        shift,
+        newFilterCurrentIndex
+    }
+}
+
+/**
+ * Rozbalení uzlu.
+ * @param {String} area oblast stromu
+ * @param {Object} node uzel
+ * @param {boolean} pokud je true, je pod rozbalovaný uzel přidán nový uzel s informací, že se načítají data
+ */
+export function _fundTreeNodeExpand(area, node, addWaitingNode=false) {
+    return {
+        type: types.FUND_FUND_TREE_EXPAND_NODE,
+        area,
+        node,
+        addWaitingNode,
+    }
+}
+
+/**
+ * Zabalení uzlu.
+ * @param {String} area oblast stromu
+ * @param {Object} node uzel
+ */
+export function fundTreeCollapse(area, node) {
+    return {
+        type: types.FUND_FUND_TREE_COLLAPSE,
+        area,
+        node
+    }
+}
+
+/**
+ * Hledání ve stromu.
+ * @param {String} area oblast stromu
+ * @param {int} versionId verze AS
+ * @param {string} filterText hledaný text
+ */
+export function fundTreeFulltextChange(area, versionId, filterText) {
+    return {
+        type: types.FUND_FUND_TREE_FULLTEXT_CHANGE,
+        area,
+        versionId,
+        filterText,
+    }
+}
+
+/**
+ * Dohledání konkrétního stromu.
+ * {Object} state root store
+ * {string} area jaký strom
+ * {int} versionId verze AS
+ */
+function getFundTreeForFund(state, area, versionId) {
+    var index = indexById(state.arrRegion.funds, versionId, "versionId");
+    if (index != null) {
+        var fund = state.arrRegion.funds[index];
+        var fundTree = getFundTree(fund, area);
+
+        return fundTree;
+    } else {
+        return null;
+    }
+}
+
+/**
+ * Změna aktuálně vybrané položky z možných výsledků hledání.
+ * {func} dispatch dispatch
+ * {string} area jaký strom
+ * {Object} fundTree store stromu
+ * {int} newIndex nový vybraný index ve výsledcích hledání
+ */
+function changeCurrentIndex(dispatch, area, fundTree, newIndex) {
+    if (newIndex != fundTree.filterCurrentIndex) {
+        var nodeId = fundTree.searchedIds[newIndex];
+        var nodeParent = fundTree.searchedParents[nodeId];
+        switch (area) {
+            case types.FUND_TREE_AREA_MAIN:
+                dispatch(fundSelectSubNode(nodeId, nodeParent, false, newIndex, true));
+            case types.FUND_TREE_AREA_MOVEMENTS_LEFT:
+                dispatch(fundTreeSelectNode(area, nodeId, false, false, newIndex))
+            case types.FUND_TREE_AREA_MOVEMENTS_RIGHT:
+                dispatch(fundTreeSelectNode(area, nodeId, false, false, newIndex))
+        }
+    }
+}
+
+/**
+ * Přesun na další položku vy výsledcích hledání.
+ * {string} area jaký strom
+ * {int} versionId verze AS
+ */
+export function fundTreeFulltextNextItem(area, versionId) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var fundTree = getFundTreeForFund(state, area, versionId);
+
+        if (fundTree && fundTree.searchedIds.length > 0) {
+            var newIndex;
+            if (fundTree.filterCurrentIndex == -1) {
+                newIndex = 0;
+            } else {
+                newIndex = Math.min(fundTree.filterCurrentIndex + 1, fundTree.searchedIds.length - 1);
+            }
+            changeCurrentIndex(dispatch, area, fundTree, newIndex);
+        }
+    }
+}
+
+/**
+ * Přesun na předchozí položku vy výsledcích hledání.
+ * {string} area jaký strom
+ * {int} versionId verze AS
+ */
+export function fundTreeFulltextPrevItem(area, versionId) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var fundTree = getFundTreeForFund(state, area, versionId);
+
+        if (fundTree && fundTree.searchedIds.length > 0) {
+            var newIndex;
+            if (fundTree.filterCurrentIndex == -1) {
+                newIndex = 0;
+            } else {
+                newIndex = Math.max(fundTree.filterCurrentIndex - 1, 0);
+            }
+            changeCurrentIndex(dispatch, area, fundTree, newIndex);
+        }
+    }
+}
+
+/**
+ * Akce fulltextového hledání ve stromu. Text, podle kterého se hledá, je brán ze store konkrétního stromu.
+ * {string} area jaký strom
+ * {int} versionId verze AS
+ */
+export function fundTreeFulltextSearch(area, versionId) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var fundTree = getFundTreeForFund(state, area, versionId);
+        if (fundTree) {
+            if (fundTree.filterText.length > 0) {
+                var searchParentNodeId
+                // V případě stromu, který má multi select hledáme v celém stromu
+                // V případě stromu, který má single select hledáme POD vybranou položkou
+                if (fundTree.multipleSelection) { // hledáme v celém stromu
+                    searchParentNodeId = null
+                } else {    // hledáme pod vybranou položkou, pokud nějaká je
+                    if (fundTree.selectedId !== null) {   // vybraná položka, hledáme pod ní
+                        searchParentNodeId = fundTree.selectedId
+                    } else {    // nice není vybráno, hledáme v celém stromě
+                        searchParentNodeId = null
+                    }
+                }
+
+                return WebApi.findInFundTree(versionId, searchParentNodeId, fundTree.filterText, 'SUBTREE')
+                    .then(json => {
+                        dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, json, false))
+                        if (json.length > 0) {
+                            var newFundTree = getFundTreeForFund(getState(), area, versionId)
+                            changeCurrentIndex(dispatch, area, newFundTree, 0);
+                        }
+                    });
+            } else {
+                dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, [], true))
+            }
+        }
+    }
+}
+
+/**
+ * Výsledek hledání ve stromu.
+ * {string} area jaký strom
+ * {int} versionId verze AS
+ * {string} filterText pro jaký hledaný text platí výsledky
+ * {Arraz} searchedData seznam nalezených node
+ * {boolean} clearFilter jedná se o akci, která má pouze vymazat aktuální filtr?
+ */
+function fundTreeFulltextResult(area, versionId, filterText, searchedData, clearFilter) {
+    return {
+        type: types.FUND_FUND_TREE_FULLTEXT_RESULT,
+        area,
+        versionId,
+        filterText,
+        searchedData,
+        clearFilter
+    }
+}
+
+/**
+ * Rozbalení uzlu.
+ * @param {String} area oblast stromu
+ * @param {Object} node uzel
+ */
+export function fundTreeNodeExpand(area, node) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
+        var fundTree = getFundTree(activeFund, area);
+
+        dispatch(_fundTreeNodeExpand(area, node, true))
+
+        var versionId = activeFund.versionId;
+        var nodeId = node.id;
+        var expandedIds = {...fundTree.expandedIds, [nodeId]: true}
+        return WebApi.getFundTree(versionId, nodeId, expandedIds)
+            .then(json => dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, [], json)));
+    }
+}
+
+/**
+ * Nastavení focusu pro uzel ve stromu.
+ * @param {String} area oblast stromu
+ * @param {Object} node uzel
+ */
+export function fundTreeFocusNode(area, node) {
+    return {
+        type: types.FUND_FUND_TREE_FOCUS_NODE,
+        area,
+        node,
+    }
+}
+
+/**
+ * Zabalení uzlu.
+ * @param {String} area oblast stromu
+ * @param {Object} node uzel
+ */
+export function fundTreeNodeCollapse(area, node) {
+    return {
+        type: types.FUND_FUND_TREE_COLLAPSE_NODE,
+        area,
+        node,
+    }
+}
+
+/**
+ * Získání store konkrétního store stromu na daný AS a oblast stromu.
+ * {Object} fund store fund
+ * {string} area o jaký strom se jedná
+ */
+function getFundTree(fund, area) {
+    switch (area) {
+        case types.FUND_TREE_AREA_MAIN:
+            return fund.fundTree;
+        case types.FUND_TREE_AREA_MOVEMENTS_LEFT:
+            return fund.fundTreeMovementsLeft;
+        case types.FUND_TREE_AREA_MOVEMENTS_RIGHT:
+            return fund.fundTreeMovementsRight;
+    }
+}
+
+/**
+ * Vyžádání dat - aby byla ve store k dispozici.
+ * @param {String} area oblast stromu
+ * @param {versionId} id verze
+ * @param {expandedIds} seznam rozbalených uzlů
+ */
+export function fundTreeFetchIfNeeded(area, versionId, expandedIds, selectedId) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
+        var fundTree = getFundTree(activeFund, area);
+
+        var fetch = false;
+
+        var includeIds = [];
+        if (selectedId != null && typeof selectedId !== 'undefined') {
+            includeIds.push(selectedId);
+
+            var isInView = indexById(fundTree.nodes, selectedId);
+            if (isInView == null) {
+                if (!fundTree.fetchingIncludeIds[selectedId]) {
+                    fetch = true;
+                }
+            }
+        }
+
+        if (!fundTree.fetched && !fundTree.isFetching) {
+            fetch = true;
+        }
+
+        if (fundTree.dirty && !fundTree.isFetching) {
+            fetch = true;
+        }
+
+        if (fetch) {
+            return dispatch(fundTreeFetch(area, versionId, null, expandedIds, includeIds));
+        }
+    }
+}
+
+/**
+ * Nové načtení dat.
+ * @param {String} area oblast stromu
+ * @param {versionId} id verze
+ * @param {nodeId} pokud je uvedeno, obsahuje id node, pro který se mají vracet data, pokud není uveden, vrací se celý strom
+ * @param {expandedIds} seznam rozbalených uzlů
+ */
+export function fundTreeFetch(area, versionId, nodeId, expandedIds, includeIds=[]) {
+    return dispatch => {
+        dispatch(fundTreeRequest(area, versionId, nodeId, expandedIds, includeIds))
+        return WebApi.getFundTree(versionId, nodeId, expandedIds, includeIds)
+            .then(json => dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, includeIds, json)));
+    }
+}
+
+/**
+ * Nová data byla načtena.
+ * @param {String} area oblast stromu
+ * @param {versionId} id verze
+ * @param {nodeId} node id, pokud bylo požadováno
+ * @param {expandedIds} seznam rozbalených uzlů
+ * @param {Object} json objekt s daty
+ */
+export function fundTreeReceive(area, versionId, nodeId, expandedIds, includeIds, json) {
+    return {
+        type: types.FUND_FUND_TREE_RECEIVE,
+        area,
+        versionId,
+        nodeId,
+        expandedIds,
+        includeIds,
+        nodes: json.nodes,
+        expandedIdsExtension: json.expandedIdsExtension,
+        receivedAt: Date.now()
+    }
+}
+
+/**
+ * Bylo zahájeno nové načítání dat.
+ * @param {String} area oblast stromu
+ * @param {versionId} id verze
+ * @param {nodeId} node id, pokud bylo požadováno
+ * @param {expandedIds} seznam rozbalených uzlů
+ */
+export function fundTreeRequest(area, versionId, nodeId, expandedIds, includeIds) {
+    return {
+        type: types.FUND_FUND_TREE_REQUEST,
+        area,
+        versionId,
+        nodeId,
+        expandedIds,
+        includeIds,
+    }
+}

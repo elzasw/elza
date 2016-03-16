@@ -11,16 +11,16 @@ import {connect} from 'react-redux'
 import {Icon, ListBox, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown,
         Search, GoToPositionForm} from 'components';
 import {Button, Tooltip, OverlayTrigger, Input} from 'react-bootstrap';
-import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
-import {faSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister'
-import {faSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo'
-import {faNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo'
-import {faSelectSubNode, faSubNodesNext, faSubNodesPrev, faSubNodesNextPage, faSubNodesPrevPage} from 'actions/arr/nodes'
-import {faNodeSubNodeFulltextSearch} from 'actions/arr/node'
+import {fundSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
+import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister'
+import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo'
+import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo'
+import {fundSelectSubNode, fundSubNodesNext, fundSubNodesPrev, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/nodes'
+import {fundNodeSubNodeFulltextSearch} from 'actions/arr/node'
 import {addNode} from 'actions/arr/node'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {indexById} from 'stores/app/utils.jsx'
-import {createFaRoot, isFaRootId} from './ArrUtils.jsx'
+import {createFundRoot, isFundRootId} from './ArrUtils.jsx'
 import {propsEquals} from 'components/Utils'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils'
@@ -34,7 +34,7 @@ var classNames = require('classnames');
 import {setFocus, canSetFocus, focusWasSet, isFocusFor, isFocusExactFor} from 'actions/global/focus'
 require ('./NodePanel.less');
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
-import {faSubNodeFormDescItemTypeAdd} from 'actions/arr/subNodeForm'
+import {fundSubNodeFormDescItemTypeAdd} from 'actions/arr/subNodeForm'
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -300,7 +300,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
         var submit = (data) => {
             this.dispatch(modalDialogHide());
-            this.dispatch(faSubNodeFormDescItemTypeAdd(versionId, selectedSubNodeId, nodeKey, data.descItemTypeId));
+            this.dispatch(fundSubNodeFormDescItemTypeAdd(versionId, selectedSubNodeId, nodeKey, data.descItemTypeId));
         };
         // Modální dialog
         var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
@@ -343,30 +343,30 @@ return true
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['versionId', 'fa', 'node', 'calendarTypes', 'descItemTypes',
-            'packetTypes', 'packets', 'rulDataTypes', 'findingAidId', 'showRegisterJp', 'closed']
+        var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes',
+            'packetTypes', 'packets', 'rulDataTypes', 'fundId', 'showRegisterJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
     /**
      * Načtení dat, pokud je potřeba.
-     * @param versionId {String} verze AP
+     * @param versionId {String} verze AS
      * @param node {Object} node
      * @param showRegisterJp {bool} zobrazení rejstřílů vázené k jednotce popisu
      */
     requestData(versionId, node, showRegisterJp) {
         if (node.selectedSubNodeId != null) {
             this.dispatch(descItemTypesFetchIfNeeded());
-            this.dispatch(faSubNodeFormFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
-            this.dispatch(faSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
+            this.dispatch(fundSubNodeFormFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
+            this.dispatch(fundSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
             this.dispatch(refRulDataTypesFetchIfNeeded());
 
             if (showRegisterJp) {
-                this.dispatch(faSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
+                this.dispatch(fundSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
             }
 
         }
-        this.dispatch(faNodeInfoFetchIfNeeded(versionId, node.id, node.nodeKey));
+        this.dispatch(fundNodeInfoFetchIfNeeded(versionId, node.id, node.nodeKey));
     }
 
     /**
@@ -379,10 +379,10 @@ return true
         var subNodeId = node.id;
         var subNodeParentNode = index + 1 < parentNodes.length ? parentNodes[index + 1] : null;
         if (subNodeParentNode == null) {
-            subNodeParentNode = createFaRoot(this.props.fa);
+            subNodeParentNode = createFundRoot(this.props.fund);
         }
 
-        this.dispatch(faSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
+        this.dispatch(fundSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
     }
 
     /**
@@ -392,7 +392,7 @@ return true
     handleChildNodeClick(node) {
         var subNodeId = node.id;
         var subNodeParentNode = this.getSiblingNodes()[indexById(this.getSiblingNodes(), this.props.node.selectedSubNodeId)];
-        this.dispatch(faSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
+        this.dispatch(fundSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
     }
 
     /**
@@ -451,7 +451,7 @@ return true
     renderRowItem(onClick, item) {
         var icon = item.icon ? <Icon className="node-icon" glyph={getGlyph(item.icon)} /> : ''
         var levels = <span className="reference-mark">{createReferenceMarkString(item)}</span>
-        var name = item.name ? item.name : <i>{i18n('faTree.node.name.undefined', item.id)}</i>;
+        var name = item.name ? item.name : <i>{i18n('fundTree.node.name.undefined', item.id)}</i>;
         name = <span title={name} className="name">{name}</span>
 
         const click = typeof item.id !== 'undefined' ? onClick.bind(this, item) : null
@@ -469,7 +469,7 @@ return true
      */
     getParentNodes() {
         const {node} = this.props;
-        if (isFaRootId(node.id)) {
+        if (isFundRootId(node.id)) {
             return [...node.parentNodes];
         } else {
             return [node, ...node.parentNodes];
@@ -497,7 +497,7 @@ return true
      * @param item {Object} na který node v Accordion se kliklo
      */
     handleCloseItem(item) {
-        this.dispatch(faSelectSubNode(null, this.props.node, false, null, false));
+        this.dispatch(fundSelectSubNode(null, this.props.node, false, null, false));
     }
 
     /**
@@ -506,7 +506,7 @@ return true
      */
     handleOpenItem(item) {
         var subNodeId = item.id;
-        this.dispatch(faSelectSubNode(subNodeId, this.props.node, false, null, true));
+        this.dispatch(fundSelectSubNode(subNodeId, this.props.node, false, null, true));
     }
 
     /**
@@ -517,7 +517,7 @@ return true
      * @param scenario name vybraného scénáře
      */
     handleAddNodeAtEnd(event, scenario) {
-        this.dispatch(addNode(this.props.node, this.props.node, this.props.fa.versionId, "CHILD", this.getDescItemTypeCopyIds(), scenario));
+        this.dispatch(addNode(this.props.node, this.props.node, this.props.fund.versionId, "CHILD", this.getDescItemTypeCopyIds(), scenario));
     }
 
     /**
@@ -595,7 +595,7 @@ return true
 
         if (node.viewStartIndex > 0) {
             rows.push(
-                <Button key="prev" onClick={()=>this.dispatch(faSubNodesPrev())}><Icon glyph="fa-chevron-left" />{i18n('arr.fa.prev')}</Button>
+                <Button key="prev" onClick={()=>this.dispatch(fundSubNodesPrev())}><Icon glyph="fa-chevron-left" />{i18n('arr.fund.prev')}</Button>
             )
         }
 
@@ -650,7 +650,7 @@ return true
 
         if (node.viewStartIndex + node.pageSize/2 < node.childNodes.length) {
             rows.push(
-                <Button key="next" onClick={()=>this.dispatch(faSubNodesNext())}><Icon glyph="fa-chevron-right" />{i18n('arr.fa.next')}</Button>
+                <Button key="next" onClick={()=>this.dispatch(fundSubNodesNext())}><Icon glyph="fa-chevron-right" />{i18n('arr.fund.next')}</Button>
             )
         }
 
@@ -674,7 +674,7 @@ return true
         var index = form.position - 1;
         var subNodeId = node.allChildNodes[index].id;
 
-        this.dispatch(faSelectSubNode(subNodeId, node));
+        this.dispatch(fundSelectSubNode(subNodeId, node));
         this.dispatch(modalDialogHide());
     }
 
@@ -689,7 +689,7 @@ return true
             count = node.allChildNodes.length;
         }
 
-        this.dispatch(modalDialogShow(this, i18n('arr.fa.subNodes.findPosition'),
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.subNodes.findPosition'),
                         <GoToPositionForm onSubmitForm={this.handleFindPositionSubmit} maxPosition={count} />
                 )
         )
@@ -697,8 +697,8 @@ return true
 
     render() {
         const {developer, calendarTypes, versionId, rulDataTypes, node,
-                packetTypes, packets, findingAidId,
-                showRegisterJp, fa, closed, descItemTypes} = this.props;
+                packetTypes, packets, fundId,
+                showRegisterJp, fund, closed, descItemTypes} = this.props;
 
         if (!node.nodeInfoFetched) {
             return <Loading value={i18n('global.data.loading.node')}/>
@@ -716,21 +716,21 @@ return true
             <div key='actions' className='actions-container'>
                 <div key='actions' className='actions'>
                     {
-                        node.nodeInfoFetched && !isFaRootId(node.id) && !closed &&
+                        node.nodeInfoFetched && !isFundRootId(node.id) && !closed &&
                         <AddNodeDropdown key="end"
                                         ref='addNodeChild'
                                          title={i18n('nodePanel.addSubNode')}
                                          glyph="fa-plus-circle"
                                          action={this.handleAddNodeAtEnd}
                                          node={this.props.node}
-                                         version={fa.versionId}
+                                         version={fund.versionId}
                                          direction="CHILD"
                         />
                     }
-                    <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</div>
-                    <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>
+                    <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(fundSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fund.subNodes.prevPage')}</div>
+                    <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(fundSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fund.subNodes.nextPage')}</div>
 
-                    <div className='btn btn-default' onClick={this.handleFindPosition} title={i18n('arr.fa.subNodes.findPosition')} ><Icon glyph="fa-hand-o-down" /></div>
+                    <div className='btn btn-default' onClick={this.handleFindPosition} title={i18n('arr.fund.subNodes.findPosition')} ><Icon glyph="fa-hand-o-down" /></div>
 
                     <Search
                         ref='search'
@@ -739,8 +739,8 @@ return true
                         filterText={this.props.filterText}
                         value={this.state.filterText}
                         onChange={(e) => this.handleChangeFilterText(e.target.value)}
-                        onClear={() => {this.handleChangeFilterText(''); this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}
-                        onSearch={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}
+                        onClear={() => {this.handleChangeFilterText(''); this.dispatch(fundNodeSubNodeFulltextSearch(this.state.filterText))}}
+                        onSearch={() => {this.dispatch(fundNodeSubNodeFulltextSearch(this.state.filterText))}}
                     />
                 </div>
             </div>
@@ -777,7 +777,7 @@ return true
                 conformityInfo={conformityInfo}
                 packets={packets}
                 parentNode={node}
-                findingAidId={findingAidId}
+                fundId={fundId}
                 selectedSubNode={node.subNodeForm.data.node}
                 descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
                 closed={closed}
@@ -874,7 +874,7 @@ function mapStateToProps(state) {
 
 NodePanel.propTypes = {
     versionId: React.PropTypes.number.isRequired,
-    fa: React.PropTypes.object.isRequired,
+    fund: React.PropTypes.object.isRequired,
     node: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,
@@ -882,7 +882,7 @@ NodePanel.propTypes = {
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
-    findingAidId: React.PropTypes.number,
+    fundId: React.PropTypes.number,
     showRegisterJp: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
 }

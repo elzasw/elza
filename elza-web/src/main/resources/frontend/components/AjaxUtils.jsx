@@ -8,7 +8,7 @@
 // Nastavení úrovně logování
 var _logCalls = true;
 var _logErrors = true;
-var _logResults = false;
+var _logResults = true;
 var _logDuration = false;    // moznost logovani delky volani
 
 var React = require('react');

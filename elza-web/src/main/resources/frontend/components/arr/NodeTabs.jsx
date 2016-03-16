@@ -9,7 +9,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, NodePanel, Tabs, i18n} from 'components';
 import {AppActions} from 'stores';
-import {faSelectNodeTab, faCloseNodeTab} from 'actions/arr/nodes'
+import {fundSelectNodeTab, fundCloseNodeTab} from 'actions/arr/nodes'
 import {nodesFetchIfNeeded} from 'actions/arr/node'
 import {propsEquals} from 'components/Utils'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils'
@@ -50,26 +50,26 @@ return true
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['versionId', 'fa', 'nodes', 'activeIndex', 'findingAidId', 'descItemTypes',
+        var eqProps = ['versionId', 'fund', 'nodes', 'activeIndex', 'fundId', 'descItemTypes',
             'rulDataTypes', 'calendarTypes', 'packetTypes', 'packets', 'showRegisterJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
     handleTabSelect(item) {
-        this.dispatch(faSelectNodeTab(item.index))
+        this.dispatch(fundSelectNodeTab(item.index))
         this.dispatch(setFocus('arr', 2, 'tabs'))
     }
 
     render() {
-        const {fa, nodes, activeIndex, versionId, rulDataTypes, showRegisterJp,
-                calendarTypes, descItemTypes, packetTypes, packets, findingAidId, closed} = this.props;
+        const {fund, nodes, activeIndex, versionId, rulDataTypes, showRegisterJp,
+                calendarTypes, descItemTypes, packetTypes, packets, fundId, closed} = this.props;
 
         if (nodes.length == 0) {
             return <div></div>
         }
 
         var tabs = nodes.map((node, i) => {
-            var name = node.name ? node.name : i18n('faTree.node.name.undefined', node.id);
+            var name = node.name ? node.name : i18n('fundTree.node.name.undefined', node.id);
             return {
                 id: node.id,
                 index: i,
@@ -86,13 +86,13 @@ return true
             <Tabs.Container ref='tabs' className='node-tabs-container'>
                 <Tabs.Tabs closable items={tabs} activeItem={activeTab}
                     onSelect={this.handleTabSelect}
-                    onClose={item=>this.dispatch(faCloseNodeTab(item.index))}
+                    onClose={item=>this.dispatch(fundCloseNodeTab(item.index))}
                 />
                 <Tabs.Content>
                     {activeNode && <NodePanel versionId={versionId}
-                                              fa={fa}
+                                              fund={fund}
                                               closed={closed}
-                                              findingAidId={findingAidId}
+                                              fundId={fundId}
                                               node={activeNode}
                                               rulDataTypes={rulDataTypes}
                                               calendarTypes={calendarTypes}
@@ -108,10 +108,10 @@ return true
 
 NodeTabs.propTypes = {
     versionId: React.PropTypes.number.isRequired,
-    fa: React.PropTypes.object.isRequired,
+    fund: React.PropTypes.object.isRequired,
     nodes: React.PropTypes.array.isRequired,
     activeIndex: React.PropTypes.number,
-    findingAidId: React.PropTypes.number,
+    fundId: React.PropTypes.number,
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,

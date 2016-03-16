@@ -10,12 +10,12 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components';
-import {Splitter, Autocomplete, FaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
-import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
+import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
+import {ModalDialog, NodeTabs, FundTreeTabs} from 'components';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {modalDialogShow} from 'actions/global/modalDialog'
-import {createFa} from 'actions/arr/fa'
+import {createFund} from 'actions/arr/fund'
 import {storeLoadData, storeSave, storeLoad} from 'actions/store/store'
 import {Combobox} from 'react-input-enhancements'
 import {WebApi} from 'actions'
@@ -172,8 +172,8 @@ var _id = 0;
 var HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleAddFa', 'handleCallAddFa', 'renderHistory',
-            'renderHistoryItem', 'getFaDesc', 'handleFindParty', 'renderRecord');
+        this.bindMethods('handleAddFund', 'handleCallAddFund', 'renderHistory',
+            'renderHistoryItem', 'getFundDesc', 'handleFindParty', 'renderRecord');
 
         this.buildRibbon = this.buildRibbon.bind(this);
 
@@ -190,19 +190,19 @@ var options2 = [...options, {value: '3', text: 'ccc3'}]
 setTimeout(()=>this.setState({options: options2}), 4000);
     }
 
-    handleAddFa() {
-        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.add'), <FaForm create
-                                                                              onSubmitForm={this.handleCallAddFa}/>));
+    handleAddFund() {
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.title.add'), <FundForm create
+                                                                              onSubmitForm={this.handleCallAddFund}/>));
     }
 
-    handleCallAddFa(data) {
-        this.dispatch(createFa(data));
+    handleCallAddFund(data) {
+        this.dispatch(createFund(data));
     }
 
     buildRibbon() {
         var altActions = [];
         altActions.push(
-            <Button key="add-fa" onClick={this.handleAddFa}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.add')}</span></div></Button>
+            <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div></Button>
         );
 
         var altSection;
@@ -227,7 +227,7 @@ setTimeout(()=>this.setState({options: options2}), 4000);
             case 'ARR_REGION':
                 glyph = 'fa-file-text';
                 break;
-            case 'ARR_REGION_FA':
+            case 'ARR_REGION_FUND':
                 glyph = 'fa-file-text';
                 break;            
         }
@@ -263,8 +263,8 @@ setTimeout(()=>this.setState({options: options2}), 4000);
         })
     }
 
-    getFaDesc(fa) {
-        var descs = fa.nodes.nodes.map(nodeobj => nodeobj.name);
+    getFundDesc(fund) {
+        var descs = fund.nodes.nodes.map(nodeobj => nodeobj.name);
         return this.arrToString(descs);
     }
 
@@ -288,14 +288,14 @@ setTimeout(()=>this.setState({options: options2}), 4000);
             }
         })
         if (false && stateRegion.arrRegion) {
-            var descs = stateRegion.arrRegion.fas.map(faobj => faobj.name);
+            var descs = stateRegion.arrRegion.funds.map(fundobj => fundobj.name);
             var desc = this.arrToString(descs)
             items.push(this.renderHistoryItem(i18n('home.action.arr'), desc, 'ARR_REGION', stateRegion.arrRegion));
         }
         stateRegion.arrRegionFront.forEach(x => {
             var name = x.name + (x.lockDate ? ' ' + dateToString(new Date(x.lockDate)) : '');
-            var desc = this.getFaDesc(x)
-            items.push(this.renderHistoryItem(name, desc, 'ARR_REGION_FA', x));
+            var desc = this.getFundDesc(x)
+            items.push(this.renderHistoryItem(name, desc, 'ARR_REGION_FUND', x));
         })
 
         return (

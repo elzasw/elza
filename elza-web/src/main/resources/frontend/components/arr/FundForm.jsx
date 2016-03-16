@@ -1,8 +1,8 @@
 /**
- * Formulář přidání nebo uzavření AP.
+ * Formulář přidání nebo uzavření AS.
  */
 
-require ('./FaForm.less');
+require ('./FundForm.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -33,7 +33,7 @@ const validate = (values, props) => {
     return errors;
 };
 
-var FaForm = class FaForm extends AbstractReactComponent {
+var FundForm = class FundForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -118,12 +118,12 @@ var FaForm = class FaForm extends AbstractReactComponent {
         var approveButton;
         if (this.props.approve) {
             if (this.isBulkActionRunning()) {
-                approveButton = <span className="text-danger">{i18n('arr.fa.approveVersion.runningBulkAction')}</span>;
+                approveButton = <span className="text-danger">{i18n('arr.fund.approveVersion.runningBulkAction')}</span>;
             } else if (this.isMandatoryBulkActionsDone() && this.props.versionValidation.count < 1) {
-                approveButton = <Button onClick={handleSubmit(submitForm)}>{i18n('arr.fa.approveVersion.approve')}</Button>
+                approveButton = <Button onClick={handleSubmit(submitForm)}>{i18n('arr.fund.approveVersion.approve')}</Button>
             } else {
                 approveButton = <Button bsStyle="danger"
-                                        onClick={handleSubmit(submitForm)}>{i18n('arr.fa.approveVersion.approveForce')}</Button>
+                                        onClick={handleSubmit(submitForm)}>{i18n('arr.fund.approveVersion.approveForce')}</Button>
             }
         }
         var ruleSets = this.props.refTables.ruleSet.items;
@@ -139,10 +139,10 @@ var FaForm = class FaForm extends AbstractReactComponent {
             }
         }
         let bulkActionsTextOk = <span className="bulk-action-state success">
-            <Icon glyph="fa-check"/>{i18n('arr.fa.approveVersion.bulkActionsOk')}
+            <Icon glyph="fa-check"/>{i18n('arr.fund.approveVersion.bulkActionsOk')}
         </span>;
         let bulkActionsTextErr = <span className="bulk-action-state err">
-            <Icon glyph="fa-exclamation-triangle"/>{i18n('arr.fa.approveVersion.bulkActionsNeedRun')}
+            <Icon glyph="fa-exclamation-triangle"/>{i18n('arr.fund.approveVersion.bulkActionsNeedRun')}
         </span>;
         return (
             <div>
@@ -162,22 +162,22 @@ var FaForm = class FaForm extends AbstractReactComponent {
                     }
                     <form onSubmit={handleSubmit(submitForm)}>
                         {(this.props.create || this.props.update) &&
-                        <Input type="text" label={i18n('arr.fa.name')} {...name} {...decorateFormField(name)} />}
+                        <Input type="text" label={i18n('arr.fund.name')} {...name} {...decorateFormField(name)} />}
                         {(this.props.create || this.props.approve) &&
-                        <Input type="select" label={i18n('arr.fa.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
+                        <Input type="select" label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
                             <option key='-ruleSetId'/>
                             {ruleSets.map(i=> {
                                 return <option value={i.id}>{i.name}</option>
                             })}
                         </Input>}
                         {(this.props.create || this.props.approve) &&
-                        <Input type="select" disabled={ruleSetId.invalid} label={i18n('arr.fa.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
+                        <Input type="select" disabled={ruleSetId.invalid} label={i18n('arr.fund.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
                             <option key='-rulArrTypeId'/>
                             {ruleSetOptions}
                         </Input>}
                         {this.props.update && <Autocomplete
                             tags
-                            label={i18n('arr.fa.regScope')}
+                            label={i18n('arr.fund.regScope')}
                             items={this.props.scopeList}
                             getItemId={(item) => item ? item.id : null}
                             getItemName={(item) => item ? item.name : ''}
@@ -217,7 +217,7 @@ var FaForm = class FaForm extends AbstractReactComponent {
     }
 };
 
-FaForm.propTypes = {
+FundForm.propTypes = {
     approve: React.PropTypes.bool,
     create: React.PropTypes.bool,
     update: React.PropTypes.bool,
@@ -225,16 +225,16 @@ FaForm.propTypes = {
 };
 
 module.exports = reduxForm({
-        form: 'faForm',
+        form: 'fundForm',
         fields: ['name', 'ruleSetId', 'rulArrTypeId', 'regScopes[].id', 'regScopes[].name'],
     }, state => ({
-        initialValues: state.form.faForm.initialValues,
+        initialValues: state.form.fundForm.initialValues,
         refTables: state.refTables,
-        bulkActions: state.arrRegion.activeIndex !== null ? state.arrRegion.fas[state.arrRegion.activeIndex].bulkActions : undefined,
-        versionValidation: state.arrRegion.activeIndex !== null ? state.arrRegion.fas[state.arrRegion.activeIndex].versionValidation : undefined,
+        bulkActions: state.arrRegion.activeIndex !== null ? state.arrRegion.funds[state.arrRegion.activeIndex].bulkActions : undefined,
+        versionValidation: state.arrRegion.activeIndex !== null ? state.arrRegion.funds[state.arrRegion.activeIndex].versionValidation : undefined,
     }),
-    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'faForm', data})}
-)(FaForm);
+    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'fundForm', data})}
+)(FundForm);
 
 
 
