@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components';
-import {Splitter, Autocomplete, FaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
+import {DataGrid, Splitter, Autocomplete, FaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
 import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -21,6 +21,64 @@ import {Combobox} from 'react-input-enhancements'
 import {WebApi} from 'actions'
 import {setInputFocus, dateToString} from 'components/Utils'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
+
+var rows = []
+var selectedIds = [0, 1, 2, 3, 4]
+var focus
+
+for (var a=0; a<40; a++) {
+    rows.push({
+        id: a,
+        firstname: 'jan ' + a,
+        surname: 'novak ' + a,
+        age: 10+2*a,
+        address: 'Nejaka ulice ' + a + ', 330 22, Plzen',
+        tel: 2*a%10 + 3*a%10 + 4*a%10 + 5*a%10 + 6*a%10 + 7*a%10 + 8*a%10 + 9*a%10 + 2*a%10
+    })
+    if (a % 4 == 0) {
+        rows[rows.length-1].address = rows[rows.length-1].address + rows[rows.length-1].address + rows[rows.length-1].address
+    }
+}
+
+var cols = []
+
+cols.push({
+    dataName: 'id',
+    title: 'Id',
+    desc: 'popis id',
+    width: 60,
+})
+cols.push({
+    dataName: 'firstname',
+    title: 'Jmeno',
+    desc: 'popis jmena',
+    width: 120,
+})
+cols.push({
+    dataName: 'surname',
+    title: 'Prijmeni',
+    desc: 'popis prijmeni',
+    width: 120,
+})
+cols.push({
+    dataName: 'age',
+    title: 'Vek',
+    desc: 'popis vek',
+    width: 160,
+})
+cols.push({
+    dataName: 'address',
+    title: 'Adresa',
+    desc: 'popis adresy',
+    width: 220,
+})
+cols.push({
+    dataName: 'tel',
+    title: 'Telefon',
+    desc: 'popis telefonu',
+    width: 120,
+})
+
 
 var HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
@@ -182,6 +240,20 @@ var HomePage = class HomePage extends AbstractReactComponent {
                 {this.renderHistory()}
             </div>
         )
+
+centerPanel =
+    <div>
+        <DataGrid
+            rows={rows}
+            cols={cols}
+            selectedIds={selectedIds}
+            focus={focus}
+            onColumnResize={(colIndex, width) => {cols[colIndex].width = width; this.setState({})}}
+            onSelectedIdsChange={ids => {selectedIds = ids; this.setState({})}}
+            onEdit={(row, col) => {console.log('edit', row, col)}}
+        />
+        {centerPanel}
+    </div>
 
         return (
             <PageLayout

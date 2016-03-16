@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Resizer} from 'components';
 const scrollIntoView = require('dom-scroll-into-view')
 
-const __scrollWidth = 48
+const __emptyColWidth = 8000
 
 var keyDownHandlers = {
     changeFocus: function(newFocus) {
@@ -279,12 +279,17 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
 
         var colCls = colFocus ? 'focus' : ''
         var cellCls = cellFocus ? ' cell-focus' : ''
+        
+        var style = {}
+        if (rowIndex === 0) {
+            style = {width: colWidths[colIndex]}
+        }
 
         return (
             <td
                 ref={rowIndex + '-' + colIndex}
                 className={colCls + cellCls}
-                style={{width: colWidths[colIndex]}}
+                style={style}
                 onClick={this.handleCellClick.bind(this, rowIndex, colIndex)}
                 onDoubleClick={this.handleEdit.bind(this, rowIndex, colIndex)}
             >
@@ -352,7 +357,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         return (
             <div className={cls} onKeyDown={this.handleKeyDown} tabIndex={0}>
                 <div ref='header' className='header-container'>
-                    <table style={{width: fullWidth + __scrollWidth}}>
+                    <table style={{width: fullWidth + __emptyColWidth}}>
                         <thead>
                             <tr>
                                 {cols.map((col, colIndex) => this.renderHeaderCol(col, colIndex, focus.col === colIndex))}
