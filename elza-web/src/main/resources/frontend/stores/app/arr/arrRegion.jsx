@@ -14,6 +14,8 @@ import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo'
 import {isNodeInfoAction} from 'actions/arr/nodeInfo'
 import {isVersionValidation} from 'actions/arr/versionValidation'
+import {isNodeAction} from 'actions/arr/node'
+import {isNodesAction} from 'actions/arr/nodes'
 
 const initialState = {
     activeIndex: null,
@@ -76,6 +78,8 @@ export default function arrRegion(state = initialState, action) {
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)
         || isVersionValidation(action)
+        || isNodeAction(action)
+        || isNodesAction(action)
     ) {
         var index = indexById(state.funds, action.versionId, "versionId");
         return processFund(state, action, index);
@@ -133,7 +137,6 @@ export default function arrRegion(state = initialState, action) {
         case types.FUND_EXTENDED_VIEW:
             var result = {...state, extendedView: action.enable}
             return consolidateState(state, result);
-        case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT:
         case types.FUND_NODE_CHANGE:
         case types.FUND_NODES_RECEIVE:
         case types.FUND_NODES_REQUEST:
@@ -172,13 +175,6 @@ export default function arrRegion(state = initialState, action) {
                 return state
             }
         case types.GLOBAL_CONTEXT_MENU_HIDE:
-        case types.FUND_FUND_SUBNODES_NEXT:
-        case types.FUND_FUND_SUBNODES_PREV:
-        case types.FUND_FUND_SUBNODES_NEXT_PAGE:
-        case types.FUND_FUND_SUBNODES_PREV_PAGE:
-        case types.FUND_FUND_SUBNODES_FULLTEXT_SEARCH:
-        case types.FUND_FUND_CLOSE_NODE_TAB:
-        case types.FUND_FUND_SELECT_NODE_TAB:
             var index = state.activeIndex;
             return processFund(state, action, index);
         case types.FUND_CLOSE_FUND_TAB:

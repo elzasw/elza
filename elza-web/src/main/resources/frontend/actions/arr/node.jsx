@@ -8,6 +8,20 @@ import {fundSelectSubNode} from 'actions/arr/nodes';
 import {indexById} from 'stores/app/utils.jsx'
 import {isFundRootId} from 'components/arr/ArrUtils'
 
+export function isNodeAction(action) {
+    switch (action.type) {
+        case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT:
+        case types.FUND_FUND_SUBNODES_NEXT:
+        case types.FUND_FUND_SUBNODES_PREV:
+        case types.FUND_FUND_SUBNODES_NEXT_PAGE:
+        case types.FUND_FUND_SUBNODES_PREV_PAGE:
+        case types.FUND_FUND_SUBNODES_FULLTEXT_SEARCH:
+            return true
+        default:
+            return false
+    }
+}
+
 /**
  * Fetch dat pro otevřené záložky NODE, pokud je potřeba.
  * {int} versionId verze AS
@@ -208,5 +222,124 @@ function fundNodeChangeDelete(versionId, node, parentNode) {
         action: 'DELETE',
         type: types.FUND_NODE_CHANGE,
         versionId
+    }
+}
+
+/**
+ * Stránkování v Accordion - další část.
+ * {int} versionId verze AS
+ * {int} nodeId id node dané záložky NODE
+ * {string} nodeKey klíč dané záložky
+ */
+export function fundSubNodesNext(versionId, nodeId, nodeKey) {
+    return {
+        type: types.FUND_FUND_SUBNODES_NEXT,
+        versionId,
+        nodeId,
+        nodeKey,
+    }
+}
+
+/**
+ * Stránkování v Accordion - předchozí část.
+ * {int} versionId verze AS
+ * {int} nodeId id node dané záložky NODE
+ * {string} nodeKey klíč dané záložky
+ */
+export function fundSubNodesPrev(versionId, nodeId, nodeKey) {
+    return {
+        type: types.FUND_FUND_SUBNODES_PREV,
+        versionId,
+        nodeId,
+        nodeKey,
+    }
+}
+
+/**
+ * Stránkování v Accordion - další stránka.
+ * {int} versionId verze AS
+ * {int} nodeId id node dané záložky NODE
+ * {string} nodeKey klíč dané záložky
+ */
+export function fundSubNodesNextPage(versionId, nodeId, nodeKey) {
+    return (dispatch, getState) => {
+        const r = findByNodeKeyInGlobalState(getState(), versionId, nodeKey)
+        if (r) {
+            let activeFund = r.fund
+            let node = r.node
+            let viewIndex = node.viewStartIndex;
+            let index = indexById(node.childNodes, node.selectedSubNodeId);
+            dispatch(_fundSubNodesNextPage(versionId, nodeId, nodeKey));
+
+            if (index != null) {
+                const rnew = findByNodeKeyInGlobalState(getState(), versionId, nodeKey)
+                let newActiveFund = rnew.fund
+                let newNode = rnew.node
+                let newViewIndex = newNode.viewStartIndex;
+                let newIndex = newViewIndex - viewIndex + index;
+                let count = newNode.childNodes.length;
+                let subNodeId = newIndex < count ? newNode.childNodes[newIndex].id : newNode.childNodes[count - 1].id;
+                let subNodeParentNode = newNode;
+                dispatch(fundSelectSubNode(newActiveFund.versionId, subNodeId, subNodeParentNode, false, null, true));
+            }
+        }
+    }
+}
+
+/**
+ * Stránkování v Accordion - předchozí stránka.
+ * {int} versionId verze AS
+ * {int} nodeId id node dané záložky NODE
+ * {string} nodeKey klíč dané záložky
+ */
+export function _fundSubNodesNextPage(versionId, nodeId, nodeKey) {
+    return {
+        type: types.FUND_FUND_SUBNODES_NEXT_PAGE,
+        versionId,
+        nodeId,
+        nodeKey,
+    }
+}
+
+/**
+ * Stránkování v Accordion - předchozí stránka.
+ * {int} versionId verze AS
+ * {int} nodeId id node dané záložky NODE
+ * {string} nodeKey klíč dané záložky
+ */
+export function fundSubNodesPrevPage(versionId, nodeId, nodeKey) {
+    return (dispatch, getState) => {
+        const r = findByNodeKeyInGlobalState(getState(), versionId, nodeKey)
+        let activeFund = r.fund
+        let node = r.node
+        let viewIndex = node.viewStartIndex;
+        let index = indexById(node.childNodes, node.selectedSubNodeId);
+        dispatch(_fundSubNodesPrevPage(versionId, nodeId, nodeKey));
+
+        if (index != null) {
+            const rnew = findByNodeKeyInGlobalState(getState(), versionId, nodeKey)
+            let newActiveFund = rnew.fund
+            let newNode = rnew.node
+            let newViewIndex = newNode.viewStartIndex;
+            let newIndex = newViewIndex - viewIndex + index;
+            let subNodeId = newIndex < 0 ? newNode.childNodes[0].id : newNode.childNodes[newIndex].id;
+            let subNodeParentNode = newNode;
+            dispatch(fundSelectSubNode(newActiveFund.versionId, subNodeId, subNodeParentNode, false, null, true));
+        }
+    }
+}
+
+/**
+ * Stránkování v Accordion - předchozí stránka.
+ * {int} versionId verze AS
+ * {int} nodeId id node dané záložky NODE
+ * {string} nodeKey klíč dané záložky
+ */
+function _fundSubNodesPrevPage(versionId, nodeId, nodeKey) {
+    return {
+        type: types.FUND_FUND_SUBNODES_PREV_PAGE,
+        versionId,
+        nodeId,
+        nodeKey,
     }
 }

@@ -11,6 +11,8 @@ import {isSubNodeFormAction, isSubNodeFormCacheAction} from 'actions/arr/subNode
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo'
 import {isNodeInfoAction} from 'actions/arr/nodeInfo'
 import {isVersionValidation} from 'actions/arr/versionValidation'
+import {isNodeAction} from 'actions/arr/node'
+import {isNodesAction} from 'actions/arr/nodes'
 
 export function fundInitState(fundWithVersion) {
     var result = {
@@ -73,6 +75,8 @@ export function fund(state, action) {
         || isSubNodeFormCacheAction(action)
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)
+        || isNodeAction(action)
+        || isNodesAction(action)
     ) {
         var result = {...state,
             nodes: nodes(state.nodes, action),
@@ -141,13 +145,6 @@ export function fund(state, action) {
             var result = {...state, nodes: nodes(state.nodes, action)}
             updateFundTree(result, action);
             return consolidateState(state, result);
-        case types.FUND_FUND_SUBNODES_NEXT:
-        case types.FUND_FUND_SUBNODES_PREV:
-        case types.FUND_FUND_SUBNODES_NEXT_PAGE:
-        case types.FUND_FUND_SUBNODES_PREV_PAGE:
-        case types.FUND_FUND_SUBNODES_FULLTEXT_SEARCH:
-        case types.FUND_FUND_CLOSE_NODE_TAB:
-        case types.FUND_FUND_SELECT_NODE_TAB:
         case types.FUND_NODE_CHANGE:
         case types.FUND_NODES_RECEIVE:
         case types.FUND_NODES_REQUEST:
@@ -159,7 +156,6 @@ export function fund(state, action) {
         case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
         case types.FUND_SUB_NODE_REGISTER_VALUE_FOCUS:
         case types.FUND_SUB_NODE_REGISTER_VALUE_BLUR:
-        case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT:
         case types.DEVELOPER_SCENARIOS_RECEIVED:
         case types.DEVELOPER_SCENARIOS_FETCHING:
         case types.DEVELOPER_SCENARIOS_DIRTY:

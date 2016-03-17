@@ -5,6 +5,7 @@ import {consolidateState} from 'components/Utils'
 import {isSubNodeFormAction} from 'actions/arr/subNodeForm'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo'
 import {isNodeInfoAction} from 'actions/arr/nodeInfo'
+import {isNodeAction} from 'actions/arr/node'
 
 const nodesInitialState = {
     activeIndex: null,
@@ -37,6 +38,7 @@ export default function nodes(state = nodesInitialState, action) {
         || isSubNodeFormAction(action)
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)
+        || isNodeAction(action)
     ) {
         var r = findByNodeKeyInNodes(state, action.versionId, action.nodeKey);
         if (r) {
@@ -86,7 +88,6 @@ export default function nodes(state = nodesInitialState, action) {
         case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
         case types.FUND_SUB_NODE_REGISTER_VALUE_FOCUS:
         case types.FUND_SUB_NODE_REGISTER_VALUE_BLUR:
-        case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT:
         case types.DEVELOPER_SCENARIOS_RECEIVED:
         case types.DEVELOPER_SCENARIOS_FETCHING:
         case types.DEVELOPER_SCENARIOS_DIRTY:
@@ -97,13 +98,6 @@ export default function nodes(state = nodesInitialState, action) {
             } else {
                 return state;
             }
-        case types.FUND_FUND_SUBNODES_NEXT:
-        case types.FUND_FUND_SUBNODES_PREV:
-        case types.FUND_FUND_SUBNODES_NEXT_PAGE:
-        case types.FUND_FUND_SUBNODES_PREV_PAGE:
-        case types.FUND_FUND_SUBNODES_FULLTEXT_SEARCH:
-            var index = state.activeIndex;
-            return processNode(state, action, index);
         case types.FUND_FUND_SELECT_SUBNODE:
             var newState;
 

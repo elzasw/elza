@@ -7,43 +7,69 @@ import {indexById} from 'stores/app/utils.jsx'
 import {fundExtendedView} from './fund'
 import * as types from 'actions/constants/ActionTypes';
 import {developerNodeScenariosDirty} from 'actions/global/developer';
+import {findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
+
+export function isNodesAction(action) {
+    switch (action.type) {
+        case types.FUND_FUND_CLOSE_NODE_TAB:
+        case types.FUND_FUND_SELECT_NODE_TAB:
+            return true
+        default:
+            return false
+    }
+}
 
 /**
  * Změna vybrané záložky JP.
  * Pokud má daná záložka vybraný podřízený JP, je poslána nová akce s vybrání podřízené JP {@link fundSelectSubNode}.
+ * {int} versionId verze AS
+ * {int} nodeId id node dané záložky NODE
+ * {string} nodeKey klíč dané záložky
  * @param {int} index index vybrané záložky
  */
-export function fundSelectNodeTab(index) {
+export function fundSelectNodeTab(versionId, nodeId, nodeKey, index) {
     return (dispatch, getState) => {
         var state = getState();
         var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
         var nodeTab = activeFund.nodes.nodes[index];
         dispatch({
             type: types.FUND_FUND_SELECT_NODE_TAB,
+            versionId,
+            nodeId,
+            nodeKey,
             index,
         });
         if (nodeTab.selectedSubNodeId != null) {    // musíme poslat akci vybrání subnode (aby se řádek vybral např. ve stromu)
-            dispatch(fundSelectSubNodeInt(activeFund.versionId, nodeTab.selectedSubNodeId, nodeTab, false, null, true));
+            dispatch(fundSelectSubNodeInt(versionId, nodeTab.selectedSubNodeId, nodeTab, false, null, true));
         }
     }
 }
 
 /**
  * Zavření záložky JP.
+ * {int} versionId verze AS
+ * {int} nodeId id node dané záložky NODE
+ * {string} nodeKey klíč dané záložky
  * @param index {int} index záložky
  */
-function _fundCloseNodeTab(index) {
+function _fundCloseNodeTab(versionId, nodeId, nodeKey, index) {
     return {
         type: types.FUND_FUND_CLOSE_NODE_TAB,
-        index
+        versionId,
+        nodeId,
+        nodeKey,
+        index,
     }
 }
 
 /**
  * Zavření záložky JP.
+ * {int} versionId verze AS
+ * {int} nodeId id node dané záložky NODE
+ * {string} nodeKey klíč dané záložky
  * @param index {int} index záložky
  */
-export function fundCloseNodeTab(index) {
+export function fundCloseNodeTab(versionId, nodeId, nodeKey, index) {
     return (dispatch, getState) => {
         var state = getState();
         var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
@@ -51,12 +77,13 @@ export function fundCloseNodeTab(index) {
         if (activeFund.nodes.activeIndex == index) {  // zavíráme aktuálně vybranou
             wasSelected = true;
         }
-        dispatch(_fundCloseNodeTab(index));
+        dispatch(_fundCloseNodeTab(versionId, nodeId, nodeKey, index));
         var newState = getState();
         var newActiveFund = newState.arrRegion.funds[newState.arrRegion.activeIndex];
         if (wasSelected) { 
-            if (newActiveFund.nodes.nodes.length > 0) {    // je vybraná nějaká jiná, protože ještě nějaké záložky existují
-                dispatch(fundSelectNodeTab(newActiveFund.nodes.activeIndex));
+            if (newActiveFund.nodes.nodes.length > 0) {    // bude vybraná nějaká jiná, protože ještě nějaké záložky existují
+                const node = newActiveFund.nodes.nodes[newActiveFund.nodes.activeIndex]
+                dispatch(fundSelectNodeTab(versionId, node.id, node.nodeKey, newActiveFund.nodes.activeIndex));
             } else {    // není žádná záložka
                 dispatch(fundSelectSubNodeInt(newActiveFund.versionId, null, null, false, null, false));
             }
@@ -100,93 +127,6 @@ export function fundSelectSubNode(versionId, subNodeId, subNodeParentNode, openN
         dispatch(fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible));
         let state = getState();
         dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.nodeKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
-    }
-}
-
-/**
- * Stránkování v Accordion - další část.
- */
-export function fundSubNodesNext() {
-    return {
-        type: types.FUND_FUND_SUBNODES_NEXT,
-    }
-}
-
-/**
- * Stránkování v Accordion - předchozí část.
- */
-export function fundSubNodesPrev() {
-    return {
-        type: types.FUND_FUND_SUBNODES_PREV,
-    }
-}
-
-/**
- * Stránkování v Accordion - další stránka.
- */
-export function fundSubNodesNextPage() {
-    return (dispatch, getState) => {
-        let state = getState();
-        let activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
-        let node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
-        let viewIndex = node.viewStartIndex;
-        let index = indexById(node.childNodes, node.selectedSubNodeId);
-        dispatch(_fundSubNodesNextPage());
-
-        if (index != null) {
-            let newState = getState();
-            let newActiveFund = newState.arrRegion.funds[newState.arrRegion.activeIndex];
-            let newNode = newActiveFund.nodes.nodes[newActiveFund.nodes.activeIndex];
-            let newViewIndex = newNode.viewStartIndex;
-            let newIndex = newViewIndex - viewIndex + index;
-            let count = newNode.childNodes.length;
-            let subNodeId = newIndex < count ? newNode.childNodes[newIndex].id : newNode.childNodes[count - 1].id;
-            let subNodeParentNode = newNode;
-            dispatch(fundSelectSubNode(newActiveFund.versionId, subNodeId, subNodeParentNode, false, null, true));
-        }
-    }
-}
-
-/**
- * Stránkování v Accordion - předchozí stránka.
- */
-export function _fundSubNodesNextPage() {
-    return {
-        type: types.FUND_FUND_SUBNODES_NEXT_PAGE,
-    }
-}
-
-/**
- * Stránkování v Accordion - předchozí stránka.
- */
-export function fundSubNodesPrevPage() {
-    return (dispatch, getState) => {
-        let state = getState();
-        let activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
-        let node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
-        let viewIndex = node.viewStartIndex;
-        let index = indexById(node.childNodes, node.selectedSubNodeId);
-        dispatch(_fundSubNodesPrevPage());
-
-        if (index != null) {
-            let newState = getState();
-            let newActiveFund = newState.arrRegion.funds[newState.arrRegion.activeIndex];
-            let newNode = newActiveFund.nodes.nodes[newActiveFund.nodes.activeIndex];
-            let newViewIndex = newNode.viewStartIndex;
-            let newIndex = newViewIndex - viewIndex + index;
-            let subNodeId = newIndex < 0 ? newNode.childNodes[0].id : newNode.childNodes[newIndex].id;
-            let subNodeParentNode = newNode;
-            dispatch(fundSelectSubNode(newActiveFund.versionId, subNodeId, subNodeParentNode, false, null, true));
-        }
-    }
-}
-
-/**
- * Stránkování v Accordion - předchozí stránka.
- */
-function _fundSubNodesPrevPage() {
-    return {
-        type: types.FUND_FUND_SUBNODES_PREV_PAGE,
     }
 }
 

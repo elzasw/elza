@@ -13,10 +13,11 @@ exports.findByNodeKeyInNodes = findByNodeKeyInNodes
 function findByNodeKeyInGlobalState(globalState, versionId, nodeKey) {
     var fundIndex = indexById(globalState.arrRegion.funds, versionId, "versionId");
     if (fundIndex != null) {
-        var nodes = globalState.arrRegion.funds[fundIndex].nodes.nodes;
+        const fund = globalState.arrRegion.funds[fundIndex]
+        var nodes = fund.nodes.nodes
         for (var a=0; a<nodes.length; a++) {
             if (nodes[a].nodeKey == nodeKey) {
-                return {fundIndex: fundIndex, node: nodes[a], nodeIndex: a};
+                return {fundIndex: fundIndex, fund: fund, node: nodes[a], nodeIndex: a};
             }
         }
     }

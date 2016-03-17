@@ -86,7 +86,7 @@ return true
             <Tabs.Container ref='tabs' className='node-tabs-container'>
                 <Tabs.Tabs closable items={tabs} activeItem={activeTab}
                     onSelect={this.handleTabSelect}
-                    onClose={item=>this.dispatch(fundCloseNodeTab(item.index))}
+                    onClose={item=>this.dispatch(fundCloseNodeTab(versionId, item.id, item.key, item.index))}
                 />
                 <Tabs.Content>
                     {activeNode && <NodePanel versionId={versionId}

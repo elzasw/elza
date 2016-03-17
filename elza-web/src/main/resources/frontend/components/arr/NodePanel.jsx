@@ -15,8 +15,8 @@ import {fundSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister'
 import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo'
 import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo'
-import {fundSelectSubNode, fundSubNodesNext, fundSubNodesPrev, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/nodes'
-import {fundNodeSubNodeFulltextSearch} from 'actions/arr/node'
+import {fundSelectSubNode} from 'actions/arr/nodes'
+import {fundNodeSubNodeFulltextSearch, fundSubNodesNext, fundSubNodesPrev, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node'
 import {addNode} from 'actions/arr/node'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {indexById} from 'stores/app/utils.jsx'
@@ -589,13 +589,13 @@ return true
      * @return {Object} view
      */
     renderAccordion(form, recordInfo) {
-        const {node} = this.props;
+        const {node, versionId } = this.props;
 
         var rows = [];
 
         if (node.viewStartIndex > 0) {
             rows.push(
-                <Button key="prev" onClick={()=>this.dispatch(fundSubNodesPrev())}><Icon glyph="fa-chevron-left" />{i18n('arr.fund.prev')}</Button>
+                <Button key="prev" onClick={()=>this.dispatch(fundSubNodesPrev(versionId, node.id, node.nodeKey))}><Icon glyph="fa-chevron-left" />{i18n('arr.fund.prev')}</Button>
             )
         }
 
@@ -650,7 +650,7 @@ return true
 
         if (node.viewStartIndex + node.pageSize/2 < node.childNodes.length) {
             rows.push(
-                <Button key="next" onClick={()=>this.dispatch(fundSubNodesNext())}><Icon glyph="fa-chevron-right" />{i18n('arr.fund.next')}</Button>
+                <Button key="next" onClick={()=>this.dispatch(fundSubNodesNext(versionId, node.id, node.nodeKey))}><Icon glyph="fa-chevron-right" />{i18n('arr.fund.next')}</Button>
             )
         }
 
@@ -727,8 +727,8 @@ return true
                                          direction="CHILD"
                         />
                     }
-                    <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(fundSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fund.subNodes.prevPage')}</div>
-                    <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(fundSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fund.subNodes.nextPage')}</div>
+                    <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.nodeKey))}><Icon glyph="fa-backward" />{i18n('arr.fund.subNodes.prevPage')}</div>
+                    <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(fundSubNodesNextPage(versionId, node.id, node.nodeKey))}><Icon glyph="fa-forward" />{i18n('arr.fund.subNodes.nextPage')}</div>
 
                     <div className='btn btn-default' onClick={this.handleFindPosition} title={i18n('arr.fund.subNodes.findPosition')} ><Icon glyph="fa-hand-o-down" /></div>
 
