@@ -6,6 +6,7 @@ import {isSubNodeFormAction} from 'actions/arr/subNodeForm'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo'
 import {isNodeInfoAction} from 'actions/arr/nodeInfo'
 import {isNodeAction} from 'actions/arr/node'
+import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister'
 
 const nodesInitialState = {
     activeIndex: null,
@@ -39,6 +40,7 @@ export default function nodes(state = nodesInitialState, action) {
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)
         || isNodeAction(action)
+        || isSubNodeRegisterAction(action)
     ) {
         var r = findByNodeKeyInNodes(state, action.versionId, action.nodeKey);
         if (r) {
@@ -80,14 +82,6 @@ export default function nodes(state = nodesInitialState, action) {
             } else {
                 return state
             }
-        case types.FUND_SUB_NODE_REGISTER_REQUEST:
-        case types.FUND_SUB_NODE_REGISTER_RECEIVE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_DELETE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_ADD:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_FOCUS:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_BLUR:
         case types.DEVELOPER_SCENARIOS_RECEIVED:
         case types.DEVELOPER_SCENARIOS_FETCHING:
         case types.DEVELOPER_SCENARIOS_DIRTY:

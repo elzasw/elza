@@ -13,6 +13,7 @@ import {isNodeInfoAction} from 'actions/arr/nodeInfo'
 import {isVersionValidation} from 'actions/arr/versionValidation'
 import {isNodeAction} from 'actions/arr/node'
 import {isNodesAction} from 'actions/arr/nodes'
+import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister'
 
 export function fundInitState(fundWithVersion) {
     var result = {
@@ -77,6 +78,7 @@ export function fund(state, action) {
         || isNodeInfoAction(action)
         || isNodeAction(action)
         || isNodesAction(action)
+        || isSubNodeRegisterAction(action)
     ) {
         var result = {...state,
             nodes: nodes(state.nodes, action),
@@ -148,14 +150,6 @@ export function fund(state, action) {
         case types.FUND_NODE_CHANGE:
         case types.FUND_NODES_RECEIVE:
         case types.FUND_NODES_REQUEST:
-        case types.FUND_SUB_NODE_REGISTER_REQUEST:
-        case types.FUND_SUB_NODE_REGISTER_RECEIVE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_DELETE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_ADD:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_FOCUS:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_BLUR:
         case types.DEVELOPER_SCENARIOS_RECEIVED:
         case types.DEVELOPER_SCENARIOS_FETCHING:
         case types.DEVELOPER_SCENARIOS_DIRTY:

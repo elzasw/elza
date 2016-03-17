@@ -7,6 +7,7 @@ import subNodeInfo from './subNodeInfo'
 import {consolidateState} from 'components/Utils'
 import {isSubNodeFormAction, isSubNodeFormCacheAction} from 'actions/arr/subNodeForm'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo'
+import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister'
 
 var _nextNodeKey = 1;
 var _pageSize = 50;
@@ -140,6 +141,14 @@ export function node(state = nodeInitialState, action) {
         var result = {
             ...state,
             subNodeInfo: subNodeInfo(state.subNodeInfo, action),
+        }
+        return consolidateState(state, result);
+    }
+
+    if (isSubNodeRegisterAction(action)) {
+        var result = {
+            ...state,
+            subNodeRegister: subNodeRegister(state.subNodeRegister, action),
         }
         return consolidateState(state, result);
     }
@@ -282,19 +291,6 @@ export function node(state = nodeInitialState, action) {
             }
             result.viewStartIndex = getViewStartIndex(result, state.selectedSubNodeId);
             return result;
-        case types.FUND_SUB_NODE_REGISTER_REQUEST:
-        case types.FUND_SUB_NODE_REGISTER_RECEIVE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_DELETE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_ADD:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_FOCUS:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_BLUR:
-            var result = {
-                ...state,
-                subNodeRegister: subNodeRegister(state.subNodeRegister, action),
-            }
-            return consolidateState(state, result);
         case types.FUND_NODE_INFO_REQUEST:
             return {
                 ...state,
