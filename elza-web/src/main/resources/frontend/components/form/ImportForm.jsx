@@ -77,7 +77,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
         });
         var data = Object.assign({}, {
             xmlFile: values.xmlFile[0],
-            importDataFormat: this.props.fund ? 'FINDING_AID' : this.props.record ? 'RECORD' : 'PARTY',
+            importDataFormat: this.props.fund ? 'FUND' : this.props.record ? 'RECORD' : 'PARTY',
             stopOnError: values.stopOnError && values.stopOnError == 1 ? values.stopOnError : false
         });
 

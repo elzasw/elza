@@ -163,7 +163,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes";
     protected static final String UPDATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/{scopeId}";
     protected static final String DELETE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/";
-    protected static final String FA_SCOPES = REGISTRY_CONTROLLER_URL + "/faScopes";
+    protected static final String FA_SCOPES = REGISTRY_CONTROLLER_URL + "/fundScopes";
     protected static final String ALL_SCOPES = REGISTRY_CONTROLLER_URL + "/scopes";
     protected static final String RECORD_TYPES = REGISTRY_CONTROLLER_URL + "/recordTypes";
 

@@ -147,10 +147,10 @@ function processEvents(values) {
                 registryChange(value);
                 break;
 
-            case 'FINDING_AID_UPDATE':
+            case 'FUND_UPDATE':
                 fundChange(value);
                 break;
-            case 'FINDING_AID_RECORD_CHANGE':
+            case 'FUND_RECORD_CHANGE':
                 fundRecordChange(value);
                 break;
             default:

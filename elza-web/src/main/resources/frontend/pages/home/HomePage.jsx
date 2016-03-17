@@ -243,7 +243,7 @@ var HomePage = class HomePage extends AbstractReactComponent {
 
 centerPanel =
     <div>
-        <DataGrid
+        {false && <DataGrid
             rows={rows}
             cols={cols}
             selectedIds={selectedIds}
@@ -251,7 +251,7 @@ centerPanel =
             onColumnResize={(colIndex, width) => {cols[colIndex].width = width; this.setState({})}}
             onSelectedIdsChange={ids => {selectedIds = ids; this.setState({})}}
             onEdit={(row, col) => {console.log('edit', row, col)}}
-        />
+        />}
         {centerPanel}
     </div>
 

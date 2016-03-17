@@ -419,7 +419,7 @@ public class RegistryController {
      * @param versionId id verze nebo null
      * @return seznam tříd
      */
-    @RequestMapping(value = "/faScopes", method = RequestMethod.GET)
+    @RequestMapping(value = "/fundScopes", method = RequestMethod.GET)
     public List<RegScopeVO> getScopeIdsByVersion(@RequestParam(required = false) @Nullable final Integer versionId) {
 
         ArrFund fund;
