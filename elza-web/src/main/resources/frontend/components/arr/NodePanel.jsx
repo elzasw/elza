@@ -382,7 +382,7 @@ return true
             subNodeParentNode = createFundRoot(this.props.fund);
         }
 
-        this.dispatch(fundSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
+        this.dispatch(fundSelectSubNode(this.props.versionId, subNodeId, subNodeParentNode, false, null, true));
     }
 
     /**
@@ -392,7 +392,7 @@ return true
     handleChildNodeClick(node) {
         var subNodeId = node.id;
         var subNodeParentNode = this.getSiblingNodes()[indexById(this.getSiblingNodes(), this.props.node.selectedSubNodeId)];
-        this.dispatch(fundSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
+        this.dispatch(fundSelectSubNode(this.props.versionId, subNodeId, subNodeParentNode, false, null, true));
     }
 
     /**
@@ -497,7 +497,7 @@ return true
      * @param item {Object} na který node v Accordion se kliklo
      */
     handleCloseItem(item) {
-        this.dispatch(fundSelectSubNode(null, this.props.node, false, null, false));
+        this.dispatch(fundSelectSubNode(this.props.versionId, null, this.props.node, false, null, false));
     }
 
     /**
@@ -506,7 +506,7 @@ return true
      */
     handleOpenItem(item) {
         var subNodeId = item.id;
-        this.dispatch(fundSelectSubNode(subNodeId, this.props.node, false, null, true));
+        this.dispatch(fundSelectSubNode(this.props.versionId, subNodeId, this.props.node, false, null, true));
     }
 
     /**
@@ -674,7 +674,7 @@ return true
         var index = form.position - 1;
         var subNodeId = node.allChildNodes[index].id;
 
-        this.dispatch(fundSelectSubNode(subNodeId, node));
+        this.dispatch(fundSelectSubNode(this.props.versionId, subNodeId, node));
         this.dispatch(modalDialogHide());
     }
 

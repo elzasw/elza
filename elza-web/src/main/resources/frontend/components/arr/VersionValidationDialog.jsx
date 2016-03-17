@@ -30,7 +30,7 @@ var VersionValidationDialog = class VersionValidationDialog extends AbstractReac
     }
 
     handleSelectNode(id, parent) {
-        this.dispatch(fundSelectSubNode(id, parent ? parent : createFundRoot(this.props.fund)));
+        this.dispatch(fundSelectSubNode(this.props.versionId, id, parent ? parent : createFundRoot(this.props.fund)));
         this.props.onClose();
     }
 

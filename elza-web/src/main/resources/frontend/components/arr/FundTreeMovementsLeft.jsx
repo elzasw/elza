@@ -10,7 +10,6 @@ import {AppActions} from 'stores';
 import {MenuItem} from 'react-bootstrap';
 import {selectFundTab, closeFundTab} from 'actions/arr/fund'
 import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeSelectNode, fundTreeCollapse, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeNodeCollapse} from 'actions/arr/fundTree'
-import {fundSelectSubNode} from 'actions/arr/nodes'
 import {createFundRoot, getParentNode} from './ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
 
@@ -71,7 +70,7 @@ var FundTreeMovementsLeft = class FundTreeMovementsLeft extends AbstractReactCom
             </ul>
         )
 
-        this.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MOVEMENTS_LEFT, node));
+        this.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, node));
         this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
     }
 
@@ -81,14 +80,14 @@ var FundTreeMovementsLeft = class FundTreeMovementsLeft extends AbstractReactCom
      * @param e {Object} event
      */
     handleNodeClick(node, e) {
-        this.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_MOVEMENTS_LEFT, node.id, e.ctrlKey, e.shiftKey));
+        this.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, node.id, e.ctrlKey, e.shiftKey));
     }
 
     /**
      * Zabalení stromu
      */
     handleCollapse() {
-        this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.fund))
+        this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, this.props.fund))
     }
 
     render() {
@@ -96,7 +95,7 @@ var FundTreeMovementsLeft = class FundTreeMovementsLeft extends AbstractReactCom
             <FundTreeLazy 
                 {...this.props}
                 cutLongLabels={true}
-                onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MOVEMENTS_LEFT, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MOVEMENTS_LEFT, node))}}
+                onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MOVEMENTS_LEFT, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, node))}}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onCollapse={this.handleCollapse}

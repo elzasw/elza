@@ -9,11 +9,29 @@ import * as types from 'actions/constants/ActionTypes';
 import {indexById} from 'stores/app/utils.jsx'
 import {fundSelectSubNode} from './nodes'
 
+export function isFundTreeAction(action) {
+    switch (action.type) {
+        case types.FUND_FUND_TREE_FULLTEXT_CHANGE:
+        case types.FUND_FUND_TREE_FOCUS_NODE:
+        case types.FUND_FUND_TREE_EXPAND_NODE:
+        case types.FUND_FUND_TREE_COLLAPSE:
+        case types.FUND_FUND_TREE_COLLAPSE_NODE:
+        case types.FUND_FUND_TREE_SELECT_NODE:
+        case types.FUND_FUND_TREE_REQUEST:
+        case types.FUND_FUND_TREE_RECEIVE:
+        case types.FUND_FUND_TREE_FULLTEXT_RESULT:
+            return true
+        default:
+            return false
+    }
+}
+
 // jen vyber polozky, vyuzite jen v presunech JP
-export function fundTreeSelectNode(area, nodeId, ctrl, shift, newFilterCurrentIndex = null) {
+export function fundTreeSelectNode(area, versionId, nodeId, ctrl, shift, newFilterCurrentIndex = null) {
     return {
         type: types.FUND_FUND_TREE_SELECT_NODE,
         area,
+        versionId,
         nodeId,
         ctrl,
         shift,
@@ -24,14 +42,16 @@ export function fundTreeSelectNode(area, nodeId, ctrl, shift, newFilterCurrentIn
 /**
  * Rozbalení uzlu.
  * @param {String} area oblast stromu
+ * @param {int} versionId verze AS
  * @param {Object} node uzel
  * @param {boolean} pokud je true, je pod rozbalovaný uzel přidán nový uzel s informací, že se načítají data
  */
-export function _fundTreeNodeExpand(area, node, addWaitingNode=false) {
+export function _fundTreeNodeExpand(area, versionId, node, addWaitingNode=false) {
     return {
         type: types.FUND_FUND_TREE_EXPAND_NODE,
         area,
         node,
+        versionId,
         addWaitingNode,
     }
 }
@@ -39,13 +59,15 @@ export function _fundTreeNodeExpand(area, node, addWaitingNode=false) {
 /**
  * Zabalení uzlu.
  * @param {String} area oblast stromu
+ * @param {int} versionId verze AS
  * @param {Object} node uzel
  */
-export function fundTreeCollapse(area, node) {
+export function fundTreeCollapse(area, versionId, node) {
     return {
         type: types.FUND_FUND_TREE_COLLAPSE,
         area,
-        node
+        node,
+        versionId,
     }
 }
 
@@ -89,17 +111,17 @@ function getFundTreeForFund(state, area, versionId) {
  * {Object} fundTree store stromu
  * {int} newIndex nový vybraný index ve výsledcích hledání
  */
-function changeCurrentIndex(dispatch, area, fundTree, newIndex) {
+function changeCurrentIndex(dispatch, area, versionId, fundTree, newIndex) {
     if (newIndex != fundTree.filterCurrentIndex) {
         var nodeId = fundTree.searchedIds[newIndex];
         var nodeParent = fundTree.searchedParents[nodeId];
         switch (area) {
             case types.FUND_TREE_AREA_MAIN:
-                dispatch(fundSelectSubNode(nodeId, nodeParent, false, newIndex, true));
+                dispatch(fundSelectSubNode(versionId, nodeId, nodeParent, false, newIndex, true));
             case types.FUND_TREE_AREA_MOVEMENTS_LEFT:
-                dispatch(fundTreeSelectNode(area, nodeId, false, false, newIndex))
+                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex))
             case types.FUND_TREE_AREA_MOVEMENTS_RIGHT:
-                dispatch(fundTreeSelectNode(area, nodeId, false, false, newIndex))
+                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex))
         }
     }
 }
@@ -121,7 +143,7 @@ export function fundTreeFulltextNextItem(area, versionId) {
             } else {
                 newIndex = Math.min(fundTree.filterCurrentIndex + 1, fundTree.searchedIds.length - 1);
             }
-            changeCurrentIndex(dispatch, area, fundTree, newIndex);
+            changeCurrentIndex(dispatch, area, versionId, fundTree, newIndex);
         }
     }
 }
@@ -143,7 +165,7 @@ export function fundTreeFulltextPrevItem(area, versionId) {
             } else {
                 newIndex = Math.max(fundTree.filterCurrentIndex - 1, 0);
             }
-            changeCurrentIndex(dispatch, area, fundTree, newIndex);
+            changeCurrentIndex(dispatch, area, versionId, fundTree, newIndex);
         }
     }
 }
@@ -177,7 +199,7 @@ export function fundTreeFulltextSearch(area, versionId) {
                         dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, json, false))
                         if (json.length > 0) {
                             var newFundTree = getFundTreeForFund(getState(), area, versionId)
-                            changeCurrentIndex(dispatch, area, newFundTree, 0);
+                            changeCurrentIndex(dispatch, area, versionId, newFundTree, 0);
                         }
                     });
             } else {
@@ -217,7 +239,7 @@ export function fundTreeNodeExpand(area, node) {
         var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
         var fundTree = getFundTree(activeFund, area);
 
-        dispatch(_fundTreeNodeExpand(area, node, true))
+        dispatch(_fundTreeNodeExpand(area, activeFund.versionId, node, true))
 
         var versionId = activeFund.versionId;
         var nodeId = node.id;
@@ -230,26 +252,30 @@ export function fundTreeNodeExpand(area, node) {
 /**
  * Nastavení focusu pro uzel ve stromu.
  * @param {String} area oblast stromu
+ * @param {int} versionId verze AS
  * @param {Object} node uzel
  */
-export function fundTreeFocusNode(area, node) {
+export function fundTreeFocusNode(area, versionId, node) {
     return {
         type: types.FUND_FUND_TREE_FOCUS_NODE,
         area,
         node,
+        versionId,
     }
 }
 
 /**
  * Zabalení uzlu.
  * @param {String} area oblast stromu
+ * @param {int} versionId verze AS
  * @param {Object} node uzel
  */
-export function fundTreeNodeCollapse(area, node) {
+export function fundTreeNodeCollapse(area, versionId, node) {
     return {
         type: types.FUND_FUND_TREE_COLLAPSE_NODE,
         area,
         node,
+        versionId,
     }
 }
 

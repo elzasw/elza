@@ -22,7 +22,6 @@ import {lockDescItemType, unlockDescItemType, unlockAllDescItemType,
         copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting'
 import {addNode,deleteNode} from '../../actions/arr/node'
 import {createPacket} from 'actions/arr/packets'
-import fundSelectSubNode from 'actions/arr/nodes'
 import {isFundRootId} from './ArrUtils.jsx'
 import {partySelect, partyAdd} from 'actions/party/party'
 import {registrySelect, registryAdd} from 'actions/registry/registryRegionList'

@@ -2,6 +2,9 @@ import * as types from 'actions/constants/ActionTypes';
 import {indexById, findByNodeKeyInNodes, selectedAfterClose} from 'stores/app/utils.jsx'
 import {node, nodeInitState} from './node.jsx'
 import {consolidateState} from 'components/Utils'
+import {isSubNodeFormAction} from 'actions/arr/subNodeForm'
+import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo'
+import {isNodeInfoAction} from 'actions/arr/nodeInfo'
 
 const nodesInitialState = {
     activeIndex: null,
@@ -30,6 +33,20 @@ function processNode(state, action, index) {
 }
 
 export default function nodes(state = nodesInitialState, action) {
+    if (false
+        || isSubNodeFormAction(action)
+        || isSubNodeInfoAction(action)
+        || isNodeInfoAction(action)
+    ) {
+        var r = findByNodeKeyInNodes(state, action.versionId, action.nodeKey);
+        if (r) {
+            var index = r.nodeIndex;
+            return processNode(state, action, index);
+        } else {
+            return state;
+        }
+    }
+
     switch (action.type) {
         case types.STORE_LOAD:
             return {
@@ -61,8 +78,6 @@ export default function nodes(state = nodesInitialState, action) {
             } else {
                 return state
             }
-        case types.FUND_NODE_INFO_REQUEST:
-        case types.FUND_NODE_INFO_RECEIVE:
         case types.FUND_SUB_NODE_REGISTER_REQUEST:
         case types.FUND_SUB_NODE_REGISTER_RECEIVE:
         case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:
@@ -71,26 +86,6 @@ export default function nodes(state = nodesInitialState, action) {
         case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
         case types.FUND_SUB_NODE_REGISTER_VALUE_FOCUS:
         case types.FUND_SUB_NODE_REGISTER_VALUE_BLUR:
-        case types.FUND_SUB_NODE_FORM_REQUEST:
-        case types.FUND_SUB_NODE_FORM_RECEIVE:
-        case types.FUND_SUB_NODE_FORM_CACHE_RESPONSE:
-        case types.FUND_SUB_NODE_FORM_CACHE_REQUEST:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
-        case types.FUND_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
-        case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
-        case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
-        case types.FUND_SUB_NODE_FORM_VALUE_ADD:
-        case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
-        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
-        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
-        case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
-        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
-        case types.FUND_SUB_NODE_INFO_REQUEST:
-        case types.FUND_SUB_NODE_INFO_RECEIVE:
         case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT:
         case types.DEVELOPER_SCENARIOS_RECEIVED:
         case types.DEVELOPER_SCENARIOS_FETCHING:

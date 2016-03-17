@@ -23,7 +23,7 @@ export function fundSelectNodeTab(index) {
             index,
         });
         if (nodeTab.selectedSubNodeId != null) {    // musíme poslat akci vybrání subnode (aby se řádek vybral např. ve stromu)
-            dispatch(fundSelectSubNodeInt(nodeTab.selectedSubNodeId, nodeTab, false, null, true));
+            dispatch(fundSelectSubNodeInt(activeFund.versionId, nodeTab.selectedSubNodeId, nodeTab, false, null, true));
         }
     }
 }
@@ -58,7 +58,7 @@ export function fundCloseNodeTab(index) {
             if (newActiveFund.nodes.nodes.length > 0) {    // je vybraná nějaká jiná, protože ještě nějaké záložky existují
                 dispatch(fundSelectNodeTab(newActiveFund.nodes.activeIndex));
             } else {    // není žádná záložka
-                dispatch(fundSelectSubNodeInt(null, null, false, null, false));
+                dispatch(fundSelectSubNodeInt(newActiveFund.versionId, null, null, false, null, false));
             }
         }
     }
@@ -66,14 +66,16 @@ export function fundCloseNodeTab(index) {
 
 /**
  * Vybrání podřízené JP pod záložkou JP (vybrání JP pro formulář).
+ * @param {int} versionId verze AS
  * @param {String} subNodeId id JP pro vybrání
  * @param {Object} subNodeParentNode nadřazený JP pro vybíranou JP, předáváno kvůli případnému otevření nové záložky, pokud neexistuje
  * @param {boolean} openNewTab má se otevřít nová záložka? Pokud je false, bude použita existující  aktuálně vybraná, pokud žádná neexistuje, bude nová vytvořena
  */
-export function fundSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
+export function fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
     return {
         type: types.FUND_FUND_SELECT_SUBNODE,
         area: types.FUND_TREE_AREA_MAIN,
+        versionId,
         subNodeId,
         subNodeParentNode,
         openNewTab,
@@ -85,16 +87,17 @@ export function fundSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab=fa
 /**
  * Akce vybrání záložky NODE v Accordion v aktuální záložce NODE pod aktuální vybranou záložkou AS. V případě, že neexsituje aktuální záložka NODE
  * je vytvořena nová na základě parametru subNodeParentNode, který bude reprezentovat záložku.
- * @param {int} subNodeId id node, který má být vzbrán v Accordion
+ * @param {int} versionId verze AS
+ * @param {int} subNodeId id node, který má být vybrán v Accordion
  * @param {Object} subNodeParentNode nadřazený node k subNodeId
  * @param {boolean} openNewTab pokud je true, je vždy vytvářena nová záložka. pokud je false, je nová záložka vytvářena pouze pokud žádná není
  * @param {int} newFilterCurrentIndex nový index ve výsledcích hledání ve stromu, pokud daná akce je vyvolána akcí skuku na jinou vyhledanou položku vy výsledcích hledání ve stromu
  * @param {boolean} ensureItemVisible true, pokud má být daná položka vidět - má se odscrolovat
  */
-export function fundSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
+export function fundSelectSubNode(versionId, subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
     return (dispatch, getState) => {
         dispatch(fundExtendedView(false));
-        dispatch(fundSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible));
+        dispatch(fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible));
         let state = getState();
         dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.nodeKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
     }
@@ -139,7 +142,7 @@ export function fundSubNodesNextPage() {
             let count = newNode.childNodes.length;
             let subNodeId = newIndex < count ? newNode.childNodes[newIndex].id : newNode.childNodes[count - 1].id;
             let subNodeParentNode = newNode;
-            dispatch(fundSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
+            dispatch(fundSelectSubNode(newActiveFund.versionId, subNodeId, subNodeParentNode, false, null, true));
         }
     }
 }
@@ -173,7 +176,7 @@ export function fundSubNodesPrevPage() {
             let newIndex = newViewIndex - viewIndex + index;
             let subNodeId = newIndex < 0 ? newNode.childNodes[0].id : newNode.childNodes[newIndex].id;
             let subNodeParentNode = newNode;
-            dispatch(fundSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
+            dispatch(fundSelectSubNode(newActiveFund.versionId, subNodeId, subNodeParentNode, false, null, true));
         }
     }
 }

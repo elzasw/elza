@@ -3,6 +3,22 @@ import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 
 import * as types from 'actions/constants/ActionTypes';
 
+export function isSubNodeRegisterAction(action) {
+    switch (action.type) {
+        case types.FUND_SUB_NODE_REGISTER_REQUEST:
+        case types.FUND_SUB_NODE_REGISTER_RECEIVE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_DELETE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_ADD:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_FOCUS:
+        case types.FUND_SUB_NODE_REGISTER_VALUE_BLUR:
+            return true
+        default:
+            return false
+    }
+}
+
 export function fundSubNodeRegisterFetchIfNeeded(versionId, nodeId, nodeKey) {
     return (dispatch, getState) => {
         var state = getState();

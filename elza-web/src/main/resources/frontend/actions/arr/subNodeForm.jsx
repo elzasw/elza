@@ -13,6 +13,40 @@ import {setFocus} from 'actions/global/focus'
 
 import * as types from 'actions/constants/ActionTypes';
 
+export function isSubNodeFormCacheAction(action) {
+    switch (action.type) {
+        case types.FUND_SUB_NODE_FORM_CACHE_RESPONSE:
+        case types.FUND_SUB_NODE_FORM_CACHE_REQUEST:
+            return true
+        default:
+            return false
+    }
+}
+
+export function isSubNodeFormAction(action) {
+    switch (action.type) {
+        case types.FUND_SUB_NODE_FORM_REQUEST:
+        case types.FUND_SUB_NODE_FORM_RECEIVE:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
+        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
+        case types.FUND_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
+        case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
+        case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
+        case types.FUND_SUB_NODE_FORM_VALUE_ADD:
+        case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
+        case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
+            return true
+        default:
+            return false
+    }
+}
+
 /**
  * Akce přidání nové prázdné hodnoty descItem vícehodnotového atributu descItemType.
  * @param {int} versionId verze AS

@@ -5,6 +5,12 @@ import nodes from './nodes'
 import bulkActions from './bulkActions'
 import versionValidation from './versionValidation'
 import {consolidateState} from 'components/Utils'
+import {isBulkAction} from 'actions/arr/bulkActions'
+import {isFundTreeAction} from 'actions/arr/fundTree'
+import {isSubNodeFormAction, isSubNodeFormCacheAction} from 'actions/arr/subNodeForm'
+import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo'
+import {isNodeInfoAction} from 'actions/arr/nodeInfo'
+import {isVersionValidation} from 'actions/arr/versionValidation'
 
 export function fundInitState(fundWithVersion) {
     var result = {
@@ -46,6 +52,35 @@ function updateFundTree(state, action) {
 }
 
 export function fund(state, action) {
+    if (isBulkAction(action)) {
+        var result = {...state, bulkActions: bulkActions(state.bulkActions, action)}
+        return consolidateState(state, result);
+    }
+
+    if (isFundTreeAction(action)) {
+        var result = {...state};
+        updateFundTree(result, action);
+        return consolidateState(state, result);
+    }
+
+    if (isVersionValidation(action)) {
+        var result = {...state, versionValidation: versionValidation(state.versionValidation, action)};
+        return consolidateState(state, result);
+    }
+
+    if (false
+        || isSubNodeFormAction(action)
+        || isSubNodeFormCacheAction(action)
+        || isSubNodeInfoAction(action)
+        || isNodeInfoAction(action)
+    ) {
+        var result = {...state,
+            nodes: nodes(state.nodes, action),
+            fundTree: fundTree(state.fundTree, action),
+        }
+        return consolidateState(state, result);
+    }
+
     switch (action.type) {
         case types.STORE_LOAD:
             return {
@@ -98,15 +133,6 @@ export function fund(state, action) {
                 ...state,
                 dirty: true,
             }
-        case types.FUND_FUND_TREE_REQUEST:
-        case types.FUND_FUND_TREE_RECEIVE:
-        case types.FUND_FUND_TREE_FULLTEXT_RESULT:
-        case types.FUND_FUND_TREE_FULLTEXT_CHANGE:
-        case types.FUND_FUND_TREE_FOCUS_NODE:
-        case types.FUND_FUND_TREE_EXPAND_NODE:
-        case types.FUND_FUND_TREE_COLLAPSE_NODE:
-        case types.FUND_FUND_TREE_COLLAPSE:
-        case types.FUND_FUND_TREE_SELECT_NODE:
         case types.GLOBAL_CONTEXT_MENU_HIDE:
             var result = {...state};
             updateFundTree(result, action);
@@ -125,12 +151,6 @@ export function fund(state, action) {
         case types.FUND_NODE_CHANGE:
         case types.FUND_NODES_RECEIVE:
         case types.FUND_NODES_REQUEST:
-        case types.FUND_NODE_INFO_REQUEST:
-        case types.FUND_NODE_INFO_RECEIVE:
-        case types.FUND_SUB_NODE_FORM_REQUEST:
-        case types.FUND_SUB_NODE_FORM_RECEIVE:
-        case types.FUND_SUB_NODE_FORM_CACHE_RESPONSE:
-        case types.FUND_SUB_NODE_FORM_CACHE_REQUEST:
         case types.FUND_SUB_NODE_REGISTER_REQUEST:
         case types.FUND_SUB_NODE_REGISTER_RECEIVE:
         case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:
@@ -139,22 +159,6 @@ export function fund(state, action) {
         case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
         case types.FUND_SUB_NODE_REGISTER_VALUE_FOCUS:
         case types.FUND_SUB_NODE_REGISTER_VALUE_BLUR:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
-        case types.FUND_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
-        case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
-        case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
-        case types.FUND_SUB_NODE_FORM_VALUE_ADD:
-        case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
-        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
-        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
-        case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
-        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
-        case types.FUND_SUB_NODE_INFO_REQUEST:
-        case types.FUND_SUB_NODE_INFO_RECEIVE:
         case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT:
         case types.DEVELOPER_SCENARIOS_RECEIVED:
         case types.DEVELOPER_SCENARIOS_FETCHING:
@@ -164,7 +168,6 @@ export function fund(state, action) {
                 fundTree: fundTree(state.fundTree, action),
             }
             return consolidateState(state, result);
-
         case types.CHANGE_FUND_RECORD:
         case types.CHANGE_NODES:
         case types.CHANGE_ADD_LEVEL:
@@ -187,22 +190,6 @@ export function fund(state, action) {
                 bulkActions: bulkActions(state.bulkActions, action)
             }
             return consolidateState(state, result);
-        case types.BULK_ACTIONS_DATA_LOADING:
-        case types.BULK_ACTIONS_DATA_LOADED:
-        case types.BULK_ACTIONS_RECEIVED_DATA:
-        case types.BULK_ACTIONS_VERSION_VALIDATE_RECEIVED_DATA:
-        case types.BULK_ACTIONS_RECEIVED_ACTIONS:
-        case types.BULK_ACTIONS_RECEIVED_STATES:
-        case types.BULK_ACTIONS_RECEIVED_STATE:
-        case types.BULK_ACTIONS_STATE_CHANGE:
-        case types.BULK_ACTIONS_STATE_IS_DIRTY:
-            var result = {...state, bulkActions: bulkActions(state.bulkActions, action)}
-            return consolidateState(state, result);
-        case types.FUND_VERSION_VALIDATION_LOAD:
-        case types.FUND_VERSION_VALIDATION_RECEIVED:
-            var result = {...state, versionValidation: versionValidation(state.versionValidation, action)};
-            return consolidateState(state, result);
-
         case types.FUND_FUND_APPROVE_VERSION:
 
             if (state.closed == false) {

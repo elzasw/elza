@@ -114,7 +114,7 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
                 .then(json => {
                     dispatch(fundNodeSubNodeFulltextResult(activeFund.versionId, activeNode.id, activeNode.nodeKey, json));
                     if (json.length > 0) {
-                        dispatch(fundSelectSubNode(json[0].nodeId, json[0].parent, false, null, true));
+                        dispatch(activeFund.versionId, fundSelectSubNode(json[0].nodeId, json[0].parent, false, null, true));
                     }
                 })
         } else {
@@ -146,7 +146,7 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
         };
         return WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName).then((json) => {
             dispatch(fundNodeChangeAdd(versionId, json.node, indexNode, json.parentNode, direction));
-            dispatch(fundSelectSubNode(json.node.id, json.parentNode));
+            dispatch(fundSelectSubNode(versionId, json.node.id, json.parentNode));
         });
     }
 }

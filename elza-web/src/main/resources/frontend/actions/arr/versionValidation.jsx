@@ -2,6 +2,16 @@ import {WebApi} from 'actions';
 import * as types from 'actions/constants/ActionTypes';
 import {barrier} from 'components/Utils';
 
+export function isVersionValidation(action) {
+    switch (action.type) {
+        case types.FUND_VERSION_VALIDATION_LOAD:
+        case types.FUND_VERSION_VALIDATION_RECEIVED:
+            return true
+        default:
+            return false
+    }
+}
+
 export function versionValidate(versionId, loadErrors = false) {
     return (dispatch) => {
         dispatch(versionValidationLoad(versionId));

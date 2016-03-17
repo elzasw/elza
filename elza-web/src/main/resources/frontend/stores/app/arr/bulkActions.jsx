@@ -13,8 +13,6 @@ export default function bulkActions(state = bulkActionsInitState, action) {
     switch (action.type) {
         case types.BULK_ACTIONS_DATA_LOADING:
             return {...state, isFetching: true, mandatory: action.mandatory};
-        case types.BULK_ACTIONS_DATA_LOADED:
-            return {...state, isFetching: false};
         case types.BULK_ACTIONS_RECEIVED_DATA:
             return {
                 ...state,
@@ -32,24 +30,6 @@ export default function bulkActions(state = bulkActionsInitState, action) {
                 isFetching: false,
                 isDirty: false,
                 mandatory: action.mandatory
-            };
-        case types.BULK_ACTIONS_RECEIVED_ACTIONS:
-            return {...state, actions: action.data};
-        case types.BULK_ACTIONS_RECEIVED_STATES:
-            return {...state, states: action.data};
-        case types.BULK_ACTIONS_RECEIVED_STATE:
-            var index = indexById(state.states, action.code, 'code');
-            if (index !== null && state.states[index].isDirty === undefined) {
-                return state;
-            }
-            return {
-                ...state,
-                isFetching: false,
-                states: [
-                    ...state.states.slice(0, index),
-                    {...action.data, code: action.code},
-                    ...state.states.slice(index + 1)
-                ]
             };
         case types.BULK_ACTIONS_STATE_IS_DIRTY:
             var index = indexById(state.states, action.code, 'code');

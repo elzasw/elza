@@ -2,10 +2,24 @@ import {WebApi} from 'actions';
 import * as types from 'actions/constants/ActionTypes';
 import {barrier} from 'components/Utils';
 
+export function isBulkAction(action) {
+    switch (action.type) {
+        case types.BULK_ACTIONS_STATE_CHANGE:
+        case types.BULK_ACTIONS_DATA_LOADING:
+        case types.BULK_ACTIONS_RECEIVED_DATA:
+        case types.BULK_ACTIONS_VERSION_VALIDATE_RECEIVED_DATA:
+        case types.BULK_ACTIONS_RECEIVED_STATE:
+        case types.BULK_ACTIONS_STATE_IS_DIRTY:
+            return true
+        default:
+            return false
+    }
+}
+
 export function bulkActionsLoadData(versionId, mandatory = false, silent = false) {
     return (dispatch) => {
         if (!silent) {
-            dispatch(bulkActionsDataLoading(mandatory));
+            dispatch(bulkActionsDataLoading(versionId, mandatory));
         }
         barrier(
             WebApi.getBulkActions(versionId, mandatory),
@@ -18,10 +32,7 @@ export function bulkActionsLoadData(versionId, mandatory = false, silent = false
                 }
             })
             .then(json => {
-                dispatch(bulkActionsDataReceived({
-                    actions: json.actions,
-                    states: json.states
-                }, mandatory));
+                dispatch(bulkActionsDataReceived(versionId, { actions: json.actions, states: json.states }, mandatory));
             });
     }
 }
@@ -30,7 +41,7 @@ export function bulkActionsValidateVersion(versionId, silent = false) {
     return (dispatch) => {
 
         if (!silent) {
-            dispatch(bulkActionsDataLoading(true));
+            dispatch(bulkActionsDataLoading(versionId, true));
         }
         barrier(
             WebApi.bulkActionValidate(versionId),
@@ -43,40 +54,39 @@ export function bulkActionsValidateVersion(versionId, silent = false) {
                 }
             })
             .then(json => {
-                dispatch(bulkActionsVersionValidateDataReceived({
-                    actions: json.actions,
-                    states: json.states
-                }, true));
+                dispatch(bulkActionsVersionValidateDataReceived(versionId, { actions: json.actions, states: json.states }, true));
             });
     }
 }
 
 export function bulkActionsRun(versionId, code) {
     return (dispatch) => {
-        dispatch(bulkActionsStateIsDirty(code));
+        dispatch(bulkActionsStateIsDirty(versionId, code));
         WebApi.bulkActionRun(versionId, code).then((result) => {
-            dispatch(bulkActionsStateReceived(result, code))
+            dispatch(bulkActionsStateReceived(versionId, result, code))
         })
     }
 }
 
-export function bulkActionsDataReceived(data, mandatory) {
+export function bulkActionsDataReceived(versionId, data, mandatory) {
     return {
         type: types.BULK_ACTIONS_RECEIVED_DATA,
+        versionId,
         data,
         mandatory
     }
 }
 
-export function bulkActionsVersionValidateDataReceived(data, mandatory) {
+export function bulkActionsVersionValidateDataReceived(versionId, data, mandatory) {
     return {
         type: types.BULK_ACTIONS_VERSION_VALIDATE_RECEIVED_DATA,
+        versionId,
         data,
         mandatory
     }
 }
 
-export function bulkActionsStateReceived(data, code) {
+export function bulkActionsStateReceived(versionId, data, code) {
     return {
         type: types.BULK_ACTIONS_RECEIVED_STATE,
         data,
@@ -84,10 +94,11 @@ export function bulkActionsStateReceived(data, code) {
     }
 }
 
-export function bulkActionsDataLoading(mandatory) {
+export function bulkActionsDataLoading(versionId, mandatory) {
     return {
         type: types.BULK_ACTIONS_DATA_LOADING,
-        mandatory
+        mandatory,
+        versionId
     }
 }
 
@@ -98,7 +109,7 @@ export function buklActionStateChange(data) {
     }
 }
 
-export function bulkActionsStateIsDirty(code) {
+export function bulkActionsStateIsDirty(versionId, code) {
     return {
         type: types.BULK_ACTIONS_STATE_IS_DIRTY,
         code

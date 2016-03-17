@@ -8,6 +8,16 @@ import {barrier} from 'components/Utils'
 import {isFundRootId} from 'components/arr/ArrUtils'
 import * as types from 'actions/constants/ActionTypes';
 
+export function isNodeInfoAction(action) {
+    switch (action.type) {
+        case types.FUND_NODE_INFO_REQUEST:
+        case types.FUND_NODE_INFO_RECEIVE:
+            return true
+        default:
+            return false
+    }
+}
+
 /**
  * Dohledání store node pro předané parametry.
  * @param {state} kořenový store

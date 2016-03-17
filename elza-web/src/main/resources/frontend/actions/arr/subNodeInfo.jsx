@@ -7,6 +7,16 @@ import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 
 import * as types from 'actions/constants/ActionTypes';
 
+export function isSubNodeInfoAction(action) {
+    switch (action.type) {
+        case types.FUND_SUB_NODE_INFO_REQUEST:
+        case types.FUND_SUB_NODE_INFO_RECEIVE:
+            return true
+        default:
+            return false
+    }
+}
+
 /**
  * Načtení subNodeInfo store pro předaná data.
  * @param {Object} state globální store

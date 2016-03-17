@@ -87,7 +87,7 @@ return true
             </ul>
         )
 
-        this.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MAIN, node));
+        this.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MAIN, this.props.versionId, node));
         this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
     }
 
@@ -111,7 +111,7 @@ return true
         if (parentNode == null) {   // root
             parentNode = createFundRoot(this.props.fund);
         }
-        this.dispatch(fundSelectSubNode(node.id, parentNode, openNewTab, null, false));
+        this.dispatch(fundSelectSubNode(this.props.versionId, node.id, parentNode, openNewTab, null, false));
     }
 
     /**
@@ -143,7 +143,7 @@ return true
      * Zabalení stromu
      */
     handleCollapse() {
-        this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MAIN, this.props.fund))
+        this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, this.props.fund))
     }
 
     render() {
@@ -154,7 +154,7 @@ return true
                 ref='tree'
                 {...this.props}
                 cutLongLabels={cutLongLabels}
-                onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MAIN, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MAIN, node))}}
+                onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MAIN, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, node))}}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onFulltextChange={this.handleFulltextChange}

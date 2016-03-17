@@ -72,7 +72,7 @@ var FundTreeTabs = class FundTreeTabs extends AbstractReactComponent {
             </ul>
         )
 
-        this.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MAIN, node));
+        this.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MAIN, this.props.activeFund.versionId, node));
         this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
     }
 
@@ -96,7 +96,7 @@ var FundTreeTabs = class FundTreeTabs extends AbstractReactComponent {
         if (parentNode == null) {   // root
             parentNode = createFundRoot(this.props.activeFund);
         }
-        this.dispatch(fundSelectSubNode(node.id, parentNode, openNewTab, null, false));
+        this.dispatch(fundSelectSubNode(this.props.activeFund.versionId, node.id, parentNode, openNewTab, null, false));
     }
 
     /**
@@ -151,7 +151,7 @@ var FundTreeTabs = class FundTreeTabs extends AbstractReactComponent {
                         fund={activeFund}
                         {...activeFund.fundTree}
                         versionId={this.props.activeFund.versionId}
-                        onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MAIN, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MAIN, node))}}
+                        onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MAIN, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MAIN, this.props.activeFund.versionId, node))}}
                         onContextMenu={this.handleContextMenu}
                         onNodeClick={this.handleNodeClick}
                     /> }

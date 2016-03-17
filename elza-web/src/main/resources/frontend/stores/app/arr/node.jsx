@@ -5,6 +5,8 @@ import subNodeFormCache from './subNodeFormCache'
 import subNodeRegister from './subNodeRegister'
 import subNodeInfo from './subNodeInfo'
 import {consolidateState} from 'components/Utils'
+import {isSubNodeFormAction, isSubNodeFormCacheAction} from 'actions/arr/subNodeForm'
+import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo'
 
 var _nextNodeKey = 1;
 var _pageSize = 50;
@@ -119,6 +121,29 @@ const nodeInitialState = {
     //nodeInfo: nodeInfo(undefined, {type:''}),
 
 export function node(state = nodeInitialState, action) {
+    if (isSubNodeFormAction(action)) {
+        var result = {
+            ...state, 
+            subNodeForm: subNodeForm(state.subNodeForm, action),
+        };
+        return consolidateState(state, result);
+    }
+
+    if (isSubNodeFormCacheAction(action)) {
+        return {
+            ...state, 
+            subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
+        }
+    }
+
+    if (isSubNodeInfoAction(action)) {
+        var result = {
+            ...state,
+            subNodeInfo: subNodeInfo(state.subNodeInfo, action),
+        }
+        return consolidateState(state, result);
+    }
+
     switch (action.type) {
         case types.STORE_LOAD:
             return {
@@ -175,33 +200,6 @@ export function node(state = nodeInitialState, action) {
             } else {
                 return state
             }        
-        case types.FUND_SUB_NODE_FORM_CACHE_RESPONSE:
-        case types.FUND_SUB_NODE_FORM_CACHE_REQUEST:
-            return {
-                ...state, 
-                subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
-            }
-        case types.FUND_SUB_NODE_FORM_REQUEST:
-        case types.FUND_SUB_NODE_FORM_RECEIVE:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
-        case types.FUND_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
-        case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
-        case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
-        case types.FUND_SUB_NODE_FORM_VALUE_ADD:
-        case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
-        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
-        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
-        case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
-        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
-            var result = {
-                ...state, 
-                subNodeForm: subNodeForm(state.subNodeForm, action),
-            };
-            return consolidateState(state, result);
         case types.CHANGE_NODES:
         case types.CHANGE_FUND_RECORD:
             var result = {
@@ -284,13 +282,6 @@ export function node(state = nodeInitialState, action) {
             }
             result.viewStartIndex = getViewStartIndex(result, state.selectedSubNodeId);
             return result;
-        case types.FUND_SUB_NODE_INFO_REQUEST:
-        case types.FUND_SUB_NODE_INFO_RECEIVE:
-            var result = {
-                ...state,
-                subNodeInfo: subNodeInfo(state.subNodeInfo, action),
-            }
-            return consolidateState(state, result);
         case types.FUND_SUB_NODE_REGISTER_REQUEST:
         case types.FUND_SUB_NODE_REGISTER_RECEIVE:
         case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:

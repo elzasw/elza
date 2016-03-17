@@ -7,6 +7,13 @@ import fundTree from './fundTree'
 import nodeSetting from './nodeSetting'
 import {consolidateState} from 'components/Utils'
 import {Toastr, i18n} from 'components';
+import {isBulkAction} from 'actions/arr/bulkActions'
+import {isFundTreeAction} from 'actions/arr/fundTree'
+import {isSubNodeFormAction, isSubNodeFormCacheAction} from 'actions/arr/subNodeForm'
+import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister'
+import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo'
+import {isNodeInfoAction} from 'actions/arr/nodeInfo'
+import {isVersionValidation} from 'actions/arr/versionValidation'
 
 const initialState = {
     activeIndex: null,
@@ -60,8 +67,21 @@ function processFund(state, action, index) {
 }
 
 export default function arrRegion(state = initialState, action) {
-    switch (action.type) {
+    if (false
+        || isBulkAction(action)
+        || isFundTreeAction(action)
+        || isSubNodeFormAction(action)
+        || isSubNodeFormCacheAction(action)
+        || isSubNodeRegisterAction(action)
+        || isSubNodeInfoAction(action)
+        || isNodeInfoAction(action)
+        || isVersionValidation(action)
+    ) {
+        var index = indexById(state.funds, action.versionId, "versionId");
+        return processFund(state, action, index);
+    }
 
+    switch (action.type) {
         case types.SHOW_REGISTER_JP: {
             return {
                 ...state,
@@ -113,56 +133,21 @@ export default function arrRegion(state = initialState, action) {
         case types.FUND_EXTENDED_VIEW:
             var result = {...state, extendedView: action.enable}
             return consolidateState(state, result);
-        case types.FUND_FUND_TREE_REQUEST:
-        case types.FUND_FUND_TREE_RECEIVE:
-        case types.FUND_FUND_TREE_FULLTEXT_RESULT:
-        case types.FUND_NODE_INFO_REQUEST:
-        case types.FUND_NODE_INFO_RECEIVE:
-        case types.FUND_SUB_NODE_FORM_REQUEST:
-        case types.FUND_SUB_NODE_FORM_RECEIVE:
-        case types.FUND_SUB_NODE_FORM_CACHE_RESPONSE:
-        case types.FUND_SUB_NODE_FORM_CACHE_REQUEST:
-        case types.FUND_SUB_NODE_REGISTER_REQUEST:
-        case types.FUND_SUB_NODE_REGISTER_RECEIVE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_DELETE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_ADD:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_FOCUS:
-        case types.FUND_SUB_NODE_REGISTER_VALUE_BLUR:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
-        case types.FUND_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
-        case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
-        case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
-        case types.FUND_SUB_NODE_FORM_VALUE_ADD:
-        case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
-        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
-        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
-        case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
-        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
-        case types.FUND_SUB_NODE_INFO_REQUEST:
-        case types.FUND_SUB_NODE_INFO_RECEIVE:
         case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT:
         case types.FUND_NODE_CHANGE:
         case types.FUND_NODES_RECEIVE:
         case types.FUND_NODES_REQUEST:
         case types.CHANGE_NODES:
-        case types.BULK_ACTIONS_STATE_CHANGE:
         case types.CHANGE_DELETE_LEVEL:
         case types.CHANGE_ADD_LEVEL:
         case types.CHANGE_MOVE_LEVEL:
-        case types.FUND_VERSION_VALIDATION_LOAD:
-        case types.FUND_VERSION_VALIDATION_RECEIVED:
         case types.FUND_FUND_APPROVE_VERSION:
         case types.CHANGE_FUND:
         case types.CHANGE_FUND_RECORD:
         case types.DEVELOPER_SCENARIOS_RECEIVED:
         case types.DEVELOPER_SCENARIOS_FETCHING:
         case types.DEVELOPER_SCENARIOS_DIRTY:
+        case types.FUND_FUND_SELECT_SUBNODE:
             var index = indexById(state.funds, action.versionId, "versionId");
             return processFund(state, action, index);
         case types.FUND_FUNDS_RECEIVE:
@@ -186,14 +171,7 @@ export default function arrRegion(state = initialState, action) {
             } else {
                 return state
             }
-        case types.FUND_FUND_TREE_FULLTEXT_CHANGE:
-        case types.FUND_FUND_TREE_FOCUS_NODE:
-        case types.FUND_FUND_TREE_EXPAND_NODE:
-        case types.FUND_FUND_TREE_COLLAPSE:
-        case types.FUND_FUND_TREE_COLLAPSE_NODE:
-        case types.FUND_FUND_TREE_SELECT_NODE:
         case types.GLOBAL_CONTEXT_MENU_HIDE:
-        case types.FUND_FUND_SELECT_SUBNODE:
         case types.FUND_FUND_SUBNODES_NEXT:
         case types.FUND_FUND_SUBNODES_PREV:
         case types.FUND_FUND_SUBNODES_NEXT_PAGE:
@@ -201,14 +179,6 @@ export default function arrRegion(state = initialState, action) {
         case types.FUND_FUND_SUBNODES_FULLTEXT_SEARCH:
         case types.FUND_FUND_CLOSE_NODE_TAB:
         case types.FUND_FUND_SELECT_NODE_TAB:
-        case types.BULK_ACTIONS_DATA_LOADING:
-        case types.BULK_ACTIONS_DATA_LOADED:
-        case types.BULK_ACTIONS_RECEIVED_DATA:
-        case types.BULK_ACTIONS_VERSION_VALIDATE_RECEIVED_DATA:
-        case types.BULK_ACTIONS_RECEIVED_ACTIONS:
-        case types.BULK_ACTIONS_RECEIVED_STATES:
-        case types.BULK_ACTIONS_RECEIVED_STATE:
-        case types.BULK_ACTIONS_STATE_IS_DIRTY:
             var index = state.activeIndex;
             return processFund(state, action, index);
         case types.FUND_CLOSE_FUND_TAB:
