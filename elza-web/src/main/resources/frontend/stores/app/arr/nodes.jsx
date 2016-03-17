@@ -7,6 +7,7 @@ import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo'
 import {isNodeInfoAction} from 'actions/arr/nodeInfo'
 import {isNodeAction} from 'actions/arr/node'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister'
+import {isDeveloperScenariosAction} from 'actions/global/developer'
 
 const nodesInitialState = {
     activeIndex: null,
@@ -41,6 +42,7 @@ export default function nodes(state = nodesInitialState, action) {
         || isNodeInfoAction(action)
         || isNodeAction(action)
         || isSubNodeRegisterAction(action)
+        || isDeveloperScenariosAction(action)
     ) {
         var r = findByNodeKeyInNodes(state, action.versionId, action.nodeKey);
         if (r) {
@@ -81,16 +83,6 @@ export default function nodes(state = nodesInitialState, action) {
                 }
             } else {
                 return state
-            }
-        case types.DEVELOPER_SCENARIOS_RECEIVED:
-        case types.DEVELOPER_SCENARIOS_FETCHING:
-        case types.DEVELOPER_SCENARIOS_DIRTY:
-            var r = findByNodeKeyInNodes(state, action.versionId, action.nodeKey);
-            if (r) {
-                var index = r.nodeIndex;
-                return processNode(state, action, index);
-            } else {
-                return state;
             }
         case types.FUND_FUND_SELECT_SUBNODE:
             var newState;

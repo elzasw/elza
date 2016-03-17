@@ -16,6 +16,8 @@ import {isNodeInfoAction} from 'actions/arr/nodeInfo'
 import {isVersionValidation} from 'actions/arr/versionValidation'
 import {isNodeAction} from 'actions/arr/node'
 import {isNodesAction} from 'actions/arr/nodes'
+import {isDeveloperScenariosAction} from 'actions/global/developer'
+import {isNodeSettingsAction} from 'actions/arr/nodeSetting'
 
 const initialState = {
     activeIndex: null,
@@ -80,9 +82,18 @@ export default function arrRegion(state = initialState, action) {
         || isVersionValidation(action)
         || isNodeAction(action)
         || isNodesAction(action)
+        || isDeveloperScenariosAction(action)
     ) {
         var index = indexById(state.funds, action.versionId, "versionId");
         return processFund(state, action, index);
+    }
+
+    if (isNodeSettingsAction(action)) {
+        var result =  {
+            ...state,
+            nodeSettings: nodeSetting(state.nodeSettings, action)
+        }
+        return consolidateState(state, result);
     }
 
     switch (action.type) {
@@ -147,9 +158,6 @@ export default function arrRegion(state = initialState, action) {
         case types.FUND_FUND_APPROVE_VERSION:
         case types.CHANGE_FUND:
         case types.CHANGE_FUND_RECORD:
-        case types.DEVELOPER_SCENARIOS_RECEIVED:
-        case types.DEVELOPER_SCENARIOS_FETCHING:
-        case types.DEVELOPER_SCENARIOS_DIRTY:
         case types.FUND_FUND_SELECT_SUBNODE:
             var index = indexById(state.funds, action.versionId, "versionId");
             return processFund(state, action, index);
@@ -195,16 +203,6 @@ export default function arrRegion(state = initialState, action) {
             }
         case types.FUND_SELECT_FUND_TAB:
             return selectFundTab(state, action);
-        case types.NODE_DESC_ITEM_TYPE_LOCK:
-        case types.NODE_DESC_ITEM_TYPE_UNLOCK:
-        case types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL:
-        case types.NODE_DESC_ITEM_TYPE_COPY:
-        case types.NODE_DESC_ITEM_TYPE_NOCOPY:
-            var result =  {
-                ...state,
-                nodeSettings: nodeSetting(state.nodeSettings, action)
-            }
-            return consolidateState(state, result);
         case types.PACKETS_REQUEST:
             var packets = state.packets;
             var fundPackets = packets[action.fundId];

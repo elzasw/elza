@@ -6,6 +6,17 @@ import {WebApi} from 'actions';
 import * as types from 'actions/constants/ActionTypes';
 import {barrier} from 'components/Utils';
 
+export function isDeveloperScenariosAction(action) {
+    switch (action.type) {
+        case types.DEVELOPER_SCENARIOS_RECEIVED:
+        case types.DEVELOPER_SCENARIOS_FETCHING:
+        case types.DEVELOPER_SCENARIOS_DIRTY:
+            return true
+        default:
+            return false
+    }
+}
+
 export function developerSet(enabled) {
     return {
         type: types.DEVELOPER_SET,
