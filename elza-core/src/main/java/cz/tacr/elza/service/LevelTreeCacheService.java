@@ -42,12 +42,8 @@ import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.DataPacketRefRepository;
-import cz.tacr.elza.repository.DataPartyRefRepository;
-import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -87,18 +83,6 @@ public class LevelTreeCacheService {
     private FundVersionRepository fundVersionRepository;
 
     @Autowired
-    private DataRepository dataRepository;
-
-    @Autowired
-    private DataRecordRefRepository dataRecordRefRepository;
-
-    @Autowired
-    private DataPartyRefRepository dataPartyRefRepository;
-
-    @Autowired
-    private DataPacketRefRepository dataPacketRefRepository;
-
-    @Autowired
     private RuleService ruleService;
 
     @Autowired
@@ -115,6 +99,9 @@ public class LevelTreeCacheService {
 
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
+
+    @Autowired
+    private DescriptionItemService descriptionItemService;
 
     @Value("${elza.treenode.defaultTitle}")
     private String defaultNodeTitle = "";
@@ -539,7 +526,7 @@ public class LevelTreeCacheService {
      * @param version verze stromu
      * @return mapa všech uzlů stromu (nodeid uzlu -> uzel)
      */
-    synchronized private Map<Integer, TreeNode> getVersionTreeCache(final ArrFundVersion version) {
+    synchronized public Map<Integer, TreeNode> getVersionTreeCache(final ArrFundVersion version) {
         Map<Integer, TreeNode> versionTreeMap = versionCache.get(version.getFundVersionId());
 
         if (versionTreeMap == null) {
@@ -888,182 +875,11 @@ public class LevelTreeCacheService {
         ViewTitles viewTitles = configView
                 .getViewTitles(version.getRuleSet().getCode(), version.getFund().getFundId());
         Set<RulDescItemType> descItemTypes = getDescriptionItemTypes(viewTitles);
-        return createValuesMap(treeNodeMap, subtreeRoot, descItemTypes, version);
+
+        return descriptionItemService.createNodeValuesMap(treeNodeMap.keySet(), subtreeRoot, descItemTypes, version);
     }
 
-    private Map<Integer, Map<String, TitleValue>> createValuesMap(Map<Integer, TreeNode> treeNodeMap,
-                                                                  final TreeNode subtreeRoot,
-                                                                  Set<RulDescItemType> descItemTypes,
-                                                                  ArrFundVersion version) {
-        Map<Integer, Map<String, TitleValue>> valueMap = new HashMap<>();
 
-        if (descItemTypes.isEmpty()) {
-            return valueMap;
-        }
-
-        //chceme nalézt atributy i pro rodiče podstromu
-        Set<Integer> nodeIds = new HashSet<>(treeNodeMap.keySet());
-        TreeNode rootParent = subtreeRoot;
-        while(rootParent != null){
-            nodeIds.add(rootParent.getId());
-            rootParent = rootParent.getParent();
-        }
-
-
-        List<ArrData> dataList = dataRepository.findDescItemsByNodeIds(nodeIds, descItemTypes, version);
-        Set<Integer> partyRefDataIds = new HashSet<>();
-        Set<Integer> recordRefDataIds = new HashSet<>();
-        Set<Integer> packetRefDataIds = new HashSet<>();
-        Set<Integer> enumDataIds = new HashSet<>();
-
-        for (ArrData data : dataList) {
-            if (data.getDescItem().getPosition() > 1) {
-                continue; // Používáme jen první hodnotu
-            }
-            String value = null;
-            String code = data.getDescItem().getDescItemType().getCode();
-            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
-                    .getCode();
-            Integer nodeId = data.getDescItem().getNode().getNodeId();
-            if (data.getDataType().getCode().equals("ENUM")) {
-                enumDataIds.add(data.getDataId());
-            } else if (data.getDataType().getCode().equals("PARTY_REF")) {
-                partyRefDataIds.add(data.getDataId());
-            } else if (data.getDataType().getCode().equals("RECORD_REF")) {
-                recordRefDataIds.add(data.getDataId());
-            } else if (data.getDataType().getCode().equals("PACKET_REF")) {
-                packetRefDataIds.add(data.getDataId());
-            } else if (data.getDataType().getCode().equals("UNITDATE")) {
-                ArrDataUnitdate unitDate = (ArrDataUnitdate) data;
-
-                ParUnitdate parUnitdate = new ParUnitdate();
-                parUnitdate.setCalendarType(unitDate.getCalendarType());
-                parUnitdate.setFormat(unitDate.getFormat());
-                parUnitdate.setValueFrom(unitDate.getValueFrom());
-                parUnitdate.setValueFromEstimated(unitDate.getValueFromEstimated());
-                parUnitdate.setValueTo(unitDate.getValueTo());
-                parUnitdate.setValueToEstimated(unitDate.getValueToEstimated());
-
-                value = UnitDateConvertor.convertToString(parUnitdate);
-            } else if (data.getDataType().getCode().equals("STRING")) {
-                ArrDataString stringtData = (ArrDataString) data;
-                value = stringtData.getValue();
-            } else if (data.getDataType().getCode().equals("TEXT") || data.getDataType().getCode().equals("FORMATTED_TEXT")) {
-                ArrDataText textData = (ArrDataText) data;
-                value = textData.getValue();
-            } else if (data.getDataType().getCode().equals("UNITID")) {
-                ArrDataUnitid unitId = (ArrDataUnitid) data;
-                value = unitId.getValue();
-            } else if (data.getDataType().getCode().equals("COORDINATES")) {
-                ArrDataCoordinates coordinates = (ArrDataCoordinates) data;
-                value = coordinates.getValue();
-            } else if (data.getDataType().getCode().equals("INT")) {
-                ArrDataInteger intData = (ArrDataInteger) data;
-                value = intData.getValue().toString();
-            } else if (data.getDataType().getCode().equals("DECIMAL")) {
-                ArrDataDecimal decimalData = (ArrDataDecimal) data;
-                value = decimalData.getValue().toPlainString();
-            }
-
-            String iconValue = getIconValue(data);
-
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
-        }
-
-        List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, version);
-        for (ArrData data : enumData) {
-            String value = data.getDescItem().getDescItemSpec().getName();
-            String iconValue = getIconValue(data);
-            String code = data.getDescItem().getDescItemType().getCode();
-            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
-                    .getCode();
-            Integer nodeId = data.getDescItem().getNode().getNodeId();
-
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
-        }
-
-        List<ArrDataPartyRef> partyData = dataPartyRefRepository.findByDataIdsAndVersionFetchPartyRecord(partyRefDataIds, descItemTypes, version);
-        for (ArrDataPartyRef data : partyData) {
-            String value = data.getParty().getRecord().getRecord();
-            String iconValue = getIconValue(data);
-            String code = data.getDescItem().getDescItemType().getCode();
-            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
-                    .getCode();
-            Integer nodeId = data.getDescItem().getNode().getNodeId();
-
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
-        }
-
-        List<ArrDataRecordRef> recordData = dataRecordRefRepository.findByDataIdsAndVersionFetchRecord(recordRefDataIds, descItemTypes, version);
-        for (ArrDataRecordRef data : recordData) {
-            String value = data.getRecord().getRecord();
-            String iconValue = getIconValue(data);
-            String code = data.getDescItem().getDescItemType().getCode();
-            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
-                    .getCode();
-            Integer nodeId = data.getDescItem().getNode().getNodeId();
-
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
-        }
-
-        List<ArrDataPacketRef> packetData = dataPacketRefRepository.findByDataIdsAndVersionFetchPacket(packetRefDataIds, descItemTypes, version);
-        for (ArrDataPacketRef data : packetData) {
-            ArrPacket packet = data.getPacket();
-            RulPacketType packetType = packet.getPacketType();
-            String value;
-            if (packetType == null) {
-                value = packet.getStorageNumber();
-            } else {
-                value = packetType.getName() + " " + packet.getStorageNumber();
-            }
-            String iconValue = getIconValue(data);
-            String code = data.getDescItem().getDescItemType().getCode();
-            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
-                    .getCode();
-            Integer nodeId = data.getDescItem().getNode().getNodeId();
-
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
-        }
-
-        return valueMap;
-    }
-
-    private void addValuesToMap(Map<Integer, Map<String, TitleValue>> valueMap, String value, String code,
-                                String specCode, Integer nodeId, String iconValue) {
-        if (value == null && iconValue == null) {
-            return;
-        }
-
-        Map<String, TitleValue> descItemCodeToValueMap = valueMap.get(nodeId);
-        if (descItemCodeToValueMap == null) {
-            descItemCodeToValueMap = new HashMap<>();
-            valueMap.put(nodeId, descItemCodeToValueMap);
-        }
-
-        TitleValue titleValue = descItemCodeToValueMap.get(code);
-        if (titleValue == null) {
-            titleValue = new TitleValue();
-            titleValue.setIconValue(iconValue);
-            titleValue.setValue(value);
-            titleValue.setSpecCode(specCode);
-            descItemCodeToValueMap.put(code, titleValue);
-        } else {
-            if (titleValue.getValue() == null ) {
-                titleValue.setValue(value);
-            }
-
-            if (titleValue.getIconValue() == null) {
-                titleValue.setValue(value);
-            }
-        }
-    }
-
-    private String getIconValue(ArrData data) {
-        if (data.getDescItem().getDescItemSpec() != null) {
-            return data.getDescItem().getDescItemSpec().getCode();
-        }
-        return null;
-    }
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1322,38 +1138,7 @@ public class LevelTreeCacheService {
         return nodes;
     }
 
-    public class TitleValue {
 
-        private String value;
-
-        private String specCode;
-
-        private String iconValue;
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
-
-        public String getSpecCode() {
-            return specCode;
-        }
-
-        public void setSpecCode(final String specCode) {
-            this.specCode = specCode;
-        }
-
-        public String getIconValue() {
-            return iconValue;
-        }
-
-        public void setIconValue(String iconValue) {
-            this.iconValue = iconValue;
-        }
-    }
 
     public List<Integer> sortNodesByTreePosition(Set<Integer> nodeIds, ArrFundVersion version) {
         List<TreeNodeClient> nodes = getNodesByIds(nodeIds, version.getFundVersionId());
