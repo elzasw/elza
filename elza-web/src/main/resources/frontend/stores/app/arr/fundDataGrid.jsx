@@ -20,7 +20,7 @@ const initialState = {
     columnInfos: {},    // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
     selectedIds: [],
 }
-for (var a=1; a<1; a++) {
+for (var a=1; a<100; a++) {
 initialState.visibleColumns[a] = true
 }
 

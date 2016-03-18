@@ -77,9 +77,10 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
                 resolve(items)
             })*/
 
-            WebApi.getFilteredNodes(versionId, pageIndex, pageSize, Object.keys(fundDataGrid.visibleColumns)).then(map => {
-
-                var items = Object.keys(map).map(id => map[id])
+            WebApi.getFilteredNodes(versionId, pageIndex, pageSize, Object.keys(fundDataGrid.visibleColumns)).then(nodes => {
+                var items = nodes.map(node => {
+                    return {...node, ...node.valuesMap}
+                })
 
                 const newState = getState();
                 const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId')
