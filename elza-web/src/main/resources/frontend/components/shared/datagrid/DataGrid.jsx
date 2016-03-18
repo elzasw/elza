@@ -9,6 +9,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Resizer} from 'components';
 const scrollIntoView = require('dom-scroll-into-view')
+import {propsEquals} from 'components/Utils'
 
 const __emptyColWidth = 8000
 const __minColWidth = 16
@@ -76,6 +77,16 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         this.setState(this.getStateFromProps(nextProps, this.state))
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+//            return true;  // zde NECHCEME!!! - stavse meni vzdy, protoze se vola getStateFromProps, po jeho pripadne uprave je mozne toto odkomentovat!
+        }
+
+        var eqProps = ['rows', 'cols', 'selectedIds', 'onColumnResize', 'onSelectedIdsChange']
+        //var eqProps = ['rows', 'cols', 'selectedIds']
+        return !propsEquals(this.props, nextProps, eqProps)
     }
 
     getStateFromProps(props, currState) {

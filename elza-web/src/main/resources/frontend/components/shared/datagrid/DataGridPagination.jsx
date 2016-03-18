@@ -129,10 +129,9 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
 
     render() {
         const {onSetPageIndex, onChangePageSize, itemsCount, pageSize, pageIndex} = this.props
-
         var pagesCount = getPagesCount(itemsCount, pageSize)
 
-        var options = [10, 25, 50, 100, 250, 500].map(val => <option value={val}>{val}</option>)
+        var options = [10, 25, 50, 100, 250].map(val => <option value={val}>{val}</option>)
 
         var cls = this.props.className ? 'pagination-container ' + this.props.className : 'pagination-container'
         return (

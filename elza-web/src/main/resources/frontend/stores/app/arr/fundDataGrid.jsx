@@ -9,6 +9,8 @@ const initialState = {
     pageIndex: 0,   // aktuální stránka
     fetchedPageSize: -1,     // naposledy načtána data - s jakou velikostí stránky byla data načtena
     fetchedPageIndex: -1,    // naposledy načtána data - pro jakou stránku byly data načtena
+    fetchingPageSize: -1,     // aktuálně načtaná data
+    fetchingPageIndex: -1,    // aktuálně načtaná data
     dirty: false,
     items: [],
     itemsCount: 0,
@@ -17,6 +19,9 @@ const initialState = {
     columnsOrder: [],   // seznam id desc item type - pořadí zobrazování sloupečků
     columnInfos: {},    // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
     selectedIds: [],
+}
+for (var a=1; a<100; a++) {
+initialState.visibleColumns[a] = true
 }
 
 export default function fundDataGrid(state = initialState, action = {}) {
@@ -29,11 +34,13 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 dirty: true,
             }
         case types.FUND_FUND_DATA_GRID_COLUMN_SIZE:
-            var info = state.columnInfos[action.columnId] || {}
+            var columnInfos = {...state.columnInfos}
+            var info = columnInfos[action.columnId] || {}
             info.width = action.width
-            state.columnInfos[action.columnId] = info
+            columnInfos[action.columnId] = info
             return {
                 ...state,
+                columnInfos: columnInfos,
             }
         case types.FUND_FUND_DATA_GRID_SELECTION:
             return {
@@ -63,6 +70,8 @@ export default function fundDataGrid(state = initialState, action = {}) {
             return {
                 ...state,
                 isFetchingData: true,
+                fetchingPageSize: action.pageSize,
+                fetchingPageIndex: action.pageIndex,
             }
         case types.FUND_FUND_DATA_GRID_DATA_RECEIVE:
             return {
