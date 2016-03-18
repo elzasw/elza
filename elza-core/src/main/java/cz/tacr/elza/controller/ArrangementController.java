@@ -34,6 +34,7 @@ import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeData;
@@ -59,6 +60,7 @@ import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
@@ -1030,10 +1032,11 @@ public class ArrangementController {
      * @return mapa hodnot atributů nodeId -> descItemId -> value
      */
     @RequestMapping(value = "/getFilterNodes/{versionId}", method = RequestMethod.PUT)
-    public Map<Integer, Map<Integer, String>> getFilteredNodes(@PathVariable("versionId") final Integer versionId,
-                                                               @RequestParam("page") final Integer page,
-                                                               @RequestParam("pageSize") final Integer pageSize,
-                                                               @RequestBody final Set<Integer> descItemTypeIds) {
+    public List<FilterNode> getFilteredNodes(@PathVariable("versionId") final Integer versionId,
+                                             @RequestParam("page") final Integer page,
+                                             @RequestParam("pageSize") final Integer pageSize,
+                                             @RequestBody final Set<Integer> descItemTypeIds)
+            throws FilterExpiredException {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
 

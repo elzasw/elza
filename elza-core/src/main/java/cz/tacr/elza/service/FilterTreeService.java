@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.FilterTools;
+import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -78,9 +79,9 @@ public class FilterTreeService {
      * @param page            číslo stránky, od 0
      * @param pageSize        velikost stránky
      * @param descItemTypeIds id typů atributů, které chceme načíst
-     * @return mapa hodnot atributů nodeId -> descItemId -> value
+     * @return seznam uzlů s hodnotami atributů
      */
-    public Map<Integer, Map<Integer, String>> getFilteredData(final ArrFundVersion version,
+    public List<FilterNode> getFilteredData(final ArrFundVersion version,
                                                               final int page,
                                                               final int pageSize,
                                                               final Set<Integer> descItemTypeIds)
@@ -117,20 +118,17 @@ public class FilterTreeService {
      * @param filteredIds     id filtrovaných uzlů
      * @param descItemTypeMap mapa typů atributů (kod typu -> typ)
      * @param valuesMap       mapa nalezených hodnot atributů (id uzlu -> kod typu -> hodnota atributu)
-     * @return mapa hodnot atributů nodeId -> descItemId -> value
+     * @return seznam uzlů s hodnotami atributů
      */
-    private Map<Integer, Map<Integer, String>> createResult(final List<Integer> filteredIds,
+    private List<FilterNode> createResult(final List<Integer> filteredIds,
                                                             final Map<String, RulDescItemType> descItemTypeMap,
                                                             final Map<Integer, Map<String, TitleValue>> valuesMap) {
 
-        Map<Integer, Map<Integer, String>> result = new LinkedHashMap<>();
+        List<FilterNode> result = new ArrayList<>(filteredIds.size());
 
         for (Integer filteredId : filteredIds) {
-            Map<Integer, String> nodeValuesMap = result.get(filteredId);
-            if (nodeValuesMap == null) {
-                nodeValuesMap = new HashMap<>();
-                result.put(filteredId, nodeValuesMap);
-            }
+
+            Map<Integer, String> nodeValuesMap = new HashMap<>();
 
             Map<String, TitleValue> nodeValues = valuesMap.get(filteredId);
             if (nodeValues != null) {
@@ -140,6 +138,8 @@ public class FilterTreeService {
                     nodeValuesMap.put(descItymTypeId, value);
                 }
             }
+
+            result.add(new FilterNode(filteredId, nodeValuesMap));
         }
 
         return result;
