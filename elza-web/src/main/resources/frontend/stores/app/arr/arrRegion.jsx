@@ -18,6 +18,7 @@ import {isNodeAction} from 'actions/arr/node'
 import {isNodesAction} from 'actions/arr/nodes'
 import {isDeveloperScenariosAction} from 'actions/global/developer'
 import {isNodeSettingsAction} from 'actions/arr/nodeSetting'
+import {isFundDataGridAction} from 'actions/arr/fundDataGrid'
 
 const initialState = {
     activeIndex: null,
@@ -83,9 +84,14 @@ export default function arrRegion(state = initialState, action) {
         || isNodeAction(action)
         || isNodesAction(action)
         || isDeveloperScenariosAction(action)
+        || isFundDataGridAction(action)
     ) {
-        var index = indexById(state.funds, action.versionId, "versionId");
-        return processFund(state, action, index);
+        var index = indexById(state.funds, action.versionId, "versionId")
+        if (index !== null) {
+            return processFund(state, action, index)
+        } else {
+            return state
+        }
     }
 
     if (isNodeSettingsAction(action)) {
@@ -103,7 +109,6 @@ export default function arrRegion(state = initialState, action) {
                 showRegisterJp: action.showRegisterJp
             }
         }
-
         case types.STORE_LOAD:
             if (action.arrRegion) {
                 return {
@@ -224,7 +229,6 @@ export default function arrRegion(state = initialState, action) {
                 ...state,
                 packets
             }
-
         case types.CHANGE_PACKETS:
             var packets = state.packets;
             var fundPackets = packets[action.fundId];
@@ -283,7 +287,6 @@ export default function arrRegion(state = initialState, action) {
             }
 
         case types.CHANGE_APPROVE_VERSION:
-
             var funds = state.funds;
             var update = false;
 

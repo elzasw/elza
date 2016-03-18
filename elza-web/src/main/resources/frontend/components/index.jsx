@@ -28,6 +28,7 @@ exports.Splitter = require('./shared/splitter/Splitter');
 exports.Scope = require('./shared/scope/Scope');
 exports.ControllableDropdownButton = require('./shared/dropdown-button/ControllableDropdownButton');
 exports.DataGrid = require('./shared/datagrid/DataGrid');
+exports.DataGridPagination = require('./shared/datagrid/DataGridPagination');
 exports.Resizer = require('./shared/resizer/Resizer');
 
 exports.FormUtils = require('./form/FormUtils');
@@ -44,6 +45,7 @@ exports.RegistryLabel = require('./registry/RegistryLabel');
 exports.FundFileTree = require('./arr/FundFileTree');
 exports.NodePanel = require('./arr/NodePanel');
 exports.NodeTabs = require('./arr/NodeTabs');
+exports.FundDataGrid = require('./arr/FundDataGrid');
 exports.FundTreeTabs = require('./arr/FundTreeTabs');
 exports.FundTreeLazy = require('./arr/FundTreeLazy');
 exports.SubNodeForm = require('./arr/SubNodeForm');

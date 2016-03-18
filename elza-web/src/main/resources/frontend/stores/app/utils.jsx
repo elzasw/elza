@@ -48,6 +48,20 @@ function indexById(arr, id, attrName = 'id') {
 }
 exports.indexById = indexById
 
+function objectById(arr, id, attrName = 'id') {
+    if (arr == null) {
+        return null;
+    }
+
+    for (var a = 0; a < arr.length; a++) {
+        if (arr[a][attrName] == id) {
+            return arr[a];
+        }
+    }
+    return null;
+}
+exports.objectById = objectById
+
 function selectedAfterClose(arr, index) {
     if (index >= arr.length - 1) {
         if (index - 1 >= 0) {

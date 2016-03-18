@@ -2,6 +2,7 @@ import * as types from 'actions/constants/ActionTypes';
 import {indexById} from 'stores/app/utils.jsx'
 import fundTree from './fundTree'
 import nodes from './nodes'
+import fundDataGrid from './fundDataGrid'
 import bulkActions from './bulkActions'
 import versionValidation from './versionValidation'
 import {consolidateState} from 'components/Utils'
@@ -15,6 +16,7 @@ import {isNodeAction} from 'actions/arr/node'
 import {isNodesAction} from 'actions/arr/nodes'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister'
 import {isDeveloperScenariosAction} from 'actions/global/developer'
+import {isFundDataGridAction} from 'actions/arr/fundDataGrid'
 
 export function fundInitState(fundWithVersion) {
     var result = {
@@ -26,6 +28,7 @@ export function fundInitState(fundWithVersion) {
         name: fundWithVersion.name,
         isFetching: false,
         dirty: false,
+        fundDataGrid: fundDataGrid(),
         fundTree: fundTree(undefined, {type: ''}),
         fundTreeMovementsLeft: fundTree(undefined, {type: ''}),
         fundTreeMovementsRight: fundTree(undefined, {type: ''}),
@@ -72,6 +75,11 @@ export function fund(state, action) {
         return consolidateState(state, result);
     }
 
+    if (isFundDataGridAction(action)) {
+        var result = {...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action)};
+        return consolidateState(state, result);
+    }
+
     if (false
         || isSubNodeFormAction(action)
         || isSubNodeFormCacheAction(action)
@@ -96,6 +104,7 @@ export function fund(state, action) {
                 isFetching: false,
                 closed: true,   // při načtení vždy chceme closed, u i když není - aby nemohl editovat, než se načte aktuální stav ze serveru
                 dirty: true,
+                fundDataGrid: fundDataGrid(),
                 fundTree: fundTree(state.fundTree, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),

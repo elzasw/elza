@@ -6,7 +6,7 @@ require ('./FundExtendedView.less');
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Tabs, Icon, FundTreeMain, FundTreeMovementsLeft, FundTreeMovementsRight} from 'components';
+import {FundDataGrid, DataGrid, DataGridPagination, AbstractReactComponent, i18n, Tabs, Icon, FundTreeMain, FundTreeMovementsLeft, FundTreeMovementsRight} from 'components';
 import * as types from 'actions/constants/ActionTypes';
 import {Button} from 'react-bootstrap';
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes'
@@ -21,7 +21,7 @@ var FundExtendedView = class FundExtendedView extends AbstractReactComponent {
             'handleMoveBefore', 'getDestNode', 'handleToggleExtendedView');
 
         this.tabItems = [{id:0, title: 'Strom AS'}, {id: 1, title: 'Hromadné úpravy JP'}, {id: 2, title: 'Přesuny JP'}];
-        this.state = { selectedTabItem: this.tabItems[0] }
+        this.state = { selectedTabItem: this.tabItems[1] }
     }
 
     componentDidMount() {
@@ -124,6 +124,14 @@ var FundExtendedView = class FundExtendedView extends AbstractReactComponent {
                     cutLongLabels={false}
                     versionId={fund.versionId}
                     {...fund.fundTree}
+                />
+            )
+        } else if (this.state.selectedTabItem.id == 1) {
+            tabContentClassName = 'movements'
+            tabContent.push(
+                <FundDataGrid
+                    versionId={fund.versionId}
+                    fundDataGrid={fund.fundDataGrid}
                 />
             )
         } else if (this.state.selectedTabItem.id == 2) {
