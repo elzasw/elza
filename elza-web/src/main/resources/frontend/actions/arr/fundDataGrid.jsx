@@ -53,33 +53,39 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
 
         if ((!fundDataGrid.fetchedData && !fundDataGrid.isFetchingData)
             ||
-            fundDataGrid.fetchedPageSize !== pageSize
+            (fundDataGrid.fetchedPageSize !== pageSize && fundDataGrid.fetchingPageSize !== pageSize)
             ||
-            fundDataGrid.fetchedPageIndex !== pageIndex) {
-            dispatch(_dataRequest(versionId))
-            const items = []
-            for (var a=pageIndex * pageSize; a<pageIndex * pageSize + pageSize; a++) {
-                items.push({
-                    id: a,
-                    /*firstname: 'jan ' + a,
-                    surname: 'novak ' + a,
-                    age: 10+2*a,
-                    address: 'Nejaka ulice ' + a + ', 330 22, Plzen',
-                    tel: 2*a%10 + 3*a%10 + 4*a%10 + 5*a%10 + 6*a%10 + 7*a%10 + 8*a%10 + 9*a%10 + 2*a%10*/
-                })
-                if (a % 4 == 0) {
-                    //items[items.length-1].address = items[items.length-1].address + items[items.length-1].address + items[items.length-1].address
-                }
-            }
-            const newState = getState();
-            const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId')
-            if (newFund) {
-                const newFundDataGrid = newFund.fundDataGrid
+            (fundDataGrid.fetchedPageIndex !== pageIndex && fundDataGrid.fetchingPageIndex !== pageIndex)
+        ) {
+            dispatch(_dataRequest(versionId, pageIndex, pageSize))
 
-                if (newFundDataGrid.pageIndex === pageIndex && newFundDataGrid.pageSize === pageSize) {
-                    dispatch(_dataReceive(versionId, items))
+            new Promise(function (resolve, reject) {
+                var items = []
+                for (var a=pageIndex * pageSize; a<pageIndex * pageSize + pageSize; a++) {
+                    items.push({
+                        id: a,
+                        firstname: 'jan ' + a,
+                        surname: 'novak ' + a,
+                        age: 10+2*a,
+                        address: 'Nejaka ulice ' + a + ', 330 22, Plzen',
+                        tel: 2*a%10 + 3*a%10 + 4*a%10 + 5*a%10 + 6*a%10 + 7*a%10 + 8*a%10 + 9*a%10 + 2*a%10
+                    })
+                    if (a % 4 == 0) {
+                        items[items.length-1].address = items[items.length-1].address + items[items.length-1].address + items[items.length-1].address
+                    }
                 }
-            }
+                resolve(items)
+            }).then(items => {
+                const newState = getState();
+                const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId')
+                if (newFund) {
+                    const newFundDataGrid = newFund.fundDataGrid
+
+                    if (newFundDataGrid.pageIndex === pageIndex && newFundDataGrid.pageSize === pageSize) {
+                        dispatch(_dataReceive(versionId, items))
+                    }
+                }
+            })
         }
     }
 }
@@ -182,10 +188,12 @@ function _filterReceive(versionId, itemsCount) {
 /**
  * Byl volán request na data.
  */
-function _dataRequest(versionId) {
+function _dataRequest(versionId,pageIndex, pageSize) {
     return {
         type: types.FUND_FUND_DATA_GRID_DATA_REQUEST,
         versionId,
+        pageIndex,
+        pageSize,
     }
 }
 

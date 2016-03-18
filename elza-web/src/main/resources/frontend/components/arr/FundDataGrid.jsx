@@ -10,6 +10,7 @@ import * as types from 'actions/constants/ActionTypes';
 import {fundDataGridSetSelection, fundDataGridSetColumnSize, fundDataGridFetchFilterIfNeeded, fundDataGridFetchDataIfNeeded, fundDataGridSetPageIndex, fundDataGridSetPageSize} from 'actions/arr/fundDataGrid'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 import {getMapFromList} from 'stores/app/utils'
+import {propsEquals} from 'components/Utils'
 
 var cols = []
 
@@ -60,7 +61,14 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        //this.bindMethods('');
+        this.bindMethods('handleSelectedIdsChange', 'handleColumnResize');
+
+        const colState = this.getColsStateFromProps(props, {})
+        if (colState) {
+            this.state = colState
+        } else {
+            this.state = {cols: []}
+        }
     }
 
     componentDidMount() {
@@ -72,11 +80,50 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {fundDataGrid, versionId} = nextProps;
+        const {fundDataGrid, versionId, descItemTypes} = nextProps;
         //this.requestFundTreeData(versionId, expandedIds, selectedId);
         this.dispatch(descItemTypesFetchIfNeeded())
         this.dispatch(fundDataGridFetchFilterIfNeeded(versionId))
         this.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize))
+
+        const colState = this.getColsStateFromProps(nextProps, this.props)
+        colState && this.setState(colState)
+    }
+
+    getColsStateFromProps(nextProps, props) {
+        const {fundDataGrid, descItemTypes} = nextProps;
+
+        if (descItemTypes.fetched) {
+            if (props.fundDataGrid.columnsOrder !== fundDataGrid.columnsOrder
+                || props.descItemTypes !== descItemTypes
+                || props.fundDataGrid.columnInfos !== fundDataGrid.columnInfos
+            ) {
+                const cols = this.buildColumns(fundDataGrid, descItemTypes)
+                return {cols: cols}
+            }
+        }
+        return null
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+            return true;
+        }
+
+        var eqProps = ['versionId', 'descItemTypes']
+        if (!propsEquals(this.props, nextProps, eqProps)) {
+            return true
+        }
+
+        var eqProps2 = [
+            'isFetchingFilter', 'fetchedFilter', 'isFetchingData', 'fetchedData', 'pageSize', 'pageIndex',
+            'items', 'itemsCount', 'filter', 'visibleColumns', 'columnsOrder', 'columnInfos', 'selectedIds'
+        ]
+        if (!propsEquals(this.props.fundDataGrid, nextProps.fundDataGrid, eqProps2)) {
+            return true
+        }
+
+        return false
     }
 
     getColumnsOrder(fundDataGrid, refTypesMap) {
@@ -115,24 +162,31 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         return cols
     }
 
+    handleColumnResize(colIndex, width) {
+        this.dispatch(fundDataGridSetColumnSize(versionId, cols2[colIndex].id, width))
+    }
+
+    handleSelectedIdsChange(ids) {
+        this.dispatch(fundDataGridSetSelection(versionId, ids))
+    }
+
     render() {
         const {fundDataGrid, versionId, descItemTypes} = this.props;
+        const {cols} = this.state;
 
         if (!fundDataGrid.fetchedFilter || !fundDataGrid.fetchedData || !descItemTypes.fetched) {
             return <Loading/>
         }
 
-        var cols2 = this.buildColumns(fundDataGrid, descItemTypes)
-console.log('fundDataGrid', fundDataGrid)
         return (
             <div>
-                {true && <DataGrid
+                <DataGrid
                     rows={fundDataGrid.items}
-                    cols={cols2}
+                    cols={cols}
                     selectedIds={fundDataGrid.selectedIds}
-                    onColumnResize={(colIndex, width) => this.dispatch(fundDataGridSetColumnSize(versionId, cols2[colIndex].id, width))}
-                    onSelectedIdsChange={ids => this.dispatch(fundDataGridSetSelection(versionId, ids))}
-                />}
+                    onColumnResize={this.handleColumnResize}
+                    onSelectedIdsChange={this.handleSelectedIdsChange}
+                />
                 <DataGridPagination
                     itemsCount={fundDataGrid.itemsCount}
                     pageSize={fundDataGrid.pageSize}
