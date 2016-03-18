@@ -57,7 +57,7 @@ import {setFocus} from 'actions/global/focus';
 
         setTimeout(testBodyfocus, 150)
     }
-    testBodyfocus()
+    //testBodyfocus()
 }
 /*
 import {setFocus} from 'actions/global/focus';
