@@ -567,6 +567,14 @@ class WebApi{
             });
     }
 
+    filterNodes(versionId, filter) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/filterNodes/' + versionId)
+    }
+
+    getFilteredNodes(versionId, pageIndex, pageSize, descItemTypeIds) {
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/getFilterNodes/' + versionId, {page: pageIndex, pageSize: pageSize}, descItemTypeIds)
+    }
+
     getPackages() {
         return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/getPackages')
             .then(json=>{

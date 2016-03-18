@@ -15,12 +15,12 @@ const initialState = {
     items: [],
     itemsCount: 0,
     filter: {},
-    visibleColumns: {1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 8: true},   // seznam mapa id na boolean viditelných sloupečků
+    visibleColumns: {1: true, 2: true, 3: true},   // seznam mapa id na boolean viditelných sloupečků
     columnsOrder: [],   // seznam id desc item type - pořadí zobrazování sloupečků
     columnInfos: {},    // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
     selectedIds: [],
 }
-for (var a=1; a<100; a++) {
+for (var a=1; a<1; a++) {
 initialState.visibleColumns[a] = true
 }
 

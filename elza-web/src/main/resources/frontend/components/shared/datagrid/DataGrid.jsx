@@ -81,7 +81,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
 
     shouldComponentUpdate(nextProps, nextState) {
         if (this.state !== nextState) {
-//            return true;  // zde NECHCEME!!! - stavse meni vzdy, protoze se vola getStateFromProps, po jeho pripadne uprave je mozne toto odkomentovat!
+            return true;  // zde NECHCEME!!! - stavse meni vzdy, protoze se vola getStateFromProps, po jeho pripadne uprave je mozne toto odkomentovat!
         }
 
         var eqProps = ['rows', 'cols', 'selectedIds', 'onColumnResize', 'onSelectedIdsChange']
@@ -367,7 +367,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         cols.forEach((col, colIndex) => {
             fullWidth += colWidths[colIndex]
         })
-var t1 = new Date().getTime()
+//var t1 = new Date().getTime()
         var ret = (
             <div className={cls} onKeyDown={this.handleKeyDown} tabIndex={0}>
                 <div ref='header' className='header-container'>
@@ -406,7 +406,7 @@ var t1 = new Date().getTime()
                 </div>
             </div>
         )
-console.log('ee', new Date().getTime() - t1)
+//console.log('ee', new Date().getTime() - t1)
         return ret
     }
 }

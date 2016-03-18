@@ -63,7 +63,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         this.bindMethods('handleSelectedIdsChange', 'handleColumnResize');
 
-        const colState = this.getColsStateFromProps(props, {})
+        const colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
         if (colState) {
             this.state = colState
         } else {
@@ -163,10 +163,12 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     handleColumnResize(colIndex, width) {
-        this.dispatch(fundDataGridSetColumnSize(versionId, cols2[colIndex].id, width))
+        const {versionId} = this.props
+        this.dispatch(fundDataGridSetColumnSize(versionId, this.state.cols[colIndex].id, width))
     }
 
     handleSelectedIdsChange(ids) {
+        const {versionId} = this.props
         this.dispatch(fundDataGridSetSelection(versionId, ids))
     }
 

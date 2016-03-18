@@ -10,6 +10,13 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {AppActions} from 'stores';
 import {deleteIdentifier, updateParty} from 'actions/party/party'
 
+/*
+@@@@@@@@@@@@@@@@@@@
+
+POZOR - zde se pracuje s props.partyRegion.selectedPartyData a to se primo upravuje !!!!!!!!!!!!!!!!!!!!!!!
+
+@@@@@@@@@@@@@@@@@@@
+*/
 
 var PartyDetailIdentifiers = class PartyDetailIdentifiers extends AbstractReactComponent {
     constructor(props) {
@@ -22,6 +29,11 @@ var PartyDetailIdentifiers = class PartyDetailIdentifiers extends AbstractReactC
             'updateIdentifier',
             'deleteIdentifier',
         );
+
+        var party = this.props.partyRegion.selectedPartyData
+        if (!party.partyGroupIdentifiers) {
+            party.partyGroupIdentifiers = []
+        }
     }
 
    /**

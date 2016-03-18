@@ -59,7 +59,7 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
         ) {
             dispatch(_dataRequest(versionId, pageIndex, pageSize))
 
-            new Promise(function (resolve, reject) {
+            /*new Promise(function (resolve, reject) {
                 var items = []
                 for (var a=pageIndex * pageSize; a<pageIndex * pageSize + pageSize; a++) {
                     items.push({
@@ -75,7 +75,12 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
                     }
                 }
                 resolve(items)
-            }).then(items => {
+            })*/
+
+            WebApi.getFilteredNodes(versionId, pageIndex, pageSize, Object.keys(fundDataGrid.visibleColumns)).then(map => {
+
+                var items = Object.keys(map).map(id => map[id])
+
                 const newState = getState();
                 const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId')
                 if (newFund) {
@@ -159,8 +164,11 @@ function _setPageIndex(versionId, pageIndex) {
 export function fundDataGridFilter(versionId, filter) {
     return (dispatch, getState) => {
         dispatch(_filterRequest(versionId))
-        const count = 1000
-        dispatch(_filterReceive(versionId, count))
+
+        WebApi.filterNodes(versionId, filter)
+            .then(json => {
+                dispatch(_filterReceive(versionId, json))
+            })
     }
 }
 
