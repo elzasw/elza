@@ -11,6 +11,7 @@ import {AbstractReactComponent, i18n, Resizer} from 'components';
 const scrollIntoView = require('dom-scroll-into-view')
 
 const __emptyColWidth = 8000
+const __minColWidth = 16
 
 var keyDownHandlers = {
     changeFocus: function(newFocus) {
@@ -216,6 +217,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
                     const position = this.state.position;
 
                     let newSize = size - (position - current);
+                    if (newSize < __minColWidth) newSize = __minColWidth
                     var {colWidths} = this.state
                     colWidths[this.state.columnSizeDraggedIndex] = newSize
 
@@ -282,11 +284,12 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         
         var style = {}
         if (rowIndex === 0) {
-            style = {width: colWidths[colIndex]}
+            style = {width: colWidths[colIndex], maxWidth: colWidths[colIndex] }
         }
 
         return (
             <td
+                key={colIndex}
                 ref={rowIndex + '-' + colIndex}
                 className={colCls + cellCls}
                 style={style}
@@ -328,7 +331,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         }
 
         return (
-            <th ref={'col' + colIndex} className={colCls} style={{width: colWidths[colIndex]}}>
+            <th ref={'col' + colIndex} className={colCls} style={{width: colWidths[colIndex], maxWidth: colWidths[colIndex]}}>
                 {content}
                 {resizer}
             </th>
@@ -353,8 +356,8 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         cols.forEach((col, colIndex) => {
             fullWidth += colWidths[colIndex]
         })
-
-        return (
+var t1 = new Date().getTime()
+        var ret = (
             <div className={cls} onKeyDown={this.handleKeyDown} tabIndex={0}>
                 <div ref='header' className='header-container'>
                     <table style={{width: fullWidth + __emptyColWidth}}>
@@ -382,7 +385,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
 
                                 const cells = cols.map((col, colIndex) => this.renderCell(row, rowIndex, col, colIndex, focus.col === colIndex, rowWasFocus && focus.col === colIndex))
                                 return (
-                                    <tr className={rowCls}>
+                                    <tr className={rowCls} key={rowIndex}>
                                         {cells}
                                     </tr>
                                 )
@@ -392,6 +395,8 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
                 </div>
             </div>
         )
+console.log('ee', new Date().getTime() - t1)
+        return ret
     }
 }
 

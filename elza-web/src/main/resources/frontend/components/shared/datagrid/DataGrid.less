@@ -15,19 +15,21 @@
         overflow: hidden;
         height: @header-height;
         background: @header-background;
+        border-bottom: 1px solid silver;
         
         table {
             height: 100%;
-            border-bottom: 1px solid silver;
             th {
                 border: 1px solid silver;
                 border-bottom: none;
+                font-weight: normal;
 
                 &.th-empty-scroll {
                     width: @emptyColWidth;
                 }
                 
                 .cell-container {
+                    overflow: hidden;
                     width: 100%;
                     height: @header-height;
                     float: left;
@@ -75,6 +77,12 @@
                         width: 100%;
                         height: 100%;
                     }                
+                }
+                
+                &:first-child {
+                    td {
+                        border-top: none;
+                    }
                 }
             }
         }

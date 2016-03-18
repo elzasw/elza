@@ -526,6 +526,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     <FundExtendedView
                         fund={activeFund}
                         versionId={activeFund.versionId}
+                        descItemTypes={descItemTypes}
                     />
                 )
             } else if (activeFund.nodes) {

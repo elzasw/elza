@@ -15,6 +15,8 @@ export function isFundDataGridAction(action) {
         case types.FUND_FUND_DATA_GRID_DATA_RECEIVE:
         case types.FUND_FUND_DATA_GRID_PAGE_SIZE:
         case types.FUND_FUND_DATA_GRID_PAGE_INDEX:
+        case types.FUND_FUND_DATA_GRID_COLUMN_SIZE:
+        case types.FUND_FUND_DATA_GRID_SELECTION:
             return true
         default:
             return false
@@ -59,14 +61,14 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
             for (var a=pageIndex * pageSize; a<pageIndex * pageSize + pageSize; a++) {
                 items.push({
                     id: a,
-                    firstname: 'jan ' + a,
+                    /*firstname: 'jan ' + a,
                     surname: 'novak ' + a,
                     age: 10+2*a,
                     address: 'Nejaka ulice ' + a + ', 330 22, Plzen',
-                    tel: 2*a%10 + 3*a%10 + 4*a%10 + 5*a%10 + 6*a%10 + 7*a%10 + 8*a%10 + 9*a%10 + 2*a%10
+                    tel: 2*a%10 + 3*a%10 + 4*a%10 + 5*a%10 + 6*a%10 + 7*a%10 + 8*a%10 + 9*a%10 + 2*a%10*/
                 })
                 if (a % 4 == 0) {
-                    items[items.length-1].address = items[items.length-1].address + items[items.length-1].address + items[items.length-1].address
+                    //items[items.length-1].address = items[items.length-1].address + items[items.length-1].address + items[items.length-1].address
                 }
             }
             const newState = getState();
@@ -108,6 +110,29 @@ function _setPageSize(versionId, pageSize) {
         type: types.FUND_FUND_DATA_GRID_PAGE_SIZE,
         versionId,
         pageSize,
+    }
+}
+
+/**
+ * Nastavení šířky sloupečku.
+ */
+export function fundDataGridSetColumnSize(versionId, columnId, width) {
+    return {
+        type: types.FUND_FUND_DATA_GRID_COLUMN_SIZE,
+        versionId,
+        columnId,
+        width,
+    }
+}
+
+/**
+ * Nastavení označených sloupečků.
+ */
+export function fundDataGridSetSelection(versionId, ids) {
+    return {
+        type: types.FUND_FUND_DATA_GRID_SELECTION,
+        versionId,
+        ids,
     }
 }
 

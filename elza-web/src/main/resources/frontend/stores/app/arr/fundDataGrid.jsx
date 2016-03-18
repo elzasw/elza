@@ -13,6 +13,10 @@ const initialState = {
     items: [],
     itemsCount: 0,
     filter: {},
+    visibleColumns: {1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 8: true},   // seznam mapa id na boolean viditelných sloupečků
+    columnsOrder: [],   // seznam id desc item type - pořadí zobrazování sloupečků
+    columnInfos: {},    // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
+    selectedIds: [],
 }
 
 export default function fundDataGrid(state = initialState, action = {}) {
@@ -23,6 +27,18 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 pageSize: action.pageSize,
                 pageIndex: 0,
                 dirty: true,
+            }
+        case types.FUND_FUND_DATA_GRID_COLUMN_SIZE:
+            var info = state.columnInfos[action.columnId] || {}
+            info.width = action.width
+            state.columnInfos[action.columnId] = info
+            return {
+                ...state,
+            }
+        case types.FUND_FUND_DATA_GRID_SELECTION:
+            return {
+                ...state,
+                selectedIds: [...action.ids],
             }
         case types.FUND_FUND_DATA_GRID_PAGE_INDEX:
             return {

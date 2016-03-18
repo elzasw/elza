@@ -2,6 +2,14 @@
     .pagination {
         margin: 0;
 
+        a {
+            cursor: default;
+            
+            &.disabled {
+                cursor: not-allowed;
+            }
+        }
+        
         .input > span {
             padding: 0;
             height: 31px;

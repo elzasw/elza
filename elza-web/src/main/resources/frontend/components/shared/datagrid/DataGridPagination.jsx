@@ -27,7 +27,8 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleCurrPageFocus', 'handleCurrPageBlur', 'handleCurrPageChange', 'handleCurrPageKeyDown', 'processCurrPageChange');
+        this.bindMethods('handleCurrPageFocus', 'handleCurrPageBlur', 'handleCurrPageChange',
+            'handleCurrPageKeyDown', 'processCurrPageChange', 'renderButton');
 
         const pagesCount = getPagesCount(props.itemsCount, props.pageSize)
 
@@ -121,17 +122,24 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
         }
     }
 
+    renderButton(disabed, onClick, content) {
+        var cls = disabed ? 'disabled' : ''
+        return <a className={cls} onClick={onClick}>{content}</a>
+    }
+
     render() {
         const {onSetPageIndex, onChangePageSize, itemsCount, pageSize, pageIndex} = this.props
 
         var pagesCount = getPagesCount(itemsCount, pageSize)
 
+        var options = [10, 25, 50, 100, 250, 500].map(val => <option value={val}>{val}</option>)
+
         var cls = this.props.className ? 'pagination-container ' + this.props.className : 'pagination-container'
         return (
             <nav className={cls} >
                 <ul className="pagination">
-                    <li><a disabled={pageIndex === 0} onClick={() => pageIndex > 0 && onSetPageIndex(0)}>«</a></li>
-                    <li><a disabled={pageIndex === 0} onClick={() => pageIndex > 0 && onSetPageIndex(pageIndex - 1)}>‹</a></li>
+                    <li>{this.renderButton(pageIndex === 0, () => pageIndex > 0 && onSetPageIndex(0), '«')}</li>
+                    <li>{this.renderButton(pageIndex === 0, () => pageIndex > 0 && onSetPageIndex(pageIndex - 1), '‹')}</li>
                     <li className='input'><span>
                         <input 
                             type='text' value={this.state.currPageValue}
@@ -141,9 +149,9 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
                             onKeyDown={this.handleCurrPageKeyDown}
                         />
                     </span></li>
-                    <li className='input'><span><select value={pageSize} onChange={e => onChangePageSize(Number(e.target.value))}><option value='10'>10</option><option value='20'>20</option></select></span></li>
-                    <li><a disabled={pageIndex + 1 >= pagesCount} onClick={() => pageIndex + 1 < pagesCount && onSetPageIndex(pageIndex + 1)}>›</a></li>
-                    <li><a disabled={pageIndex === pagesCount - 1} onClick={() => pageIndex < pagesCount - 1 && onSetPageIndex(pagesCount - 1)}>»</a></li>
+                    <li className='input'><span><select value={pageSize} onChange={e => onChangePageSize(Number(e.target.value))}>{options}</select></span></li>
+                    <li>{this.renderButton(pageIndex + 1 >= pagesCount, () => pageIndex + 1 < pagesCount && onSetPageIndex(pageIndex + 1), '›')}</li>
+                    <li>{this.renderButton(pageIndex === pagesCount - 1, () => pageIndex < pagesCount - 1 && onSetPageIndex(pagesCount - 1), '»')}</li>
                 </ul>
             </nav>
         )

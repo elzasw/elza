@@ -9,7 +9,7 @@ import {lenToBytesStr, roughSizeOfObject} from 'components/Utils';
 // Nastavení úrovně logování
 const _logStoreState = true;
 const _logStoreSize = false;
-const _logActionDuration = false;
+const _logActionDuration = true;
 const _logCollapsed = true;
 
 /**
