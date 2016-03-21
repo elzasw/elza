@@ -94,10 +94,10 @@ export function changeRegistryRecord(changedIds){
     }
 }
 
-export function changeFund(versionId) {
+export function changeFund(fundId) {
     return {
         type: types.CHANGE_FUND,
-        versionId
+        fundId
     }
 }
 

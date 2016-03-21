@@ -11,6 +11,7 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, BulkActionsTable, Icon, Autocomplete, VersionValidationState} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet'
+import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions'
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
 
@@ -26,8 +27,11 @@ const validate = (values, props) => {
     if ((props.create || props.approve) && !values.ruleSetId) {
         errors.ruleSetId = i18n('global.validation.required');
     }
-    if ((props.create || props.approve) && !values.rulArrTypeId) {
-        errors.rulArrTypeId = i18n('global.validation.required');
+    if ((props.create || props.update) && !values.institutionId) {
+        errors.institutionId = i18n('global.validation.required');
+    }
+    if ((props.create || props.update) && !values.internalCode) {
+        errors.internalCode = i18n('global.validation.required');
     }
 
     return errors;
@@ -44,6 +48,7 @@ var FundForm = class FundForm extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(refRuleSetFetchIfNeeded());
+        this.dispatch(refInstitutionsFetchIfNeeded());
         if (this.props.initData) {
             this.props.load(this.props.initData);
         }
@@ -111,7 +116,7 @@ var FundForm = class FundForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {name, ruleSetId, rulArrTypeId, regScopes}, handleSubmit, onClose} = this.props;
+        const {fields: {name, ruleSetId, regScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose} = this.props;
 
         var submitForm = submitReduxForm.bind(this, validate);
 
@@ -127,17 +132,8 @@ var FundForm = class FundForm extends AbstractReactComponent {
             }
         }
         var ruleSets = this.props.refTables.ruleSet.items;
-        var currRuleSetId = this.props.values.ruleSetId;
-        var currRuleSet = [];
-        var ruleSetOptions = [];
-        if (!ruleSetId.invalid) {
-            currRuleSet = ruleSets[indexById(ruleSets, currRuleSetId)];
-            if (currRuleSet) {
-                ruleSetOptions = currRuleSet.arrangementTypes.map(
-                    i=> <option key={i.id} value={i.id}>{i.name}</option>
-                );
-            }
-        }
+        var institutions = this.props.refTables.institutions.items;
+
         let bulkActionsTextOk = <span className="bulk-action-state success">
             <Icon glyph="fa-check"/>{i18n('arr.fund.approveVersion.bulkActionsOk')}
         </span>;
@@ -170,11 +166,17 @@ var FundForm = class FundForm extends AbstractReactComponent {
                                 return <option value={i.id}>{i.name}</option>
                             })}
                         </Input>}
-                        {(this.props.create || this.props.approve) &&
-                        <Input type="select" disabled={ruleSetId.invalid} label={i18n('arr.fund.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
-                            <option key='-rulArrTypeId'/>
-                            {ruleSetOptions}
+                        {(this.props.create || this.props.update) &&
+                        <Input type="select" label={i18n('arr.fund.institution')} {...institutionId} {...decorateFormField(institutionId)}>
+                            <option key='-institutionId'/>
+                            {institutions.map(i=> {
+                                return <option value={i.id}>{i.name}</option>
+                            })}
                         </Input>}
+                        {(this.props.create || this.props.update) &&
+                        <Input type="text" label={i18n('arr.fund.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />}
+                        {(this.props.create || this.props.approve) &&
+                        <Input type="textarea" label={i18n('arr.fund.dateRange')} {...dateRange} {...decorateFormField(dateRange)} />}
                         {this.props.update && <Autocomplete
                             tags
                             label={i18n('arr.fund.regScope')}
@@ -226,7 +228,7 @@ FundForm.propTypes = {
 
 module.exports = reduxForm({
         form: 'fundForm',
-        fields: ['name', 'ruleSetId', 'rulArrTypeId', 'regScopes[].id', 'regScopes[].name'],
+        fields: ['name', 'ruleSetId', 'institutionId', 'internalCode', 'dateRange', 'regScopes[].id', 'regScopes[].name'],
     }, state => ({
         initialValues: state.form.fundForm.initialValues,
         refTables: state.refTables,

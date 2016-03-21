@@ -115,7 +115,10 @@ var messages = {
     "arr.fund.regScope": "Třídy rejstříku",
     "arr.fund.arrType": "Typ výstupu",
     "arr.fund.currentVersion": "Aktuální verze",
-    
+    "arr.fund.institution": "Instituce",
+    "arr.fund.internalCode": "Interní kod",
+    "arr.fund.dateRange": "Časový rozsah",
+
     "arr.fund.subNodes.prevPage": "Předchozí stránka",
     "arr.fund.subNodes.nextPage": "Další stránka",
     "arr.fund.subNodes.findPosition": "Přejít na JP podle pořadového čísla",

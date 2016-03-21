@@ -67,17 +67,6 @@ var FundFileTree = class FundFileTree extends AbstractReactComponent {
             )
             item.versions.each(ver => {
                 var glyph = '';
-                switch (ver.arrangementType.code) {
-                    case 'MAN':
-                        glyph = 'fa-list';
-                        break;
-                    case 'INV':
-                        glyph = 'fa-th-large';
-                        break;
-                    case 'KAT':
-                        glyph = 'fa-files-o';
-                        break;
-                }
                 rows.push(
                     <NavItem className='version' key={item.id + '_' + ver.id} onClick={this.handleSelect.bind(this, item, ver)}>
                         <Icon glyph={glyph}/>

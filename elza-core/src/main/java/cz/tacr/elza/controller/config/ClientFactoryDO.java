@@ -51,6 +51,9 @@ public class ClientFactoryDO {
     @Autowired
     private NodeRepository nodeRepository;
 
+    @Autowired
+    private InstitutionRepository institutionRepository;
+
     /**
      * Vytvoří node z VO.
      * @param nodeVO vo node
@@ -274,7 +277,10 @@ public class ClientFactoryDO {
     public ArrFund createFund(ArrFundVO fundVO) {
         Assert.notNull(fundVO);
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(fundVO, ArrFund.class);
+        ArrFund fund = mapper.map(fundVO, ArrFund.class);
+        ParInstitution institution = institutionRepository.findOne(fundVO.getInstitutionId());
+        fund.setInstitution(institution);
+        return fund;
     }
 
     public ArrNodeRegister createRegisterLink(final ArrNodeRegisterVO nodeRegisterVO) {

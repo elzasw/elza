@@ -600,6 +600,7 @@ public class ClientFactoryVO {
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFundVO fundVO = mapper.map(fund, ArrFundVO.class);
+        fundVO.setInstitutionId(fund.getInstitution().getInstitutionId());
         if (includeVersions) {
 
             List<ArrFundVersion> versions = fundVersionRepository
@@ -635,6 +636,7 @@ public class ClientFactoryVO {
             fundVersionVO.setLockDate(lockDate);
         }
         fundVersionVO.setDateRange(fundVersion.getDateRange());
+        fundVersionVO.setRuleSetId(fundVersion.getRuleSet().getRuleSetId());
 
         return fundVersionVO;
     }
@@ -1093,6 +1095,21 @@ public class ClientFactoryVO {
      * @return seznam VO
      */
     public List<ParInstitutionVO> createInstitutionList(final List<ParInstitution> institutions) {
-        return createList(institutions, ParInstitutionVO.class, null);
+        return createList(institutions, ParInstitutionVO.class, this::createInstitution);
+    }
+
+    /**
+     * Vytvoří VO instituce.
+     *
+     * @param institution instituce DO
+     * @return instituce VO
+     */
+    public ParInstitutionVO createInstitution(final ParInstitution institution) {
+        Assert.notNull(institution);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ParInstitutionVO institutionVO = mapper.map(institution, ParInstitutionVO.class);
+        institutionVO.setName(institution.getParty().getRecord().getRecord());
+        institutionVO.setPartyId(institution.getParty().getPartyId());
+        return institutionVO;
     }
 }

@@ -151,7 +151,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
      */
     handleCallApproveFundVersion(data) {
         var activeInfo = this.getActiveInfo();
-        this.dispatch(approveFund(activeInfo.activeFund.versionId, data.ruleSetId, data.rulArrTypeId));
+        this.dispatch(approveFund(activeInfo.activeFund.versionId, data.ruleSetId, data.dateRange));
     }
 
     /**
@@ -161,8 +161,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var activeInfo = this.getActiveInfo();
         var data = {
             name_: activeInfo.activeFund.name,
-            ruleSetId: activeInfo.activeFund.activeVersion.arrangementType.ruleSetId,
-            rulArrTypeId: activeInfo.activeFund.activeVersion.arrangementType.id
+            dateRange: activeInfo.activeFund.activeVersion.dateRange,
+            ruleSetId: activeInfo.activeFund.activeVersion.ruleSetId
         }
         this.dispatch(
             modalDialogShow(
@@ -239,6 +239,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             .then(json => {
                 var data = {
                     name: activeInfo.activeFund.name,
+                    institutionId: activeInfo.activeFund.institutionId,
+                    internalCode: activeInfo.activeFund.internalCode,
                     regScopes: json.scopes
                 };
                 that.dispatch(modalDialogShow(that, i18n('arr.fund.title.update'),

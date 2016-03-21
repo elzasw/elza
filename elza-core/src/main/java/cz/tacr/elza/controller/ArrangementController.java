@@ -15,6 +15,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -44,29 +46,9 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.RulArrangementType;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulDescItemTypeExt;
-import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.FilterExpiredException;
-import cz.tacr.elza.repository.ArrangementTypeRepository;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DescriptionItemService;
@@ -137,6 +119,9 @@ public class ArrangementController {
 
     @Autowired
     private FilterTreeService filterTreeService;
+
+    @Autowired
+    private InstitutionRepository institutionRepository;
 
     /**
      * Seznam typů obalů.
@@ -374,13 +359,18 @@ public class ArrangementController {
         Map<Integer, ArrFundVO> funds = new LinkedHashMap<>();
         fundVersionRepository.findAllFetchFunds().forEach(version -> {
             ArrFund fund = version.getFund();
-            ArrFundVO fundVO = factoryVo
-                    .getOrCreateVo(fund.getFundId(), fund, funds, ArrFundVO.class);
+            ArrFundVO fundVO;
+            if (funds.get(fund.getFundId()) == null) {
+                fundVO = factoryVo.createFundVO(fund, false);
+                funds.put(fund.getFundId(), fundVO);
+            } else {
+                fundVO = funds.get(fund.getFundId());
+            }
             fundVO.getVersions().add(factoryVo.createFundVersion(version));
         });
 
 
-        return new ArrayList<ArrFundVO>(funds.values());
+        return new ArrayList<>(funds.values());
     }
 
     /**
@@ -596,6 +586,8 @@ public class ArrangementController {
      * @param name              název archivní pomůcky
      * @param ruleSetId         id pravidel podle kterých se vytváří popis
      * @param dateRange         vysčítaná informace o časovém rozsahu fondu
+     * @param internalCode      interní kód
+     * @param institutionId     id instituce
      * @return nová archivní pomůcka
      */
     @Transactional
@@ -604,19 +596,22 @@ public class ArrangementController {
     public ArrFundVO createFund(@RequestParam(value = "name") final String name,
                                 @RequestParam(value = "ruleSetId") final Integer ruleSetId,
                                 @RequestParam(value = "internalCode") final String internalCode,
+                                @RequestParam(value = "institutionId") final Integer institutionId,
                                 @RequestParam(value = "dateRange", required = false) final String dateRange) {
 
         Assert.hasText(name);
         Assert.hasText(internalCode);
+        Assert.notNull(institutionId);
         Assert.notNull(ruleSetId);
 
         RulRuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
-
         Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + ruleSetId);
 
+        ParInstitution institution = institutionRepository.findOne(institutionId);
+        Assert.notNull(institution, "Nebyla nalezena instituce s id " + institutionId);
 
         ArrFund newFund = arrangementService
-                .createFundWithScenario(name, ruleSet, internalCode, dateRange);
+                .createFundWithScenario(name, ruleSet, internalCode, institution, dateRange);
 
         return factoryVo.createFundVO(newFund, true);
     }

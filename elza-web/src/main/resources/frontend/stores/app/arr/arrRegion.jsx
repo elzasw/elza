@@ -161,7 +161,6 @@ export default function arrRegion(state = initialState, action) {
         case types.CHANGE_ADD_LEVEL:
         case types.CHANGE_MOVE_LEVEL:
         case types.FUND_FUND_APPROVE_VERSION:
-        case types.CHANGE_FUND:
         case types.CHANGE_FUND_RECORD:
         case types.FUND_FUND_SELECT_SUBNODE:
             var index = indexById(state.funds, action.versionId, "versionId");
@@ -187,6 +186,16 @@ export default function arrRegion(state = initialState, action) {
             } else {
                 return state
             }
+        case types.CHANGE_FUND:
+
+            var i = 0;
+            state.funds.forEach(fund => {
+                if (fund.fundId = action.fundId) {
+                    state = processFund(state, action, i++);
+                }
+            });
+
+            return state;
         case types.GLOBAL_CONTEXT_MENU_HIDE:
             var index = state.activeIndex;
             return processFund(state, action, index);

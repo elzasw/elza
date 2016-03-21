@@ -66,7 +66,7 @@ export function fundsReceive(funds) {
  */
 export function createFund(data) {
     return dispatch => {
-        return WebApi.createFund(data.name, data.ruleSetId, data.rulArrTypeId)
+        return WebApi.createFund(data.name, data.ruleSetId, data.institutionId, data.internalCode, data.dateRange)
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.fund.title.added")));
                 dispatch(modalDialogHide());
@@ -81,9 +81,9 @@ export function createFund(data) {
  * @param {int} ruleSetId id pravidla
  * @param {int} arrangementTypeId id typu výstupu
  */
-export function approveFund(versionId, ruleSetId, arrangementTypeId) {
+export function approveFund(versionId, ruleSetId, dateRange) {
     return dispatch => {
-        return WebApi.approveVersion(versionId, ruleSetId, arrangementTypeId)
+        return WebApi.approveVersion(versionId, ruleSetId, dateRange)
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.fund.title.approved")));
                 dispatch(approveFundResult(json.versionId))

@@ -139,16 +139,30 @@ public class ArrangementService {
     @Autowired
     private RegistryService registryService;
 
+    /**
+     * Vytvoření archivního souboru.
+     *
+     * @param name          název
+     * @param ruleSet       pravidla
+     * @param change        změna
+     * @param uuid          uuid
+     * @param internalCode  iterní kód
+     * @param institution   instituce
+     * @param dateRange     časový rozsah
+     * @return vytvořený arch. soubor
+     */
     public ArrFund createFund(final String name,
                               final RulRuleSet ruleSet,
                               final ArrChange change,
                               final String uuid,
                               final String internalCode,
+                              final ParInstitution institution,
                               final String dateRange) {
         ArrFund fund = new ArrFund();
         fund.setCreateDate(LocalDateTime.now());
         fund.setName(name);
         fund.setInternalCode(internalCode);
+        fund.setInstitution(institution);
 
         fund = fundRepository.save(fund);
 
@@ -173,7 +187,10 @@ public class ArrangementService {
         Assert.notNull(fund);
         ArrFund originalFund = fundRepository.findOne(fund.getFundId());
         Assert.notNull(originalFund);
+
         originalFund.setName(fund.getName());
+        originalFund.setInternalCode(fund.getInternalCode());
+        originalFund.setInstitution(fund.getInstitution());
 
         fundRepository.save(originalFund);
 
@@ -231,13 +248,14 @@ public class ArrangementService {
      * @param internalCode    interní označení
      * @return nová archivní pomůcka
      */
-    public ArrFund createFundWithScenario(String name,
-                                          RulRuleSet ruleSet,
-                                          String internalCode,
-                                          String dateRange) {
+    public ArrFund createFundWithScenario(final String name,
+                                          final RulRuleSet ruleSet,
+                                          final String internalCode,
+                                          final ParInstitution institution,
+                                          final String dateRange) {
         ArrChange change = createChange();
 
-        ArrFund fund = createFund(name, ruleSet, change, null, internalCode, dateRange);
+        ArrFund fund = createFund(name, ruleSet, change, null, internalCode, institution, dateRange);
 
         List<RegScope> defaultScopes = registryService.findDefaultScopes();
         if (!defaultScopes.isEmpty()) {

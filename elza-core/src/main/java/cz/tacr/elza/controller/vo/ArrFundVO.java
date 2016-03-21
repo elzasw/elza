@@ -22,6 +22,10 @@ public class ArrFundVO {
 
     private Date createDate;
 
+    private String internalCode;
+
+    private Integer institutionId;
+
     private List<ArrFundVersionVO> versions = new LinkedList<>();
 
     private List<RegScopeVO> regScopes;
@@ -64,6 +68,22 @@ public class ArrFundVO {
 
     public void setRegScopes(List<RegScopeVO> regScopes) {
         this.regScopes = regScopes;
+    }
+
+    public String getInternalCode() {
+        return internalCode;
+    }
+
+    public void setInternalCode(final String internalCode) {
+        this.internalCode = internalCode;
+    }
+
+    public Integer getInstitutionId() {
+        return institutionId;
+    }
+
+    public void setInstitutionId(final Integer institutionId) {
+        this.institutionId = institutionId;
     }
 
     @Override

@@ -603,7 +603,7 @@ public class XmlImportService {
         }
 
         String uuid = XmlImportUtils.trimStringValue(fund.getRootLevel().getUuid(), StringLength.LENGTH_36, stopOnError);
-        ArrFund arrFund = arrangementService.createFund(fund.getName(), ruleSet, change, uuid, "TST", null); // TODO: dateRange zatím nevyplněn, internalCode TST
+        ArrFund arrFund = arrangementService.createFund(fund.getName(), ruleSet, change, uuid, "TST", null, null); // TODO: dateRange zatím nevyplněn, internalCode TST, instituce
         arrangementService.addScopeToFund(arrFund, config.getRegScope());
 
         return arrFund;

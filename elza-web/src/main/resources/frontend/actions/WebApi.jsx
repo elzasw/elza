@@ -549,8 +549,14 @@ class WebApi{
 
 
 
-    createFund(name, ruleSetId, arrangementTypeId) {
-        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/funds', {name: name, arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId})
+    createFund(name, ruleSetId, institutionId, internalCode, dateRange) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/funds', {
+                name: name,
+                institutionId: institutionId,
+                ruleSetId: ruleSetId,
+                internalCode: internalCode,
+                dateRange: dateRange
+            })
             .then(json=>{
                 return json;
             });
@@ -560,8 +566,8 @@ class WebApi{
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/updateFund', null, data)
     }
 
-    approveVersion(versionId, ruleSetId, arrangementTypeId) {
-        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/approveVersion', {arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId, versionId: versionId})
+    approveVersion(versionId, ruleSetId, dateRange) {
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/approveVersion', {dateRange: dateRange, ruleSetId: ruleSetId, versionId: versionId})
             .then(json=>{
                 return json;
             });
@@ -629,6 +635,9 @@ class WebApi{
         return AjaxUtils.ajaxCallRaw('/api/xmlImportManagerV2/import', {}, "POST", data);
     }
 
+    getInstitutions() {
+        return AjaxUtils.ajaxGet('/api/partyManagerV2/institutions');
+    }
 
 }
 

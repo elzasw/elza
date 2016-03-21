@@ -1,6 +1,7 @@
 import * as types from 'actions/constants/ActionTypes';
 
 import ruleSet from './ruleSet'
+import institutions from './institutions'
 import partyNameFormTypes from './partyNameFormTypes'
 import partyTypes from './partyTypes'
 import recordTypes from './recordTypes'
@@ -14,6 +15,7 @@ import descItemTypes from './descItemTypes';
 
 const initialState = {
     ruleSet: ruleSet(undefined, {type:''}),
+    institutions: institutions(),
     partyNameFormTypes: partyNameFormTypes(undefined, {type:''}),
     partyTypes: partyTypes(undefined, {type:''}),
     recordTypes: recordTypes(undefined, {type:''}),
@@ -45,6 +47,12 @@ export default function refTables(state = initialState, action) {
             return {
                 ...state,
                 ruleSet: ruleSet(state.ruleSet, action),
+            }
+        case types.REF_INSTITUTIONS_REQUEST:
+        case types.REF_INSTITUTIONS_RECEIVE:
+            return {
+                ...state,
+                institutions: institutions(state.institutions, action),
             }
         case types.REF_PARTY_NAME_FORM_TYPES_REQUEST:
         case types.REF_PARTY_NAME_FORM_TYPES_RECEIVE:

@@ -23,6 +23,8 @@ public class ArrFundVersionVO {
 
     private String dateRange;
 
+    private Integer ruleSetId;
+
     public Integer getId() {
         return id;
     }
@@ -53,6 +55,14 @@ public class ArrFundVersionVO {
 
     public void setDateRange(String dateRange) {
         this.dateRange = dateRange;
+    }
+
+    public Integer getRuleSetId() {
+        return ruleSetId;
+    }
+
+    public void setRuleSetId(final Integer ruleSetId) {
+        this.ruleSetId = ruleSetId;
     }
 
     @Override
