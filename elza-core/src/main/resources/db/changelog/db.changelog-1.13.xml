@@ -28,6 +28,11 @@
             <column name="name" value="Výchozí" />
         </insert>
 
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="par_institution_type|institution_type_id"/>
+            <column name="next_val" value="2"/>
+        </insert>
+
         <!--
             par_institution
         -->
@@ -60,6 +65,11 @@
                                  referencedTableName="par_party"
                                  referencedColumnNames="party_id"
                                  onDelete="NO ACTION"/>
+
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="par_institution|institution_id"/>
+            <column name="next_val" value="1"/>
+        </insert>
 
         <!--
             arr_fund
