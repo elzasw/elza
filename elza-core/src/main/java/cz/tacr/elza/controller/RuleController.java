@@ -4,14 +4,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.repository.RuleSetRepository;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -29,7 +27,6 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -56,21 +53,16 @@ public class RuleController {
     private DataTypeRepository dataTypeRepository;
 
     @Autowired
+    private RuleSetRepository ruleSetRepository;
+
+    @Autowired
     private RuleService ruleService;
     @Autowired
     private PackageService packageService;
 
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
     public List<RulRuleSetVO> getRuleSets() {
-        Map<Integer, RulRuleSetVO> ruleSets = new LinkedHashMap<>();
-        arrangementTypeRepository.findAllFetchRuleSets().forEach(arrType -> {
-            RulRuleSet ruleSet = arrType.getRuleSet();
-            RulRuleSetVO ruleSetVO = factoryVo.getOrCreateVo(ruleSet.getRuleSetId(), ruleSet, ruleSets, RulRuleSetVO.class);
-            ruleSetVO.getArrangementTypes().add(factoryVo.createArrangementType(arrType));
-        });
-
-
-        return new ArrayList<RulRuleSetVO>(ruleSets.values());
+        return factoryVo.createRuleSetList(ruleSetRepository.findAll());
     }
 
     @RequestMapping(value = "/dataTypes", method = RequestMethod.GET)

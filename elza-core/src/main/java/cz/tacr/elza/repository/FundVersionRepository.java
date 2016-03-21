@@ -1,14 +1,12 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrLevel;
+import java.util.List;
 
 
 /**
@@ -29,7 +27,7 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
     ArrFundVersion findTopByRootNode(ArrNode node);
 
 
-    @Query(value = "SELECT v FROM arr_fund_version v join fetch v.fund fa join fetch v.arrangementType at join fetch at.ruleSet join fetch v.createChange left join fetch v.lockChange order by fa.name asc, v.createChange.changeId desc")
+    @Query(value = "SELECT v FROM arr_fund_version v join fetch v.fund fa join fetch v.createChange left join fetch v.lockChange order by fa.name asc, v.createChange.changeId desc")
     List<ArrFundVersion> findAllFetchFunds();
 
 

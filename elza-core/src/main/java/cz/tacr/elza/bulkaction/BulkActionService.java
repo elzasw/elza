@@ -405,23 +405,12 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
         }
 
-        final String arrangmentTypeCode = version.getArrangementType().getCode();
-
         List<BulkActionConfig> bulkActionConfigs = new ArrayList<>();
 
         for (BulkActionConfig bulkActionConfig : bulkActionConfigManager.getBulkActions()) {
             String ruleCode = (String) bulkActionConfig.getProperty("rule_code");
             if (version.getRuleSet().getCode().equals(ruleCode)) {
-                String mandatoryArrangementTypeString = (String) bulkActionConfig
-                        .getProperty("mandatory_arrangement_type");
-
-                mandatoryArrangementTypeString = mandatoryArrangementTypeString == null ? ""
-                                                                                        : mandatoryArrangementTypeString;
-                List<String> mandatoryArrangementType = Arrays.asList(mandatoryArrangementTypeString.split("\\|"));
-
                 if (!mandatory) {
-                    bulkActionConfigs.add(bulkActionConfig);
-                } else if (mandatoryArrangementType.contains(arrangmentTypeCode) && mandatory) {
                     bulkActionConfigs.add(bulkActionConfig);
                 }
             }

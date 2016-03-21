@@ -3,10 +3,7 @@ package cz.tacr.elza.domain;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -21,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "arr_fund")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrFund, Serializable {
+public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrFund<ParInstitution>, Serializable {
 
     @Id
     @GeneratedValue
@@ -32,6 +29,13 @@ public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.a
 
     @Column(nullable = false)
     private LocalDateTime createDate;
+
+    @Column(length = 250, nullable = false)
+    private String internalCode;
+
+    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParInstitution.class)
+    @JoinColumn(name = "institutionId", nullable = false)
+    private ParInstitution institution;
 
     @Override
     public Integer getFundId() {
@@ -61,6 +65,26 @@ public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.a
     @Override
     public void setCreateDate(final LocalDateTime createDate) {
         this.createDate = createDate;
+    }
+
+    @Override
+    public String getInternalCode() {
+        return internalCode;
+    }
+
+    @Override
+    public void setInternalCode(final String internalCode) {
+        this.internalCode = internalCode;
+    }
+
+    @Override
+    public ParInstitution getInstitution() {
+        return institution;
+    }
+
+    @Override
+    public void setInstitution(final ParInstitution institution) {
+        this.institution = institution;
     }
 
     @Override

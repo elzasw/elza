@@ -74,6 +74,9 @@ public class PartyController {
     @Autowired
     private FundVersionRepository fundVersionRepository;
 
+    @Autowired
+    private InstitutionRepository institutionRepository;
+
     /**
      * Načte osobu podle id.
      * @param partyId id osoby
@@ -396,5 +399,9 @@ public class PartyController {
         }
     }
 
+    @RequestMapping(value = "/institutions", method = RequestMethod.GET)
+    public List<ParInstitutionVO> getInstitutions() {
+        return factoryVo.createInstitutionList(institutionRepository.findAll());
+    }
 
 }

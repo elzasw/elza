@@ -11,10 +11,8 @@ import cz.tacr.elza.api.RulArrangementType;
 import cz.tacr.elza.api.RulDataType;
 import cz.tacr.elza.api.RulDescItemSpec;
 import cz.tacr.elza.api.RulDescItemType;
-import cz.tacr.elza.api.RulFaView;
 import cz.tacr.elza.api.RulPackage;
 import cz.tacr.elza.api.RulRuleSet;
-import cz.tacr.elza.api.vo.FaViewDescItemTypes;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 
@@ -25,13 +23,12 @@ import cz.tacr.elza.api.vo.RelatedNodeDirection;
  * @param <DT> {@link RulDataType} datový typ atribut arch. popisu
  * @param <DIT> {@link RulDescItemType} datový typ atributů arch. popisu
  * @param <DIS> {@link RulDescItemSpec} datový typ specifických atributů arch. popisu
- * @param <RFV> {@link RulFaView} nastavení zobrazení atributů archivního popisu pomůcky
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
 public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec,
-        RFV extends RulFaView, NTO extends NodeTypeOperation, RND extends RelatedNodeDirection, DI extends ArrDescItem,
+        NTO extends NodeTypeOperation, RND extends RelatedNodeDirection, DI extends ArrDescItem,
         FAV extends ArrFundVersion, FAVCI extends ArrVersionConformity, P extends RulPackage> {
 
     /**
@@ -88,23 +85,6 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @return                  Datový typ
      */
     DT getDataTypeForDescItemType(DIT rulDescItemType);
-
-    /**
-     * Vrátí seznam identifikátorů typů atributů archivního popisu,
-     * které se mají pro verzi archivní pomůcky zobrazovat v hierarchickém seznamu uzlů.
-     * @param fundVersionId id verze
-     * @return Zapouzdření {@link RulFaView} a {@link FaViewDescItemTypes}.
-     */
-    FaViewDescItemTypes getFaViewDescItemTypes(Integer fundVersionId);
-
-    /**
-     * Pro soubor pravidel a typ výstupu uloží seznam identifikátorů typů atributů archivního popisu,
-     * které se mají zobrazovat v hierarchickém seznamu uzlů.
-     * @param rulFaView nastavení zobrazení archivního popisu pro uložení
-     * @param descItemTypeIds seznam typů atributů do {@link RulFaView#setViewSpecification(String)}.
-     * @return descItemTypeIds
-     */
-    List<Integer> saveFaViewDescItemTypes(RFV rulFaView, Integer[] descItemTypeIds);
 
 
     /**

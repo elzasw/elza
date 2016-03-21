@@ -21,7 +21,7 @@ public class ArrFundVersionVO {
 
     private Date lockDate;
 
-    private RulArrangementTypeVO arrangementType;
+    private String dateRange;
 
     public Integer getId() {
         return id;
@@ -47,12 +47,12 @@ public class ArrFundVersionVO {
         this.lockDate = lockDate;
     }
 
-    public RulArrangementTypeVO getArrangementType() {
-        return arrangementType;
+    public String getDateRange() {
+        return dateRange;
     }
 
-    public void setArrangementType(RulArrangementTypeVO arrangementType) {
-        this.arrangementType = arrangementType;
+    public void setDateRange(String dateRange) {
+        this.dateRange = dateRange;
     }
 
     @Override

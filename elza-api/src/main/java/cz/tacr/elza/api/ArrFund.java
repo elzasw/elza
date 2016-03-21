@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
  * @author vavrejn
  *
  */
-public interface ArrFund extends Versionable, Serializable {
+public interface ArrFund<I extends ParInstitution> extends Versionable, Serializable {
 
     Integer getFundId();
 
@@ -38,4 +38,25 @@ public interface ArrFund extends Versionable, Serializable {
      * @param createDate datum založení.
      */
     void setCreateDate(LocalDateTime createDate);
+
+    /**
+     * @return interní kód
+     */
+    String getInternalCode();
+
+    /**
+     * @param internalCode interní kód
+     */
+    void setInternalCode(String internalCode);
+
+    /**
+     *
+     * @return instituce
+     */
+    I getInstitution();
+
+    /**
+     * @param institution instituce
+     */
+    void setInstitution(I institution);
 }

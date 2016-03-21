@@ -59,10 +59,6 @@ public class DescItemTypesRules extends Rules {
     	ActiveLevel activeLevel = scriptModelFactory.createActiveLevel(modelLevel, level, version);
     	ModelFactory.addAll(activeLevel, facts);
 
-    	// Add arrangement type
-    	RulArrangementType arrangementType = version.getArrangementType();
-    	facts.add(arrangementType);
-
     	// Add strategies
     	facts.addAll(ModelFactory.createStrategies(strategies));
 

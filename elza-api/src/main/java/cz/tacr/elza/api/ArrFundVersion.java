@@ -13,10 +13,9 @@ import java.io.Serializable;
  * @param <FA> {@link ArrFund}
  * @param <FC> {@link ArrChange}
  * @param <FN> {@link ArrNode}
- * @param <AT> {@link RulArrangementType}
  * @param <RS> {@link RulRuleSet}
  */
-public interface ArrFundVersion<FA extends ArrFund, FC extends ArrChange, FN extends ArrNode, AT extends RulArrangementType, RS extends RulRuleSet>
+public interface ArrFundVersion<FA extends ArrFund, FC extends ArrChange, FN extends ArrNode, RS extends RulRuleSet>
         extends
             Versionable,
             Serializable {
@@ -66,16 +65,6 @@ public interface ArrFundVersion<FA extends ArrFund, FC extends ArrChange, FN ext
     void setFund(FA fund);
 
     /**
-     * @return odkaz na pravidla výstupu.
-     */
-    AT getArrangementType();
-
-    /**
-     * @param arrangementType odkaz na pravidla výstupu.
-     */
-    void setArrangementType(AT arrangementType);
-
-    /**
      * @return odkaz na pravidla tvorby.
      */
     RS getRuleSet();
@@ -95,4 +84,13 @@ public interface ArrFundVersion<FA extends ArrFund, FC extends ArrChange, FN ext
      */
     void setLastChange(FC lastChange);
 
+    /**
+     * @return vysčítaná informace o časovém rozsahu fondu - sdruženo po typech kalendářů
+     */
+    String getDateRange();
+
+    /**
+     * @param dateRange vysčítaná informace o časovém rozsahu fondu - sdruženo po typech kalendářů
+     */
+    void setDateRange(String dateRange);
 }

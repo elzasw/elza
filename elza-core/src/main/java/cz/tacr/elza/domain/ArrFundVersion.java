@@ -1,11 +1,6 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -27,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrFundVersion extends AbstractVersionableEntity implements
-        cz.tacr.elza.api.ArrFundVersion<ArrFund, ArrChange, ArrNode, RulArrangementType, RulRuleSet> {
+        cz.tacr.elza.api.ArrFundVersion<ArrFund, ArrChange, ArrNode, RulRuleSet> {
 
     @Id
     @GeneratedValue
@@ -54,11 +49,6 @@ public class ArrFundVersion extends AbstractVersionableEntity implements
     private ArrFund fund;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulArrangementType.class)
-    @JoinColumn(name = "arrangementTypeId", nullable = false)
-    private RulArrangementType arrangementType;
-
-    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
@@ -67,6 +57,9 @@ public class ArrFundVersion extends AbstractVersionableEntity implements
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "lastChangeId", nullable = false)
     private ArrChange lastChange;
+
+    @Column(nullable = true)
+    private String dateRange;
 
     @Override
     public Integer getFundVersionId() {
@@ -119,16 +112,6 @@ public class ArrFundVersion extends AbstractVersionableEntity implements
     }
 
     @Override
-    public RulArrangementType getArrangementType() {
-        return arrangementType;
-    }
-
-    @Override
-    public void setArrangementType(final RulArrangementType arrangementType) {
-        this.arrangementType = arrangementType;
-    }
-
-    @Override
     public RulRuleSet getRuleSet() {
         return ruleSet;
     }
@@ -151,6 +134,16 @@ public class ArrFundVersion extends AbstractVersionableEntity implements
     @Override
     public String toString() {
         return "ArrFundVersion pk=" + fundVersionId;
+    }
+
+    @Override
+    public String getDateRange() {
+        return dateRange;
+    }
+
+    @Override
+    public void setDateRange(final String dateRange) {
+        this.dateRange = dateRange;
     }
 
     @Override

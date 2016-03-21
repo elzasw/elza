@@ -228,10 +228,6 @@ public class XmlImportService {
     /**
      * Naimportuje data.
      *
-     * @param importDataFormat formát vstupních dat
-     * @param xmlFile vstupní data
-     * @param stopOnError příznak zda se má import přerušit při první chybě nebo se má pokusit naimportovat co nejvíce
-     *          dat
      * @throws XmlImportException chyba při importu
      */
     @Transactional
@@ -607,7 +603,7 @@ public class XmlImportService {
         }
 
         String uuid = XmlImportUtils.trimStringValue(fund.getRootLevel().getUuid(), StringLength.LENGTH_36, stopOnError);
-        ArrFund arrFund = arrangementService.createFund(fund.getName(), ruleSet, arrangementType, change, uuid);
+        ArrFund arrFund = arrangementService.createFund(fund.getName(), ruleSet, change, uuid, "TST", null); // TODO: dateRange zatím nevyplněn, internalCode TST
         arrangementService.addScopeToFund(arrFund, config.getRegScope());
 
         return arrFund;
@@ -1149,7 +1145,6 @@ public class XmlImportService {
      * Import rejstříků.
      *
      * @param records rejstříky
-     * @param parent nadřazené rejstříkové heslo
      * @param stopOnError příznak zda se má import přerušit při první chybě nebo se má pokusit naimportovat co nejvíce dat
      * @param usedRecords množina s externími id rejstříků které se mají importovat
      * @param regScope třída rejstříků
@@ -1424,7 +1419,7 @@ public class XmlImportService {
     /**
      * Převede data z xml do objektu {@link XmlImport}
      *
-     * @param xml stream
+     * @param inputStream stream
      *
      * @return {@link XmlImport}
      */

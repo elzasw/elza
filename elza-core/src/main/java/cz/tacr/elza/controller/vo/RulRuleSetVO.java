@@ -22,8 +22,6 @@ public class RulRuleSetVO {
 
     private String name;
 
-    private List<RulArrangementTypeVO> arrangementTypes = new LinkedList<>();
-
     public Integer getId() {
         return id;
     }
@@ -46,14 +44,6 @@ public class RulRuleSetVO {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public List<RulArrangementTypeVO> getArrangementTypes() {
-        return arrangementTypes;
-    }
-
-    public void setArrangementTypes(List<RulArrangementTypeVO> arrangementTypes) {
-        this.arrangementTypes = arrangementTypes;
     }
 
     @Override

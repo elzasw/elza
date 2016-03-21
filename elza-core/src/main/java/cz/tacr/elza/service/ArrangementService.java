@@ -139,11 +139,16 @@ public class ArrangementService {
     @Autowired
     private RegistryService registryService;
 
-    public ArrFund createFund(String name, RulRuleSet ruleSet, RulArrangementType arrangementType,
-                              ArrChange change, String uuid) {
+    public ArrFund createFund(final String name,
+                              final RulRuleSet ruleSet,
+                              final ArrChange change,
+                              final String uuid,
+                              final String internalCode,
+                              final String dateRange) {
         ArrFund fund = new ArrFund();
         fund.setCreateDate(LocalDateTime.now());
         fund.setName(name);
+        fund.setInternalCode(internalCode);
 
         fund = fundRepository.save(fund);
 
@@ -153,7 +158,7 @@ public class ArrangementService {
         //        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
         ArrLevel rootLevel = createLevel(change, null, uuid);
-        createVersion(change, fund, arrangementType, ruleSet, rootLevel.getNode());
+        createVersion(change, fund, ruleSet, rootLevel.getNode(), dateRange);
 
         return fund;
     }
@@ -221,16 +226,18 @@ public class ArrangementService {
      * vytvoří atributy podle scénáře.
      *
      * @param name            název archivní pomůcky
-     * @param arrangementType id typu výstupu
      * @param ruleSet         id pravidel podle kterých se vytváří popis
+     * @param dateRange       vysčítaná informace o časovém rozsahu fondu
+     * @param internalCode    interní označení
      * @return nová archivní pomůcka
      */
     public ArrFund createFundWithScenario(String name,
                                           RulRuleSet ruleSet,
-                                          RulArrangementType arrangementType) {
+                                          String internalCode,
+                                          String dateRange) {
         ArrChange change = createChange();
 
-        ArrFund fund = createFund(name, ruleSet, arrangementType, change, null);
+        ArrFund fund = createFund(name, ruleSet, change, null, internalCode, dateRange);
 
         List<RegScope> defaultScopes = registryService.findDefaultScopes();
         if (!defaultScopes.isEmpty()) {
@@ -268,16 +275,16 @@ public class ArrangementService {
 
     public ArrFundVersion createVersion(final ArrChange createChange,
                                         final ArrFund fund,
-                                        final RulArrangementType arrangementType,
                                         final RulRuleSet ruleSet,
-                                        final ArrNode rootNode) {
+                                        final ArrNode rootNode,
+                                        final String dateRange) {
         ArrFundVersion version = new ArrFundVersion();
         version.setCreateChange(createChange);
-        version.setArrangementType(arrangementType);
         version.setFund(fund);
         version.setRuleSet(ruleSet);
         version.setRootNode(rootNode);
         version.setLastChange(createChange);
+        version.setDateRange(dateRange);
         return fundVersionRepository.save(version);
     }
 
@@ -381,16 +388,15 @@ public class ArrangementService {
      * - spustí přepočet stavů uzlů pro novou verzi
      *
      * @param version         verze, která se má uzavřít
-     * @param arrangementType typ výstupu nové verze
      * @param ruleSet         pravidla podle kterých se vytváří popis v nové verzi
+     * @param dateRange       vysčítaná informace o časovém rozsahu fondu
      * @return nová verze archivní pomůcky
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
      */
     public ArrFundVersion approveVersion(final ArrFundVersion version,
-                                         final RulArrangementType arrangementType,
-                                         final RulRuleSet ruleSet) {
+                                         final RulRuleSet ruleSet,
+                                         final String dateRange) {
         Assert.notNull(version);
-        Assert.notNull(arrangementType);
         Assert.notNull(ruleSet);
 
         ArrFund fund = version.getFund();
@@ -420,10 +426,7 @@ public class ArrangementService {
         version.setLockChange(change);
         fundVersionRepository.save(version);
 
-
-        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
-
-        ArrFundVersion newVersion = createVersion(change, fund, arrangementType, ruleSet, version.getRootNode());
+        ArrFundVersion newVersion = createVersion(change, fund, ruleSet, version.getRootNode(), dateRange);
         ruleService.conformityInfoAll(newVersion);
 
         eventNotificationService.publishEvent(

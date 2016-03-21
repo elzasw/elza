@@ -466,31 +466,26 @@ public class ArrangementController {
      * Uzavře otevřenou verzi archivní pomůcky a otevře novou verzi.
      *
      * @param versionId         verze, která se má uzavřít
-     * @param arrangementTypeId id typu výstupu nové verze
      * @param ruleSetId         id pravidel podle kterých se vytváří popis v nové verzi
+     * @param dateRange         vysčítaná informace o časovém rozsahu fondu
      * @return nová verze archivní pomůcky
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
      */
     @Transactional
     @RequestMapping(value = "/approveVersion", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrFundVersionVO approveVersion(@RequestParam("versionId") final Integer versionId,
-                                           @RequestParam("arrangementTypeId") final Integer arrangementTypeId,
-                                           @RequestParam("ruleSetId") final Integer ruleSetId) {
+                                           @RequestParam("ruleSetId") final Integer ruleSetId,
+                                           @RequestParam(value = "dateRange", required = false) final String dateRange) {
         Assert.notNull(versionId);
-        Assert.notNull(arrangementTypeId);
         Assert.notNull(ruleSetId);
 
         ArrFundVersion version = fundVersionRepository.findOne(versionId);
-        RulArrangementType arrangementType = arrangementTypeRepository.findOne(arrangementTypeId);
         RulRuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
 
         Assert.notNull(version, "Nebyla nalezena verze s id " + versionId);
-        Assert.notNull(arrangementType, "Nebyl nalezen typ výstupu podle zvolených pravidel s id " + arrangementTypeId);
         Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + ruleSetId);
 
-
-        ArrFundVersion nextVersion = arrangementService
-                .approveVersion(version, arrangementType, ruleSet);
+        ArrFundVersion nextVersion = arrangementService.approveVersion(version, ruleSet, dateRange);
         return factoryVo.createFundVersion(nextVersion);
     }
 
@@ -599,30 +594,29 @@ public class ArrangementController {
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
      *
      * @param name              název archivní pomůcky
-     * @param arrangementTypeId id typu výstupu
      * @param ruleSetId         id pravidel podle kterých se vytváří popis
+     * @param dateRange         vysčítaná informace o časovém rozsahu fondu
      * @return nová archivní pomůcka
      */
     @Transactional
     @RequestMapping(value = "/funds", method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrFundVO createFund(@RequestParam(value = "name") final String name,
-                                @RequestParam(value = "arrangementTypeId") final Integer arrangementTypeId,
-                                @RequestParam(value = "ruleSetId") final Integer ruleSetId) {
+                                @RequestParam(value = "ruleSetId") final Integer ruleSetId,
+                                @RequestParam(value = "internalCode") final String internalCode,
+                                @RequestParam(value = "dateRange", required = false) final String dateRange) {
 
         Assert.hasText(name);
-        Assert.notNull(arrangementTypeId);
+        Assert.hasText(internalCode);
         Assert.notNull(ruleSetId);
 
-        RulArrangementType arrangementType = arrangementTypeRepository.findOne(arrangementTypeId);
         RulRuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
 
-        Assert.notNull(arrangementType, "Nebyl nalezen typ výstupu podle zvolených pravidel s id " + arrangementTypeId);
         Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + ruleSetId);
 
 
         ArrFund newFund = arrangementService
-                .createFundWithScenario(name, ruleSet, arrangementType);
+                .createFundWithScenario(name, ruleSet, internalCode, dateRange);
 
         return factoryVo.createFundVO(newFund, true);
     }
@@ -1203,7 +1197,7 @@ public class ArrangementController {
 
 
     /**
-     * Vstupní parametry pro metodu /faTree {@link #getFaTree(FaTreeParam)}.
+     * Vstupní parametry pro metodu /faTree {@link #getFundTree(FaTreeParam)}.
      */
     public static class FaTreeParam {
 
@@ -1258,7 +1252,7 @@ public class ArrangementController {
     }
 
     /**
-     * Vstupní parametry pro metodu /faTree/nodes {@link #getFaTreeNodes(FaTreeNodesParam)}.
+     * Vstupní parametry pro metodu /faTree/nodes {@link #getFundTreeNodes(FaTreeNodesParam)}.
      */
     public static class FaTreeNodesParam {
 

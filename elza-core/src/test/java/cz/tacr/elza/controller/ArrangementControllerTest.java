@@ -421,13 +421,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     private ArrFundVersionVO approvedVersion(final ArrFundVersionVO fundVersion) {
         Assert.notNull(fundVersion);
         List<RulRuleSetVO> ruleSets = getRuleSets();
-        RulArrangementTypeVO arrangementType = ruleSets.get(0).getArrangementTypes().get(1);
-        ArrFundVersionVO newFundVersion = approveVersion(fundVersion, arrangementType);
+        ArrFundVersionVO newFundVersion = approveVersion(fundVersion, ruleSets.get(0), fundVersion.getDateRange());
 
         Assert.isTrue(!fundVersion.getId().equals(newFundVersion.getId()),
                 "Musí být odlišné identifikátory");
-        Assert.isTrue(!fundVersion.getArrangementType().getId().equals(
-                newFundVersion.getArrangementType().getId()), "Musí být odlišné typy výstupu");
 
         return newFundVersion;
     }
@@ -448,7 +445,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      * Vytvoření AP.
      */
     private ArrFundVO createdFund() {
-        ArrFundVO fund = createFund(NAME_AP);
+        ArrFundVO fund = createFund(NAME_AP, "IC1");
         Assert.notNull(fund);
         return fund;
     }
@@ -456,7 +453,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     @Test
     public void packetsTest() {
 
-        ArrFundVO fund = createFund("Packet Test AP");
+        ArrFundVO fund = createFund("Packet Test AP", "IC2");
 
         List<RulPacketTypeVO> packetTypes = getPacketTypes();
 
@@ -525,7 +522,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     @Test
     public void registerLinksTest() {
 
-        ArrFundVO fund = createFund("RegisterLinks Test AP");
+        ArrFundVO fund = createFund("RegisterLinks Test AP", "IC3");
 
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 

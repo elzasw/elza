@@ -49,8 +49,6 @@ public abstract class AbstractTest {
     @Autowired
     protected DataTypeRepository dataTypeRepository;
     @Autowired
-    private FaViewRepository faViewRepository;
-    @Autowired
     private DataRepository arrDataRepository;
     @Autowired
     protected RegisterTypeRepository registerTypeRepository;
@@ -114,6 +112,10 @@ public abstract class AbstractTest {
     protected PartyCreatorRepository partyCreatorRepository;
     @Autowired
     protected PartyGroupIdentifierRepository partyGroupIdentifierRepository;
+    @Autowired
+    protected InstitutionRepository institutionRepository;
+    @Autowired
+    protected InstitutionTypeRepository institutionTypeRepository;
 
     @Autowired
     private UtilsTest utilsTest;
@@ -158,7 +160,6 @@ public abstract class AbstractTest {
         nodeConformityMissingRepository.deleteAll();
         nodeConformityInfoRepository.deleteAll();
         descItemConstraintRepository.deleteAll();
-        faViewRepository.deleteAll();
         versionConformityInfoRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
@@ -168,6 +169,7 @@ public abstract class AbstractTest {
         descItemSpecRegisterRepository.deleteAll();
         nodeRepository.deleteAll();
         changeRepository.deleteAll();
+        institutionRepository.deleteAll();
     }
 
     /**

@@ -14,6 +14,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
@@ -30,29 +31,6 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.config.ConfigRules;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.BulkActionStateVO;
-import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.NodeConformityVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegRecordSimple;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
-import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemTypeLiteVO;
@@ -656,7 +634,7 @@ public class ClientFactoryVO {
             Date lockDate = Date.from(lockChange.getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
             fundVersionVO.setLockDate(lockDate);
         }
-        fundVersionVO.setArrangementType(createArrangementType(fundVersion.getArrangementType()));
+        fundVersionVO.setDateRange(fundVersion.getDateRange());
 
         return fundVersionVO;
     }
@@ -1096,5 +1074,25 @@ public class ClientFactoryVO {
             scenarioVO.setGroups(createDescItemGroupsNew(ruleCode, fundId, scenarioOfNewLevel.getDescItems()));
         }
         return scenarioVO;
+    }
+
+    /**
+     * Vytvořit VO pro seznam rule set.
+     *
+     * @param ruleSets seznam DO
+     * @return seznam VO
+     */
+    public List<RulRuleSetVO> createRuleSetList(final List<RulRuleSet> ruleSets) {
+        return createList(ruleSets, RulRuleSetVO.class, null);
+    }
+
+    /**
+     * Vytvořit VO pro seznam institucí.
+     *
+     * @param institutions seznam DO
+     * @return seznam VO
+     */
+    public List<ParInstitutionVO> createInstitutionList(final List<ParInstitution> institutions) {
+        return createList(institutions, ParInstitutionVO.class, null);
     }
 }

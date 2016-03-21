@@ -28,7 +28,7 @@ public class ClientEventTest extends AbstractControllerTest {
 
     @Test
     public void testEventPublish() {
-        ArrFundVO test_publish = createFund("test_publish");
+        ArrFundVO test_publish = createFund("test_publish", "IC4");
 
 
         Collection<AbstractEventSimple> lastEvents = ((ClientDataChangesServiceTest) clientDataChangesService)

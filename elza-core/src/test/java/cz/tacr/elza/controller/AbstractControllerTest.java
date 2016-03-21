@@ -13,6 +13,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,31 +34,6 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPartyWithCount;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRecordWithCount;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
-import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
@@ -179,6 +155,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/deleteVariantRecord";
 
     protected static final String RECORD_TYPES_FOR_PARTY_TYPE = REGISTRY_CONTROLLER_URL + "/recordTypesForPartyType";
+
+    protected static final String INSTITUTIONS = PARTY_CONTROLLER_URL + "/institutions";
 
     // RULE
     protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
@@ -326,20 +304,35 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
+     * Získání seznamu institucí.
+     *
+     * @return seznamu institucí
+     */
+    protected List<ParInstitutionVO> getInstitutions() {
+        Response response = get(INSTITUTIONS);
+        return Arrays.asList(response.getBody().as(ParInstitutionVO[].class));
+    }
+
+    /**
      * Vytvoření archivní pomůcky.
      *
      * @param name              název AP
-     * @param arrangementTypeId identifikátor výstupu
      * @param ruleSetId         identifikátor pravidel
+     * @param institutionId     identifikátor instituce
+     * @param dateRange         vysčítaná informace o časovém rozsahu fondu
      * @return ap
      */
     protected ArrFundVO createFund(final String name,
-                                   final Integer arrangementTypeId,
-                                   final Integer ruleSetId) {
+                                   final Integer ruleSetId,
+                                   final Integer institutionId,
+                                   final String internalCode,
+                                   final String dateRange) {
         Response response = post(spec -> spec
                 .queryParameter("name", name)
-                .queryParameter("arrangementTypeId", arrangementTypeId)
-                .queryParameter("ruleSetId", ruleSetId), CREATE_FUND);
+                .queryParameter("ruleSetId", ruleSetId)
+                .queryParameter("institutionId", institutionId)
+                .queryParameter("internalCode", internalCode)
+                .queryParameter("dateRange", dateRange), CREATE_FUND);
         return response.getBody().as(ArrFundVO.class);
     }
 
@@ -349,11 +342,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param name název AP
      * @return ap
      */
-    protected ArrFundVO createFund(final String name) {
+    protected ArrFundVO createFund(final String name, final String internalCode) {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
-        RulArrangementTypeVO arrangementType = ruleSet.getArrangementTypes().get(0);
-        return createFund(name, arrangementType.getId(), ruleSet.getId());
+        ParInstitutionVO institution = getInstitutions().get(0);
+        return createFund(name, ruleSet.getId(), institution.getId(), internalCode, null);
     }
 
     /**
@@ -371,28 +364,29 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Uzavření verze archivní pomůcky.
      *
      * @param fundVersion verze archivní pomůcky
-     * @param arrangementType   typ výstupu
+     * @param ruleSet   typ výstupu
      * @return nová verze ap
      */
     protected ArrFundVersionVO approveVersion(final ArrFundVersionVO fundVersion,
-                                              final RulArrangementTypeVO arrangementType) {
-        return approveVersion(fundVersion.getId(), arrangementType.getId(), arrangementType.getRuleSetId());
+                                              final RulRuleSetVO ruleSet,
+                                              final String dateRange) {
+        return approveVersion(fundVersion.getId(), ruleSet.getId(), dateRange);
     }
 
     /**
      * Uzavření verze archivní pomůcky.
      *
      * @param versionId         identifikátor verze archivní pomůcky
-     * @param arrangementTypeId identifikátor výstupu
+     * @param dateRange identifikátor výstupu
      * @param ruleSetId         identifikátor pravidel
      * @return nová verze ap
      */
     protected ArrFundVersionVO approveVersion(final Integer versionId,
-                                              final Integer arrangementTypeId,
-                                              final Integer ruleSetId) {
+                                              final Integer ruleSetId,
+                                              final String dateRange) {
         Response response = put(spec -> spec
                 .queryParameter("versionId", versionId)
-                .queryParameter("arrangementTypeId", arrangementTypeId)
+                .queryParameter("dateRange", dateRange)
                 .queryParameter("ruleSetId", ruleSetId), APPROVE_VERSION);
         return response.getBody().as(ArrFundVersionVO.class);
     }
