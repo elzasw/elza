@@ -34,6 +34,15 @@ function getMapFromList(list, attrName = 'id') {
 }
 exports.getMapFromList = getMapFromList
 
+function getSetFromIdsList(list) {
+    var map = {}
+    list.forEach(x => {
+        map[x] = true
+    })
+    return map
+}
+exports.getSetFromIdsList = getSetFromIdsList
+
 function indexById(arr, id, attrName = 'id') {
     if (arr == null) {
         return null;

@@ -11,7 +11,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components';
 import {DataGrid, DataGridPagination, Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
-import {ModalDialog, NodeTabs, FundTreeTabs} from 'components';
+import {NodeTabs, FundTreeTabs} from 'components';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {modalDialogShow} from 'actions/global/modalDialog'

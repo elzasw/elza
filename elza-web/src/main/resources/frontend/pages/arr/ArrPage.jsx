@@ -29,6 +29,7 @@ import {Utils} from 'components'
 import {barrier} from 'components/Utils';
 import {isFundRootId} from 'components/arr/ArrUtils';
 import {setFocus} from 'actions/global/focus'
+import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 
 var _developerSelectedTab = 0
 
@@ -60,6 +61,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     componentDidMount() {
+        this.dispatch(descItemTypesFetchIfNeeded());
         this.dispatch(packetTypesFetchIfNeeded());
         var fundId = this.getActiveFundId();
         if (fundId !== null) {
@@ -68,6 +70,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        this.dispatch(descItemTypesFetchIfNeeded());
         this.dispatch(packetTypesFetchIfNeeded());
         var fundId = this.getActiveFundId();
         if (fundId !== null) {

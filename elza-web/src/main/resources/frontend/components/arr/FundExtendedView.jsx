@@ -10,6 +10,7 @@ import {FundDataGrid, DataGrid, DataGridPagination, AbstractReactComponent, i18n
 import * as types from 'actions/constants/ActionTypes';
 import {Button} from 'react-bootstrap';
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes'
+import {fundExtendedView} from 'actions/arr/fund'
 import {indexById} from 'stores/app/utils.jsx'
 import {getNodeParents, getNodeParent} from './ArrUtils'
 

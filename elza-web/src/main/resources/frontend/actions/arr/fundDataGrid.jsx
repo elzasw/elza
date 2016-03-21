@@ -17,10 +17,16 @@ export function isFundDataGridAction(action) {
         case types.FUND_FUND_DATA_GRID_PAGE_INDEX:
         case types.FUND_FUND_DATA_GRID_COLUMN_SIZE:
         case types.FUND_FUND_DATA_GRID_SELECTION:
+        case types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS:
             return true
         default:
             return false
     }
+}
+
+export function findAndReplace(versionId, descItemTypeId,  findText, replaceText, ids) {
+    //WebApi.
+    console.log('#####findAndReplace', versionId, descItemTypeId, findText, replaceText, ids)
 }
 
 export function fundDataGridFetchFilterIfNeeded(versionId) {
@@ -102,6 +108,18 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
 export function fundDataGridSetPageSize(versionId, pageSize) {
     return (dispatch, getState) => {
         dispatch(_setPageSize(versionId, pageSize))
+    }
+}
+
+/**
+ * Obecné nastavení sloupečků.
+ */
+export function fundDataGridSetColumnsSettings(versionId, visibleColumns, columnsOrder) {
+    return {
+        type: types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS,
+        versionId,
+        visibleColumns,
+        columnsOrder,
     }
 }
 
