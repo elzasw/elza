@@ -5,63 +5,23 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Loading, DataGrid, DataGridPagination} from 'components';
+import {FundFindAndReplaceForm, Icon, ListBox, DataGridColumnsSettings, AbstractReactComponent, i18n, Loading, DataGrid, DataGridPagination} from 'components';
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import * as types from 'actions/constants/ActionTypes';
-import {fundDataGridSetSelection, fundDataGridSetColumnSize, fundDataGridFetchFilterIfNeeded, fundDataGridFetchDataIfNeeded, fundDataGridSetPageIndex, fundDataGridSetPageSize} from 'actions/arr/fundDataGrid'
+import {fundDataGridSetColumnsSettings, fundDataGridSetSelection, fundDataGridSetColumnSize, fundDataGridFetchFilterIfNeeded,
+        fundDataGridFetchDataIfNeeded, fundDataGridSetPageIndex, fundDataGridSetPageSize,
+        findAndReplace} from 'actions/arr/fundDataGrid'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
-import {getMapFromList} from 'stores/app/utils'
+import {getSetFromIdsList, getMapFromList} from 'stores/app/utils'
 import {propsEquals} from 'components/Utils'
-
-var cols = []
-
-cols.push({
-    id: 1,
-    dataName: 'id',
-    title: 'Id',
-    desc: 'popis id',
-    width: 60,
-})
-cols.push({
-    id: 2,
-    dataName: 'firstname',
-    title: 'Jmeno',
-    desc: 'popis jmena',
-    width: 120,
-})
-cols.push({
-    id: 3,
-    dataName: 'surname',
-    title: 'Prijmeni',
-    desc: 'popis prijmeni',
-    width: 120,
-})
-cols.push({
-    id: 4,
-    dataName: 'age',
-    title: 'Vek',
-    desc: 'popis vek',
-    width: 160,
-})
-cols.push({
-    id: 5,
-    dataName: 'address',
-    title: 'Adresa',
-    desc: 'popis adresy',
-    width: 220,
-})
-cols.push({
-    id: 6,
-    dataName: 'tel',
-    title: 'Telefon',
-    desc: 'popis telefonu',
-    width: 120,
-})
+import {Button} from 'react-bootstrap'
 
 var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleSelectedIdsChange', 'handleColumnResize');
+        this.bindMethods('handleSelectedIdsChange', 'handleColumnResize', 'handleColumnSettings', 'handleChangeColumnsSettings',
+            'handleFindAndReplace', 'headerColRenderer');
 
         const colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
         if (colState) {
@@ -88,6 +48,15 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         const colState = this.getColsStateFromProps(nextProps, this.props)
         colState && this.setState(colState)
+    }
+
+    headerColRenderer(col) {
+        return (
+            <div className='' title={col.refType.name}>
+                {col.refType.shortcut}
+                <Button onClick={this.handleFindAndReplace.bind(this, col.refType)}><Icon glyph='fa-edit'/></Button>
+            </div>
+        )
     }
 
     getColsStateFromProps(nextProps, props) {
@@ -150,10 +119,12 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
                 const col = {
                     id: refType.id,
+                    refType: refType,
                     title: refType.shortcut,
                     desc: refType.name,
                     width: colInfo ? colInfo.width : 60,
                     dataName: refType.id,
+                    headerColRenderer: this.headerColRenderer,
                 }
                 cols.push(col)
             }
@@ -172,6 +143,86 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(fundDataGridSetSelection(versionId, ids))
     }
 
+    handleColumnSettings() {
+        const {fundDataGrid, descItemTypes} = this.props
+        const refTypesMap = getMapFromList(descItemTypes.items)
+        const columnsOrder = this.getColumnsOrder(fundDataGrid, refTypesMap)
+        const visibleColumns = fundDataGrid.visibleColumns
+        const columns = columnsOrder.map(id => {
+            const refType = refTypesMap[id]
+            return {
+                id: refType.id,
+                title: refType.shortcut,
+                desc: refType.description,
+            }
+        })
+        this.dispatch(modalDialogShow(this, i18n('dataGrid.columnSettings.title'),
+            <DataGridColumnsSettings
+                onSubmitForm={this.handleChangeColumnsSettings}
+                columns={columns}
+                visibleColumns={visibleColumns}
+            />
+        ));
+    }
+
+    handleFindAndReplace(refType) {
+        const {versionId, fundDataGrid} = this.props
+
+        var submit = (data) => {
+            // Sestavení seznamu id
+            var ids;
+            switch (data.itemsArea) {
+                case 'all':
+                    ids = fundDataGrid.items.map(i => i.id)
+                    break
+                case 'selected':
+                    var set = getSetFromIdsList(fundDataGrid.selectedIds)
+                    ids = []
+                    fundDataGrid.items.forEach(i => {
+                        if (set[i.id]) {
+                            ids.push(i.id)
+                        }
+                    })
+                    break
+                case 'unselected':
+                    ids = []
+                    var set = getSetFromIdsList(fundDataGrid.selectedIds)
+                    fundDataGrid.items.forEach(i => {
+                        if (!set[i.id]) {
+                            ids.push(i.id)
+                        }
+                    })
+                    break
+            }
+
+            this.dispatch(findAndReplace(versionId, refType.id, data.findText, data.replaceText, ids))
+        }
+
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.findAndReplace.title'),
+            <FundFindAndReplaceForm
+                refType={refType}
+                onSubmitForm={submit}
+                allItemsCount={fundDataGrid.items.length}
+                checkedItemsCount={fundDataGrid.selectedIds.length}
+            />
+        ));
+        
+    }
+
+    handleChangeColumnsSettings(columns) {
+        const {versionId} = this.props
+
+        var visibleColumns = {}
+        var columnsOrder = []
+        columns.forEach(col => {
+            visibleColumns[col.id] = true
+            columnsOrder.push(col.id)
+        })
+        this.dispatch(fundDataGridSetColumnsSettings(versionId, visibleColumns, columnsOrder))
+
+        this.dispatch(modalDialogHide())
+    }
+
     render() {
         const {fundDataGrid, versionId, descItemTypes} = this.props;
         const {cols} = this.state;
@@ -182,6 +233,8 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         return (
             <div>
+<Button onClick={this.handleColumnSettings}><Icon glyph='fa-columns'/></Button>
+<Button onClick={this.handleFindAndReplace}><Icon glyph='fa-edit'/></Button>
                 <DataGrid
                     rows={fundDataGrid.items}
                     cols={cols}

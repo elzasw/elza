@@ -29,6 +29,7 @@ exports.Scope = require('./shared/scope/Scope');
 exports.ControllableDropdownButton = require('./shared/dropdown-button/ControllableDropdownButton');
 exports.DataGrid = require('./shared/datagrid/DataGrid');
 exports.DataGridPagination = require('./shared/datagrid/DataGridPagination');
+exports.DataGridColumnsSettings = require('./shared/datagrid/DataGridColumnsSettings');
 exports.Resizer = require('./shared/resizer/Resizer');
 
 exports.FormUtils = require('./form/FormUtils');
@@ -54,6 +55,7 @@ exports.AddNodeDropdown = require('./arr/AddNodeDropdown');
 exports.FundForm = require('./arr/FundForm');
 exports.AddPacketForm = require('./arr/AddPacketForm');
 exports.GoToPositionForm = require('./arr/GoToPositionForm');
+exports.FundFindAndReplaceForm = require('./arr/FundFindAndReplaceForm');
 exports.ArrPanel = require('./arr/ArrPanel');
 exports.BulkActionsDialog = require('./arr/BulkActionsDialog');
 exports.BulkActionsTable = require('./arr/BulkActionsTable');

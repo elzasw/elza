@@ -78,9 +78,21 @@ var messages = {
     "developer.scenarios.before": "Před",
     "developer.scenarios.child": "Pod",
 
+    "dataGrid.columnSettings.title": "Nastavení sloupců",
+    
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",
     "arr.panel.reset": "Zrušit omezení",
 
+    "arr.fund.findAndReplace.findText": "Najít",
+    "arr.fund.findAndReplace.replaceText": "Nahradit",
+    "arr.fund.findAndReplace.descItemType": "Prvek popisu",
+    "arr.fund.findAndReplace.itemsArea": "Aplikovat na jednotky popisu (JP)",
+    "arr.fund.findAndReplace.action.replace": "Nahradit",
+    "arr.fund.findAndReplace.title": "Hromadná úprava prvku popisu",
+    "arr.fund.findAndReplace.itemsArea.all": "Všechny JP na stránce ({0})",
+    "arr.fund.findAndReplace.itemsArea.selected": "Jen zaškrtnuté JP na stránce ({0})",
+    "arr.fund.findAndReplace.itemsArea.unselected": "Jen odškrtnuté JP na stránce ({0})",
+    
     "arr.fund.title.add": "Vytvoření nového AS",
     "arr.fund.title.update": "Úprava AS",
     "arr.fund.title.approve": "Uzavření verze AS",

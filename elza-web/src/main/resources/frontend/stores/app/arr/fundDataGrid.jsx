@@ -20,7 +20,7 @@ const initialState = {
     columnInfos: {},    // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
     selectedIds: [],
 }
-for (var a=1; a<100; a++) {
+for (var a=1; a<10; a++) {
 initialState.visibleColumns[a] = true
 }
 
@@ -32,6 +32,12 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 pageSize: action.pageSize,
                 pageIndex: 0,
                 dirty: true,
+            }
+        case types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS:
+            return {
+                ...state,
+                visibleColumns: action.visibleColumns,
+                columnsOrder: action.columnsOrder,
             }
         case types.FUND_FUND_DATA_GRID_COLUMN_SIZE:
             var columnInfos = {...state.columnInfos}

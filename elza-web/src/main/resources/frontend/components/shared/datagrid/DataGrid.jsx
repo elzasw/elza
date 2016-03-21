@@ -284,9 +284,9 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             )
         } else {
             if (col.cellRenderer) {
-                content = col.cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus)
+                content = <div className='cell-container'>col.cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus)</div>
             } else {
-                content = <div className='cell-container'>{row[col.dataName]}</div>
+                content = <div className='cell-container'><div className='value'>{row[col.dataName]}</div></div>
             }
         }
 
@@ -327,9 +327,13 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             content = <div className='cell-container'></div>
         } else {
             if (col.headerColRenderer) {
-                content = col.headerColRenderer(col)
+                content = <div className='cell-container'>{col.headerColRenderer(col)}</div>
             } else {
-                content = <div className='cell-container' title={col.desc}>{col.title}</div>
+                content = (
+                    <div className='cell-container'>
+                        <div className='value' title={col.desc}>{col.title}</div>
+                    </div>
+                )
             }
         }
 
