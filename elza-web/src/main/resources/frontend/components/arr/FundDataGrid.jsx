@@ -16,6 +16,8 @@ import {getSetFromIdsList, getMapFromList} from 'stores/app/utils'
 import {propsEquals} from 'components/Utils'
 import {Button} from 'react-bootstrap'
 
+require ('./FundDataGrid.less')
+
 var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -232,23 +234,27 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         }
 
         return (
-            <div>
-<Button onClick={this.handleColumnSettings}><Icon glyph='fa-columns'/></Button>
-<Button onClick={this.handleFindAndReplace}><Icon glyph='fa-edit'/></Button>
-                <DataGrid
-                    rows={fundDataGrid.items}
-                    cols={cols}
-                    selectedIds={fundDataGrid.selectedIds}
-                    onColumnResize={this.handleColumnResize}
-                    onSelectedIdsChange={this.handleSelectedIdsChange}
-                />
-                <DataGridPagination
-                    itemsCount={fundDataGrid.itemsCount}
-                    pageSize={fundDataGrid.pageSize}
-                    pageIndex={fundDataGrid.pageIndex}
-                    onSetPageIndex={pageIndex => {this.props.dispatch(fundDataGridSetPageIndex(versionId, pageIndex))}}
-                    onChangePageSize={pageSize => {this.props.dispatch(fundDataGridSetPageSize(versionId, pageSize))}}
-                />
+            <div className='fund-datagrid-container'>
+                <div className='actions-container'>
+                    <Button onClick={this.handleColumnSettings}><Icon glyph='fa-columns'/></Button>
+                    <Button onClick={this.handleFindAndReplace}><Icon glyph='fa-edit'/></Button>
+                </div>
+                <div className='grid-container'>
+                    <DataGrid
+                        rows={fundDataGrid.items}
+                        cols={cols}
+                        selectedIds={fundDataGrid.selectedIds}
+                        onColumnResize={this.handleColumnResize}
+                        onSelectedIdsChange={this.handleSelectedIdsChange}
+                    />
+                    <DataGridPagination
+                        itemsCount={fundDataGrid.itemsCount}
+                        pageSize={fundDataGrid.pageSize}
+                        pageIndex={fundDataGrid.pageIndex}
+                        onSetPageIndex={pageIndex => {this.props.dispatch(fundDataGridSetPageIndex(versionId, pageIndex))}}
+                        onChangePageSize={pageSize => {this.props.dispatch(fundDataGridSetPageSize(versionId, pageSize))}}
+                    />
+                </div>
             </div>
         )
     }
