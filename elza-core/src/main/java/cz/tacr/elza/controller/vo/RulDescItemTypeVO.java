@@ -65,11 +65,6 @@ public class RulDescItemTypeVO {
     private Integer viewOrder;
 
     /**
-     * pouze pro archivní pomůcku
-     */
-    private Boolean faOnly;
-
-    /**
      * typ důležitosti
      */
     @Deprecated
@@ -164,14 +159,6 @@ public class RulDescItemTypeVO {
 
     public void setViewOrder(final Integer viewOrder) {
         this.viewOrder = viewOrder;
-    }
-
-    public Boolean getFaOnly() {
-        return faOnly;
-    }
-
-    public void setFaOnly(final Boolean faOnly) {
-        this.faOnly = faOnly;
     }
 
     public RulDescItemType.Type getType() {

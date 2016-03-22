@@ -6,7 +6,7 @@ package cz.tacr.elza.api;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 19.11.2015
  */
-public interface ArrNodeConformityError<ANCI extends ArrNodeConformity, ADI extends ArrDescItem> {
+public interface ArrNodeConformityError<ANCI extends ArrNodeConformity, ADI extends ArrDescItem, PT extends RulPolicyType> {
 
     /**
      * @return id chyby
@@ -54,4 +54,14 @@ public interface ArrNodeConformityError<ANCI extends ArrNodeConformity, ADI exte
      * @param description textový popis chyby
      */
     void setDescription(String description);
+
+    /**
+     * @return typy kontrol, validací, archivního popisu
+     */
+    PT getPolicyType();
+
+    /**
+     * @param policyType typy kontrol, validací, archivního popisu
+     */
+    void setPolicyType(PT policyType);
 }

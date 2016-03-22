@@ -52,13 +52,13 @@ public interface RulDataType extends Serializable {
     /**
      * @return příznak, zda je možná u datového typu kontrola na maximální možnou délku textového řetězce.
      */
-    Boolean getTextLenghtLimitUse();
+    Boolean getTextLengthLimitUse();
 
 
     /**
-     * @param textLenghtLimitUse příznak, zda je možná u datového typu kontrola na maximální možnou délku textového řetězce.
+     * @param textLengthLimitUse příznak, zda je možná u datového typu kontrola na maximální možnou délku textového řetězce.
      */
-    void setTextLenghtLimitUse(final Boolean textLenghtLimitUse);
+    void setTextLengthLimitUse(final Boolean textLengthLimitUse);
 
 
     /**
