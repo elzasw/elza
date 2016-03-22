@@ -48,7 +48,7 @@ public class RulDataType implements cz.tacr.elza.api.RulDataType {
     private Boolean regexpUse;
 
     @Column(nullable = false)
-    private Boolean textLenghtLimitUse;
+    private Boolean textLengthLimitUse;
 
     @Column(length = 250, nullable = false)
     private String storageTable;
@@ -104,13 +104,13 @@ public class RulDataType implements cz.tacr.elza.api.RulDataType {
     }
 
     @Override
-    public Boolean getTextLenghtLimitUse() {
-        return textLenghtLimitUse;
+    public Boolean getTextLengthLimitUse() {
+        return textLengthLimitUse;
     }
 
     @Override
-    public void setTextLenghtLimitUse(final Boolean textLenghtLimitUse) {
-        this.textLenghtLimitUse = textLenghtLimitUse;
+    public void setTextLengthLimitUse(final Boolean textLengthLimitUse) {
+        this.textLengthLimitUse = textLengthLimitUse;
     }
 
     @Override

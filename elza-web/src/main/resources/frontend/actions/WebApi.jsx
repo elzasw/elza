@@ -4,13 +4,6 @@
 
 import {AjaxUtils} from 'components';
 
-/*
-AjaxUtils.ajaxGet('/api/arrangementManager/getFunds')
-    .then(json=>{
-        console.log(1111, json);
-    });
-*/
-
 class WebApi{
     constructor() {
     }
@@ -638,120 +631,33 @@ class WebApi{
     getInstitutions() {
         return AjaxUtils.ajaxGet('/api/partyManagerV2/institutions');
     }
+    // Hledá všechny unikátní hodnoty atributu pro daný AS
+    getDescItemTypeValues(versionId, descItemTypeId, filter, descItemSpecIds, max) {
+console.log("###getDescItemTypeValues", versionId, descItemTypeId, filter, descItemSpecIds)
 
-}
+        return new Promise(function (resolve, reject) {
+            var result = []
 
-function findNodeById(node, nodeId) {
-    if (node.id == nodeId) {
-        return node;
-    }
+            var items = []
+            for (var a=0; a<300; a++) {
+                if (descItemTypeId % 3 === 0) {
+                    items.push({value: 'aaa ' + a})
+                } else {
+                    items.push({specId: a % 20, value: 'aaa ' + a})
+                }
+            }
 
-    for (var a=0; a<node.children.length; a++) {
-        var ret = findNodeById(node.children[a], nodeId);
-        if (ret !== null) {
-            return ret;
-        }
-    }
+            const ftext = filter.toLowerCase()
+            var searchedItems = []
+            items.forEach(i => {
+                if (!filter || i.value.toLowerCase().indexOf(ftext) !== -1) {
+                    searchedItems.push(i)
+                }
+            })
 
-    return null;
-}
-function generateFlatTree(nodes, expandedIds, out) {
-    nodes.each(node => {
-        node.hasChildren = node.children && node.children.length > 0;
-        out.push(node);
-        if (expandedIds[node.id]) {
-            generateFlatTree(node.children, expandedIds, out);
-        }
-    });
-}
-function buildTree(node, depth) {
-    _nodeMap[node.id] = node;
-
-    if (depth > 3) {
-        return;
-    }
-    var len = (depth + depth % 5) * 3;
-if (depth == 1) {
-len = 40;
-}
-    for (var a=0; a<len; a++) {
-        _nodeId++;
-        var child = {id: _nodeId, name: node.name + "_" + _nodeId, depth: depth, children: []};
-        child.parent = node;
-        node.children.push(child);
-        buildTree(child, depth + 1);
+            resolve(searchedItems)
+        })
     }
 }
-var _nodeMap = {};
-var _nodeId = 1;
-var _faRootNode = {id: 0, name: 'Reyl František, ThDr. 1893-1935', depth: 0, parent: null, children: []}
-var _ch1 = {id: _nodeId++, name: 'Node', depth: 1, parent: _faRootNode, children: []}
 
-var _ch2 = {id: _nodeId++, name: 'ŽIVOTOPISNÝ MATERIÁL', depth: 1, parent: _faRootNode, children: []}
-var _ch21 = {id: _nodeId++, name: 'PÍSEMNOSTI CIZÍCH OSOB', depth: 2, parent: _ch2, children: []}
-var _ch211 = {id: _nodeId++, name: 'Úmrtní oznámení', depth: 3, parent: _ch21, children: []}
-var _ch212 = {id: _nodeId++, name: 'Diplom čestného členství v Československé straně lidové', depth: 3, parent: _ch21, children: []}
-var _ch213 = {id: _nodeId++, name: 'Legitimace účastníka 1. Národní pouti československých katolíkůdo Říma', depth: 3, parent: _ch21, children: []}
-var _ch214 = {id: _nodeId++, name: 'Legitimace člena Národního shromáždění', depth: 3, parent: _ch21, children: []}
-var _ch215 = {id: _nodeId++, name: 'Legitimace člena Národního shromáždění', depth: 3, parent: _ch21, children: []}
-_ch2.children.push(_ch21);
-_ch21.children.push(_ch211);
-_ch21.children.push(_ch212);
-_ch21.children.push(_ch213);
-_ch21.children.push(_ch214);
-_ch21.children.push(_ch215);
-
-var _ch3 = {id: _nodeId++, name: 'KORESPONDENCE', depth: 1, parent: _faRootNode, children: []}
-var _ch31 = {id: _nodeId++, name: 'Osobní', depth: 2, parent: _ch3, children: []}
-var _ch32 = {id: _nodeId++, name: 'Blahopřání - přijatá', depth: 2, parent: _ch3, children: []}
-var _ch321 = {id: _nodeId++, name: 'Blahopřání k šedesátinám od Župního výboru čsl. strany lidové župy Hradec Králové', depth: 3, parent: _ch32, children: []}
-var _ch322 = {id: _nodeId++, name: 'Blahopřání k jmeninám', depth: 3, parent: _ch32, children: []}
-var _ch323 = {id: _nodeId++, name: 'Blahopřání k sedmdesátinám od zaměstnanců kapitulního velkostatku Skály (Bischofstein)', depth: 3, parent: _ch32, children: []}
-var _ch33 = {id: _nodeId++, name: 'Blahopřání - odeslaná', depth: 2, parent: _ch3, children: []}
-var _ch331 = {id: _nodeId++, name: 'Poděkování za blahopřání k sedmdesátinám', depth: 3, parent: _ch33, children: []}
-_ch3.children.push(_ch31);
-_ch3.children.push(_ch32);
-_ch3.children.push(_ch33);
-_ch32.children.push(_ch321);
-_ch32.children.push(_ch322);
-_ch32.children.push(_ch323);
-_ch33.children.push(_ch331);
-
-var _ch4 = {id: _nodeId++, name: 'ILUSTRAČNÍ MATERIÁL', depth: 1, parent: _faRootNode, children: []}
-var _ch41 = {id: _nodeId++, name: 'Fotografie Františka Reyla', depth: 2, parent: _ch4, children: []}
-var _ch411 = {id: _nodeId++, name: 'Portrétní fotografie', depth: 3, parent: _ch41, children: []}
-var _ch412 = {id: _nodeId++, name: 'Skupinové fotografie ', depth: 3, parent: _ch41, children: []}
-var _ch42 = {id: _nodeId++, name: 'Jiné', depth: 2, parent: _ch4, children: []}
-var _ch421 = {id: _nodeId++, name: 'Album fotografií, korespondence a blahopřání', depth: 3, parent: _ch42, children: []}
-var _ch422 = {id: _nodeId++, name: 'Album blahopřejných projevů k narozeninám a korespondence', depth: 3, parent: _ch42, children: []}
-var _ch423 = {id: _nodeId++, name: 'Album blahopřejných projevů k sedmdesátinám a korespondence', depth: 3, parent: _ch42, children: []}
-_ch4.children.push(_ch41);
-_ch41.children.push(_ch411);
-_ch41.children.push(_ch412);
-_ch4.children.push(_ch42);
-_ch42.children.push(_ch421);
-_ch42.children.push(_ch422);
-_ch42.children.push(_ch423);
-
-var _ch5 = {id: _nodeId++, name: 'PÍSEMNOSTI TÝKAJÍCÍ SE RODINNÝCH PŘÍSLUŠNÍKŮ', depth: 1, parent: _faRootNode, children: []}
-var _ch51 = {id: _nodeId++, name: 'Poděkování za projev soustrasti (Antonie Bartošková a rodina Reylova-Greifova)', depth: 2, parent: _ch5, children: []}
-_ch5.children.push(_ch51);
-
-var _ch6 = {id: _nodeId++, name: 'PÍSEMNOSTI CIZÍCH OSOB', depth: 1, parent: _faRootNode, children: []}
-var _ch61 = {id: _nodeId++, name: 'Zbožná upomínka na zesnulého Františka Reyla', depth: 2, parent: _ch6, children: []}
-_ch6.children.push(_ch61);
-
-_faRootNode.children.push(_ch2);
-_faRootNode.children.push(_ch3);
-_faRootNode.children.push(_ch4);
-_faRootNode.children.push(_ch5);
-_faRootNode.children.push(_ch6);
-_faRootNode.children.push(_ch1);
-buildTree(_ch1, 2);
-_ch1.name = 'Velká testovací data';
-
-//AjaxUtils.ajaxGet('/api/arrangementManager/getLevel', {nodeId: 10, versionId: 3})
-//            .then(json=>console.log("LEVEL", json));
-
-//module.exports = new WebApiRestOld2
 module.exports = new WebApi();

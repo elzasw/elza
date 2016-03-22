@@ -3,18 +3,18 @@ package cz.tacr.elza.drools;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.PolicyTypeRepository;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.RulArrangementType;
-import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
 import cz.tacr.elza.drools.model.ActiveLevel;
@@ -40,6 +40,7 @@ public class ValidationRules extends Rules {
 
 	@Autowired
 	private ScriptModelFactory scriptModelFactory;
+
 	@Autowired
 	private DescItemTypeRepository descItemTypeRepository;
 
@@ -49,6 +50,11 @@ public class ValidationRules extends Rules {
 	@Autowired
 	private RulesExecutor rulesExecutor;
 
+	@Autowired
+	private PolicyTypeRepository policyTypeRepository;
+
+	private Log logger = LogFactory.getLog(this.getClass());
+
 	/**
 	 * Spustí validaci atributů.
 	 *
@@ -56,12 +62,9 @@ public class ValidationRules extends Rules {
 	 *            level, na kterým spouštíme validaci
 	 * @param version
 	 *            verze, do které spadá uzel
-	 * @param strategies
-	 *            strategie vyhodnocování
 	 * @return seznam validačních chyb nebo prázdný seznam
 	 */
-	public synchronized List<DataValidationResult> execute(final ArrLevel level, final ArrFundVersion version,
-			final Set<String> strategies) throws Exception {
+	public synchronized List<DataValidationResult> execute(final ArrLevel level, final ArrFundVersion version) throws Exception {
 
 		LinkedList<Object> facts = new LinkedList<>();
 
@@ -69,9 +72,6 @@ public class ValidationRules extends Rules {
 		Level modelLevel = scriptModelFactory.createLevelModel(level, version);
 		ActiveLevel activeLevel = scriptModelFactory.createActiveLevel(modelLevel, level, version);
 		ModelFactory.addAll(activeLevel, facts);
-
-		// Add strategies
-		facts.addAll(ModelFactory.createStrategies(strategies));
 
 		DataValidationResults validationResults = new DataValidationResults();
 
@@ -101,28 +101,53 @@ public class ValidationRules extends Rules {
 	 */
 	private void finalizeValidationResults(final List<DataValidationResult> validationResults) {
 
-		for (DataValidationResult validationResult : validationResults) {
+		Map<String, RulPolicyType> policyTypesMap = getPolicyTypesMap();
+
+		Iterator<DataValidationResult> iterator = validationResults.iterator();
+
+		while (iterator.hasNext()) {
+			DataValidationResult validationResult = iterator.next();
+
+			RulPolicyType rulPolicyType = policyTypesMap.get(validationResult.getPolicyTypeCode());
+
+			if (rulPolicyType == null) {
+				logger.warn("Kód '" + validationResult.getPolicyTypeCode() + "' neexistuje. Je nutné upravit drools pravidla");
+				iterator.remove();
+				continue;
+			}
+
+			validationResult.setPolicyType(rulPolicyType);
+
 			switch (validationResult.getResultType()) {
 
-			case MISSING:
-				String missingTypeCode = validationResult.getTypeCode();
-				if (missingTypeCode == null) {
-					throw new IllegalStateException("Neni vyplnen kod chybejiciho typu.");
-				}
-				validationResult.setType(descItemTypeRepository.getOneByCode(missingTypeCode));
-				break;
-			case ERROR:
-				Integer descItemId = validationResult.getDescItemId();
-				if (descItemId == null) {
-					throw new IllegalStateException("Neni vyplneno id chybneho atributu.");
-				}
-				validationResult.setDescItem(descItemRepository.findOne(descItemId));
-				break;
-			default:
-				throw new IllegalArgumentException(
-						"Neznamy typ vysledku validace " + validationResult.getResultType().name());
+				case MISSING:
+					String missingTypeCode = validationResult.getTypeCode();
+					if (missingTypeCode == null) {
+						throw new IllegalStateException("Neni vyplnen kod chybejiciho typu.");
+					}
+					validationResult.setType(descItemTypeRepository.getOneByCode(missingTypeCode));
+					break;
+				case ERROR:
+					Integer descItemId = validationResult.getDescItemId();
+					if (descItemId == null) {
+						throw new IllegalStateException("Neni vyplneno id chybneho atributu.");
+					}
+					validationResult.setDescItem(descItemRepository.findOne(descItemId));
+					break;
+				default:
+					throw new IllegalArgumentException(
+							"Neznamy typ vysledku validace " + validationResult.getResultType().name());
 			}
 		}
+	}
+
+	/**
+	 * Získání mapy typů kontrol.
+	 * @return mapa typů kontrol
+     */
+	private Map<String, RulPolicyType> getPolicyTypesMap() {
+		List<RulPolicyType> policyTypes = policyTypeRepository.findAll();
+		return policyTypes.stream().collect(Collectors.toMap(RulPolicyType::getCode, Function.identity()));
 	}
 
 }

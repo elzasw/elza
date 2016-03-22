@@ -7,7 +7,7 @@ package cz.tacr.elza.api;
  * @since 19.11.2015
  */
 public interface ArrNodeConformityMissing<ANCI extends ArrNodeConformity,
-        RDIT extends RulDescItemType, RDIS extends RulDescItemSpec> {
+        RDIT extends RulDescItemType, RDIS extends RulDescItemSpec, PT extends RulPolicyType> {
 
     /**
      * @return id textového popisu
@@ -67,4 +67,14 @@ public interface ArrNodeConformityMissing<ANCI extends ArrNodeConformity,
      * @param description Textový popis chyby
      */
     void setDescription(String description);
+
+    /**
+     * @return typy kontrol, validací, archivního popisu
+     */
+    PT getPolicyType();
+
+    /**
+     * @param policyType typy kontrol, validací, archivního popisu
+     */
+    void setPolicyType(PT policyType);
 }

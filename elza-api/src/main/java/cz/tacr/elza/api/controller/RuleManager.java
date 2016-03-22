@@ -2,7 +2,6 @@ package cz.tacr.elza.api.controller;
 
 import java.io.File;
 import java.util.List;
-import java.util.Set;
 
 import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.ArrFundVersion;
@@ -69,8 +68,7 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @return  Seznam typů hodnot atributů
      */
     List<? extends RulDescItemType> getDescriptionItemTypesForNode(Integer fundVersionId,
-                                                                   Integer nodeId,
-                                                                   Set<String> strategies);
+                                                                   Integer nodeId);
 
     /**
      * Vrací specifikace podle typu atributu.

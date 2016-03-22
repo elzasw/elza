@@ -44,9 +44,6 @@ public class DescItemType {
     @XmlElement(name = "view-order", required = true)
     private Integer viewOrder;
 
-    @XmlElement(name = "fa-only", required = true)
-    private Boolean faOnly;
-
     public String getCode() {
         return code;
     }
@@ -117,13 +114,5 @@ public class DescItemType {
 
     public void setViewOrder(final Integer viewOrder) {
         this.viewOrder = viewOrder;
-    }
-
-    public Boolean getFaOnly() {
-        return faOnly;
-    }
-
-    public void setFaOnly(final Boolean faOnly) {
-        this.faOnly = faOnly;
     }
 }

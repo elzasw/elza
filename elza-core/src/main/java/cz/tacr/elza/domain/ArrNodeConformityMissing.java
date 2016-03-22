@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrNodeConformityMissing implements cz.tacr.elza.api.ArrNodeConformityMissing<ArrNodeConformity
-        , RulDescItemType, RulDescItemSpec> {
+        , RulDescItemType, RulDescItemSpec, RulPolicyType> {
 
     @Id
     @GeneratedValue
@@ -47,6 +47,10 @@ public class ArrNodeConformityMissing implements cz.tacr.elza.api.ArrNodeConform
 
     @Column(length = 1000, nullable = true)
     private String description;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPolicyType.class)
+    @JoinColumn(name = "policyTypeId", nullable = true)
+    private RulPolicyType policyType;
 
     @Override
     public Integer getNodeConformityMissingId() {
@@ -96,6 +100,16 @@ public class ArrNodeConformityMissing implements cz.tacr.elza.api.ArrNodeConform
     @Override
     public void setDescription(final String description) {
         this.description = description;
+    }
+
+    @Override
+    public RulPolicyType getPolicyType() {
+        return policyType;
+    }
+
+    @Override
+    public void setPolicyType(final RulPolicyType policyType) {
+        this.policyType = policyType;
     }
 
     @Override

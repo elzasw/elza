@@ -3,6 +3,7 @@ package cz.tacr.elza.domain.vo;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulPolicyType;
 
 
 /**
@@ -45,6 +46,16 @@ public class DataValidationResult {
      * Specifikace atributu.
      */
     private RulDescItemSpec spec;
+
+    /**
+     * Kód typu kontroly
+     */
+    private String policyTypeCode;
+
+    /**
+     * Typ kontroly
+     */
+    private RulPolicyType policyType;
 
     public DataValidationResult(final ValidationResultType resultType) {
         this.resultType = resultType;
@@ -101,6 +112,22 @@ public class DataValidationResult {
 
     protected void setTypeCode(final String typeCode) {
         this.typeCode = typeCode;
+    }
+
+    public void setPolicyTypeCode(final String policyTypeCode) {
+        this.policyTypeCode = policyTypeCode;
+    }
+
+    public String getPolicyTypeCode() {
+        return policyTypeCode;
+    }
+
+    public RulPolicyType getPolicyType() {
+        return policyType;
+    }
+
+    public void setPolicyType(final RulPolicyType policyType) {
+        this.policyType = policyType;
     }
 
     public enum ValidationResultType {

@@ -178,7 +178,7 @@ public class UpdateConformityInfoService {
         logger.info("Aktualizace stavu " + nodeId + " ve verzi " + versionId);
 
         registerAfterCommitListener(nodeId);
-        ruleService.setConformityInfo(levelId, versionId, elzaRules.getStrategies(versionId));
+        ruleService.setConformityInfo(levelId, versionId);
     }
 
     /**

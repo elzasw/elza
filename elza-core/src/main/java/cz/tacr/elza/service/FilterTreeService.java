@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -17,14 +16,19 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.vo.DescItemValue;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.NodeRepository;
 
 
 /**
@@ -51,6 +55,9 @@ public class FilterTreeService {
     @Autowired
     private DescriptionItemService descriptionItemService;
 
+
+    @Autowired
+    private NodeRepository nodeRepository;
 
     /**
      * Provede filtraci uzlů podle filtru a uloží všechny filtrované id do session. ID jsou seřazeny podle výskytu ve
@@ -109,7 +116,7 @@ public class FilterTreeService {
         }
 
 
-        return createResult(subIds, descItemTypeMap, nodeValuesMap);
+        return createResult(subIds, levelTreeCacheService.getVersionTreeCache(version), descItemTypeMap, nodeValuesMap);
     }
 
     /**
@@ -121,25 +128,56 @@ public class FilterTreeService {
      * @return seznam uzlů s hodnotami atributů
      */
     private List<FilterNode> createResult(final List<Integer> filteredIds,
-                                                            final Map<String, RulDescItemType> descItemTypeMap,
-                                                            final Map<Integer, Map<String, TitleValue>> valuesMap) {
+                                          final Map<Integer, TreeNode> versionCache,
+                                          final Map<String, RulDescItemType> descItemTypeMap,
+                                          final Map<Integer, Map<String, TitleValue>> valuesMap) {
 
         List<FilterNode> result = new ArrayList<>(filteredIds.size());
 
+        //načtení verzí všech uzlů a jejich rodičů
+        Set<Integer> filterWithParentIds = new HashSet<>();
+        for (Integer filteredId : filteredIds) {
+            TreeNode node = versionCache.get(filteredId);
+            TreeNode parentNode = node.getParent();
+            filterWithParentIds.add(node.getId());
+            if (parentNode != null) {
+                filterWithParentIds.add(parentNode.getId());
+            }
+        }
+        Map<Integer, ArrNode> filterWithParentIdsMap = ElzaTools
+                .createEntityMap(nodeRepository.findAll(filterWithParentIds), n -> n.getNodeId());
+
+
         for (Integer filteredId : filteredIds) {
 
-            Map<Integer, String> nodeValuesMap = new HashMap<>();
-
+            //vytvoření mapy hodnot podle typu atributu
+            Map<Integer, DescItemValue> nodeValuesMap = new HashMap<>();
             Map<String, TitleValue> nodeValues = valuesMap.get(filteredId);
             if (nodeValues != null) {
                 for (Map.Entry<String, TitleValue> nodeValueEntry : nodeValues.entrySet()) {
                     Integer descItymTypeId = descItemTypeMap.get(nodeValueEntry.getKey()).getDescItemTypeId();
                     String value = nodeValueEntry.getValue().getValue();
-                    nodeValuesMap.put(descItymTypeId, value);
+                    String spec = nodeValueEntry.getValue().getSpecCode();
+                    nodeValuesMap.put(descItymTypeId, new DescItemValue(value, spec));
                 }
             }
 
-            result.add(new FilterNode(filteredId, nodeValuesMap));
+
+            //najdeme objekt uzlu a jeho rodiče, abychom získali jejich verzi
+            TreeNode treeNode = versionCache.get(filteredId);
+            TreeNode treeParentNode = treeNode.getParent();
+
+            ArrNode arrNode = filterWithParentIdsMap.get(treeNode.getId());
+            ArrNodeVO arrNodeVo = new ArrNodeVO(arrNode.getNodeId(), arrNode.getVersion());
+            ArrNodeVO arrParentNodeVo = null;
+            if(treeParentNode != null)  {
+                ArrNode arrParentNode = filterWithParentIdsMap.get(treeParentNode.getId());
+                arrParentNodeVo = new ArrNodeVO(arrParentNode.getNodeId(), arrParentNode.getVersion());
+
+            }
+
+
+            result.add(new FilterNode(arrNodeVo, arrParentNodeVo, nodeValuesMap));
         }
 
         return result;

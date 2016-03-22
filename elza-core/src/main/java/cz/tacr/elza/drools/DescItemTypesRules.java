@@ -46,8 +46,7 @@ public class DescItemTypesRules extends Rules {
     // TODO: je nutné používat synchronized?
     public synchronized List<RulDescItemTypeExt> execute(final ArrLevel level,
                                                          final ArrFundVersion version,
-                                                         final List<RulDescItemTypeExt> rulDescItemTypeExtList,
-                                                         final Set<String> strategies)
+                                                         final List<RulDescItemTypeExt> rulDescItemTypeExtList)
             throws Exception
     {
 
@@ -58,9 +57,6 @@ public class DescItemTypesRules extends Rules {
     	Level modelLevel = scriptModelFactory.createLevelModel(level, version);
     	ActiveLevel activeLevel = scriptModelFactory.createActiveLevel(modelLevel, level, version);
     	ModelFactory.addAll(activeLevel, facts);
-
-    	// Add strategies
-    	facts.addAll(ModelFactory.createStrategies(strategies));
 
     	final RulRuleSet rulRuleSet = version.getRuleSet();
 

@@ -8,7 +8,6 @@ import cz.tacr.elza.drools.model.AvailableDescItems;
 import cz.tacr.elza.drools.model.ActiveLevel;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.DescItem;
-import cz.tacr.elza.drools.model.Strategy;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -177,7 +176,6 @@ rule "Pořadové číslo - povinné"
 no-loop
 when
 	RulArrangementType(code=="MAN")
-	Strategy(code=="CheckId")	
 	$descItemType : RulDescItemTypeExt(code == "ZP2015_SERIAL_NUMBER")
 then
 	$descItemType.setType(RulDescItemType.Type.REQUIRED);
@@ -188,7 +186,6 @@ rule "Pořadové číslo - volitelné"
 no-loop
 when
 	RulArrangementType(code=="MAN")
-	not Strategy(code=="CheckId")	
 	$descItemType : RulDescItemTypeExt(code == "ZP2015_SERIAL_NUMBER")
 then
 	$descItemType.setType(RulDescItemType.Type.POSSIBLE);
@@ -198,7 +195,6 @@ end
 rule "Referenční označení - povinné"
 no-loop
 when
-	Strategy(code=="CheckId")	
 	RulArrangementType(code in ("INV", "KAT") )
 	$activeLevel: ActiveLevel( parent!=null )
 	$descItemType : RulDescItemTypeExt(code == "ZP2015_UNIT_ID")
@@ -210,7 +206,6 @@ end
 rule "Referenční označení - možné"
 no-loop
 when
-	not Strategy(code=="CheckId")	
 	RulArrangementType(code in ("INV", "KAT") )
 	$activeLevel: ActiveLevel( parent!=null )
 	$descItemType : RulDescItemTypeExt(code == "ZP2015_UNIT_ID")
@@ -234,7 +229,6 @@ rule "Ukládací jednotka na složce - povině"
 salience -100
 no-loop
 when
-	Strategy(code=="StorageUnit")
 	$activeLevel: ActiveLevel( )
 	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode=="ZP2015_FOLDER_UNITS"||specCode=="ZP2015_FOLDER_SINGLE_TYPE") ) from $activeLevel.descItems
 	$descItemType : RulDescItemTypeExt(code == "ZP2015_STORAGE_ID")	

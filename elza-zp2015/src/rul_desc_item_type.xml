@@ -7,7 +7,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>1</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_FOLDER_TYPE" data-type="ENUM">
         <name>Typ složky</name>
@@ -17,7 +16,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>2</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_TYPE" data-type="ENUM">
         <name>Typ archiválie</name>
@@ -27,7 +25,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>3</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_COUNT" data-type="INT">
         <name>Počet evidenčních jednotek</name>
@@ -37,7 +34,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>4</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_STORAGE_ID" data-type="PACKET_REF">
         <name>Ukládací jednotka</name>
@@ -47,7 +43,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>5</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_EXTRA_UNITS" data-type="INT">
         <name>Další evidenční jednotky ve složce</name>
@@ -57,7 +52,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>6</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_EXT_TYPE" data-type="ENUM">
         <name>Rozšířený popis archiválie</name>
@@ -67,7 +61,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>7</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_ID" data-type="UNITID">
         <name>Referenční označení (pořadové číslo)</name>
@@ -77,7 +70,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>8</view-order>
-        <fa-only>true</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_OTHER_ID" data-type="STRING">
         <name>Jiná označení - specifikace a hodnota</name>
@@ -87,7 +79,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>9</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_SERIAL_NUMBER" data-type="INT">
         <name>Jiná označení - Pořadové číslo</name>
@@ -97,7 +88,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>10</view-order>
-        <fa-only>true</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_TITLE" data-type="TEXT">
         <name>Obsah, regest</name>
@@ -107,7 +97,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>11</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_FORMAL_TITLE" data-type="STRING">
         <name>Formální název jednotky popisu</name>
@@ -117,7 +106,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>12</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_DATE_PRE" data-type="UNITDATE">
         <name>Datace prior vzniku jednotky popisu - strojově čitelný</name>
@@ -127,7 +115,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>13</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_DATE" data-type="UNITDATE">
         <name>Datace vzniku jednotky popisu - strojově čitelný</name>
@@ -137,7 +124,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>14</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_DATE_POST" data-type="UNITDATE">
         <name>Datace posterior vzniku jednotky popisu - strojově čitelný</name>
@@ -147,7 +133,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>15</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_DATE_TEXT" data-type="STRING">
         <name>Datace vzniku jednotky popisu - Textový zápis</name>
@@ -157,7 +142,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>16</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_ORIGINATOR" data-type="PARTY_REF">
         <name>Původce</name>
@@ -167,7 +151,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>17</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_HIST" data-type="TEXT">
         <name>Dějiny jednotky popisu</name>
@@ -177,7 +160,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>18</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_ARR" data-type="TEXT">
         <name>Způsob uspořádání jednotky popisu</name>
@@ -187,7 +169,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>19</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_CONTENT" data-type="TEXT">
         <name>Tematický popis jednotky popisu</name>
@@ -197,7 +178,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>20</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_SOURCE" data-type="TEXT">
         <name>Přímý zdroj akvizice</name>
@@ -207,7 +187,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>21</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_FUTURE_UNITS" data-type="TEXT">
         <name>Budoucí přírůstky</name>
@@ -217,7 +196,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>22</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_ACCESS" data-type="TEXT">
         <name>Podmínky přístupu, práva k jednotce popisu a její reprodukci</name>
@@ -227,7 +205,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>23</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_INFO_RIGHTS" data-type="TEXT">
         <name>Možnost zveřejnění informací o jednotce popisu</name>
@@ -237,7 +214,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>24</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_COPY_RIGHTS" data-type="TEXT">
         <name>Možnost zveřejnění reprodukce jednotky popisu</name>
@@ -247,7 +223,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>25</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_UNIT_CURRENT_STATUS" data-type="TEXT">
         <name>Fyzický stav jednotky popisu a technické požadavky</name>
@@ -257,7 +232,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>26</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_COPY_SOURCE" data-type="TEXT">
         <name>Identifikace předlohy kopie</name>
@@ -267,7 +241,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>27</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_RELATED_UNITS" data-type="TEXT">
         <name>Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání</name>
@@ -277,7 +250,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>28</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_EXISTING_COPY" data-type="TEXT">
         <name>Existence kopií jednotky popisu</name>
@@ -287,7 +259,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>29</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_INTERNAL_NOTE" data-type="TEXT">
         <name>Služební poznámka</name>
@@ -297,7 +268,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>30</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_NOTE" data-type="TEXT">
         <name>Veřejná poznámka</name>
@@ -307,7 +277,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>31</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_ARRANGE_RULES" data-type="TEXT">
         <name>Pravidla zpracování jednotky popisu</name>
@@ -317,7 +286,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>32</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_4_OTHER" data-type="UNITDATE">
         <name>Jiné datace jednotky popisu než datace vzniku jednotky popisu - specifikace a hodnota</name>
@@ -328,7 +296,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>33</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_ITEM_TITLE" data-type="TEXT">
         <name>Název autorského díla</name>
@@ -338,7 +305,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>34</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_STORAGE_COND" data-type="TEXT">
         <name>Způsob a forma dochování</name>
@@ -348,7 +314,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>35</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_SIZE" data-type="TEXT">
         <name>Rozměry, hmotnost, velikost, množství</name>
@@ -358,7 +323,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>36</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_SCALE" data-type="TEXT">
         <name>Měřítko</name>
@@ -368,7 +332,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>37</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_POSITION" data-type="COORDINATES">
         <name>Souřadnice - tvar a souřadnice</name>
@@ -378,7 +341,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>38</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_ORIENTATION" data-type="TEXT">
         <name>Orientace z hlediska světových stran</name>
@@ -388,7 +350,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>39</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_ITEM_MAT" data-type="TEXT">
         <name>Technika, adjustace, nosič a látka záznamu</name>
@@ -398,7 +359,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>40</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_PART" data-type="TEXT">
         <name>Díl, část, pořadí vydání jednotky popisu</name>
@@ -408,7 +368,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>41</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_LANGUAGE" data-type="ENUM">
         <name>Jazyk, písmo</name>
@@ -418,7 +377,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>42</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_EDITION" data-type="TEXT">
         <name>Edice a literatura</name>
@@ -428,7 +386,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>43</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_ENTITY_ROLE" data-type="RECORD_REF">
         <name>Role entit (specifikace + hodnota)</name>
@@ -438,7 +395,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>44</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_EXERQUE" data-type="TEXT">
         <name>Opis, nápis, exerque</name>
@@ -448,7 +404,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>45</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_PAINTING_CHAR" data-type="TEXT">
         <name>Popis obrazu v poli typáře či otisku</name>
@@ -458,7 +413,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>46</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_CORROBORATION" data-type="TEXT">
         <name>Koroborace dokumentu, k němuž byl popisovaný otisk připojen</name>
@@ -468,7 +422,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>47</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_IMPRINT_COUNT" data-type="TEXT">
         <name>Počet otisků původní a současný</name>
@@ -478,7 +431,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>48</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_IMPRINT_ORDER" data-type="TEXT">
         <name>Pořadí otisku</name>
@@ -488,7 +440,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>49</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_LEGEND" data-type="FORMATTED_TEXT">
         <name>Legenda</name>
@@ -498,7 +449,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>50</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_MOVIE_LENGTH" data-type="INT">
         <name>Délka filmového záznamu</name>
@@ -508,7 +458,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>51</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_RECORD_LENGTH" data-type="INT">
         <name>Délka zvukového záznamu</name>
@@ -518,7 +467,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>52</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
     <desc-item-type code="ZP2015_COLL_EXTENT_LENGTH" data-type="DECIMAL">
         <name>Rozsah archivního souboru</name>
@@ -528,6 +476,5 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>53</view-order>
-        <fa-only>false</fa-only>
     </desc-item-type>
 </desc-item-types>

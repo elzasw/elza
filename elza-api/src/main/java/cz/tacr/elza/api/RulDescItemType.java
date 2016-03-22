@@ -141,22 +141,6 @@ public interface RulDescItemType<RT extends RulDataType, P extends RulPackage> e
 
 
     /**
-     * @return příznak udává, zda je příslušný atribut platný jen pro jednu konkrétní AP
-     */
-    Boolean getFaOnly();
-
-
-    /**
-     * Příznak udává, zda je příslušný atribut platný jen pro jednu konkrétní AP. Pokud je příznak nastaven, tak
-     * hodnoty
-     * těchto atributů nejsou sdíleny, ale mohou být zobrazeny.
-     *
-     * @param faOnly hodnota příznaku
-     */
-    void setFaOnly(Boolean faOnly);
-
-
-    /**
      * @return typ udává, zda je povinné/doporučené/... vyplnit hodnotu atributu.
      */
     Type getType();

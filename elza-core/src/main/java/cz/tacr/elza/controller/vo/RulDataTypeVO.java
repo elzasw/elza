@@ -36,7 +36,7 @@ public class RulDataTypeVO {
     /**
      * lze použít limitaci délky textu?
      */
-    private Boolean textLenghtLimitUse;
+    private Boolean textLengthLimitUse;
 
     /**
      * tabulka pro uložení
@@ -83,12 +83,12 @@ public class RulDataTypeVO {
         this.regexpUse = regexpUse;
     }
 
-    public Boolean getTextLenghtLimitUse() {
-        return textLenghtLimitUse;
+    public Boolean getTextLengthLimitUse() {
+        return textLengthLimitUse;
     }
 
-    public void setTextLenghtLimitUse(final Boolean textLenghtLimitUse) {
-        this.textLenghtLimitUse = textLenghtLimitUse;
+    public void setTextLengthLimitUse(final Boolean textLengthLimitUse) {
+        this.textLengthLimitUse = textLengthLimitUse;
     }
 
     public String getStorageTable() {

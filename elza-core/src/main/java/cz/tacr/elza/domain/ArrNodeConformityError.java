@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrNodeConformityError implements cz.tacr.elza.api.ArrNodeConformityError<
-        ArrNodeConformity, ArrDescItem> {
+        ArrNodeConformity, ArrDescItem, RulPolicyType> {
 
     @Id
     @GeneratedValue
@@ -42,6 +42,10 @@ public class ArrNodeConformityError implements cz.tacr.elza.api.ArrNodeConformit
 
     @Column(length = 1000, nullable = true)
     private String description;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPolicyType.class)
+    @JoinColumn(name = "policyTypeId", nullable = true)
+    private RulPolicyType policyType;
 
     @Override
     public Integer getNodeConformityErrorId() {
@@ -81,6 +85,16 @@ public class ArrNodeConformityError implements cz.tacr.elza.api.ArrNodeConformit
     @Override
     public void setDescription(final String description) {
         this.description = description;
+    }
+
+    @Override
+    public RulPolicyType getPolicyType() {
+        return policyType;
+    }
+
+    @Override
+    public void setPolicyType(final RulPolicyType policyType) {
+        this.policyType = policyType;
     }
 
     @Override

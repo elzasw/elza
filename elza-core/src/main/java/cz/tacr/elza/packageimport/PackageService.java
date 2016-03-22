@@ -26,6 +26,9 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.packageimport.xml.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,49 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.domain.RulArrangementType;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulDescItemConstraint;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemSpecRegister;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.domain.RulRule;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.drools.RulesExecutor;
-import cz.tacr.elza.packageimport.xml.ArrangementType;
-import cz.tacr.elza.packageimport.xml.ArrangementTypes;
-import cz.tacr.elza.packageimport.xml.DescItemConstraint;
-import cz.tacr.elza.packageimport.xml.DescItemConstraints;
-import cz.tacr.elza.packageimport.xml.DescItemSpec;
-import cz.tacr.elza.packageimport.xml.DescItemSpecRegister;
-import cz.tacr.elza.packageimport.xml.DescItemSpecs;
-import cz.tacr.elza.packageimport.xml.DescItemType;
-import cz.tacr.elza.packageimport.xml.DescItemTypes;
-import cz.tacr.elza.packageimport.xml.PackageAction;
-import cz.tacr.elza.packageimport.xml.PackageActions;
-import cz.tacr.elza.packageimport.xml.PackageInfo;
-import cz.tacr.elza.packageimport.xml.PackageRule;
-import cz.tacr.elza.packageimport.xml.PackageRules;
-import cz.tacr.elza.packageimport.xml.PacketType;
-import cz.tacr.elza.packageimport.xml.PacketTypes;
-import cz.tacr.elza.packageimport.xml.RuleSet;
-import cz.tacr.elza.packageimport.xml.RuleSets;
-import cz.tacr.elza.repository.ActionRepository;
-import cz.tacr.elza.repository.ArrangementTypeRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.DescItemConstraintRepository;
-import cz.tacr.elza.repository.DescItemSpecRegisterRepository;
-import cz.tacr.elza.repository.DescItemSpecRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.RuleRepository;
-import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -99,6 +60,11 @@ public class PackageService {
      * pravidla v zipu
      */
     public static final String RULE_SET_XML = "rul_rule_set.xml";
+
+    /**
+     * typy kontrol, validací, archivního popisu
+     */
+    public static final String POLICY_TYPE_XML = "rul_policy_type.xml";
 
     /**
      * typy v zipu
@@ -188,6 +154,9 @@ public class PackageService {
     private PacketTypeRepository packetTypeRepository;
 
     @Autowired
+    private PolicyTypeRepository policyTypeRepository;
+
+    @Autowired
     private EventNotificationService eventNotificationService;
 
     @Autowired
@@ -221,6 +190,8 @@ public class PackageService {
 
             RuleSets ruleSets = convertXmlStreamToObject(RuleSets.class, mapEntry.get(RULE_SET_XML));
 
+            PolicyTypes policyTypes = convertXmlStreamToObject(PolicyTypes.class, mapEntry.get(POLICY_TYPE_XML));
+
             ArrangementTypes arrangementTypes = convertXmlStreamToObject(ArrangementTypes.class,
                     mapEntry.get(ARRANGEMENT_TYPE_XML));
             DescItemConstraints descItemConstraints = convertXmlStreamToObject(DescItemConstraints.class,
@@ -238,6 +209,9 @@ public class PackageService {
             processPacketTypes(packetTypes, rulPackage);
 
             List<RulRuleSet> rulRuleSets = processRuleSets(ruleSets, arrangementTypes, rulPackage);
+
+            processPolicyTypes(policyTypes, rulPackage, rulRuleSets);
+
             processDescItemTypes(descItemTypes, descItemSpecs, descItemConstraints, rulPackage);
             rulPackageActions = processPackageActions(packageActions, rulPackage, mapEntry, dirActions);
 
@@ -282,6 +256,74 @@ public class PackageService {
             }
         }
 
+    }
+
+    /**
+     * Zpracování policy.
+     *
+     * @param policyTypes VO policy
+     * @param rulPackage  balíček
+     * @param rulRuleSets seznam pravidel
+     */
+    private void processPolicyTypes(final PolicyTypes policyTypes,
+                                    final RulPackage rulPackage,
+                                    final List<RulRuleSet> rulRuleSets) {
+        List<RulPolicyType> rulPolicyTypesTypes = policyTypeRepository.findByRulPackage(rulPackage);
+        List<RulPolicyType> rulPolicyTypesNew = new ArrayList<>();
+
+        if (!CollectionUtils.isEmpty(policyTypes.getPolicyTypes())) {
+            for (PolicyType policyType : policyTypes.getPolicyTypes()) {
+                List<RulPolicyType> findItems = rulPolicyTypesTypes.stream().filter(
+                        (r) -> r.getCode().equals(policyType.getCode())).collect(
+                        Collectors.toList());
+                RulPolicyType item;
+                if (findItems.size() > 0) {
+                    item = findItems.get(0);
+                } else {
+                    item = new RulPolicyType();
+                }
+
+                convertRulPolicyTypes(rulPackage, policyType, item, rulRuleSets);
+                rulPolicyTypesNew.add(item);
+            }
+        }
+
+        rulPolicyTypesNew = policyTypeRepository.save(rulPolicyTypesNew);
+
+        List<RulPolicyType> rulPolicyTypesDelete = new ArrayList<>(rulPolicyTypesNew);
+        rulPolicyTypesDelete.removeAll(rulPolicyTypesNew);
+        policyTypeRepository.delete(rulPolicyTypesDelete);
+    }
+
+    /**
+     * Převod VO na DAO policy.
+     *
+     * @param rulPackage    balíček
+     * @param policyType    VO policy
+     * @param rulPolicyType DAO policy
+     * @param rulRuleSets   seznam pravidel
+     */
+    private void convertRulPolicyTypes(final RulPackage rulPackage,
+                                       final PolicyType policyType,
+                                       final RulPolicyType rulPolicyType,
+                                       final List<RulRuleSet> rulRuleSets) {
+        rulPolicyType.setCode(policyType.getCode());
+        rulPolicyType.setName(policyType.getName());
+        rulPolicyType.setRulPackage(rulPackage);
+
+        List<RulRuleSet> findItems = rulRuleSets.stream()
+                .filter((r) -> r.getCode().equals(policyType.getRuleSet()))
+                .collect(Collectors.toList());
+
+        RulRuleSet item;
+
+        if (findItems.size() > 0) {
+            item = findItems.get(0);
+        } else {
+            throw new IllegalStateException("Kód " + policyType.getRuleSet() + " neexistuje v RulRuleSet");
+        }
+
+        rulPolicyType.setRuleSet(item);
     }
 
     /**
@@ -956,7 +998,6 @@ public class PackageService {
         rulDescItemType.setCanBeOrdered(descItemType.getCanBeOrdered());
         rulDescItemType.setUseSpecification(descItemType.getUseSpecification());
         rulDescItemType.setViewOrder(descItemType.getViewOrder());
-        rulDescItemType.setFaOnly(descItemType.getFaOnly());
 
         rulDescItemType.setPackage(rulPackage);
     }
@@ -1206,6 +1247,8 @@ public class PackageService {
             packageActionsRepository.deleteByRulPackage(rulPackage);
 
             packageRulesRepository.deleteByRulPackage(rulPackage);
+
+            policyTypeRepository.deleteByRulPackage(rulPackage);
 
             ruleSetRepository.deleteByRulPackage(rulPackage);
 
@@ -1568,7 +1611,6 @@ public class PackageService {
         descItemType.setCanBeOrdered(rulDescItemType.getCanBeOrdered());
         descItemType.setDataType(rulDescItemType.getDataType().getCode());
         descItemType.setDescription(rulDescItemType.getDescription());
-        descItemType.setFaOnly(rulDescItemType.getFaOnly());
         descItemType.setIsValueUnique(rulDescItemType.getIsValueUnique());
         descItemType.setUseSpecification(rulDescItemType.getUseSpecification());
         descItemType.setViewOrder(rulDescItemType.getViewOrder());

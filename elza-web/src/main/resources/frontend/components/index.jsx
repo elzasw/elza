@@ -6,6 +6,7 @@ exports.LongText = require('./LongText');
 exports.Utils = require('./Utils');
 
 exports.ListBox = require('./shared/listbox/ListBox');
+exports.FilterableListBox = require('./shared/listbox/FilterableListBox');
 exports.NoFocusButton = require('./shared/button/NoFocusButton');
 exports.Toastr = require('./shared/toastr/index');
 exports.RibbonMenu = require('./shared/ribbon-menu/RibbonMenu');
@@ -35,7 +36,6 @@ exports.Resizer = require('./shared/resizer/Resizer');
 exports.FormUtils = require('./form/FormUtils');
 exports.ImportForm = require('./form/ImportForm');
 
-
 exports.Ribbon = require('./page/Ribbon');
 
 exports.RegistryPanel = require('./registry/RegistryPanel');
@@ -47,6 +47,7 @@ exports.FundFileTree = require('./arr/FundFileTree');
 exports.NodePanel = require('./arr/NodePanel');
 exports.NodeTabs = require('./arr/NodeTabs');
 exports.FundDataGrid = require('./arr/FundDataGrid');
+exports.FundFilterSettings = require('./arr/FundFilterSettings');
 exports.FundTreeTabs = require('./arr/FundTreeTabs');
 exports.FundTreeLazy = require('./arr/FundTreeLazy');
 exports.SubNodeForm = require('./arr/SubNodeForm');
