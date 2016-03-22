@@ -24,6 +24,7 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.vo.DescItemValue;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.repository.DescItemTypeRepository;
@@ -150,13 +151,14 @@ public class FilterTreeService {
         for (Integer filteredId : filteredIds) {
 
             //vytvoření mapy hodnot podle typu atributu
-            Map<Integer, String> nodeValuesMap = new HashMap<>();
+            Map<Integer, DescItemValue> nodeValuesMap = new HashMap<>();
             Map<String, TitleValue> nodeValues = valuesMap.get(filteredId);
             if (nodeValues != null) {
                 for (Map.Entry<String, TitleValue> nodeValueEntry : nodeValues.entrySet()) {
                     Integer descItymTypeId = descItemTypeMap.get(nodeValueEntry.getKey()).getDescItemTypeId();
                     String value = nodeValueEntry.getValue().getValue();
-                    nodeValuesMap.put(descItymTypeId, value);
+                    String spec = nodeValueEntry.getValue().getSpecCode();
+                    nodeValuesMap.put(descItymTypeId, new DescItemValue(value, spec));
                 }
             }
 
