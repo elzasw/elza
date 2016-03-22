@@ -1,5 +1,5 @@
 /**
- * Formulář přidání obalu.
+ * Formulář hledání a nahrazení.
  */
 
 import React from 'react';
@@ -65,7 +65,7 @@ var FundFindAndReplaceForm = class FundFindAndReplaceForm extends AbstractReactC
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={handleSubmit(submitForm)}>{i18n('arr.fund.findAndReplace.action.replace')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.close')}</Button>
                 </Modal.Footer>
             </div>
         )

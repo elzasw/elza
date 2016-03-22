@@ -9,6 +9,9 @@ var messages = {
     "global.title.yes": "Ano",
     "global.title.no": "Ne",
     
+    "global.title.selectAll": "Vybrat vše",
+    "global.title.unselectAll": "Vymazat",
+    
     "global.title.moreRows": "Existují další záznamy ({0}).",
     
     "global.title.processAction": "Opravdu chcete provést vybranou akci?",
@@ -92,6 +95,10 @@ var messages = {
     "arr.fund.findAndReplace.itemsArea.all": "Všechny JP na stránce ({0})",
     "arr.fund.findAndReplace.itemsArea.selected": "Jen zaškrtnuté JP na stránce ({0})",
     "arr.fund.findAndReplace.itemsArea.unselected": "Jen odškrtnuté JP na stránce ({0})",
+    "arr.fund.filterSettings.title": "Nastavení filtru pro prvek popisu",
+    "arr.fund.filterSettings.filterByValue.title": "Filtrovat podle hodnoty",
+    "arr.fund.filterSettings.filterBySpecification.title": "Filtrovat podle speficikace",
+    "arr.fund.filterSettings.filterByCondition.title": "Filtrovat podle podmínky",
     
     "arr.fund.title.add": "Vytvoření nového AS",
     "arr.fund.title.update": "Úprava AS",

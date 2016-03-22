@@ -23,7 +23,18 @@ var keyDownHandlers = {
         const {activeIndex} = this.state
 
         if (activeIndex !== null) {
-            this.props.onSelect(items[activeIndex], activeIndex)
+            this.props.onSelect && this.props.onSelect(items[activeIndex], activeIndex)
+        }
+    },
+    ' ': function(e) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        const {items} = this.props
+        const {activeIndex} = this.state
+
+        if (activeIndex !== null) {
+            this.props.onCheck && this.props.onCheck(items[activeIndex], activeIndex)
         }
     },
     Home: function(e) {
@@ -146,6 +157,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
         } else {
             this.setState({
                 activeIndex: this.getActiveIndexForUse(nextProps, this.state),
+                lastFocus: this.getActiveIndexForUse(nextProps, this.state),
             })
         }
     }
@@ -303,13 +315,22 @@ var ListBox = class ListBox extends AbstractReactComponent {
     }
 
     getActiveIndexForUse(props, state) {
+        var index
+
         if (typeof props.activeIndex !== 'undefined') {
-            return props.activeIndex
+            index = props.activeIndex
         } else if (typeof state.activeIndex !== 'undefined') {
-            return state.activeIndex
+            index = state.activeIndex
         } else {
-            return null
+            index = null
         }
+
+        if (index < 0) {
+            index = props.items.length > 0 ? 0 : null
+        } else if (index >= props.items.length) {
+            index = props.items.length - 1
+        }
+        return index
     }
 
     ensureItemVisible(index) {

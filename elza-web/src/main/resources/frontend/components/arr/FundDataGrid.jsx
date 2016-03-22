@@ -5,7 +5,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {FundFindAndReplaceForm, Icon, ListBox, DataGridColumnsSettings, AbstractReactComponent, i18n, Loading, DataGrid, DataGridPagination} from 'components';
+import {FundFindAndReplaceForm, Icon, ListBox, DataGridColumnsSettings, AbstractReactComponent, i18n, Loading,
+        DataGrid, FundFilterSettings, DataGridPagination} from 'components';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import * as types from 'actions/constants/ActionTypes';
 import {fundDataGridSetColumnsSettings, fundDataGridSetSelection, fundDataGridSetColumnSize, fundDataGridFetchFilterIfNeeded,
@@ -23,7 +24,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('handleSelectedIdsChange', 'handleColumnResize', 'handleColumnSettings', 'handleChangeColumnsSettings',
-            'handleFindAndReplace', 'headerColRenderer');
+            'handleFindAndReplace', 'handleFilterSettings', 'headerColRenderer');
 
         const colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
         if (colState) {
@@ -57,6 +58,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             <div className='' title={col.refType.name}>
                 {col.refType.shortcut}
                 <Button onClick={this.handleFindAndReplace.bind(this, col.refType)}><Icon glyph='fa-edit'/></Button>
+                <Button onClick={this.handleFilterSettings.bind(this, col.refType)}><Icon glyph='fa-filter'/></Button>
             </div>
         )
     }
@@ -167,6 +169,17 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         ));
     }
 
+    handleFilterSettings(refType) {
+        const {versionId, fundDataGrid} = this.props
+
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.filterSettings.title'),
+            <FundFilterSettings
+                versionId={versionId}
+                refType={refType}
+            />
+        ));
+    }
+
     handleFindAndReplace(refType) {
         const {versionId, fundDataGrid} = this.props
 
@@ -208,7 +221,6 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 checkedItemsCount={fundDataGrid.selectedIds.length}
             />
         ));
-        
     }
 
     handleChangeColumnsSettings(columns) {
@@ -237,7 +249,6 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             <div className='fund-datagrid-container'>
                 <div className='actions-container'>
                     <Button onClick={this.handleColumnSettings}><Icon glyph='fa-columns'/></Button>
-                    <Button onClick={this.handleFindAndReplace}><Icon glyph='fa-edit'/></Button>
                 </div>
                 <div className='grid-container'>
                     <DataGrid
