@@ -67,17 +67,15 @@ public class RulesExecutor implements InitializingBean {
      * @param level                  checked level
      * @param rulDescItemTypeExtList seznam všech atributů
      * @param version                verze AP
-     * @param strategies             strategie vyhodnocování
      * @return seznam typů atributů odpovídající pravidlům
      */
     public List<RulDescItemTypeExt> executeDescItemTypesRules(final ArrLevel level,
                                                               final List<RulDescItemTypeExt> rulDescItemTypeExtList,
-                                                              final ArrFundVersion version,
-                                                              final Set<String> strategies) {
+                                                              final ArrFundVersion version) {
 
         try {
             return descItemTypesRules
-                    .execute(level, version, rulDescItemTypeExtList, strategies);
+                    .execute(level, version, rulDescItemTypeExtList);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return rulDescItemTypeExtList;
@@ -117,14 +115,12 @@ public class RulesExecutor implements InitializingBean {
      *
      * @param level   validovaný uzel
      * @param version verze uzlu
-     * @param strategies
      * @return seznam validačních chyb nebo prázdný seznam
      */
     public List<DataValidationResult> executeDescItemValidationRules(final ArrLevel level,
-                                                                     final ArrFundVersion version,
-                                                                     final Set<String> strategies) {
+                                                                     final ArrFundVersion version) {
         try {
-            return descItemValidationRules.execute(level, version, strategies);
+            return descItemValidationRules.execute(level, version);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return Collections.emptyList();

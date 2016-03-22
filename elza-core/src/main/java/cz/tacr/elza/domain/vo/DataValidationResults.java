@@ -69,12 +69,16 @@ public class DataValidationResults {
 	 * Create error description
 	 * @param descItemId 	Item with error
 	 * @param errorMsg		Error description
+     * @param policyTypeCode kód typu kontroly
 	 * @return Object with error description
 	 */
-    public DataValidationResult createError(final Integer descItemId, final String errorMsg){
+    public DataValidationResult createError(final Integer descItemId,
+                                            final String errorMsg,
+                                            final String policyTypeCode){
         DataValidationResult result = new DataValidationResult(ValidationResultType.ERROR);
         result.setDescItemId(descItemId);
         result.setMessage(errorMsg);
+        result.setPolicyTypeCode(policyTypeCode);
         
         results.add(result);
         return result;
@@ -101,7 +105,7 @@ public class DataValidationResults {
     }
 
     public DataValidationResult createMissing(final RulDescItemType type,
-                                                     final RulDescItemSpec spec) 
+                                              final RulDescItemSpec spec)
     {
         DataValidationResult result = new DataValidationResult(ValidationResultType.MISSING);
         result.setType(type);
@@ -118,11 +122,14 @@ public class DataValidationResults {
         return result;
     }
 
-    public DataValidationResult createMissing(final String typeCode, final String message){
+    public DataValidationResult createMissing(final String typeCode,
+                                              final String message,
+                                              final String policyTypeCode){
         DataValidationResult result = new DataValidationResult(ValidationResultType.MISSING);
         result.setTypeCode(typeCode);
         result.setMessage(message);
-        
+        result.setPolicyTypeCode(policyTypeCode);
+
         results.add(result);
 
         return result;

@@ -1,7 +1,6 @@
 package cz.tacr.elza.validation.impl;
 
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,8 +38,7 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
 
     @Override
     public List<DataValidationResult> postValidateNodeDescItems(final ArrLevel level,
-                                                            final ArrFundVersion version,
-                                                                final Set<String> strategies) {    	
+                                                                final ArrFundVersion version) {
 
         List<ArrData> levelData;
         if (version.getLockChange() == null) {
@@ -50,7 +48,7 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
         }
 
 
-        List<RulDescItemTypeExt> nodeTypes = ruleService.getDescriptionItemTypes(version, level.getNode(), strategies);
+        List<RulDescItemTypeExt> nodeTypes = ruleService.getDescriptionItemTypes(version, level.getNode());
 
         // Create validator and validate
         Validator validator = new Validator(nodeTypes, levelData, descItemFactory);

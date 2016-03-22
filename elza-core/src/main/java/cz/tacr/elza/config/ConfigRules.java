@@ -36,28 +36,10 @@ public class ConfigRules {
     public static final String FA_PREFIX = "fa-";
     public static final String DEFAULT = "default";
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    @Autowired
-    private FundVersionRepository fundVersionRepository;
-
     private Group defaultGroup = new Group("DEFAULT");
-
-    /**
-     * Seznam strategii podle pravidel.
-     */
-    private Map<String, Map<String, List<String>>> rules;
 
     @Valid
     private Map<String, Map<String, Map<String, TypesGroupConf>>> typeGroups;
-
-    public Map<String, Map<String, List<String>>> getRules() {
-        return rules;
-    }
-
-    public void setRules(final Map<String, Map<String, List<String>>> rules) {
-        this.rules = rules;
-    }
 
     public Map<String, Map<String, Map<String, TypesGroupConf>>> getTypeGroups() {
         return typeGroups;
@@ -169,45 +151,6 @@ public class ConfigRules {
             }
         }
         return 1;
-    }
-
-    /**
-     * Vrací seznam strategií.
-     *
-     * @param versionId identifikátor verze AP
-     * @return seznam strategií
-     */
-    public Set<String> getStrategies(final Integer versionId) {
-        Assert.notNull(versionId);
-
-        ArrFundVersion version = fundVersionRepository.findOne(versionId);
-
-        Assert.notNull(version, "Verzev s ID:" + versionId + " neexistuje");
-
-        String ruleCode = version.getRuleSet().getCode();
-
-        if (rules == null) {
-            logger.warn("Nejsou nastavené strategie");
-            return new HashSet<>();
-        }
-
-        Map<String, List<String>> ruleMap = rules.get(ruleCode);
-
-        if (ruleMap == null) {
-            logger.warn("Nejsou nastavené strategie pro kód pravidel: " + ruleCode);
-            return new HashSet<>();
-        }
-
-        List<String> strategies = ruleMap.get("version_" + versionId);
-
-        if (strategies == null) {
-            strategies = ruleMap.get("default");
-            if (strategies == null) {
-                throw new IllegalStateException("Nejsou nastavené výchozí (default) strategie pro kód pravidel: " + ruleCode);
-            }
-        }
-
-        return new HashSet<>(strategies);
     }
 
     public static class Group {

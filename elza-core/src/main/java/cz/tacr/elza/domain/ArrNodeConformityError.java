@@ -44,7 +44,7 @@ public class ArrNodeConformityError implements cz.tacr.elza.api.ArrNodeConformit
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPolicyType.class)
-    @JoinColumn(name = "policyTypeId", nullable = false)
+    @JoinColumn(name = "policyTypeId", nullable = true)
     private RulPolicyType policyType;
 
     @Override

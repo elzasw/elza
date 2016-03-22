@@ -26,6 +26,5 @@ public interface ArrDescItemsPostValidator {
      * @param version verze
      * @return seznam chybných hodnot
      */
-    List<DataValidationResult> postValidateNodeDescItems(ArrLevel level, ArrFundVersion version,
-                                                         Set<String> strategies);
+    List<DataValidationResult> postValidateNodeDescItems(ArrLevel level, ArrFundVersion version);
 }

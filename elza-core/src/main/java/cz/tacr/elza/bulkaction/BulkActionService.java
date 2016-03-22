@@ -522,13 +522,11 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      *
      * @param faLevelId   id uzlu
      * @param fundVersionId id verze
-     * @param strategies  strategie
      * @return výsledek validace
      */
     @Transactional(value = Transactional.TxType.REQUIRES_NEW)
-    public ArrNodeConformityExt setConformityInfoInNewTransaction(final Integer faLevelId, final Integer fundVersionId,
-                                                                  final Set<String> strategies) {
-        return ruleService.setConformityInfo(faLevelId, fundVersionId, strategies);
+    public ArrNodeConformityExt setConformityInfoInNewTransaction(final Integer faLevelId, final Integer fundVersionId) {
+        return ruleService.setConformityInfo(faLevelId, fundVersionId);
     }
 
     /**

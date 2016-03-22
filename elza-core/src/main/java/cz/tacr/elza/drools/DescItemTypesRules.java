@@ -46,8 +46,7 @@ public class DescItemTypesRules extends Rules {
     // TODO: je nutné používat synchronized?
     public synchronized List<RulDescItemTypeExt> execute(final ArrLevel level,
                                                          final ArrFundVersion version,
-                                                         final List<RulDescItemTypeExt> rulDescItemTypeExtList,
-                                                         final Set<String> strategies)
+                                                         final List<RulDescItemTypeExt> rulDescItemTypeExtList)
             throws Exception
     {
 
@@ -62,9 +61,6 @@ public class DescItemTypesRules extends Rules {
     	// Add arrangement type
     	RulArrangementType arrangementType = version.getArrangementType();
     	facts.add(arrangementType);
-
-    	// Add strategies
-    	facts.addAll(ModelFactory.createStrategies(strategies));
 
     	final RulRuleSet rulRuleSet = version.getRuleSet();
 

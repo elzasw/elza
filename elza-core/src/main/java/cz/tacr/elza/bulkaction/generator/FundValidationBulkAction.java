@@ -1,9 +1,6 @@
 package cz.tacr.elza.bulkaction.generator;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import cz.tacr.elza.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,11 +54,6 @@ public class FundValidationBulkAction extends BulkAction {
     private BulkActionState bulkActionState;
 
     /**
-     * Strategie vyhodnocování
-     */
-    private Set<String> strategies;
-
-    /**
      * Počet chybných uzlů
      */
     private Integer errorCount;
@@ -87,14 +79,6 @@ public class FundValidationBulkAction extends BulkAction {
 
         Assert.notNull(bulkActionConfig);
 
-        String evaluationTypeString = (String) bulkActionConfig.getProperty("evaluation_strategies");
-
-        if (evaluationTypeString == null) {
-            strategies = new HashSet<>();
-        } else {
-            strategies = new HashSet<>(Arrays.asList(evaluationTypeString.split("\\|")));
-        }
-
         errorCount = 0;
     }
 
@@ -118,8 +102,7 @@ public class FundValidationBulkAction extends BulkAction {
 
         try {
             nodeConformityInfoExt = bulkActionService
-                    .setConformityInfoInNewTransaction(level.getLevelId(), version.getFundVersionId(),
-                            strategies);
+                    .setConformityInfoInNewTransaction(level.getLevelId(), version.getFundVersionId());
             stateLevel = nodeConformityInfoExt.getState();
         }catch (Exception e){
             stateLevel = ArrNodeConformity.State.ERR;

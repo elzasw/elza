@@ -5,7 +5,6 @@ import java.util.Arrays;
 import cz.tacr.elza.drools.model.Level
 import cz.tacr.elza.drools.model.ActiveLevel
 import cz.tacr.elza.drools.model.DescItem;
-import cz.tacr.elza.drools.model.Strategy;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
 import cz.tacr.elza.domain.RulArrangementType;
@@ -15,12 +14,11 @@ global DataValidationResults results;
 // Kontrola, zda každý list má ukládací jednotku
 rule "List musí mít ukládací jednotku směrem ke kořeni"
 when
-	Strategy(code=="StorageUnit")
 	$activeLevel: ActiveLevel( !hasChildren )
 	not ( $level: Level( $items: descItems ) and 
 		DescItem(type=="ZP2015_STORAGE_ID") from $items )
 then
-	results.createMissing("ZP2015_STORAGE_ID", "V hierarchii není uveden prvek ZP2015_STORAGE_ID");
+	results.createMissing("ZP2015_STORAGE_ID", "V hierarchii není uveden prvek ZP2015_STORAGE_ID", "PT1");
 end
 
 // Kontrola, zda každý list má dataci
@@ -32,19 +30,18 @@ when
 		  ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST","ZP2015_UNIT_DATE_TEXT" ) )
 		  from $items )
 then
-	results.createMissing("ZP2015_UNIT_DATE", "V hierarchii není uveden prvek datace vzniku");
+	results.createMissing("ZP2015_UNIT_DATE", "V hierarchii není uveden prvek datace vzniku", "PT1");
 end
 
 
 // Kontrola, zda každá hromadina s EJ má uvedenu ukládací jednotku s druhem KAR,FAS,DAJ
 rule "Každá hromadina s EJ má uvedenu ukládací jednotku"
 when
-	Strategy(code=="StorageUnit")
 	$activeLevel: ActiveLevel( $items: descItems )
 	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode=="ZP2015_FOLDER_UNITS"||specCode=="ZP2015_FOLDER_SINGLE_TYPE") ) from $items 
 	not ( DescItem(type=="ZP2015_STORAGE_ID"&&packet!=null&&packet.packetType!=null&&(packet.packetType.code=="BOX"||packet.packetType.code=="FASCICLE"||packet.packetType.code=="DATA_UNIT" ) ) from $items )
 then
-	results.createMissing("ZP2015_STORAGE_ID", "V hierarchii není uveden prvek ZP2015_STORAGE_ID");
+	results.createMissing("ZP2015_STORAGE_ID", "V hierarchii není uveden prvek ZP2015_STORAGE_ID", "PT1");
 end
 
 // Počet jednotek musí být větší než 1 pro ZP2015_UNIT_COUNT
@@ -53,7 +50,7 @@ when
 	$activeLevel: ActiveLevel( $items: descItems )
     $descItem: DescItem(type=="ZP2015_UNIT_COUNT"  && integer.intValue()<2 ) from $items
 then
-	results.createError($descItem.getDescItemId(), "Počet jednotek musí být větší než 1");
+	results.createError($descItem.getDescItemId(), "Počet jednotek musí být větší než 1", "PT1");
 end
 
 /*

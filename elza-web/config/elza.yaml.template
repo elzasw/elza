@@ -4,11 +4,6 @@ elza:
       user: app
       pass: app
 
-#  rules:
-#    ZP2015:
-#      default:
-#        - NORMAL
-
   treenode:
       defaultTitle: <Není nastaven popisek>
 

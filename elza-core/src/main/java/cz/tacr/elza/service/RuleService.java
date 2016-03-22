@@ -120,14 +120,11 @@ public class RuleService {
      *
      * @param faLevelId   id uzlu
      * @param fundVersionId id verze
-     * @param strategies  strategie vyhodnocovani
      * @return stav validovaného uzlu
      */
-    public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId,
-                                                  final Set<String> strategies) {
+    public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId) {
         Assert.notNull(faLevelId);
         Assert.notNull(fundVersionId);
-        Assert.notNull(strategies);
 
         ArrLevel level = levelRepository.findOne(faLevelId);
         Integer nodeId = level.getNode().getNodeId();
@@ -142,9 +139,10 @@ public class RuleService {
         }
 
         List<DataValidationResult> validationResults = descItemsPostValidator
-                .postValidateNodeDescItems(level, version, strategies);
+                .postValidateNodeDescItems(level, version);
         List<DataValidationResult> scriptResults = rulesExecutor
-                .executeDescItemValidationRules(level, version, strategies);
+                .executeDescItemValidationRules(level, version);
+
         validationResults.addAll(scriptResults);
 
         ArrNodeConformityExt result = updateNodeConformityInfo(level, version, validationResults);
@@ -203,6 +201,7 @@ public class RuleService {
                         missing.setDescItemType(validationResult.getType());
                         missing.setDescItemSpec(validationResult.getSpec());
                         missing.setDescription(validationResult.getMessage());
+                        missing.setPolicyType(validationResult.getPolicyType());
                         nodeConformityMissingRepository.save(missing);
                         break;
                     case ERROR:
@@ -210,6 +209,7 @@ public class RuleService {
                         error.setNodeConformity(conformityInfo);
                         error.setDescItem(validationResult.getDescItem());
                         error.setDescription(validationResult.getMessage());
+                        error.setPolicyType(validationResult.getPolicyType());
                         nodeConformityErrorsRepository.save(error);
                         break;
                 }
@@ -450,8 +450,6 @@ public class RuleService {
         Assert.notNull(fundVersionId);
         Assert.notNull(nodeId);
 
-        Set<String> strategies = elzaRules.getStrategies(fundVersionId);
-
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         if (version == null) {
@@ -464,7 +462,7 @@ public class RuleService {
             throw new IllegalArgumentException("Uzel neexistuje");
         }
 
-        return getDescriptionItemTypes(version, node, strategies);
+        return getDescriptionItemTypes(version, node);
     }
 
     /**
@@ -472,20 +470,17 @@ public class RuleService {
      *
      * @param version    verze archivní pomůcky
      * @param node       uzel
-     * @param strategies seznam strategií
      * @return seznam typů hodnot atributů se specifikacemi
      */
     public List<RulDescItemTypeExt> getDescriptionItemTypes(final ArrFundVersion version,
-                                                            final ArrNode node,
-                                                            final Set<String> strategies) {
+                                                            final ArrNode node) {
 
         ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
                 version.getLockChange());
 
-        Assert.notNull(strategies);
         List<RulDescItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes();
 
-        return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version, strategies);
+        return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version);
     }
 
     /**
