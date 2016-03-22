@@ -2,6 +2,8 @@ package cz.tacr.elza.controller.vo;
 
 import java.util.Map;
 
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+
 
 /**
  * Uzel pro filtrovaná data ve stromě.
@@ -11,10 +13,9 @@ import java.util.Map;
  */
 public class FilterNode {
 
-    /**
-     * Id uzlu.
-     */
-    private Integer id;
+
+    private ArrNodeVO node;
+    private ArrNodeVO parentNode;
 
     /**
      * Mapa hodnot atributů na uzlu (typ atributu -> hodnota)
@@ -24,17 +25,26 @@ public class FilterNode {
     public FilterNode() {
     }
 
-    public FilterNode(final Integer id, final Map<Integer, String> valuesMap) {
-        this.id = id;
+    public FilterNode(final ArrNodeVO node, final ArrNodeVO parentNode, final Map<Integer, String> valuesMap) {
+        this.node = node;
+        this.parentNode = parentNode;
         this.valuesMap = valuesMap;
     }
 
-    public Integer getId() {
-        return id;
+    public ArrNodeVO getNode() {
+        return node;
     }
 
-    public void setId(final Integer id) {
-        this.id = id;
+    public void setNode(final ArrNodeVO node) {
+        this.node = node;
+    }
+
+    public ArrNodeVO getParentNode() {
+        return parentNode;
+    }
+
+    public void setParentNode(final ArrNodeVO parentNode) {
+        this.parentNode = parentNode;
     }
 
     public Map<Integer, String> getValuesMap() {

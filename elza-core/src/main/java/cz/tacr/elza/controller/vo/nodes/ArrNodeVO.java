@@ -22,6 +22,14 @@ public class ArrNodeVO {
      */
     private Integer version;
 
+    public ArrNodeVO() {
+    }
+
+    public ArrNodeVO(final Integer id, final Integer version) {
+        this.id = id;
+        this.version = version;
+    }
+
     public Integer getId() {
         return id;
     }
