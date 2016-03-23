@@ -70,6 +70,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+//  console.log(nextProps)
         this.dispatch(descItemTypesFetchIfNeeded());
         this.dispatch(packetTypesFetchIfNeeded());
         var fundId = this.getActiveFundId();

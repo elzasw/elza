@@ -25,7 +25,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('handleSelectedIdsChange', 'handleColumnResize', 'handleColumnSettings', 'handleChangeColumnsSettings',
-            'handleFindAndReplace', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer');
+            'handleFindAndReplace', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer', 'resizeGrid');
 
         const colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
         if (colState) {
@@ -42,6 +42,8 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(refRulDataTypesFetchIfNeeded())
         this.dispatch(fundDataGridFetchFilterIfNeeded(versionId))
         this.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize))
+
+        this.setState({}, this.resizeGrid)
     }
 
     componentWillReceiveProps(nextProps) {
@@ -53,7 +55,21 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize))
 
         const colState = this.getColsStateFromProps(nextProps, this.props)
-        colState && this.setState(colState)
+        if (colState) {
+            this.setState(colState, this.resizeGrid)
+        } else {
+            this.setState({}, this.resizeGrid)
+        }
+    }
+
+    resizeGrid() {
+        const parentEl = ReactDOM.findDOMNode(this.refs.gridContainer)
+        const gridEl = ReactDOM.findDOMNode(this.refs.grid)
+        if (parentEl && gridEl) {
+            const rect = parentEl.getBoundingClientRect()
+            const width = rect.right - rect.left - 32
+            gridEl.style.width = width + 'px'
+        }
     }
 
     cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus) {
@@ -283,9 +299,10 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 <div className='actions-container'>
                     <Button onClick={this.handleColumnSettings}><Icon glyph='fa-columns'/></Button>
                 </div>
-                <div className='grid-container'>
+                <div ref='gridContainer' className='grid-container'>
                     <DataGrid
                         rows={fundDataGrid.items}
+                        ref='grid'
                         cols={cols}
                         selectedIds={fundDataGrid.selectedIds}
                         onColumnResize={this.handleColumnResize}
@@ -304,6 +321,13 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(FundDataGrid);
+function mapStateToProps(state) {
+    const {splitter} = state
+    return {
+        splitter,
+    }
+}
+
+module.exports = connect(mapStateToProps)(FundDataGrid);
 
 
