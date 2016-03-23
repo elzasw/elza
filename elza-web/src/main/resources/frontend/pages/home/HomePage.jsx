@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components';
-import {DataGrid, DataGridPagination, Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
+import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
 import {NodeTabs, FundTreeTabs} from 'components';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -243,16 +243,6 @@ var HomePage = class HomePage extends AbstractReactComponent {
 
 centerPanel =
     <div>
-        {true && <DataGrid
-            rows={rows}
-            cols={cols}
-            selectedIds={selectedIds}
-            focus={focus}
-            onColumnResize={(colIndex, width) => {cols[colIndex].width = width; this.setState({})}}
-            onSelectedIdsChange={ids => {selectedIds = ids; this.setState({})}}
-            onEdit={(row, col) => {console.log('edit', row, col)}}
-        />}
-        <DataGridPagination/>
         {centerPanel}
     </div>
 
