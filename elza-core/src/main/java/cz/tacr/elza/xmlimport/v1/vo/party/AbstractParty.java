@@ -88,6 +88,10 @@ public abstract class AbstractParty {
     @XmlElement(name = "characteristics")
     private String characteristics;
 
+    /** Instituce. */
+    @XmlElement(name = "institution")
+    private Institution institution;
+
     public String getPartyId() {
         return partyId;
     }
@@ -182,6 +186,14 @@ public abstract class AbstractParty {
 
     public void setCharacteristics(String characteristics) {
         this.characteristics = characteristics;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     @Override

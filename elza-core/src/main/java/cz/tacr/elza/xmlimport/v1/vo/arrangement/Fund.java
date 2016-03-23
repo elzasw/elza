@@ -37,6 +37,10 @@ public class Fund {
     @XmlAttribute(name = "rule-set-code")
     private String ruleSetCode;
 
+    /** Kód instituce. */
+    @XmlAttribute(name = "institution-code", required = true)
+    private String institutionCode;
+
     public String getName() {
         return name;
     }
@@ -58,7 +62,7 @@ public class Fund {
     }
 
     public void setArrangementTypeCode(String arrangementTypeCode) {
-        arrangementTypeCode = arrangementTypeCode;
+        this.arrangementTypeCode = arrangementTypeCode;
     }
 
     public String getRuleSetCode() {
@@ -67,6 +71,14 @@ public class Fund {
 
     public void setRuleSetCode(String ruleSetCode) {
         this.ruleSetCode = ruleSetCode;
+    }
+
+    public String getInstitutionCode() {
+        return institutionCode;
+    }
+
+    public void setInstitutionCode(String institutionCode) {
+        this.institutionCode = institutionCode;
     }
 
     @Override

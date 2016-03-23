@@ -28,6 +28,8 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParCreator;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.ParInstitutionType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
@@ -48,6 +50,7 @@ import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
@@ -152,6 +155,9 @@ public class PartyService {
 
     @Autowired
     private RegisterTypeRepository registerTypeRepository;
+
+    @Autowired
+    private InstitutionRepository institutionRepository;
 
     /**
      * Najde osobu podle rejstříkového hesla.
@@ -870,4 +876,34 @@ public class PartyService {
         }
     }
 
+    /**
+     * Vytvoří instituci.
+     *
+     * @param code kód
+     * @param institutionType typ instituce
+     * @param party osoba
+     *
+     * @return neuložená instituce
+     */
+    public ParInstitution createInstitution(String code, ParInstitutionType institutionType, ParParty party) {
+        ParInstitution institution = new ParInstitution();
+        institution.setCode(code);
+        institution.setInstitutionType(institutionType);
+        institution.setParty(party);
+
+        return institution;
+    }
+
+    /**
+     * Uloží instituci.
+     *
+     * @param institution instituce
+     *
+     * @return uložená instituce
+     */
+    public ParInstitution saveInstitution(ParInstitution institution) {
+        Assert.notNull(institution);
+
+        return institutionRepository.save(institution);
+    }
 }

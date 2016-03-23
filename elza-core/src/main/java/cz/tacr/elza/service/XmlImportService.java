@@ -30,9 +30,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamSource;
 
-import cz.tacr.elza.domain.*;
-import liquibase.util.file.FilenameUtils;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -44,7 +41,55 @@ import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
 import cz.tacr.elza.api.vo.XmlImportType;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParCreator;
+import cz.tacr.elza.domain.ParDynasty;
+import cz.tacr.elza.domain.ParEvent;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.ParInstitutionType;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroup;
+import cz.tacr.elza.domain.ParPartyGroupIdentifier;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPerson;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.RegExternalSource;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
@@ -56,7 +101,8 @@ import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
@@ -73,7 +119,6 @@ import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.exception.FatalXmlImportException;
@@ -106,6 +151,7 @@ import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
 import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Dynasty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Event;
+import cz.tacr.elza.xmlimport.v1.vo.party.Institution;
 import cz.tacr.elza.xmlimport.v1.vo.party.PartyGroup;
 import cz.tacr.elza.xmlimport.v1.vo.party.PartyGroupId;
 import cz.tacr.elza.xmlimport.v1.vo.party.PartyName;
@@ -115,6 +161,7 @@ import cz.tacr.elza.xmlimport.v1.vo.party.Relation;
 import cz.tacr.elza.xmlimport.v1.vo.party.RoleType;
 import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 import cz.tacr.elza.xmlimport.v1.vo.record.VariantRecord;
+import liquibase.util.file.FilenameUtils;
 
 /**
  * Import dat z xml.
@@ -131,6 +178,9 @@ public class XmlImportService {
 
     @Autowired
     private ArrangementService arrangementService;
+
+    @Autowired
+    private PartyService partyService;
 
     @Autowired
     private ExternalSourceRepository externalSourceRepository;
@@ -187,7 +237,10 @@ public class XmlImportService {
     private DataRepository dataRepository;
 
     @Autowired
-    private NodeRepository nodeRepository;
+    private InstitutionRepository institutionRepository;
+
+    @Autowired
+    private InstitutionTypeRepository institutionTypeRepository;
 
     @Autowired
     private PartyNameFormTypeRepository partyNameFormTypeRepository;
@@ -212,9 +265,6 @@ public class XmlImportService {
 
     @Autowired
     private RelationEntityRepository relationEntityRepository;
-
-    @Autowired
-    private ScopeRepository scopeRepository;
 
     @Autowired
     private UnitdateRepository unitdateRepository;
@@ -602,11 +652,33 @@ public class XmlImportService {
             ruleSet = ruleSetRepository.findOne(config.getRuleSetId());
         }
 
+        ParInstitution institution = getInstitution(fund.getInstitutionCode());
         String uuid = XmlImportUtils.trimStringValue(fund.getRootLevel().getUuid(), StringLength.LENGTH_36, stopOnError);
-        ArrFund arrFund = arrangementService.createFund(fund.getName(), ruleSet, change, uuid, "TST", null, null); // TODO: dateRange zatím nevyplněn, internalCode TST, instituce
+        ArrFund arrFund = arrangementService.createFund(fund.getName(), ruleSet, change, uuid, "TST", institution, null); // TODO: dateRange zatím nevyplněn, internalCode TST, instituce
         arrangementService.addScopeToFund(arrFund, config.getRegScope());
 
         return arrFund;
+    }
+
+    /**
+     * Najde instituci podle kódu.
+     *
+     * @param institutionCode kód instituce
+     *
+     * @return pokud instituce existuje tak ji vrátí jinak vyhodí výjimku
+     * @throws FatalXmlImportException kódje prázdný nebo instituce s kódem neexistuje
+     */
+    private ParInstitution getInstitution(final String institutionCode) throws FatalXmlImportException {
+        if (StringUtils.isBlank(institutionCode)) {
+            throw new FatalXmlImportException("Kód instituce musí být vyplněn.");
+        }
+
+        ParInstitution institution = institutionRepository.findByCode(institutionCode);
+        if (institution == null) {
+            throw new FatalXmlImportException("Instituce s kódem " + institutionCode + " neexistuje.");
+        }
+
+        return institution;
     }
 
     private void checkData(XmlImport xmlImport, Set<String> usedRecords, Set<String> usedParties, Set<String> usedPackets,
@@ -842,8 +914,39 @@ public class XmlImportService {
             importPartyGroupIdentifiers(partyGroup, parPartyGroup, stopOnError);
         }
 
+        importPartyInstituion(party, parParty, stopOnError);
 
         return partyRepository.save(parParty);
+    }
+
+    private void importPartyInstituion(AbstractParty party, ParParty parParty, boolean stopOnError) throws PartyImportException {
+        Institution institution = party.getInstitution();
+        if (institution == null) {
+            return;
+        }
+
+        String typeCode = institution.getTypeCode();
+        ParInstitutionType parInstitutionType = institutionTypeRepository.findByCode(typeCode);
+        if (parInstitutionType == null) {
+            if (stopOnError) {
+                throw new PartyImportException("Neexistuje typ instituce s kódem " + typeCode);
+            }
+
+            return;
+        }
+
+        String code = institution.getCode();
+        ParInstitution parInstitution = institutionRepository.findByCode(code);
+        if (parInstitution != null && parInstitution.getInstitutionType().getCode().equals(typeCode)) {
+            if (stopOnError) {
+                throw new PartyImportException("Již existuje instituce s kódem " + code + ".");
+            }
+
+            return;
+        }
+
+        parInstitution = partyService.createInstitution(code, parInstitutionType, parParty);
+        partyService.saveInstitution(parInstitution);
     }
 
     private void importEvents(List<Relation> events, ParParty parParty, boolean stopOnError, Map<String, RegRecord> xmlIdIntIdRecordMap)
