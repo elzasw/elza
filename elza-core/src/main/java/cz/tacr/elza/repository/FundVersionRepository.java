@@ -32,6 +32,8 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
     @Query(value = "SELECT v FROM arr_fund_version v join fetch v.fund fa join fetch v.arrangementType at join fetch at.ruleSet join fetch v.createChange left join fetch v.lockChange order by fa.name asc, v.createChange.changeId desc")
     List<ArrFundVersion> findAllFetchFunds();
 
+    @Query(value = "SELECT v FROM arr_fund_version v JOIN FETCH v.fund f WHERE v.lockChange IS NULL")
+    List<ArrFundVersion> findAllOpenVersion();
 
     @Override
     default String getClassName() {

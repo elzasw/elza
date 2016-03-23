@@ -28,4 +28,5 @@ public interface NodeRepositoryCustom {
 
     List<ArrNode> findByFulltextAndVersionLockChangeId(String text, Integer lockChangeId);
 
+    List<ArrNode> findByNodeConformityIsNull();
 }
