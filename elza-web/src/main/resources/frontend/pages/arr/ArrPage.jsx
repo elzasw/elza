@@ -30,6 +30,7 @@ import {barrier} from 'components/Utils';
 import {isFundRootId} from 'components/arr/ArrUtils';
 import {setFocus} from 'actions/global/focus'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
+import {propsEquals} from 'components/Utils'
 
 var _developerSelectedTab = 0
 
@@ -530,6 +531,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                         fund={activeFund}
                         versionId={activeFund.versionId}
                         descItemTypes={descItemTypes}
+                        rulDataTypes={rulDataTypes}
                     />
                 )
             } else if (activeFund.nodes) {

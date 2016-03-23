@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import {stateEquals} from 'components/Utils'
+import {propsEquals} from 'components/Utils'
 
 var AbstractReactComponent = class AbstractReactComponent extends React.Component {
     constructor(props) {
@@ -16,6 +16,13 @@ var AbstractReactComponent = class AbstractReactComponent extends React.Componen
 
     componentWillUpdate() {
     //console.log(this);
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+            return true;
+        }
+        return !propsEquals(this.props, nextProps);
     }
 
     /**

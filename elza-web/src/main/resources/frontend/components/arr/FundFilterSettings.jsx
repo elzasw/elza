@@ -12,23 +12,28 @@ import {FilterableListBox, AbstractReactComponent, i18n} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {WebApi} from 'actions'
+import {hasDescItemTypeValue} from 'components/arr/ArrUtils'
+const FundFilterCondition = require('./FundFilterCondition')
 
 var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods('callValueSearch', 'callSpecSearch', 'handleValueSearch', 'handleSpecSearch',
-            'handleValueItemsChange', 'handleSpecItemsChange')
+            'handleValueItemsChange', 'renderConditionFilter', 'handleSpecItemsChange', 'handleConditionChange',
+            'handleSubmit')
 
         this.state = {
             valueItems: [],
             specItems: [],
             valueSearchText: '',
-            specSearchText: '',
             selectedValueItems: [],
             selectedValueItemsType: 'unselected',
+            specSearchText: '',
             selectedSpecItems: [],
             selectedSpecItemsType: 'unselected',
+            conditionSelectedCode: 'none',
+            conditionValues: []
         }
     }
 
@@ -110,9 +115,105 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
         })
     }
 
+    handleConditionChange(selectedCode, values) {
+        this.setState({
+            conditionSelectedCode: selectedCode,
+            conditionValues: values,
+        })
+    }
+
+    renderConditionFilter() {
+        const {refType, dataType} = this.props
+        const {conditionSelectedCode, conditionValues} = this.state
+
+        if (!hasDescItemTypeValue(dataType)) {
+            return null
+        }
+
+        var items = []
+        switch (dataType.code) {
+            case 'TEXT':
+            case 'STRING':
+            case 'FORMATTED_TEXT':
+            case 'UNITID':
+                items = [
+                    {values: 0, code: 'none', name: i18n('arr.fund.filterSettings.condition.none')},
+                    {values: 0, code: 'empty', name: i18n('arr.fund.filterSettings.condition.empty')},
+                    {values: 0, code: 'notEmpty', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 1, code: 'contains', name: i18n('arr.fund.filterSettings.condition.contains')},
+                    {values: 1, code: 'notContains', name: i18n('arr.fund.filterSettings.condition.notContains')},
+                    {values: 1, code: 'begins', name: i18n('arr.fund.filterSettings.condition.begins')},
+                    {values: 1, code: 'ends', name: i18n('arr.fund.filterSettings.condition.ends')},
+                    {values: 1, code: 'eq', name: i18n('arr.fund.filterSettings.condition.eq')},
+                ]
+                break
+            case 'INT':
+            case 'DECIMAL':
+                items = [
+                    {values: 0, code: 'none', name: i18n('arr.fund.filterSettings.condition.none')},
+                    {values: 0, code: 'empty', name: i18n('arr.fund.filterSettings.condition.empty')},
+                    {values: 0, code: 'notEmpty', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 1, code: 'gt', name: i18n('arr.fund.filterSettings.condition.gt')},
+                    {values: 1, code: 'ge', name: i18n('arr.fund.filterSettings.condition.ge')},
+                    {values: 1, code: 'lt', name: i18n('arr.fund.filterSettings.condition.lt')},
+                    {values: 1, code: 'le', name: i18n('arr.fund.filterSettings.condition.le')},
+                    {values: 1, code: 'eq', name: i18n('arr.fund.filterSettings.condition.eq')},
+                    {values: 1, code: 'ne', name: i18n('arr.fund.filterSettings.condition.ne')},
+                    {values: 2, code: 'interval', name: i18n('arr.fund.filterSettings.condition.interval')},
+                    {values: 2, code: 'notInterval', name: i18n('arr.fund.filterSettings.condition.notInterval')},
+                ]
+                break
+            case 'COORDINATES':
+                break
+            case 'PARTY_REF':
+            case 'RECORD_REF':
+            case 'PACKET_REF':
+                break
+            case 'UNITDATE':
+                break
+            case 'ENUM':
+                break 
+        }
+
+        if (items.length === 0) {
+            return null
+        }
+
+        return (
+            <FundFilterCondition
+                className='filter-content-container'
+                label={i18n('arr.fund.filterSettings.filterByCondition.title')}
+                selectedCode={conditionSelectedCode}
+                values={conditionValues}
+                onChange={this.handleConditionChange}
+                items={items}
+            >
+                <Input type='text' />
+            </FundFilterCondition>
+        )
+    }
+
+    handleSubmit() {
+        const {selectedValueItems, selectedValueItemsType, selectedSpecItems, selectedSpecItemsType, conditionSelectedCode, conditionValues} = this.state
+        const {refType} = this.props
+        var data = {
+            values: selectedValueItems,
+            valuesType: selectedValueItemsType,
+            condition: conditionValues,
+            conditionType: conditionSelectedCode,
+        }
+
+        if (refType.useSpecification) {
+            data.specs = selectedSpecItems
+            data.specsType = selectedSpecItemsType
+        }
+
+        console.log(data)
+    }
+
     render() {
         const {refType, onClose} = this.props
-        const {valueItems, specItems} = this.state
+        const {conditionSelectedCode, conditionValues, valueItems, specItems} = this.state
 
         var specContent
         if (refType.useSpecification) {
@@ -140,7 +241,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             />
         )
 
-        var conditionContent
+        var conditionContent = this.renderConditionFilter()
 
         return (
             <div className='fund-filter-settings-container'>
@@ -152,7 +253,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={()=>{}}>{i18n('global.action.store')}</Button>
+                    <Button onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>

@@ -4,6 +4,8 @@ import thunkMiddleware from 'redux-thunk'
 import createLogger from 'redux-logger'
 import {reducer as formReducer} from 'redux-form';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils';
+import {splitterResize} from 'actions/global/splitter';
+
 //import devTools from 'remote-redux-devtools';
 
 // Nastavení úrovně logování
@@ -115,6 +117,12 @@ import {selectFundTab} from 'actions/arr/fund'
 var fund = Object.assign({id: 1, versionId: 1});
 store.dispatch(selectFundTab(fund));
 */
+
+// Resize
+window.addEventListener("resize", () => {
+    const state = store.getState()
+    store.dispatch(splitterResize(state.splitter.leftSize, state.splitter.rightSize))
+});
 
 if (_logStoreSize) {
     let curr
