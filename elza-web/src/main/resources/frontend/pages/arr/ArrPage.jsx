@@ -530,6 +530,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                         fund={activeFund}
                         versionId={activeFund.versionId}
                         descItemTypes={descItemTypes}
+                        rulDataTypes={rulDataTypes}
                     />
                 )
             } else if (activeFund.nodes) {

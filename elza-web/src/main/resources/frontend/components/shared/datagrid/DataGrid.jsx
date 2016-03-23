@@ -50,8 +50,7 @@ var keyDownHandlers = {
         }
     },
     ArrowRight: function(e) {
-        const {focus} = this.state
-        const {cols} = this.props
+        const {focus, cols} = this.state
 
         if (focus.col + 1 < cols.length) {
             keyDownHandlers.changeFocus.bind(this)({ row: focus.row, col: focus.col + 1 })

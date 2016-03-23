@@ -114,7 +114,7 @@ var FundExtendedView = class FundExtendedView extends AbstractReactComponent {
     }
 
     render() {
-        const {fund, descItemTypes} = this.props;
+        const {fund, descItemTypes, rulDataTypes} = this.props;
 
         var tabContent = [];
         var tabContentClassName;
@@ -134,6 +134,7 @@ var FundExtendedView = class FundExtendedView extends AbstractReactComponent {
                     versionId={fund.versionId}
                     fundDataGrid={fund.fundDataGrid}
                     descItemTypes={descItemTypes}
+                    rulDataTypes={rulDataTypes}
                 />
             )
         } else if (this.state.selectedTabItem.id == 2) {
@@ -189,6 +190,7 @@ FundExtendedView.propTypes = {
     fund: React.PropTypes.object.isRequired,
     versionId: React.PropTypes.number.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,
+    rulDataTypes: React.PropTypes.object.isRequired,
 }
 
 module.exports = connect()(FundExtendedView);
