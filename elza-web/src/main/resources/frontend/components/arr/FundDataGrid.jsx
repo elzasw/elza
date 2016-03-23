@@ -24,7 +24,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('handleSelectedIdsChange', 'handleColumnResize', 'handleColumnSettings', 'handleChangeColumnsSettings',
-            'handleFindAndReplace', 'handleFilterSettings', 'headerColRenderer');
+            'handleFindAndReplace', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer');
 
         const colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
         if (colState) {
@@ -51,6 +51,19 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         const colState = this.getColsStateFromProps(nextProps, this.props)
         colState && this.setState(colState)
+    }
+
+    cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus) {
+        const value = row[col.dataName]
+
+        var displayValue
+        if (value) {
+            displayValue = value.value
+        }
+
+        return (
+            <div className=''>{displayValue}</div>
+        )
     }
 
     headerColRenderer(col) {
@@ -129,6 +142,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                     width: colInfo ? colInfo.width : 60,
                     dataName: refType.id,
                     headerColRenderer: this.headerColRenderer,
+                    cellRenderer: this.cellRenderer,
                 }
                 cols.push(col)
             }
