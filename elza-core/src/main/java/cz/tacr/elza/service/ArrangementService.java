@@ -152,7 +152,7 @@ public class ArrangementService {
 
         //        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
-        ArrLevel rootLevel = createLevel(change, null, uuid);
+        ArrLevel rootLevel = createLevel(change, null, uuid, fund);
         createVersion(change, fund, arrangementType, ruleSet, rootLevel.getNode());
 
         return fund;
@@ -281,23 +281,29 @@ public class ArrangementService {
         return fundVersionRepository.save(version);
     }
 
-    public ArrLevel createLevel(final ArrChange createChange, final ArrNode parentNode, final String uuid) {
+    public ArrLevel createLevel(final ArrChange createChange,
+                                final ArrNode parentNode,
+                                final String uuid,
+                                final ArrFund fund) {
         ArrLevel level = new ArrLevel();
         level.setPosition(1);
         level.setCreateChange(createChange);
         level.setNodeParent(parentNode);
-        level.setNode(createNode(uuid));
+        level.setNode(createNode(uuid, fund));
         return levelRepository.save(level);
     }
 
-    public ArrLevel createLevel(final ArrChange createChange, final ArrNode parentNode, final Integer position) {
+    public ArrLevel createLevel(final ArrChange createChange,
+                                final ArrNode parentNode,
+                                final Integer position,
+                                final ArrFund fund) {
         Assert.notNull(createChange);
 
         ArrLevel level = new ArrLevel();
         level.setPosition(position);
         level.setCreateChange(createChange);
         level.setNodeParent(parentNode);
-        level.setNode(createNode());
+        level.setNode(createNode(fund));
         return levelRepository.save(level);
     }
 
@@ -312,20 +318,23 @@ public class ArrangementService {
         return levelRepository.save(level);
     }
 
-    public ArrNode createNode() {
+    public ArrNode createNode(ArrFund fund) {
         ArrNode node = new ArrNode();
         node.setLastUpdate(LocalDateTime.now());
         node.setUuid(UUID.randomUUID().toString());
+        node.setFund(fund);
         return nodeRepository.save(node);
     }
 
-    public ArrNode createNode(String uuid) {
+    public ArrNode createNode(final String uuid,
+                              final ArrFund fund) {
         if (StringUtils.isBlank(uuid)) {
-            return createNode();
+            return createNode(fund);
         }
         ArrNode node = new ArrNode();
         node.setLastUpdate(LocalDateTime.now());
         node.setUuid(uuid);
+        node.setFund(fund);
         return nodeRepository.save(node);
     }
 
@@ -761,6 +770,7 @@ public class ArrangementService {
 
         lockNode.setUuid(staticNodeDb.getUuid());
         lockNode.setLastUpdate(LocalDateTime.now());
+        lockNode.setFund(version.getFund());
         nodeRepository.save(lockNode);
 
         return lockLevel;

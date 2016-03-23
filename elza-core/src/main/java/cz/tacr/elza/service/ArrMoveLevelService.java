@@ -613,7 +613,8 @@ public class ArrMoveLevelService {
 
         ArrChange change = arrangementService.createChange();
         shiftNodes(nodesToShift, change, newLevelPosition + 1);
-        ArrLevel newLevel = arrangementService.createLevel(change, staticLevelParent.getNode(), newLevelPosition);
+        ArrLevel newLevel = arrangementService.createLevel(change, staticLevelParent.getNode(), newLevelPosition,
+                version.getFund());
 
         return newLevel;
     }
@@ -644,7 +645,8 @@ public class ArrMoveLevelService {
         }
 
         ArrChange change = arrangementService.createChange();
-        ArrLevel newLevel = arrangementService.createLevel(change, staticLevel.getNode(), maxPosition + 1);
+        ArrLevel newLevel = arrangementService.createLevel(change, staticLevel.getNode(), maxPosition + 1,
+                version.getFund());
 
         return newLevel;
     }
