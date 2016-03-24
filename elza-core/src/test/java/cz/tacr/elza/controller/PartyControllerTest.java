@@ -55,6 +55,10 @@ public class PartyControllerTest extends AbstractControllerTest {
      */
     @Test
     public void scenarioTest() {
+
+        /** Smazání tabulek (kvůli XML importu pro zakládání archivních fondů) **/
+        deleteTables();
+
         /** Testovací datumy **/
         ArrCalendarTypeVO gregorian = findCalendarByCode(getCalendarTypes(), "GREGORIAN");
 

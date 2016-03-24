@@ -97,7 +97,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     public void getBulkActionStateTest() throws InterruptedException {
         int fundVersionId = importAndGetVersionId();
         List<BulkActionVO> actionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId), BULK_ACTION_VALIDATE).getBody().as(BulkActionVO[].class));
-        Assert.assertNotEquals(0, actionVOs.size());
+        Assert.assertEquals(0, actionVOs.size());
 
         runBulkAction(fundVersionId, BULK_ACTION_CLEAN_SERIAL_NUMBER);
         runBulkAction(fundVersionId, BULK_ACTION_SERIAL_NUMBER_GENERATOR);
@@ -110,7 +110,8 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         Assert.assertEquals(0, actionVOs.size());
     }
 
-    @Test
+    // povinný nyní nejsou žádný - test nemá význam
+    /*@Test
     public void getBulkActionsMandatoryTest() {
         int fundVersionId = importAndGetVersionId();
         List<BulkActionVO> bulkActionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId).pathParam("mandatory", true), BULK_ACTIONS).getBody().as(BulkActionVO[].class));
@@ -132,7 +133,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
         Assert.assertTrue("Hromadna akce " + BULK_ACTION_SERIAL_NUMBER_GENERATOR + " neni v seznamu", serial);
         Assert.assertTrue("Hromadna akce " + BULK_ACTION_FUND_VALIDATION + " neni v seznamu", fa);
-    }
+    }*/
 
     private BulkActionStateVO getBulkActionState(int fundVersionId, String code) {
         for (BulkActionStateVO state : getBulkActionStates(fundVersionId)) {

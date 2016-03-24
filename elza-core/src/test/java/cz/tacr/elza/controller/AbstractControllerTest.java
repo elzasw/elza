@@ -176,11 +176,19 @@ public abstract class AbstractControllerTest extends AbstractTest {
     private List<RulDataTypeVO> dataTypes = null;
     private List<RulDescItemTypeExtVO> descItemTypes = null;
 
+    // Import institucí
+    private final static String XML_INSTITUTION = "institution-import.xml";
+
+    // Výchozí scope
+    private final static String IMPORT_SCOPE = "GLOBAL";
+
     @Before
     public void setUp() {
         super.setUp();
         RestAssured.port = port;                        // nastavi default port pro REST-assured
         RestAssured.baseURI = RestAssured.DEFAULT_URI;  // nastavi default URI pro REST-assured. Nejcasteni localhost
+
+        importXmlFile(null, null, XmlImportType.PARTY, IMPORT_SCOPE, 1, XmlImportControllerTest.getFile(XML_INSTITUTION));
     }
 
     public static Response delete(Function<RequestSpecification, RequestSpecification> params, String url) {

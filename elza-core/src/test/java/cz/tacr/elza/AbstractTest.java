@@ -140,7 +140,7 @@ public abstract class AbstractTest {
         deleteTables();
     }
 
-    private void deleteTables() {
+    protected void deleteTables() {
         // TODO: dopsat vsechny potrebne tabulky
         arrDataRepository.deleteAll();
         faBulkActionRepository.deleteAll();

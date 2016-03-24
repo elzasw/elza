@@ -159,6 +159,7 @@ public class XmlDataGenerator {
         fa.setName("Import z XML");
         fa.setArrangementTypeCode("arr type code");
         fa.setRuleSetCode("rule set code");
+        fa.setInstitutionCode("in1");
         fa.setRootLevel(createLevelTree(records, parties, packets, config));
 
         return fa;
