@@ -50,6 +50,7 @@ export default function refTables(state = initialState, action) {
             }
         case types.REF_INSTITUTIONS_REQUEST:
         case types.REF_INSTITUTIONS_RECEIVE:
+        case types.CHANGE_INSTITUTION:
             return {
                 ...state,
                 institutions: institutions(state.institutions, action),

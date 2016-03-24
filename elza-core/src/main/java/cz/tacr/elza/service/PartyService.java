@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -903,7 +904,7 @@ public class PartyService {
      */
     public ParInstitution saveInstitution(ParInstitution institution) {
         Assert.notNull(institution);
-
+        eventNotificationService.publishEvent(new ActionEvent(EventType.INSTITUTION_CHANGE));
         return institutionRepository.save(institution);
     }
 }

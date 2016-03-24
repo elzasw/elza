@@ -7,7 +7,7 @@ import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
         changeNodes, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
-    changeMoveLevel, changeRegistryRecord, changeFund, changeFundRecord} from 'actions/global/change';
+    changeMoveLevel, changeRegistryRecord, changeFund, changeFundRecord, changeInstitution} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -93,6 +93,10 @@ function processEvents(values) {
 
             case 'PACKAGE':
                 packageEvent();
+                break;
+
+            case 'INSTITUTION_CHANGE':
+                institutionChange();
                 break;
 
             case 'PARTY_CREATE':
@@ -221,6 +225,13 @@ function indexingFinished() {
  */
 function packageEvent() {
     store.dispatch(changePackage());
+}
+
+/**
+ * Změna instituce.
+ */
+function institutionChange() {
+    store.dispatch(changeInstitution());
 }
 
 /**

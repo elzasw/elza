@@ -45,6 +45,8 @@ public enum EventType {
 
     PACKETS_CHANGE(EventId.class),
 
+    INSTITUTION_CHANGE(ActionEvent.class),
+
     CONFORMITY_INFO(EventIdsInVersion.class),
 
     BULK_ACTION_STATE_CHANGE(EventStringInVersion.class);

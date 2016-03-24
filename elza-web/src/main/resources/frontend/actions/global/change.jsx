@@ -27,6 +27,13 @@ export function changePackage() {
     }
 }
 
+export function changeInstitution() {
+
+    return {
+        type: types.CHANGE_INSTITUTION
+    }
+}
+
 export function changePackets(fundId) {
 
     return {

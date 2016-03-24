@@ -108,3 +108,6 @@ logging:
 
 ### Import balíčku s pravidly
 Po přeložení spuštění je potřeba naimportovat základní pravidla - soubor elza-war/target/elza-packages.zip
+
+### Import institucí
+Aby bylo možné vytvářen archivní fondy, je nutné importovat instituci v sekci Osoby - soubor elza-core/src/test/resources/institution-import.xml

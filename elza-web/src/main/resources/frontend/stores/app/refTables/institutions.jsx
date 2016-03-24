@@ -21,7 +21,7 @@ export default function institutions(state = initialState, action = {}) {
                 items: action.items,
                 lastUpdated: action.receivedAt
             })
-        case types.CHANGE_PACKAGE:
+        case types.CHANGE_INSTITUTION:
             return Object.assign({}, state, {
                 dirty: true
             })
