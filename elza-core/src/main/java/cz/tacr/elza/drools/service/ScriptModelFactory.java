@@ -1,41 +1,21 @@
 package cz.tacr.elza.drools.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDescItemEnum;
-import cz.tacr.elza.domain.ArrDescItemInt;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import cz.tacr.elza.drools.model.ActiveLevel;
-import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.drools.model.DescItem;
-import cz.tacr.elza.drools.model.EventSource;
-import cz.tacr.elza.drools.model.Level;
-import cz.tacr.elza.drools.model.NewLevel;
-import cz.tacr.elza.drools.model.NewLevelApproach;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.drools.model.*;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.function.Consumer;
 
 
 /**
@@ -93,7 +73,7 @@ public class ScriptModelFactory {
         }
         return list;
     }
-    
+
 
     /**
      * Vytvoří hodnoty atributu.
@@ -125,7 +105,7 @@ public class ScriptModelFactory {
         nodes.add(level.getNode());
 
         DescItemReader descItemReader = new DescItemReader(descItemRepository, descItemTypeRepository, descItemFactory);
-        
+
         Level mainLevel = ModelFactory.createLevel(level, version);
         descItemReader.add(mainLevel, level.getNode());
 
@@ -143,7 +123,7 @@ public class ScriptModelFactory {
 
         return mainLevel;
     }
-    
+
     /**
      * Vytvoří hodnoty atributu, pro každý atribut je zavolána extension.
      *
@@ -214,9 +194,9 @@ public class ScriptModelFactory {
                                    final DirectionLevel directionLevel, final ArrFundVersion version)
     {
     	Level srcModelLevel = createLevelModel(level, version);
-            	
+
     	DescItemReader descItemReader = new DescItemReader(descItemRepository, descItemTypeRepository, descItemFactory);
-    	
+
     	// Parent level
         Level parentLevel = null;
         EventSource eventSource = null;
@@ -280,7 +260,7 @@ public class ScriptModelFactory {
 				descItemReader.add(modelSiblingBefore, siblingBefore.getNode());
 			}
 			break;
-        
+
         case ROOT:
             // pokud je vytvářena AP, tak se root level vytváří automaticky
             break;
@@ -289,14 +269,14 @@ public class ScriptModelFactory {
             throw new IllegalStateException("Nedefinovaný stav DirectionLevel");
 
         }
-		        
+
         // Prepare new level
         NewLevel newLevel = new NewLevel();
         newLevel.setParent(parentLevel);
         newLevel.setEventSource(eventSource);
         newLevel.setSiblingAfter(modelSiblingAfter);
         newLevel.setSiblingBefore(modelSiblingBefore);
-        
+
         // Add to the output
         List<Level> levels = new LinkedList<>();
         ModelFactory.addAll(newLevel, (List) levels);
@@ -318,14 +298,14 @@ public class ScriptModelFactory {
         DescItemReader descItemReader = new DescItemReader(descItemRepository, descItemTypeRepository, descItemFactory);
 
         ActiveLevel activeLevel = new ActiveLevel(modelLevel);
-        
+
         // Prepare children info
         Integer childsCount = levelRepository.countChildsByParent(level.getNode(), version.getLockChange());
         activeLevel.setChildCount(childsCount);
 
         // Prepare siblinds
         List<ArrLevel> siblings;
-        siblings = levelRepository.findByParentNode(level.getNodeParent(), version.getLockChange());        
+        siblings = levelRepository.findByParentNode(level.getNodeParent(), version.getLockChange());
 
         // Find siblings
         Level modelSiblingBefore = null;
@@ -355,6 +335,110 @@ public class ScriptModelFactory {
 
         // Read description items
         descItemReader.read(version);
+
+        // Add effective attributes
+        addEffectiveDescItems(activeLevel);
+
         return activeLevel;
+    }
+
+    /**
+     * Přidání efektivních atributů.
+     *
+     * @param level požadovaný level, ke kterému se budou efektivní atributu vytvářet
+     */
+    private void addEffectiveDescItems(Level level) {
+        Level tmpLevel = level.getParent();
+        List<DescItem> descItemLevel = level.getDescItems();
+        while (tmpLevel != null) {
+            // atributy procházeného rodiče
+            List<DescItem> descItems = tmpLevel.getDescItems();
+
+            // atributy, které v cyklu jsou označeny jako effektivní
+            List<DescItem> effectiveDescItemsAdd = new ArrayList<>();
+
+            // existuje nějaký atribut?
+            if (descItemLevel.size() > 0) {
+                for (DescItem descItem : descItems) {
+                    String dataType = descItem.getDataType();
+                    Boolean addAsEffective = true;
+
+                    // u typu ENUM se neporovnává specifikace (protože je to hodnota)
+                    if (dataType.equals("ENUM")) {
+                        addAsEffective = compareAttributesForEnum(descItemLevel, descItem, addAsEffective);
+                    } else {
+                        addAsEffective = compareAttributesForOther(descItemLevel, descItem, addAsEffective);
+                    }
+
+                    // pokud ještě neexistuje, přidá se do seznamu pro přidání
+                    if (addAsEffective) {
+                        addDescItemToEffective(tmpLevel, effectiveDescItemsAdd, descItem);
+                    }
+                }
+            } else {
+                // pokud neexistuje žádný atribut, přidají se všechny z procházeného předka
+                for (DescItem descItem : descItems) {
+                    addDescItemToEffective(tmpLevel, effectiveDescItemsAdd, descItem);
+                }
+            }
+
+            // přidání nových efektivních atributů z procházeného předka
+            descItemLevel.addAll(effectiveDescItemsAdd);
+            tmpLevel = tmpLevel.getParent();
+        }
+    }
+
+    /**
+     * Přidání hodnoty atributu mezi efektivní.
+     *
+     * @param level     procházený level
+     * @param descItems seznam atributů
+     * @param descItem  přidávaný atribut
+     */
+    private void addDescItemToEffective(final Level level, final List<DescItem> descItems, final DescItem descItem) {
+        DescItem descItemCopy = new DescItem(descItem);
+        // vyplní se nodeId - stane se z něj effektivní atribut
+        descItemCopy.setNodeId(level.getNodeId());
+        descItems.add(descItemCopy);
+    }
+
+    /**
+     * Porovnání atributů pro typ ENUM
+     *
+     * @param descItems       seznam atributů k porovnání
+     * @param descItemCompare porovnávaný astribut
+     * @param addAsEffective  přidat jako effektivní atribut?
+     * @return přidat jako effektivní atribut
+     */
+    private boolean compareAttributesForEnum(final List<DescItem> descItems, final DescItem descItemCompare, boolean addAsEffective) {
+        for (DescItem descItem : descItems) {
+            if (descItem.getType().equals(descItemCompare.getType())) {
+                addAsEffective = false;
+                break;
+            }
+        }
+        return addAsEffective;
+    }
+
+    /**
+     * Porovnání atributů pro ostatní typy
+     *
+     * @param descItems       seznam atributů k porovnání
+     * @param descItemCompare porovnávaný astribut
+     * @param addAsEffective  přidat jako effektivní atribut?
+     * @return přidat jako effektivní atribut
+     */
+    private boolean compareAttributesForOther(final List<DescItem> descItems, final DescItem descItemCompare, boolean addAsEffective) {
+        for (DescItem descItem : descItems) {
+            if (descItem.getType().equals(descItemCompare.getType())
+                    && ((descItem.getSpecCode() != null &&
+                    descItem.getSpecCode().equals(descItemCompare.getSpecCode())) ||
+                    descItem.getSpecCode() == null && descItem.getSpecCode() == descItemCompare.getSpecCode()
+            )) {
+                addAsEffective = false;
+                break;
+            }
+        }
+        return addAsEffective;
     }
 }

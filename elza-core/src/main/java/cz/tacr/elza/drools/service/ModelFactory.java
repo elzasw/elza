@@ -40,6 +40,7 @@ public class ModelFactory {
         item.setDescItemId(descItem.getDescItemId());
         item.setType(descItem.getDescItemType().getCode());
         item.setSpecCode(descItem.getDescItemSpec() == null ? null : descItem.getDescItemSpec().getCode());
+        item.setDataType(descItem.getDescItemType().getDataType().getCode());
 
         return item;
     }
@@ -72,7 +73,7 @@ public class ModelFactory {
     		) 
     {
     	if(descItems==null) {
-    		return Collections.emptyList();
+    		return new ArrayList<>();
     	}
         List<DescItem> result = new ArrayList<>(descItems.size());
         for (ArrDescItem descItem : descItems) {
