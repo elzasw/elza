@@ -6,19 +6,19 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {FundFindAndReplaceForm, Icon, ListBox, DataGridColumnsSettings, AbstractReactComponent, i18n, Loading,
-        DataGrid, FundFilterSettings, DataGridPagination} from 'components';
+    DataGrid, FundFilterSettings, DataGridPagination} from 'components';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import * as types from 'actions/constants/ActionTypes';
 import {fundDataGridSetColumnsSettings, fundDataGridSetSelection, fundDataGridSetColumnSize, fundDataGridFetchFilterIfNeeded,
-        fundDataGridFetchDataIfNeeded, fundDataGridSetPageIndex, fundDataGridSetPageSize,
-        findAndReplace} from 'actions/arr/fundDataGrid'
+    fundDataGridFetchDataIfNeeded, fundDataGridSetPageIndex, fundDataGridSetPageSize,
+    findAndReplace} from 'actions/arr/fundDataGrid'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 import {getSetFromIdsList, getMapFromList} from 'stores/app/utils'
 import {propsEquals} from 'components/Utils'
 import {Button} from 'react-bootstrap'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 
-require ('./FundDataGrid.less')
+require('./FundDataGrid.less')
 
 var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     constructor(props) {
@@ -67,7 +67,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         const gridEl = ReactDOM.findDOMNode(this.refs.grid)
         if (parentEl && gridEl) {
             const rect = parentEl.getBoundingClientRect()
-            const width = rect.right - rect.left - 32
+            const width = rect.right - rect.left
             gridEl.style.width = width + 'px'
         }
     }
@@ -103,7 +103,8 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             <div className='' title={col.refType.name}>
                 {col.refType.shortcut}
                 <Button onClick={this.handleFindAndReplace.bind(this, col.refType)}><Icon glyph='fa-edit'/></Button>
-                <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)}><Icon glyph='fa-filter'/></Button>
+                <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)}><Icon
+                    glyph='fa-filter'/></Button>
             </div>
         )
     }
@@ -295,26 +296,27 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         }
 
         return (
-            <div className='fund-datagrid-container'>
-                <div className='actions-container'>
-                    <Button onClick={this.handleColumnSettings}><Icon glyph='fa-columns'/></Button>
-                </div>
-                <div ref='gridContainer' className='grid-container'>
-                    <DataGrid
-                        rows={fundDataGrid.items}
-                        ref='grid'
-                        cols={cols}
-                        selectedIds={fundDataGrid.selectedIds}
-                        onColumnResize={this.handleColumnResize}
-                        onSelectedIdsChange={this.handleSelectedIdsChange}
-                    />
-                    <DataGridPagination
-                        itemsCount={fundDataGrid.itemsCount}
-                        pageSize={fundDataGrid.pageSize}
-                        pageIndex={fundDataGrid.pageIndex}
-                        onSetPageIndex={pageIndex => {this.props.dispatch(fundDataGridSetPageIndex(versionId, pageIndex))}}
-                        onChangePageSize={pageSize => {this.props.dispatch(fundDataGridSetPageSize(versionId, pageSize))}}
-                    />
+            <div ref='gridContainer' className='fund-datagrid-container-wrap'>
+                <div ref='grid' className='fund-datagrid-container'>
+                    <div className='actions-container'>
+                        <Button onClick={this.handleColumnSettings}><Icon glyph='fa-columns'/></Button>
+                    </div>
+                    <div className='grid-container'>
+                        <DataGrid
+                            rows={fundDataGrid.items}
+                            cols={cols}
+                            selectedIds={fundDataGrid.selectedIds}
+                            onColumnResize={this.handleColumnResize}
+                            onSelectedIdsChange={this.handleSelectedIdsChange}
+                        />
+                        <DataGridPagination
+                            itemsCount={fundDataGrid.itemsCount}
+                            pageSize={fundDataGrid.pageSize}
+                            pageIndex={fundDataGrid.pageIndex}
+                            onSetPageIndex={pageIndex => {this.props.dispatch(fundDataGridSetPageIndex(versionId, pageIndex))}}
+                            onChangePageSize={pageSize => {this.props.dispatch(fundDataGridSetPageSize(versionId, pageSize))}}
+                        />
+                    </div>
                 </div>
             </div>
         )
