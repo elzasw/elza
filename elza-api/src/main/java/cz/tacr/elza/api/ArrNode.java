@@ -8,9 +8,8 @@ import java.time.LocalDateTime;
  * Entita zajišťuje zámek pro uzel kvůli konkurentnímu přístupu.
  *
  * @author vavrejn
- *
  */
-public interface ArrNode extends Versionable, Serializable {
+public interface ArrNode<F extends ArrFund> extends Versionable, Serializable {
 
     Integer getNodeId();
 
@@ -23,4 +22,8 @@ public interface ArrNode extends Versionable, Serializable {
     String getUuid();
 
     void setUuid(String uuid);
+
+    void setFund(F fund);
+
+    F getFund();
 }

@@ -50,8 +50,7 @@ var keyDownHandlers = {
         }
     },
     ArrowRight: function(e) {
-        const {focus} = this.state
-        const {cols} = this.props
+        const {focus, cols} = this.state
 
         if (focus.col + 1 < cols.length) {
             keyDownHandlers.changeFocus.bind(this)({ row: focus.row, col: focus.col + 1 })
@@ -284,7 +283,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             )
         } else {
             if (col.cellRenderer) {
-                content = <div className='cell-container'>col.cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus)</div>
+                content = <div className='cell-container'>{col.cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus)}</div>
             } else {
                 content = <div className='cell-container'><div className='value'>{row[col.dataName]}</div></div>
             }

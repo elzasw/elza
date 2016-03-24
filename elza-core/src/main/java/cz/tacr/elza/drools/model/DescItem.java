@@ -24,6 +24,11 @@ public class DescItem {
     private String specCode;
 
     /**
+     * Datový typ.
+     */
+    private String dataType;
+
+    /**
      * Hodnota.
      */
     private Integer integerValue;
@@ -33,11 +38,15 @@ public class DescItem {
      */
     private Packet packet;
 
-
     /**
      * Typ změny atributu.
      */
     private DescItemChange change;
+
+    /**
+     * Identifikátor nodu, kdy byl atribut přidán.
+     */
+    private Integer nodeId;
 
     public DescItem() {
 
@@ -46,6 +55,21 @@ public class DescItem {
     public DescItem(final String type, final String spec) {
         this.type = type;
         this.specCode = spec;
+    }
+
+    /**
+     * Copy constructor
+     * @param descItem kopírovaný atribut
+     */
+    public DescItem(final DescItem descItem) {
+        this.descItemId = descItem.descItemId;
+        this.type = descItem.type;
+        this.specCode = descItem.specCode;
+        this.dataType = descItem.dataType;
+        this.integerValue = descItem.integerValue;
+        this.packet = descItem.packet;
+        this.change = descItem.change;
+        this.nodeId = descItem.nodeId;
     }
 
     public Integer getDescItemId() {
@@ -94,5 +118,30 @@ public class DescItem {
 
     public void setPacket(final Packet packet) {
         this.packet = packet;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(final String dataType) {
+        this.dataType = dataType;
+    }
+
+    public Integer getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(final Integer nodeId) {
+        this.nodeId = nodeId;
+    }
+
+    /**
+     * Je atribut označen jako efektivní?
+     *
+     * @return je efektivní?
+     */
+    public boolean isEffectiveAttribute() {
+        return nodeId != null;
     }
 }

@@ -163,12 +163,12 @@ public abstract class AbstractTest {
         versionConformityInfoRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
-        fundRepository.deleteAll();
         levelRepository.deleteAll();
         descItemRepository.deleteAll();
         descItemSpecRegisterRepository.deleteAll();
         nodeRepository.deleteAll();
         changeRepository.deleteAll();
+        fundRepository.deleteAll();
         institutionRepository.deleteAll();
     }
 

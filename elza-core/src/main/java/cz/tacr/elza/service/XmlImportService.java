@@ -343,7 +343,7 @@ public class XmlImportService {
 
             Map<String, ArrPacket> xmlIdIntIdPacketMap = importPackets(xmlImport, usedPackets, stopOnError, fund);
             importFund(xmlImport.getFund(), change, rootNode, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap,
-                    config);
+                    config, fund);
         }
     }
 
@@ -402,22 +402,25 @@ public class XmlImportService {
     }
 
     private void importFund(Fund fund, ArrChange change, ArrNode rootNode, Map<String, RegRecord> xmlIdIntIdRecordMap,
-                            Map<String, ParParty> xmlIdIntIdPartyMap, Map<String, ArrPacket> xmlIdIntIdPacketMap, XmlImportConfig config) throws LevelImportException, InvalidDataException {
+                            Map<String, ParParty> xmlIdIntIdPartyMap, Map<String, ArrPacket> xmlIdIntIdPacketMap,
+                            XmlImportConfig config, final ArrFund arrFund) throws LevelImportException, InvalidDataException {
         Level rootLevel = fund.getRootLevel();
         int position = 1;
 
         if (rootLevel.getSubLevels() != null) {
             for (Level level : rootLevel.getSubLevels()) {
-                importLevel(level, position++, rootNode, config, change, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap);
+                importLevel(level, position++, rootNode, config, change, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap,
+                        xmlIdIntIdPacketMap, arrFund);
             }
         }
     }
 
     private void importLevel(Level level, int position, ArrNode parent, XmlImportConfig config, ArrChange change,
-            Map<String, RegRecord> xmlIdIntIdRecordMap, Map<String, ParParty> xmlIdIntIdPartyMap, Map<String, ArrPacket> xmlIdIntIdPacketMap)
+                             Map<String, RegRecord> xmlIdIntIdRecordMap, Map<String, ParParty> xmlIdIntIdPartyMap,
+                             Map<String, ArrPacket> xmlIdIntIdPacketMap, final ArrFund arrFund)
             throws LevelImportException, InvalidDataException {
         ArrNode arrNode = arrangementService.createNode(XmlImportUtils.trimStringValue(level.getUuid(), StringLength.LENGTH_36,
-                config.isStopOnError()));
+                config.isStopOnError()), arrFund);
         ArrLevel arrLevel = arrangementService.createLevel(change, arrNode, parent, position);
 
         try {
@@ -434,7 +437,7 @@ public class XmlImportService {
             for (Level subLevel : level.getSubLevels()) {
                 try {
                     importLevel(subLevel, childPosition++, arrNode, config, change, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap,
-                            xmlIdIntIdPacketMap);
+                            xmlIdIntIdPacketMap, arrFund);
                 } catch (NonFatalXmlImportException e) {
                     if (config.isStopOnError()) {
                         throw e;

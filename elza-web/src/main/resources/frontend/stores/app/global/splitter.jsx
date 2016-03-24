@@ -17,12 +17,6 @@ export default function splitter(state = initialState, action) {
             } else {
                 return state;
             }
-        case types.STORE_STATE_DATA:
-            const {leftWidth, rightWidth} = state
-            return {
-                leftWidth,
-                rightWidth
-            }
         case types.GLOBAL_SPLITTER_RESIZE:
             return {
                 ...state,

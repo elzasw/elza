@@ -1,28 +1,23 @@
 package cz.tacr.elza.domain;
 
-import java.time.LocalDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cz.tacr.elza.domain.enumeration.StringLength;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.tacr.elza.domain.enumeration.StringLength;
+import javax.persistence.*;
+import java.time.LocalDateTime;
 
 
 /**
  * Entita zajišťuje zámek pro uzel kvůli konkurentnímu přístupu.
+ *
  * @author Martin Šlapa
  * @since 4. 9. 2015
  */
 @Entity(name = "arr_node")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrNode {
+public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrNode<ArrFund> {
 
     @Id
     @GeneratedValue
@@ -33,6 +28,10 @@ public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.a
 
     @Column(length = StringLength.LENGTH_36, nullable = false)
     private String uuid;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
+    @JoinColumn(name = "fundId", nullable = false)
+    private ArrFund fund;
 
     @Override
     public Integer getNodeId() {
@@ -65,6 +64,16 @@ public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.a
     }
 
     @Override
+    public void setFund(final ArrFund fund) {
+        this.fund = fund;
+    }
+
+    @Override
+    public ArrFund getFund() {
+        return fund;
+    }
+
+    @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof ArrNode)) {
             return false;
@@ -83,6 +92,6 @@ public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.a
 
     @Override
     public String toString() {
-        return "ArrNode{" + "nodeId=" + nodeId + ", lastUpdate=" + lastUpdate + "uuid=" + uuid +'}';
+        return "ArrNode{" + "nodeId=" + nodeId + ", lastUpdate=" + lastUpdate + "uuid=" + uuid + '}';
     }
 }

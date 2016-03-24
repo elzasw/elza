@@ -163,7 +163,7 @@ var Splitter = class Splitter extends AbstractReactComponent {
         }
 
         return (
-            <div className='splitter-container'>
+            <div ref='container' className='splitter-container'>
                 {parts}
             </div>
         )

@@ -3,6 +3,8 @@
  *
  **/
 
+require ('./FilterableListBox.less')
+
 import React from 'react';
 import {Search, ListBox, AbstractReactComponent, i18n} from 'components';
 import {Input, Button} from 'react-bootstrap';
@@ -116,13 +118,12 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
     render() {
         const {label, className, items, searchable} = this.props
         const {filterText} = this.state
+        const lbl = label ? <h4>{label}</h4> : null
 
         var cls = "filterable-listbox-container";
         if (className) {
             cls += " " + className;
         }
-
-        var lbl = label ? <h4>{label}</h4> : null
 
         return (
             <div className={cls}>

@@ -43,7 +43,7 @@ var ModalDialog = class extends AbstractReactComponent {
         });
 
         return (
-            <ModalDialogWrapper ref='wrapper' title={this.props.title} onHide={this.handleClose}>
+            <ModalDialogWrapper className={this.props.dialogClassName} ref='wrapper' title={this.props.title} onHide={this.handleClose}>
                 {children}
             </ModalDialogWrapper>
         )

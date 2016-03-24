@@ -60,30 +60,34 @@ function setInputFocus(el, selectContent = false) {
 }
 
 function propsEquals(x, y, attrs) {
-    for (var a=0; a<attrs.length; a++) {
-        var p = attrs[a];
+    if (typeof attrs !== 'undefined' && attrs !== null) {
+        for (var a=0; a<attrs.length; a++) {
+            var p = attrs[a];
 
-        if ( ! x.hasOwnProperty( p ) ) continue;
-          // other properties were tested using x.constructor === y.constructor
+            if ( ! x.hasOwnProperty( p ) ) continue;
+              // other properties were tested using x.constructor === y.constructor
 
-        if ( ! y.hasOwnProperty( p ) ) {
-            return false;
+            if ( ! y.hasOwnProperty( p ) ) {
+                return false;
+            }
+              // allows to compare x[ p ] and y[ p ] when set to undefined
+
+            if ( x[ p ] === y[ p ] ) continue;
+              // if they have the same strict value or identity then they are equal
+
+            if ( typeof( x[ p ] ) !== "object" ) {
+                return false;
+            }
+              // Numbers, Strings, Functions, Booleans must be strictly equal
+
+            if (x[ p ] !==  y[ p ] ) {
+                return false;
+            }
         }
-          // allows to compare x[ p ] and y[ p ] when set to undefined
-
-        if ( x[ p ] === y[ p ] ) continue;
-          // if they have the same strict value or identity then they are equal
-
-        if ( typeof( x[ p ] ) !== "object" ) {
-            return false;
-        }
-          // Numbers, Strings, Functions, Booleans must be strictly equal
-
-        if (x[ p ] !==  y[ p ] ) {
-            return false;
-        }
+        return true;
+    } else {
+        return stateEquals(x, y)
     }
-    return true;
 }
 
 function stateEquals(x, y) {
@@ -100,7 +104,10 @@ function stateEquals(x, y) {
     if ( typeof( x[ p ] ) !== "object" ) return false;
       // Numbers, Strings, Functions, Booleans must be strictly equal
 
-    if (x[ p ] !==  y[ p ] ) return false;
+    if (x[ p ] !==  y[ p ] ) {
+//console.log(p)
+        return false;
+    }
   }
     return true;
 }
