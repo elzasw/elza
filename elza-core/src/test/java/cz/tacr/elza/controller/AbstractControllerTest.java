@@ -13,7 +13,6 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,6 +33,31 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.api.vo.XmlImportType;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.ParInstitutionVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPartyWithCount;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRecordWithCount;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
@@ -120,6 +144,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String NODES = ARRANGEMENT_CONTROLLER_URL + "/nodes";
     protected static final String COPY_SIBLING = ARRANGEMENT_CONTROLLER_URL + "/copyOlderSiblingAttribute";
     protected static final String VERSIONS = ARRANGEMENT_CONTROLLER_URL + "/getVersions";
+    protected static final String REPLACE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/replaceDataValues/{versionId}";
+
 
     // Party
     protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations";
@@ -1798,5 +1824,29 @@ public abstract class AbstractControllerTest extends AbstractTest {
             params.put("scopeId", scopeId);
         }
         return multipart(spec -> spec.multiPart("xmlFile", xmlFile).params(params), XML_IMPORT);
+    }
+
+
+    /**
+     * Nahrazení textu v hodnotách textových atributů.
+     * @param versionId id verze stromu
+     * @param descItemTypeId typ atributu
+     * @param searchText hledaný text v atributu
+     * @param replaceText text, který nahradí hledaný text v celém textu
+     * @param nodes seznam uzlů, ve kterých hledáme
+     */
+    protected void replaceDataValues(final Integer versionId,
+                                     final Integer descItemTypeId,
+                                     final String searchText,
+                                     final String replaceText,
+                                     final Collection<ArrNodeVO> nodes) {
+
+        put(spec -> spec
+                .pathParameter("versionId", versionId)
+                .queryParameter("descItemTypeId", descItemTypeId)
+                .queryParameter("searchText", searchText)
+                .queryParameter("replaceText", replaceText)
+                .body(nodes), REPLACE_DATA_VALUES);
+
     }
 }

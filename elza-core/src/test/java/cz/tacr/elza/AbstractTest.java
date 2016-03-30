@@ -1,5 +1,6 @@
 package cz.tacr.elza;
 
+import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.other.UtilsTest;
 import cz.tacr.elza.repository.*;
@@ -116,6 +117,10 @@ public abstract class AbstractTest {
     protected InstitutionRepository institutionRepository;
     @Autowired
     protected InstitutionTypeRepository institutionTypeRepository;
+    @Autowired
+    protected DataRepository dataRepository;
+    @Autowired
+    protected ClientFactoryVO clientFactoryVO;
 
     @Autowired
     private UtilsTest utilsTest;

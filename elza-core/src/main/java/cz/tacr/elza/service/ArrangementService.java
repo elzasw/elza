@@ -14,8 +14,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -39,11 +37,41 @@ import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundRegisterScope;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ArrVersionConformity;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
+import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FundRegisterScopeRepository;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVersion;
@@ -788,13 +816,27 @@ public class ArrangementService {
                 .findNodeInRootTreeByNodeId(lockNode, version.getRootNode(), version.getLockChange());
         Assert.notNull(lockLevel);
         ArrNode staticNodeDb = lockLevel.getNode();
-
-        lockNode.setUuid(staticNodeDb.getUuid());
-        lockNode.setLastUpdate(LocalDateTime.now());
-        lockNode.setFund(version.getFund());
-        nodeRepository.save(lockNode);
+        lockNode(staticNodeDb, lockNode);
 
         return lockLevel;
+    }
+
+    /**
+     * Provede uzamčení nodu (zvýšení verze uzlu)
+     *
+     * @param dbNode   odpovídající uzel načtený z db
+     * @param lockNode uzamykaný node
+     * @return level nodu
+     */
+    public ArrNode lockNode(final ArrNode dbNode, final ArrNode lockNode) {
+        Assert.notNull(dbNode);
+        Assert.notNull(lockNode);
+
+        lockNode.setUuid(dbNode.getUuid());
+        lockNode.setLastUpdate(LocalDateTime.now());
+        lockNode.setFund(dbNode.getFund());
+
+        return nodeRepository.save(lockNode);
     }
 
     /**

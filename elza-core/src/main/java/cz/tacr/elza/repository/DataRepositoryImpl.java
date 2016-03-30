@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -7,10 +8,12 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-import cz.tacr.elza.domain.ArrFundVersion;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.utils.ObjectListIterator;
 
@@ -90,5 +93,43 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         }
 
         return result;
+    }
+
+
+    @Override
+    public <T extends ArrData> List<T> findByNodesContainingText(final Collection<ArrNode> nodes,
+                                                                 final RulDescItemType descItemType,
+                                                                 final String text) {
+
+        if(StringUtils.isBlank(text)){
+            throw new IllegalArgumentException("Parametr text nesmí mít prázdnou hodnotu.");
+        }
+
+
+        String searchText = "%" + text + "%";
+
+        String tableName;
+        switch (descItemType.getDataType().getCode()){
+            case "STRING":
+                tableName = descItemType.getDataType().getStorageTable();
+                break;
+            case "TEXT":
+                tableName = descItemType.getDataType().getStorageTable();
+                break;
+            default:
+                throw new IllegalStateException(
+                        "Není zatím implementováno pro typ " + descItemType.getDataType().getCode());
+        }
+
+        String hql = "SELECT d FROM " + tableName +" d"
+                + " JOIN FETCH d.descItem di "
+                + " JOIN FETCH di.node n WHERE di.descItemType = :descItemType AND di.node IN (:nodes) AND d.value like :text";
+
+        Query query = entityManager.createQuery(hql);
+        query.setParameter("descItemType", descItemType);
+        query.setParameter("nodes", nodes);
+        query.setParameter("text", searchText);
+
+        return query.getResultList();
     }
 }

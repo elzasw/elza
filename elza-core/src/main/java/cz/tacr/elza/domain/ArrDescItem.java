@@ -36,6 +36,7 @@ import cz.tacr.elza.search.DescItemIndexingInterceptor;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulDescItemType, RulDescItemSpec, ArrNode> {
 
+    public static final String NODE = "node";
     @Id
     @GeneratedValue
     private Integer descItemId;

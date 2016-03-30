@@ -12,15 +12,36 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.domain.*;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
+import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -410,18 +431,7 @@ public class DescriptionItemService {
                                        final ArrFundVersion version) {
         for (ArrDescItem descItemMove : descItems) {
 
-            descItemMove.setDeleteChange(change);
-            descItemRepository.save(descItemMove);
-
-            ArrDescItem descItemNew = new ArrDescItem();
-
-            BeanUtils.copyProperties(descItemMove, descItemNew);
-            descItemNew.setDescItemId(null);
-            descItemNew.setDeleteChange(null);
-            descItemNew.setCreateChange(change);
-            descItemNew.setPosition(descItemMove.getPosition() + diff);
-
-            descItemRepository.save(descItemNew);
+            ArrDescItem descItemNew  = copyDescItem(change, descItemMove, descItemMove.getPosition() + diff);
 
             // sockety
             publishChangeDescItem(version, descItemNew);
@@ -429,6 +439,28 @@ public class DescriptionItemService {
             // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
             copyDescItemData(descItemMove, descItemNew);
         }
+    }
+
+    /**
+     * Vytvoří kopii descItem. Původní hodnotu uzavře a vytvoří novou se stejnými daty (odverzování)
+     * @param change změna, se kterou dojde k uzamčení a vytvoření kopie
+     * @param descItem hodnota ke zkopírování
+     * @param position pozice atributu
+     * @return kopie atributu4
+     */
+    private ArrDescItem copyDescItem(final ArrChange change, final ArrDescItem descItem, final int position){
+        descItem.setDeleteChange(change);
+        descItemRepository.save(descItem);
+
+        ArrDescItem descItemNew = new ArrDescItem();
+
+        BeanUtils.copyProperties(descItem, descItemNew);
+        descItemNew.setDescItemId(null);
+        descItemNew.setDeleteChange(null);
+        descItemNew.setCreateChange(change);
+        descItemNew.setPosition(position);
+
+        return descItemRepository.save(descItemNew);
     }
 
     /**
@@ -489,15 +521,25 @@ public class DescriptionItemService {
         }
 
         ArrData data = dataList.get(0);
+        ArrData dataNew = createCopyDescItemData(data, descItemTo);
 
+        dataRepository.save(dataNew);
+    }
+
+    /**
+     * Vytvoří kopii dat atributu.
+     * @param data data atributu
+     * @param newDescItem atribut, do kterého patří data
+     * @return vytvořená kopie dat atributu (neuložená)
+     */
+    private ArrData createCopyDescItemData(final ArrData data, final ArrDescItem newDescItem) {
         try {
             ArrData dataNew = data.getClass().getConstructor().newInstance();
 
             BeanUtils.copyProperties(data, dataNew);
             dataNew.setDataId(null);
-            dataNew.setDescItem(descItemTo);
-
-            dataRepository.save(dataNew);
+            dataNew.setDescItem(newDescItem);
+            return dataNew;
         } catch (Exception e) {
             throw new IllegalStateException(e.getCause());
         }
@@ -939,6 +981,98 @@ public class DescriptionItemService {
         return null;
     }
 
+
+    /**
+     * Nahrazení textu v hodnotách textových atributů.
+     * @param version  verze stromu
+     * @param descItemType typ atributu
+     * @param nodes seznam uzlů, ve kterých hledáme
+     * @param findText hledaný text v atributu
+     * @param replaceText text, který nahradí hledaný text v celém textu
+     */
+    public void replaceDescItemValues(final ArrFundVersion version,
+                                      final RulDescItemType descItemType,
+                                      final Set<ArrNode> nodes,
+                                      final String findText,
+                                      final String replaceText) {
+        Assert.notNull(version);
+        Assert.notNull(descItemType);
+        Assert.hasText(findText);
+        Assert.hasText(replaceText);
+        Assert.notEmpty(nodes);
+
+        Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, n -> n.getNodeId());
+
+        List<ArrData> dataToReplaceText = dataRepository.findByNodesContainingText(nodes, descItemType, findText);
+        if(!dataToReplaceText.isEmpty()){
+
+
+            ArrChange change = arrangementService.createChange();
+
+            for (ArrData arrData : dataToReplaceText) {
+                ArrNode clientNode = nodesMap.get(arrData.getDescItem().getNodeId());
+                arrangementService.lockNode(arrData.getDescItem().getNode(), clientNode);
+
+                replaceDescItemValue(arrData, findText, replaceText, change);
+
+                publishChangeDescItem(version, arrData.getDescItem());
+            }
+        }
+    }
+
+    /**
+     * Provede nahrazení textu v hodnotě atributu.
+     * @param data data atributu
+     * @param searchString text, který hledáme
+     * @param replaceString text, který nahradíme
+     * @param change změna (odverzování)
+     */
+    private void replaceDescItemValue(final ArrData data, final String searchString, final String replaceString, final ArrChange change){
+
+
+        ArrDescItem descItem = data.getDescItem();
+        ArrDescItem newDescItem = copyDescItem(change, descItem, descItem.getPosition());
+
+        ArrData newData = createCopyDescItemData(data, newDescItem);
+
+
+        switch (data.getDescItem().getDescItemType().getDataType().getCode()) {
+            case "STRING":
+                ArrDataString oldStringData = (ArrDataString) data;
+
+                ArrDataString newStringData = (ArrDataString) newData;
+                newStringData.setValue(getReplacedDataValue(oldStringData.getValue(), searchString, replaceString));
+
+                break;
+            case "TEXT":
+                ArrDataText oldTextData = (ArrDataText) data;
+                ArrDataText newTextData = (ArrDataText) newData;
+                newTextData.setValue(getReplacedDataValue(oldTextData.getValue(), searchString, replaceString));
+                break;
+
+            default:
+                throw new IllegalStateException(
+                        "Zatím není implementováno pro kod " + data.getDescItem().getDescItemType().getCode());
+        }
+
+        dataRepository.save(newData);
+    }
+
+    /**
+     * Nahradí text v řetězci.
+     *
+     * @param text          text, ve kterém hledáme
+     * @param searchString  text, který hledáme
+     * @param replaceString text, který nahradíme
+     * @return zpracovaný text
+     */
+    private String getReplacedDataValue(final String text, final String searchString, final String replaceString) {
+        Assert.notNull(text);
+        Assert.notNull(searchString);
+        Assert.notNull(replaceString);
+
+        return StringUtils.replace(text, searchString, replaceString);
+    }
 
 
 

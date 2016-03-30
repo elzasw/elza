@@ -15,8 +15,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -46,9 +44,30 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.FilterExpiredException;
+import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DescriptionItemService;
@@ -1032,6 +1051,30 @@ public class ArrangementController {
         return filterTreeService.getFilteredData(version, page, pageSize, descItemTypeIds);
     }
 
+
+    /**
+     * Nahrazení textu v hodnotách textových atributů.
+     * @param versionId id verze stromu
+     * @param descItemTypeId typ atributu
+     * @param searchText hledaný text v atributu
+     * @param replaceText text, který nahradí hledaný text v celém textu
+     * @param nodes seznam uzlů, ve kterých hledáme
+     */
+    @Transactional
+    @RequestMapping(value = "/replaceDataValues/{versionId}", method = RequestMethod.PUT)
+    public void replaceDataValues(@PathVariable("versionId") final Integer versionId,
+                                  @RequestParam("descItemTypeId") final Integer descItemTypeId,
+                                  @RequestParam("searchText") final String searchText,
+                                  @RequestParam("replaceText") final String replaceText,
+                                  @RequestBody final Set<ArrNodeVO> nodes) {
+
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
+        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+
+        Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(nodes));
+
+        descriptionItemService.replaceDescItemValues(version, descItemType, nodesDO, searchText, replaceText);
+    }
 
 
     public static class VersionValidationItem {

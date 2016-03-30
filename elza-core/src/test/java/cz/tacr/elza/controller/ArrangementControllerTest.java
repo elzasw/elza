@@ -1,24 +1,43 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.vo.*;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.service.ArrMoveLevelService;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
 
 /**
@@ -580,4 +599,46 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Assert.isTrue(updatedLink.getId().equals(deletedLink.getId()));
     }
 
+
+    @Test
+    public void replaceDataValues() {
+
+        // vytvoření
+        ArrFundVersionVO fundVersion = getOpenVersion(createdFund());
+
+        // vytvoření uzlů
+        List<ArrNodeVO> nodes = createLevels(fundVersion);
+        Set<Integer> nodeIds = new HashSet<>();
+        for (ArrNodeVO node : nodes) {
+            nodeIds.add(node.getId());
+        }
+
+        // vytvoření hodnoty
+        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("ZP2015_TITLE");
+        int index = 0;
+        for (ArrNodeVO node : nodes) {
+            ArrDescItemVO descItem = buildDescItem(typeVo.getCode(), null, index + "value" + index, null, null);
+            ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node,
+                    typeVo);
+            index++;
+        }
+
+        //nahrazení hodnoty value za hodnotu valXYZ
+        List<ArrNodeVO> allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
+        replaceDataValues(fundVersion.getId(), typeVo.getId(), "value", "valXYZ", allNodes);
+
+
+        //nalezení hodnot podle změněné hodnoty
+        RulDescItemType type = descItemTypeRepository.findOneByCode("ZP2015_TITLE");
+        type.setDataType(dataTypeRepository.findByCode("TEXT"));  //kvůli transakci (no session)
+        List<ArrData> nodesContainingText = dataRepository.findByNodesContainingText(nodeRepository.findAll(nodeIds),
+                type, "valXYZ");
+
+        Assert.isTrue(nodesContainingText.size() == nodeIds.size());
+        for (ArrData arrData : nodesContainingText) {
+            ArrDataText data = (ArrDataText) arrData;
+            Assert.isTrue(Pattern.compile("^(\\d+valXYZ\\d+)$").matcher(data.getValue()).matches());
+            Assert.isTrue(nodeIds.contains(arrData.getDescItem().getNodeId()));
+        }
+    }
 }
