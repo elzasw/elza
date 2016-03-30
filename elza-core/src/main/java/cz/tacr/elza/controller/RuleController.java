@@ -1,36 +1,33 @@
 package cz.tacr.elza.controller;
 
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.service.PolicyService;
+import cz.tacr.elza.service.RuleService;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
-
-import cz.tacr.elza.repository.RuleSetRepository;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulDescItemTypeExt;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.repository.ArrangementTypeRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.service.RuleService;
+import java.util.Map;
 
 
 /**
@@ -44,9 +41,6 @@ import cz.tacr.elza.service.RuleService;
 public class RuleController {
 
     @Autowired
-    private ArrangementTypeRepository arrangementTypeRepository;
-
-    @Autowired
     private ClientFactoryVO factoryVo;
 
     @Autowired
@@ -57,8 +51,18 @@ public class RuleController {
 
     @Autowired
     private RuleService ruleService;
+
     @Autowired
     private PackageService packageService;
+
+    @Autowired
+    private PolicyService policyService;
+
+    @Autowired
+    private FundVersionRepository fundVersionRepository;
+
+    @Autowired
+    private NodeRepository nodeRepository;
 
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
     public List<RulRuleSetVO> getRuleSets() {
@@ -106,6 +110,60 @@ public class RuleController {
         }
     }
 
+    @RequestMapping(value = "/policy/types/{fundVersionId}", method = RequestMethod.GET)
+    public List<RulPolicyTypeVO> getPolicyTypes(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+        Assert.notNull(fundVersionId, "Verze fondu musí být vyplněna");
+
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        Assert.notNull(fundVersion, "Nebyla nalezena verze fondu s id " + fundVersionId);
+
+        List<RulPolicyType> policyTypes = policyService.getPolicyTypes(fundVersion);
+        return factoryVo.createPolicyTypes(policyTypes);
+    }
+
+    @Transactional
+    @RequestMapping(value = "/policy/{nodeId}/{fundVersionId}", method = RequestMethod.PUT)
+    public void setVisiblePolicy(@PathVariable(value = "nodeId") final Integer nodeId,
+                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                              @RequestBody final VisiblePolicyParams visiblePolicyParams) {
+        Assert.notNull(nodeId);
+        Assert.notNull(fundVersionId);
+        Assert.notNull(visiblePolicyParams);
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+        Assert.notNull(node, "Uzel s id=" + nodeId + " neexistuje");
+
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        Assert.notNull(fundVersion, "Verze fondu s id=" + fundVersionId + " neexistuje");
+
+        policyService.setVisiblePolicy(node, fundVersion, visiblePolicyParams.getPolicyTypeIdsMap(),
+                visiblePolicyParams.getIncludeSubtree());
+    }
+
+    @RequestMapping(value = "/policy/{nodeId}/{fundVersionId}/{includeParents}", method = RequestMethod.GET)
+    public VisiblePolicyTypes getVisiblePolicy(@PathVariable(value = "nodeId") final Integer nodeId,
+                                 @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                 @PathVariable(value = "includeParents") final Boolean includeParents) {
+        Assert.notNull(nodeId);
+        Assert.notNull(fundVersionId);
+        Assert.notNull(includeParents);
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+        Assert.notNull(node, "Uzel s id=" + nodeId + " neexistuje");
+
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        Assert.notNull(fundVersion, "Verze fondu s id=" + fundVersionId + " neexistuje");
+
+        Map<RulPolicyType, Boolean> visibleTypesPolicy = policyService.getVisiblePolicy(node, fundVersion, includeParents);
+
+        VisiblePolicyTypes result = new VisiblePolicyTypes();
+        Map<Integer, Boolean> visibleTypeIdsPolicy = new HashMap<>(visibleTypesPolicy.size());
+        for (Map.Entry<RulPolicyType, Boolean> entry : visibleTypesPolicy.entrySet()) {
+            visibleTypeIdsPolicy.put(entry.getKey().getPolicyTypeId(), entry.getValue());
+        }
+        result.setPolicyTypeIdsMap(visibleTypeIdsPolicy);
+        return result;
+    }
 
     @Transactional
     @RequestMapping(value="/importPackage", method=RequestMethod.POST)
@@ -122,6 +180,57 @@ public class RuleController {
             if (temp != null) {
                 temp.deleteOnExit();
             }
+        }
+    }
+
+    /**
+     * Vstupní parametry pro nastavení oprávnění.
+     */
+    public static class VisiblePolicyParams {
+
+        /**
+         * Zohlednit i podstrom
+         */
+        private Boolean includeSubtree;
+
+        /**
+         * Mapa typů oprávnění a jejich zobrazení
+         */
+        private Map<Integer, Boolean> policyTypeIdsMap;
+
+        public Boolean getIncludeSubtree() {
+            return includeSubtree;
+        }
+
+        public void setIncludeSubtree(final Boolean includeSubtree) {
+            this.includeSubtree = includeSubtree;
+        }
+
+        public Map<Integer, Boolean> getPolicyTypeIdsMap() {
+            return policyTypeIdsMap;
+        }
+
+        public void setPolicyTypeIdsMap(final Map<Integer, Boolean> policyTypeIdsMap) {
+            this.policyTypeIdsMap = policyTypeIdsMap;
+        }
+    }
+
+    /**
+     * Výstupní data pro zjištění oprávnění.
+     */
+    public static class VisiblePolicyTypes {
+
+        /**
+         * Mapa typů oprávnění a jejich zobrazení
+         */
+        private Map<Integer, Boolean> policyTypeIdsMap;
+
+        public Map<Integer, Boolean> getPolicyTypeIdsMap() {
+            return policyTypeIdsMap;
+        }
+
+        public void setPolicyTypeIdsMap(final Map<Integer, Boolean> policyTypeIdsMap) {
+            this.policyTypeIdsMap = policyTypeIdsMap;
         }
     }
 

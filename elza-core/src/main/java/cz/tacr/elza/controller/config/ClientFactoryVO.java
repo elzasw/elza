@@ -1112,4 +1112,28 @@ public class ClientFactoryVO {
         institutionVO.setPartyId(institution.getParty().getPartyId());
         return institutionVO;
     }
+
+    /**
+     * Vytvoří VO pro seznam typů oprávnění.
+     *
+     * @param policyTypes   seznam DO
+     * @return seznam VO
+     */
+    public List<RulPolicyTypeVO> createPolicyTypes(final List<RulPolicyType> policyTypes) {
+        return createList(policyTypes, RulPolicyTypeVO.class, this::createPolicyType);
+    }
+
+    /**
+     * Vytvoří VO pro typ oprávnění.
+     *
+     * @param policyType   DO typu oprávnění
+     * @return seznam VO typu oprávnění
+     */
+    public RulPolicyTypeVO createPolicyType(final RulPolicyType policyType) {
+        Assert.notNull(policyType);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        RulPolicyTypeVO policyTypeVO = mapper.map(policyType, RulPolicyTypeVO.class);
+        policyTypeVO.setRuleSetId(policyType.getRuleSet().getRuleSetId());
+        return policyTypeVO;
+    }
 }

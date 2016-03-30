@@ -1,11 +1,13 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulRuleSet;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 
@@ -18,4 +20,8 @@ public interface PolicyTypeRepository extends JpaRepository<RulPolicyType, Integ
 
     RulPolicyType findByCode(String packetTypeCode);
 
+    List<RulPolicyType> findByRuleSet(RulRuleSet ruleSet);
+
+    @Query("SELECT t FROM rul_policy_type t WHERE t.policyTypeId in ?1")
+    List<RulPolicyType> findByIds(Collection<Integer> policyTypeIds);
 }
