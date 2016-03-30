@@ -103,6 +103,9 @@ public class LevelTreeCacheService {
     @Autowired
     private DescriptionItemService descriptionItemService;
 
+    @Autowired
+    private PolicyService policyService;
+
     @Value("${elza.treenode.defaultTitle}")
     private String defaultNodeTitle = "";
 
@@ -258,12 +261,23 @@ public class LevelTreeCacheService {
         Map<Integer, ArrNodeConformityExt> conformityInfoForNodes = ruleService
                 .getNodeConformityInfoForNodes(nodeIds, version);
 
+        List<Integer> conformityNodeIds = new ArrayList<>();
         for (TreeNodeClient treeNode: nodes) {
             ArrNodeConformityExt nodeConformity = conformityInfoForNodes.get(treeNode.getId());
             if (nodeConformity != null) {
                 treeNode.setNodeConformity(clientFactoryVO.createNodeConformity(nodeConformity));
+                conformityNodeIds.add(treeNode.getId());
             }
         }
+
+        Map<Integer, Map<Integer, Boolean>> nodeIdsVisiblePolicy = policyService.getVisiblePolicyIds(conformityNodeIds, version, true);
+        for (TreeNodeClient node : nodes) {
+            Map<Integer, Boolean> visiblePolicy = nodeIdsVisiblePolicy.get(node.getId());
+            if (visiblePolicy != null) {
+                node.getNodeConformity().setPolicyTypeIdsVisible(visiblePolicy);
+            }
+        }
+
     }
 
 

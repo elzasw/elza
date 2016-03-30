@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import cz.tacr.elza.api.ArrNodeConformity;
 
@@ -42,6 +43,11 @@ public class NodeConformityVO {
      * Seznam chybných hodnot.
      */
     private List<NodeConformityErrorVO> errorList;
+
+    /**
+     * Mapa zobrazování chyb/chybějících.
+     */
+    private Map<Integer, Boolean> policyTypeIdsVisible;
 
     public Integer getNodeId() {
         return nodeId;
@@ -89,5 +95,13 @@ public class NodeConformityVO {
 
     public void setErrorList(final List<NodeConformityErrorVO> errorList) {
         this.errorList = errorList;
+    }
+
+    public Map<Integer, Boolean> getPolicyTypeIdsVisible() {
+        return policyTypeIdsVisible;
+    }
+
+    public void setPolicyTypeIdsVisible(final Map<Integer, Boolean> policyTypeIdsVisible) {
+        this.policyTypeIdsVisible = policyTypeIdsVisible;
     }
 }

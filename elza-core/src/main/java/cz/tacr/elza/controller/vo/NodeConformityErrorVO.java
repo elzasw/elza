@@ -18,6 +18,11 @@ public class NodeConformityErrorVO {
      */
     private String description;
 
+    /**
+     * Identifikátor typu oprávnění.
+     */
+    private Integer policyTypeId;
+
     public Integer getDescItemObjectId() {
         return descItemObjectId;
     }
@@ -32,5 +37,13 @@ public class NodeConformityErrorVO {
 
     public void setDescription(final String description) {
         this.description = description;
+    }
+
+    public Integer getPolicyTypeId() {
+        return policyTypeId;
+    }
+
+    public void setPolicyTypeId(final Integer policyTypeId) {
+        this.policyTypeId = policyTypeId;
     }
 }

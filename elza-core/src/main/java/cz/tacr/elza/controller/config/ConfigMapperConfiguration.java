@@ -116,6 +116,9 @@ public class ConfigMapperConfiguration {
                         super.mapAtoB(arrNodeConformityError, nodeConformityErrorVO, context);
                         nodeConformityErrorVO
                                 .setDescItemObjectId(arrNodeConformityError.getDescItem().getDescItemObjectId());
+                        Integer policyTypeId = arrNodeConformityError.getPolicyType() == null ?
+                                null : arrNodeConformityError.getPolicyType().getPolicyTypeId();
+                        nodeConformityErrorVO.setPolicyTypeId(policyTypeId);
                     }
                 }).byDefault().register();
 
@@ -131,6 +134,9 @@ public class ConfigMapperConfiguration {
                         nodeConformityMissingVO.setDescItemSpecId(
                                 arrNodeConformityMissing.getDescItemSpec() == null ? null : arrNodeConformityMissing
                                         .getDescItemSpec().getDescItemSpecId());
+                        Integer policyTypeId = arrNodeConformityMissing.getPolicyType() == null ?
+                                null : arrNodeConformityMissing.getPolicyType().getPolicyTypeId();
+                        nodeConformityMissingVO.setPolicyTypeId(policyTypeId);
                     }
                 }).byDefault().register();
 

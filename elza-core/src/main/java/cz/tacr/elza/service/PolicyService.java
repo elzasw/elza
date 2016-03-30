@@ -48,37 +48,122 @@ public class PolicyService {
     /**
      * Získání nastavení oprávnění pro uzel.
      *
-     * @param node           node ke kterému hledám oprávnění
+     * @param nodeId         identifikátor node ke kterému hledám oprávnění
      * @param fundVersion    verze fondu
      * @param includeParents zohlednit zděděné oprávnění od rodičů?
      * @return mapa typů a jejich zobrazení
      */
-    public Map<RulPolicyType, Boolean> getVisiblePolicy(final ArrNode node,
+    public Map<RulPolicyType, Boolean> getVisiblePolicy(final Integer nodeId,
                                                         final ArrFundVersion fundVersion,
                                                         final Boolean includeParents) {
-        Assert.notNull(node);
+        Assert.notNull(nodeId);
+        Assert.notNull(fundVersion);
+        Assert.notNull(includeParents);
+        Map<Integer, Map<RulPolicyType, Boolean>> nodeIdsMap =
+                getVisiblePolicy(Arrays.asList(nodeId), fundVersion, includeParents);
+        return nodeIdsMap.get(nodeId);
+    }
+
+    /**
+     * Získání nastavení oprávnění pro uzly.
+     *
+     * @param nodeIds        identifikátor node ke kterému hledám oprávnění
+     * @param fundVersion    verze fondu
+     * @param includeParents zohlednit zděděné oprávnění od rodičů?
+     * @return mapa uzlů map typů a jejich zobrazení
+     */
+    public Map<Integer, Map<RulPolicyType, Boolean>> getVisiblePolicy(final List<Integer> nodeIds,
+                                                                      final ArrFundVersion fundVersion,
+                                                                      final Boolean includeParents) {
+        Assert.notNull(nodeIds);
         Assert.notNull(fundVersion);
         Assert.notNull(includeParents);
 
         RulRuleSet ruleSet = fundVersion.getRuleSet();
         List<RulPolicyType> policyTypes = policyTypeRepository.findByRuleSet(ruleSet);
 
-        List<Integer> nodeIds = new ArrayList<>();
-        nodeIds.add(node.getNodeId());
+        // mapa napočítaných oprávnění předů
+        Map<Integer, Map<Integer, Boolean>> parentPolicyIds = new HashMap<>();
 
-        // chci zohlednit i zděděné oprávnění od rodičů
-        if (includeParents) {
-            Collection<TreeNodeClient> nodeParents = levelTreeCacheService.getNodeParents(node.getNodeId(), fundVersion.getFundVersionId());
-            nodeIds.addAll(nodeParents.stream().map(TreeNodeClient::getId).collect(Collectors.toList()));
+        Map<Integer, Map<RulPolicyType, Boolean>> result = new HashMap<>();
+        for (Integer nodeId : nodeIds) {
+            Map<Integer, Boolean> parentPolicy = null;
+
+            // chci zohlednit i zděděné oprávnění od předů
+            if (includeParents) {
+                Collection<TreeNodeClient> nodeParents = levelTreeCacheService.getNodeParents(nodeId, fundVersion.getFundVersionId());
+
+                // existují předci?
+                if (nodeParents.size() > 0) {
+                    List<Integer> parentNodeIds = nodeParents.stream().map(TreeNodeClient::getId).collect(Collectors.toList());
+                    Integer firstParentNodeId = parentNodeIds.get(0);
+
+                    // hledám napočtené oprávnění
+                    parentPolicy = parentPolicyIds.get(firstParentNodeId);
+
+                    // pokud neexistuje, vypočítám ho
+                    if (parentPolicy == null) {
+                        parentPolicy = new HashMap<>();
+                        parentPolicyIds.put(firstParentNodeId, parentPolicy);
+
+                        // načtu oprávnění předků
+                        List<UIVisiblePolicy> visiblePolicies = visiblePolicyRepository.findByNodeIds(parentNodeIds, policyTypes);
+
+                        fillVisiblePolicyMap(parentNodeIds, visiblePolicies, parentPolicy);
+                    }
+                }
+            }
+
+            // načtu pro aktuální uzel
+            List<UIVisiblePolicy> visiblePolicies = visiblePolicyRepository.findByNodeIds(Arrays.asList(nodeId), policyTypes);
+            Map<Integer, Boolean> policyTypeIdsVisible = new HashMap<>();
+            fillVisiblePolicyMap(Arrays.asList(nodeId), visiblePolicies, policyTypeIdsVisible);
+
+            // pokud existují práva od předka
+            if (parentPolicy != null) {
+                for (Map.Entry<Integer, Boolean> entry : parentPolicy.entrySet()) {
+                    Boolean visible = policyTypeIdsVisible.get(entry.getKey());
+
+                    // vkládám pouze, pokud typ ještě neexistuje
+                    if (visible == null) {
+                        policyTypeIdsVisible.put(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
+
+            // vytvoří mapu podle typů
+            Map<RulPolicyType, Boolean> policyTypeVisible = new HashMap<>();
+            for (RulPolicyType policyType : policyTypes) {
+                Boolean visible = policyTypeIdsVisible.get(policyType.getPolicyTypeId());
+
+                // pokud neexistuje hodnota u typu, je přidána s true
+                if (visible == null) {
+                    visible = true;
+                }
+
+                policyTypeVisible.put(policyType, visible);
+            }
+
+            result.put(nodeId, policyTypeVisible);
         }
 
-        List<UIVisiblePolicy> visiblePolicies = visiblePolicyRepository.findByNodeIds(nodeIds, policyTypes);
+        return result;
+    }
 
-        Map<Integer, Boolean> policyTypeIdsVisible = new HashMap<>();
-        for (Integer nodeId : nodeIds) {
+    /**
+     * Provádí průchod a vyplňování typů oprávnění ke kořenu.
+     *
+     * @param nodeIds              seznam identifikátorů nodů - seřazený od nodu ke kořenu
+     * @param visiblePolicies      seznam všech oprávnění
+     * @param policyTypeIdsVisible plněný seznam
+     */
+    private void fillVisiblePolicyMap(final List<Integer> nodeIds,
+                                      final List<UIVisiblePolicy> visiblePolicies,
+                                      final Map<Integer, Boolean> policyTypeIdsVisible) {
+        for (Integer nodeIdTmp : nodeIds) {
             // získání pouze typů k nodu
             List<UIVisiblePolicy> nodeVisiblePolicies = visiblePolicies.stream()
-                    .filter(visiblePolicy -> nodeId.equals(visiblePolicy.getNode().getNodeId())).
+                    .filter(visiblePolicy -> nodeIdTmp.equals(visiblePolicy.getNode().getNodeId())).
                             collect(Collectors.toCollection(LinkedList::new));
 
             for (UIVisiblePolicy nodeVisiblePolicy : nodeVisiblePolicies) {
@@ -91,21 +176,48 @@ public class PolicyService {
                 }
             }
         }
+    }
 
-        // vytvoří mapu podle typů
-        Map<RulPolicyType, Boolean> policyTypeVisible = new HashMap<>();
-        for (RulPolicyType policyType : policyTypes) {
-            Boolean visible = policyTypeIdsVisible.get(policyType.getPolicyTypeId());
-
-            // pokud neexistuje hodnota u typu, je přidána s true
-            if (visible == null) {
-                visible = true;
-            }
-
-            policyTypeVisible.put(policyType, visible);
+    /**
+     * Získání nastavení oprávnění pro uzly.
+     *
+     * @param nodeId         identifikátor node ke kterému hledám oprávnění
+     * @param fundVersion    verze fondu
+     * @param includeParents zohlednit zděděné oprávnění od rodičů?
+     * @return mapa uzlů map typů a jejich zobrazení
+     */
+    public Map<Integer, Boolean> getVisiblePolicyIds(final Integer nodeId,
+                                                                   final ArrFundVersion fundVersion,
+                                                                   final Boolean includeParents) {
+        Map<RulPolicyType, Boolean> visiblePolicy = getVisiblePolicy(nodeId, fundVersion, includeParents);
+        Map<Integer, Boolean> visiblePolicyIds = new HashMap<>();
+        for (Map.Entry<RulPolicyType, Boolean> entry : visiblePolicy.entrySet()) {
+            visiblePolicyIds.put(entry.getKey().getPolicyTypeId(), entry.getValue());
         }
+        return visiblePolicyIds;
+    }
 
-        return policyTypeVisible;
+    /**
+     * Získání nastavení oprávnění pro uzly.
+     *
+     * @param nodeIds        identifikátor node ke kterému hledám oprávnění
+     * @param fundVersion    verze fondu
+     * @param includeParents zohlednit zděděné oprávnění od rodičů?
+     * @return mapa uzlů map typů a jejich zobrazení
+     */
+    public Map<Integer, Map<Integer, Boolean>> getVisiblePolicyIds(final List<Integer> nodeIds,
+                                                                         final ArrFundVersion fundVersion,
+                                                                         final Boolean includeParents) {
+        Map<Integer, Map<RulPolicyType, Boolean>> visiblePolicy = getVisiblePolicy(nodeIds, fundVersion, includeParents);
+        Map<Integer, Map<Integer, Boolean>> visiblePolicyIds = new HashMap<>();
+        for (Map.Entry<Integer, Map<RulPolicyType, Boolean>> entry : visiblePolicy.entrySet()) {
+            Map<Integer, Boolean> visiblePolicyVisible = new HashMap<>();
+            for (Map.Entry<RulPolicyType, Boolean> entryVisible : entry.getValue().entrySet()) {
+                visiblePolicyVisible.put(entryVisible.getKey().getPolicyTypeId(), entryVisible.getValue());
+            }
+            visiblePolicyIds.put(entry.getKey(), visiblePolicyVisible);
+        }
+        return visiblePolicyIds;
     }
 
     /**

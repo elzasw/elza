@@ -23,6 +23,11 @@ public class NodeConformityMissingVO {
      */
     private String description;
 
+    /**
+     * Identifikátor typu oprávnění.
+     */
+    private Integer policyTypeId;
+
     public Integer getDescItemTypeId() {
         return descItemTypeId;
     }
@@ -45,5 +50,13 @@ public class NodeConformityMissingVO {
 
     public void setDescription(final String description) {
         this.description = description;
+    }
+
+    public Integer getPolicyTypeId() {
+        return policyTypeId;
+    }
+
+    public void setPolicyTypeId(final Integer policyTypeId) {
+        this.policyTypeId = policyTypeId;
     }
 }

@@ -154,13 +154,8 @@ public class RuleController {
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         Assert.notNull(fundVersion, "Verze fondu s id=" + fundVersionId + " neexistuje");
 
-        Map<RulPolicyType, Boolean> visibleTypesPolicy = policyService.getVisiblePolicy(node, fundVersion, includeParents);
-
         VisiblePolicyTypes result = new VisiblePolicyTypes();
-        Map<Integer, Boolean> visibleTypeIdsPolicy = new HashMap<>(visibleTypesPolicy.size());
-        for (Map.Entry<RulPolicyType, Boolean> entry : visibleTypesPolicy.entrySet()) {
-            visibleTypeIdsPolicy.put(entry.getKey().getPolicyTypeId(), entry.getValue());
-        }
+        Map<Integer, Boolean> visibleTypeIdsPolicy = policyService.getVisiblePolicyIds(node.getNodeId(), fundVersion, includeParents);
         result.setPolicyTypeIdsMap(visibleTypeIdsPolicy);
         return result;
     }
