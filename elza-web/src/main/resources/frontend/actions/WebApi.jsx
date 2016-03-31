@@ -274,8 +274,8 @@ class WebApi{
             });
     }
 
-    versionValidate(versionId) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/validateVersion/' + versionId, null)
+    versionValidate(versionId, showAll = false) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/validateVersion/' + versionId + '/' + showAll, null)
     }
 
     versionValidateCount(versionId) {

@@ -5,6 +5,7 @@ const initialState = {
     isFetching: false,
     isDirty: true,
     errors: [],
+    showAll: false,
     count: 0
 };
 

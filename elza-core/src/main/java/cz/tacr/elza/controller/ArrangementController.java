@@ -983,16 +983,18 @@ public class ArrangementController {
      * @param versionId         verze, která se má validovat
      * @return Objekt s listem (prvních 20) chyb
      */
-    @RequestMapping(value = "/validateVersion/{versionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<VersionValidationItem> validateVersion(@PathVariable("versionId") final Integer versionId) {
+    @RequestMapping(value = "/validateVersion/{versionId}/{showAll}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<VersionValidationItem> validateVersion(@PathVariable("versionId") final Integer versionId,
+                                                       @PathVariable("showAll") final Boolean showAll) {
         Assert.notNull(versionId);
+        Assert.notNull(showAll);
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(versionId);
         if (fundVersion == null) {
             throw new IllegalStateException("Neexistuje verze archivní pomůcky s id " + versionId);
         }
 
-        List<ArrNodeConformity> validationErrors = arrangementService.findConformityErrors(fundVersion);
+        List<ArrNodeConformity> validationErrors = arrangementService.findConformityErrors(fundVersion, showAll);
 
         return arrangementService.createVersionValidationItems(validationErrors, fundVersion);
     }

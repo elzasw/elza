@@ -12,7 +12,7 @@ export function isVersionValidation(action) {
     }
 }
 
-export function versionValidate(versionId, loadErrors = false) {
+export function versionValidate(versionId, loadErrors = false, showAll = false) {
     return (dispatch) => {
         dispatch(versionValidationLoad(versionId));
         if (!loadErrors) {
@@ -24,7 +24,7 @@ export function versionValidate(versionId, loadErrors = false) {
         } else {
             barrier(
                 WebApi.versionValidateCount(versionId),
-                WebApi.versionValidate(versionId)
+                WebApi.versionValidate(versionId, showAll)
             )
                 .then(data => {
                     return {
@@ -35,7 +35,8 @@ export function versionValidate(versionId, loadErrors = false) {
                 .then(json => {
                     dispatch(versionValidationReceived(versionId, {
                         count: json.count,
-                        errors: json.errors
+                        errors: json.errors,
+                        showAll: showAll
                     }, false));
                 });
         }

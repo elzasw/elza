@@ -6,7 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Icon, VersionValidationState} from 'components';
-import {Button, Modal} from 'react-bootstrap';
+import {Button, Modal, Input} from 'react-bootstrap';
 import {fundSelectSubNode} from 'actions/arr/nodes';
 import {versionValidate} from 'actions/arr/versionValidation';
 import {createFundRoot} from 'components/arr/ArrUtils';
@@ -14,7 +14,7 @@ import {createFundRoot} from 'components/arr/ArrUtils';
 var VersionValidationDialog = class VersionValidationDialog extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleSelectNode');
+        this.bindMethods('handleSelectNode', 'handleChange');
     }
 
     componentDidMount() {
@@ -25,8 +25,13 @@ var VersionValidationDialog = class VersionValidationDialog extends AbstractReac
         this.requestData((nextProps.store.count > 0 && nextProps.store.errors.length === 0) || nextProps.store.isErrorListDirty, nextProps.store.isFetching, nextProps.versionId);
     }
 
-    requestData(isDirty, isFetching, versionId) {
-        isDirty && !isFetching && this.dispatch(versionValidate(versionId, true))
+    requestData(isDirty, isFetching, versionId, showAll = false) {
+        isDirty && !isFetching && this.dispatch(versionValidate(versionId, true, showAll))
+    }
+
+    handleChange(event) {
+        var showAll = this.refs.showAll.refs.input.checked;
+        this.requestData(true, this.props.store.isFetching, this.props.versionId, showAll)
     }
 
     handleSelectNode(id, parent) {
@@ -44,6 +49,7 @@ var VersionValidationDialog = class VersionValidationDialog extends AbstractReac
                             <a onClick={() => (this.handleSelectNode(item.nodeId, item.parent))}>JP-{item.nodeId}</a>: {item.description}
                         </div>
                     ))}
+                    <Input type="checkbox" checked={this.props.store.showAll} ref="showAll" onChange={this.handleChange} label={i18n('arr.fund.versionValidation.showAll')} />
                     <VersionValidationState
                         count={this.props.store.count}
                         errExist={this.props.store.errors.length > 0}

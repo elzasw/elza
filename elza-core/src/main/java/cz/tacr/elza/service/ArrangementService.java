@@ -2,17 +2,8 @@ package cz.tacr.elza.service;
 
 import java.text.Normalizer;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -166,6 +157,9 @@ public class ArrangementService {
 
     @Autowired
     private RegistryService registryService;
+
+    @Autowired
+    private PolicyService policyService;
 
     /**
      * Vytvoření archivního souboru.
@@ -850,14 +844,61 @@ public class ArrangementService {
         return nodeConformityInfoRepository.findCountByFundVersionAndState(fundVersion, State.ERR);
     }
 
-    public List<ArrNodeConformity> findConformityErrors(ArrFundVersion fundVersion) {
+    public List<ArrNodeConformity> findConformityErrors(ArrFundVersion fundVersion, final Boolean showAll) {
         List<ArrNodeConformity> conformity = nodeConformityInfoRepository.findFirst20ByFundVersionAndStateOrderByNodeConformityIdAsc(fundVersion, State.ERR);
 
         if (conformity.isEmpty()) {
             return new ArrayList<>();
         }
 
-        return nodeConformityInfoRepository.fetchErrorAndMissingConformity(conformity, fundVersion, State.ERR);
+        // TODO: bude se řešit v budoucnu úplně jinak
+
+        List<ArrNodeConformity> nodeConformities = nodeConformityInfoRepository.fetchErrorAndMissingConformity(conformity, fundVersion, State.ERR);
+
+        if (!showAll) {
+            Set<Integer> nodeIds = nodeConformities.stream().map(arrNodeConformity -> arrNodeConformity.getNode().getNodeId()).collect(Collectors.toSet());
+
+            Map<Integer, Map<Integer, Boolean>> visiblePolicyIds = policyService.getVisiblePolicyIds(new ArrayList<>(nodeIds), fundVersion, true);
+
+            Iterator<ArrNodeConformity> nodeConformityIterator = nodeConformities.iterator();
+            while (nodeConformityIterator.hasNext()) {
+                ArrNodeConformity nodeConformity = nodeConformityIterator.next();
+                Map<Integer, Boolean> visiblePolicy = visiblePolicyIds.get(nodeConformity.getNode().getNodeId());
+
+                Iterator<ArrNodeConformityError> conformityErrorIterator = nodeConformity.getErrorConformity().iterator();
+                Iterator<ArrNodeConformityMissing> conformityMissingIterator = nodeConformity.getMissingConformity().iterator();
+
+                while (conformityErrorIterator.hasNext()) {
+                    ArrNodeConformityError conformityError = conformityErrorIterator.next();
+                    if (conformityError.getPolicyType() != null) {
+                        Integer policyTypeId = conformityError.getPolicyType().getPolicyTypeId();
+                        Boolean visible = visiblePolicy.get(policyTypeId);
+                        if (visible != null && visible == false) {
+                            conformityErrorIterator.remove();
+                        }
+                    }
+                }
+
+                while (conformityMissingIterator.hasNext()) {
+                    ArrNodeConformityMissing conformityMissing = conformityMissingIterator.next();
+                    if (conformityMissing.getPolicyType() != null) {
+                        Integer policyTypeId = conformityMissing.getPolicyType().getPolicyTypeId();
+                        Boolean visible = visiblePolicy.get(policyTypeId);
+                        if (visible != null && visible == false) {
+                            conformityMissingIterator.remove();
+                        }
+                    }
+                }
+
+                if (nodeConformity.getErrorConformity().size() == 0 && nodeConformity.getMissingConformity().size() == 0) {
+                    nodeConformityIterator.remove();
+                }
+            }
+
+
+        }
+
+        return nodeConformities;
     }
 
 
