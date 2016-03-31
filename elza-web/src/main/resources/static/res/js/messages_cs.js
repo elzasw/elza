@@ -143,6 +143,7 @@ var messages = {
     "arr.fund.versionValidation.ok": "Nejsou známé žádné chyby validace",
     "arr.fund.versionValidation.err": "Jsou nalezeny chyby validace",
     "arr.fund.versionValidation.count": "Jsou nalezeny chyby validace (celkem {0})",
+    "arr.fund.versionValidation.showAll": "Zobrazit vše",
 
     "arr.fund.name": "Název",
     "arr.fund.ruleSet": "Pravidla tvorby",
