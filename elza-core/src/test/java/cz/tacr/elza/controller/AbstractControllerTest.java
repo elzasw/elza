@@ -134,7 +134,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_REGISTER_LINK = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/create";
     protected static final String UPDATE_REGISTER_LINK = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/update";
     protected static final String DELETE_REGISTER_LINK = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/delete";
-    protected static final String VALIDATE_VERSION = ARRANGEMENT_CONTROLLER_URL + "/validateVersion/{versionId}";
+    protected static final String VALIDATE_VERSION = ARRANGEMENT_CONTROLLER_URL + "/validateVersion/{versionId}/{showAll}";
     protected static final String VALIDATE_VERSION_COUNT = ARRANGEMENT_CONTROLLER_URL + "/validateVersionCount/{versionId}";
     protected static final String FA_TREE_NODES = ARRANGEMENT_CONTROLLER_URL + "/fundTree/nodes";
     protected static final String NODE_PARENTS = ARRANGEMENT_CONTROLLER_URL + "/nodeParents";
@@ -1268,7 +1268,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     public List<ArrangementController.VersionValidationItem> validateVersion(final Integer versionId) {
         return Arrays.asList(get(spec -> spec
-                        .pathParameter("versionId", versionId),
+                        .pathParameter("versionId", versionId)
+                        .pathParameter("showAll", true),
                 VALIDATE_VERSION).getBody().as(ArrangementController.VersionValidationItem[].class));
     }
 
