@@ -546,28 +546,55 @@ return true
         if (item.nodeConformity) {
             var _id=0;
 
+            var policyTypes = item.nodeConformity.policyTypeIdsVisible;
+
             var description = (item.nodeConformity.description) ? "<br />" + item.nodeConformity.description : "";
             var messages = new Array();
 
             var errors = item.nodeConformity.errorList;
             var missings = item.nodeConformity.missingList;
 
+            var errorsHide = 0;
             if (errors && errors.length > 0) {
                 messages.push(<div key="errors" className="error">Chyby</div>);
-                errors.forEach(error => { messages.push(<div key={'err' + _id++} className="message">{error.description}</div>) });
+                errors.forEach(error => {
+                    var cls = "message";
+                    if (error.policyTypeId != null
+                        && policyTypes[error.policyTypeId] != null
+                        && policyTypes[error.policyTypeId] == false) {
+                        cls += " ignore";
+                        errorsHide++;
+                    }
+                    messages.push(<div key={'err' + _id++} className={cls}>{error.description}</div>)
+                });
             }
 
+            var missingsHide = 0;
             if (missings && missings.length > 0) {
                 messages.push(<div key="missings" className="missing">Chybějící</div>);
-                missings.forEach(missing => { messages.push(<div key={'mis' + _id++}  className="message">{missing.description}</div>) });
+                missings.forEach(missing => {
+                    var cls = "message";
+                    if (missing.policyTypeId != null
+                        && policyTypes[missing.policyTypeId] != null
+                        && policyTypes[missing.policyTypeId] == false) {
+                        cls += " ignore";
+                        missingsHide++;
+                    }
+                    messages.push(<div key={'mis' + _id++}  className={cls}>{missing.description}</div>)
+                });
             }
 
             if (item.nodeConformity.state === "OK") {
                 icon = <Icon glyph="fa-check" />
                 tooltip = <Tooltip id="status-ok">{i18n('arr.node.status.ok') + description}</Tooltip>
             } else {
-                icon = <Icon glyph="fa-exclamation-circle" />
-                tooltip = <Tooltip id="status-err">{i18n('arr.node.status.err')} {description} {messages}</Tooltip>
+                if ((missings == null || missingsHide == missings.length) && (errors == null || errorsHide == errors.length)) {
+                    icon = <Icon glyph="fa-check-circle" />
+                    tooltip = <Tooltip id="status-err">{i18n('arr.node.status.okx')} {description} {messages}</Tooltip>
+                } else {
+                    icon = <Icon glyph="fa-exclamation-circle" />
+                    tooltip = <Tooltip id="status-err">{i18n('arr.node.status.err')} {description} {messages}</Tooltip>
+                }
             }
         } else {
             icon = <Icon glyph="fa-exclamation-triangle" />
@@ -839,13 +866,19 @@ return true
         };
 
         if (nodeState) {
+            var policyTypes = nodeState.policyTypeIdsVisible;
+
             var errors = nodeState.errorList;
             if (errors && errors.length > 0) {
                 errors.forEach(error => {
                     if (conformityInfo.errors[error.descItemObjectId] == null) {
                         conformityInfo.errors[error.descItemObjectId] = new Array();
                     }
-                    conformityInfo.errors[error.descItemObjectId].push(error);
+                    if (error.policyTypeId == null
+                        || policyTypes[error.policyTypeId] == null
+                        || policyTypes[error.policyTypeId] == true) {
+                        conformityInfo.errors[error.descItemObjectId].push(error);
+                    }
                 });
             }
 
@@ -855,7 +888,11 @@ return true
                     if (conformityInfo.missings[missing.descItemTypeId] == null) {
                         conformityInfo.missings[missing.descItemTypeId] = new Array();
                     }
-                    conformityInfo.missings[missing.descItemTypeId].push(missing);
+                    if (missing.policyTypeId == null
+                        || policyTypes[missing.policyTypeId] == null
+                        || policyTypes[missing.policyTypeId] == true) {
+                        conformityInfo.missings[missing.descItemTypeId].push(missing);
+                    }
                 });
             }
         }

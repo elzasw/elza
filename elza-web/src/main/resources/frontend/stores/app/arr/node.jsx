@@ -344,6 +344,8 @@ export function node(state = nodeInitialState, action) {
                 result.subNodeInfo = subNodeInfo(undefined, {type:''});
             }
             return result;
+
+        case types.CHANGE_VISIBLE_POLICY:
         case types.CHANGE_CONFORMITY_INFO:
             return Object.assign({}, state, { nodeInfoDirty: true });
 

@@ -7,7 +7,8 @@ import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
         changeNodes, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
-    changeMoveLevel, changeRegistryRecord, changeFund, changeFundRecord, changeInstitution} from 'actions/global/change';
+    changeMoveLevel, changeRegistryRecord, changeFund, changeFundRecord, changeInstitution,
+    changeVisiblePolicy} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -157,6 +158,11 @@ function processEvents(values) {
             case 'FUND_RECORD_CHANGE':
                 fundRecordChange(value);
                 break;
+
+            case 'VISIBLE_POLICY_CHANGE':
+                visiblePolicyChange(value);
+                break;
+
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
@@ -204,6 +210,11 @@ function fundChange(value) {
 function fundRecordChange(value) {
     store.dispatch(changeFundRecord(value.versionId, value.nodeId, value.version));
 }
+
+function visiblePolicyChange(value) {
+    store.dispatch(changeVisiblePolicy(value.versionId, value.nodeIds, value.invalidateNodes));
+}
+
 /**
  * Validace uzlu.
  *

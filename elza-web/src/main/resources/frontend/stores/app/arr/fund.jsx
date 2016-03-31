@@ -17,6 +17,7 @@ import {isNodesAction} from 'actions/arr/nodes'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister'
 import {isDeveloperScenariosAction} from 'actions/global/developer'
 import {isFundDataGridAction} from 'actions/arr/fundDataGrid'
+import {isFundChangeAction} from 'actions/global/change'
 
 export function fundInitState(fundWithVersion) {
     var result = {
@@ -89,6 +90,7 @@ export function fund(state, action) {
         || isNodesAction(action)
         || isSubNodeRegisterAction(action)
         || isDeveloperScenariosAction(action)
+        || isFundChangeAction(action)
     ) {
         var result = {...state,
             nodes: nodes(state.nodes, action),

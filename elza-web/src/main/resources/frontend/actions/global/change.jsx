@@ -3,6 +3,15 @@ import * as types from 'actions/constants/ActionTypes';
 import {i18n} from 'components';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions'
 
+export function isFundChangeAction(action) {
+    switch (action.type) {
+        case types.CHANGE_VISIBLE_POLICY:
+            return true
+        default:
+            return false
+    }
+}
+
 export function changeConformityInfo(fundVersionId, nodeIds) {
     return {
         type: types.CHANGE_CONFORMITY_INFO,
@@ -114,5 +123,19 @@ export function changeFundRecord(versionId, nodeId, version) {
         versionId,
         nodeId,
         version
+    }
+}
+
+export function changeVisiblePolicy(versionId, nodeId, invalidateNodes) {
+    var nodeIdsMap = {};
+
+    nodeId.forEach(item => nodeIdsMap[item] = true);
+
+    return {
+        type: types.CHANGE_VISIBLE_POLICY,
+        versionId,
+        nodeId,
+        nodeIdsMap,
+        invalidateNodes
     }
 }

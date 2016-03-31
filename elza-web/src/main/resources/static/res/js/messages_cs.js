@@ -166,6 +166,7 @@ var messages = {
     "arr.fund.next": "Následující",
 
     "arr.node.status.ok": "Ok",
+    "arr.node.status.okx": "Ok*",
     "arr.node.status.err": "Err",
     "arr.node.status.undefined": "Nezvalidovaný",
 

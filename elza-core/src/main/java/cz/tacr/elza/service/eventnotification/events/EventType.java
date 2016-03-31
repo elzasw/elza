@@ -47,6 +47,8 @@ public enum EventType {
 
     INSTITUTION_CHANGE(ActionEvent.class),
 
+    VISIBLE_POLICY_CHANGE(EventIdsInVersion.class),
+
     CONFORMITY_INFO(EventIdsInVersion.class),
 
     BULK_ACTION_STATE_CHANGE(EventStringInVersion.class);

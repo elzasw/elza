@@ -8,6 +8,7 @@ import {isNodeInfoAction} from 'actions/arr/nodeInfo'
 import {isNodeAction} from 'actions/arr/node'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister'
 import {isDeveloperScenariosAction} from 'actions/global/developer'
+import {isFundChangeAction} from 'actions/global/change'
 
 const nodesInitialState = {
     activeIndex: null,
@@ -54,6 +55,22 @@ export default function nodes(state = nodesInitialState, action) {
     }
 
     switch (action.type) {
+        case types.CHANGE_VISIBLE_POLICY:
+
+            var changed = false;
+            var nodes = [...state.nodes];
+
+            for (var i = 0; i < nodes.length; i++) {
+                if(action.invalidateNodes == "ALL" || action.nodeIdsMap[nodes[i].id]) {
+                    nodes[i] = node(nodes[i], action);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                return {...state, nodes}
+            }
+            return state;
+
         case types.STORE_LOAD:
             return {
                 ...state,

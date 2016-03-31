@@ -5,6 +5,9 @@ import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.eventnotification.events.EventVisiblePolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -21,6 +24,12 @@ import java.util.stream.Collectors;
 @Service
 public class PolicyService {
 
+    /**
+     * Maximální počet uzlů, které je možné poslat na invalidaci stavu.
+     * Při překročení se invalidují zobrazené ve verzi.
+     */
+    public static final int MAX_SEND_NODE = 100;
+
     @Autowired
     private PolicyTypeRepository policyTypeRepository;
 
@@ -32,6 +41,9 @@ public class PolicyService {
 
     @Autowired
     private LevelTreeCacheWalker levelTreeCacheWalker;
+
+    @Autowired
+    private EventNotificationService eventNotificationService;
 
     /**
      * Vrací typy oprávnění podle verze fondu.
@@ -246,10 +258,10 @@ public class PolicyService {
             policyTypeMap.put(policyType, policyTypeIdsMap.get(policyType.getPolicyTypeId()));
         }
 
-        if (includeSubtree) {
-            Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(fundVersion);
-            TreeNode treeNode = versionTreeCache.get(node.getNodeId());
+        Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(fundVersion);
+        TreeNode treeNode = versionTreeCache.get(node.getNodeId());
 
+        if (includeSubtree) {
             LinkedHashSet<Integer> versionIdsTable = levelTreeCacheWalker.walkThroughDFS(treeNode);
             List<UIVisiblePolicy> visiblePolicies = visiblePolicyRepository.findByFundAndPolicyTypes(fundVersion.getFund());
 
@@ -275,6 +287,41 @@ public class PolicyService {
         }
 
         visiblePolicyRepository.save(visiblePolicies);
+
+        List<Integer> parentNodeIds = new ArrayList<>();
+        if (treeNode.getParent() != null) {
+            parentNodeIds.add(treeNode.getParent().getId());
+            addParentNodeIds(treeNode, parentNodeIds);
+        }
+
+        if (parentNodeIds.size() > MAX_SEND_NODE || treeNode.getParent() == null) {
+            eventNotificationService.publishEvent(new EventVisiblePolicy(EventType.VISIBLE_POLICY_CHANGE,
+                    fundVersion.getFundVersionId(),
+                    EventVisiblePolicy.InvalidateNodes.ALL));
+        } else {
+            Integer[] nodeIds = new Integer[parentNodeIds.size()];
+            parentNodeIds.toArray(nodeIds);
+            eventNotificationService.publishEvent(new EventVisiblePolicy(EventType.VISIBLE_POLICY_CHANGE,
+                    fundVersion.getFundVersionId(),
+                    EventVisiblePolicy.InvalidateNodes.LIST,
+                    nodeIds));
+        }
+    }
+
+    /**
+     * Rekurzivní přidání identifikátorů uzlů, pokud mají nějakého potomka.
+     *
+     * @param treeNode      procházený uzel
+     * @param parentNodeIds seznam přidaných identifikátorů uzlů
+     */
+    private void addParentNodeIds(final TreeNode treeNode, final List<Integer> parentNodeIds) {
+        LinkedList<TreeNode> childs = treeNode.getChilds();
+        if (childs != null && childs.size() > 0 && parentNodeIds.size() <= MAX_SEND_NODE) {
+            parentNodeIds.add(treeNode.getId());
+            for (TreeNode child : childs) {
+                addParentNodeIds(child, parentNodeIds);
+            }
+        }
     }
 
 }
