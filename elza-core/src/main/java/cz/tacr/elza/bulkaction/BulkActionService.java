@@ -465,8 +465,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             throw new IllegalArgumentException("Verze archivní je již uzavřená!");
         }
 
-        ArrChange lastUserChange = version.getLastChange();
-
         List<BulkActionConfig> bulkActionConfigReturnList = new ArrayList<>();
 
         List<BulkActionConfig> bulkActionConfigMandatoryList = getBulkActions(fundVersionId, true);
@@ -477,9 +475,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             boolean isValidate = false;
             for (ArrBulkActionRun bulkAction : bulkActions) {
                 if (bulkAction.getBulkActionCode().equals(bulkActionConfig.getCode())) {
-                    if (bulkAction.getChange().getChangeId() > lastUserChange.getChangeId()) {
-                        isValidate = true;
-                    }
+                    isValidate = true;
                     break;
                 }
             }
@@ -489,7 +485,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             }
         }
 
-        return bulkActionConfigReturnList;
+        return bulkActionConfigMandatoryList;
     }
 
     /**

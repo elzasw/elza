@@ -78,8 +78,6 @@ public abstract class AbstractTest {
     @Autowired
     protected NodeConformityMissingRepository nodeConformityMissingRepository;
     @Autowired
-    protected VersionConformityRepository versionConformityInfoRepository;
-    @Autowired
     protected PackageRepository packageRepository;
     @Autowired
     protected PartyTypeRelationRepository partyTypeRelationRepository;
@@ -165,7 +163,6 @@ public abstract class AbstractTest {
         nodeConformityMissingRepository.deleteAll();
         nodeConformityInfoRepository.deleteAll();
         descItemConstraintRepository.deleteAll();
-        versionConformityInfoRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();

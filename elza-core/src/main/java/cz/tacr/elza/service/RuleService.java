@@ -40,7 +40,6 @@ import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.utils.ObjectListIterator;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 
@@ -66,8 +65,6 @@ public class RuleService {
     private ConfigRules elzaRules;
 
     @Autowired
-    private VersionConformityRepository versionConformityRepository;
-    @Autowired
     private LevelRepository levelRepository;
     @Autowired
     private NodeRepository nodeRepository;
@@ -89,31 +86,6 @@ public class RuleService {
     private DescItemTypeRepository descItemTypeRepository;
     @Autowired
     private DescItemConstraintRepository descItemConstraintRepository;
-
-    /**
-     * Nastavení stavu u verze archivní pomůcky.
-     *
-     * @param state            stav
-     * @param stateDescription popis stavu
-     * @param version          verze ap
-     */
-    public void setVersionConformityInfo(final ArrVersionConformity.State state,
-                                         final String stateDescription,
-                                         final ArrFundVersion version) {
-        Assert.notNull(version);
-        ArrVersionConformity conformityInfo = versionConformityRepository
-                .findByFundVersion(version);
-
-        if (conformityInfo == null) {
-            conformityInfo = new ArrVersionConformity();
-        }
-
-        conformityInfo.setFundVersion(version);
-        conformityInfo.setState(state);
-        conformityInfo.setStateDescription(stateDescription);
-        versionConformityRepository.save(conformityInfo);
-    }
-
 
     /**
      * Provede validaci atributů vybraného uzlu a nastaví jejich validační hodnoty.
@@ -215,8 +187,6 @@ public class RuleService {
                 }
             }
 
-            setVersionConformityInfo(ArrVersionConformity.State.ERR,
-                    "Nejméně jedna jednotka popisu se nachází v chybovém stavu", version);
         }
 
         return extendedObjectsFactory.createNodeConformityInfoExt(conformityInfo, true);
@@ -409,7 +379,6 @@ public class RuleService {
                     .findByNodesAndFundVersion(deleteNodes, version);
 
             deleteConformityInfo(deleteInfos);
-            setVersionConformityInfo(null, null, version);
             updateConformityInfoService.updateInfoForNodesAfterCommit(deleteNodes, version);
         }
     }

@@ -5,7 +5,6 @@ import java.util.List;
 
 import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.ArrFundVersion;
-import cz.tacr.elza.api.ArrVersionConformity;
 import cz.tacr.elza.api.RulArrangementType;
 import cz.tacr.elza.api.RulDataType;
 import cz.tacr.elza.api.RulDescItemSpec;
@@ -28,7 +27,7 @@ import cz.tacr.elza.api.vo.RelatedNodeDirection;
  */
 public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec,
         NTO extends NodeTypeOperation, RND extends RelatedNodeDirection, DI extends ArrDescItem,
-        FAV extends ArrFundVersion, FAVCI extends ArrVersionConformity, P extends RulPackage> {
+        FAV extends ArrFundVersion, P extends RulPackage> {
 
     /**
      * Najde specifikaci podle id.

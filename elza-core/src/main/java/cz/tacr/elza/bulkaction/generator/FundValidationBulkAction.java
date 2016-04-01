@@ -1,26 +1,27 @@
 package cz.tacr.elza.bulkaction.generator;
 
-import java.util.List;
-
-import cz.tacr.elza.domain.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.api.ArrNodeConformity;
-import cz.tacr.elza.api.ArrNodeConformityExt;
 import cz.tacr.elza.api.vo.BulkActionState.State;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.BulkActionState;
-import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
+import java.util.List;
 
 
 /**
@@ -53,14 +54,6 @@ public class FundValidationBulkAction extends BulkAction {
      */
     private BulkActionState bulkActionState;
 
-    /**
-     * Počet chybných uzlů
-     */
-    private Integer errorCount;
-
-    @Autowired
-    private RuleService ruleService;
-
     @Autowired
     private UpdateConformityInfoService updateConformityInfoService;
 
@@ -70,16 +63,15 @@ public class FundValidationBulkAction extends BulkAction {
     @Autowired
     private BulkActionService bulkActionService;
 
+    private static final Logger logger = LoggerFactory.getLogger(FundValidationBulkAction.class);
+
     /**
      * Inicializace hromadné akce.
      *
      * @param bulkActionConfig nastavení hromadné akce
      */
     private void init(final BulkActionConfig bulkActionConfig) {
-
         Assert.notNull(bulkActionConfig);
-
-        errorCount = 0;
     }
 
     /**
@@ -87,7 +79,7 @@ public class FundValidationBulkAction extends BulkAction {
      *
      * @param level uzel
      */
-    private ArrVersionConformity.State generate(final ArrLevel level) {
+    private void generate(final ArrLevel level) {
         if (bulkActionState.isInterrupt()) {
             bulkActionState.setState(State.ERROR);
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
@@ -95,33 +87,15 @@ public class FundValidationBulkAction extends BulkAction {
 
         List<ArrLevel> childLevels = getChildren(level);
 
-        ArrVersionConformity.State state = ArrVersionConformity.State.OK;
-
-        ArrNodeConformityExt nodeConformityInfoExt;
-        ArrNodeConformity.State stateLevel;
-
         try {
-            nodeConformityInfoExt = bulkActionService
-                    .setConformityInfoInNewTransaction(level.getLevelId(), version.getFundVersionId());
-            stateLevel = nodeConformityInfoExt.getState();
-        }catch (Exception e){
-            stateLevel = ArrNodeConformity.State.ERR;
-        }
-
-        if (stateLevel.equals(ArrNodeConformity.State.ERR)) {
-            errorCount++;
-            state = ArrVersionConformity.State.ERR;
+            bulkActionService.setConformityInfoInNewTransaction(level.getLevelId(), version.getFundVersionId());
+        } catch (Exception e){
+            logger.warn("Nastal problém při validaci uzlu v hromadné akci", e);
         }
 
         for (ArrLevel childLevel : childLevels) {
-            ArrVersionConformity.State stateChild = generate(childLevel);
-            if (!stateChild.equals(ArrVersionConformity.State.OK)) {
-                state = ArrVersionConformity.State.ERR;
-            }
+            generate(childLevel);
         }
-
-        return state;
-
     }
 
     @Override
@@ -148,23 +122,10 @@ public class FundValidationBulkAction extends BulkAction {
         // v případě, že existuje nějaké přepočítávání uzlů, je nutné to ukončit
         updateConformityInfoService.terminateWorkerInVersion(version);
 
-        ArrVersionConformity.State state;
-        try {
-            ArrNode rootNode = version.getRootNode();
-            ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
-            state = generate(rootLevel);
-        } catch (Exception e) {
-            state = ArrVersionConformity.State.ERR;
-        }
+        ArrNode rootNode = version.getRootNode();
+        ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
 
-        String stateDescription;
-        if (state.equals(ArrVersionConformity.State.ERR)) {
-            stateDescription = "Validace uzlů archivní pomůcky zjistila nejméně jednu chybu: " + errorCount;
-        } else {
-            stateDescription = null;
-        }
-
-        ruleService.setVersionConformityInfo(state, stateDescription, version);
+        generate(rootLevel);
     }
 
     @Override

@@ -582,8 +582,6 @@ public class RegistryService {
 
         validateNodeRegisterLink(nodeRegister);
 
-        arrangementService.saveLastChangeFundVersion(change, versionId);
-
         nodeRegister.setNode(node);
         nodeRegister.setCreateChange(change);
         eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
@@ -620,8 +618,6 @@ public class RegistryService {
         nodeRegisterRepository.save(nodeRegisterDB);
 
 
-        arrangementService.saveLastChangeFundVersion(change, versionId);
-
         nodeRegister.setNodeRegisterId(null);
         nodeRegister.setNode(node);
         nodeRegister.setRecord(nodeRegister.getRecord());
@@ -657,7 +653,6 @@ public class RegistryService {
 
         nodeRegisterDB.setDeleteChange(change);
 
-        arrangementService.saveLastChangeFundVersion(change, versionId);
         eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_RECORD_CHANGE, versionId, node.getNodeId(), node.getVersion()));
         return nodeRegisterRepository.save(nodeRegisterDB);
     }

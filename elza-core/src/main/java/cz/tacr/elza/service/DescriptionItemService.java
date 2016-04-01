@@ -174,9 +174,6 @@ public class DescriptionItemService {
 
         ArrDescItem descItemDeleted = deleteDescriptionItem(descItem, fundVersion, change, true);
 
-        // uložení poslední uživatelské změny nad AP k verzi AP
-        arrangementService.saveLastChangeFundVersion(change, fundVersion);
-
         // validace uzlu
         ruleService.conformityInfo(fundVersionId, Arrays.asList(descItem.getNode().getNodeId()),
                 NodeTypeOperation.SAVE_DESC_ITEM, null, null, Arrays.asList(descItem));
@@ -224,9 +221,6 @@ public class DescriptionItemService {
         for (ArrDescItem descItem : descItems) {
             descItemsDeleted.add(deleteDescriptionItem(descItem, fundVersion, change, false));
         }
-
-        // uložení poslední uživatelské změny nad AP k verzi AP
-        arrangementService.saveLastChangeFundVersion(change, fundVersion);
 
         // validace uzlu
         ruleService.conformityInfo(fundVersionId, Arrays.asList(node.getNodeId()),
@@ -289,9 +283,6 @@ public class DescriptionItemService {
         descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
 
         ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, version, change);
-
-        // uložení poslední uživatelské změny nad AP k verzi AP
-        arrangementService.saveLastChangeFundVersion(change, version.getFundVersionId());
 
         // validace uzlu
         ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(descItem.getNode().getNodeId()),
@@ -588,9 +579,6 @@ public class DescriptionItemService {
 
             // vytvoření změny
             change = arrangementService.createChange();
-
-            // uložení poslední uživatelské změny nad AP k verzi AP
-            arrangementService.saveLastChangeFundVersion(change, fundVersion);
         }
 
         ArrDescItem descItemUpdated = updateDescriptionItemWithData(descItem, descItemDB, fundVersion, change, createNewVersion);

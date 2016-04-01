@@ -165,8 +165,6 @@ public class ArrMoveLevelService {
         }
 
 
-        arrangementService.saveLastChangeFundVersion(change, versionId);
-
         if (transportLevelParent.getNode().equals(staticLevel.getNodeParent())) {
             ruleService.conformityInfo(versionId, transportNodeIds, NodeTypeOperation.CONNECT_NODE_LOCAL,
                     null, null, null);
@@ -283,8 +281,6 @@ public class ArrMoveLevelService {
         }
 
 
-        arrangementService.saveLastChangeFundVersion(change, versionId);
-
         if (transportLevelParent.getNode().equals(staticLevel.getNodeParent())) {
             ruleService.conformityInfo(versionId, transportNodeIds, NodeTypeOperation.CONNECT_NODE_LOCAL,
                     null, null, null);
@@ -377,8 +373,6 @@ public class ArrMoveLevelService {
 
         placeLevels(transportLevels, staticLevel.getNode(), change, maxPosition + 1);
 
-
-        arrangementService.saveLastChangeFundVersion(change, versionId);
 
         ruleService.conformityInfo(versionId, transportNodeIds, NodeTypeOperation.CONNECT_NODE, null, null, null);
 
@@ -564,8 +558,6 @@ public class ArrMoveLevelService {
             descriptionItemService.copyDescItemWithDataToNode(newLevel.getNode(), siblingDescItems, change, version);
         }
 
-
-        arrangementService.saveLastChangeFundVersion(change, version.getFundVersionId());
 
         ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(newLevel.getNode().getNodeId()),
                 NodeTypeOperation.CREATE_NODE, null, null, null);

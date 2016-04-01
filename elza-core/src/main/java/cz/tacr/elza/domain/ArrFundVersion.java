@@ -53,11 +53,6 @@ public class ArrFundVersion extends AbstractVersionableEntity implements
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
 
-    @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "lastChangeId", nullable = false)
-    private ArrChange lastChange;
-
     @Column(nullable = true)
     private String dateRange;
 
@@ -119,16 +114,6 @@ public class ArrFundVersion extends AbstractVersionableEntity implements
     @Override
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
-    }
-
-    @Override
-    public ArrChange getLastChange() {
-        return lastChange;
-    }
-
-    @Override
-    public void setLastChange(final ArrChange lastChange) {
-        this.lastChange = lastChange;
     }
 
     @Override

@@ -147,10 +147,6 @@ var FundForm = class FundForm extends AbstractReactComponent {
                         this.props.approve &&
                         <div>
                             {this.props.bulkActions.actions.length > 0 && bulkActionsTextErr}
-                            <BulkActionsTable
-                                mandatory={true}
-                                versionValidate={true}
-                                okText={bulkActionsTextOk}/>
                             <VersionValidationState count={this.props.versionValidation.count}
                                                     errExist={this.props.versionValidation.count > 0}
                                                     isFetching={this.props.versionValidation.isFetching}/>

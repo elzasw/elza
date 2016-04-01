@@ -22,7 +22,6 @@ import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
@@ -38,7 +37,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -62,7 +60,6 @@ import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVersion;
@@ -132,9 +129,6 @@ public class ArrangementService {
 
     @Autowired
     private NodeConformityMissingRepository nodeConformityMissingRepository;
-
-    @Autowired
-    private VersionConformityRepository fundVersionConformityInfoRepository;
 
     @Autowired
     private BulkActionRunRepository faBulkActionRepository;
@@ -323,7 +317,6 @@ public class ArrangementService {
         version.setFund(fund);
         version.setRuleSet(ruleSet);
         version.setRootNode(rootNode);
-        version.setLastChange(createChange);
         version.setDateRange(dateRange);
         return fundVersionRepository.save(version);
     }
@@ -459,18 +452,6 @@ public class ArrangementService {
             throw new ConcurrentUpdateException("Verze byla již uzavřena");
         }
 
-        List<BulkActionConfig> bulkActionConfigs = bulkActionService.runValidation(version.getFundVersionId());
-        if (bulkActionConfigs.size() > 0) {
-            List<String> codes = new LinkedList<>();
-
-            for (BulkActionConfig bulkActionConfig : bulkActionConfigs) {
-                codes.add(bulkActionConfig.getCode());
-            }
-
-            ruleService.setVersionConformityInfo(ArrVersionConformity.State.ERR,
-                    "Nebyly provedeny povinné hromadné akce " + codes + " před uzavřením verze", version);
-        }
-
         ArrChange change = createChange();
         version.setLockChange(change);
         fundVersionRepository.save(version);
@@ -498,11 +479,6 @@ public class ArrangementService {
         nodeConformityInfoRepository.findByFundVersion(version).forEach(conformityInfo -> {
             deleteConformityInfo(conformityInfo);
         });
-
-        ArrVersionConformity versionConformityInfo = fundVersionConformityInfoRepository.findByFundVersion(version);
-        if (versionConformityInfo != null) {
-            fundVersionConformityInfoRepository.delete(versionConformityInfo);
-        }
 
         fundVersionRepository.delete(version);
     }
@@ -726,36 +702,6 @@ public class ArrangementService {
                return false;
            }
        }
-
-    /**
-     * Uložení poslední uživatelské změny nad AP k verzi AP
-     *
-     * @param change    ukládaná změna
-     * @param fundVersionId identifikátor verze AP
-     * @return aktuální verze AP
-     */
-    public ArrFundVersion saveLastChangeFundVersion(final ArrChange change, final Integer fundVersionId) {
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-        return saveLastChangeFundVersion(change, version);
-    }
-
-    /**
-     * Uložení poslední uživatelské změny nad AP k verzi AP
-     *
-     * @param change  ukládaná změna
-     * @param fundVersion verze AP
-     * @return aktuální verze AP
-     */
-    public ArrFundVersion saveLastChangeFundVersion(final ArrChange change, final ArrFundVersion fundVersion) {
-
-        if (!bulkActionService.existsChangeInWorkers(change)) {
-            fundVersion.setLastChange(change);
-            return fundVersionRepository.save(fundVersion);
-        }
-
-        return fundVersion;
-
-    }
 
     /**
      * Vyhledání id nodů podle hodnoty atributu.

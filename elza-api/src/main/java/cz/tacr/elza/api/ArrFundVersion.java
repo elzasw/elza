@@ -75,16 +75,6 @@ public interface ArrFundVersion<FA extends ArrFund, FC extends ArrChange, FN ext
     void setRuleSet(RS ruleSet);
 
     /**
-     * @return poslední uživatelská změna nad verzí AP
-     */
-    FC getLastChange();
-
-    /**
-     * @param lastChange poslední uživatelská změna nad verzí AP
-     */
-    void setLastChange(FC lastChange);
-
-    /**
      * @return vysčítaná informace o časovém rozsahu fondu - sdruženo po typech kalendářů
      */
     String getDateRange();
