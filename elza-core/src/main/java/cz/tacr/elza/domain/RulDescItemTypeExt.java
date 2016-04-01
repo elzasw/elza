@@ -10,27 +10,16 @@ import java.util.List;
  * @since 20.8.2015
  */
 
-public class RulDescItemTypeExt extends RulDescItemType implements cz.tacr.elza.api.RulDescItemTypeExt<RulDataType, RulDescItemConstraint, RulDescItemSpecExt, RulPackage> {
+public class RulDescItemTypeExt extends RulDescItemType implements cz.tacr.elza.api.RulDescItemTypeExt<RulDataType, RulDescItemSpecExt, RulPackage> {
 
     private List<RulDescItemSpecExt> rulDescItemSpecList = new LinkedList<>();
-
-    private List<RulDescItemConstraint> rulDescItemConstraintList = new LinkedList<>();
 
     @Override
     public List<RulDescItemSpecExt> getRulDescItemSpecList() {
         return this.rulDescItemSpecList;
     }
 
-    @Override
-    public List<RulDescItemConstraint> getRulDescItemConstraintList() {
-        return this.rulDescItemConstraintList;
-    }
-
     public void setRulDescItemSpecList(List<RulDescItemSpecExt> rulDescItemSpecList) {
         this.rulDescItemSpecList = rulDescItemSpecList;
-    }
-
-    public void setRulDescItemConstraintList(List<RulDescItemConstraint> rulDescItemConstraintList) {
-        this.rulDescItemConstraintList = rulDescItemConstraintList;
     }
 }

@@ -362,7 +362,9 @@ public class DescriptionItemService {
         Assert.notNull(descItemType, "Hodnota atributu musí mít vyplněný typ");
 
         if (descItemType.getUseSpecification()) {
-            Assert.notNull(descItemSpec, "Pro typ atributu je specifikace povinná");
+            Assert.notNull(descItemSpec, "Pro typ atributu je nutné specifikaci vyplnit");
+        } else {
+            Assert.isNull(descItemSpec, "Pro typ atributu nesmí být specifikace vyplněná");
         }
 
         if (descItemSpec != null) {

@@ -46,8 +46,6 @@ public abstract class AbstractTest {
     @Autowired
     private DescItemSpecRegisterRepository descItemSpecRegisterRepository;
     @Autowired
-    private DescItemConstraintRepository descItemConstraintRepository;
-    @Autowired
     protected DataTypeRepository dataTypeRepository;
     @Autowired
     private DataRepository arrDataRepository;
@@ -162,7 +160,6 @@ public abstract class AbstractTest {
         nodeConformityErrorsRepository.deleteAll();
         nodeConformityMissingRepository.deleteAll();
         nodeConformityInfoRepository.deleteAll();
-        descItemConstraintRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();

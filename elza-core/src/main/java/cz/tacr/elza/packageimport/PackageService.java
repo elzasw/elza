@@ -72,11 +72,6 @@ public class PackageService {
     public static final String ARRANGEMENT_TYPE_XML = "rul_arrangement_type.xml";
 
     /**
-     * podmínky atributů v zipu
-     */
-    public static final String DESC_ITEM_CONSTRAINT_XML = "rul_desc_item_constraint.xml";
-
-    /**
      * specifikace atributů v zipu
      */
     public static final String DESC_ITEM_SPEC_XML = "rul_desc_item_spec.xml";
@@ -136,9 +131,6 @@ public class PackageService {
     private DescItemSpecRegisterRepository descItemSpecRegisterRepository;
 
     @Autowired
-    private DescItemConstraintRepository descItemConstraintRepository;
-
-    @Autowired
     private RegisterTypeRepository registerTypeRepository;
 
     @Autowired
@@ -161,6 +153,9 @@ public class PackageService {
 
     @Autowired
     private RulesExecutor rulesExecutor;
+
+    @Autowired
+    private DescItemRepository descItemRepository;
 
     /**
      * Provede import balíčku.
@@ -194,8 +189,6 @@ public class PackageService {
 
             ArrangementTypes arrangementTypes = convertXmlStreamToObject(ArrangementTypes.class,
                     mapEntry.get(ARRANGEMENT_TYPE_XML));
-            DescItemConstraints descItemConstraints = convertXmlStreamToObject(DescItemConstraints.class,
-                    mapEntry.get(DESC_ITEM_CONSTRAINT_XML));
             DescItemSpecs descItemSpecs = convertXmlStreamToObject(DescItemSpecs.class,
                     mapEntry.get(DESC_ITEM_SPEC_XML));
             DescItemTypes descItemTypes = convertXmlStreamToObject(DescItemTypes.class,
@@ -212,7 +205,7 @@ public class PackageService {
 
             processPolicyTypes(policyTypes, rulPackage, rulRuleSets);
 
-            processDescItemTypes(descItemTypes, descItemSpecs, descItemConstraints, rulPackage);
+            processDescItemTypes(descItemTypes, descItemSpecs, rulPackage);
             rulPackageActions = processPackageActions(packageActions, rulPackage, mapEntry, dirActions);
 
             rulPackageRules = processPackageRules(packageRules, rulPackage, mapEntry, rulRuleSets,
@@ -664,12 +657,10 @@ public class PackageService {
      *
      * @param descItemTypes       seznam importovaných typů
      * @param descItemSpecs       seznam importovaných specifikací
-     * @param descItemConstraints seznam importovaných podmínek
      * @param rulPackage          balíček
      */
     private void processDescItemTypes(final DescItemTypes descItemTypes,
                                       final DescItemSpecs descItemSpecs,
-                                      final DescItemConstraints descItemConstraints,
                                       final RulPackage rulPackage) {
 
         List<RulDataType> rulDataTypes = dataTypeRepository.findAll();
@@ -685,6 +676,18 @@ public class PackageService {
                 RulDescItemType item;
                 if (findItems.size() > 0) {
                     item = findItems.get(0);
+
+                    // provedla se změna pro použití specifikace?
+                    if (!item.getUseSpecification().equals(descItemType.getUseSpecification())) {
+                        // je nutné zkontrolovat, jestli neexistuje nějaký záznam
+
+                        Long countDescItems = descItemRepository.getCountByType(item);
+                        if (countDescItems != null && countDescItems > 0) {
+                            throw new IllegalStateException("Nelze změnit použití specifikace u typu " + item.getCode()
+                                    + ", protože existují záznamy, které typ využívají");
+                        }
+                    }
+
                 } else {
                     item = new RulDescItemType();
                 }
@@ -696,7 +699,7 @@ public class PackageService {
 
         rulDescItemTypesNew = descItemTypeRepository.save(rulDescItemTypesNew);
 
-        processDescItemSpecs(descItemSpecs, descItemConstraints, rulPackage, rulDescItemTypesNew);
+        processDescItemSpecs(descItemSpecs, rulPackage, rulDescItemTypesNew);
 
         List<RulDescItemType> rulDescItemTypesDelete = new ArrayList<>(rulDescItemTypes);
         rulDescItemTypesDelete.removeAll(rulDescItemTypesNew);
@@ -708,12 +711,10 @@ public class PackageService {
      * Zpracování specifikací atributů.
      *
      * @param descItemSpecs       seznam importovaných specifikací
-     * @param descItemConstraints seznam importovaných podmínek
      * @param rulPackage          balíček
      * @param rulDescItemTypes    seznam typů atributů
      */
     private void processDescItemSpecs(final DescItemSpecs descItemSpecs,
-                                      final DescItemConstraints descItemConstraints,
                                       final RulPackage rulPackage, final List<RulDescItemType> rulDescItemTypes) {
 
         List<RulDescItemSpec> rulDescItemSpecs = descItemSpecRepository.findByRulPackage(rulPackage);
@@ -739,7 +740,6 @@ public class PackageService {
         rulDescItemSpecsNew = descItemSpecRepository.save(rulDescItemSpecsNew);
 
         processDescItemSpecsRegister(descItemSpecs, rulDescItemSpecsNew);
-        processDescItemConstraints(descItemConstraints, rulPackage, rulDescItemSpecsNew, rulDescItemTypes);
 
         List<RulDescItemSpec> rulDescItemSpecsDelete = new ArrayList<>(rulDescItemSpecs);
         rulDescItemSpecsDelete.removeAll(rulDescItemSpecsNew);
@@ -747,99 +747,6 @@ public class PackageService {
             descItemSpecRegisterRepository.deleteByDescItemSpec(descItemSpec);
         }
         descItemSpecRepository.delete(rulDescItemSpecsDelete);
-    }
-
-    /**
-     * Zpracování podmínek atributů.
-     *
-     * @param descItemConstraints seznam importovaných podmínek
-     * @param rulPackage          balíček
-     * @param rulDescItemSpecs    seznam specifikací atributů
-     * @param rulDescItemTypes    seznam typů atributů
-     */
-    private void processDescItemConstraints(final DescItemConstraints descItemConstraints,
-                                            final RulPackage rulPackage,
-                                            final List<RulDescItemSpec> rulDescItemSpecs,
-                                            final List<RulDescItemType> rulDescItemTypes) {
-
-
-        List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByRulPackage(rulPackage);
-        List<RulDescItemConstraint> rulDescItemConstraintsNew = new ArrayList<>();
-
-        if (!CollectionUtils.isEmpty(descItemConstraints.getDescItemConstraints())) {
-            for (DescItemConstraint descItemConstraint : descItemConstraints.getDescItemConstraints()) {
-                List<RulDescItemConstraint> findItems = rulDescItemConstraints.stream()
-                        .filter((r) -> r.getCode().equals(descItemConstraint.getCode())).collect(Collectors.toList());
-                RulDescItemConstraint item;
-                if (findItems.size() > 0) {
-                    item = findItems.get(0);
-                } else {
-                    item = new RulDescItemConstraint();
-                }
-
-                convertRulDescItemConstraint(rulPackage, descItemConstraint, item, rulDescItemTypes, rulDescItemSpecs);
-                rulDescItemConstraintsNew.add(item);
-            }
-        }
-
-        rulDescItemConstraintsNew = descItemConstraintRepository.save(rulDescItemConstraintsNew);
-
-        List<RulDescItemConstraint> rulDescItemConstraintsDelete = new ArrayList<>(rulDescItemConstraints);
-        rulDescItemConstraintsDelete.removeAll(rulDescItemConstraintsNew);
-        descItemConstraintRepository.delete(rulDescItemConstraintsDelete);
-    }
-
-    /**
-     * Převod VO na DAO podmínky atributu.
-     *
-     * @param rulPackage            balíček
-     * @param descItemConstraint    VO podínky
-     * @param rulDescItemConstraint DAO podmínky
-     * @param rulDescItemTypes      seznam typů atributů
-     * @param rulDescItemSpecs      seznam specifikací atributů
-     */
-    private void convertRulDescItemConstraint(final RulPackage rulPackage,
-                                              final DescItemConstraint descItemConstraint,
-                                              final RulDescItemConstraint rulDescItemConstraint,
-                                              final List<RulDescItemType> rulDescItemTypes,
-                                              final List<RulDescItemSpec> rulDescItemSpecs) {
-
-        rulDescItemConstraint.setCode(descItemConstraint.getCode());
-        rulDescItemConstraint.setRegexp(descItemConstraint.getRegexp());
-        rulDescItemConstraint.setRepeatable(descItemConstraint.getRepeatable());
-        rulDescItemConstraint.setTextLenghtLimit(descItemConstraint.getTextLenghtLimit());
-        rulDescItemConstraint.setPackage(rulPackage);
-
-        List<RulDescItemType> findItemsType = rulDescItemTypes.stream()
-                .filter((r) -> r.getCode().equals(descItemConstraint.getDescItemType()))
-                .collect(Collectors.toList());
-
-        RulDescItemType itemType;
-
-        if (findItemsType.size() > 0) {
-            itemType = findItemsType.get(0);
-        } else {
-            throw new IllegalStateException(
-                    "Kód " + descItemConstraint.getDescItemType() + " neexistuje v RulDescItemType");
-        }
-
-        rulDescItemConstraint.setDescItemType(itemType);
-
-        List<RulDescItemSpec> findItemsSpec = rulDescItemSpecs.stream()
-                .filter((r) -> r.getCode().equals(descItemConstraint.getDescItemSpec()))
-                .collect(Collectors.toList());
-
-        RulDescItemSpec itemSpec = null;
-
-        if (findItemsSpec.size() > 0) {
-            itemSpec = findItemsSpec.get(0);
-        } else if (descItemConstraint.getDescItemSpec() != null) {
-            throw new IllegalStateException(
-                    "Kód " + descItemConstraint.getDescItemSpec() + " neexistuje v RulDescItemSpec");
-        }
-
-        rulDescItemConstraint.setDescItemSpec(itemSpec);
-
     }
 
     /**
@@ -1217,8 +1124,6 @@ public class PackageService {
             throw new IllegalArgumentException("Balíček s kódem " + code + " neexistuje");
         }
 
-        descItemConstraintRepository.deleteByRulPackage(rulPackage);
-
         List<RulDescItemSpec> rulDescItemSpecs = descItemSpecRepository.findByRulPackage(rulPackage);
         for (RulDescItemSpec rulDescItemSpec : rulDescItemSpecs) {
             descItemSpecRegisterRepository.deleteByDescItemSpec(rulDescItemSpec);
@@ -1313,7 +1218,6 @@ public class PackageService {
             exportPackageInfo(rulPackage, zos);
             exportRuleSet(rulPackage, zos);
             exportArrangementTypes(rulPackage, zos);
-            exportDescItemConstraints(rulPackage, zos);
             exportDescItemSpecs(rulPackage, zos);
             exportDescItemTypes(rulPackage, zos);
             exportPackageActions(rulPackage, zos);
@@ -1522,44 +1426,6 @@ public class PackageService {
         }
 
         addObjectToZipFile(descItemSpecs, zos, DESC_ITEM_SPEC_XML);
-    }
-
-    /**
-     * Exportování podmínek atributů.
-     *
-     * @param rulPackage balíček
-     * @param zos        stream zip souboru
-     */
-    private void exportDescItemConstraints(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
-        DescItemConstraints descItemConstraints = new DescItemConstraints();
-        List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByRulPackage(rulPackage);
-        List<DescItemConstraint> descItemConstraintList = new ArrayList<>(rulDescItemConstraints.size());
-        descItemConstraints.setDescItemConstraints(descItemConstraintList);
-
-        for (RulDescItemConstraint rulDescItemConstraint : rulDescItemConstraints) {
-            DescItemConstraint descItemConstraint = new DescItemConstraint();
-            convertDescItemConstraint(rulDescItemConstraint, descItemConstraint);
-            descItemConstraintList.add(descItemConstraint);
-        }
-
-        addObjectToZipFile(descItemConstraints, zos, DESC_ITEM_CONSTRAINT_XML);
-    }
-
-    /**
-     * Převod DAO na VO podmínky atributu.
-     *
-     * @param rulDescItemConstraint DAO podmínky
-     * @param descItemConstraint    VO podínky
-     */
-    private void convertDescItemConstraint(final RulDescItemConstraint rulDescItemConstraint,
-                                           final DescItemConstraint descItemConstraint) {
-        descItemConstraint.setCode(rulDescItemConstraint.getCode());
-        descItemConstraint.setRegexp(rulDescItemConstraint.getRegexp());
-        descItemConstraint.setRepeatable(rulDescItemConstraint.getRepeatable());
-        descItemConstraint.setTextLenghtLimit(rulDescItemConstraint.getTextLenghtLimit());
-        descItemConstraint.setDescItemType(rulDescItemConstraint.getDescItemType().getCode());
-        descItemConstraint.setDescItemSpec(rulDescItemConstraint.getDescItemSpec() == null ? null :
-                                           rulDescItemConstraint.getDescItemSpec().getCode());
     }
 
     /**

@@ -31,7 +31,6 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
-import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -41,7 +40,6 @@ import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.utils.ObjectListIterator;
-import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 
 
 /**
@@ -71,8 +69,6 @@ public class RuleService {
     @Autowired
     private FundVersionRepository fundVersionRepository;
     @Autowired
-    private ArrDescItemsPostValidator descItemsPostValidator;
-    @Autowired
     private NodeConformityRepository nodeConformityInfoRepository;
     @Autowired
     private NodeConformityMissingRepository nodeConformityMissingRepository;
@@ -84,8 +80,6 @@ public class RuleService {
     private DescItemSpecRepository descItemSpecRepository;
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
-    @Autowired
-    private DescItemConstraintRepository descItemConstraintRepository;
 
     /**
      * Provede validaci atributů vybraného uzlu a nastaví jejich validační hodnoty.
@@ -110,13 +104,7 @@ public class RuleService {
             throw new IllegalArgumentException("Level s id " + faLevelId + " nespadá do verze s id " + fundVersionId);
         }
 
-        List<DataValidationResult> validationResults = descItemsPostValidator
-                .postValidateNodeDescItems(level, version);
-        List<DataValidationResult> scriptResults = rulesExecutor
-                .executeDescItemValidationRules(level, version);
-
-        validationResults.addAll(scriptResults);
-
+        List<DataValidationResult> validationResults = rulesExecutor.executeDescItemValidationRules(level, version);
         ArrNodeConformityExt result = updateNodeConformityInfo(level, version, validationResults);
 
         entityManager.detach(nodeBeforeValidation);
@@ -468,29 +456,12 @@ public class RuleService {
             rulDescItemTypeExt.setType(RulDescItemType.Type.IMPOSSIBLE);
             rulDescItemTypeExt.setRepeatable(true);
 
-            // projde všechny podmínky typů
-            for (RulDescItemConstraint rulDescItemConstraint : rulDescItemTypeExt.getRulDescItemConstraintList()) {
-                if (rulDescItemConstraint.getRepeatable() != null && rulDescItemConstraint.getRepeatable()
-                        .equals(false)) {
-                    rulDescItemTypeExt.setRepeatable(false);
-                    break;
-                }
-            }
-
             // projde všechny specifikace typů atributů
             for (RulDescItemSpecExt rulDescItemSpecExt : rulDescItemTypeExt.getRulDescItemSpecList()) {
 
                 rulDescItemSpecExt.setType(RulDescItemSpec.Type.IMPOSSIBLE);
                 rulDescItemSpecExt.setRepeatable(true);
 
-                // projde všechny podmínky specifikací
-                for (RulDescItemConstraint rulDescItemConstraint : rulDescItemSpecExt.getRulDescItemConstraintList()) {
-                    if (rulDescItemConstraint.getRepeatable() != null && rulDescItemConstraint.getRepeatable()
-                            .equals(false)) {
-                        rulDescItemSpecExt.setRepeatable(false);
-                        break;
-                    }
-                }
             }
         }
         return rulDescItemTypeExtList;
@@ -498,8 +469,6 @@ public class RuleService {
 
     /**
      * Vytvoření seznamu rozšířených typů hodnot atributů se specifikacemi podle seznamu typů hodnot atributů.
-     *
-     * TODO: refactor
      *
      * @param itemTypeList seznam typů hodnot atributů
      * @return seznam typů hodnot atributů se specifikacemi
@@ -513,20 +482,6 @@ public class RuleService {
         Map<Integer, List<RulDescItemSpec>> itemSpecMap =
                 ElzaTools.createGroupMap(listDescItem, p -> p.getDescItemType().getDescItemTypeId());
 
-        List<RulDescItemConstraint> findItemConstList =
-                descItemConstraintRepository.findByItemTypeIds(itemTypeList);
-        Map<Integer, List<RulDescItemConstraint>> itemConstrainMap =
-                ElzaTools.createGroupMap(findItemConstList, p -> p.getDescItemType().getDescItemTypeId());
-
-        List<RulDescItemConstraint> findItemSpecConstList;
-        if (listDescItem.isEmpty()) {
-            findItemSpecConstList = new ArrayList<>();
-        } else {
-            findItemSpecConstList = descItemConstraintRepository.findByItemSpecIds(listDescItem);
-        }
-        Map<Integer, List<RulDescItemConstraint>> itemSpecConstrainMap =
-                ElzaTools.createGroupMap(findItemSpecConstList, p -> p.getDescItemSpec().getDescItemSpecId());
-
         List<RulDescItemTypeExt> result = new LinkedList<>();
         for (RulDescItemType rulDescItemType : itemTypeList) {
             RulDescItemTypeExt descItemTypeExt = new RulDescItemTypeExt();
@@ -538,17 +493,7 @@ public class RuleService {
                     RulDescItemSpecExt descItemSpecExt = new RulDescItemSpecExt();
                     BeanUtils.copyProperties(rulDescItemSpec, descItemSpecExt);
                     descItemTypeExt.getRulDescItemSpecList().add(descItemSpecExt);
-                    List<RulDescItemConstraint> itemConstrainList =
-                            itemSpecConstrainMap.get(rulDescItemSpec.getDescItemSpecId());
-                    if (itemConstrainList != null) {
-                        descItemSpecExt.getRulDescItemConstraintList().addAll(itemConstrainList);
-                    }
                 }
-            }
-            List<RulDescItemConstraint> itemConstrainList =
-                    itemConstrainMap.get(rulDescItemType.getDescItemTypeId());
-            if (itemConstrainList != null) {
-                descItemTypeExt.getRulDescItemConstraintList().addAll(itemConstrainList);
             }
             result.add(descItemTypeExt);
         }

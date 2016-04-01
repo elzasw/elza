@@ -41,8 +41,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import cz.tacr.elza.repository.DescItemConstraintRepository;
-import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
@@ -91,12 +89,6 @@ public class ClientFactoryVO {
 
     @Autowired
     private UnitdateRepository unitdateRepository;
-
-    @Autowired
-    private DescItemSpecRepository descItemSpecRepository;
-
-    @Autowired
-    private DescItemConstraintRepository descItemConstraintRepository;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;

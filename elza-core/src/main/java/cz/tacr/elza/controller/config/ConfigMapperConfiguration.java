@@ -553,25 +553,6 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(RulDataType.class, RulDataTypeVO.class).byDefault().field("dataTypeId", "id").register();
 
 
-        mapperFactory.classMap(RulDescItemConstraint.class, RulDescItemConstraintVO.class).customize(
-                new CustomMapper<RulDescItemConstraint, RulDescItemConstraintVO>() {
-                    @Override
-                    public void mapAtoB(final RulDescItemConstraint descItemConstraint,
-                                        final RulDescItemConstraintVO descItemConstraintVO,
-                                        final MappingContext context) {
-                        descItemConstraintVO.setId(descItemConstraint.getDescItemConstraintId());
-                        descItemConstraintVO
-                                .setDescItemTypeId(descItemConstraint.getDescItemType().getDescItemTypeId());
-                        if (descItemConstraint.getDescItemSpec() != null) {
-                            descItemConstraintVO
-                                    .setDescItemSpecId(descItemConstraint.getDescItemSpec().getDescItemSpecId());
-                        }
-                        if (descItemConstraint.getFundVersion() != null) {
-                            descItemConstraintVO
-                                    .setFundVersionId(descItemConstraint.getFundVersion().getFundVersionId());
-                        }
-                    }
-                }).byDefault().register();
         mapperFactory.classMap(RulDescItemType.class, RulDescItemTypeDescItemsVO.class).byDefault().field(
                 "descItemTypeId",
                 "id").register();

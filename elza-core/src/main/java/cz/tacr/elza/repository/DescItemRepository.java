@@ -155,4 +155,7 @@ public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer>,
     @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL AND i.descItemType = ?2 AND i.descItemSpec is null")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndDescItemTypeAndSpecItemTypeIsNull(ArrNode node, RulDescItemType descItemType);
 
+    @Query("SELECT COUNT(i) FROM arr_desc_item i JOIN i.descItemType t WHERE i.descItemType = ?1")
+    Long getCountByType(RulDescItemType descItemType);
+
 }
