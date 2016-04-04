@@ -48,10 +48,16 @@ export function fundDataGridFetchFilterIfNeeded(versionId) {
 
 function _fundDataGridKey(state) {
     var str = ''
-    str += '-' + state.pageSize
-    str += '-' + state.pageIndex
-    Object.keys(state.visibleColumns).forEach(k => {
+    str += '-pg' + state.pageSize
+    str += '-pi' + state.pageIndex
+    str += '-vc'
+    Object.keys(state.visibleColumns).sort().forEach(k => {
         str += '-' + k
+    })
+    str += '-fi'
+    Object.keys(state.filter).sort().forEach(k => {
+        str += '-' + k
+        str += JSON.stringify(state.filter[k])
     })
     return str
 }
@@ -96,7 +102,7 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
         }
 
         const dataKey = _fundDataGridKey(fundDataGrid)
-        if (fundDataGrid.fetchingDataKey !== dataKey) {
+        if (fundDataGrid.currentDataKey !== dataKey) {
             dispatch(_dataRequest(versionId, dataKey))
 
             WebApi.getFilteredNodes(versionId, pageIndex, pageSize, Object.keys(fundDataGrid.visibleColumns)).then(nodes => {
@@ -108,15 +114,17 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
 
                     if (newDataKey === dataKey) {
                         var items = nodes.map(node => {
-                            return {...node, ...node.valuesMap}
+                            const {valuesMap, ...nodeRest} = node
+                            return {id: nodeRest.node.id, ...nodeRest, ...node.valuesMap}
                         })
 
                         const newState = getState();
                         const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId')
                         if (newFund) {
                             const newFundDataGrid = newFund.fundDataGrid
+                            const newDataKey = _fundDataGridKey(newFundDataGrid)
 
-                            if (newFundDataGrid.pageIndex === pageIndex && newFundDataGrid.pageSize === pageSize) {
+                            if (newDataKey === dataKey) {   // ještě je pořád v tom stavu, pro jaký se načítala data
                                 dispatch(_dataReceive(versionId, items))
                             }
                         }

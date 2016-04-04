@@ -62,7 +62,7 @@ var FundFilterCondition = class FundFilterCondition extends AbstractReactCompone
                 return result
             })
             valuesChildren.push(
-                <div className='value-container'>
+                <div key={index} className='value-container'>
                     {els}
                 </div>
             )
@@ -83,7 +83,7 @@ var FundFilterCondition = class FundFilterCondition extends AbstractReactCompone
                     <Input type='select' onChange={this.handleCodeChange} value={selectedCode}>
                         {items.map(i => {
                             return (
-                                <option value={i.code}>{i.name}</option>
+                                <option key={i.code} value={i.code}>{i.name}</option>
                             )
                         })}
                     </Input>

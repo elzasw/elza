@@ -11,12 +11,11 @@ const initialState = {
     items: [],
     itemsCount: 0,
     filter: {}, // mapa id desc item type na filter data
-    visibleColumns: {1: true, 2: true, 3: true},   // seznam mapa id na boolean viditelných sloupečků
+    visibleColumns: {1: true, 2: true, 3: true},   // seznam mapa id na boolean viditelných sloupečků   // "4", "5", "8", "9", "11", "14", "17", "38", "42", "44", "50", "53"
     columnsOrder: [],   // seznam id desc item type - pořadí zobrazování sloupečků
     columnInfos: {},    // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
     selectedIds: [],
-    fetchingDataKey: '',
-    fetchedDataKey: '',
+    currentDataKey: '',
 }
 for (var a=1; a<10; a++) {
 initialState.visibleColumns[a] = true
@@ -35,8 +34,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 items: [],
                 itemsCount: 0,
                 selectedIds: [],
-                fetchingDataKey: '',
-                fetchedDataKey: '',
+                currentDataKey: '',
             }
         case types.STORE_SAVE:
             const {pageSize, pageIndex, filter, visibleColumns, columnsOrder, columnInfos} = state;
@@ -116,12 +114,13 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 fetchedFilter: true,
                 itemsCount: action.itemsCount,
                 pageIndex: 0,
+                currentDataKey: '', // vynucení načtení dat!!!
             }
         case types.FUND_FUND_DATA_GRID_DATA_REQUEST:
             return {
                 ...state,
                 isFetchingData: true,
-                fetchingDataKey: action.dataKey,
+                currentDataKey: action.dataKey,
             }
         case types.FUND_FUND_DATA_GRID_DATA_RECEIVE:
             return {

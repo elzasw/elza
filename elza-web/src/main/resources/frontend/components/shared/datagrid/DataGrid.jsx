@@ -345,7 +345,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         }
 
         return (
-            <th ref={'col' + colIndex} className={colCls} style={{width: colWidths[colIndex], maxWidth: colWidths[colIndex]}}>
+            <th key={colIndex} ref={'col' + colIndex} className={colCls} style={{width: colWidths[colIndex], maxWidth: colWidths[colIndex]}}>
                 {content}
                 {resizer}
             </th>
@@ -378,7 +378,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
                         <thead>
                             <tr>
                                 {cols.map((col, colIndex) => this.renderHeaderCol(col, colIndex, focus.col === colIndex))}
-                                <th className='th-empty-scroll'></th>
+                                <th key={-1} className='th-empty-scroll'></th>
                             </tr>
                         </thead>
                     </table>
@@ -399,7 +399,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
 
                                 const cells = cols.map((col, colIndex) => this.renderCell(row, rowIndex, col, colIndex, focus.col === colIndex, rowWasFocus && focus.col === colIndex))
                                 return (
-                                    <tr className={rowCls} key={rowIndex}>
+                                    <tr key={rowIndex} className={rowCls}>
                                         {cells}
                                     </tr>
                                 )
