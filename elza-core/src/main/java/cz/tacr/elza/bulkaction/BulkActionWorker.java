@@ -1,6 +1,7 @@
 package cz.tacr.elza.bulkaction;
 
 
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
@@ -31,6 +32,11 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
     private Integer versionId;
 
     /**
+     * Seznam vstupních uzlů (podstromů AS)
+     */
+    private List<Integer> inputNodeIds;
+
+    /**
      * Nastavení hromadné akce
      */
     private BulkActionConfig bulkActionConfig;
@@ -46,15 +52,18 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
      * @param bulkAction       hromadná akce
      * @param bulkActionConfig nastavení hromadné akce
      * @param versionId        identifikátor verze archivní pomůcky
+     * @param inputNodeIds     seznam vstupních uzlů (podstromů AS)
      */
     public BulkActionWorker(final BulkAction bulkAction,
                             final BulkActionConfig bulkActionConfig,
-                            final Integer versionId) {
+                            final Integer versionId,
+                            final List<Integer> inputNodeIds) {
         bulkActionState = new BulkActionState();
         bulkActionState.setBulkActionCode(bulkActionConfig.getCode());
         this.bulkAction = bulkAction;
         this.bulkActionConfig = bulkActionConfig;
         this.versionId = versionId;
+        this.inputNodeIds = inputNodeIds;
     }
 
     /**
@@ -72,7 +81,7 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
         bulkActionState.setProcessId((int) Thread.currentThread().getId());
         bulkActionState.setState(State.RUNNING);
         try {
-            bulkAction.run(versionId, bulkActionConfig, bulkActionState);
+            bulkAction.run(versionId, inputNodeIds, bulkActionConfig, bulkActionState);
 
             //Thread.sleep(10000); // PRO TESTOVÁNÍ A DALŠÍ VÝVOJ
 
@@ -140,5 +149,9 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
             }
         }
         bulkActionState.setInterrupt(false);
+    }
+
+    public List<Integer> getInputNodeIds() {
+        return inputNodeIds;
     }
 }

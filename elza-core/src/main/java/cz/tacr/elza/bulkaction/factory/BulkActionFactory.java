@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.bulkaction.generator.BulkAction;
-import cz.tacr.elza.bulkaction.generator.CleanDescriptionItemBulkAction;
 import cz.tacr.elza.bulkaction.generator.FundValidationBulkAction;
 import cz.tacr.elza.bulkaction.generator.SerialNumberBulkAction;
 import cz.tacr.elza.bulkaction.generator.UnitIdBulkAction;
@@ -38,9 +37,6 @@ public class BulkActionFactory {
 
             case SerialNumberBulkAction.TYPE:
                 return new SerialNumberBulkAction();
-
-            case CleanDescriptionItemBulkAction.TYPE:
-                return new CleanDescriptionItemBulkAction();
 
             case FundValidationBulkAction.TYPE:
                 return new FundValidationBulkAction();

@@ -3,6 +3,7 @@ package cz.tacr.elza.bulkaction.generator;
 import java.util.List;
 
 import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.repository.NodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
@@ -32,6 +33,9 @@ public abstract class BulkAction {
     protected LevelRepository levelRepository;
 
     @Autowired
+    protected NodeRepository nodeRepository;
+
+    @Autowired
     private DescriptionItemService descriptionItemService;
 
     @Autowired
@@ -41,10 +45,12 @@ public abstract class BulkAction {
      * Abstrakní metoda pro spuštění hromadné akce.
      *
      * @param fundVersionId      identifikátor verze archivní pomůcky
+     * @param inputNodeIds       seznam vstupních uzlů (podstromů AS)
      * @param bulkActionConfig nastavení hromadné akce
      * @param bulkActionState  stav hromadné akce
      */
     abstract public void run(final Integer fundVersionId,
+                             final List<Integer> inputNodeIds,
                              final BulkActionConfig bulkActionConfig,
                              final BulkActionState bulkActionState);
 

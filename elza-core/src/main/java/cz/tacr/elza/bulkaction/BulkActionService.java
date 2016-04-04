@@ -10,8 +10,8 @@ import java.util.Set;
 
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -25,15 +25,9 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import cz.tacr.elza.api.vo.BulkActionState.State;
 import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
 import cz.tacr.elza.bulkaction.generator.BulkAction;
-import cz.tacr.elza.bulkaction.generator.CleanDescriptionItemBulkAction;
 import cz.tacr.elza.bulkaction.generator.FundValidationBulkAction;
 import cz.tacr.elza.bulkaction.generator.SerialNumberBulkAction;
 import cz.tacr.elza.bulkaction.generator.UnitIdBulkAction;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -70,6 +64,12 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     @Autowired
     private RuleService ruleService;
 
+    @Autowired
+    private NodeRepository nodeRepository;
+
+    @Autowired
+    private BulkActionNodeRepository bulkActionNodeRepository;
+
     /**
      * Seznam registrovaných typů hromadných akcí.
      */
@@ -89,7 +89,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     @Override
     public void afterPropertiesSet() throws Exception {
         bulkActionTypes = new ArrayList<>();
-        bulkActionTypes.add(CleanDescriptionItemBulkAction.TYPE);
         bulkActionTypes.add(SerialNumberBulkAction.TYPE);
         bulkActionTypes.add(UnitIdBulkAction.TYPE);
         bulkActionTypes.add(FundValidationBulkAction.TYPE);
@@ -148,13 +147,52 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     }
 
     /**
-     * Spuštění instance hromadné akce ve verzi archivní pomůcky.
+     * Spuštění instance hromadné akce ve verzi archivního souboru.
      *
-     * @param bulkActionConfig    nastavení hromadné akce
-     * @param fundVersionId identifikátor verze archivní pomůcky
+     * @param bulkActionConfig  nastavení hromadné akce
+     * @param fundVersionId     identifikátor verze archivní pomůcky
      * @return stav instance hromadné akce
      */
-    public BulkActionState run(final BulkActionConfig bulkActionConfig, final Integer fundVersionId) {
+    public BulkActionState run(final BulkActionConfig bulkActionConfig,
+                               final Integer fundVersionId) {
+        BulkActionConfig bulkActionConfigOrig = bulkActionConfigManager.get(bulkActionConfig.getCode());
+
+        if (bulkActionConfigOrig == null) {
+            throw new IllegalArgumentException("Hromadná akce neexistuje!");
+        }
+
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+
+        if (version == null) {
+            throw new IllegalArgumentException("Verze archivní neexistuje!");
+        }
+
+        if (version.getLockChange() != null) {
+            throw new IllegalArgumentException("Verze archivní pomůcky je uzamčená!");
+        }
+
+        String ruleCode = (String) bulkActionConfigOrig.getProperty("rule_code");
+        if (ruleCode == null || !version.getRuleSet().getCode().equals(ruleCode)) {
+            throw new IllegalArgumentException("Nastavení kódu pravidel (rule_code: " + ruleCode
+                    + ") hromadné akce neodpovídá verzi archivní pomůcky (rule_code: " + version.getRuleSet().getCode()
+                    + ")!");
+        }
+        List<Integer> inputNodeIds = Arrays.asList(version.getRootNode().getNodeId());
+
+        return run(fundVersionId, bulkActionConfigOrig, inputNodeIds);
+    }
+
+    /**
+     * Spuštění instance hromadné akce ve verzi archivní pomůcky.
+     *
+     * @param bulkActionConfig  nastavení hromadné akce
+     * @param fundVersionId     identifikátor verze archivní pomůcky
+     * @param inputNodeIds      seznam vstupních uzlů (podstromů AS)
+     * @return stav instance hromadné akce
+     */
+    public BulkActionState run(final BulkActionConfig bulkActionConfig,
+                               final Integer fundVersionId,
+                               final List<Integer> inputNodeIds) {
         BulkActionConfig bulkActionConfigOrig = bulkActionConfigManager.get(bulkActionConfig.getCode());
 
         if (bulkActionConfigOrig == null) {
@@ -178,13 +216,23 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
                     + ")!");
         }
 
+        return run(fundVersionId, bulkActionConfigOrig, inputNodeIds);
+    }
+
+    /**
+     * Spuštění instance hromadné akce.
+     *
+     * @param fundVersionId         id verze archivního souboru
+     * @param bulkActionConfig      nastavení hromadné akce
+     * @param inputNodeIds          seznam vstupních uzlů (podstromů AS)
+     * @return stav instance hromadné akce
+     */
+    private BulkActionState run(final Integer fundVersionId, final BulkActionConfig bulkActionConfig, final List<Integer> inputNodeIds) {
         BulkAction bulkAction = bulkActionFactory
-                .getByCode((String) bulkActionConfigOrig.getProperty("code_type_bulk_action"));
-        BulkActionWorker bulkActionWorker = new BulkActionWorker(bulkAction, bulkActionConfigOrig, fundVersionId);
+                .getByCode((String) bulkActionConfig.getProperty("code_type_bulk_action"));
+        BulkActionWorker bulkActionWorker = new BulkActionWorker(bulkAction, bulkActionConfig, fundVersionId, inputNodeIds);
         addWorker(bulkActionWorker);
-
         runNextWorker();
-
         return bulkActionWorker.getBulkActionState();
     }
 
@@ -227,7 +275,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         removeOldWorker(bulkActionWorker);
 
         // odstraní z db záznamy o doběhnutí hromadné akce
-        removeOldFaBulkAction(bulkActionWorker);
+        //removeOldFaBulkAction(bulkActionWorker);
 
         workers.add(bulkActionWorker);
 
@@ -307,7 +355,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         removeOldWorker(bulkActionWorker);
 
         // odstraní z db záznamy o doběhnutí hromadné akce
-        removeOldFaBulkAction(bulkActionWorker);
+        //removeOldFaBulkAction(bulkActionWorker);
 
         bulkActionWorker.getBulkActionState().setState(State.PLANNED);
         logger.info("Hromadná akce naplánována ke spuštění: " + bulkActionWorker);
@@ -387,6 +435,17 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         arrFaBulkAction.setFundVersion(fundVersion);
 
         bulkActionRepository.save(arrFaBulkAction);
+
+        List<ArrNode> nodes = nodeRepository.findAll(result.getInputNodeIds());
+
+        List<ArrBulkActionNode> bulkActionNodes = new ArrayList<>(nodes.size());
+        for (ArrNode node : nodes) {
+            ArrBulkActionNode bulkActionNode = new ArrBulkActionNode();
+            bulkActionNode.setNode(node);
+            bulkActionNode.setBulkActionRun(arrFaBulkAction);
+            bulkActionNodes.add(bulkActionNode);
+        }
+        bulkActionNodeRepository.save(bulkActionNodes);
 
         runNextWorker();
     }

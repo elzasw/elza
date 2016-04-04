@@ -150,83 +150,85 @@ public class UnitIdBulkAction extends BulkAction {
 
     /**
      * Generování hodnot - rekurzivní volání pro procházení celého stromu
-     *
-     * @param level          uzel
+     *  @param level          uzel
+     * @param rootNode
      * @param unitId         generátor pořadových čísel
      * @param parentSpecCode specifický kód rodiče
      */
-    private void generate(final ArrLevel level, UnitId unitId, final String parentSpecCode) {
+    private void generate(final ArrLevel level, final ArrNode rootNode, UnitId unitId, final String parentSpecCode) {
         if (bulkActionState.isInterrupt()) {
             bulkActionState.setState(State.ERROR);
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
         }
 
         ArrDescItem descItemLevel = loadDescItemLevel(level);
+        if (!level.getNode().equals(rootNode)) {
 
-        if (level.getNodeParent() != null) {
+            if (level.getNodeParent() != null) {
 
-            ArrDescItem descItem = loadDescItem(level);
+                ArrDescItem descItem = loadDescItem(level);
 
-            if (unitId == null) {
-                unitId = new UnitId(1);
-            } else {
-                String specCode = descItemLevel == null ? null : descItemLevel.getDescItemSpec().getCode();
-
-                if ((specCode == null && parentSpecCode == null)
-                        || (specCode != null && specCode.equals(parentSpecCode))
-                        || (parentSpecCode != null && parentSpecCode.equals(specCode))
-                        || (delimiterMajorLevelTypeNotUseList.contains(specCode))) {
-                    unitId.setSeparator(delimiterMinor);
+                if (unitId == null) {
+                    unitId = new UnitId(1);
                 } else {
-                    unitId.setSeparator(delimiterMajor);
-                }
+                    String specCode = descItemLevel == null ? null : descItemLevel.getDescItemSpec().getCode();
 
-                unitId.genNext();
-            }
-
-            // vytvoření nového atributu
-            if (descItem == null) {
-                descItem = new ArrDescItemUnitid();
-                descItem.setDescItemType(descItemType);
-                descItem.setNode(level.getNode());
-            }
-
-            if (!(descItem instanceof ArrDescItemUnitid)) {
-                throw new IllegalStateException(descItemType.getCode() + " neni typu ArrDescItemUnitid");
-            }
-
-            // uložit pouze při rozdílu
-            if (((ArrDescItemUnitid) descItem).getValue() == null || !unitId.getData()
-                    .equals(((ArrDescItemUnitid) descItem).getValue())) {
-
-                ArrDescItem ret;
-
-                // uložit původní hodnotu pouze při první změně z předchozí verze
-                if (descItem.getDescItemObjectId() != null && descItem.getCreateChange().getChangeId() < version
-                        .getCreateChange().getChangeId()) {
-                    ArrDescItem descItemPrev = descItemFactory.createDescItemByType(descItemPreviousType.getDataType());
-                    descItemPrev.setDescItemType(descItemPreviousType);
-                    descItemPrev.setDescItemSpec(descItemPreviousSpec);
-                    descItemPrev.setNode(level.getNode());
-
-                    if (descItemPrev instanceof ArrDescItemString) {
-                        ((ArrDescItemString) descItemPrev).setValue(((ArrDescItemUnitid) descItem).getValue());
+                    if ((specCode == null && parentSpecCode == null)
+                            || (specCode != null && specCode.equals(parentSpecCode))
+                            || (parentSpecCode != null && parentSpecCode.equals(specCode))
+                            || (delimiterMajorLevelTypeNotUseList.contains(specCode))) {
+                        unitId.setSeparator(delimiterMinor);
                     } else {
-                        throw new IllegalStateException(
-                                descItemPrev.getClass().getName() + " nema definovany prevod hodnoty");
+                        unitId.setSeparator(delimiterMajor);
                     }
 
-                    ret = saveDescItem(descItemPrev, version, change);
+                    unitId.genNext();
+                }
+
+                // vytvoření nového atributu
+                if (descItem == null) {
+                    descItem = new ArrDescItemUnitid();
+                    descItem.setDescItemType(descItemType);
+                    descItem.setNode(level.getNode());
+                }
+
+                if (!(descItem instanceof ArrDescItemUnitid)) {
+                    throw new IllegalStateException(descItemType.getCode() + " neni typu ArrDescItemUnitid");
+                }
+
+                // uložit pouze při rozdílu
+                if (((ArrDescItemUnitid) descItem).getValue() == null || !unitId.getData()
+                        .equals(((ArrDescItemUnitid) descItem).getValue())) {
+
+                    ArrDescItem ret;
+
+                    // uložit původní hodnotu pouze při první změně z předchozí verze
+                    if (descItem.getDescItemObjectId() != null && descItem.getCreateChange().getChangeId() < version
+                            .getCreateChange().getChangeId()) {
+                        ArrDescItem descItemPrev = descItemFactory.createDescItemByType(descItemPreviousType.getDataType());
+                        descItemPrev.setDescItemType(descItemPreviousType);
+                        descItemPrev.setDescItemSpec(descItemPreviousSpec);
+                        descItemPrev.setNode(level.getNode());
+
+                        if (descItemPrev instanceof ArrDescItemString) {
+                            ((ArrDescItemString) descItemPrev).setValue(((ArrDescItemUnitid) descItem).getValue());
+                        } else {
+                            throw new IllegalStateException(
+                                    descItemPrev.getClass().getName() + " nema definovany prevod hodnoty");
+                        }
+
+                        ret = saveDescItem(descItemPrev, version, change);
+                        level.setNode(ret.getNode());
+
+                    }
+
+                    ((ArrDescItemUnitid) descItem).setValue(unitId.getData());
+                    ret = saveDescItem(descItem, version, change);
                     level.setNode(ret.getNode());
 
                 }
 
-                ((ArrDescItemUnitid) descItem).setValue(unitId.getData());
-                ret = saveDescItem(descItem, version, change);
-                level.setNode(ret.getNode());
-
             }
-
         }
 
         List<ArrLevel> childLevels = getChildren(level);
@@ -241,7 +243,7 @@ public class UnitIdBulkAction extends BulkAction {
             if (unitId != null && unitIdChild == null) {
                 unitIdChild = unitId.getClone();
             }
-            generate(childLevel, unitIdChild, descItemLevel == null ? null : descItemLevel.getDescItemSpec().getCode());
+            generate(childLevel, rootNode, unitIdChild, descItemLevel == null ? null : descItemLevel.getDescItemSpec().getCode());
         }
 
     }
@@ -289,6 +291,7 @@ public class UnitIdBulkAction extends BulkAction {
     @Override
     @Transactional
     public void run(final Integer fundVersionId,
+                    final List<Integer> inputNodeIds,
                     final BulkActionConfig bulkAction,
                     final BulkActionState bulkActionState) {
         this.bulkActionState = bulkActionState;
@@ -304,8 +307,40 @@ public class UnitIdBulkAction extends BulkAction {
         this.bulkActionState.setRunChange(this.change);
 
         ArrNode rootNode = version.getRootNode();
-        ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
-        generate(rootLevel, null, null);
+
+        for (Integer nodeId : inputNodeIds) {
+            ArrNode node = nodeRepository.findOne(nodeId);
+            Assert.notNull("Node s nodeId=" + nodeId + " neexistuje");
+            ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
+            Assert.notNull("Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
+
+            ArrDescItem descItem = loadDescItem(level);
+            ArrDescItem descItemLevel = loadDescItemLevel(level);
+            if (descItem != null) {
+                if (!(descItem instanceof ArrDescItemUnitid)) {
+                    throw new IllegalStateException(descItemType.getCode() + " neni typu ArrDescItemUnitid");
+                }
+
+                List<ArrLevel> childLevels = getChildren(level);
+
+                String value = ((ArrDescItemUnitid) descItem).getValue();
+                UnitId unitId = new UnitId(value);
+                unitId.setSeparator("");
+
+                UnitId unitIdChild = null;
+                for (ArrLevel childLevel : childLevels) {
+                    if (unitId != null && unitIdChild == null) {
+                        unitIdChild = unitId.getClone();
+                    }
+                    generate(childLevel, rootNode, unitIdChild, descItemLevel == null ? null : descItemLevel.getDescItemSpec().getCode());
+                }
+
+            } else if(node.equals(rootNode)) {
+                generate(level, rootNode, null, descItemLevel == null ? null : descItemLevel.getDescItemSpec().getCode());
+            }
+
+        }
+
         eventNotificationService.publishEvent(EventFactory.createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, fundVersionId, bulkAction.getCode()), true);
     }
 

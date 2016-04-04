@@ -33,7 +33,6 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     private static final String BULK_ACTION_RUN = BULK_ACTION_CONTROLLER_URL + "/run/{versionId}/{code}";
     private static final String BULK_ACTION_VALIDATE = BULK_ACTION_CONTROLLER_URL + "/validate/{versionId}";
 
-    private static final String BULK_ACTION_CLEAN_SERIAL_NUMBER = "CLEAN_SERIAL_NUMBER_ZP2015";
     private static final String BULK_ACTION_FUND_VALIDATION = "FUND_VALIDATION_ZP2015";
     private static final String BULK_ACTION_GENERATOR_UNIT = "GENERATOR_UNIT_ID_ZP2015";
     private static final String BULK_ACTION_SERIAL_NUMBER_GENERATOR = "GENERATOR_SERIAL_NUMBER_ZP2015";
@@ -62,15 +61,12 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         int fundVersionId = importAndGetVersionId();
         List<BulkActionVO> bulkActionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId).pathParam("mandatory", false), BULK_ACTIONS).getBody().as(BulkActionVO[].class));
 
-        Assert.assertEquals(4, bulkActionVOs.size());
+        Assert.assertEquals(3, bulkActionVOs.size());
 
-        Boolean clean = false, unit = false, serial = false, fa = false;
+        Boolean unit = false, serial = false, fa = false;
 
         for (BulkActionVO bulkAction : bulkActionVOs) {
             switch (bulkAction.getCode()) {
-                case BULK_ACTION_CLEAN_SERIAL_NUMBER:
-                    clean = true;
-                    break;
                 case BULK_ACTION_GENERATOR_UNIT:
                     unit = true;
                     break;
@@ -83,7 +79,6 @@ public class BulkActionControllerTest extends AbstractControllerTest {
             }
         }
 
-        Assert.assertTrue("Hromadna akce " + BULK_ACTION_CLEAN_SERIAL_NUMBER + " neni v seznamu", clean);
         Assert.assertTrue("Hromadna akce " + BULK_ACTION_GENERATOR_UNIT + " neni v seznamu", unit);
         Assert.assertTrue("Hromadna akce " + BULK_ACTION_SERIAL_NUMBER_GENERATOR + " neni v seznamu", serial);
         Assert.assertTrue("Hromadna akce " + BULK_ACTION_FUND_VALIDATION + " neni v seznamu", fa);
@@ -99,7 +94,6 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         List<BulkActionVO> actionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId), BULK_ACTION_VALIDATE).getBody().as(BulkActionVO[].class));
         Assert.assertEquals(0, actionVOs.size());
 
-        runBulkAction(fundVersionId, BULK_ACTION_CLEAN_SERIAL_NUMBER);
         runBulkAction(fundVersionId, BULK_ACTION_SERIAL_NUMBER_GENERATOR);
         runBulkAction(fundVersionId, BULK_ACTION_GENERATOR_UNIT);
         runBulkAction(fundVersionId, BULK_ACTION_FUND_VALIDATION);

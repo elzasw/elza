@@ -118,46 +118,48 @@ public class SerialNumberBulkAction extends BulkAction {
      * Generování hodnot - rekurzivní volání pro procházení celého stromu
      *
      * @param level uzel
+     * @param rootNode
      */
-    private void generate(final ArrLevel level) {
+    private void generate(final ArrLevel level, final ArrNode rootNode) {
         if (bulkActionState.isInterrupt()) {
             bulkActionState.setState(State.ERROR);
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
         }
 
-        ArrDescItem descItem = loadDescItem(level);
+        if (!level.getNode().equals(rootNode)) {
+            ArrDescItem descItem = loadDescItem(level);
+            int sn = serialNumber.getNext();
 
-        int sn = serialNumber.getNext();
+            // vytvoření nového atributu
+            if (descItem == null) {
+                descItem = new ArrDescItemInt();
+                descItem.setDescItemType(descItemType);
+                descItem.setNode(level.getNode());
+            }
 
-        // vytvoření nového atributu
-        if (descItem == null) {
-            descItem = new ArrDescItemInt();
-            descItem.setDescItemType(descItemType);
-            descItem.setNode(level.getNode());
-        }
+            if (!(descItem instanceof ArrDescItemInt)) {
+                throw new IllegalStateException(descItemType.getCode() + " není typu ArrDescItemInt");
+            }
 
-        if (!(descItem instanceof ArrDescItemInt)) {
-            throw new IllegalStateException(descItemType.getCode() + " není typu ArrDescItemInt");
-        }
+            // uložit pouze při rozdílu
+            if (((ArrDescItemInt) descItem).getValue() == null || sn != ((ArrDescItemInt) descItem).getValue()) {
+                ((ArrDescItemInt) descItem).setValue(sn);
+                ArrDescItem ret = saveDescItem(descItem, version, change);
+                level.setNode(ret.getNode());
+            }
 
-        // uložit pouze při rozdílu
-        if (((ArrDescItemInt) descItem).getValue() == null || sn != ((ArrDescItemInt) descItem).getValue()) {
-            ((ArrDescItemInt) descItem).setValue(sn);
-            ArrDescItem ret = saveDescItem(descItem, version, change);
-            level.setNode(ret.getNode());
-        }
-
-        if (descItemEndType != null) {
-            ArrDescItem descItemLevel = loadDescItem(level, descItemEndType, descItemEndSpec);
-            if (descItemLevel != null) {
-                return;
+            if (descItemEndType != null) {
+                ArrDescItem descItemLevel = loadDescItem(level, descItemEndType, descItemEndSpec);
+                if (descItemLevel != null) {
+                    return;
+                }
             }
         }
 
         List<ArrLevel> childLevels = getChildren(level);
 
         for (ArrLevel childLevel : childLevels) {
-            generate(childLevel);
+            generate(childLevel, rootNode);
         }
 
     }
@@ -208,6 +210,7 @@ public class SerialNumberBulkAction extends BulkAction {
     @Override
     @Transactional
     public void run(final Integer fundVersionId,
+                    final List<Integer> inputNodeIds,
                     final BulkActionConfig bulkAction,
                     final BulkActionState bulkActionState) {
         this.bulkActionState = bulkActionState;
@@ -224,8 +227,16 @@ public class SerialNumberBulkAction extends BulkAction {
         this.serialNumber = new SerialNumber();
 
         ArrNode rootNode = version.getRootNode();
-        ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
-        generate(rootLevel);
+
+        for (Integer nodeId : inputNodeIds) {
+            ArrNode node = nodeRepository.findOne(nodeId);
+            Assert.notNull("Node s nodeId=" + nodeId + " neexistuje");
+            ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
+            Assert.notNull("Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
+
+            generate(level, rootNode);
+        }
+
         eventNotificationService.publishEvent(EventFactory.createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, fundVersionId, bulkAction.getCode()), true);
     }
 

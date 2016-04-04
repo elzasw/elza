@@ -117,6 +117,8 @@ public abstract class AbstractTest {
     protected DataRepository dataRepository;
     @Autowired
     protected ClientFactoryVO clientFactoryVO;
+    @Autowired
+    protected BulkActionNodeRepository bulkActionNodeRepository;
 
     @Autowired
     private UtilsTest utilsTest;
@@ -144,6 +146,7 @@ public abstract class AbstractTest {
     protected void deleteTables() {
         // TODO: dopsat vsechny potrebne tabulky
         arrDataRepository.deleteAll();
+        bulkActionNodeRepository.deleteAll();
         faBulkActionRepository.deleteAll();
         packetRepository.deleteAll();
         partyNameComplementRepository.deleteAll();

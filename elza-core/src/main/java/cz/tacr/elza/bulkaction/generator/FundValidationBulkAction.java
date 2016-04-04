@@ -101,6 +101,7 @@ public class FundValidationBulkAction extends BulkAction {
     @Override
     @Transactional
     public void run(final Integer fundVersionId,
+                    final List<Integer> inputNodeIds,
                     final BulkActionConfig bulkAction,
                     final BulkActionState bulkActionState) {
         this.bulkActionState = bulkActionState;
@@ -123,9 +124,18 @@ public class FundValidationBulkAction extends BulkAction {
         updateConformityInfoService.terminateWorkerInVersion(version);
 
         ArrNode rootNode = version.getRootNode();
-        ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
+        for (Integer nodeId : inputNodeIds) {
+            ArrNode node = nodeRepository.findOne(nodeId);
+            Assert.notNull("Node s nodeId=" + nodeId + " neexistuje");
+            ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
+            Assert.notNull("Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
 
-        generate(rootLevel);
+            generate(level);
+        }
+
+        eventNotificationService.publishEvent(EventFactory
+                        .createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, fundVersionId, bulkAction.getCode()),
+                true);
     }
 
     @Override
