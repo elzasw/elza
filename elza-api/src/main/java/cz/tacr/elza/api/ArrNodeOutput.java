@@ -8,7 +8,7 @@ import java.io.Serializable;
  * @author Martin Šlapa
  * @since 01.04.2016
  */
-public interface ArrNodeOutput<O extends ArrOutput, C extends ArrChange, N extends ArrNode> extends Serializable {
+public interface ArrNodeOutput<NO extends ArrNamedOutput, C extends ArrChange, N extends ArrNode> extends Serializable {
 
     /**
      * @return  identifikátor entity
@@ -21,14 +21,14 @@ public interface ArrNodeOutput<O extends ArrOutput, C extends ArrChange, N exten
     void setNodeOutputId(Integer nodeOutputId);
 
     /**
-     * @return verze pojmenovaného výstupu z archivního výstupu
+     * @return pojmenovaný výstup z archivního souboru
      */
-    O getOutput();
+    NO getNamedOutput();
 
     /**
-     * @param output verze pojmenovaného výstupu z archivního výstupu
+     * @param namedOutput pojmenovaný výstup z archivního souboru
      */
-    void setOutput(O output);
+    void setNamedOutput(NO namedOutput);
 
     /**
      * @return navázaný uzel
