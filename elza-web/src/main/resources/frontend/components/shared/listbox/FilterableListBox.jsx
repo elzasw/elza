@@ -9,7 +9,7 @@ import React from 'react';
 import {Search, ListBox, AbstractReactComponent, i18n} from 'components';
 import {Input, Button} from 'react-bootstrap';
 import ReactDOM from 'react-dom';
-
+import {getSetFromIdsList} from 'stores/app/utils.jsx'
 var __FilterableListBox_timer = null
 
 var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
@@ -23,11 +23,18 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
         //   selectionType === 'selected', selectedIds obsahuje seznam vybraných id
         //   selectionType === 'unselected', selectedIds obsahuje seznam NEvybraných id
 
-        this.state = {
-            selectionType: 'unselected',
+        const {selectionType, selectedIds} = props
+        var state = {
+            selectionType: selectionType || 'unselected',
             selectedIds: {},
             filterText: ''
         }
+
+        if (selectedIds) {
+            state.selectedIds = getSetFromIdsList(selectedIds)
+        }
+
+        this.state = state
     }
 
     handleCheckItem(item) {

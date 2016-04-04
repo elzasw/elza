@@ -632,8 +632,8 @@ class WebApi{
         return AjaxUtils.ajaxGet('/api/partyManagerV2/institutions');
     }
     // Hledá všechny unikátní hodnoty atributu pro daný AS
-    getDescItemTypeValues(versionId, descItemTypeId, filter, descItemSpecIds, max) {
-console.log("###getDescItemTypeValues", versionId, descItemTypeId, filter, descItemSpecIds)
+    getDescItemTypeValues(versionId, descItemTypeId, filterText, descItemSpecIds, max) {
+console.log("###getDescItemTypeValues", versionId, descItemTypeId, filterText, descItemSpecIds)
 
         return new Promise(function (resolve, reject) {
             var result = []
@@ -647,10 +647,10 @@ console.log("###getDescItemTypeValues", versionId, descItemTypeId, filter, descI
                 }
             }
 
-            const ftext = filter.toLowerCase()
+            const ftext = filterText.toLowerCase()
             var searchedItems = []
             items.forEach(i => {
-                if (!filter || i.value.toLowerCase().indexOf(ftext) !== -1) {
+                if (!filterText || i.value.toLowerCase().indexOf(ftext) !== -1) {
                     searchedItems.push(i)
                 }
             })

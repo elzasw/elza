@@ -11,6 +11,7 @@ export function isFundDataGridAction(action) {
         case types.FUND_FUND_DATA_GRID_FILTER:
         case types.FUND_FUND_DATA_GRID_FILTER_REQUEST:
         case types.FUND_FUND_DATA_GRID_FILTER_RECEIVE:
+        case types.FUND_FUND_DATA_GRID_FILTER_CHANGE:
         case types.FUND_FUND_DATA_GRID_DATA_REQUEST:
         case types.FUND_FUND_DATA_GRID_DATA_RECEIVE:
         case types.FUND_FUND_DATA_GRID_PAGE_SIZE:
@@ -44,6 +45,27 @@ export function fundDataGridFetchFilterIfNeeded(versionId) {
     }
 }
 
+function _fundDataGridKey(state) {
+    var str = ''
+    str += '-' + state.pageSize
+    str += '-' + state.pageIndex
+    Object.keys(state.visibleColumns).forEach(k => {
+        str += '-' + k
+    })
+    return str
+}
+
+export function fundDataGridFilterChange(versionId, descItemTypeId, filter) {
+    return (dispatch, getState) => {
+        dispatch({
+            type: types.FUND_FUND_DATA_GRID_FILTER_CHANGE,
+            versionId,
+            descItemTypeId,
+            filter,
+        })
+    }
+}
+
 export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
     return (dispatch, getState) => {
         const state = getState();
@@ -57,44 +79,31 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
             return
         }
 
-        if ((!fundDataGrid.fetchedData && !fundDataGrid.isFetchingData)
-            ||
-            (fundDataGrid.fetchedPageSize !== pageSize && fundDataGrid.fetchingPageSize !== pageSize)
-            ||
-            (fundDataGrid.fetchedPageIndex !== pageIndex && fundDataGrid.fetchingPageIndex !== pageIndex)
-        ) {
-            dispatch(_dataRequest(versionId, pageIndex, pageSize))
-
-            /*new Promise(function (resolve, reject) {
-                var items = []
-                for (var a=pageIndex * pageSize; a<pageIndex * pageSize + pageSize; a++) {
-                    items.push({
-                        id: a,
-                        firstname: 'jan ' + a,
-                        surname: 'novak ' + a,
-                        age: 10+2*a,
-                        address: 'Nejaka ulice ' + a + ', 330 22, Plzen',
-                        tel: 2*a%10 + 3*a%10 + 4*a%10 + 5*a%10 + 6*a%10 + 7*a%10 + 8*a%10 + 9*a%10 + 2*a%10
-                    })
-                    if (a % 4 == 0) {
-                        items[items.length-1].address = items[items.length-1].address + items[items.length-1].address + items[items.length-1].address
-                    }
-                }
-                resolve(items)
-            })*/
+        const dataKey = _fundDataGridKey(fundDataGrid)
+        if (fundDataGrid.fetchingDataKey !== dataKey) {
+            dispatch(_dataRequest(versionId, dataKey))
 
             WebApi.getFilteredNodes(versionId, pageIndex, pageSize, Object.keys(fundDataGrid.visibleColumns)).then(nodes => {
-                var items = nodes.map(node => {
-                    return {...node, ...node.valuesMap}
-                })
-
                 const newState = getState();
-                const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId')
-                if (newFund) {
-                    const newFundDataGrid = newFund.fundDataGrid
+                const newFund = objectById(state.arrRegion.funds, versionId, 'versionId')
+                if (newFund !== null) {
+                    const newFundDataGrid = fund.fundDataGrid
+                    const newDataKey = _fundDataGridKey(fundDataGrid)
 
-                    if (newFundDataGrid.pageIndex === pageIndex && newFundDataGrid.pageSize === pageSize) {
-                        dispatch(_dataReceive(versionId, items))
+                    if (newDataKey === dataKey) {
+                        var items = nodes.map(node => {
+                            return {...node, ...node.valuesMap}
+                        })
+
+                        const newState = getState();
+                        const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId')
+                        if (newFund) {
+                            const newFundDataGrid = newFund.fundDataGrid
+
+                            if (newFundDataGrid.pageIndex === pageIndex && newFundDataGrid.pageSize === pageSize) {
+                                dispatch(_dataReceive(versionId, items))
+                            }
+                        }
                     }
                 }
             })
@@ -181,6 +190,7 @@ function _setPageIndex(versionId, pageIndex) {
  * Filtrování dat podle předaného filtru.
  */
 export function fundDataGridFilter(versionId, filter) {
+console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$ FILTER", versionId, filter)
     return (dispatch, getState) => {
         dispatch(_filterRequest(versionId))
 
@@ -215,12 +225,11 @@ function _filterReceive(versionId, itemsCount) {
 /**
  * Byl volán request na data.
  */
-function _dataRequest(versionId,pageIndex, pageSize) {
+function _dataRequest(versionId, dataKey) {
     return {
         type: types.FUND_FUND_DATA_GRID_DATA_REQUEST,
         versionId,
-        pageIndex,
-        pageSize,
+        dataKey,
     }
 }
 

@@ -11,7 +11,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import * as types from 'actions/constants/ActionTypes';
 import {fundDataGridSetColumnsSettings, fundDataGridSetSelection, fundDataGridSetColumnSize, fundDataGridFetchFilterIfNeeded,
     fundDataGridFetchDataIfNeeded, fundDataGridSetPageIndex, fundDataGridSetPageSize,
-    findAndReplace} from 'actions/arr/fundDataGrid'
+    fundDataGridFilterChange, findAndReplace} from 'actions/arr/fundDataGrid'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 import {getSetFromIdsList, getMapFromList} from 'stores/app/utils'
 import {propsEquals} from 'components/Utils'
@@ -99,9 +99,19 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     headerColRenderer(col) {
+        const {fundDataGrid} = this.props
+
+        var cls = ''
+
+        let filtered
+        if (fundDataGrid.filter[col.refType.id]) {
+            cls += ' filtered'
+        }
+
         return (
-            <div className='' title={col.refType.name}>
+            <div className={cls} title={col.refType.name}>
                 {col.refType.shortcut}
+                {filtered && 'xx'}
                 <Button onClick={this.handleFindAndReplace.bind(this, col.refType)}><Icon glyph='fa-edit'/></Button>
                 <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)}><Icon
                     glyph='fa-filter'/></Button>
@@ -116,6 +126,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             if (props.fundDataGrid.columnsOrder !== fundDataGrid.columnsOrder
                 || props.descItemTypes !== descItemTypes
                 || props.fundDataGrid.columnInfos !== fundDataGrid.columnInfos
+                || props.fundDataGrid.filter !== fundDataGrid.filter
             ) {
                 const cols = this.buildColumns(fundDataGrid, descItemTypes, rulDataTypes)
                 return {cols: cols}
@@ -226,8 +237,15 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 versionId={versionId}
                 refType={refType}
                 dataType={dataType}
+                filter={fundDataGrid.filter[refType.id]}
+                onSubmitForm={this.handleChangeFilter.bind(this, versionId, refType)}
             />, 'fund-filter-settings-dialog'
         ));
+    }
+
+    handleChangeFilter(versionId, refType, filter) {
+        this.dispatch(modalDialogHide())
+        this.dispatch(fundDataGridFilterChange(versionId, refType.id, filter))
     }
 
     handleFindAndReplace(refType) {

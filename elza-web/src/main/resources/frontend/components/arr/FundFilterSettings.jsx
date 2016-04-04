@@ -21,9 +21,9 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
 
         this.bindMethods('callValueSearch', 'callSpecSearch', 'handleValueSearch', 'handleSpecSearch',
             'handleValueItemsChange', 'renderConditionFilter', 'handleSpecItemsChange', 'handleConditionChange',
-            'handleSubmit')
+            'handleSubmit', 'getSpecsIds')
 
-        this.state = {
+        var state = {
             valueItems: [],
             specItems: [],
             valueSearchText: '',
@@ -35,6 +35,18 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             conditionSelectedCode: 'none',
             conditionValues: []
         }
+
+        const {filter} = props
+        if (typeof filter !== 'undefined' && filter) {
+            state.selectedValueItems = filter.values
+            state.selectedValueItemsType = filter.valuesType
+            state.selectedSpecItems = filter.specs
+            state.selectedSpecItemsType = filter.specsType
+            state.conditionSelectedCode = filter.conditionType
+            state.conditionValues = filter.condition
+        }
+
+        this.state = state
     }
 
     componentWillReceiveProps(nextProps) {
@@ -75,7 +87,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
         }
     }
 
-    callValueSearch() {
+    getSpecsIds() {
         const {versionId, refType} = this.props
         const {valueSearchText, selectedSpecItems, selectedSpecItemsType} = this.state
 
@@ -92,6 +104,14 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 })
             }
         }
+        return specIds
+    }
+
+    callValueSearch() {
+        const {versionId, refType} = this.props
+        const {valueSearchText, selectedSpecItems, selectedSpecItemsType} = this.state
+
+        var specIds = this.getSpecsIds()
 
         WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, specIds, 200)
             .then(json => {
@@ -140,10 +160,10 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                     {values: 0, code: 'none', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'empty', name: i18n('arr.fund.filterSettings.condition.empty')},
                     {values: 0, code: 'notEmpty', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                    {values: 1, code: 'contains', name: i18n('arr.fund.filterSettings.condition.contains')},
-                    {values: 1, code: 'notContains', name: i18n('arr.fund.filterSettings.condition.notContains')},
-                    {values: 1, code: 'begins', name: i18n('arr.fund.filterSettings.condition.begins')},
-                    {values: 1, code: 'ends', name: i18n('arr.fund.filterSettings.condition.ends')},
+                    {values: 1, code: 'contain', name: i18n('arr.fund.filterSettings.condition.string.contain')},
+                    {values: 1, code: 'notContain', name: i18n('arr.fund.filterSettings.condition.string.notContain')},
+                    {values: 1, code: 'begin', name: i18n('arr.fund.filterSettings.condition.begin')},
+                    {values: 1, code: 'end', name: i18n('arr.fund.filterSettings.condition.end')},
                     {values: 1, code: 'eq', name: i18n('arr.fund.filterSettings.condition.eq')},
                 ]
                 break
@@ -163,13 +183,30 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                     {values: 2, code: 'notInterval', name: i18n('arr.fund.filterSettings.condition.notInterval')},
                 ]
                 break
-            case 'COORDINATES':
-                break
             case 'PARTY_REF':
             case 'RECORD_REF':
-            case 'PACKET_REF':
+                items = [
+                    {values: 0, code: 'none', name: i18n('arr.fund.filterSettings.condition.none')},
+                    {values: 0, code: 'empty', name: i18n('arr.fund.filterSettings.condition.empty')},
+                    {values: 0, code: 'notEmpty', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 1, code: 'contain', name: i18n('arr.fund.filterSettings.condition.string.contain')},
+                ]
                 break
             case 'UNITDATE':
+                items = [
+                    {values: 0, code: 'none', name: i18n('arr.fund.filterSettings.condition.none')},
+                    {values: 0, code: 'empty', name: i18n('arr.fund.filterSettings.condition.empty')},
+                    {values: 0, code: 'notEmpty', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 1, code: 'eq', name: i18n('arr.fund.filterSettings.condition.eq')},
+                    {values: 1, code: 'lt', name: i18n('arr.fund.filterSettings.condition.gt')},
+                    {values: 1, code: 'gt', name: i18n('arr.fund.filterSettings.condition.ge')},
+                    {values: 1, code: 'subset', name: i18n('arr.fund.filterSettings.condition.unitdate.subset')},
+                    {values: 1, code: 'intersect', name: i18n('arr.fund.filterSettings.condition.unitdate.intersect')},
+                ]
+                break
+            case 'COORDINATES':
+                break
+            case 'PACKET_REF':
                 break
             case 'ENUM':
                 break 
@@ -195,7 +232,8 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
 
     handleSubmit() {
         const {selectedValueItems, selectedValueItemsType, selectedSpecItems, selectedSpecItemsType, conditionSelectedCode, conditionValues} = this.state
-        const {refType} = this.props
+        const {onSubmitForm, refType} = this.props
+
         var data = {
             values: selectedValueItems,
             valuesType: selectedValueItemsType,
@@ -208,12 +246,27 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             data.specsType = selectedSpecItemsType
         }
 
-        console.log(data)
+console.log(data)
+
+        // ##
+        // # Test, zda není filtr prázdný
+        // ##
+        var outData = null
+
+        if (data.valuesType === 'selected' || data.values.length > 0) {      // je zadáno filtrování podle hodnoty
+            outData = data
+        } else if (refType.useSpecification && (data.specsType === 'selected' || data.specs.length > 0)) {     // je zadáno filtrování podle specifikace
+            outData = data
+        } else if (data.conditionType !== 'none') { // je zadáno filtrování podle podmínky
+            outData = data
+        }
+
+        onSubmitForm(outData)
     }
 
     render() {
         const {refType, onClose} = this.props
-        const {conditionSelectedCode, conditionValues, valueItems, specItems} = this.state
+        const {conditionSelectedCode, conditionValues, valueItems, specItems, selectedValueItems, selectedValueItemsType, selectedSpecItems, selectedSpecItemsType} = this.state
 
         var specContent
         if (refType.useSpecification) {
@@ -223,6 +276,8 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                     searchable
                     items={specItems}
                     label={i18n('arr.fund.filterSettings.filterBySpecification.title')}
+                    selectionType={selectedSpecItemsType}
+                    selectedIds={selectedSpecItems}
                     onChange={this.handleSpecItemsChange}
                     onSearch={this.handleSpecSearch}
                 />
@@ -236,6 +291,8 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 searchable
                 items={valueItems}
                 label={i18n('arr.fund.filterSettings.filterByValue.title')}
+                selectionType={selectedValueItemsType}
+                selectedIds={selectedValueItems}
                 onChange={this.handleValueItemsChange}
                 onSearch={this.handleValueSearch}
             />

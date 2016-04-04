@@ -7,18 +7,16 @@ const initialState = {
     fetchedData: false,
     pageSize: 10,   // aktuální velikost stránky
     pageIndex: 0,   // aktuální stránka
-    fetchedPageSize: -1,     // naposledy načtána data - s jakou velikostí stránky byla data načtena
-    fetchedPageIndex: -1,    // naposledy načtána data - pro jakou stránku byly data načtena
-    fetchingPageSize: -1,     // aktuálně načtaná data
-    fetchingPageIndex: -1,    // aktuálně načtaná data
     dirty: false,
     items: [],
     itemsCount: 0,
-    filter: {},
+    filter: {}, // mapa id desc item type na filter data
     visibleColumns: {1: true, 2: true, 3: true},   // seznam mapa id na boolean viditelných sloupečků
     columnsOrder: [],   // seznam id desc item type - pořadí zobrazování sloupečků
     columnInfos: {},    // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
     selectedIds: [],
+    fetchingDataKey: '',
+    fetchedDataKey: '',
 }
 for (var a=1; a<10; a++) {
 initialState.visibleColumns[a] = true
@@ -59,6 +57,20 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 pageIndex: action.pageIndex,
                 dirty: true,
             }
+        case types.FUND_FUND_DATA_GRID_FILTER_CHANGE:
+            var filter = {...state.filter}
+
+            if (action.filter) {
+                filter[action.descItemTypeId] = action.filter
+            } else {
+                delete filter[action.descItemTypeId]
+            }
+
+            return {
+                ...state,
+                filter: filter,
+                fetchedFilter: false,
+            }
         case types.FUND_FUND_DATA_GRID_FILTER_REQUEST:
             return {
                 ...state,
@@ -76,8 +88,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
             return {
                 ...state,
                 isFetchingData: true,
-                fetchingPageSize: action.pageSize,
-                fetchingPageIndex: action.pageIndex,
+                fetchingDataKey: action.dataKey,
             }
         case types.FUND_FUND_DATA_GRID_DATA_RECEIVE:
             return {
@@ -85,8 +96,6 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 isFetchingData: false,
                 fetchedData: true,
                 items: action.items,
-                fetchedPageIndex: state.pageIndex,
-                fetchedPageSize: state.pageSize,
             }
         default:
             return state
