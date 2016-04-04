@@ -24,6 +24,37 @@ initialState.visibleColumns[a] = true
 
 export default function fundDataGrid(state = initialState, action = {}) {
     switch (action.type) {
+        case types.STORE_LOAD:
+            return {
+                ...state,
+                isFetchingFilter: false,
+                fetchedFilter: false,
+                isFetchingData: false,
+                fetchedData: false,
+                dirty: false,
+                items: [],
+                itemsCount: 0,
+                selectedIds: [],
+                fetchingDataKey: '',
+                fetchedDataKey: '',
+            }
+        case types.STORE_SAVE:
+            const {pageSize, pageIndex, filter, visibleColumns, columnsOrder, columnInfos} = state;
+
+            return {
+                pageSize,
+                pageIndex,
+                filter,
+                visibleColumns,
+                columnsOrder,
+                columnInfos,
+            }
+        case types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL:
+            return {
+                ...state,
+                filter: {},
+                fetchedFilter: false,
+            }
         case types.FUND_FUND_DATA_GRID_PAGE_SIZE:
             return {
                 ...state,
@@ -60,10 +91,12 @@ export default function fundDataGrid(state = initialState, action = {}) {
         case types.FUND_FUND_DATA_GRID_FILTER_CHANGE:
             var filter = {...state.filter}
 
-            if (action.filter) {
-                filter[action.descItemTypeId] = action.filter
-            } else {
-                delete filter[action.descItemTypeId]
+            if (action.descItemTypeId !== null) {   // null je pro případ, kdy jen chceme aktualizovat data
+                if (action.filter) {
+                    filter[action.descItemTypeId] = action.filter
+                } else {
+                    delete filter[action.descItemTypeId]
+                }
             }
 
             return {

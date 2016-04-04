@@ -106,11 +106,11 @@ export function fund(state, action) {
                 isFetching: false,
                 closed: true,   // při načtení vždy chceme closed, u i když není - aby nemohl editovat, než se načte aktuální stav ze serveru
                 dirty: true,
-                fundDataGrid: fundDataGrid(),
                 fundTree: fundTree(state.fundTree, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
                 nodes: nodes(state.nodes, action),
+                fundDataGrid: fundDataGrid(state.fundDataGrid, action),
                 bulkActions: bulkActions(undefined, {type: ''}),
                 versionValidation: versionValidation(undefined, {type: ''})
             }
@@ -126,6 +126,7 @@ export function fund(state, action) {
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
                 nodes: nodes(state.nodes, action),
+                fundDataGrid: fundDataGrid(state.fundDataGrid, action),
             }
         case types.FUND_FUNDS_REQUEST:
             if (action.fundMap[state.versionId]) {

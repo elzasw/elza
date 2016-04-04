@@ -81,11 +81,15 @@ var messages = {
     "developer.scenarios.before": "Před",
     "developer.scenarios.child": "Pod",
 
-    "dataGrid.columnSettings.title": "Nastavení sloupců",
     
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",
     "arr.panel.reset": "Zrušit omezení",
 
+    "arr.fund.filterSettings.clearAll.action": "Odebrat všechny filtry",
+    "arr.fund.filterSettings.updateData.action": "Aktualizovat data podle filtru",
+    "arr.fund.columnSettings.title": "Nastavení sloupců",
+    "arr.fund.columnSettings.action": "Nastavit zobrazení sloupců",
+    "arr.fund.findAndReplace.action": "Hromadná úprava prvku popisu",
     "arr.fund.findAndReplace.findText": "Najít",
     "arr.fund.findAndReplace.replaceText": "Nahradit",
     "arr.fund.findAndReplace.descItemType": "Prvek popisu",
@@ -95,7 +99,8 @@ var messages = {
     "arr.fund.findAndReplace.itemsArea.all": "Všechny JP na stránce ({0})",
     "arr.fund.findAndReplace.itemsArea.selected": "Jen zaškrtnuté JP na stránce ({0})",
     "arr.fund.findAndReplace.itemsArea.unselected": "Jen odškrtnuté JP na stránce ({0})",
-    "arr.fund.filterSettings.title": "Nastavení filtru pro prvek popisu",
+    "arr.fund.filterSettings.action": "Nastavit filtr pro prvek popisu",
+    "arr.fund.filterSettings.title": "Nastavení filtru pro prvek popisu: {0}",
     "arr.fund.filterSettings.filterByValue.title": "Filtrovat podle hodnoty",
     "arr.fund.filterSettings.filterBySpecification.title": "Filtrovat podle speficikace",
     "arr.fund.filterSettings.filterByCondition.title": "Filtrovat podle podmínky",

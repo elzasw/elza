@@ -11,7 +11,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import * as types from 'actions/constants/ActionTypes';
 import {fundDataGridSetColumnsSettings, fundDataGridSetSelection, fundDataGridSetColumnSize, fundDataGridFetchFilterIfNeeded,
     fundDataGridFetchDataIfNeeded, fundDataGridSetPageIndex, fundDataGridSetPageSize,
-    fundDataGridFilterChange, findAndReplace} from 'actions/arr/fundDataGrid'
+    fundDataGridFilterChange, findAndReplace, fundDataGridFilterClearAll, fundDataGridFilterUpdateData} from 'actions/arr/fundDataGrid'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 import {getSetFromIdsList, getMapFromList} from 'stores/app/utils'
 import {propsEquals} from 'components/Utils'
@@ -25,7 +25,8 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('handleSelectedIdsChange', 'handleColumnResize', 'handleColumnSettings', 'handleChangeColumnsSettings',
-            'handleFindAndReplace', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer', 'resizeGrid');
+            'handleFindAndReplace', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer', 'resizeGrid', 'handleFilterClearAll',
+            'handleFilterUpdateData');
 
         const colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
         if (colState) {
@@ -112,8 +113,8 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             <div className={cls} title={col.refType.name}>
                 {col.refType.shortcut}
                 {filtered && 'xx'}
-                <Button onClick={this.handleFindAndReplace.bind(this, col.refType)}><Icon glyph='fa-edit'/></Button>
-                <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)}><Icon
+                <Button onClick={this.handleFindAndReplace.bind(this, col.refType)} title={i18n('arr.fund.findAndReplace.action')}><Icon glyph='fa-edit'/></Button>
+                <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.filterSettings.action')}><Icon
                     glyph='fa-filter'/></Button>
             </div>
         )
@@ -207,6 +208,16 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(fundDataGridSetSelection(versionId, ids))
     }
 
+    handleFilterClearAll() {
+        const {versionId} = this.props
+        this.dispatch(fundDataGridFilterClearAll(versionId))
+    }
+
+    handleFilterUpdateData() {
+        const {versionId} = this.props
+        this.dispatch(fundDataGridFilterUpdateData(versionId))
+    }
+
     handleColumnSettings() {
         const {fundDataGrid, descItemTypes} = this.props
         const refTypesMap = getMapFromList(descItemTypes.items)
@@ -220,7 +231,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 desc: refType.description,
             }
         })
-        this.dispatch(modalDialogShow(this, i18n('dataGrid.columnSettings.title'),
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.columnSettings.title'),
             <DataGridColumnsSettings
                 onSubmitForm={this.handleChangeColumnsSettings}
                 columns={columns}
@@ -232,7 +243,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     handleFilterSettings(refType, dataType) {
         const {versionId, fundDataGrid} = this.props
 
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.filterSettings.title'),
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.filterSettings.title', refType.shortcut),
             <FundFilterSettings
                 versionId={versionId}
                 refType={refType}
@@ -317,7 +328,9 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             <div ref='gridContainer' className='fund-datagrid-container-wrap'>
                 <div ref='grid' className='fund-datagrid-container'>
                     <div className='actions-container'>
-                        <Button onClick={this.handleColumnSettings}><Icon glyph='fa-columns'/></Button>
+                        <Button onClick={this.handleColumnSettings} title={i18n('arr.fund.columnSettings.action')}><Icon glyph='fa-columns'/></Button>
+                        <Button onClick={this.handleFilterUpdateData}>{i18n('arr.fund.filterSettings.updateData.action')}</Button>
+                        <Button onClick={this.handleFilterClearAll}>{i18n('arr.fund.filterSettings.clearAll.action')}</Button>
                     </div>
                     <div className='grid-container'>
                         <DataGrid

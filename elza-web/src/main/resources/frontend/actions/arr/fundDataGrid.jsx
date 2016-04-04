@@ -19,6 +19,7 @@ export function isFundDataGridAction(action) {
         case types.FUND_FUND_DATA_GRID_COLUMN_SIZE:
         case types.FUND_FUND_DATA_GRID_SELECTION:
         case types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS:
+        case types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL:
             return true
         default:
             return false
@@ -53,6 +54,21 @@ function _fundDataGridKey(state) {
         str += '-' + k
     })
     return str
+}
+
+export function fundDataGridFilterClearAll(versionId) {
+    return {
+        type: types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL,
+        versionId,
+    }
+}
+
+export function fundDataGridFilterUpdateData(versionId) {
+    return {
+        type: types.FUND_FUND_DATA_GRID_FILTER_CHANGE,
+        versionId,
+        descItemTypeId: null,
+    }
 }
 
 export function fundDataGridFilterChange(versionId, descItemTypeId, filter) {
