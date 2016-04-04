@@ -131,15 +131,15 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
         const {onSetPageIndex, onChangePageSize, itemsCount, pageSize, pageIndex} = this.props
         var pagesCount = getPagesCount(itemsCount, pageSize)
 
-        var options = [10, 25, 50, 100, 250].map(val => <option value={val}>{val}</option>)
+        var options = [10, 25, 50, 100, 250].map(val => <option key={val} value={val}>{val}</option>)
 
         var cls = this.props.className ? 'pagination-container ' + this.props.className : 'pagination-container'
         return (
             <nav className={cls} >
                 <ul className="pagination">
-                    <li>{this.renderButton(pageIndex === 0, () => pageIndex > 0 && onSetPageIndex(0), '«')}</li>
-                    <li>{this.renderButton(pageIndex === 0, () => pageIndex > 0 && onSetPageIndex(pageIndex - 1), '‹')}</li>
-                    <li className='input'><span>
+                    <li key='start'>{this.renderButton(pageIndex === 0, () => pageIndex > 0 && onSetPageIndex(0), '«')}</li>
+                    <li key='prev'>{this.renderButton(pageIndex === 0, () => pageIndex > 0 && onSetPageIndex(pageIndex - 1), '‹')}</li>
+                    <li key='goTo' className='input'><span>
                         <input 
                             type='text' value={this.state.currPageValue}
                             onChange={this.handleCurrPageChange}
@@ -148,9 +148,9 @@ var DataGridPagination = class DataGridPagination extends AbstractReactComponent
                             onKeyDown={this.handleCurrPageKeyDown}
                         />
                     </span></li>
-                    <li className='input'><span><select value={pageSize} onChange={e => onChangePageSize(Number(e.target.value))}>{options}</select></span></li>
-                    <li>{this.renderButton(pageIndex + 1 >= pagesCount, () => pageIndex + 1 < pagesCount && onSetPageIndex(pageIndex + 1), '›')}</li>
-                    <li>{this.renderButton(pageIndex === pagesCount - 1, () => pageIndex < pagesCount - 1 && onSetPageIndex(pagesCount - 1), '»')}</li>
+                    <li key='pageSize' className='input'><span><select value={pageSize} onChange={e => onChangePageSize(Number(e.target.value))}>{options}</select></span></li>
+                    <li key='next'>{this.renderButton(pageIndex + 1 >= pagesCount, () => pageIndex + 1 < pagesCount && onSetPageIndex(pageIndex + 1), '›')}</li>
+                    <li key='end'>{this.renderButton(pageIndex === pagesCount - 1, () => pageIndex < pagesCount - 1 && onSetPageIndex(pagesCount - 1), '»')}</li>
                 </ul>
             </nav>
         )

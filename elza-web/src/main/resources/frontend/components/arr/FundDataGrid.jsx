@@ -99,6 +99,23 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         )
     }
 
+    supportFindAndReplace(refType, dataType) {
+        let result
+
+        switch (dataType.code) {
+            case 'TEXT':
+            case 'STRING':
+            case 'FORMATTED_TEXT':
+            case 'UNITID':
+                result = true
+                break
+            default:
+                result = false
+                break
+        }
+        return result
+    }
+
     headerColRenderer(col) {
         const {fundDataGrid} = this.props
 
@@ -109,13 +126,13 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             cls += ' filtered'
         }
 
+        const showFindAndReplace = this.supportFindAndReplace(col.refType, col.dataType)
+
         return (
             <div className={cls} title={col.refType.name}>
                 {col.refType.shortcut}
-                {filtered && 'xx'}
-                <Button onClick={this.handleFindAndReplace.bind(this, col.refType)} title={i18n('arr.fund.findAndReplace.action')}><Icon glyph='fa-edit'/></Button>
-                <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.filterSettings.action')}><Icon
-                    glyph='fa-filter'/></Button>
+                {showFindAndReplace && <Button onClick={this.handleFindAndReplace.bind(this, col.refType)} title={i18n('arr.fund.findAndReplace.action')}><Icon glyph='fa-edit'/></Button>}
+                <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.filterSettings.action')}><Icon glyph='fa-filter'/></Button>
             </div>
         )
     }

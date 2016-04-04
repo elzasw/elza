@@ -374,6 +374,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
                 <div
                     className={'listbox-item' + (active ? ' active' : '')}
                     ref={'item-' + index}
+                    key={index}
                     data-id={index}
                     onClick={this.handleClick.bind(this, index)}
                     onDoubleClick={this.props.onDoubleClick}
