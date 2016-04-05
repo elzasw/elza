@@ -1,0 +1,11 @@
+<policy-types>
+    <policy-type code="PT1" rule-set="ZP2015">
+        <name>Policy type 1</name>
+    </policy-type>
+    <policy-type code="PT2" rule-set="ZP2015">
+        <name>Policy type 2</name>
+    </policy-type>
+    <policy-type code="PT3" rule-set="ZP2015">
+        <name>Policy type 3</name>
+    </policy-type>
+</policy-types>

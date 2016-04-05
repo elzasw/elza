@@ -209,7 +209,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     private final static String IMPORT_SCOPE = "GLOBAL";
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         super.setUp();
         RestAssured.port = port;                        // nastavi default port pro REST-assured
         RestAssured.baseURI = RestAssured.DEFAULT_URI;  // nastavi default URI pro REST-assured. Nejcasteni localhost

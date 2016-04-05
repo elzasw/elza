@@ -1,0 +1,205 @@
+package ZP2015;
+
+
+import java.util.Arrays;
+import cz.tacr.elza.drools.model.Level
+import cz.tacr.elza.drools.model.ActiveLevel
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.domain.vo.DataValidationResult;
+import cz.tacr.elza.domain.vo.DataValidationResults;
+import cz.tacr.elza.domain.RulArrangementType;
+
+global DataValidationResults results;
+
+// Kontrola, zda každý list má ukládací jednotku
+rule "List musí mít ukládací jednotku směrem ke kořeni"
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	not ( $level: Level( $items: descItems ) and 
+		DescItem(type=="ZP2015_STORAGE_ID") from $items )
+then
+	results.createMissing("ZP2015_STORAGE_ID", "V hierarchii není uveden prvek ZP2015_STORAGE_ID", "PT1");
+end
+
+// Kontrola, zda každý list má dataci
+rule "List musí mít dataci směrem ke kořeni"
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	not ( $level: Level( $items: descItems ) and 
+		DescItem(type in 
+		  ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST","ZP2015_UNIT_DATE_TEXT" ) )
+		  from $items )
+then
+	results.createMissing("ZP2015_UNIT_DATE", "V hierarchii není uveden prvek datace vzniku", "PT1");
+end
+
+
+// Kontrola, zda každá hromadina s EJ má uvedenu ukládací jednotku s druhem KAR,FAS,DAJ
+rule "Každá hromadina s EJ má uvedenu ukládací jednotku"
+when
+	$activeLevel: ActiveLevel( $items: descItems )
+	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode=="ZP2015_FOLDER_UNITS"||specCode=="ZP2015_FOLDER_SINGLE_TYPE") ) from $items 
+	not ( DescItem(type=="ZP2015_STORAGE_ID"&&packet!=null&&packet.packetType!=null&&(packet.packetType.code=="BOX"||packet.packetType.code=="FASCICLE"||packet.packetType.code=="DATA_UNIT" ) ) from $items )
+then
+	results.createMissing("ZP2015_STORAGE_ID", "V hierarchii není uveden prvek ZP2015_STORAGE_ID", "PT1");
+end
+
+// Počet jednotek musí být větší než 1 pro ZP2015_UNIT_COUNT
+rule "Počet jednotek musí být větší než 1 - ZP2015_UNIT_COUNT"
+when
+	$activeLevel: ActiveLevel( $items: descItems )
+    $descItem: DescItem(type=="ZP2015_UNIT_COUNT"  && integer.intValue()<2 ) from $items
+then
+	results.createError($descItem.getDescItemId(), "Počet jednotek musí být větší než 1", "PT1");
+end
+
+/*
+
+
+
+function DescItem getLevelAttribute(Level level, String attributeName){
+     if(level.getDescItems() == null){
+         return null;
+     } else{
+         for (DescItem descItem : level.getDescItems()) {
+            if(descItem.getType().equals(attributeName)){
+                 return descItem;
+            }
+         }
+         return null;
+     }
+}
+
+function boolean hasLevelRequiredTypeSpec(Level level, String typeCode, String requiredSpecCode){
+    if(level.getDescItems() == null){
+        return false;
+    }
+
+
+    for (DescItem descItem : level.getDescItems()) {
+        if(typeCode.equals(descItem.getType()) && requiredSpecCode.equals(descItem.getSpecCode())){
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+rule "Kontrola u posledního node/levelu stromu (listu), zda je v jeho větvi (od něj až po root) alespoň jednou uveden atribut ZP2015_TITLE"
+when
+    level: Level()
+    eval(strategies.contains("COMPLETE"))
+    eval(isLeaf(level))
+    eval(!hasLevelAttribute(level, "ZP2015_TITLE") && !hasParentsAttribute(level, "ZP2015_TITLE"))
+then
+	results.add(DataValidationResult.createMissing("ZP2015_TITLE", "V hierarchii archivního popisu není uveden atribut ZP2015_TITLE"));
+end
+
+
+rule "Kontrola root levelu/node na atribut ZP2015_LEVEL_TYPE, zda je správně podřízenost/nadřízenost"
+when
+    //jedná se o level přímo pod rootem
+    level: Level(parent != null, parent.getParent() == null)
+    eval(hasLevelAttribute(level, "ZP2015_LEVEL_TYPE"))
+    eval(!hasLevelRequiredTypeSpec(level, "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SERIES"))
+then
+    DescItem typeItem = getLevelAttribute(level, "ZP2015_LEVEL_TYPE");
+    results.add(DataValidationResult.createError(typeItem.getDescItemId(), "Chybně uvedená úroveň popisu: " + typeItem.getSpecCode()+" nesmí být pod kořenovým uzlem."));
+end
+
+rule "Kontrola ZP2015_LEVEL_SERIES levelu/node na atribut ZP2015_LEVEL_TYPE, zda je správně podřízenost/nadřízenost"
+when
+    level: Level(parent != null)
+    eval(hasLevelAttribute(level, "ZP2015_LEVEL_TYPE"))
+    eval(hasLevelAttribute(level.getParent(), "ZP2015_LEVEL_TYPE"))
+
+    eval(hasLevelRequiredTypeSpec(level.getParent(), "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SERIES")
+            &&
+
+            (   !hasLevelRequiredTypeSpec(level, "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SERIES")
+            &&  !hasLevelRequiredTypeSpec(level, "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_FOLDER")
+            &&  !hasLevelRequiredTypeSpec(level, "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ITEM")
+               )
+        )
+then
+    DescItem typeItem = getLevelAttribute(level, "ZP2015_LEVEL_TYPE");
+    DescItem parentItem = getLevelAttribute(level.getParent(), "ZP2015_LEVEL_TYPE");
+    results.add(DataValidationResult.createError(typeItem.getDescItemId(), "Chybně uvedená úroveň popisu: " + typeItem.getSpecCode()+", nadřízená je: "+parentItem.getSpecCode()));
+end
+
+rule "Kontrola ZP2015_LEVEL_FOLDER levelu/node na atribut ZP2015_LEVEL_TYPE, zda je správně podřízenost/nadřízenost"
+when
+    level: Level(parent != null)
+    eval(hasLevelAttribute(level, "ZP2015_LEVEL_TYPE"))
+    eval(hasLevelAttribute(level.getParent(), "ZP2015_LEVEL_TYPE"))
+
+    eval(hasLevelRequiredTypeSpec(level.getParent(), "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_FOLDER")
+        &&  (!hasLevelRequiredTypeSpec(level, "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_FOLDER")
+            &&!hasLevelRequiredTypeSpec(level, "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ITEM")
+            )
+        )
+
+
+    eval(!(hasLevelRequiredTypeSpec(level.getParent(), "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ITEM")
+        &&  !hasLevelRequiredTypeSpec(level, "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_PART")
+        ))
+
+
+    eval(!(hasLevelRequiredTypeSpec(level.getParent(), "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_PART")
+        &&  !hasLevelRequiredTypeSpec(level, "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_PART")
+        ))
+then
+    DescItem typeItem = getLevelAttribute(level, "ZP2015_LEVEL_TYPE");
+    DescItem parentItem = getLevelAttribute(level.getParent(), "ZP2015_LEVEL_TYPE");
+    results.add(DataValidationResult.createError(typeItem.getDescItemId(), "Chybně uvedená úroveň popisu: " + typeItem.getSpecCode()+", nadřízená je: "+parentItem.getSpecCode()));
+end
+
+rule "Kontrola ZP2015_LEVEL_ITEM levelu/node na atribut ZP2015_LEVEL_TYPE, zda je správně podřízenost/nadřízenost"
+when
+    level: Level(parent != null)
+    eval(hasLevelAttribute(level, "ZP2015_LEVEL_TYPE"))
+    eval(hasLevelAttribute(level.getParent(), "ZP2015_LEVEL_TYPE"))
+
+    eval(hasLevelRequiredTypeSpec(level.getParent(), "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ITEM")
+        &&  !hasLevelRequiredTypeSpec(level, "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_PART")
+        )
+then
+    DescItem typeItem = getLevelAttribute(level, "ZP2015_LEVEL_TYPE");
+    DescItem parentItem = getLevelAttribute(level.getParent(), "ZP2015_LEVEL_TYPE");
+    results.add(DataValidationResult.createError(typeItem.getDescItemId(), "Chybně uvedená úroveň popisu: " + typeItem.getSpecCode()+", nadřízená je: "+parentItem.getSpecCode()));
+end
+
+rule "Kontrola ZP2015_LEVEL_PART levelu/node na atribut ZP2015_LEVEL_TYPE, zda je správně podřízenost/nadřízenost"
+when
+    level: Level(parent != null)
+    eval(hasLevelAttribute(level, "ZP2015_LEVEL_TYPE"))
+    eval(hasLevelAttribute(level.getParent(), "ZP2015_LEVEL_TYPE"))
+
+    eval(hasLevelRequiredTypeSpec(level.getParent(), "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_PART")
+        &&  !hasLevelRequiredTypeSpec(level, "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_PART")
+        )
+then
+    DescItem typeItem = getLevelAttribute(level, "ZP2015_LEVEL_TYPE");
+    DescItem parentItem = getLevelAttribute(level.getParent(), "ZP2015_LEVEL_TYPE");
+    results.add(DataValidationResult.createError(typeItem.getDescItemId(), "Chybně uvedená úroveň popisu: " + typeItem.getSpecCode()+", nadřízená je: "+parentItem.getSpecCode()));
+end
+
+
+rule "Kontrola koncových uzlů typu série a jednotlivost"
+when
+    //jedná se o level přímo pod rootem
+    level: Level()
+    eval(arrType.getCode().equals("KAT"))
+    eval(isLeaf(level))
+    eval(hasLevelAttribute(level, "ZP2015_LEVEL_TYPE"))
+
+    eval(hasLevelAttribute(level.getParent(), "ZP2015_LEVEL_TYPE"))
+    eval(hasLevelRequiredTypeSpec(level, "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_FOLDER")
+        ||
+         hasLevelRequiredTypeSpec(level, "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SERIES"))
+then
+    DescItem typeItem = getLevelAttribute(level, "ZP2015_LEVEL_TYPE");
+    results.add(DataValidationResult.createError(typeItem.getDescItemId(), "Chybně ukončená úroveň popisu v "+arrType.getCode()+": "+typeItem.getSpecCode()));
+end
+*/

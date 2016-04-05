@@ -37,16 +37,16 @@ public class RuleControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void deleteImportExportPackageTest() {
+    public void deleteImportExportPackageTest() throws Exception {
         deletePackage(getPackages().get(0).getCode());
         importPackage();
         exportPackage(getPackages().get(0).getCode());
     }
 
-    private void importPackage() {
-        URL url = Thread.currentThread().getContextClassLoader().getResource(PACKAGE_FILE);
-        File file = new File(url.getPath());
+    private void importPackage() throws Exception {
+        File file = buildPackageFileZip();
         multipart(spec -> spec.multiPart("file", file), IMPORT_PACKAGE);
+        file.delete();
     }
 
     private void deletePackage(final String code) {
