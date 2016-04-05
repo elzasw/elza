@@ -445,11 +445,19 @@ public class ArrangementService {
 
         if (!fundRepository.exists(fund.getFundId())) {
             throw new ConcurrentUpdateException(
-                    "Archivní pomůcka s identifikátorem " + fund.getFundId() + " již neexistuje.");
+                    "Archivní soubor s identifikátorem " + fund.getFundId() + " již neexistuje.");
         }
 
         if (version.getLockChange() != null) {
             throw new ConcurrentUpdateException("Verze byla již uzavřena");
+        }
+
+        if (bulkActionService.isRunning(version)) {
+            throw new IllegalStateException("Nelze uzavřít verzi, protože běží hromadná akce");
+        }
+
+        if (updateConformityInfoService.isRunning(version)) {
+            throw new IllegalStateException("Nelze uzavřít verzi, protože běží validace");
         }
 
         ArrChange change = createChange();

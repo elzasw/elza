@@ -199,4 +199,21 @@ public class UpdateConformityInfoService {
     public UpdateConformityInfoWorker createConformityInfoWorker(final Integer versionId) {
         return new UpdateConformityInfoWorker(versionId);
     }
+
+    /**
+     * Zjistí, zda-li nad verzí AS neběží nějaká validace.
+     *
+     * @param version verze AS
+     * @return běží nad verzí validace?
+     */
+    public boolean isRunning(final ArrFundVersion version) {
+        Assert.notNull(version);
+
+        UpdateConformityInfoWorker updateConformityInfoWorker = versionWorkers.get(version);
+        if (updateConformityInfoWorker != null) {
+            return updateConformityInfoWorker.isRunning();
+        }
+
+        return false;
+    }
 }

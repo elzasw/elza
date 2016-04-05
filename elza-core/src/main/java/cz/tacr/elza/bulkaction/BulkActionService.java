@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
@@ -583,5 +584,25 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         ArrChange change = new ArrChange();
         change.setChangeDate(LocalDateTime.now());
         return changeRepository.save(change);
+    }
+
+    /**
+     * Zjistí, zda-li nad verzí AS neběží nějaká hromadná akce.
+     *
+     * @param version verze AS
+     * @return běží nad verzí hromadná akce?
+     */
+    public boolean isRunning(final ArrFundVersion version) {
+        Assert.notNull(version);
+        List<BulkActionState> bulkActionStates = getBulkActionState(version.getFundVersionId());
+
+        for (BulkActionState bulkActionState : bulkActionStates) {
+            State state = bulkActionState.getState();
+            if (!state.equals(State.FINISH) && !state.equals(State.ERROR)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -62,7 +62,7 @@ var FundForm = class FundForm extends AbstractReactComponent {
     isBulkActionRunning() {
         var result = false;
         this.props.bulkActions.states.forEach((item) => {
-            if (item.state === 'RUNNING') {
+            if (item.state !== 'ERROR' && item.state !== 'FINISH') {
                 result = true;
             }
         });
@@ -134,19 +134,12 @@ var FundForm = class FundForm extends AbstractReactComponent {
         var ruleSets = this.props.refTables.ruleSet.items;
         var institutions = this.props.refTables.institutions.items;
 
-        let bulkActionsTextOk = <span className="bulk-action-state success">
-            <Icon glyph="fa-check"/>{i18n('arr.fund.approveVersion.bulkActionsOk')}
-        </span>;
-        let bulkActionsTextErr = <span className="bulk-action-state err">
-            <Icon glyph="fa-exclamation-triangle"/>{i18n('arr.fund.approveVersion.bulkActionsNeedRun')}
-        </span>;
         return (
             <div>
                 <Modal.Body>
                     {
                         this.props.approve &&
                         <div>
-                            {this.props.bulkActions.actions.length > 0 && bulkActionsTextErr}
                             <VersionValidationState count={this.props.versionValidation.count}
                                                     errExist={this.props.versionValidation.count > 0}
                                                     isFetching={this.props.versionValidation.isFetching}/>
