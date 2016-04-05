@@ -19,6 +19,8 @@ import java.time.LocalDateTime;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrNode<ArrFund> {
 
+    public static final String FUND = "fund";
+
     @Id
     @GeneratedValue
     private Integer nodeId;

@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -1007,6 +1009,36 @@ public class DescriptionItemService {
 
                 publishChangeDescItem(version, arrData.getDescItem());
             }
+        }
+    }
+
+    public Class<? extends ArrData> getDescItemDataTypeClass(final RulDescItemType descItemType) {
+        switch (descItemType.getDataType().getCode()) {
+            case "INT":
+                return ArrDataInteger.class;
+            case "STRING":
+                return ArrDataString.class;
+            case "TEXT":
+            case "FORMATTED_TEXT":
+                return ArrDataText.class;
+            case "UNITDATE":
+                return ArrDataUnitdate.class;
+            case "UNITID":
+                return ArrDataUnitdate.class;
+            case "COORDINATES":
+                return ArrDataCoordinates.class;
+            case "PARTY_REF":
+                return ArrDataPartyRef.class;
+            case "RECORD_REF":
+                return ArrDataRecordRef.class;
+            case "DECIMAL":
+                return ArrDataDecimal.class;
+            case "PACKET_REF":
+                return ArrDataPacketRef.class;
+            case "ENUM":
+                return ArrDataNull.class;
+            default:
+                throw new NotImplementedException("Nebyl namapován datový typ");
         }
     }
 

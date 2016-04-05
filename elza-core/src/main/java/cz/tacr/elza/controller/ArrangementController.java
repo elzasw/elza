@@ -1053,6 +1053,30 @@ public class ArrangementController {
         return filterTreeService.getFilteredData(version, page, pageSize, descItemTypeIds);
     }
 
+    /**
+     * Získání unikátních hodnot atributů podle typu.
+     *
+     * @param versionId      verze stromu
+     * @param descItemTypeId id typu atributu
+     * @param fulltext       fultextové hledání
+     * @param max            maximální počet záznamů
+     * @param specIds        id specifikací / id typů atributů
+     * @return seznam unikátních hodnot
+     */
+    @RequestMapping(value = "/filterUniqueValues/{versionId}", method = RequestMethod.PUT)
+    public List<String> filterUniqueValues(@PathVariable("versionId") final Integer versionId,
+                                           @RequestParam("descItemTypeId") final Integer descItemTypeId,
+                                           @RequestParam(value = "fulltext", required = false) final String fulltext,
+                                           @RequestParam(value = "max", required = true) final Integer max,
+                                           @RequestBody(required = false) final Set<Integer> specIds) {
+
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
+        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+
+
+        return filterTreeService.filterUniqueValues(version, descItemType, specIds, fulltext, max);
+    }
+
 
     /**
      * Nahrazení textu v hodnotách textových atributů.

@@ -24,6 +24,8 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataRecordRef extends ArrData implements cz.tacr.elza.api.ArrDataRecordRef<RegRecord> {
 
+    public static final String RECORD = "record";
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
     @JoinColumn(name = "recordId", nullable = false)

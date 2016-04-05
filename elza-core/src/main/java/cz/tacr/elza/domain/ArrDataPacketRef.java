@@ -25,6 +25,8 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataPacketRef extends ArrData implements cz.tacr.elza.api.ArrDataPacketRef<ArrPacket> {
 
+    public static final String PACKET = "packet";
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrPacket.class)
     @JoinColumn(name = "packetId", nullable = false)

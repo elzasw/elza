@@ -25,6 +25,8 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataPartyRef extends ArrData implements cz.tacr.elza.api.ArrDataPartyRef<ParParty> {
 
+    public static final String PARTY = "party";
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)
     @JoinColumn(name = "partyId", nullable = false)

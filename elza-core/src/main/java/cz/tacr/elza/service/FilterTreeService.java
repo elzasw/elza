@@ -9,26 +9,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.vo.DescItemValue;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.exception.FilterExpiredException;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PacketTypeRepository;
 
 
 /**
@@ -58,6 +68,14 @@ public class FilterTreeService {
 
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private DataRepository dataRepository;
+
+    @Autowired
+    private PacketTypeRepository packetTypeRepository;
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
 
     /**
      * Provede filtraci uzlů podle filtru a uloží všechny filtrované id do session. ID jsou seřazeny podle výskytu ve
@@ -118,6 +136,35 @@ public class FilterTreeService {
 
         return createResult(subIds, levelTreeCacheService.getVersionTreeCache(version), descItemTypeMap, nodeValuesMap);
     }
+
+
+    public List<String> filterUniqueValues(final ArrFundVersion version,
+                                           final RulDescItemType descItemType,
+                                           @Nullable final Set<Integer> specIds,
+                                           @Nullable final String fulltext,
+                                           final int max) {
+
+        Assert.notNull(version);
+        Assert.notNull(descItemType);
+
+        Class<? extends ArrData> dataTypeClass = descriptionItemService.getDescItemDataTypeClass(descItemType);
+        if (dataTypeClass.equals(ArrDataPacketRef.class)) {
+            Assert.notEmpty(specIds);
+            Set<RulPacketType> packetTypes = new HashSet<>(packetTypeRepository.findAll(specIds));
+            return dataRepository
+                    .findUniquePacketValuesInVersion(version, descItemType, dataTypeClass, packetTypes, fulltext, max);
+        } else {
+            Set<RulDescItemSpec> specs = null;
+            if (descItemType.getUseSpecification()) {
+                Assert.notEmpty(specIds);
+                specs = new HashSet<>(descItemSpecRepository.findAll(specIds));
+            }
+
+            return dataRepository
+                    .findUniqueSpecValuesInVersion(version, descItemType, dataTypeClass, specs, fulltext, max);
+        }
+    }
+
 
     /**
      * Vytvoří výslednou mapu.

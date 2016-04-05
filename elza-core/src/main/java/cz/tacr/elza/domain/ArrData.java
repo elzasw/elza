@@ -40,6 +40,8 @@ filters = {
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType, ArrDescItem> {
 
+    public static final String DESC_ITEM = "descItem";
+
     @Id
     @GeneratedValue
     private Integer dataId;

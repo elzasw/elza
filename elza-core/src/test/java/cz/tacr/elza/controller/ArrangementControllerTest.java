@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
@@ -601,7 +600,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
 
     @Test
-    public void replaceDataValues() {
+    public void replaceDataValuesTest() {
 
         // vytvoření
         ArrFundVersionVO fundVersion = getOpenVersion(createdFund());
@@ -641,4 +640,46 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             Assert.isTrue(nodeIds.contains(arrData.getDescItem().getNodeId()));
         }
     }
+
+    @Test
+    public void filterUniqueValuesTest(){
+        // vytvoření
+        ArrFundVersionVO fundVersion = getOpenVersion(createdFund());
+
+        // vytvoření uzlů
+        List<ArrNodeVO> nodes = createLevels(fundVersion);
+        Set<Integer> nodeIds = new HashSet<>();
+        for (ArrNodeVO node : nodes) {
+            nodeIds.add(node.getId());
+        }
+
+        // vytvoření hodnoty
+        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("ZP2015_UNIT_DATE_TEXT");
+        int index = 1;
+        String value = "value";
+        for (ArrNodeVO node : nodes) {
+            ArrDescItemVO descItem = buildDescItem(typeVo.getCode(), null, value + index, null, null);
+            ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node,
+                    typeVo);
+            index = -index;
+        }
+
+
+        List<String> resultList = filterUniqueValues(fundVersion.getId(), typeVo.getId(), "ue1", null);
+        Assert.isTrue(resultList.size() < nodes.size());
+        Assert.isTrue(resultList.contains("value1"));
+        Assert.isTrue(!resultList.contains("value-1"));
+
+
+
+        approvedVersion(fundVersion);
+        resultList = filterUniqueValues(fundVersion.getId(), typeVo.getId(), "ue1", null);
+        Assert.isTrue(resultList.size() < nodes.size());
+        Assert.isTrue(resultList.contains("value1"));
+        Assert.isTrue(!resultList.contains("value-1"));
+
+
+
+    }
+
 }

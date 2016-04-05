@@ -37,6 +37,11 @@ import cz.tacr.elza.search.DescItemIndexingInterceptor;
 public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulDescItemType, RulDescItemSpec, ArrNode> {
 
     public static final String NODE = "node";
+    public static final String CREATE_CHANGE_ID = "createChangeId";
+    public static final String DELETE_CHANGE_ID = "deleteChangeId";
+    public static final String DESC_ITEM_SPEC = "descItemSpec";
+    public static final String DESC_ITEM_TYPE = "descItemType";
+
     @Id
     @GeneratedValue
     private Integer descItemId;
@@ -46,10 +51,17 @@ public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulD
     @JoinColumn(name = "createChangeId", nullable = false)
     private ArrChange createChange;
 
+    @Column(name = "createChangeId", nullable = false, updatable = false, insertable = false)
+    private Integer createChangeId;
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "deleteChangeId", nullable = true)
     private ArrChange deleteChange;
+
+    @Column(name = "deleteChangeId", nullable = true, updatable = false, insertable = false)
+    private Integer deleteChangeId;
+
 
     @Column(nullable = false)
     private Integer descItemObjectId;
@@ -85,13 +97,13 @@ public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulD
     @Field
     @NumericField
     public Integer getCreateChangeId() {
-        return createChange.getChangeId();
+        return createChangeId;
     }
 
     @Field
     @NumericField
     public Integer getDeleteChangeId() {
-        return deleteChange == null ? Integer.MAX_VALUE : deleteChange.getChangeId();
+        return deleteChangeId == null ? Integer.MAX_VALUE : deleteChangeId;
     }
 
     @Override

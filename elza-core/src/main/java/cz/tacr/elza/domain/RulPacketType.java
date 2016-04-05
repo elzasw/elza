@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class RulPacketType implements cz.tacr.elza.api.RulPacketType<RulPackage> {
 
     public final static String PACKET_TYPE_ID = "packetTypeId";
+    public static final String NAME = "name";
 
     @Id
     @GeneratedValue

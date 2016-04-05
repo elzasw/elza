@@ -9,10 +9,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -145,6 +147,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String COPY_SIBLING = ARRANGEMENT_CONTROLLER_URL + "/copyOlderSiblingAttribute";
     protected static final String VERSIONS = ARRANGEMENT_CONTROLLER_URL + "/getVersions";
     protected static final String REPLACE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/replaceDataValues/{versionId}";
+    protected static final String FILTER_UNIQUE_VALUES = ARRANGEMENT_CONTROLLER_URL + "/filterUniqueValues/{versionId}";
+
 
 
     // Party
@@ -1849,5 +1853,37 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .queryParameter("replaceText", replaceText)
                 .body(nodes), REPLACE_DATA_VALUES);
 
+    }
+
+    /**
+     * Získání unikátních hodnot atributů podle typu.
+     *
+     * @param versionId      verze stromu
+     * @param descItemTypeId typ atributu
+     * @param fulltext       fultextové hledání
+     * @param specIds        id specifikací
+     * @return seznam unikátních hodnot
+     */
+    protected List<String> filterUniqueValues(final Integer versionId,
+                                              final Integer descItemTypeId,
+                                              final String fulltext,
+                                              final Set<Integer> specIds) {
+        Response result;
+        if (CollectionUtils.isEmpty(specIds)) {
+            result = put(spec -> spec
+                    .pathParameter("versionId", versionId)
+                    .queryParameter("descItemTypeId", descItemTypeId)
+                    .queryParameter("fulltext", fulltext)
+                    .queryParameter("max", 200), FILTER_UNIQUE_VALUES);
+        } else {
+            result = put(spec -> spec
+                    .pathParameter("versionId", versionId)
+                    .queryParameter("descItemTypeId", descItemTypeId)
+                    .queryParameter("fulltext", fulltext)
+                    .queryParameter("max", 200)
+                    .body(specIds), FILTER_UNIQUE_VALUES);
+        }
+
+        return result.as(List.class);
     }
 }

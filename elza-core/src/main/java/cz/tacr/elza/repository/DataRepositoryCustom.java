@@ -4,10 +4,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulPacketType;
 
 
 /**
@@ -36,4 +40,41 @@ public interface DataRepositoryCustom {
     <T extends ArrData> List<T> findByNodesContainingText(Collection<ArrNode> nodes, RulDescItemType descItemType,
                                                           String text);
 
+
+    /**
+     * Provede načtení unikátních hodnot atributů typu obal.
+     *
+     * @param version       id verze stromu
+     * @param descItemType  typ atributu
+     * @param dataTypeClass třída hodnot atributu
+     * @param packetTypes   filtr typů obalů
+     * @param fulltext      fulltext
+     * @param max           maximální počet hodnot
+     * @return seznam unikátních hodnot
+     */
+    List<String> findUniquePacketValuesInVersion(ArrFundVersion version,
+                                                 RulDescItemType descItemType,
+                                                 Class<? extends ArrData> dataTypeClass,
+                                                 Set<RulPacketType> packetTypes,
+                                                 @Nullable String fulltext,
+                                                 int max);
+
+
+    /**
+     * Provede načtení unikátních hodnot atributů.
+     *
+     * @param version       id verze stromu
+     * @param descItemType  typ atributu
+     * @param dataTypeClass třída hodnot atributu
+     * @param specs         pokud je typ se specifikací, obsahuje filtr specifikací
+     * @param fulltext      fulltext
+     * @param max           maximální počet hodnot
+     * @return seznam unikátních hodnot
+     */
+    List<String> findUniqueSpecValuesInVersion(ArrFundVersion version,
+                                               RulDescItemType descItemType,
+                                               Class<? extends ArrData> dataTypeClass,
+                                               @Nullable Set<RulDescItemSpec> specs,
+                                               @Nullable String fulltext,
+                                               int max);
 }
