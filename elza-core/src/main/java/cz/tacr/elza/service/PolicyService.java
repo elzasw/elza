@@ -103,11 +103,10 @@ public class PolicyService {
 
             // chci zohlednit i zděděné oprávnění od předů
             if (includeParents) {
-                Collection<TreeNodeClient> nodeParents = levelTreeCacheService.getNodeParents(nodeId, fundVersion.getFundVersionId());
+                List<Integer> parentNodeIds = levelTreeCacheService.getParentNodeIds(nodeId, fundVersion);
 
                 // existují předci?
-                if (nodeParents.size() > 0) {
-                    List<Integer> parentNodeIds = nodeParents.stream().map(TreeNodeClient::getId).collect(Collectors.toList());
+                if (parentNodeIds.size() > 0) {
                     Integer firstParentNodeId = parentNodeIds.get(0);
 
                     // hledám napočtené oprávnění

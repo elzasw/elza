@@ -280,6 +280,37 @@ public class LevelTreeCacheService {
 
     }
 
+    /**
+     * Najde v cache seznam id rodičů daného uzlu. Seřazeno od prvního id rodiče po kořen stromu.
+     *
+     * @param nodeId        id nodu pod kterým se má hledat
+     * @param fundVersion   verze AS
+     * @return  seznam identifikátorů uzlů
+     */
+    public List<Integer> getParentNodeIds(final Integer nodeId, final ArrFundVersion fundVersion) {
+        Assert.notNull(nodeId);
+        Assert.notNull(fundVersion);
+
+        // mapa nodů z cache
+        Map<Integer, TreeNode> treeMap = getVersionTreeCache(fundVersion);
+
+        TreeNode node = treeMap.get(nodeId);
+        if (node == null) {
+            throw new IllegalArgumentException("Ve verzi " + fundVersion.getFundVersionId()
+                    + " nebyl nalezen node s id " + nodeId);
+        }
+
+        LinkedList<Integer> parents = new LinkedList();
+
+        // procházím prvky přes rodiče až ke kořeni
+        TreeNode parent = node.getParent();
+        while (parent != null) {
+            parents.addFirst(parent.getId());
+            parent = parent.getParent();
+        }
+
+        return parents;
+    }
 
     /**
      * Najde v cache seznam rodičů daného uzlu. Seřazeno od prvního rodiče po kořen stromu.
