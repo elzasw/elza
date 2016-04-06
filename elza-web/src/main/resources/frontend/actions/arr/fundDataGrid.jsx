@@ -28,15 +28,24 @@ export function isFundDataGridAction(action) {
 }
 
 export function fundBulkModifications(versionId, descItemTypeId, specsIds, operationType, findText, replaceText, nodes) {
+//    console.log('#####findAndReplace', versionId, descItemTypeId, specsIds, operationType, findText, replaceText, nodes)
     
-    console.log('#####findAndReplace', versionId, descItemTypeId, specsIds, operationType, findText, replaceText, nodes)
     return (dispatch, getState) => {
-        WebApi.replaceDataValues(versionId, descItemTypeId, specsIds, findText, replaceText, nodes)
-            .then(
-                dispatch(modalDialogHide())
-            )
+        switch (operationType) {
+            case 'findAndReplace':
+                    WebApi.replaceDataValues(versionId, descItemTypeId, specsIds, findText, replaceText, nodes)
+                        .then(dispatch(modalDialogHide()))
+                break
+            case 'replace':
+                    WebApi.XXXreplaceDataValues(versionId, descItemTypeId, specsIds, replaceText, nodes)
+                        .then(dispatch(modalDialogHide()))
+                break
+            case 'delete':
+                    WebApi.XXXdeleteDataValues(versionId, descItemTypeId, specsIds, nodes)
+                        .then(dispatch(modalDialogHide()))
+                break
+        }
     }
-
 }
 
 export function fundDataGridFetchFilterIfNeeded(versionId) {

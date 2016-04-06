@@ -101,6 +101,9 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     supportBulkModifications(refType, dataType) {
+
+        return true
+/*
         let result
 
         switch (dataType.code) {
@@ -114,7 +117,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 result = false
                 break
         }
-        return result
+        return result*/
     }
 
     headerColRenderer(col) {
@@ -131,8 +134,8 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         return (
             <div className={cls} title={col.refType.name}>
-                {col.refType.shortcut}{col.dataType.code}
-                {showBulkModifications && <Button onClick={this.handleBulkModifications.bind(this, col.refType)} title={i18n('arr.fund.bulkModifications.action')}><Icon glyph='fa-edit'/></Button>}
+                {col.refType.shortcut}
+                {showBulkModifications && <Button onClick={this.handleBulkModifications.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.bulkModifications.action')}><Icon glyph='fa-edit'/></Button>}
                 <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.filterSettings.action')}><Icon glyph='fa-filter'/></Button>
             </div>
         )
@@ -279,7 +282,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(fundDataGridFilterChange(versionId, refType.id, filter))
     }
 
-    handleBulkModifications(refType) {
+    handleBulkModifications(refType, dataType) {
         const {versionId, fundDataGrid} = this.props
 
         var submit = (data) => {
@@ -318,6 +321,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('arr.fund.bulkModifications.title'),
             <FundBulkModificationsForm
                 refType={refType}
+                dataType={dataType}
                 onSubmitForm={submit}
                 allItemsCount={fundDataGrid.items.length}
                 checkedItemsCount={fundDataGrid.selectedIds.length}
