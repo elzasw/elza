@@ -36,7 +36,7 @@ exports.getMapFromList = getMapFromList
 
 function getSetFromIdsList(list) {
     var map = {}
-    list.forEach(x => {
+    list && list.forEach(x => {
         map[x] = true
     })
     return map

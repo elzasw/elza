@@ -92,6 +92,7 @@ var messages = {
     "arr.fund.bulkModifications.action": "Hromadná úprava prvku popisu",
     "arr.fund.bulkModifications.findText": "Najít",
     "arr.fund.bulkModifications.replaceText": "Nahradit",
+    "arr.fund.bulkModifications.replaceSpec": "Specifikace",
     "arr.fund.bulkModifications.descItemType": "Prvek popisu",
     "arr.fund.bulkModifications.itemsArea": "Aplikovat na jednotky popisu (JP)",
     "arr.fund.bulkModifications.action.replace": "Nahradit",

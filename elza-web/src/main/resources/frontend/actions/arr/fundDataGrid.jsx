@@ -27,8 +27,8 @@ export function isFundDataGridAction(action) {
     }
 }
 
-export function fundBulkModifications(versionId, descItemTypeId, specsIds, operationType, findText, replaceText, nodes) {
-//    console.log('#####findAndReplace', versionId, descItemTypeId, specsIds, operationType, findText, replaceText, nodes)
+export function fundBulkModifications(versionId, descItemTypeId, specsIds, operationType, findText, replaceText, replaceSpecId, nodes) {
+    console.log('#####findAndReplace', versionId, descItemTypeId, specsIds, operationType, findText, replaceText, replaceSpecId, nodes)
     
     return (dispatch, getState) => {
         switch (operationType) {
@@ -37,7 +37,7 @@ export function fundBulkModifications(versionId, descItemTypeId, specsIds, opera
                         .then(dispatch(modalDialogHide()))
                 break
             case 'replace':
-                    WebApi.XXXreplaceDataValues(versionId, descItemTypeId, specsIds, replaceText, nodes)
+                    WebApi.XXXreplaceDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes)
                         .then(dispatch(modalDialogHide()))
                 break
             case 'delete':

@@ -41,6 +41,9 @@ const validate = (values, props) => {
             if (!values.replaceText) {
                 errors.replaceText = i18n('global.validation.required');
             }
+            if (props.refType.useSpecification && !values.replaceSpec) {
+                errors.replaceSpec = i18n('global.validation.required');
+            }
             break
         case 'delete':
             break
@@ -141,7 +144,7 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
     }
 
     render() {
-        const {allItemsCount, checkedItemsCount, refType, fields: {findText, replaceText, itemsArea, operationType, specs}, handleSubmit, onClose, descItemTypes} = this.props;
+        const {allItemsCount, checkedItemsCount, refType, fields: {findText, replaceText, itemsArea, operationType, specs, replaceSpec}, handleSubmit, onClose, descItemTypes} = this.props;
         const uncheckedItemsCount = allItemsCount - checkedItemsCount
         var submitForm = submitReduxForm.bind(this, validate)
 
@@ -152,6 +155,18 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
                 operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />)
                 break
             case 'replace':
+                if (refType.useSpecification) {
+                    operationInputs.push(
+                        <Input type='select' label={i18n('arr.fund.bulkModifications.replaceSpec')} {...replaceSpec} {...decorateFormField(replaceSpec)}>
+                            <option />
+                            {refType.descItemSpecs.map(i => (
+                                <option key={i.id} value={i.id}>{i.name}</option>
+                            ))}
+                        </Input>
+                    )
+                    replaceSpec
+                }
+
                 operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />)
                 break
             case 'delete':
@@ -200,7 +215,7 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
 
 module.exports = reduxForm({
     form: 'fundBulkModificationsForm',
-    fields: ['findText', 'replaceText', 'itemsArea', 'operationType', 'specs'],
+    fields: ['findText', 'replaceText', 'itemsArea', 'operationType', 'specs', 'replaceSpec'],
 }, (state, props) => {
         return {
             initialValues: {findText: '', replaceText: '', itemsArea: getDefaultItemsArea(props), operationType: getDefaultOperationType(props), specs: {type: 'unselected'}},
