@@ -17,6 +17,7 @@ import {getSetFromIdsList, getMapFromList} from 'stores/app/utils'
 import {propsEquals} from 'components/Utils'
 import {Button} from 'react-bootstrap'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
+import {getSpecsIds} from 'components/arr/ArrUtils'
 
 require('./FundDataGrid.less')
 
@@ -308,7 +309,10 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                     break
             }
 
-            this.dispatch(fundBulkModifications(versionId, refType.id, data.operationType, data.findText, data.replaceText, ids))
+            // Získání seznam specifikací
+            const specsIds = getSpecsIds(refType, data.specs.type, data.specs.ids)
+
+            this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, data.replaceText, ids))
         }
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.bulkModifications.title'),

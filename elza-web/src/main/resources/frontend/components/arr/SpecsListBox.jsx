@@ -5,22 +5,34 @@
 
 import React from 'react';
 import {FilterableListBox, AbstractReactComponent, i18n} from 'components';
+import {indexById, getSetFromIdsList} from 'stores/app/utils.jsx'
+import {getSpecsIds} from 'components/arr/ArrUtils'
 
 var SpecsListBox = class SpecsListBox extends AbstractReactComponent {
     constructor(props) {
         super(props)
 
-        this.bindMethods('handleSpecItemsChange', 'handleSpecSearch')
+        this.bindMethods('handleSpecItemsChange', 'handleSpecSearch', 'getSpecsIds', 'getValue')
 
-        var state = {
+        this.state = {
             specItems: [],
             specSearchText: '',
-            selectedSpecItems: [],
-            selectedSpecItemsType: 'unselected',
         }
     }
 
     componentWillReceiveProps(nextProps) {
+    }
+
+    getValue() {
+        var {value} = this.props
+        if (typeof value === 'undefined') {
+            value = {type: 'unselected', ids: []}
+        }
+
+        return {
+            type: value.type || 'unselected',
+            ids: value.ids || [],
+        }
     }
 
     componentDidMount() {
@@ -28,16 +40,19 @@ var SpecsListBox = class SpecsListBox extends AbstractReactComponent {
     }
 
     handleSpecItemsChange(type, ids) {
-        this.setState({
-            selectedSpecItems: ids,
-            selectedSpecItemsType: type,
-        }, this.props.onSpecItemsChange(type, ids))
+        this.props.onChange({type, ids})
     }
 
     handleSpecSearch(text) {
         this.setState({
             specSearchText: text
         }, this.callSpecSearch)
+    }
+
+    getSpecsIds() {
+        const {refType} = this.props
+        const value = this.getValue()
+        return getSpecsIds(refType, value.type, value.ids)
     }
 
     callSpecSearch() {
@@ -60,7 +75,8 @@ var SpecsListBox = class SpecsListBox extends AbstractReactComponent {
 
     render() {
         const {refType, label} = this.props
-        const {selectedSpecItemsType, selectedSpecItems, specItems} = this.state
+        const {specItems} = this.state
+        const value = this.getValue()
         
         return (
             <FilterableListBox
@@ -68,8 +84,8 @@ var SpecsListBox = class SpecsListBox extends AbstractReactComponent {
                 searchable
                 items={specItems}
                 label={label}
-                selectionType={selectedSpecItemsType}
-                selectedIds={selectedSpecItems}
+                selectionType={value.type}
+                selectedIds={value.ids}
                 onChange={this.handleSpecItemsChange}
                 onSearch={this.handleSpecSearch}
             />

@@ -11,6 +11,8 @@ import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
+import {getSpecsIds} from 'components/arr/ArrUtils'
+const SpecsListBox = require('./SpecsListBox')
 
 /**
  * Validace formuláře.
@@ -20,6 +22,13 @@ const validate = (values, props) => {
 
     if (!values.operationType) {
         errors.operationType = i18n('global.validation.required');
+    }
+
+    if (props.refType.useSpecification) {
+        const specsIds = getSpecsIds(props.refType, values.specs.type, values.specs.ids)
+        if (specsIds.length === 0) {
+            errors.specs = i18n('global.validation.required');
+        }
     }
 
     switch (values.operationType) {
@@ -70,7 +79,7 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
     }
 
     render() {
-        const {allItemsCount, checkedItemsCount, refType, fields: {findText, replaceText, itemsArea, operationType}, handleSubmit, onClose, descItemTypes} = this.props;
+        const {allItemsCount, checkedItemsCount, refType, fields: {findText, replaceText, itemsArea, operationType, specs}, handleSubmit, onClose, descItemTypes} = this.props;
         const uncheckedItemsCount = allItemsCount - checkedItemsCount
         var submitForm = submitReduxForm.bind(this, validate)
 
@@ -96,6 +105,15 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
                                 {refType.shortcut}
                             </div>
                         </Input>
+
+                        {refType.useSpecification && <Input label={i18n('arr.fund.bulkModifications.specs')} {...decorateFormField(specs)}>
+                            <SpecsListBox
+                                ref='specsListBox'
+                                refType={refType}
+                                {...specs}
+                            />
+                        </Input>}
+
                         <Input label={i18n('arr.fund.bulkModifications.itemsArea')} {...decorateFormField(itemsArea)} wrapperClassName='form-items-group'>
                             <Input type="radio" label={i18n('arr.fund.bulkModifications.itemsArea.all', allItemsCount)} {...itemsArea} value='all' checked={itemsArea.value === 'all'} />
                             {checkedItemsCount > 0 && checkedItemsCount < allItemsCount && <Input type="radio" label={i18n('arr.fund.bulkModifications.itemsArea.selected', checkedItemsCount)} {...itemsArea} value='selected' checked={itemsArea.value === 'selected'} />}
@@ -120,10 +138,11 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
 
 module.exports = reduxForm({
     form: 'fundBulkModificationsForm',
-    fields: ['findText', 'replaceText', 'itemsArea', 'operationType'],
+    fields: ['findText', 'replaceText', 'itemsArea', 'operationType', 'specs'],
 }, (state, props) => {
         return {
-            initialValues: {findText: '', replaceText: '', itemsArea: getDefaultItemsArea(props), operationType: 'findAndReplace'}, descItemTypes: state.refTables.descItemTypes
+            initialValues: {findText: '', replaceText: '', itemsArea: getDefaultItemsArea(props), operationType: 'findAndReplace', specs: {type: 'unselected'}},
+            descItemTypes: state.refTables.descItemTypes
         }
     },
 {}

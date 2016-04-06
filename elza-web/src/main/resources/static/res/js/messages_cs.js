@@ -103,6 +103,7 @@ var messages = {
     "arr.fund.bulkModifications.itemsArea.all": "Všechny JP na stránce ({0})",
     "arr.fund.bulkModifications.itemsArea.selected": "Jen zaškrtnuté JP na stránce ({0})",
     "arr.fund.bulkModifications.itemsArea.unselected": "Jen odškrtnuté JP na stránce ({0})",
+    "arr.fund.bulkModifications.specs": "Aplikovat na specifikace",
     "arr.fund.filterSettings.action": "Nastavit filtr pro prvek popisu",
     "arr.fund.filterSettings.title": "Nastavení filtru pro prvek popisu: {0}",
     "arr.fund.filterSettings.filterByValue.title": "Filtrovat podle hodnoty",

@@ -10,7 +10,6 @@ import * as types from 'actions/constants/ActionTypes';
 import {reduxForm} from 'redux-form';
 import {FilterableListBox, AbstractReactComponent, i18n} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
-import {indexById, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {WebApi} from 'actions'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils'
 const FundFilterCondition = require('./FundFilterCondition')
@@ -20,17 +19,15 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
     constructor(props) {
         super(props);
 
-        this.bindMethods('callValueSearch', 'callSpecSearch', 'handleValueSearch', 'handleSpecSearch',
+        this.bindMethods('callValueSearch', 'handleValueSearch',
             'handleValueItemsChange', 'renderConditionFilter', 'handleSpecItemsChange', 'handleConditionChange',
-            'handleSubmit', 'getSpecsIds', 'renderValueFilter', 'renderSpecFilter')
+            'handleSubmit', 'renderValueFilter')
 
         var state = {
             valueItems: [],
-            specItems: [],
             valueSearchText: '',
             selectedValueItems: [],
             selectedValueItemsType: 'unselected',
-            specSearchText: '',
             selectedSpecItems: [],
             selectedSpecItemsType: 'unselected',
             conditionSelectedCode: 'none',
@@ -55,7 +52,6 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
 
     componentDidMount() {
         this.callValueSearch('')
-        this.callSpecSearch('')
     }
 
     handleValueSearch(text) {
@@ -64,65 +60,24 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
         }, this.callValueSearch)
     }
 
-    handleSpecSearch(text) {
-        this.setState({
-            specSearchText: text
-        }, this.callSpecSearch)
-    }
-
-    callSpecSearch() {
-        const {refType} = this.props
-        const {specSearchText} = this.state
-
-        if (refType.useSpecification) {
-            var fspecSearchText = specSearchText.toLowerCase()
-            var specItems = []
-            refType.descItemSpecs.forEach(i => {
-                if (!specSearchText || i.name.toLowerCase().indexOf(fspecSearchText) !== -1) {
-                    specItems.push({id: i.id, name: i.name})
-                }
-            })
-            this.setState({
-                specItems: specItems,
-            })
-        }
-    }
-
-    getSpecsIds() {
-        const {versionId, refType} = this.props
-        const {valueSearchText, selectedSpecItems, selectedSpecItemsType} = this.state
-
-        var specIds = []
-        if (refType.useSpecification) {
-            if (selectedSpecItemsType === 'selected') {
-                specIds = selectedSpecItems
-            } else {
-                var set = getSetFromIdsList(selectedSpecItems)
-                refType.descItemSpecs.forEach(i => {
-                    if (!set[i.id]) {
-                        specIds.push(i.id)
-                    }
-                })
-            }
-        }
-        return specIds
-    }
-
     callValueSearch() {
         const {versionId, refType, dataType} = this.props
-        const {valueSearchText, selectedSpecItems, selectedSpecItemsType} = this.state
+        const {valueSearchText} = this.state
 
         if (!hasDescItemTypeValue(dataType)) {  // pokud nemá hodnotu, nemůžeme volat
             return
         }
 
-        var specIds = this.getSpecsIds()
+        var specIds = []
+        if (refType.useSpecification) {
+            specIds = this.refs.specsListBox.getSpecsIds()
 
-        if (refType.useSpecification && specIds.length === 0) { // pokud nemá nic vybráno, nevrátily by se žádné položky a není třeba volat server
-            this.setState({
-                valueItems: [],
-            })
-            return 
+            if (specIds.length === 0) { // pokud nemá nic vybráno, nevrátily by se žádné položky a není třeba volat server
+                this.setState({
+                    valueItems: [],
+                })
+                return 
+            }
         }
 
         WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, specIds, 200)
@@ -133,7 +88,8 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             })
     }
 
-    handleSpecItemsChange(type, ids) {
+    handleSpecItemsChange(data) {
+        const {type, ids} = data
         this.setState({
             selectedSpecItems: ids,
             selectedSpecItemsType: type,
@@ -162,7 +118,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             return null
         }
 
-        if (dataType.code === 'UNITDATE') { // zde je výjimka a nechceme dle hodnoty
+        if (dataType.code === 'UNITDATE' || dataType.code === 'TEXT') { // zde je výjimka a nechceme dle hodnoty
             return null
         }
 
@@ -176,29 +132,6 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 selectedIds={selectedValueItems}
                 onChange={this.handleValueItemsChange}
                 onSearch={this.handleValueSearch}
-            />
-        )
-    }
-
-    renderSpecFilter() {
-        const {refType} = this.props
-        const {selectedSpecItemsType, selectedSpecItems, specItems} = this.state
-        
-        if (!refType.useSpecification) {
-            return null
-        }
-
-
-        return (
-            <FilterableListBox
-                className='filter-content-container'
-                searchable
-                items={specItems}
-                label={i18n('arr.fund.filterSettings.filterBySpecification.title')}
-                selectionType={selectedSpecItemsType}
-                selectedIds={selectedSpecItems}
-                onChange={this.handleSpecItemsChange}
-                onSearch={this.handleSpecSearch}
             />
         )
     }
@@ -327,9 +260,20 @@ console.log(data)
 
     render() {
         const {refType, onClose} = this.props
-        const {conditionSelectedCode, conditionValues, valueItems, specItems, selectedValueItems, selectedValueItemsType, selectedSpecItems, selectedSpecItemsType} = this.state
+        const {conditionSelectedCode, conditionValues, valueItems, selectedValueItems, selectedValueItemsType, selectedSpecItems, selectedSpecItemsType} = this.state
 
-        var specContent = this.renderSpecFilter()
+        var specContent = null
+        if (refType.useSpecification) {
+            specContent = (
+                <SpecsListBox
+                    ref='specsListBox'
+                    refType={refType}
+                    label={i18n('arr.fund.filterSettings.filterBySpecification.title')}
+                    value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
+                    onChange={this.handleSpecItemsChange}
+                />
+            )
+        }
         
         var valueContent = this.renderValueFilter()
 
