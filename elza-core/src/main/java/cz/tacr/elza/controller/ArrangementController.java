@@ -54,6 +54,7 @@ import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulPacketType;
@@ -63,6 +64,7 @@ import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
@@ -141,6 +143,9 @@ public class ArrangementController {
 
     @Autowired
     private InstitutionRepository institutionRepository;
+
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
 
     /**
      * Seznam typů obalů.
@@ -1084,7 +1089,7 @@ public class ArrangementController {
      * @param descItemTypeId typ atributu
      * @param searchText hledaný text v atributu
      * @param replaceText text, který nahradí hledaný text v celém textu
-     * @param nodes seznam uzlů, ve kterých hledáme
+     * @param replaceDataBody seznam uzlů, ve kterých hledáme a seznam specifikací
      */
     @Transactional
     @RequestMapping(value = "/replaceDataValues/{versionId}", method = RequestMethod.PUT)
@@ -1092,14 +1097,18 @@ public class ArrangementController {
                                   @RequestParam("descItemTypeId") final Integer descItemTypeId,
                                   @RequestParam("searchText") final String searchText,
                                   @RequestParam("replaceText") final String replaceText,
-                                  @RequestBody final Set<ArrNodeVO> nodes) {
+                                  @RequestBody final ReplaceDataBody replaceDataBody) {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
         RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
 
-        Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(nodes));
+        Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
 
-        descriptionItemService.replaceDescItemValues(version, descItemType, nodesDO, searchText, replaceText);
+        Set<RulDescItemSpec> specifications =
+                CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
+                new HashSet<>(descItemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+
+        descriptionItemService.replaceDescItemValues(version, descItemType, nodesDO, specifications, searchText, replaceText);
     }
 
 
@@ -1711,6 +1720,28 @@ public class ArrangementController {
         public NodeWithParent(final ArrNodeVO node, final TreeNodeClient parentNode) {
             this.node = node;
             this.parentNode = parentNode;
+        }
+    }
+
+    public static class ReplaceDataBody {
+
+        private Set<ArrNodeVO> nodes;
+        private Set<Integer> specIds;
+
+        public Set<ArrNodeVO> getNodes() {
+            return nodes;
+        }
+
+        public void setNodes(final Set<ArrNodeVO> nodes) {
+            this.nodes = nodes;
+        }
+
+        public Set<Integer> getSpecIds() {
+            return specIds;
+        }
+
+        public void setSpecIds(final Set<Integer> specIds) {
+            this.specIds = specIds;
         }
     }
 }

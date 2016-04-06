@@ -979,13 +979,14 @@ public class DescriptionItemService {
      * @param version  verze stromu
      * @param descItemType typ atributu
      * @param nodes seznam uzlů, ve kterých hledáme
+     * @param specifications seznam specifikací (pokud se jedná o typ atributu se specifikací)
      * @param findText hledaný text v atributu
      * @param replaceText text, který nahradí hledaný text v celém textu
      */
     public void replaceDescItemValues(final ArrFundVersion version,
                                       final RulDescItemType descItemType,
                                       final Set<ArrNode> nodes,
-                                      final String findText,
+                                      final Set<RulDescItemSpec> specifications, final String findText,
                                       final String replaceText) {
         Assert.notNull(version);
         Assert.notNull(descItemType);
@@ -995,7 +996,7 @@ public class DescriptionItemService {
 
         Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, n -> n.getNodeId());
 
-        List<ArrData> dataToReplaceText = dataRepository.findByNodesContainingText(nodes, descItemType, findText);
+        List<ArrData> dataToReplaceText = dataRepository.findByNodesContainingText(nodes, descItemType,specifications, findText);
         if(!dataToReplaceText.isEmpty()){
 
 

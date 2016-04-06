@@ -624,14 +624,16 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         //nahrazení hodnoty value za hodnotu valXYZ
         List<ArrNodeVO> allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
-        replaceDataValues(fundVersion.getId(), typeVo.getId(), "value", "valXYZ", allNodes);
+        ArrangementController.ReplaceDataBody body = new ArrangementController.ReplaceDataBody();
+        body.setNodes(new HashSet<>(allNodes));
+        replaceDataValues(fundVersion.getId(), typeVo.getId(), "value", "valXYZ", body);
 
 
         //nalezení hodnot podle změněné hodnoty
         RulDescItemType type = descItemTypeRepository.findOneByCode("ZP2015_TITLE");
         type.setDataType(dataTypeRepository.findByCode("TEXT"));  //kvůli transakci (no session)
         List<ArrData> nodesContainingText = dataRepository.findByNodesContainingText(nodeRepository.findAll(nodeIds),
-                type, "valXYZ");
+                type, null, "valXYZ");
 
         Assert.isTrue(nodesContainingText.size() == nodeIds.size());
         for (ArrData arrData : nodesContainingText) {

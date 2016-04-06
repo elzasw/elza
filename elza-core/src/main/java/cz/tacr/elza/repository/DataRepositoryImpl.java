@@ -130,10 +130,15 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
     @Override
     public <T extends ArrData> List<T> findByNodesContainingText(final Collection<ArrNode> nodes,
                                                                  final RulDescItemType descItemType,
+                                                                 final Set<RulDescItemSpec> specifications,
                                                                  final String text) {
 
         if(StringUtils.isBlank(text)){
             throw new IllegalArgumentException("Parametr text nesmí mít prázdnou hodnotu.");
+        }
+
+        if(descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)){
+            throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
         }
 
 
@@ -154,12 +159,22 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         String hql = "SELECT d FROM " + tableName +" d"
                 + " JOIN FETCH d.descItem di "
-                + " JOIN FETCH di.node n WHERE di.descItemType = :descItemType AND di.node IN (:nodes) AND d.value like :text";
+                + " JOIN FETCH di.node n WHERE di.descItemType = :descItemType";
+
+        if(descItemType.getUseSpecification()){
+            hql+= " AND di.descItemSpec IN (:specs)";
+        }
+
+        hql += " AND di.node IN (:nodes) AND d.value like :text";
 
         Query query = entityManager.createQuery(hql);
         query.setParameter("descItemType", descItemType);
         query.setParameter("nodes", nodes);
         query.setParameter("text", searchText);
+        if (descItemType.getUseSpecification()) {
+            query.setParameter("specs", specifications);
+        }
+
 
         return query.getResultList();
     }

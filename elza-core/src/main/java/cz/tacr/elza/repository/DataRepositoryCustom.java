@@ -31,14 +31,14 @@ public interface DataRepositoryCustom {
 
     /**
      * Najde seznam hodnot atributů obsahujících hledaný text.
+     * @param <T>
      * @param nodes seznam uzlů, ve kterých hledáme
      * @param descItemType typ atributu
-     * @param text hledaný text
-     * @param <T>
-     * @return seznam hodnot atributů
+     * @param specifications seznam specifikací (pokud se jedná o typ atributu se specifikací)
+     *@param text hledaný text  @return seznam hodnot atributů
      */
     <T extends ArrData> List<T> findByNodesContainingText(Collection<ArrNode> nodes, RulDescItemType descItemType,
-                                                          String text);
+                                                          final Set<RulDescItemSpec> specifications, String text);
 
 
     /**

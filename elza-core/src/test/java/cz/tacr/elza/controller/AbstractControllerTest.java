@@ -1844,14 +1844,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                      final Integer descItemTypeId,
                                      final String searchText,
                                      final String replaceText,
-                                     final Collection<ArrNodeVO> nodes) {
+                                     final ArrangementController.ReplaceDataBody replaceDataBody) {
 
         put(spec -> spec
                 .pathParameter("versionId", versionId)
                 .queryParameter("descItemTypeId", descItemTypeId)
                 .queryParameter("searchText", searchText)
                 .queryParameter("replaceText", replaceText)
-                .body(nodes), REPLACE_DATA_VALUES);
+                .body(replaceDataBody), REPLACE_DATA_VALUES);
 
     }
 
