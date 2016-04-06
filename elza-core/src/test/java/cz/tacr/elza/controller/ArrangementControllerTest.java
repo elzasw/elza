@@ -641,6 +641,21 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             Assert.isTrue(Pattern.compile("^(\\d+valXYZ\\d+)$").matcher(data.getValue()).matches());
             Assert.isTrue(nodeIds.contains(arrData.getDescItem().getNodeId()));
         }
+
+
+        //test nahrazení všech hodnot na konkrétní hodnotu
+        allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
+        body.setNodes(new HashSet<>(allNodes));
+        placeDataValues(fundVersion.getId(), typeVo.getId(), "nova_value", body);
+
+        List<ArrData> byNodesAndDeleteChangeIsNull = dataRepository
+                .findByNodesAndDeleteChangeIsNull(nodeRepository.findAll(nodeIds));
+        Assert.isTrue(byNodesAndDeleteChangeIsNull.size() >= nodeIds.size());
+        for (ArrData arrData : byNodesAndDeleteChangeIsNull) {
+            ArrDataText text = (ArrDataText) arrData;
+
+            Assert.isTrue(text.getValue().equals("nova_value"));
+        }
     }
 
     @Test

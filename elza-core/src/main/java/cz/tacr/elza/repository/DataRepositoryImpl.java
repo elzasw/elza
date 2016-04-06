@@ -165,7 +165,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             hql+= " AND di.descItemSpec IN (:specs)";
         }
 
-        hql += " AND di.node IN (:nodes) AND d.value like :text";
+        hql += " AND di.node IN (:nodes) AND d.value like :text AND di.deleteChange IS NULL";
 
         Query query = entityManager.createQuery(hql);
         query.setParameter("descItemType", descItemType);

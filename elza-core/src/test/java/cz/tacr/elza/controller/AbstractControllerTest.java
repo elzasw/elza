@@ -147,6 +147,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String COPY_SIBLING = ARRANGEMENT_CONTROLLER_URL + "/copyOlderSiblingAttribute";
     protected static final String VERSIONS = ARRANGEMENT_CONTROLLER_URL + "/getVersions";
     protected static final String REPLACE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/replaceDataValues/{versionId}";
+    protected static final String PLACE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/placeDataValues/{versionId}";
     protected static final String FILTER_UNIQUE_VALUES = ARRANGEMENT_CONTROLLER_URL + "/filterUniqueValues/{versionId}";
 
 
@@ -1838,7 +1839,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param descItemTypeId typ atributu
      * @param searchText hledaný text v atributu
      * @param replaceText text, který nahradí hledaný text v celém textu
-     * @param nodes seznam uzlů, ve kterých hledáme
+     * @param replaceDataBody seznam uzlů, ve kterých hledáme
      */
     protected void replaceDataValues(final Integer versionId,
                                      final Integer descItemTypeId,
@@ -1853,6 +1854,26 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .queryParameter("replaceText", replaceText)
                 .body(replaceDataBody), REPLACE_DATA_VALUES);
 
+    }
+
+    /**
+     * Nahrazení textu v hodnotách textových atributů.
+     * @param versionId id verze stromu
+     * @param descItemTypeId typ atributu
+     * @param text hledaný text v atributu
+     * @param replaceText text, který nahradí hledaný text v celém textu
+     * @param replaceDataBody seznam uzlů, ve kterých hledáme
+     */
+    protected void placeDataValues(final Integer versionId,
+                                     final Integer descItemTypeId,
+                                     final String text,
+                                     final ArrangementController.ReplaceDataBody replaceDataBody) {
+
+        put(spec -> spec
+                .pathParameter("versionId", versionId)
+                .queryParameter("descItemTypeId", descItemTypeId)
+                .queryParameter("text", text)
+                .body(replaceDataBody), PLACE_DATA_VALUES);
     }
 
     /**

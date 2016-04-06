@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -991,7 +992,6 @@ public class DescriptionItemService {
         Assert.notNull(version);
         Assert.notNull(descItemType);
         Assert.hasText(findText);
-        Assert.hasText(replaceText);
         Assert.notEmpty(nodes);
 
         Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, n -> n.getNodeId());
@@ -1044,6 +1044,93 @@ public class DescriptionItemService {
     }
 
     /**
+     * Vytvoří novou konkrétní instanci pro {@link ArrData}.
+     *
+     * @param descItemType typ atributu
+     * @return konkrétní instance
+     */
+    private ArrData createDataByType(final RulDescItemType descItemType) {
+        Class<? extends ArrData> dataTypeClass = getDescItemDataTypeClass(descItemType);
+        try {
+            return dataTypeClass.newInstance();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Nastavení textu hodnotám atributu.
+     *
+     * @param version              verze stromu
+     * @param descItemType         typ atributu
+     * @param newItemSpecification pokud se jedná o atribut se specifikací ->  specifikace, která bude nastavena
+     * @param text                 text, který nahradí text v celém textu
+     * @param specifications       seznam specifikací, ve kterých se má hledat hodnota
+     */
+    public void placeDescItemValues(final ArrFundVersion version,
+                                    final RulDescItemType descItemType,
+                                    final Set<ArrNode> nodes,
+                                    final RulDescItemSpec newItemSpecification,
+                                    final Set<RulDescItemSpec> specifications, final String text) {
+        Assert.hasText(text);
+        Assert.isTrue(!descItemType.getUseSpecification() || newItemSpecification != null);
+        if (descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)) {
+            throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
+        }
+
+
+        Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, n -> n.getNodeId());
+        List<ArrNode> dbNodes = nodeRepository.findAll(nodesMap.keySet());
+
+        List<ArrDescItem> descItems = descItemType.getUseSpecification() ?
+                                      descItemRepository
+                                              .findOpenByNodesAndTypeAndSpec(nodes, descItemType, specifications) :
+                                      descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+
+        ArrChange change = arrangementService.createChange();
+
+        for (ArrDescItem descItem : descItems) {
+            deleteDescriptionItem(descItem, version, change, false);
+        }
+
+        for (ArrNode dbNode : dbNodes) {
+            arrangementService.lockNode(dbNode, nodesMap.get(dbNode.getNodeId()));
+
+            ArrDescItem newDescItem = new ArrDescItem();
+            newDescItem.setNode(dbNode);
+            newDescItem.setDescItemType(descItemType);
+            newDescItem.setDescItemSpec(newItemSpecification);
+            newDescItem.setCreateChange(change);
+            newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+            newDescItem.setPosition(1);
+
+            ArrData data = createDataByType(descItemType);
+            switch (descItemType.getDataType().getCode()) {
+                case "TEXT":
+                case "FORMATTED_TEXT":
+                    ArrDataText textData = (ArrDataText) data;
+                    textData.setValue(text);
+                    break;
+                case "STRING":
+                    ArrDataString stringData = (ArrDataString) data;
+                    stringData.setValue(text);
+                    break;
+                default:
+                    throw new IllegalStateException("Neplatný typ atributu " + descItemType.getDataType().getCode()
+                            + ". Pouze textové hodnoty jdou nahradit.");
+            }
+
+            newDescItem = descItemRepository.save(newDescItem);
+
+            publishChangeDescItem(version, newDescItem);
+
+            data.setDescItem(newDescItem);
+            data.setDataType(descItemType.getDataType());
+            dataRepository.save(data);
+        }
+    }
+
+    /**
      * Provede nahrazení textu v hodnotě atributu.
      * @param data data atributu
      * @param searchString text, který hledáme
@@ -1092,7 +1179,6 @@ public class DescriptionItemService {
     private String getReplacedDataValue(final String text, final String searchString, final String replaceString) {
         Assert.notNull(text);
         Assert.notNull(searchString);
-        Assert.notNull(replaceString);
 
         return StringUtils.replace(text, searchString, replaceString);
     }

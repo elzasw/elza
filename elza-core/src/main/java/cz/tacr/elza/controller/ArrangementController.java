@@ -1111,6 +1111,37 @@ public class ArrangementController {
         descriptionItemService.replaceDescItemValues(version, descItemType, nodesDO, specifications, searchText, replaceText);
     }
 
+    /**
+     * Nastavení textu hodnotám atributu..
+     *
+     * @param versionId         id verze stromu
+     * @param descItemTypeId    typ atributu
+     * @param newDescItemSpecId pokud se jedná o atribut se specifikací -> id specifikace, která bude nastavena
+     * @param text              text, který nahradí hledaný text v celém textu
+     * @param replaceDataBody   seznam uzlů, ve kterých hledáme a seznam specifikací
+     */
+    @Transactional
+    @RequestMapping(value = "/placeDataValues/{versionId}", method = RequestMethod.PUT)
+    public void placeDataValues(@PathVariable("versionId") final Integer versionId,
+                                @RequestParam("descItemTypeId") final Integer descItemTypeId,
+                                @RequestParam(value = "newDescItemSpecId", required = false) final Integer newDescItemSpecId,
+                                @RequestParam("text") final String text,
+                                @RequestBody final ReplaceDataBody replaceDataBody) {
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
+        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+
+        Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
+
+        RulDescItemSpec newDescItemSpec = newDescItemSpecId == null ? null
+                                                                    : descItemSpecRepository.findOne(newDescItemSpecId);
+        Set<RulDescItemSpec> specifications =
+                CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
+                new HashSet<>(descItemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+
+        descriptionItemService
+                .placeDescItemValues(version, descItemType, nodesDO, newDescItemSpec, specifications, text);
+    }
+
 
     public static class VersionValidationItem {
 
