@@ -126,7 +126,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('handleKeyDown', 'ensureItemVisible', 'getNextSelectableItemIndex', 'getPrevSelectableItemIndex',
-            'dragStart', 'dragEnd', 'dragOver', 'handleClick')
+            'dragStart', 'dragEnd', 'dragOver', 'handleClick', 'unFocus')
 
         if (props.multiselect) {
             var activeIndexes = {}
@@ -177,6 +177,8 @@ var ListBox = class ListBox extends AbstractReactComponent {
                     }
                 }
             } else if (e.shiftKey) {
+                this.unFocus()
+
                 const from = Math.min(index, lastFocus)
                 const to = Math.max(index, lastFocus)
                 activeIndexes = {...activeIndexes}
@@ -206,6 +208,14 @@ var ListBox = class ListBox extends AbstractReactComponent {
                     this.props.onChangeSelection && this.props.onChangeSelection([index])
                 }
             }
+        }
+    }
+
+    unFocus() {
+        if (document.selection) {
+            document.selection.empty();
+        } else {
+            window.getSelection().removeAllRanges()
         }
     }
 
@@ -376,7 +386,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
                     ref={'item-' + index}
                     key={index}
                     data-id={index}
-                    onClick={this.handleClick.bind(this, index)}
+                    onMouseDown={this.handleClick.bind(this, index)}
                     onDoubleClick={this.props.onDoubleClick}
                     {...draggableProps}
                 >

@@ -74,24 +74,32 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
     }
 
     handleRemoveVisible() {
-        var {available, visible} = this.state
-        const {rightSelected} = this.state
+        const {rightSelected, available, visible} = this.state
+        const {columns} = this.props
 
         var selectedMap = {}
         rightSelected.forEach(index => {
             selectedMap[index] = true
         })
 
-        var newAvailable = [...available]
-        var newVisible = []
-
+        // Upravení seznamu visible
+        const newVisible = []
         visible.forEach((item, index) => {
-            if (selectedMap[index]) {
-                newAvailable.push(item)
-            } else {
+            if (!selectedMap[index]) {
                 newVisible.push(item)
             }
         })
+
+        // Vytvoření seřazeného seznamu available (newAvailable) podle pořadí, které je definované na vstupu jako columns
+        const visibleMap = getMapFromList(newVisible)
+        const newAvailable = []
+        columns.forEach(col => {
+            if (!visibleMap[col.id]) {
+                newAvailable.push(col)
+            }
+        })
+
+        // ---
 
         this.setState({
             available: newAvailable,

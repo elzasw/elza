@@ -130,7 +130,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         return (
             <div className={cls} title={col.refType.name}>
-                {col.refType.shortcut}
+                {col.refType.shortcut}{col.dataType.code}
                 {showFindAndReplace && <Button onClick={this.handleFindAndReplace.bind(this, col.refType)} title={i18n('arr.fund.findAndReplace.action')}><Icon glyph='fa-edit'/></Button>}
                 <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.filterSettings.action')}><Icon glyph='fa-filter'/></Button>
             </div>
@@ -248,6 +248,8 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 desc: refType.description,
             }
         })
+        columns.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()))
+
         this.dispatch(modalDialogShow(this, i18n('arr.fund.columnSettings.title'),
             <DataGridColumnsSettings
                 onSubmitForm={this.handleChangeColumnsSettings}

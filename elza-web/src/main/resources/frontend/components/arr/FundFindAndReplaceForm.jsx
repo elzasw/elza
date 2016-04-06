@@ -54,13 +54,15 @@ var FundFindAndReplaceForm = class FundFindAndReplaceForm extends AbstractReactC
                                 {refType.shortcut}
                             </div>
                         </Input>
-                        <Input type="text" label={i18n('arr.fund.findAndReplace.findText')} {...findText} {...decorateFormField(findText)} />
-                        <Input type="text" label={i18n('arr.fund.findAndReplace.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />
                         <Input label={i18n('arr.fund.findAndReplace.itemsArea')} {...decorateFormField(itemsArea)} wrapperClassName='form-items-group'>
                             <Input type="radio" label={i18n('arr.fund.findAndReplace.itemsArea.all', allItemsCount)} {...itemsArea} value='all' checked={itemsArea.value === 'all'} />
                             {checkedItemsCount > 0 && checkedItemsCount < allItemsCount && <Input type="radio" label={i18n('arr.fund.findAndReplace.itemsArea.selected', checkedItemsCount)} {...itemsArea} value='selected' checked={itemsArea.value === 'selected'} />}
                             {uncheckedItemsCount > 0 && checkedItemsCount > 0 && <Input type="radio" label={i18n('arr.fund.findAndReplace.itemsArea.unselected', uncheckedItemsCount)} {...itemsArea} value='unselected' checked={itemsArea.value === 'unselected'} />}
                         </Input>
+                        <Input label={i18n('arr.fund.findAndReplace.operationType')} {...decorateFormField(itemsArea)} wrapperClassName='form-items-group'>
+                        </Input>
+                        <Input type="text" label={i18n('arr.fund.findAndReplace.findText')} {...findText} {...decorateFormField(findText)} />
+                        <Input type="text" label={i18n('arr.fund.findAndReplace.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

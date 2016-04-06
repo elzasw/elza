@@ -21,7 +21,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
 
         this.bindMethods('callValueSearch', 'callSpecSearch', 'handleValueSearch', 'handleSpecSearch',
             'handleValueItemsChange', 'renderConditionFilter', 'handleSpecItemsChange', 'handleConditionChange',
-            'handleSubmit', 'getSpecsIds')
+            'handleSubmit', 'getSpecsIds', 'renderValueFilter', 'renderSpecFilter')
 
         var state = {
             valueItems: [],
@@ -122,10 +122,14 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
     }
 
     handleSpecItemsChange(type, ids) {
+        const {dataType} = this.props
+
+        const valueSearch = hasDescItemTypeValue(dataType) ? this.callValueSearch : () => {}
+
         this.setState({
             selectedSpecItems: ids,
             selectedSpecItemsType: type,
-        }, this.callValueSearch)
+        }, valueSearch)
     }
 
     handleValueItemsChange(type, ids) {
@@ -140,6 +144,55 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             conditionSelectedCode: selectedCode,
             conditionValues: values,
         })
+    }
+
+    renderValueFilter() {
+        const {refType, dataType} = this.props
+        const {valueItems, selectedValueItems, selectedValueItemsType} = this.state
+
+        if (!hasDescItemTypeValue(dataType)) {
+            return null
+        }
+
+        if (dataType.code === 'UNITDATE') { // zde je výjimka a nechceme dle hodnoty
+            return null
+        }
+
+        return (
+            <FilterableListBox
+                className='filter-content-container'
+                searchable
+                items={valueItems}
+                label={i18n('arr.fund.filterSettings.filterByValue.title')}
+                selectionType={selectedValueItemsType}
+                selectedIds={selectedValueItems}
+                onChange={this.handleValueItemsChange}
+                onSearch={this.handleValueSearch}
+            />
+        )
+    }
+
+    renderSpecFilter() {
+        const {refType, dataType} = this.props
+        const {selectedSpecItemsType, selectedSpecItems, specItems} = this.state
+        
+        if (!refType.useSpecification) {
+            return null
+        }
+
+
+        return (
+            <FilterableListBox
+                className='filter-content-container'
+                searchable
+                items={specItems}
+                label={i18n('arr.fund.filterSettings.filterBySpecification.title')}
+                selectionType={selectedSpecItemsType}
+                selectedIds={selectedSpecItems}
+                onChange={this.handleSpecItemsChange}
+                onSearch={this.handleSpecSearch}
+            />
+        )
     }
 
     renderConditionFilter() {
@@ -198,8 +251,8 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                     {values: 0, code: 'empty', name: i18n('arr.fund.filterSettings.condition.empty')},
                     {values: 0, code: 'notEmpty', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
                     {values: 1, code: 'eq', name: i18n('arr.fund.filterSettings.condition.eq')},
-                    {values: 1, code: 'lt', name: i18n('arr.fund.filterSettings.condition.gt')},
-                    {values: 1, code: 'gt', name: i18n('arr.fund.filterSettings.condition.ge')},
+                    {values: 1, code: 'lt', name: i18n('arr.fund.filterSettings.condition.unitdate.lt')},
+                    {values: 1, code: 'gt', name: i18n('arr.fund.filterSettings.condition.unitdate.gt')},
                     {values: 1, code: 'subset', name: i18n('arr.fund.filterSettings.condition.unitdate.subset')},
                     {values: 1, code: 'intersect', name: i18n('arr.fund.filterSettings.condition.unitdate.intersect')},
                 ]
@@ -268,35 +321,9 @@ console.log(data)
         const {refType, onClose} = this.props
         const {conditionSelectedCode, conditionValues, valueItems, specItems, selectedValueItems, selectedValueItemsType, selectedSpecItems, selectedSpecItemsType} = this.state
 
-        var specContent
-        if (refType.useSpecification) {
-            specContent = (
-                <FilterableListBox
-                    className='filter-content-container'
-                    searchable
-                    items={specItems}
-                    label={i18n('arr.fund.filterSettings.filterBySpecification.title')}
-                    selectionType={selectedSpecItemsType}
-                    selectedIds={selectedSpecItems}
-                    onChange={this.handleSpecItemsChange}
-                    onSearch={this.handleSpecSearch}
-                />
-            )
-        }
+        var specContent = this.renderSpecFilter()
 
-        var valueContent
-        valueContent = (
-            <FilterableListBox
-                className='filter-content-container'
-                searchable
-                items={valueItems}
-                label={i18n('arr.fund.filterSettings.filterByValue.title')}
-                selectionType={selectedValueItemsType}
-                selectedIds={selectedValueItems}
-                onChange={this.handleValueItemsChange}
-                onSearch={this.handleValueSearch}
-            />
-        )
+        var valueContent = this.renderValueFilter()
 
         var conditionContent = this.renderConditionFilter()
 
