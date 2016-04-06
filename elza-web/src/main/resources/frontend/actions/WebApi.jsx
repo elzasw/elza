@@ -574,6 +574,10 @@ class WebApi{
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/getFilterNodes/' + versionId, {page: pageIndex, pageSize: pageSize}, descItemTypeIds)
     }
 
+    replaceDataValues(versionId, descItemTypeId, specsIds, searchText, replaceText, nodes) {
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/replaceDataValues/' + versionId, {descItemTypeId, searchText, replaceText, }, {nodes, specIds: specsIds})
+    }
+
     getPackages() {
         return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/getPackages')
             .then(json=>{
@@ -635,7 +639,7 @@ class WebApi{
     getDescItemTypeValues(versionId, descItemTypeId, filterText, descItemSpecIds, max) {
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/filterUniqueValues/' + versionId, 
             { descItemTypeId, fulltext: filterText, max }, descItemSpecIds)
-        }
+    }
 }
 
 module.exports = new WebApi();

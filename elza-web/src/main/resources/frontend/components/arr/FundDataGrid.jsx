@@ -284,26 +284,26 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         var submit = (data) => {
             // Sestavení seznamu node s id a verzí, pro které se má daná operace provést
-            var ids;
+            var nodes;
             switch (data.itemsArea) {
                 case 'all':
-                    ids = fundDataGrid.items.map(i => ({id: i.node.id, version: i.node.version}) )
+                    nodes = fundDataGrid.items.map(i => ({id: i.node.id, version: i.node.version}) )
                     break
                 case 'selected':
                     var set = getSetFromIdsList(fundDataGrid.selectedIds)
-                    ids = []
+                    nodes = []
                     fundDataGrid.items.forEach(i => {
                         if (set[i.id]) {
-                            ids.push({id: i.node.id, version: i.node.version})
+                            nodes.push({id: i.node.id, version: i.node.version})
                         }
                     })
                     break
                 case 'unselected':
-                    ids = []
+                    nodes = []
                     var set = getSetFromIdsList(fundDataGrid.selectedIds)
                     fundDataGrid.items.forEach(i => {
                         if (!set[i.id]) {
-                            ids.push({id: i.node.id, version: i.node.version})
+                            nodes.push({id: i.node.id, version: i.node.version})
                         }
                     })
                     break
@@ -312,7 +312,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             // Získání seznam specifikací
             const specsIds = getSpecsIds(refType, data.specs.type, data.specs.ids)
 
-            this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, data.replaceText, ids))
+            this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, data.replaceText, nodes))
         }
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.bulkModifications.title'),
