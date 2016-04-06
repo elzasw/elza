@@ -91,4 +91,24 @@ public interface ArrDataUnitdate<CT extends ArrCalendarType> extends Serializabl
     @Override
     void setFormat(String format);
 
+    /**
+     * @return počet sekund v normalizačním kalendáři - od
+     */
+    Long getNormalizedFrom();
+
+    /**
+     * @param normalizedFrom počet sekund v normalizačním kalendáři - od
+     */
+    void setNormalizedFrom(Long normalizedFrom);
+
+    /**
+     * @return počet sekund v normalizačním kalendáři - do
+     */
+    Long getNormalizedTo();
+
+    /**
+     * @param normalizedFrom počet sekund v normalizačním kalendáři - do
+     */
+    void setNormalizedTo(Long normalizedFrom);
+
 }

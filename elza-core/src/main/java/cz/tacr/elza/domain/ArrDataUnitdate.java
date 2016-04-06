@@ -46,6 +46,12 @@ public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrData
     @Column(length = 50, nullable = false)
     private String format;
 
+    @Column(nullable = false)
+    private Long normalizedFrom;
+
+    @Column(nullable = false)
+    private Long normalizedTo;
+
     @Override
     public String getValueFrom() {
         return this.valueFrom;
@@ -105,6 +111,26 @@ public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrData
     @Override
     public void setFormat(String format) {
         this.format = format;
+    }
+
+    @Override
+    public Long getNormalizedFrom() {
+        return normalizedFrom;
+    }
+
+    @Override
+    public void setNormalizedFrom(final Long normalizedFrom) {
+        this.normalizedFrom = normalizedFrom;
+    }
+
+    @Override
+    public Long getNormalizedTo() {
+        return normalizedTo;
+    }
+
+    @Override
+    public void setNormalizedTo(final Long normalizedTo) {
+        this.normalizedTo = normalizedTo;
     }
 
     @Override

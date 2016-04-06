@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.domain.convertor.CalendarConverter;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MappingContext;
@@ -129,22 +130,10 @@ public class DescItemFactory implements InitializingBean {
     private DataRepository dataRepository;
 
     @Autowired
-    private PartyRepository partyRepository;
-
-    @Autowired
-    private PacketRepository packetRepository;
-
-    @Autowired
-    private RegRecordRepository regRecordRepository;
-
-    @Autowired
     private DataPacketRefRepository dataPacketRefRepository;
 
     @Autowired
     private DataNullRepository dataNullRepository;
-
-    @Autowired
-    private CalendarTypeRepository calendarTypeRepository;
 
     public DescItemFactory() {
     }
@@ -536,6 +525,25 @@ public class DescItemFactory implements InitializingBean {
                         } else if (arrDescItemUnitdate.getValueFrom() == null
                                 && arrDescItemUnitdate.getValueTo() == null) {
                             throw new IllegalArgumentException("Nebyl zadán interval ISO datumů");
+                        }
+
+                        String codeCalendar = arrDescItemUnitdate.getCalendarType().getCode();
+                        CalendarConverter.CalendarType calendarType = CalendarConverter.CalendarType.valueOf(codeCalendar);
+
+                        String value;
+
+                        value = arrDescItemUnitdate.getValueFrom();
+                        if (value != null) {
+                            arrDataUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                        } else {
+                            arrDataUnitdate.setNormalizedFrom(Long.MIN_VALUE);
+                        }
+
+                        value = arrDescItemUnitdate.getValueTo();
+                        if (value != null) {
+                            arrDataUnitdate.setNormalizedTo(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                        } else {
+                            arrDataUnitdate.setNormalizedTo(Long.MAX_VALUE);
                         }
 
                         arrDataUnitdate.setValueToEstimated(arrDescItemUnitdate.getValueToEstimated());
