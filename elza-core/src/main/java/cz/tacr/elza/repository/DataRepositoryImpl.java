@@ -201,7 +201,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             }
 
             @Override
-            public Selection getSpecSelection() {
+            public Path getSpecSelection() {
                 return packetTypeJoin.get(RulPacketType.NAME);
             }
         };
@@ -242,7 +242,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             }
 
             @Override
-            public Selection getSpecSelection() {
+            public Path getSpecSelection() {
                 return specJoin.get("name");
             }
         };
@@ -299,29 +299,31 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         andPredicates.add(builder.equal(node.get(ArrNode.FUND), version.getFund()));
         andPredicates.add(versionPredicate);
         andPredicates.add(builder.equal(descItem.get(ArrDescItem.DESC_ITEM_TYPE), descItemType));
-        if (StringUtils.isNotBlank(fulltext)) {
-            andPredicates.add(typeHelper.getFulltextPredicate(fulltext, builder));
+        if (specificationDataTypeHelper.useSpec()) {
+            specificationDataTypeHelper.init(data, descItem);
+
+            andPredicates.add(specificationDataTypeHelper.getPredicate());
         }
 
 
         //seznam vracených sloupců
         List<Selection<?>> selections = new LinkedList<>();
-
-
-        Path valueSelection = typeHelper.getValueStringSelection(builder);    //hodnota pro select
-        selections.add(valueSelection);
-
-        if (specificationDataTypeHelper.useSpec()) {
-            specificationDataTypeHelper.init(data, descItem);
-            andPredicates.add(specificationDataTypeHelper.getPredicate());
-            selections.add(specificationDataTypeHelper.getSpecSelection());
-        }
+        Expression valueSelection = typeHelper.getValueStringSelection(builder).as(String.class);    //hodnota pro select
+        Expression valueExpression = createUniqueValueExpression(valueSelection, specificationDataTypeHelper, builder);
+        selections.add(valueExpression);
 
         //oříznutá hodnota převedená na string, kvůli řazení
-
         Expression substringValue = builder.substring(valueSelection.as(String.class), 0, 100);
         selections.add(substringValue);
 
+
+        if (StringUtils.isNotBlank(fulltext)) {
+            String text = "%" + fulltext + "%";
+            andPredicates.add(builder.like(valueExpression, text));
+        }
+
+
+        //sestavení dotazu
         query.multiselect(selections);
         query.where(andPredicates.toArray(new Predicate[andPredicates.size()]));
 
@@ -332,21 +334,38 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         //převedení na text
         List<String> result = new ArrayList<>(resultList.size());
-        if (specificationDataTypeHelper.useSpec()) {
-            for (Tuple tuple : resultList) {
-                Object value = tuple.get(0);
-                result.add(tuple.get(1) + ": " + value == null ? "" : value.toString());
-            }
-        } else {
-            for (Tuple tuple : resultList) {
-                Object value = tuple.get(0);
-                result.add(value == null ? "" : value.toString());
-            }
+        for (Tuple tuple : resultList) {
+            Object value = tuple.get(0);
+            result.add(value == null ? "" : value.toString());
         }
 
         return result;
     }
 
+
+    /**
+     * Vytvoření selectu pro hodnotu atributu.
+     *
+     * @param valuePath  výraz pro získání hodnoty atributu
+     * @param specHelper použití specifikace
+     * @param builder    criteria builder
+     * @return výraz pro výběr hodnoty atributu. Pokud se jedná o specifikaci, je výraz spojen do název specifikace:
+     * hodnota.
+     */
+    private Expression createUniqueValueExpression(final Expression valuePath,
+                                                   final SpecificationDataTypeHelper specHelper,
+                                                   final CriteriaBuilder builder) {
+        Expression result;
+        if (specHelper.useSpec()) {
+            Path specSelection = specHelper.getSpecSelection();
+            Expression<String> concat = builder.concat(specSelection, ": ");
+            result = builder.concat(concat, valuePath);
+        } else {
+            result = valuePath;
+        }
+
+        return result;
+    }
 
     /**
      * Podle typu atributu vrací informace pro načtení a filtrování konkrétních dat.
@@ -371,12 +390,6 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 public Path getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get("value");
                 }
-
-                @Override
-                public Predicate getFulltextPredicate(final String fulltext, final CriteriaBuilder criteriaBuilder) {
-                    String fulltextString = "%" + fulltext + "%";
-                    return criteriaBuilder.like(targetJoin.get("value"), fulltextString);
-                }
             };
         } else if (dataClassType.equals(ArrDataDecimal.class) ||
                 dataClassType.equals(ArrDataInteger.class)) {
@@ -389,13 +402,6 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 @Override
                 public Path getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get("value");
-                }
-
-                @Override
-                public Predicate getFulltextPredicate(final String fulltext, final CriteriaBuilder criteriaBuilder) {
-                    String fulltextString = "%" + fulltext + "%";
-
-                    return criteriaBuilder.like(targetJoin.get("value").as(String.class), fulltextString);
                 }
             };
         } else if (dataClassType.equals(ArrDataPartyRef.class)) {
@@ -411,13 +417,6 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 public Path getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(RegRecord.RECORD);
                 }
-
-                @Override
-                public Predicate getFulltextPredicate(final String fulltext, final CriteriaBuilder criteriaBuilder) {
-                    String fulltextString = "%" + fulltext + "%";
-
-                    return criteriaBuilder.like(targetJoin.get(RegRecord.RECORD), fulltextString);
-                }
             };
         } else if (dataClassType.equals(ArrDataRecordRef.class)) {
             return new AbstractDescItemDataTypeHelper() {
@@ -430,15 +429,8 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 public Path getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(RegRecord.RECORD);
                 }
-
-                @Override
-                public Predicate getFulltextPredicate(final String fulltext, final CriteriaBuilder criteriaBuilder) {
-                    String fulltextString = "%" + fulltext + "%";
-
-                    return criteriaBuilder.like(targetJoin.get(RegRecord.RECORD), fulltextString);
-                }
             };
-        }else if(dataClassType.equals(ArrDataPacketRef.class)){
+        } else if (dataClassType.equals(ArrDataPacketRef.class)) {
             return new AbstractDescItemDataTypeHelper() {
                 @Override
                 protected void init() {
@@ -449,16 +441,8 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 public Path getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(ArrPacket.STORAGE_NUMBER);
                 }
-
-                @Override
-                public Predicate getFulltextPredicate(final String fulltext, final CriteriaBuilder criteriaBuilder) {
-                    String fulltextString = "%" + fulltext + "%";
-
-                    return criteriaBuilder.like(targetJoin.get(ArrPacket.STORAGE_NUMBER), fulltextString);
-                }
             };
-        }
-        else  {
+        } else {
             throw new NotImplementedException();
         }
     }
@@ -482,15 +466,6 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
          * @return výraz
          */
         public abstract Path getValueStringSelection(final CriteriaBuilder criteriaBuilder);
-
-
-        /**
-         * Vrací podmínku pro vyhledání hodnoty podle fulltextu.
-         * @param fulltext fulltext
-         * @param criteriaBuilder
-         * @return
-         */
-        public abstract Predicate getFulltextPredicate(final String fulltext, final CriteriaBuilder criteriaBuilder);
     }
 
     private interface SpecificationDataTypeHelper{
@@ -498,7 +473,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
          void init(Root root, Join descItemJoin);
         Predicate getPredicate();
 
-        Selection getSpecSelection();
+        Path getSpecSelection();
 
 
 
