@@ -37,6 +37,22 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
         this.state = state
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (typeof nextProps.selectionType !== 'undefined' || typeof nextProps.selectedIds !== 'undefined') {
+            let nextSelectedIds
+            if (typeof nextProps.selectedIds !== 'undefined') {
+                nextSelectedIds = getSetFromIdsList(nextProps.selectedIds)
+            } else {
+                nextSelectedIds = this.state.selectedIds
+            }
+
+            this.setState({
+                selectedIds: nextSelectedIds,
+                selectionType: nextProps.selectionType || this.state.selectionType,
+            })
+        }
+    }
+
     handleCheckItem(item) {
         const {selectionType, selectedIds} = this.state
         const {onChange} = this.props

@@ -5,18 +5,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {FundFindAndReplaceForm, Icon, ListBox, DataGridColumnsSettings, AbstractReactComponent, i18n, Loading,
+import {FundBulkModificationsForm, Icon, ListBox, DataGridColumnsSettings, AbstractReactComponent, i18n, Loading,
     DataGrid, FundFilterSettings, DataGridPagination} from 'components';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import * as types from 'actions/constants/ActionTypes';
 import {fundDataGridSetColumnsSettings, fundDataGridSetSelection, fundDataGridSetColumnSize, fundDataGridFetchFilterIfNeeded,
     fundDataGridFetchDataIfNeeded, fundDataGridSetPageIndex, fundDataGridSetPageSize,
-    fundDataGridFilterChange, findAndReplace, fundDataGridFilterClearAll, fundDataGridFilterUpdateData} from 'actions/arr/fundDataGrid'
+    fundDataGridFilterChange, fundBulkModifications, fundDataGridFilterClearAll, fundDataGridFilterUpdateData} from 'actions/arr/fundDataGrid'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 import {getSetFromIdsList, getMapFromList} from 'stores/app/utils'
 import {propsEquals} from 'components/Utils'
 import {Button} from 'react-bootstrap'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
+import {getSpecsIds} from 'components/arr/ArrUtils'
 
 require('./FundDataGrid.less')
 
@@ -25,7 +26,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('handleSelectedIdsChange', 'handleColumnResize', 'handleColumnSettings', 'handleChangeColumnsSettings',
-            'handleFindAndReplace', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer', 'resizeGrid', 'handleFilterClearAll',
+            'handleBulkModifications', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer', 'resizeGrid', 'handleFilterClearAll',
             'handleFilterUpdateData');
 
         const colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
@@ -99,7 +100,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         )
     }
 
-    supportFindAndReplace(refType, dataType) {
+    supportBulkModifications(refType, dataType) {
         let result
 
         switch (dataType.code) {
@@ -126,12 +127,12 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             cls += ' filtered'
         }
 
-        const showFindAndReplace = this.supportFindAndReplace(col.refType, col.dataType)
+        const showBulkModifications = this.supportBulkModifications(col.refType, col.dataType)
 
         return (
             <div className={cls} title={col.refType.name}>
                 {col.refType.shortcut}{col.dataType.code}
-                {showFindAndReplace && <Button onClick={this.handleFindAndReplace.bind(this, col.refType)} title={i18n('arr.fund.findAndReplace.action')}><Icon glyph='fa-edit'/></Button>}
+                {showBulkModifications && <Button onClick={this.handleBulkModifications.bind(this, col.refType)} title={i18n('arr.fund.bulkModifications.action')}><Icon glyph='fa-edit'/></Button>}
                 <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.filterSettings.action')}><Icon glyph='fa-filter'/></Button>
             </div>
         )
@@ -278,41 +279,44 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(fundDataGridFilterChange(versionId, refType.id, filter))
     }
 
-    handleFindAndReplace(refType) {
+    handleBulkModifications(refType) {
         const {versionId, fundDataGrid} = this.props
 
         var submit = (data) => {
-            // Sestavení seznamu id
-            var ids;
+            // Sestavení seznamu node s id a verzí, pro které se má daná operace provést
+            var nodes;
             switch (data.itemsArea) {
                 case 'all':
-                    ids = fundDataGrid.items.map(i => i.id)
+                    nodes = fundDataGrid.items.map(i => ({id: i.node.id, version: i.node.version}) )
                     break
                 case 'selected':
                     var set = getSetFromIdsList(fundDataGrid.selectedIds)
-                    ids = []
+                    nodes = []
                     fundDataGrid.items.forEach(i => {
                         if (set[i.id]) {
-                            ids.push(i.id)
+                            nodes.push({id: i.node.id, version: i.node.version})
                         }
                     })
                     break
                 case 'unselected':
-                    ids = []
+                    nodes = []
                     var set = getSetFromIdsList(fundDataGrid.selectedIds)
                     fundDataGrid.items.forEach(i => {
                         if (!set[i.id]) {
-                            ids.push(i.id)
+                            nodes.push({id: i.node.id, version: i.node.version})
                         }
                     })
                     break
             }
 
-            this.dispatch(findAndReplace(versionId, refType.id, data.findText, data.replaceText, ids))
+            // Získání seznam specifikací
+            const specsIds = getSpecsIds(refType, data.specs.type, data.specs.ids)
+
+            this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, data.replaceText, nodes))
         }
 
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.findAndReplace.title'),
-            <FundFindAndReplaceForm
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.bulkModifications.title'),
+            <FundBulkModificationsForm
                 refType={refType}
                 onSubmitForm={submit}
                 allItemsCount={fundDataGrid.items.length}

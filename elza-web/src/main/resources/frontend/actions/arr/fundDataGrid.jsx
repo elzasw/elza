@@ -5,6 +5,7 @@
 import {WebApi} from 'actions';
 import * as types from 'actions/constants/ActionTypes';
 import {indexById, objectById} from 'stores/app/utils.jsx'
+import {modalDialogHide} from 'actions/global/modalDialog'
 
 export function isFundDataGridAction(action) {
     switch (action.type) {
@@ -26,9 +27,16 @@ export function isFundDataGridAction(action) {
     }
 }
 
-export function findAndReplace(versionId, descItemTypeId,  findText, replaceText, ids) {
-    //WebApi.
-    console.log('#####findAndReplace', versionId, descItemTypeId, findText, replaceText, ids)
+export function fundBulkModifications(versionId, descItemTypeId, specsIds, operationType, findText, replaceText, nodes) {
+    
+    console.log('#####findAndReplace', versionId, descItemTypeId, specsIds, operationType, findText, replaceText, nodes)
+    return (dispatch, getState) => {
+        WebApi.replaceDataValues(versionId, descItemTypeId, specsIds, findText, replaceText, nodes)
+            .then(
+                dispatch(modalDialogHide())
+            )
+    }
+
 }
 
 export function fundDataGridFetchFilterIfNeeded(versionId) {

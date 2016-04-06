@@ -39,7 +39,7 @@ function chooseInputEl(el1, el2) {
  * @return {bool} true, pokud se podařilo najít a nastavit focus
  */
 function setInputFocus(el, selectContent = false) {
-    var elem = $('input:visible:enabled', el).get(0);
+    var elem = $('input:visible:enabled:not([type=radio])', el).get(0);
     var select = $('select:visible:enabled', el).get(0);
     elem = chooseInputEl(elem, select);
 

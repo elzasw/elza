@@ -4,11 +4,29 @@
 import {indexById} from 'stores/app/utils.jsx'
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {getSetFromIdsList} from 'stores/app/utils.jsx'
 
 export function getFundFromFundAndVersion(fund, version) {
     var fundVersionClosed = version.lockDate != null;
     var fund = Object.assign({}, fund, {fundId: fund.id, versionId: version.id, lockDate: version.lockDate, id: version.id, activeVersion: version, closed: fundVersionClosed});
     return fund;
+}
+
+export function getSpecsIds(refType, selectionType, selectedIds) {
+    var specIds = []
+    if (refType.useSpecification) {
+        if (selectionType === 'selected') {
+            specIds = selectedIds
+        } else {
+            var set = getSetFromIdsList(selectedIds)
+            refType.descItemSpecs.forEach(i => {
+                if (!set[i.id]) {
+                    specIds.push(i.id)
+                }
+            })
+        }
+    }
+    return specIds
 }
 
 export function getNodeParent(nodes, nodeId) {
