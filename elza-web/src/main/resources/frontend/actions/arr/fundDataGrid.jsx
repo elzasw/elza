@@ -26,9 +26,9 @@ export function isFundDataGridAction(action) {
     }
 }
 
-export function findAndReplace(versionId, descItemTypeId,  findText, replaceText, ids) {
-    //WebApi.
-    console.log('#####findAndReplace', versionId, descItemTypeId, findText, replaceText, ids)
+export function fundBulkModifications(versionId, descItemTypeId, operationType, findText, replaceText, ids) {
+    
+    console.log('#####findAndReplace', versionId, descItemTypeId, operationType, findText, replaceText, ids)
 }
 
 export function fundDataGridFetchFilterIfNeeded(versionId) {

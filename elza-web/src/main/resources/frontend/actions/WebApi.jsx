@@ -633,31 +633,9 @@ class WebApi{
     }
     // Hledá všechny unikátní hodnoty atributu pro daný AS
     getDescItemTypeValues(versionId, descItemTypeId, filterText, descItemSpecIds, max) {
-console.log("###getDescItemTypeValues", versionId, descItemTypeId, filterText, descItemSpecIds)
-
-        return new Promise(function (resolve, reject) {
-            var result = []
-
-            var items = []
-            for (var a=0; a<300; a++) {
-                if (descItemTypeId % 3 === 0) {
-                    items.push({value: 'aaa ' + a})
-                } else {
-                    items.push({specId: a % 20, value: 'aaa ' + a})
-                }
-            }
-
-            const ftext = filterText.toLowerCase()
-            var searchedItems = []
-            items.forEach(i => {
-                if (!filterText || i.value.toLowerCase().indexOf(ftext) !== -1) {
-                    searchedItems.push(i)
-                }
-            })
-
-            resolve(searchedItems)
-        })
-    }
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/filterUniqueValues/' + versionId, 
+            { descItemTypeId, fulltext: filterText, max }, descItemSpecIds)
+        }
 }
 
 module.exports = new WebApi();

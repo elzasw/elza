@@ -14,6 +14,7 @@ import {indexById, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {WebApi} from 'actions'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils'
 const FundFilterCondition = require('./FundFilterCondition')
+const SpecsListBox = require('./SpecsListBox')
 
 var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent {
     constructor(props) {
@@ -108,28 +109,35 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
     }
 
     callValueSearch() {
-        const {versionId, refType} = this.props
+        const {versionId, refType, dataType} = this.props
         const {valueSearchText, selectedSpecItems, selectedSpecItemsType} = this.state
 
+        if (!hasDescItemTypeValue(dataType)) {  // pokud nemá hodnotu, nemůžeme volat
+            return
+        }
+
         var specIds = this.getSpecsIds()
+
+        if (refType.useSpecification && specIds.length === 0) { // pokud nemá nic vybráno, nevrátily by se žádné položky a není třeba volat server
+            this.setState({
+                valueItems: [],
+            })
+            return 
+        }
 
         WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, specIds, 200)
             .then(json => {
                 this.setState({
-                    valueItems: json.map(i => ({id: i.value, name: i.value})),
+                    valueItems: json.map(i => ({id: i, name: i})),
                 })
             })
     }
 
     handleSpecItemsChange(type, ids) {
-        const {dataType} = this.props
-
-        const valueSearch = hasDescItemTypeValue(dataType) ? this.callValueSearch : () => {}
-
         this.setState({
             selectedSpecItems: ids,
             selectedSpecItemsType: type,
-        }, valueSearch)
+        }, this.callValueSearch)
     }
 
     handleValueItemsChange(type, ids) {
@@ -173,7 +181,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
     }
 
     renderSpecFilter() {
-        const {refType, dataType} = this.props
+        const {refType} = this.props
         const {selectedSpecItemsType, selectedSpecItems, specItems} = this.state
         
         if (!refType.useSpecification) {
@@ -322,7 +330,7 @@ console.log(data)
         const {conditionSelectedCode, conditionValues, valueItems, specItems, selectedValueItems, selectedValueItemsType, selectedSpecItems, selectedSpecItemsType} = this.state
 
         var specContent = this.renderSpecFilter()
-
+        
         var valueContent = this.renderValueFilter()
 
         var conditionContent = this.renderConditionFilter()
