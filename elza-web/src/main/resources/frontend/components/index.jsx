@@ -16,6 +16,7 @@ exports.Icon = require('./shared/icon/Icon');
 exports.ToggleContent = require('./shared/toggle-content/ToggleContent');
 exports.Tabs = require('./shared/tabs/Tabs');
 exports.Search = require('./shared/search/Search');
+exports.SearchWithGoto = require('./shared/search/SearchWithGoto');
 exports.DropDownTree = require('./shared/drop-down-tree/DropDownTree');
 exports.Loading = require('./shared/loading/Loading');
 exports.VirtualList = require('./shared/virtual-list/VirtualList');

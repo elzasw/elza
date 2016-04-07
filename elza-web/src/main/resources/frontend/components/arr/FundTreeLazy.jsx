@@ -7,7 +7,7 @@ require ('./FundTreeLazy.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, Loading, Icon, Search} from 'components';
+import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, Loading, Icon, SearchWithGoto} from 'components';
 import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 var classNames = require('classnames');
 import {ResizeStore} from 'stores';
@@ -85,7 +85,7 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
         super(props);
 
         this.bindMethods(
-            'renderNode', 'handleKeyDown', 'handleOnSearch',
+            'renderNode', 'handleKeyDown',
             'focus'
         );
 
@@ -103,7 +103,7 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['ensureItemVisible', 'filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching', 'fetched', 'searchedIds', 'searchedParents', 'filterCurrentIndex']
+        var eqProps = ['ensureItemVisible', 'filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching', 'fetched', 'searchedIds', 'filterCurrentIndex']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -187,57 +187,8 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
         )
     }
 
-    handleOnSearch(filterText, searchByEnter, shiftKey) {
-        const {onFulltextNextItem, onFulltextPrevItem, searchedIds, filterCurrentIndex, filterResult, onFulltextSearch} = this.props
-
-        if (searchByEnter) {    // při hledání pomocí enter se chováme jinak - pokud již něco vyledaného je, jdeme na další (případně předchozí) výsledek
-            if (filterResult) { // je něco vyhledáno a nic mezitím nebylo změněno
-                if (!shiftKey) {
-                    if (filterCurrentIndex + 1 < searchedIds.length) {
-                        onFulltextNextItem()
-                    }
-                } else {
-                    if (filterCurrentIndex > 0) {
-                        onFulltextPrevItem()
-                    }
-                }
-            } else {
-                onFulltextSearch()
-            }
-        } else {    // standardní hledání kliknutím na tlačítko hledat
-            onFulltextSearch()
-        }
-    }
-
     render() {
-        const {searchedIds, searchedParents, filterCurrentIndex, filterResult} = this.props;
-
-        var actionAddons = []
-        if (filterResult) {
-            var searchedInfo
-            if (searchedIds.length > 0) {
-                searchedInfo = (
-                    <div className='fa-tree-lazy-search-info'>
-                        ({filterCurrentIndex + 1} z {searchedIds.length})
-                    </div>
-                )
-            } else {
-                searchedInfo = (
-                    <div className='fa-tree-lazy-search-info'>
-                        ({i18n('search.not.found')})
-                    </div>
-                )
-            }
-
-            if (searchedIds.length > 1) {
-                var prevButtonEnabled = filterCurrentIndex > 0;
-                var nextButtonEnabled = filterCurrentIndex < searchedIds.length - 1;
-
-                actionAddons.push(<NoFocusButton disabled={!nextButtonEnabled} className="next" onClick={this.props.onFulltextNextItem}><Icon glyph='fa-chevron-down'/></NoFocusButton>)
-                actionAddons.push(<NoFocusButton disabled={!prevButtonEnabled} className="prev" onClick={this.props.onFulltextPrevItem}><Icon glyph='fa-chevron-up'/></NoFocusButton>)
-            }
-            actionAddons.push(searchedInfo)
-        }
+        const {onFulltextNextItem, onFulltextPrevItem, onFulltextSearch, onFulltextChange, filterText, searchedIds, filterCurrentIndex, filterResult} = this.props;
 
         var index;
         if (this.props.ensureItemVisible) {
@@ -247,13 +198,15 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
         return (
             <div className='fa-tree-lazy-main-container'>
                 <div className='fa-traa-header-container'>
-                    <Search
-                        placeholder={i18n('search.input.search')}
-                        filterText={this.props.filterText}
-                        onChange={e => this.props.onFulltextChange(e.target.value)}
-                        onClear={e => {this.props.onFulltextChange(''); this.props.onFulltextSearch()}}
-                        onSearch={this.handleOnSearch}
-                        actionAddons={actionAddons}
+                    <SearchWithGoto
+                        filterText={filterText}
+                        searchedItems={searchedIds}
+                        filterCurrentIndex={filterCurrentIndex}
+                        showFilterResult={filterResult}
+                        onFulltextChange={onFulltextChange}
+                        onFulltextSearch={onFulltextSearch}
+                        onFulltextNextItem={onFulltextNextItem}
+                        onFulltextPrevItem={onFulltextPrevItem}
                     />
                 </div>
                 <div className='fa-tree-lazy-container' ref="treeContainer" onKeyDown={this.handleKeyDown} tabIndex={0}>
@@ -267,19 +220,6 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
                         itemHeight={this.props.rowHeight}
                     />}
                 </div>
-            </div>
-        )
-
-        var rows;
-        if (this.props.fetched) {
-            rows = this.props.nodes.map(node => {
-                return this.renderNode(node);
-            });
-        }
-        return (
-            <div className='fa-tree'>
-                {(this.props.isFetching || !this.props.fetched) && <Loading/>}
-                {(!this.props.isFetching && this.props.fetched) && rows}
             </div>
         )
     }
@@ -296,7 +236,6 @@ FundTreeLazy.propTypes = {
     selectedIds: React.PropTypes.object,
     filterText: React.PropTypes.string,
     searchedIds: React.PropTypes.array,
-    searchedParents: React.PropTypes.object,
     filterCurrentIndex: React.PropTypes.number,
     nodes: React.PropTypes.array.isRequired,
     focusId: React.PropTypes.number,
