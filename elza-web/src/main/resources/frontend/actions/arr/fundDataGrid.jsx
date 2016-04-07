@@ -37,7 +37,7 @@ export function fundBulkModifications(versionId, descItemTypeId, specsIds, opera
                         .then(dispatch(modalDialogHide()))
                 break
             case 'replace':
-                    WebApi.XXXreplaceDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes)
+                    WebApi.placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes)
                         .then(dispatch(modalDialogHide()))
                 break
             case 'delete':

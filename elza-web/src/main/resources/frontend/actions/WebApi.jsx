@@ -575,7 +575,11 @@ class WebApi{
     }
 
     replaceDataValues(versionId, descItemTypeId, specsIds, searchText, replaceText, nodes) {
-        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/replaceDataValues/' + versionId, {descItemTypeId, searchText, replaceText, }, {nodes, specIds: specsIds})
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/replaceDataValues/' + versionId, {descItemTypeId, searchText, replaceText }, {nodes, specIds: specsIds})
+    }
+
+    placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes) {
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/placeDataValues/' + versionId, {descItemTypeId, newDescItemSpecId: replaceSpecId, text: replaceText }, {nodes, specIds: specsIds})
     }
 
     getPackages() {

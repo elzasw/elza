@@ -17,7 +17,7 @@ import {getSetFromIdsList, getMapFromList} from 'stores/app/utils'
 import {propsEquals} from 'components/Utils'
 import {Button} from 'react-bootstrap'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
-import {getSpecsIds} from 'components/arr/ArrUtils'
+import {getSpecsIds, hasDescItemTypeValue} from 'components/arr/ArrUtils'
 
 require('./FundDataGrid.less')
 
@@ -79,20 +79,19 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         var displayValue
         if (value) {
-            displayValue = value.value
-        }
+            if (col.refType.useSpecification) {
+                var spec = null
+                for (var a=0; a<col.refType.descItemSpecs.length; a++) {
+                    if (col.refType.descItemSpecs[a].code === value.specCode) {
+                        spec = col.refType.descItemSpecs[a]
+                        break
+                    }
+                }
 
-        return (
-            <div className=''>{displayValue}</div>
-        )
-    }
-
-    cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus) {
-        const value = row[col.dataName]
-
-        var displayValue
-        if (value) {
-            displayValue = value.value
+                displayValue = hasDescItemTypeValue(col.dataType) ? spec.name + ': ' + value.value : spec.name
+            } else {
+                displayValue = value.value
+            }
         }
 
         return (

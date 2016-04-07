@@ -2,6 +2,8 @@
  * Formulář hledání a nahrazení.
  */
 
+require ('./FundBulkModificationsForm.less')
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes';
@@ -149,12 +151,15 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
         var submitForm = submitReduxForm.bind(this, validate)
 
         let operationInputs = []
+        let submitButtonTitle
         switch (operationType.value) {
             case 'findAndReplace':
+                submitButtonTitle = 'arr.fund.bulkModifications.action.findAndReplace'
                 operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.findText')} {...findText} {...decorateFormField(findText)} />)
                 operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />)
                 break
             case 'replace':
+                submitButtonTitle = 'arr.fund.bulkModifications.action.replace'
                 if (refType.useSpecification) {
                     operationInputs.push(
                         <Input type='select' label={i18n('arr.fund.bulkModifications.replaceSpec')} {...replaceSpec} {...decorateFormField(replaceSpec)}>
@@ -170,12 +175,13 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
                 operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />)
                 break
             case 'delete':
+                submitButtonTitle = 'arr.fund.bulkModifications.action.delete'
                 break
         }
 
         return (
             <div>
-                <Modal.Body>
+                <Modal.Body className='fund-bulk-modifications-container'>
                     <form onSubmit={handleSubmit(submitForm)}>
                         <Input label={i18n('arr.fund.bulkModifications.descItemType')} wrapperClassName='form-items-group'>
                             <div title={refType.name}>
@@ -205,7 +211,7 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit(submitForm)}>{i18n('arr.fund.bulkModifications.action.replace')}</Button>
+                    <Button onClick={handleSubmit(submitForm)}>{i18n(submitButtonTitle)}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.close')}</Button>
                 </Modal.Footer>
             </div>
