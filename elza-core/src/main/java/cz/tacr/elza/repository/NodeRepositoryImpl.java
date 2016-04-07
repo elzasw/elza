@@ -1,15 +1,18 @@
 package cz.tacr.elza.repository;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import cz.tacr.elza.domain.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.queries.ChainedFilter;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.NumericRangeFilter;
 import org.apache.lucene.search.Query;
@@ -23,7 +26,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.utils.NodeUtils;
 
 
@@ -39,6 +46,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Autowired
     private LevelRepository levelRepository;
+
+    private FullTextEntityManager fullTextEntityManager;
 
     @Override
     public List<ArrNode> findNodesByDirection(final ArrNode node,
@@ -61,18 +70,20 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      *
      * @param text The query text.
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     @Override
-    public List findByFulltextAndVersionLockChangeId(String text, Integer lockChangeId) {
-        List<String> descItemIds = findDescItemIdsByData(text);
+    public Set<Integer> findByFulltextAndVersionLockChangeId(String text, Integer fundId, Integer lockChangeId) {
+        Assert.notNull(fundId);
+
+        List<String> descItemIds = findDescItemIdsByData(text, fundId);
         if (descItemIds.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            return Collections.EMPTY_SET;
         }
 
         String descItemIdsString = StringUtils.join(descItemIds, " ");
-        List<Integer> descItemNodeIds = findNodeIdsByValidDescItems(lockChangeId, descItemIdsString);
+        List<Integer> nodeIds = findNodeIdsByValidDescItems(lockChangeId, descItemIdsString);
 
-        return descItemNodeIds;
+        return new HashSet<>(nodeIds);
     }
 
     /**
@@ -94,39 +105,74 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * Vyhledá id atributů podle předané hodnoty. Hledá napříč archivními pomůckami a jejich verzemi.
      *
      * @param text hodnota podle které se hledá
+     * @param fundId id fondu
      *
      * @return id atributů které mají danou hodnotu
      */
     @SuppressWarnings("unchecked")
-    private List<String> findDescItemIdsByData(String text) {
-        String searchValue;
+    private List<String> findDescItemIdsByData(String text, Integer fundId) {
         if (StringUtils.isBlank(text)) {
             return Collections.EMPTY_LIST;
         }
 
-        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
+        Class<ArrData> entityClass = ArrData.class;
+        QueryBuilder queryBuilder = createQueryBuilder(entityClass);
 
-        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
-                .forEntity(ArrData.class).get();
+        Query textQuery = createTextQuery(text, queryBuilder);
+        Query fundIdQuery = queryBuilder.keyword().onField("fundId").matching(fundId).createQuery();
+        Query query = queryBuilder.bool().must(textQuery).must(fundIdQuery).createQuery();
 
-        // rozdělení zadaného výrazu podle mezer a hledání výsledků pomocí OR tak že každý obsahuje alespoň jednu část zadaného výrazu
-        String[] tokens = StringUtils.split(text.toLowerCase(), ' ');
-        BooleanJunction<BooleanJunction> mainBoolQuery = queryBuilder.bool();
-        for (String token : tokens) {
-            searchValue = "*" + token + "*";
-            Query createQuery = queryBuilder.keyword().wildcard().onField("fulltextValue").matching(searchValue).createQuery();
-            mainBoolQuery.should(createQuery);
-        }
-
-        Query query = mainBoolQuery.createQuery();
-        FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ArrData.class);
-        jpaQuery.setProjection("descItemId");
-
-        List<String> result = (List<String>) jpaQuery.getResultList().stream().map(row -> {
+        List<String> result = (List<String>) createFullTextQuery(query, entityClass).setProjection("descItemId").getResultList().stream().map(row -> {
             return ((Object[]) row)[0];
         }).collect(Collectors.toList());
 
         return result;
+    }
+
+    /**
+     * Vytvoří lucene dotaz na hledání arr_data podle hodnoty.
+     *
+     * @param text hodnota
+     * @param queryBuilder query builder
+     *
+     * @param dotaz
+     */
+    private Query createTextQuery(String text, QueryBuilder queryBuilder) {
+        // rozdělení zadaného výrazu podle mezer a hledání výsledků pomocí OR tak že každý obsahuje alespoň jednu část zadaného výrazu
+        String[] tokens = StringUtils.split(text.toLowerCase(), ' ');
+
+        BooleanJunction<BooleanJunction> textConditions = queryBuilder.bool();
+        for (String token : tokens) {
+            String searchValue = "*" + token + "*";
+            Query createQuery = queryBuilder.keyword().wildcard().onField("fulltextValue").matching(searchValue).createQuery();
+            textConditions.should(createQuery);
+        }
+
+        return textConditions.createQuery();
+    }
+
+    /**
+     * Vytvoří hibernate jpa query z lucene query.
+     *
+     * @param query lucene qery
+     * @param entityClass třída pro kterou je dotaz
+     *
+     * @return hibernate jpa query
+     */
+    private FullTextQuery createFullTextQuery(Query query, Class<?> entityClass) {
+        FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, entityClass);
+        return jpaQuery;
+    }
+
+    /**
+     * Vytvoří query builder pro danou třídu.
+     *
+     * @param entityClasstřída
+     *
+     * @return query builder
+     */
+    private QueryBuilder createQueryBuilder(Class<?> entityClass) {
+        return fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(entityClass).get();
     }
 
     /**
@@ -139,46 +185,54 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     @SuppressWarnings("unchecked")
     private List<Integer> findNodeIdsByValidDescItems(Integer lockChangeId, String descItemIdsString) {
-        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
+        Class<ArrDescItem> entityClass = ArrDescItem.class;
 
-        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
-                .forEntity(ArrDescItem.class).get();
+        Filter changeFilter = createChangeFilter(lockChangeId);
 
-        Filter changeFilter;
-        if (lockChangeId == null) {
-            // deleteChange is null
-            changeFilter = NumericRangeFilter.newIntRange("deleteChangeId", Integer.MAX_VALUE, Integer.MAX_VALUE, true,
-                    true);
-        } else {
-            // createChangeId < lockChangeId
-            NumericRangeFilter<Integer> createChangeFilter = NumericRangeFilter.newIntRange("createChangeId", null,
-                    lockChangeId, false, false);
-            // and (deleteChange is null or deleteChange < lockChangeId)
-            NumericRangeFilter<Integer> nullDeleteChangeFilter = NumericRangeFilter.newIntRange("deleteChangeId", Integer.MAX_VALUE,
-                    Integer.MAX_VALUE, true, true);
-            NumericRangeFilter<Integer> deleteChangeFilter = NumericRangeFilter.newIntRange("deleteChangeId", null,
-                    lockChangeId, false, false);
-
-            Filter[] deleteChangeFilters = {nullDeleteChangeFilter, deleteChangeFilter};
-            ChainedFilter orFilter = new ChainedFilter(deleteChangeFilters, ChainedFilter.OR);
-
-            Filter[] andFilters = {createChangeFilter, orFilter};
-            changeFilter = new ChainedFilter(andFilters, ChainedFilter.AND);
-        }
-
-
-
+        QueryBuilder queryBuilder = createQueryBuilder(entityClass);
         Query descItemIdsQuery = queryBuilder.keyword().onField("descItemIdString").matching(descItemIdsString).createQuery();
         Query validDescItemInVersionQuery = queryBuilder.all().filteredBy(changeFilter).createQuery();
         Query query = queryBuilder.bool().must(descItemIdsQuery).must(validDescItemInVersionQuery).createQuery();
 
-        FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ArrDescItem.class);
-        jpaQuery.setProjection("nodeId");
-
-        List<Integer> result = jpaQuery.getResultList().stream().mapToInt(row -> {
+        List<Integer> result = createFullTextQuery(query, entityClass).setProjection("nodeId").getResultList().stream().mapToInt(row -> {
             return (int) ((Object[]) row)[0];
         }).boxed().collect(Collectors.toList());
 
         return result;
     }
+
+    /**
+     * Vytvoří filtr pro hledání podle aktuální nebo uzavžené verze.
+     *
+     * @param lockChangeId id verze, může být null
+     *
+     * @return filtr
+     */
+    private Filter createChangeFilter(Integer lockChangeId) {
+        if (lockChangeId == null) { // deleteChange is null
+            return NumericRangeFilter.newIntRange("deleteChangeId", Integer.MAX_VALUE, Integer.MAX_VALUE, true, true);
+        }
+
+        // createChangeId < lockChangeId
+        NumericRangeFilter<Integer> createChangeFilter = NumericRangeFilter.newIntRange("createChangeId", null,
+                lockChangeId, false, false);
+        // and (deleteChange is null or deleteChange < lockChangeId)
+        NumericRangeFilter<Integer> nullDeleteChangeFilter = NumericRangeFilter.newIntRange("deleteChangeId", Integer.MAX_VALUE,
+                Integer.MAX_VALUE, true, true);
+        NumericRangeFilter<Integer> deleteChangeFilter = NumericRangeFilter.newIntRange("deleteChangeId", null,
+                lockChangeId, false, false);
+
+        Filter[] deleteChangeFilters = {nullDeleteChangeFilter, deleteChangeFilter};
+        ChainedFilter orFilter = new ChainedFilter(deleteChangeFilters, ChainedFilter.OR);
+
+        Filter[] andFilters = {createChangeFilter, orFilter};
+        return new ChainedFilter(andFilters, ChainedFilter.AND);
+    }
+
+    @PostConstruct
+    private void buildFullTextEntityManager() {
+        fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
+        BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
+    }
+
 }

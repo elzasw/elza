@@ -2,7 +2,18 @@ package cz.tacr.elza.service;
 
 import java.text.Normalizer;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -727,13 +738,9 @@ public class ArrangementService {
 
         ArrChange lockChange = version.getLockChange();
         Integer lockChangeId = lockChange == null ? null : lockChange.getChangeId();
+        Integer fundId = version.getFund().getFundId();
 
-        List<ArrNode> nodeIds = nodeRepository.findByFulltextAndVersionLockChangeId(searchValue, lockChangeId);
-
-        Set<Integer> versionNodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, nodeId, depth);
-        versionNodeIds.retainAll(nodeIds);
-
-        return versionNodeIds;
+        return nodeRepository.findByFulltextAndVersionLockChangeId(searchValue, fundId, lockChangeId);
     }
 
     /**

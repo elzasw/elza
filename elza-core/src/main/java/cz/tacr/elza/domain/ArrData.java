@@ -66,6 +66,11 @@ public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType
         return descItem.getDescItemId().toString();
     }
 
+    @Field
+    public Integer getFundId() {
+        return descItem.getNode().getFund().getFundId();
+    }
+
     @Override
     public Integer getDataId() {
         return dataId;
