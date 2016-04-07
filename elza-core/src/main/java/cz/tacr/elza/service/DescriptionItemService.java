@@ -9,10 +9,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -1093,7 +1095,20 @@ public class DescriptionItemService {
             deleteDescriptionItem(descItem, version, change, false);
         }
 
+        //pokud má specifikaci a není opakovatelný, musíme zkontrolovat,
+        //jestli nemá již nějakou hodnotu specifikace nastavenou (jinou než přišla v parametru seznamu specifikací)
+        //takovým nodům nenastavujeme novou hodnotu se specifikací
+        Set<ArrNode> ignoreNodes = new HashSet<>();
+        if(descItemType.getUseSpecification() && BooleanUtils.isNotTrue(descItemType.getRepeatable())){
+            List<ArrDescItem> remainSpecItems = descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+            ignoreNodes = remainSpecItems.stream().map(n -> n.getNode()).collect(Collectors.toSet());
+        }
+
         for (ArrNode dbNode : dbNodes) {
+            if(ignoreNodes.contains(dbNode)){
+                continue;
+            }
+
             arrangementService.lockNode(dbNode, nodesMap.get(dbNode.getNodeId()));
 
             ArrDescItem newDescItem = new ArrDescItem();
