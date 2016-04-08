@@ -88,7 +88,7 @@ export function createPacket(fundId, storageNumber, packetTypeId, invalidPacket,
         return WebApi.insertPacket(fundId, storageNumber, packetTypeId, invalidPacket)
                 .then(json => dispatch(createPacketReceive(fundId, json)))
                 .then(action => {
-                    dispatch(fundSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, action.data.id, true));
+                    dispatch(fundSubNodeFormValueChange(versionId, nodeKey, valueLocation, action.data.id, true));
                     dispatch(modalDialogHide())
                 });
     }

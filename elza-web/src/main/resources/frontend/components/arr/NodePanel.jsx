@@ -300,7 +300,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
         var submit = (data) => {
             this.dispatch(modalDialogHide());
-            this.dispatch(fundSubNodeFormDescItemTypeAdd(versionId, selectedSubNodeId, nodeKey, data.descItemTypeId));
+            this.dispatch(fundSubNodeFormDescItemTypeAdd(versionId, nodeKey, data.descItemTypeId));
         };
         // Modální dialog
         var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
@@ -357,7 +357,7 @@ return true
     requestData(versionId, node, showRegisterJp) {
         if (node.selectedSubNodeId != null) {
             this.dispatch(descItemTypesFetchIfNeeded());
-            this.dispatch(fundSubNodeFormFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
+            this.dispatch(fundSubNodeFormFetchIfNeeded(versionId, node.nodeKey));
             this.dispatch(fundSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
             this.dispatch(refRulDataTypesFetchIfNeeded());
 
