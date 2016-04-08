@@ -35,6 +35,7 @@ import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeData;
@@ -1056,6 +1057,25 @@ public class ArrangementController {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
 
         return filterTreeService.getFilteredData(version, page, pageSize, descItemTypeIds);
+    }
+
+
+    /**
+     * Ve filtrovaném seznamu najde uzly podle fulltextu. Vrací seřazený seznam uzlů podle jejich indexu v seznamu
+     * všech
+     * filtrovaných uzlů.
+     *
+     * @param versionId id verze stromu
+     * @param fulltext  fulltext
+     * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
+     * @throws FilterExpiredException není nastaven filtr, nejprve zavolat {@link FilterTreeService#filterData(ArrFundVersion,
+     *                                Object)}
+     */
+    @RequestMapping(value = "/getFilteredFulltext/{versionId}", method = RequestMethod.GET)
+    public List<FilterNodePosition> getFilteredFulltextNodes(@PathVariable("versionId") final Integer versionId,
+                                                             @RequestParam("fulltext") final String fulltext) {
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
+        return filterTreeService.getFilteredFulltextIds(version, fulltext);
     }
 
     /**

@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,9 +9,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +24,9 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.FilterTools;
+import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.domain.ArrData;
@@ -51,31 +56,24 @@ import cz.tacr.elza.repository.PacketTypeRepository;
 @Configuration
 public class FilterTreeService {
 
-
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
-
     @Autowired
     private LevelTreeCacheWalker levelTreeCacheWalker;
-
-
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
-
     @Autowired
     private DescriptionItemService descriptionItemService;
-
-
     @Autowired
     private NodeRepository nodeRepository;
-
     @Autowired
     private DataRepository dataRepository;
-
     @Autowired
     private PacketTypeRepository packetTypeRepository;
     @Autowired
     private DescItemSpecRepository descItemSpecRepository;
+    @Autowired
+    private ArrangementService arrangementService;
 
     /**
      * Provede filtraci uzlů podle filtru a uloží všechny filtrované id do session. ID jsou seřazeny podle výskytu ve
@@ -93,7 +91,7 @@ public class FilterTreeService {
 
         FilterTreeSession session = storeFilteredTreeIntersection(version.getFundVersionId(), versionIdsTable,
                 versionIdsTable);
-        return session.getFilteredIds().size();
+        return session.getFilteredIds(version.getFundVersionId()).size();
     }
 
 
@@ -117,13 +115,7 @@ public class FilterTreeService {
             descItemTypeMap.put(descItemType.getCode(), descItemType);
         }
 
-        ArrayList<Integer> filteredIds = getUserFilterSession().getFilteredIds();
-        Integer filteredVersionId = getUserFilterSession().getVersionId();
-        if (filteredIds == null || filteredVersionId != version.getFundVersionId()) {
-            throw new FilterExpiredException();
-        }
-
-
+        ArrayList<Integer> filteredIds = getUserFilterSession().getFilteredIds(version.getFundVersionId());
         ArrayList<Integer> subIds = FilterTools.getSublist(page, pageSize, filteredIds);
 
 
@@ -135,6 +127,52 @@ public class FilterTreeService {
 
 
         return createResult(subIds, levelTreeCacheService.getVersionTreeCache(version), descItemTypeMap, nodeValuesMap);
+    }
+
+    /**
+     * Ve filtrovaném seznamu najde uzly podle fulltextu. Vrací seřazený seznam uzlů podle jejich indexu v seznamu
+     * všech
+     * filtrovaných uzlů.
+     *
+     * @param version  verze stromu
+     * @param fulltext fulltext
+     * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
+     * @throws FilterExpiredException není nastaven filtr, nejprve zavolat {@link #filterData(ArrFundVersion, Object)}
+     */
+    public List<FilterNodePosition> getFilteredFulltextIds(final ArrFundVersion version, final String fulltext)
+            throws FilterExpiredException {
+        Assert.notNull(version);
+
+        TreeSet<FilterNodePosition> result = new TreeSet<>((a, b) -> a.getIndex().compareTo(b.getIndex()));
+
+        ArrayList<Integer> filteredIds = getUserFilterSession().getFilteredIds(version.getFundVersionId());
+
+        //filtrované id vložíme do mapy s jejich pozicí (id uzlu -> pozice v seznamu) pro rychlejší procházení
+        Map<Integer, Integer> filteredPositionMap = new HashMap<>();
+        int index = 0;
+        for (Integer filteredId : filteredIds) {
+            filteredPositionMap.put(filteredId, index++);
+        }
+
+        //seznam id nalezených fulltextem
+        Collection<Integer> fulltextIds;
+        if (StringUtils.isBlank(fulltext)) {
+            fulltextIds = filteredIds;
+        } else {
+            fulltextIds = arrangementService
+                    .findNodeIdsByFulltext(version, version.getRootNode().getNodeId(), fulltext,
+                            ArrangementController.Depth.SUBTREE);
+        }
+
+
+        for (Integer fulltextId : fulltextIds) {
+            Integer position = filteredPositionMap.get(fulltextId);
+            if (position != null) {
+                result.add(new FilterNodePosition(fulltextId, position));
+            }
+        }
+
+        return new ArrayList<>(result);
     }
 
 
@@ -277,7 +315,11 @@ public class FilterTreeService {
         public FilterTreeSession() {
         }
 
-        public ArrayList<Integer> getFilteredIds() {
+        public ArrayList<Integer> getFilteredIds(final Integer versionId) throws FilterExpiredException {
+            if (filteredIds == null || !this.versionId.equals(versionId)) {
+                throw new FilterExpiredException();
+            }
+
             return filteredIds;
         }
 
