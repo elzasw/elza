@@ -200,8 +200,8 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
                 <div className='fa-traa-header-container'>
                     <SearchWithGoto
                         filterText={filterText}
-                        searchedItems={searchedIds}
-                        filterCurrentIndex={filterCurrentIndex}
+                        itemsCount={searchedIds ? searchedIds.length : 0}
+                        selIndex={filterCurrentIndex}
                         showFilterResult={filterResult}
                         onFulltextChange={onFulltextChange}
                         onFulltextSearch={onFulltextSearch}

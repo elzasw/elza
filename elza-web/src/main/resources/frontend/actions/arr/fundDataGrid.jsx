@@ -41,7 +41,7 @@ export function fundBulkModifications(versionId, descItemTypeId, specsIds, opera
                         .then(dispatch(modalDialogHide()))
                 break
             case 'delete':
-                    WebApi.XXXdeleteDataValues(versionId, descItemTypeId, specsIds, nodes)
+                    WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes)
                         .then(dispatch(modalDialogHide()))
                 break
         }

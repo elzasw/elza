@@ -17,28 +17,28 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
 
         this.state = {
             filterText: props.filterText || '',
+            showFilterResult: typeof props.showFilterResult !== 'undefined' ? props.showFilterResult : false,
         }
     }
 
     componentWillReceiveProps(nexProps){
-        if (typeof nexProps.filterText !== 'undefined') {
-            this.setState({
-                filterText: nexProps.filterText,
-            })
-        }
+        this.setState({
+            filterText: typeof nexProps.filterText !== 'undefined' ? nexProps.filterText : this.state.filterText,
+            showFilterResult: typeof nexProps.showFilterResult !== 'undefined' ? nexProps.showFilterResult : this.state.showFilterResult,
+        })
     }
 
     handleOnSearch(filterText, searchByEnter, shiftKey) {
-        const {onFulltextNextItem, onFulltextPrevItem, searchedItems, filterCurrentIndex, showFilterResult, onFulltextSearch} = this.props
+        const {onFulltextNextItem, onFulltextPrevItem, itemsCount, selIndex, showFilterResult, onFulltextSearch} = this.props
 
         if (searchByEnter) {    // při hledání pomocí enter se chováme jinak - pokud již něco vyledaného je, jdeme na další (případně předchozí) výsledek
             if (showFilterResult) { // je něco vyhledáno a nic mezitím nebylo změněno
                 if (!shiftKey) {
-                    if (filterCurrentIndex + 1 < searchedItems.length) {
+                    if (selIndex + 1 < itemsCount) {
                         onFulltextNextItem()
                     }
                 } else {
-                    if (filterCurrentIndex > 0) {
+                    if (selIndex > 0) {
                         onFulltextPrevItem()
                     }
                 }
@@ -55,22 +55,23 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
 
         this.setState({
             filterText: value,
+            showFilterResult: false,
         }, () => {
             onFulltextChange && onFulltextChange(value)
         })
     }
 
     render() {
-        const {searchedItems, filterCurrentIndex, showFilterResult, onFulltextSearch, onFulltextNextItem, onFulltextPrevItem} = this.props;
-        const {filterText} = this.state;
+        const {itemsCount, selIndex, onFulltextSearch, onFulltextNextItem, onFulltextPrevItem} = this.props;
+        const {filterText, showFilterResult} = this.state;
 
         var actionAddons = []
         if (showFilterResult) {
             var searchedInfo
-            if (searchedItems.length > 0) {
+            if (itemsCount > 0) {
                 searchedInfo = (
                     <div className='fa-tree-lazy-search-info'>
-                        ({filterCurrentIndex + 1} z {searchedItems.length})
+                        ({selIndex + 1} z {itemsCount})
                     </div>
                 )
             } else {
@@ -81,9 +82,9 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
                 )
             }
 
-            if (searchedItems.length > 1) {
-                var prevButtonEnabled = filterCurrentIndex > 0;
-                var nextButtonEnabled = filterCurrentIndex < searchedItems.length - 1;
+            if (itemsCount > 1) {
+                var prevButtonEnabled = selIndex > 0;
+                var nextButtonEnabled = selIndex < itemsCount - 1;
 
                 actionAddons.push(<NoFocusButton disabled={!nextButtonEnabled} className="next" onClick={onFulltextNextItem}><Icon glyph='fa-chevron-down'/></NoFocusButton>)
                 actionAddons.push(<NoFocusButton disabled={!prevButtonEnabled} className="prev" onClick={onFulltextPrevItem}><Icon glyph='fa-chevron-up'/></NoFocusButton>)
@@ -106,8 +107,8 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
 
 SearchWithGoto.propTypes = {
     filterText: React.PropTypes.string,
-    searchedItems: React.PropTypes.array.isRequired,
-    filterCurrentIndex: React.PropTypes.number.isRequired,
+    itemsCount: React.PropTypes.number.isRequired,
+    selIndex: React.PropTypes.number.isRequired,
     showFilterResult: React.PropTypes.bool.isRequired,
     onFulltextChange: React.PropTypes.func,
     onFulltextSearch: React.PropTypes.func,

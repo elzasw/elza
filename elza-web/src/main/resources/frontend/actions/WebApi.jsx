@@ -582,6 +582,10 @@ class WebApi{
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/placeDataValues/' + versionId, {descItemTypeId, newDescItemSpecId: replaceSpecId, text: replaceText }, {nodes, specIds: specsIds})
     }
 
+    deleteDataValues(versionId, descItemTypeId, specsIds, nodes) {
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/deleteDataValues/' + versionId, {descItemTypeId}, {nodes, specIds: specsIds})
+    }
+
     getPackages() {
         return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/getPackages')
             .then(json=>{
