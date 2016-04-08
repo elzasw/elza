@@ -34,6 +34,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.service.ArrMoveLevelService;
@@ -657,6 +658,16 @@ public class ArrangementControllerTest extends AbstractControllerTest {
                 Assert.isTrue(text.getValue().equals("nova_value"));
             }
         }
+
+
+        //smazání hodnot atributů
+        allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
+        body.setNodes(new HashSet<>(allNodes));
+        deleteDescItems(fundVersion.getId(), typeVo.getId(), body);
+
+        List<ArrDescItem> nodeDescItems = descItemRepository
+                .findOpenByNodesAndType(nodeRepository.findAll(nodeIds), type);
+        Assert.isTrue(nodeDescItems.isEmpty());
     }
 
     @Test

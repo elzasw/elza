@@ -148,6 +148,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String VERSIONS = ARRANGEMENT_CONTROLLER_URL + "/getVersions";
     protected static final String REPLACE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/replaceDataValues/{versionId}";
     protected static final String PLACE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/placeDataValues/{versionId}";
+    protected static final String DELETE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/deleteDataValues/{versionId}";
     protected static final String FILTER_UNIQUE_VALUES = ARRANGEMENT_CONTROLLER_URL + "/filterUniqueValues/{versionId}";
 
 
@@ -1861,7 +1862,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param versionId id verze stromu
      * @param descItemTypeId typ atributu
      * @param text hledaný text v atributu
-     * @param replaceText text, který nahradí hledaný text v celém textu
      * @param replaceDataBody seznam uzlů, ve kterých hledáme
      */
     protected void placeDataValues(final Integer versionId,
@@ -1874,6 +1874,22 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .queryParameter("descItemTypeId", descItemTypeId)
                 .queryParameter("text", text)
                 .body(replaceDataBody), PLACE_DATA_VALUES);
+    }
+
+    /**
+     * Smazání hodnot atributů daného typu pro vybrané uzly.
+     *
+     * @param versionId       id verze stromu
+     * @param descItemTypeId  id typu atributu
+     * @param replaceDataBody seznam uzlů a specifikaci
+     */
+    protected void deleteDescItems(final Integer versionId,
+                                   final Integer descItemTypeId,
+                                   final ArrangementController.ReplaceDataBody replaceDataBody) {
+        put(spec -> spec
+                .pathParameter("versionId", versionId)
+                .queryParameter("descItemTypeId", descItemTypeId)
+                .body(replaceDataBody), DELETE_DATA_VALUES);
     }
 
     /**

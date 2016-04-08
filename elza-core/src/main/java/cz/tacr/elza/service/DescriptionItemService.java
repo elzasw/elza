@@ -1183,6 +1183,39 @@ public class DescriptionItemService {
         dataRepository.save(newData);
     }
 
+
+    /**
+     * Smazání hodnot atributů daného typu pro vybrané uzly.
+     *
+     * @param version        verze stromu
+     * @param descItemType   typ atributu, jehož hodnoty budou smazány
+     * @param nodes          seznam uzlů, jejichž hodnoty mažeme
+     * @param specifications seznam specifikací pro typ se specifikací, kterým budou smazány hodnoty
+     */
+    public void deleteDescItemValues(final ArrFundVersion version,
+                                     final RulDescItemType descItemType,
+                                     final Set<ArrNode> nodes,
+                                     final Set<RulDescItemSpec> specifications) {
+        Assert.notNull(version);
+        Assert.notNull(descItemType);
+        if (descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)) {
+            throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
+        }
+
+
+        List<ArrDescItem> descItems = descItemType.getUseSpecification() ?
+                                      descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, descItemType,
+                                              specifications) :
+                                      descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+        if (!descItems.isEmpty()) {
+            ArrChange change = arrangementService.createChange();
+
+            for (ArrDescItem descItem : descItems) {
+                deleteDescriptionItem(descItem, version, change, false);
+            }
+        }
+    }
+
     /**
      * Nahradí text v řetězci.
      *

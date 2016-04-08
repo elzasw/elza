@@ -1143,6 +1143,30 @@ public class ArrangementController {
     }
 
 
+    /**
+     * Smazání hodnot atributů daného typu pro vybrané uzly.
+     *
+     * @param versionId         id verze stromu
+     * @param descItemTypeId    typ atributu
+     * @param replaceDataBody   seznam uzlů, ve kterých hledáme a seznam specifikací
+     */
+    @Transactional
+    @RequestMapping(value = "/deleteDataValues/{versionId}", method = RequestMethod.PUT)
+    public void deleteDataValues(@PathVariable("versionId") final Integer versionId,
+                                 @RequestParam("descItemTypeId") final Integer descItemTypeId,
+                                 @RequestBody final ReplaceDataBody replaceDataBody) {
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
+        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+
+        Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
+
+        Set<RulDescItemSpec> specifications =
+                CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
+                new HashSet<>(descItemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+
+        descriptionItemService.deleteDescItemValues(version, descItemType, nodesDO, specifications);
+    }
+
     public static class VersionValidationItem {
 
         private int nodeId;
