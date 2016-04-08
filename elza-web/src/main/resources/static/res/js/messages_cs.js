@@ -98,6 +98,8 @@ var messages = {
     "arr.fund.bulkModifications.action.findAndReplace": "Najít a nahradit",
     "arr.fund.bulkModifications.action.replace": "Nastavit",
     "arr.fund.bulkModifications.action.delete": "Odstranit",
+    "arr.fund.bulkModifications.action.openInNewTab": "Zobrazit v nové záložce formuláře JP",
+    "arr.fund.bulkModifications.action.open": "Zobrazit ve formuláři JP",
     "arr.fund.bulkModifications.title": "Hromadná úprava prvku popisu",
     "arr.fund.bulkModifications.operationType": "Typ úpravy",
     "arr.fund.bulkModifications.operationType.findAndReplace": "Najít a nahradit část obsahu",

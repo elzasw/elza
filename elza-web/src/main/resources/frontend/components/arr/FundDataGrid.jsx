@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {FundBulkModificationsForm, Icon, ListBox, DataGridColumnsSettings, AbstractReactComponent, i18n, Loading,
     DataGrid, FundFilterSettings, DataGridPagination} from 'components';
+import {MenuItem} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import * as types from 'actions/constants/ActionTypes';
 import {fundDataGridSetColumnsSettings, fundDataGridSetSelection, fundDataGridSetColumnSize, fundDataGridFetchFilterIfNeeded,
@@ -18,6 +19,8 @@ import {propsEquals} from 'components/Utils'
 import {Button} from 'react-bootstrap'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {getSpecsIds, hasDescItemTypeValue} from 'components/arr/ArrUtils'
+import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
+import {fundSelectSubNode} from 'actions/arr/nodes'
 
 require('./FundDataGrid.less')
 
@@ -27,7 +30,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         this.bindMethods('handleSelectedIdsChange', 'handleColumnResize', 'handleColumnSettings', 'handleChangeColumnsSettings',
             'handleBulkModifications', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer', 'resizeGrid', 'handleFilterClearAll',
-            'handleFilterUpdateData');
+            'handleFilterUpdateData', 'handleContextMenu', 'handleSelectInNewTab', 'handleSelectInTab', 'handleEdit');
 
         const colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
         if (colState) {
@@ -342,6 +345,45 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(modalDialogHide())
     }
 
+    handleContextMenu(row, rowIndex, col, colIndex, e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var menu = (
+            <ul className="dropdown-menu">
+                <MenuItem onClick={this.handleSelectInNewTab.bind(this, row)}>{i18n('arr.fund.bulkModifications.action.openInNewTab')}</MenuItem>
+                <MenuItem onClick={this.handleSelectInTab.bind(this, row)}>{i18n('arr.fund.bulkModifications.action.open')}</MenuItem>
+                <MenuItem onClick={() => {this.dispatch(contextMenuHide());this.handleEdit(row, col)}}>{i18n('global.action.update')}</MenuItem>
+            </ul>
+        )
+
+        this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
+    }
+
+    handleEdit(row, col) {
+console.log("@@@@@@@@ EDIT", row, col)
+    }
+
+    /**
+     * Otevření uzlu v nové záložce.
+     * @param row {Object} řádek dat
+     */
+    handleSelectInNewTab(row) {
+        const {versionId} = this.props
+        this.dispatch(contextMenuHide());
+        this.dispatch(fundSelectSubNode(versionId, row.node.id, row.parentNode, true, null, true));
+    }
+
+    /**
+     * Otevření uzlu v záložce.
+     * @param row {Object} řádek dat
+     */
+    handleSelectInTab(row) {
+        const {versionId} = this.props
+        this.dispatch(contextMenuHide());
+        this.dispatch(fundSelectSubNode(versionId, row.node.id, row.parentNode, false, null, true));
+    }
+
     render() {
         const {fundDataGrid, versionId, rulDataTypes, descItemTypes} = this.props;
         const {cols} = this.state;
@@ -365,6 +407,8 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                             selectedIds={fundDataGrid.selectedIds}
                             onColumnResize={this.handleColumnResize}
                             onSelectedIdsChange={this.handleSelectedIdsChange}
+                            onContextMenu={this.handleContextMenu}
+                            onEdit={this.handleEdit}
                         />
                         <DataGridPagination
                             itemsCount={fundDataGrid.itemsCount}
