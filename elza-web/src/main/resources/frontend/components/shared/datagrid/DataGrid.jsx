@@ -65,7 +65,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         this.bindMethods('handleScroll', 'renderHeaderCol', 'renderCell',
             'handleKeyDown', 'ensureFocusVisible', 'handleResizerMouseDown',
             'handleMouseUp', 'handleMouseMove', 'unFocus', 'handleCellClick',
-            'handleCheckboxChange', 'getExtColumnIndex', 'handleEdit');
+            'handleCheckboxChange', 'getExtColumnIndex', 'handleEdit', 'handleContextMenu');
 
         var state = this.getStateFromProps(props, {})
         state.columnSizeDragged = false
@@ -269,6 +269,12 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         this.props.onSelectedIdsChange(Object.keys(newSelectedIds))
     }
 
+    handleContextMenu(row, rowIndex, col, colIndex, e) {
+        const {onContextMenu} = this.props
+        this.handleCellClick(rowIndex, colIndex, e)
+        onContextMenu && onContextMenu(row, rowIndex, col, col._rowCheck ? colIndex - 1 : colIndex, e)
+    }
+
     renderCell(row, rowIndex, col, colIndex, colFocus, cellFocus) {
         const {colWidths, selectedIds} = this.state
 
@@ -305,6 +311,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
                 style={style}
                 onClick={this.handleCellClick.bind(this, rowIndex, colIndex)}
                 onDoubleClick={this.handleEdit.bind(this, rowIndex, colIndex)}
+                onContextMenu={this.handleContextMenu.bind(this, row, rowIndex, col, colIndex)}
             >
                 {content}
             </td>
