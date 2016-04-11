@@ -30,7 +30,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         this.bindMethods('handleSelectedIdsChange', 'handleColumnResize', 'handleColumnSettings', 'handleChangeColumnsSettings',
             'handleBulkModifications', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer', 'resizeGrid', 'handleFilterClearAll',
-            'handleFilterUpdateData', 'handleContextMenu', 'handleSelectInNewTab', 'handleSelectInTab', 'handleEdit');
+            'handleFilterUpdateData', 'handleContextMenu', 'handleSelectInNewTab', 'handleSelectInTab', 'handleEdit', 'setFocusAfterCellEdit');
 
         var colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
         if (!colState) {
@@ -78,23 +78,25 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus) {
-        const value = row[col.dataName]
+        const colValue = row[col.dataName]
 
         var displayValue
-        if (value) {
-            if (col.refType.useSpecification) {
-                var spec = null
-                for (var a=0; a<col.refType.descItemSpecs.length; a++) {
-                    if (col.refType.descItemSpecs[a].code === value.specCode) {
-                        spec = col.refType.descItemSpecs[a]
-                        break
+        if (colValue && colValue.values) {
+            displayValue = colValue.values.map(value => {
+                if (col.refType.useSpecification) {
+                    var spec = null
+                    for (var a=0; a<col.refType.descItemSpecs.length; a++) {
+                        if (col.refType.descItemSpecs[a].code === value.specCode) {
+                            spec = col.refType.descItemSpecs[a]
+                            break
+                        }
                     }
-                }
 
-                displayValue = hasDescItemTypeValue(col.dataType) ? spec.name + ': ' + value.value : spec.name
-            } else {
-                displayValue = value.value
-            }
+                    return <div className='cell-value-wrapper'>{hasDescItemTypeValue(col.dataType) ? spec.name + ': ' + value.value : spec.name}</div>
+                } else {
+                    return <div className='cell-value-wrapper'>{value.value}</div>
+                }
+            })
         }
 
         return (
@@ -382,8 +384,15 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 closed={closed}
                 position={{x: cellRect.left, y: cellRect.top}}
             />,
-        'fund-data-grid-cell-edit'));
+        'fund-data-grid-cell-edit', this.setFocusAfterCellEdit));
     }
+
+    setFocusAfterCellEdit() {
+        this.setState({},
+            ()=>{ ReactDOM.findDOMNode(this.refs.dataGrid).focus() }
+        )
+    }
+
 
     /**
      * Otevření uzlu v nové záložce.

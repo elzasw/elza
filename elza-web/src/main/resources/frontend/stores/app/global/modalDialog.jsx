@@ -16,6 +16,7 @@ export default function modalDialog(state = initialState, action) {
                 component: action.component,
                 content: action.content,
                 dialogClassName: action.dialogClassName,
+                onClose: action.onClose,
             })
         case types.GLOBAL_MODAL_DIALOG_HIDE:
             return Object.assign({}, state, {

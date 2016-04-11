@@ -477,7 +477,7 @@ export function fundSubNodeFormFetchIfNeeded(versionId, nodeKey) {
                 if (node !== null) {
                     const subNodeForm = node.subNodeForm
                     if ((!subNodeForm.fetched || subNodeForm.dirty) && !subNodeForm.isFetching) {
-                        return dispatch(fundSubNodeFormFetch(versionId, node.selectedSubNodeId, nodeKey));
+                        dispatch(fundSubNodeFormFetch(versionId, node.selectedSubNodeId, nodeKey));
                     }
                 }
                 break
@@ -487,7 +487,7 @@ export function fundSubNodeFormFetchIfNeeded(versionId, nodeKey) {
                     const fundDataGrid = state.arrRegion.funds[fundIndex].fundDataGrid
                     const subNodeForm = fundDataGrid.subNodeForm
                     if ((!subNodeForm.fetched || subNodeForm.dirty) && !subNodeForm.isFetching) {
-                        return dispatch(fundSubNodeFormFetch(versionId, fundDataGrid.nodeId, nodeKey));
+                        dispatch(fundSubNodeFormFetch(versionId, fundDataGrid.nodeId, nodeKey));
                     }
                 }
                 break

@@ -622,12 +622,12 @@ return true;
      * @return {Object} view
      */
     renderLabel() {
-        const {descItemCopyFromPrevEnabled, copy, locked, descItemType, infoType, refType, conformityInfo, closed} = this.props;
+        const {descItemCopyFromPrevEnabled, singleDescItemTypeEdit, copy, locked, descItemType, infoType, refType, conformityInfo, closed} = this.props;
 
         var actions = [];
 
         // Sestavení akcí
-        if (!closed) {
+        if (!closed && !singleDescItemTypeEdit) {
             actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.copy')} key="copy" onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
             actions.push(<NoFocusButton disabled={!descItemCopyFromPrevEnabled} title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book" onClick={this.handleDescItemTypeCopyFromPrev}><Icon glyph="fa-book" /></NoFocusButton>);
             actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.lock')} key="lock" onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>);

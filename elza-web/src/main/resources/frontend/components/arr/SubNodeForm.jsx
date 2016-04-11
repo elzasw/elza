@@ -114,7 +114,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
         var descItemTypes = []
         descItemGroup.descItemTypes.forEach((descItemType, descItemTypeIndex) => {
-            const render = singleDescItemTypeEdit === null || (singleDescItemTypeEdit !== null && singleDescItemTypeId == descItemType.id)
+            const render = !singleDescItemTypeEdit || (singleDescItemTypeEdit && singleDescItemTypeId == descItemType.id)
 
             if (render) {
                 const i = this.renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting)
@@ -616,7 +616,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) {
-        const {subNodeForm, descItemCopyFromPrevEnabled, rulDataTypes, calendarTypes, closed,
+        const {subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, rulDataTypes, calendarTypes, closed,
                 nodeSettings, nodeId, packetTypes, packets, conformityInfo, versionId} = this.props;
 
         var refType = subNodeForm.refTypesMap[descItemType.id]
@@ -643,6 +643,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             <DescItemType key={descItemType.id}
                 ref={'descItemType' + descItemType.id}
                 descItemType={descItemType}
+                singleDescItemTypeEdit={singleDescItemTypeEdit}
                 refType={refType}
                 infoType={infoType}
                 rulDataType={rulDataType}
@@ -665,7 +666,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onDescItemTypeLock={this.handleDescItemTypeLock.bind(this, descItemType.id)}
                 onDescItemTypeCopy={this.handleDescItemTypeCopy.bind(this, descItemType.id)}
                 onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev.bind(this, descItemGroupIndex, descItemTypeIndex, descItemType.id)}
-                locked={locked}
+                locked={singleDescItemTypeEdit ? false : locked}
                 closed={closed}
                 copy={copy}
                 conformityInfo={conformityInfo}

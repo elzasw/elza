@@ -790,6 +790,7 @@ return true
             form = <SubNodeForm
                 key={'sub-node-form-' + node.selectedSubNodeId}
                 ref='subNodeForm'
+                singleDescItemTypeEdit={false}
                 nodeId={node.id}
                 versionId={versionId}
                 selectedSubNodeId={node.selectedSubNodeId}

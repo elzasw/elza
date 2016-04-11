@@ -8,7 +8,7 @@
 // Nastavení úrovně logování
 var _logCalls = true;
 var _logErrors = true;
-var _logResults = false;
+var _logResults = true;
 var _logDuration = false;    // moznost logovani delky volani
 
 var React = require('react');
@@ -16,7 +16,6 @@ import {i18n, Toastr, LongText} from 'components';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils';
 import {store} from '../stores/app/AppStore';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions'
-
 
 var _callIndex = 0;
 

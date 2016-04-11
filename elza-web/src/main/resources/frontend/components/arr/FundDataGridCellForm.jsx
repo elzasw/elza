@@ -15,7 +15,7 @@ import {packetsFetchIfNeeded} from 'actions/arr/packets'
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
-import {fundSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
+import {fundSubNodeFormFetchIfNeeded, fundSubNodeFormDescItemTypeAdd} from 'actions/arr/subNodeForm'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {setInputFocus} from 'components/Utils'
@@ -32,12 +32,12 @@ var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactCompo
     }
 
     componentWillReceiveProps(nextProps) {
-        this.requestData(nextProps.versionId)
-
         const newFundDataGrid = this.getFundDataGrid(nextProps)
 
+        this.requestData(nextProps.versionId, newFundDataGrid)
+
         const loadingChanged = this.isLoading(this.props, this.state.fundDataGrid) !== this.isLoading(nextProps, newFundDataGrid)
-        
+
         this.setState({
             fundDataGrid: newFundDataGrid
         }, () => {
@@ -47,10 +47,23 @@ var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactCompo
         })
     }
 
+    containsDescItem(formData, descItemTypeId) {
+        for (var g=0; g<formData.descItemGroups.length; g++) {
+            const group = formData.descItemGroups[g]
+            for (var i=0; i<group.descItemTypes.length; i++) {
+                const descItemType = group.descItemTypes[i]
+                if (descItemType.id === descItemTypeId) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
     componentDidMount() {
         const {position} = this.props
 
-        this.requestData(this.props.versionId)
+        this.requestData(this.props.versionId, this.state.fundDataGrid)
 
         $('.fund-data-grid-cell-edit .modal-dialog').css({
             top: position.y + 'px',
@@ -62,13 +75,23 @@ var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactCompo
      * Načtení dat, pokud je potřeba.
      * @param versionId {String} verze AS
      */
-    requestData(versionId) {
+    requestData(versionId, validFundDataGrid) {
         const nodeKey = 'DATA_GRID'
 
         this.dispatch(descItemTypesFetchIfNeeded());
         this.dispatch(fundSubNodeFormFetchIfNeeded(versionId, nodeKey));
         this.dispatch(refRulDataTypesFetchIfNeeded());
         this.dispatch(calendarTypesFetchIfNeeded());
+
+        // Pokud se jedná o editaci jedné položky, musíme zajistit, že tato položka tam je - alespoň prázdná
+        if (validFundDataGrid.subNodeForm.fetched) {
+            const subNodeForm = validFundDataGrid.subNodeForm
+            const formData = subNodeForm.formData
+
+            if (!this.containsDescItem(formData, validFundDataGrid.descItemTypeId)) {
+                this.dispatch(fundSubNodeFormDescItemTypeAdd(versionId, nodeKey, validFundDataGrid.descItemTypeId));
+            }
+        }
     }
 
     getFundDataGrid(props) {
