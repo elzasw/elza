@@ -1,14 +1,13 @@
 /**
- *  ListBox komponenta s možností filtrování a hledání a vybrání specifikací.
+ *  ListBox komponenta s možností filtrování a hledání a vybrání položek.
  *
  **/
 
 import React from 'react';
 import {FilterableListBox, AbstractReactComponent, i18n} from 'components';
 import {indexById, getSetFromIdsList} from 'stores/app/utils.jsx'
-import {getSpecsIds} from 'components/arr/ArrUtils'
 
-var SpecsListBox = class SpecsListBox extends AbstractReactComponent {
+var SimpleCheckListBox = class SimpleCheckListBox extends AbstractReactComponent {
     constructor(props) {
         super(props)
 
@@ -49,32 +48,45 @@ var SpecsListBox = class SpecsListBox extends AbstractReactComponent {
         }, this.callSpecSearch)
     }
 
+    getSpecsIdsExt(items, selectionType, selectedIds) {
+        var specIds = []
+        if (selectionType === 'selected') {
+            specIds = selectedIds
+        } else {
+            var set = getSetFromIdsList(selectedIds)
+            items.forEach(i => {
+                if (!set[i.id]) {
+                    specIds.push(i.id)
+                }
+            })
+        }
+        return specIds
+    }
+
     getSpecsIds() {
-        const {refType} = this.props
+        const {items} = this.props
         const value = this.getValue()
-        return getSpecsIds(refType, value.type, value.ids)
+        return this.getSpecsIdsExt(items, value.type, value.ids)
     }
 
     callSpecSearch() {
-        const {refType} = this.props
+        const {items} = this.props
         const {specSearchText} = this.state
 
-        if (refType.useSpecification) {
-            var fspecSearchText = specSearchText.toLowerCase()
-            var specItems = []
-            refType.descItemSpecs.forEach(i => {
-                if (!specSearchText || i.name.toLowerCase().indexOf(fspecSearchText) !== -1) {
-                    specItems.push({id: i.id, name: i.name})
-                }
-            })
-            this.setState({
-                specItems: specItems,
-            })
-        }
+        var fspecSearchText = specSearchText.toLowerCase()
+        var specItems = []
+        items.forEach(i => {
+            if (!specSearchText || i.name.toLowerCase().indexOf(fspecSearchText) !== -1) {
+                specItems.push(i)
+            }
+        })
+        this.setState({
+            specItems: specItems,
+        })
     }
 
     render() {
-        const {refType, label} = this.props
+        const {label} = this.props
         const {specItems} = this.state
         const value = this.getValue()
         
@@ -93,5 +105,5 @@ var SpecsListBox = class SpecsListBox extends AbstractReactComponent {
     }
 }
 
-module.exports = SpecsListBox
+module.exports = SimpleCheckListBox
 

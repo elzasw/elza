@@ -533,6 +533,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                         fund={activeFund}
                         versionId={activeFund.versionId}
                         descItemTypes={descItemTypes}
+                        packetTypes={packetTypes}
                         rulDataTypes={rulDataTypes}
                     />
                 )

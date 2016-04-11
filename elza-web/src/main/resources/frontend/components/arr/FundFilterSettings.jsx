@@ -13,7 +13,7 @@ import {Modal, Button, Input} from 'react-bootstrap';
 import {WebApi} from 'actions'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils'
 const FundFilterCondition = require('./FundFilterCondition')
-const SpecsListBox = require('./SpecsListBox')
+const SimpleCheckListBox = require('./SimpleCheckListBox')
 
 var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent {
     constructor(props) {
@@ -69,7 +69,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
         }
 
         var specIds = []
-        if (refType.useSpecification) {
+        if (refType.useSpecification || dataType.code === 'PACKET_REF') {
             specIds = this.refs.specsListBox.getSpecsIds()
 
             if (specIds.length === 0) { // pokud nemá nic vybráno, nevrátily by se žádné položky a není třeba volat server
@@ -226,7 +226,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
 
     handleSubmit() {
         const {selectedValueItems, selectedValueItemsType, selectedSpecItems, selectedSpecItemsType, conditionSelectedCode, conditionValues} = this.state
-        const {onSubmitForm, refType} = this.props
+        const {onSubmitForm, refType, dataType} = this.props
 
         var data = {
             values: selectedValueItems,
@@ -235,12 +235,10 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             conditionType: conditionSelectedCode,
         }
 
-        if (refType.useSpecification) {
+        if (refType.useSpecification || dataType.code === 'PACKET_REF') {
             data.specs = selectedSpecItems
             data.specsType = selectedSpecItemsType
         }
-
-console.log(data)
 
         // ##
         // # Test, zda není filtr prázdný
@@ -249,7 +247,7 @@ console.log(data)
 
         if (data.valuesType === 'selected' || data.values.length > 0) {      // je zadáno filtrování podle hodnoty
             outData = data
-        } else if (refType.useSpecification && (data.specsType === 'selected' || data.specs.length > 0)) {     // je zadáno filtrování podle specifikace
+        } else if ((refType.useSpecification || dataType.code === 'PACKET_REF') && (data.specsType === 'selected' || data.specs.length > 0)) {     // je zadáno filtrování podle specifikace
             outData = data
         } else if (data.conditionType !== 'none') { // je zadáno filtrování podle podmínky
             outData = data
@@ -259,19 +257,29 @@ console.log(data)
     }
 
     render() {
-        const {refType, onClose} = this.props
+        const {refType, onClose, dataType, packetTypes} = this.props
         const {conditionSelectedCode, conditionValues, valueItems, selectedValueItems, selectedValueItemsType, selectedSpecItems, selectedSpecItemsType} = this.state
 
         var specContent = null
         if (refType.useSpecification) {
             specContent = (
-                <SpecsListBox
+                <SimpleCheckListBox
                     ref='specsListBox'
-                    refType={refType}
+                    items={refType.descItemSpecs}
                     label={i18n('arr.fund.filterSettings.filterBySpecification.title')}
                     value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
                     onChange={this.handleSpecItemsChange}
-                />
+                    />
+            )
+        } else if (dataType.code === 'PACKET_REF') { // u obalů budeme místo specifikací zobrazovat výběr typů obsalů
+            specContent = (
+                <SimpleCheckListBox
+                    ref='specsListBox'
+                    items={packetTypes.items}
+                    label={i18n('arr.fund.filterSettings.filterByPacketType.title')}
+                    value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
+                    onChange={this.handleSpecItemsChange}
+                    />
             )
         }
         

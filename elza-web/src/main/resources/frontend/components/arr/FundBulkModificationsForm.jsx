@@ -14,7 +14,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 import {getSpecsIds} from 'components/arr/ArrUtils'
-const SpecsListBox = require('./SpecsListBox')
+const SimpleCheckListBox = require('./SimpleCheckListBox')
 
 /**
  * Validace formuláře.
@@ -190,9 +190,9 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
                         </Input>
 
                         {refType.useSpecification && <Input label={i18n('arr.fund.bulkModifications.specs')} {...decorateFormField(specs)}>
-                            <SpecsListBox
+                            <SimpleCheckListBox
                                 ref='specsListBox'
-                                refType={refType}
+                                items={refType.descItemSpecs}
                                 {...specs}
                             />
                         </Input>}

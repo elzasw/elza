@@ -15,6 +15,7 @@ import {fundDataGridSetColumnsSettings, fundDataGridSetSelection, fundDataGridSe
     fundDataGridFilterChange, fundBulkModifications, fundDataGridFilterClearAll, fundDataGridPrepareEdit, fundDataGridFilterUpdateData,
     fundDataFulltextSearch, fundDataFulltextPrevItem, fundDataFulltextNextItem, fundDataChangeCellFocus} from 'actions/arr/fundDataGrid'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
+import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes'
 import {fundSubNodeFormHandleClose} from 'actions/arr/subNodeForm'
 import {getSetFromIdsList, getMapFromList} from 'stores/app/utils'
 import {propsEquals} from 'components/Utils'
@@ -49,6 +50,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         const {fundDataGrid, versionId} = this.props;
         //this.requestFundTreeData(versionId, expandedIds, selectedId);
         this.dispatch(descItemTypesFetchIfNeeded())
+        this.dispatch(packetTypesFetchIfNeeded())
         this.dispatch(refRulDataTypesFetchIfNeeded())
         this.dispatch(fundDataGridFetchFilterIfNeeded(versionId))
         this.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize))
@@ -60,6 +62,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         const {fundDataGrid, versionId, descItemTypes} = nextProps;
         //this.requestFundTreeData(versionId, expandedIds, selectedId);
         this.dispatch(descItemTypesFetchIfNeeded())
+        this.dispatch(packetTypesFetchIfNeeded())
         this.dispatch(refRulDataTypesFetchIfNeeded())
         this.dispatch(fundDataGridFetchFilterIfNeeded(versionId))
         this.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize))
@@ -151,11 +154,12 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     getColsStateFromProps(nextProps, props) {
-        const {fundDataGrid, descItemTypes, rulDataTypes} = nextProps;
+        const {fundDataGrid, descItemTypes, packetTypes, rulDataTypes} = nextProps;
 
         if (descItemTypes.fetched) {
             if (props.fundDataGrid.columnsOrder !== fundDataGrid.columnsOrder
                 || props.descItemTypes !== descItemTypes
+                || props.packetTypes !== packetTypes
                 || props.rulDataTypes !== rulDataTypes
                 || props.fundDataGrid.columnInfos !== fundDataGrid.columnInfos
                 || props.fundDataGrid.filter !== fundDataGrid.filter
@@ -172,7 +176,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             return true;
         }
 
-        var eqProps = ['versionId', 'descItemTypes']
+        var eqProps = ['versionId', 'descItemTypes', 'packetTypes', 'rulDataTypes']
         if (!propsEquals(this.props, nextProps, eqProps)) {
             return true
         }
@@ -274,13 +278,14 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     handleFilterSettings(refType, dataType) {
-        const {versionId, fundDataGrid} = this.props
+        const {versionId, fundDataGrid, packetTypes} = this.props
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.filterSettings.title', refType.shortcut),
             <FundFilterSettings
                 versionId={versionId}
                 refType={refType}
                 dataType={dataType}
+                packetTypes={packetTypes}
                 filter={fundDataGrid.filter[refType.id]}
                 onSubmitForm={this.handleChangeFilter.bind(this, versionId, refType)}
             />, 'fund-filter-settings-dialog'
@@ -452,10 +457,10 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     render() {
-        const {fundId, fundDataGrid, versionId, rulDataTypes, descItemTypes} = this.props;
+        const {fundId, fundDataGrid, versionId, rulDataTypes, descItemTypes, packetTypes} = this.props;
         const {cols, showFilterResult} = this.state;
 
-        if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !rulDataTypes.fetched) {
+        if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
             return <Loading/>
         }
 
