@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
  * @author vavrejn
  *
  */
-public interface ArrChange extends Serializable {
+public interface ArrChange<U extends UsrUser> extends Serializable {
 
     /**
      * 
@@ -33,4 +33,14 @@ public interface ArrChange extends Serializable {
      * @param changeDate datum změny.
      */
     void setChangeDate(LocalDateTime changeDate);
+
+    /**
+     * @return uživatel, který provedl změnu
+     */
+    U getUser();
+
+    /**
+     * @param user uživatel, který provedl změnu
+     */
+    void setUser(U user);
 }

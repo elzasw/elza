@@ -1,0 +1,101 @@
+package cz.tacr.elza.domain;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.*;
+import java.io.Serializable;
+
+/**
+ * Implementace {@link cz.tacr.elza.api.UsrUser}.
+ *
+ * @author Martin Šlapa
+ * @since 11.04.2016
+ */
+@Entity(name = "usr_user")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
+public class UsrUser implements cz.tacr.elza.api.UsrUser<ParParty>, Serializable {
+
+    @Id
+    @GeneratedValue
+    private Integer userId;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)
+    @JoinColumn(name = "partyId", nullable = false)
+    private ParParty party;
+
+    @Column(length = 250, nullable = false, unique = true)
+    private String username;
+
+    @Lob
+    @Column(length = 32, nullable = false)
+    private byte[] password;
+
+    @Column(nullable = false)
+    private Boolean active;
+
+    @Column(length = 250)
+    private String description;
+
+    @Override
+    public Integer getUserId() {
+        return userId;
+    }
+
+    @Override
+    public void setUserId(final Integer userId) {
+        this.userId = userId;
+    }
+
+    @Override
+    public ParParty getParty() {
+        return party;
+    }
+
+    @Override
+    public void setParty(final ParParty party) {
+        this.party = party;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public void setUsername(final String username) {
+        this.username = username;
+    }
+
+    @Override
+    public byte[] getPassword() {
+        return password;
+    }
+
+    @Override
+    public void setPassword(final byte[] password) {
+        this.password = password;
+    }
+
+    @Override
+    public Boolean getActive() {
+        return active;
+    }
+
+    @Override
+    public void setActive(final Boolean active) {
+        this.active = active;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public void setDescription(final String description) {
+        this.description = description;
+    }
+}
