@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,9 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.vo.DescItemValue;
+import cz.tacr.elza.domain.vo.DescItemValues;
 import cz.tacr.elza.domain.vo.TitleValue;
+import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
@@ -119,7 +122,7 @@ public class FilterTreeService {
         ArrayList<Integer> subIds = FilterTools.getSublist(page, pageSize, filteredIds);
 
 
-        Map<Integer, Map<String, TitleValue>> nodeValuesMap = Collections.EMPTY_MAP;
+        Map<Integer, Map<String, TitleValues>> nodeValuesMap = Collections.EMPTY_MAP;
         if (!subIds.isEmpty() && !descItemTypeIds.isEmpty()) {
             nodeValuesMap = descriptionItemService.createNodeValuesMap(new HashSet<>(subIds), null,
                     new HashSet<>(descItemTypeMap.values()), version);
@@ -215,7 +218,7 @@ public class FilterTreeService {
     private List<FilterNode> createResult(final List<Integer> filteredIds,
                                           final Map<Integer, TreeNode> versionCache,
                                           final Map<String, RulDescItemType> descItemTypeMap,
-                                          final Map<Integer, Map<String, TitleValue>> valuesMap) {
+                                          final Map<Integer, Map<String, TitleValues>> valuesMap) {
 
         List<FilterNode> result = new ArrayList<>(filteredIds.size());
 
@@ -236,14 +239,23 @@ public class FilterTreeService {
         for (Integer filteredId : filteredIds) {
 
             //vytvoření mapy hodnot podle typu atributu
-            Map<Integer, DescItemValue> nodeValuesMap = new HashMap<>();
-            Map<String, TitleValue> nodeValues = valuesMap.get(filteredId);
+            Map<Integer, DescItemValues> nodeValuesMap = new HashMap<>();
+            Map<String, TitleValues> nodeValues = valuesMap.get(filteredId);
             if (nodeValues != null) {
-                for (Map.Entry<String, TitleValue> nodeValueEntry : nodeValues.entrySet()) {
+                for (Map.Entry<String, TitleValues> nodeValueEntry : nodeValues.entrySet()) {
+                    DescItemValues values = new DescItemValues();
                     Integer descItymTypeId = descItemTypeMap.get(nodeValueEntry.getKey()).getDescItemTypeId();
-                    String value = nodeValueEntry.getValue().getValue();
-                    String spec = nodeValueEntry.getValue().getSpecCode();
-                    nodeValuesMap.put(descItymTypeId, new DescItemValue(value, spec));
+
+
+                    Iterator<TitleValue> valueIterator = nodeValueEntry.getValue().getValues().iterator();
+                    while (valueIterator.hasNext()) {
+                        TitleValue titleValue = valueIterator.next();
+
+                        String value = titleValue.getValue();
+                        String spec = titleValue.getSpecCode();
+                        values.addValue(new DescItemValue(value, spec));
+                        nodeValuesMap.put(descItymTypeId, values);
+                    }
                 }
             }
 

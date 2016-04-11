@@ -51,6 +51,7 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.domain.vo.TitleValue;
+import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.repository.DataPacketRefRepository;
@@ -800,11 +801,11 @@ public class DescriptionItemService {
     }
 
 
-    public Map<Integer, Map<String, TitleValue>> createNodeValuesMap(final Set<Integer> subtreeNodeIds,
+    public Map<Integer, Map<String, TitleValues>> createNodeValuesMap(final Set<Integer> subtreeNodeIds,
                                                                      @Nullable final TreeNode subtreeRoot,
                                                                      Set<RulDescItemType> descItemTypes,
                                                                      ArrFundVersion version) {
-        Map<Integer, Map<String, TitleValue>> valueMap = new HashMap<>();
+        Map<Integer, Map<String, TitleValues>> valueMap = new HashMap<>();
 
         if (descItemTypes.isEmpty()) {
             return valueMap;
@@ -826,14 +827,14 @@ public class DescriptionItemService {
         Set<Integer> enumDataIds = new HashSet<>();
 
         for (ArrData data : dataList) {
-            if (data.getDescItem().getPosition() > 1) {
-                continue; // Používáme jen první hodnotu
-            }
+
             String value = null;
             String code = data.getDescItem().getDescItemType().getCode();
             String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
                     .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
+            Integer position = data.getDescItem().getPosition();
+
             if (data.getDataType().getCode().equals("ENUM")) {
                 enumDataIds.add(data.getDataId());
             } else if (data.getDataType().getCode().equals("PARTY_REF")) {
@@ -876,7 +877,7 @@ public class DescriptionItemService {
 
             String iconValue = getIconValue(data);
 
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
+            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
         }
 
         List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, version);
@@ -887,8 +888,9 @@ public class DescriptionItemService {
             String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
                     .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
+            Integer position = data.getDescItem().getPosition();
 
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
+            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
         }
 
         List<ArrDataPartyRef> partyData = dataPartyRefRepository.findByDataIdsAndVersionFetchPartyRecord(partyRefDataIds, descItemTypes, version);
@@ -899,8 +901,9 @@ public class DescriptionItemService {
             String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
                     .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
+            Integer position = data.getDescItem().getPosition();
 
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
+            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
         }
 
         List<ArrDataRecordRef> recordData = dataRecordRefRepository.findByDataIdsAndVersionFetchRecord(recordRefDataIds, descItemTypes, version);
@@ -911,8 +914,9 @@ public class DescriptionItemService {
             String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
                     .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
+            Integer position = data.getDescItem().getPosition();
 
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
+            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
         }
 
         List<ArrDataPacketRef> packetData = dataPacketRefRepository.findByDataIdsAndVersionFetchPacket(packetRefDataIds, descItemTypes, version);
@@ -930,41 +934,40 @@ public class DescriptionItemService {
             String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
                     .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
+            Integer position = data.getDescItem().getPosition();
 
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
+            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
         }
 
         return valueMap;
     }
 
-    private void addValuesToMap(Map<Integer, Map<String, TitleValue>> valueMap, String value, String code,
-                                String specCode, Integer nodeId, String iconValue) {
+    private void addValuesToMap(Map<Integer, Map<String, TitleValues>> valueMap, String value, String code,
+                                String specCode, Integer nodeId, String iconValue, final Integer position) {
         if (value == null && iconValue == null) {
             return;
         }
 
-        Map<String, TitleValue> descItemCodeToValueMap = valueMap.get(nodeId);
+        Map<String, TitleValues> descItemCodeToValueMap = valueMap.get(nodeId);
         if (descItemCodeToValueMap == null) {
             descItemCodeToValueMap = new HashMap<>();
             valueMap.put(nodeId, descItemCodeToValueMap);
         }
 
-        TitleValue titleValue = descItemCodeToValueMap.get(code);
-        if (titleValue == null) {
-            titleValue = new TitleValue();
-            titleValue.setIconValue(iconValue);
-            titleValue.setValue(value);
-            titleValue.setSpecCode(specCode);
-            descItemCodeToValueMap.put(code, titleValue);
-        } else {
-            if (titleValue.getValue() == null ) {
-                titleValue.setValue(value);
-            }
-
-            if (titleValue.getIconValue() == null) {
-                titleValue.setValue(value);
-            }
+        TitleValues titleValues = descItemCodeToValueMap.get(code);
+        if (titleValues == null) {
+            titleValues = new TitleValues();
+            descItemCodeToValueMap.put(code, titleValues);
         }
+
+
+        TitleValue titleValue = new TitleValue();
+        titleValue.setIconValue(iconValue);
+        titleValue.setValue(value);
+        titleValue.setSpecCode(specCode);
+        titleValue.setPosition(position);
+
+        titleValues.addValue(titleValue);
     }
 
 

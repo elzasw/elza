@@ -4,6 +4,7 @@ import java.util.Map;
 
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.domain.vo.DescItemValue;
+import cz.tacr.elza.domain.vo.DescItemValues;
 
 
 /**
@@ -21,12 +22,12 @@ public class FilterNode {
     /**
      * Mapa hodnot atributů na uzlu (typ atributu -> hodnota)
      */
-    private Map<Integer, DescItemValue> valuesMap;
+    private Map<Integer, DescItemValues> valuesMap;
 
     public FilterNode() {
     }
 
-    public FilterNode(final ArrNodeVO node, final ArrNodeVO parentNode, final Map<Integer, DescItemValue> valuesMap) {
+    public FilterNode(final ArrNodeVO node, final ArrNodeVO parentNode, final Map<Integer, DescItemValues> valuesMap) {
         this.node = node;
         this.parentNode = parentNode;
         this.valuesMap = valuesMap;
@@ -48,11 +49,11 @@ public class FilterNode {
         this.parentNode = parentNode;
     }
 
-    public Map<Integer, DescItemValue> getValuesMap() {
+    public Map<Integer, DescItemValues> getValuesMap() {
         return valuesMap;
     }
 
-    public void setValuesMap(final Map<Integer, DescItemValue> valuesMap) {
+    public void setValuesMap(final Map<Integer, DescItemValues> valuesMap) {
         this.valuesMap = valuesMap;
     }
 }

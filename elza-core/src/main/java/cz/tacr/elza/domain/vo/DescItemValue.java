@@ -39,4 +39,6 @@ public class DescItemValue {
     public void setSpecCode(final String specCode) {
         this.specCode = specCode;
     }
+
+
 }
