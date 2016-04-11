@@ -8,6 +8,7 @@ const CACHE_SIZE2 = CACHE_SIZE/2
 
 import {WebApi} from 'actions'
 import {getMapFromList, indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
+import {getFocusDescItemLocation} from 'stores/app/arr/subNodeFormUtils.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
 import {setFocus} from 'actions/global/focus'
 import {getNodeKeyType} from 'stores/app/utils.jsx'
@@ -339,6 +340,17 @@ export function fundSubNodeFormValueDelete(versionId, nodeKey, valueLocation) {
                 .then(json => {
                     dispatch(fundSubNodeFormDescItemResponse(versionId, nodeKey, valueLocation, json, 'DELETE'));
                 })
+        }
+    }
+}
+
+export function fundSubNodeFormHandleClose(versionId, nodeKey) {
+    return (dispatch, getState) => {
+        var state = getState()
+        var subNodeForm = getSubNodeFormStore(state, versionId, nodeKey);
+        const valueLocation = getFocusDescItemLocation(subNodeForm)
+        if (valueLocation !== null) {
+            dispatch(fundSubNodeFormValueBlur(versionId, nodeKey, valueLocation))
         }
     }
 }

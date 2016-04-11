@@ -194,6 +194,7 @@ export function fund(state, action) {
                 fundTree: fundTree(state.fundTree, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
+                fundDataGrid: fundDataGrid(state.fundDataGrid, action),
             }
             return consolidateState(state, result);
 

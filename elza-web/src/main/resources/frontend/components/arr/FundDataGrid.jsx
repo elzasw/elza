@@ -14,6 +14,7 @@ import {fundDataGridSetColumnsSettings, fundDataGridSetSelection, fundDataGridSe
     fundDataGridFetchDataIfNeeded, fundDataGridSetPageIndex, fundDataGridSetPageSize,
     fundDataGridFilterChange, fundBulkModifications, fundDataGridFilterClearAll, fundDataGridPrepareEdit, fundDataGridFilterUpdateData} from 'actions/arr/fundDataGrid'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
+import {fundSubNodeFormHandleClose} from 'actions/arr/subNodeForm'
 import {getSetFromIdsList, getMapFromList} from 'stores/app/utils'
 import {propsEquals} from 'components/Utils'
 import {Button} from 'react-bootstrap'
@@ -30,7 +31,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         this.bindMethods('handleSelectedIdsChange', 'handleColumnResize', 'handleColumnSettings', 'handleChangeColumnsSettings',
             'handleBulkModifications', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer', 'resizeGrid', 'handleFilterClearAll',
-            'handleFilterUpdateData', 'handleContextMenu', 'handleSelectInNewTab', 'handleSelectInTab', 'handleEdit', 'setFocusAfterCellEdit');
+            'handleFilterUpdateData', 'handleContextMenu', 'handleSelectInNewTab', 'handleSelectInTab', 'handleEdit', 'handleEditClose');
 
         var colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
         if (!colState) {
@@ -384,10 +385,14 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 closed={closed}
                 position={{x: cellRect.left, y: cellRect.top}}
             />,
-        'fund-data-grid-cell-edit', this.setFocusAfterCellEdit));
+        'fund-data-grid-cell-edit', this.handleEditClose));
     }
 
-    setFocusAfterCellEdit() {
+    handleEditClose() {
+        const {versionId} = this.props
+
+        this.dispatch(fundSubNodeFormHandleClose(versionId, 'DATA_GRID'))
+
         this.setState({},
             ()=>{ ReactDOM.findDOMNode(this.refs.dataGrid).focus() }
         )
@@ -418,7 +423,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         const {fundId, fundDataGrid, versionId, rulDataTypes, descItemTypes} = this.props;
         const {cols} = this.state;
 
-        if (!fundDataGrid.fetchedFilter || !fundDataGrid.fetchedData || !descItemTypes.fetched || !rulDataTypes.fetched) {
+        if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !rulDataTypes.fetched) {
             return <Loading/>
         }
 

@@ -67,6 +67,33 @@ export function createImplicitDescItem(descItemType, refType, addedByUser=false)
     return descItem;
 }
 
+export function getFocusDescItemLocation(subNodeFormStore) {
+    const formData = subNodeFormStore.formData
+
+    for (var g=0; g<formData.descItemGroups.length; g++) {
+        const group = formData.descItemGroups[g]
+        if (group.hasFocus) {
+            for (var dit=0; dit<group.descItemTypes.length; dit++) {
+                const descItemType = group.descItemTypes[dit]
+                if (descItemType.hasFocus) {
+                    for (var di=0; di<descItemType.descItems.length; di++) {
+                        const descItem = descItemType.descItems[di]
+                        if (descItem.hasFocus) {
+                            return {
+                                descItemGroupIndex: g,
+                                descItemTypeIndex:  dit,
+                                descItemIndex: di,
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return null
+}
+
 export function createDescItemFromDb(descItemType, descItem) {
     var result = {
         ...descItem,

@@ -10,7 +10,6 @@ const initialState = {
     fetchedData: false,
     pageSize: 10,   // aktuální velikost stránky
     pageIndex: 0,   // aktuální stránka
-    dirty: false,
     items: [],
     itemsCount: 0,
     filter: {}, // mapa id desc item type na filter data
@@ -45,7 +44,6 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 fetchedFilter: false,
                 isFetchingData: false,
                 fetchedData: false,
-                dirty: false,
                 items: [],
                 itemsCount: 0,
                 selectedIds: [],
@@ -87,7 +85,6 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 ...state,
                 pageSize: action.pageSize,
                 pageIndex: 0,
-                dirty: true,
             }
         case types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS:
             return {
@@ -113,7 +110,6 @@ export default function fundDataGrid(state = initialState, action = {}) {
             return {
                 ...state,
                 pageIndex: action.pageIndex,
-                dirty: true,
             }
         case types.FUND_FUND_DATA_GRID_FILTER_CHANGE:
             var filter = {...state.filter}
@@ -144,6 +140,11 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 itemsCount: action.itemsCount,
                 pageIndex: 0,
                 currentDataKey: '', // vynucení načtení dat!!!
+            }
+        case types.CHANGE_NODES:
+            return {
+                ...state,
+                currentDataKey: '',
             }
         case types.FUND_FUND_DATA_GRID_DATA_REQUEST:
             return {
