@@ -10,6 +10,12 @@ function findByNodeKeyInNodes(nodesState, versionId, nodeKey) {
 }
 exports.findByNodeKeyInNodes = findByNodeKeyInNodes
 
+function getNodeKeyType(nodeKey) {
+    const i = nodeKey.indexOf('|')
+    return i === -1 ? nodeKey : nodeKey.substring(0, i)
+}
+exports.getNodeKeyType = getNodeKeyType
+
 function findByNodeKeyInGlobalState(globalState, versionId, nodeKey) {
     var fundIndex = indexById(globalState.arrRegion.funds, versionId, "versionId");
     if (fundIndex != null) {

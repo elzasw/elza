@@ -21,6 +21,7 @@ export function isFundDataGridAction(action) {
         case types.FUND_FUND_DATA_GRID_SELECTION:
         case types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS:
         case types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL:
+        case types.FUND_FUND_DATA_GRID_PREPARE_EDIT:
             return true
         default:
             return false
@@ -83,6 +84,16 @@ export function fundDataGridFilterClearAll(versionId) {
     return {
         type: types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL,
         versionId,
+    }
+}
+
+export function fundDataGridPrepareEdit(versionId, nodeId, parentNodeId, descItemTypeId) {
+    return {
+        type: types.FUND_FUND_DATA_GRID_PREPARE_EDIT,
+        versionId,
+        nodeId,
+        parentNodeId,
+        descItemTypeId,
     }
 }
 

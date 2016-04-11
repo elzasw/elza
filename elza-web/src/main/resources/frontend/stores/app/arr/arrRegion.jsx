@@ -21,7 +21,6 @@ import {isNodeSettingsAction} from 'actions/arr/nodeSetting'
 import {isFundDataGridAction} from 'actions/arr/fundDataGrid'
 import {isFundChangeAction} from 'actions/global/change'
 
-
 const initialState = {
     activeIndex: null,
     nodeSettings: nodeSetting(undefined, {}),

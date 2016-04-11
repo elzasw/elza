@@ -31,11 +31,15 @@ var ModalDialogWrapper = class ModalDialogWrapper extends React.Component {
     }
 
     render() {
+        const {title} = this.props
+        
+        const renderHeader = title !== null
+
         return (
-            <Modal className={this.props.className} ref='modal' show={true} onHide={this.props.onHide}>
-                <Modal.Header closeButton onHide={this.props.onHide}>
+            <Modal backdrop='static' className={this.props.className} ref='modal' show={true} onHide={this.props.onHide}>
+                {renderHeader && <Modal.Header closeButton onHide={this.props.onHide}>
                     <Modal.Title>{this.props.title}</Modal.Title>
-                </Modal.Header>
+                </Modal.Header>}
 
                 <div ref="modalBody">
                     {this.props.children}

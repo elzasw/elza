@@ -10,7 +10,7 @@ import {WebApi} from 'actions'
 import {getMapFromList, indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
 import {setFocus} from 'actions/global/focus'
-
+import {getNodeKeyType} from 'stores/app/utils.jsx'
 import * as types from 'actions/constants/ActionTypes';
 
 export function isSubNodeFormCacheAction(action) {
@@ -469,19 +469,35 @@ export function fundSubNodeFormValueFocus(versionId, nodeKey, valueLocation) {
 export function fundSubNodeFormFetchIfNeeded(versionId, nodeKey) {
     return (dispatch, getState) => {
         var state = getState();
-        var node = getNodeStore(state, versionId, nodeKey)
-        var subNodeForm = node.subNodeForm
 
-        if (subNodeForm != null) {
-            if ((!subNodeForm.fetched || subNodeForm.dirty) && !subNodeForm.isFetching) {
-                return dispatch(fundSubNodeFormFetch(versionId, node.selectedSubNodeId, nodeKey));
-            }
+        const type = getNodeKeyType(nodeKey)
+        switch (type) {
+            case 'NODE':
+                var node = getNodeStore(state, versionId, nodeKey)
+                if (node !== null) {
+                    const subNodeForm = node.subNodeForm
+                    if ((!subNodeForm.fetched || subNodeForm.dirty) && !subNodeForm.isFetching) {
+                        return dispatch(fundSubNodeFormFetch(versionId, node.selectedSubNodeId, nodeKey));
+                    }
+                }
+                break
+            case 'DATA_GRID':
+                var fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+                if (fundIndex !== null) {
+                    const fundDataGrid = state.arrRegion.funds[fundIndex].fundDataGrid
+                    const subNodeForm = fundDataGrid.subNodeForm
+                    if ((!subNodeForm.fetched || subNodeForm.dirty) && !subNodeForm.isFetching) {
+                        return dispatch(fundSubNodeFormFetch(versionId, fundDataGrid.nodeId, nodeKey));
+                    }
+                }
+                break
         }
+
     }
 }
 
 /**
- * Načtení server dat pro formulář node pro aktuálně předané parametry  s využitím cache - pokud jsou data v cache, použije je, jinak si vyžádá nová data a zajistí i nakešování okolí.
+ * Načtení server dat pro formulář node pro aktuálně předané parametry s využitím cache - pokud jsou data v cache, použije je, jinak si vyžádá nová data a zajistí i nakešování okolí.
  * Odpovídá volání WebApi.getFundNodeForm, jen dále zajišťuje cache.
  * @param {Object} getState odkaz na funkci pro načtení store
  * @param {Object} dispatch odkaz na funkci dispatch
@@ -491,65 +507,71 @@ export function fundSubNodeFormFetchIfNeeded(versionId, nodeKey) {
  * @return {Object} promise pro vrácení nových dat
  */
 function getNodeForm(getState, dispatch, versionId, nodeId, nodeKey) {
-    var state = getState()
-    var node = getNodeStore(state, versionId, nodeKey);
-    if (node === null) return   // nemělo by nastat
+    const type = getNodeKeyType(nodeKey)
+    switch (type) {
+        case 'NODE':    // podpora kešování
+            var state = getState()
+            var node = getNodeStore(state, versionId, nodeKey);
+            if (node === null) return   // nemělo by nastat
 
-    const subNodeFormCache = node.subNodeFormCache
+            const subNodeFormCache = node.subNodeFormCache
 
-    var data = subNodeFormCache.dataCache[nodeId]
-    if (!data) {    // není v cache, načteme ji včetně okolí
-        // ##
-        // # Data pro cache, jen pokud již cache nenačítá
-        // ##
-        if (!subNodeFormCache.isFetching) {
-            if (node.isNodeInfoFetching || !node.nodeInfoFetched || node.nodeInfoDirty) {   // nemáme platné okolí (okolní NODE) pro daný NODE, raději je načteme ze serveru; nemáme vlastně okolní NODE pro získání seznamu ID pro načtení formulářů pro cache
-                //console.log('### READ_CACHE', 'around')
+            var data = subNodeFormCache.dataCache[nodeId]
+            if (!data) {    // není v cache, načteme ji včetně okolí
+                // ##
+                // # Data pro cache, jen pokud již cache nenačítá
+                // ##
+                if (!subNodeFormCache.isFetching) {
+                    if (node.isNodeInfoFetching || !node.nodeInfoFetched || node.nodeInfoDirty) {   // nemáme platné okolí (okolní NODE) pro daný NODE, raději je načteme ze serveru; nemáme vlastně okolní NODE pro získání seznamu ID pro načtení formulářů pro cache
+                        //console.log('### READ_CACHE', 'around')
 
-                dispatch(fundSubNodeFormCacheRequest(versionId, nodeKey))
-                WebApi.getFundNodeFormsWithAround(versionId, nodeId, CACHE_SIZE2)
-                    .then(json => {
-                        dispatch(fundSubNodeFormCacheResponse(versionId, nodeKey, json.forms))
-                    })
-            } else {    // pro získání id okolí můžeme použít store
-                // Načtení okolí položky
-                var index = indexById(node.childNodes, nodeId)
-                var left = node.childNodes.slice(Math.max(index - CACHE_SIZE2, 0), index)
-                var right = node.childNodes.slice(index, index + CACHE_SIZE2)
+                        dispatch(fundSubNodeFormCacheRequest(versionId, nodeKey))
+                        WebApi.getFundNodeFormsWithAround(versionId, nodeId, CACHE_SIZE2)
+                            .then(json => {
+                                dispatch(fundSubNodeFormCacheResponse(versionId, nodeKey, json.forms))
+                            })
+                    } else {    // pro získání id okolí můžeme použít store
+                        // Načtení okolí položky
+                        var index = indexById(node.childNodes, nodeId)
+                        var left = node.childNodes.slice(Math.max(index - CACHE_SIZE2, 0), index)
+                        var right = node.childNodes.slice(index, index + CACHE_SIZE2)
 
-                var idsForFetch = []
-                left.forEach(n => {
-                    if (!subNodeFormCache.dataCache[n.id]) {
-                        idsForFetch.push(n.id)
-                    }
-                })
-                right.forEach(n => {
-                    if (!subNodeFormCache.dataCache[n.id]) {
-                        idsForFetch.push(n.id)
-                    }
-                })
-
-                //console.log('### READ_CACHE', idsForFetch, node.childNodes, left, right)
-
-                if (idsForFetch.length > 0) {   // máme něco pro načtení
-                    dispatch(fundSubNodeFormCacheRequest(versionId, nodeKey))
-                    WebApi.getFundNodeForms(versionId, idsForFetch)
-                        .then(json => {
-                            dispatch(fundSubNodeFormCacheResponse(versionId, nodeKey, json.forms))
+                        var idsForFetch = []
+                        left.forEach(n => {
+                            if (!subNodeFormCache.dataCache[n.id]) {
+                                idsForFetch.push(n.id)
+                            }
                         })
-                }
-            }
-        }
+                        right.forEach(n => {
+                            if (!subNodeFormCache.dataCache[n.id]) {
+                                idsForFetch.push(n.id)
+                            }
+                        })
 
-        // ##
-        // # Data požadovaného formuláře
-        // ##
-        return WebApi.getFundNodeForm(versionId, nodeId)
-    } else {    // je v cache, vrátíme ji
-        //console.log('### USE_CACHE')
-        return new Promise(function (resolve, reject) {
-            resolve(data)
-        })
+                        //console.log('### READ_CACHE', idsForFetch, node.childNodes, left, right)
+
+                        if (idsForFetch.length > 0) {   // máme něco pro načtení
+                            dispatch(fundSubNodeFormCacheRequest(versionId, nodeKey))
+                            WebApi.getFundNodeForms(versionId, idsForFetch)
+                                .then(json => {
+                                    dispatch(fundSubNodeFormCacheResponse(versionId, nodeKey, json.forms))
+                                })
+                        }
+                    }
+                }
+
+                // ##
+                // # Data požadovaného formuláře
+                // ##
+                return WebApi.getFundNodeForm(versionId, nodeId)
+            } else {    // je v cache, vrátíme ji
+                //console.log('### USE_CACHE')
+                return new Promise(function (resolve, reject) {
+                    resolve(data)
+                })
+            }
+        case 'DATA_GRID':   // není podpora kešování
+            return WebApi.getFundNodeForm(versionId, nodeId)
     }
 }
 
@@ -646,12 +668,25 @@ export function fundSubNodeFormRequest(versionId, nodeId, nodeKey) {
  * @return subNodeForm store
  */
 function getSubNodeFormStore(state, versionId, nodeKey) {
-    var node = getNodeStore(state, versionId, nodeKey);
-    if (node !== null) {
-        return node.subNodeForm;
-    } else {
-        return null;
+    const type = getNodeKeyType(nodeKey)
+    switch (type) {
+        case 'NODE':
+            var node = getNodeStore(state, versionId, nodeKey)
+            if (node !== null) {
+                return node.subNodeForm
+            } else {
+                return null
+            }
+        case 'DATA_GRID':
+            var fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+            if (fundIndex !== null) {
+                return state.arrRegion.funds[fundIndex].fundDataGrid.subNodeForm
+            } else {
+                return null
+            }
     }
+
+    return null;
 }
 
 /**

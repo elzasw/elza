@@ -41,7 +41,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
             'handleCreatePacket', 'handleCreatePacketSubmit', 'handleAddChildNode', 'handleCreateParty',
             'handleCreatedParty', 'handleCreateRecord', 'handleCreatedRecord', 'handleDeleteNode',
-            'handleDescItemTypeCopyFromPrev', 'trySetFocus', 'getFlatDescItemTypes', 'getNodeSetting',
+            'handleDescItemTypeCopyFromPrev', 'trySetFocus', 'initFocus', 'getFlatDescItemTypes', 'getNodeSetting',
             'addNodeAfterClick', 'addNodeBeforeClick', 'addNodeChildClick'
         );
     }
@@ -62,6 +62,15 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         this.trySetFocus(nextProps)
+    }
+
+    initFocus() {
+        if (this.refs.nodeForm) {
+            var el = ReactDOM.findDOMNode(this.refs.nodeForm);
+            if (el) {
+                setInputFocus(el, false);
+            }
+        }        
     }
 
     trySetFocus(props) {
@@ -101,13 +110,25 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemGroup(descItemGroup, descItemGroupIndex, nodeSetting) {
-        var descItemTypes = descItemGroup.descItemTypes.map((descItemType, descItemTypeIndex) => (
-            this.renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting)
-        ));
+        const {singleDescItemTypeEdit, singleDescItemTypeId} = this.props
+
+        var descItemTypes = []
+        descItemGroup.descItemTypes.forEach((descItemType, descItemTypeIndex) => {
+            const render = singleDescItemTypeEdit === null || (singleDescItemTypeEdit !== null && singleDescItemTypeId == descItemType.id)
+
+            if (render) {
+                const i = this.renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting)
+                descItemTypes.push(i)
+            }
+        });
         var cls = classNames({
             'desc-item-group': true,
             active: descItemGroup.hasFocus
         });
+
+        if (singleDescItemTypeEdit && descItemTypes.length === 0) {
+            return null
+        }
 
         return (
             <div key={'type-' + descItemGroup.code + '-' + descItemGroupIndex} className={cls}>
@@ -736,15 +757,19 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     render() {
-        const {subNodeForm, closed, nodeSettings, nodeId} = this.props;
+        const {subNodeForm, closed, nodeSettings, nodeId, singleDescItemTypeEdit} = this.props;
         var formData = subNodeForm.formData
 
         var nodeSetting = this.getNodeSetting()
 
-        var formActions = closed ? null : this.renderFormActions();
-        var descItemGroups = formData.descItemGroups.map((group, groupIndex) => (
-            this.renderDescItemGroup(group, groupIndex, nodeSetting)
-        ));
+        var formActions = (closed || singleDescItemTypeEdit) ? null : this.renderFormActions();
+        var descItemGroups = []
+        formData.descItemGroups.forEach((group, groupIndex) => {
+            const i = this.renderDescItemGroup(group, groupIndex, nodeSetting)
+            if (i !== null) {
+                descItemGroups.push(i)
+            }
+        });
 
         return (
             <div className='node-form'>
@@ -776,7 +801,7 @@ SubNodeForm.propTypes = {
     parentNode: React.PropTypes.object.isRequired,
     selectedSubNode: React.PropTypes.object.isRequired,
     selectedSubNodeId: React.PropTypes.number.isRequired,
-    nodeKey: React.PropTypes.number.isRequired,
+    nodeKey: React.PropTypes.string.isRequired,
     nodeId: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
     nodeSettings: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,

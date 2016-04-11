@@ -318,10 +318,14 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         )
     }
 
+    getCellElement(rowIndex, colIndex) {
+        return this.refs[rowIndex + '-' + colIndex]
+    }
+
     handleEdit(rowIndex, colIndex) {
         const {rows} = this.props
         const {cols} = this.state
-        this.props.onEdit(rows[rowIndex], cols[colIndex])
+        this.props.onEdit(rows[rowIndex], rowIndex, cols[colIndex], colIndex)
     }
 
     renderHeaderCol(col, colIndex, colFocus) {
@@ -421,4 +425,4 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(DataGrid);
+module.exports = connect(null, null, null, { withRef: true })(DataGrid)

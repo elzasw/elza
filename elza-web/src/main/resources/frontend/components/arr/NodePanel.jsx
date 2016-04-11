@@ -160,14 +160,12 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
     componentDidMount() {
         this.requestData(this.props.versionId, this.props.node);
-        this.dispatch(calendarTypesFetchIfNeeded());
         this.ensureItemVisible();
         this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
         this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp);
-        this.dispatch(calendarTypesFetchIfNeeded());
 
         var newState = {
             filterText: nextProps.node.filterText,
@@ -367,6 +365,7 @@ return true
 
         }
         this.dispatch(fundNodeInfoFetchIfNeeded(versionId, node.id, node.nodeKey));
+        this.dispatch(calendarTypesFetchIfNeeded());
     }
 
     /**

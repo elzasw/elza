@@ -1,4 +1,7 @@
 import * as types from 'actions/constants/ActionTypes';
+import {consolidateState} from 'components/Utils'
+import subNodeForm from './subNodeForm'
+import {isSubNodeFormAction} from 'actions/arr/subNodeForm'
 
 const initialState = {
     isFetchingFilter: false,
@@ -16,12 +19,24 @@ const initialState = {
     columnInfos: {},    // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
     selectedIds: [],
     currentDataKey: '',
+    subNodeForm: subNodeForm(),
+    nodeId: null,   // id node právě editovaného řádku
+    parentNodeId: null,   // id parent node právě editovaného řádku
+    descItemTypeId: null,   // id atributu právě editovaného řádku
 }
 for (var a=1; a<10; a++) {
 initialState.visibleColumns[a] = true
 }
 
 export default function fundDataGrid(state = initialState, action = {}) {
+    if (isSubNodeFormAction(action)) {
+        var result = {
+            ...state, 
+            subNodeForm: subNodeForm(state.subNodeForm, action),
+        };
+        return consolidateState(state, result);
+    }
+
     switch (action.type) {
         case types.STORE_LOAD:
             return {
@@ -35,6 +50,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 itemsCount: 0,
                 selectedIds: [],
                 currentDataKey: '',
+                subNodeForm: subNodeForm(),
             }
         case types.STORE_SAVE:
             const {pageSize, pageIndex, filter, visibleColumns, columnsOrder, columnInfos} = state;
@@ -53,6 +69,19 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 filter: {},
                 fetchedFilter: false,
             }
+        case types.FUND_FUND_DATA_GRID_PREPARE_EDIT:
+            var result = {
+                ...state,
+                nodeId: action.nodeId,
+                parentNodeId: action.parentNodeId,
+                descItemTypeId: action.descItemTypeId,
+            }
+
+            if (action.nodeId !== state.subNodeForm.fetchingId) {
+                result.subNodeForm = subNodeForm()
+            }
+
+            return result
         case types.FUND_FUND_DATA_GRID_PAGE_SIZE:
             return {
                 ...state,

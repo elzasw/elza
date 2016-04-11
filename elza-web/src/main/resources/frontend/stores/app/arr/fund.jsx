@@ -18,6 +18,7 @@ import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister'
 import {isDeveloperScenariosAction} from 'actions/global/developer'
 import {isFundDataGridAction} from 'actions/arr/fundDataGrid'
 import {isFundChangeAction} from 'actions/global/change'
+import {getNodeKeyType} from 'stores/app/utils.jsx'
 
 export function fundInitState(fundWithVersion) {
     var result = {
@@ -78,11 +79,25 @@ export function fund(state, action) {
 
     if (isFundDataGridAction(action)) {
         var result = {...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action)};
-        return consolidateState(state, result);
+        return consolidateState(state, result)
+    }
+
+    if (isSubNodeFormAction(action)) {
+        const type = getNodeKeyType(action.nodeKey)
+        switch (type) {
+            case 'NODE':
+                var result = {...state,
+                    nodes: nodes(state.nodes, action),
+                    fundTree: fundTree(state.fundTree, action),
+                }
+                return consolidateState(state, result);
+            case 'DATA_GRID':
+                var result = {...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action)};
+                return consolidateState(state, result)
+        }
     }
 
     if (false
-        || isSubNodeFormAction(action)
         || isSubNodeFormCacheAction(action)
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)
@@ -104,7 +119,7 @@ export function fund(state, action) {
             return {
                 ...state,
                 isFetching: false,
-                closed: true,   // při načtení vždy chceme closed, u i když není - aby nemohl editovat, než se načte aktuální stav ze serveru
+                closed: true,   // při načtení vždy chceme closed, i když není - aby nemohl editovat, než se načte aktuální stav ze serveru
                 dirty: true,
                 fundTree: fundTree(state.fundTree, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),

@@ -13,6 +13,7 @@ import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes
 import {fundExtendedView} from 'actions/arr/fund'
 import {indexById} from 'stores/app/utils.jsx'
 import {getNodeParents, getNodeParent} from './ArrUtils'
+import {fundsFetchIfNeeded} from 'actions/arr/fund'
 
 var FundExtendedView = class FundExtendedView extends AbstractReactComponent {
     constructor(props) {
@@ -26,9 +27,11 @@ var FundExtendedView = class FundExtendedView extends AbstractReactComponent {
     }
 
     componentDidMount() {
+        this.dispatch(fundsFetchIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
+        this.dispatch(fundsFetchIfNeeded());
     }
 
     getDestNode() {
@@ -132,6 +135,8 @@ var FundExtendedView = class FundExtendedView extends AbstractReactComponent {
             tabContent.push(
                 <FundDataGrid
                     versionId={fund.versionId}
+                    fundId={fund.id}
+                    closed={fund.closed}
                     fundDataGrid={fund.fundDataGrid}
                     descItemTypes={descItemTypes}
                     rulDataTypes={rulDataTypes}

@@ -6,13 +6,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {FundBulkModificationsForm, Icon, ListBox, DataGridColumnsSettings, AbstractReactComponent, i18n, Loading,
-    DataGrid, FundFilterSettings, DataGridPagination} from 'components';
+    DataGrid, FundFilterSettings, DataGridPagination, FundDataGridCellForm} from 'components';
 import {MenuItem} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import * as types from 'actions/constants/ActionTypes';
 import {fundDataGridSetColumnsSettings, fundDataGridSetSelection, fundDataGridSetColumnSize, fundDataGridFetchFilterIfNeeded,
     fundDataGridFetchDataIfNeeded, fundDataGridSetPageIndex, fundDataGridSetPageSize,
-    fundDataGridFilterChange, fundBulkModifications, fundDataGridFilterClearAll, fundDataGridFilterUpdateData} from 'actions/arr/fundDataGrid'
+    fundDataGridFilterChange, fundBulkModifications, fundDataGridFilterClearAll, fundDataGridPrepareEdit, fundDataGridFilterUpdateData} from 'actions/arr/fundDataGrid'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 import {getSetFromIdsList, getMapFromList} from 'stores/app/utils'
 import {propsEquals} from 'components/Utils'
@@ -32,12 +32,12 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             'handleBulkModifications', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer', 'resizeGrid', 'handleFilterClearAll',
             'handleFilterUpdateData', 'handleContextMenu', 'handleSelectInNewTab', 'handleSelectInTab', 'handleEdit');
 
-        const colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
-        if (colState) {
-            this.state = colState
-        } else {
-            this.state = {cols: []}
+        var colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
+        if (!colState) {
+            colState = {cols: []}
         }
+
+        this.state = colState
     }
 
     componentDidMount() {
@@ -360,8 +360,29 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
     }
 
-    handleEdit(row, col) {
-console.log("@@@@@@@@ EDIT", row, col)
+    handleEdit(row, rowIndex, col, colIndex) {
+        const {versionId, fundId, closed} = this.props
+        const parentNodeId = row.parentNode ? row.parentNode.id : null
+
+        if (typeof col.id === 'undefined') {
+            return
+        }
+
+        this.dispatch(fundDataGridPrepareEdit(versionId, row.id, parentNodeId, col.id))
+
+        const dataGridComp = this.refs.dataGrid.getWrappedInstance()
+        const cellEl = dataGridComp.getCellElement(rowIndex, colIndex)
+        const cellRect = cellEl.getBoundingClientRect()
+
+        this.dispatch(modalDialogShow(this, null,
+            <FundDataGridCellForm
+                versionId={versionId}
+                fundId={fundId}
+                nodeKey='DATA_GRID'
+                closed={closed}
+                position={{x: cellRect.left, y: cellRect.top}}
+            />,
+        'fund-data-grid-cell-edit'));
     }
 
     /**
@@ -385,7 +406,7 @@ console.log("@@@@@@@@ EDIT", row, col)
     }
 
     render() {
-        const {fundDataGrid, versionId, rulDataTypes, descItemTypes} = this.props;
+        const {fundId, fundDataGrid, versionId, rulDataTypes, descItemTypes} = this.props;
         const {cols} = this.state;
 
         if (!fundDataGrid.fetchedFilter || !fundDataGrid.fetchedData || !descItemTypes.fetched || !rulDataTypes.fetched) {
@@ -402,6 +423,7 @@ console.log("@@@@@@@@ EDIT", row, col)
                     </div>
                     <div className='grid-container'>
                         <DataGrid
+                            ref='dataGrid'
                             rows={fundDataGrid.items}
                             cols={cols}
                             selectedIds={fundDataGrid.selectedIds}
@@ -432,5 +454,3 @@ function mapStateToProps(state) {
 }
 
 module.exports = connect(mapStateToProps)(FundDataGrid);
-
-

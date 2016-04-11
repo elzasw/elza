@@ -114,7 +114,7 @@ function validate(descItem, refType, valueServerError) {
     return error;
 }
 
-export default function subNodeForm(state = initialState, action) {
+export default function subNodeForm(state = initialState, action = {}) {
     // Načtení umístění, pokud bylo v akci předáno
     var loc
     if (action.valueLocation) {
