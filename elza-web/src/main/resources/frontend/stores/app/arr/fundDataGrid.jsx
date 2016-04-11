@@ -13,7 +13,7 @@ const initialState = {
     items: [],
     itemsCount: 0,
     filter: {}, // mapa id desc item type na filter data
-    visibleColumns: {1: true, 2: true, 3: true},   // seznam mapa id na boolean viditelných sloupečků   // "4", "5", "8", "9", "11", "14", "17", "38", "42", "44", "50", "53"
+    visibleColumns: {},   // seznam mapa id na boolean viditelných sloupečků   // "4", "5", "8", "9", "11", "14", "17", "38", "42", "44", "50", "53"
     columnsOrder: [],   // seznam id desc item type - pořadí zobrazování sloupečků
     columnInfos: {},    // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
     selectedIds: [],
@@ -23,9 +23,9 @@ const initialState = {
     parentNodeId: null,   // id parent node právě editovaného řádku
     descItemTypeId: null,   // id atributu právě editovaného řádku
 }
-for (var a=1; a<10; a++) {
-initialState.visibleColumns[a] = true
-}
+new Array("4", "5", "8", "9", "11", "14", "17", "38", "42", "44", "50", "53").forEach(a => {
+    initialState.visibleColumns[a] = true
+})
 
 export default function fundDataGrid(state = initialState, action = {}) {
     if (isSubNodeFormAction(action)) {

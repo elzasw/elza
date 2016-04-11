@@ -152,6 +152,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         if (descItemTypes.fetched) {
             if (props.fundDataGrid.columnsOrder !== fundDataGrid.columnsOrder
                 || props.descItemTypes !== descItemTypes
+                || props.rulDataTypes !== rulDataTypes
                 || props.fundDataGrid.columnInfos !== fundDataGrid.columnInfos
                 || props.fundDataGrid.filter !== fundDataGrid.filter
             ) {
@@ -356,7 +357,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             <ul className="dropdown-menu">
                 <MenuItem onClick={this.handleSelectInNewTab.bind(this, row)}>{i18n('arr.fund.bulkModifications.action.openInNewTab')}</MenuItem>
                 <MenuItem onClick={this.handleSelectInTab.bind(this, row)}>{i18n('arr.fund.bulkModifications.action.open')}</MenuItem>
-                <MenuItem onClick={() => {this.dispatch(contextMenuHide());this.handleEdit(row, col)}}>{i18n('global.action.update')}</MenuItem>
+                <MenuItem onClick={() => {this.dispatch(contextMenuHide());this.handleEdit(row, rowIndex, col, colIndex)}}>{i18n('global.action.update')}</MenuItem>
             </ul>
         )
 
