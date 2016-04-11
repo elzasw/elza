@@ -586,6 +586,10 @@ class WebApi{
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/deleteDataValues/' + versionId, {descItemTypeId}, {nodes, specIds: specsIds})
     }
 
+    getFilteredFulltextNodes(versionId, fulltext) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFilteredFulltext/' + versionId, {fulltext})
+    }
+
     getPackages() {
         return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/getPackages')
             .then(json=>{

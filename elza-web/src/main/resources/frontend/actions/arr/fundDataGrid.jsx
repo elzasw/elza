@@ -22,6 +22,10 @@ export function isFundDataGridAction(action) {
         case types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS:
         case types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL:
         case types.FUND_FUND_DATA_GRID_PREPARE_EDIT:
+        case types.FUND_FUND_DATA_GRID_FULLTEXT_RESULT:
+        case types.FUND_FUND_DATA_GRID_FULLTEXT_NEXT_ITEM:
+        case types.FUND_FUND_DATA_GRID_FULLTEXT_PREV_ITEM:
+        case types.FUND_FUND_DATA_GRID_CHANGE_CELL_FOCUS:
             return true
         default:
             return false
@@ -46,6 +50,47 @@ export function fundBulkModifications(versionId, descItemTypeId, specsIds, opera
                         .then(dispatch(modalDialogHide()))
                 break
         }
+    }
+}
+
+export function fundDataFulltextSearch(versionId, filterText) {
+    return (dispatch, getState) => {
+        WebApi.getFilteredFulltextNodes(versionId, filterText)
+            .then(json => {
+                dispatch(fundDataFulltextSearchResult(versionId, filterText, json))
+            })
+    }
+}
+
+function fundDataFulltextSearchResult(versionId, filterText, searchedItems) {
+    return {
+        type: types.FUND_FUND_DATA_GRID_FULLTEXT_RESULT,
+        versionId,
+        filterText,
+        searchedItems,
+    }
+}
+
+export function fundDataChangeCellFocus(versionId, row, col) {
+    return {
+        type: types.FUND_FUND_DATA_GRID_CHANGE_CELL_FOCUS,
+        versionId,
+        row,
+        col,
+    }
+}
+
+export function fundDataFulltextPrevItem(versionId) {
+    return {
+        type: types.FUND_FUND_DATA_GRID_FULLTEXT_PREV_ITEM,
+        versionId,
+    }
+}
+
+export function fundDataFulltextNextItem(versionId) {
+    return {
+        type: types.FUND_FUND_DATA_GRID_FULLTEXT_NEXT_ITEM,
+        versionId,
     }
 }
 

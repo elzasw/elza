@@ -43,10 +43,10 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
                     }
                 }
             } else {
-                onFulltextSearch()
+                onFulltextSearch(filterText)
             }
         } else {    // standardní hledání kliknutím na tlačítko hledat
-            onFulltextSearch()
+            onFulltextSearch(filterText)
         }
     }
 

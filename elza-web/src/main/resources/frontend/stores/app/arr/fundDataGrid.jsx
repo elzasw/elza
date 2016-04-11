@@ -22,10 +22,39 @@ const initialState = {
     nodeId: null,   // id node právě editovaného řádku
     parentNodeId: null,   // id parent node právě editovaného řádku
     descItemTypeId: null,   // id atributu právě editovaného řádku
+    searchedItems: [], // výsledky hledání dat
+    searchedCurrentIndex: 0,    // index aktuálně vybrané položky ve výsledcích hledání
+    cellFocus: {row: 0, col: 0},
 }
 new Array("4", "5", "8", "9", "11", "14", "17", "38", "42", "44", "50", "53").forEach(a => {
     initialState.visibleColumns[a] = true
 })
+
+function changeSearchedIndex(state, newIndex) {
+    if (state.searchedItems.length === 0) {
+        return {
+            ...state,
+            searchedCurrentIndex: 0,
+        }
+    } else {
+        const info = state.searchedItems[newIndex]
+        var pageIndex = state.pageIndex
+        var selectedIds = state.selectedIds
+
+        if (info.index < state.pageIndex * state.pageSize || info.index >= (state.pageIndex + 1) * state.pageSize) { // je mimo aktuálně zobrazovanou stránku
+            pageIndex = Math.floor(info.index / state.pageSize)
+            selectedIds = []
+        }
+
+        return {
+            ...state,
+            selectedIds: selectedIds,
+            pageIndex: pageIndex,
+            searchedCurrentIndex: newIndex,
+            cellFocus: {row: info.index - pageIndex * state.pageSize, col: 0}
+        }
+    }
+}
 
 export default function fundDataGrid(state = initialState, action = {}) {
     if (isSubNodeFormAction(action)) {
@@ -49,6 +78,8 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 selectedIds: [],
                 currentDataKey: '',
                 subNodeForm: subNodeForm(),
+                searchedItems: [],
+                searchedCurrentIndex: 0,
             }
         case types.STORE_SAVE:
             const {pageSize, pageIndex, filter, visibleColumns, columnsOrder, columnInfos} = state;
@@ -61,6 +92,22 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 columnsOrder,
                 columnInfos,
             }
+        case types.FUND_FUND_DATA_GRID_CHANGE_CELL_FOCUS:
+            return {
+                ...state,
+                cellFocus: {row: action.row, col: action.col},
+            }
+        case types.FUND_FUND_DATA_GRID_FULLTEXT_NEXT_ITEM:
+            return changeSearchedIndex(state, state.searchedCurrentIndex + 1)
+        case types.FUND_FUND_DATA_GRID_FULLTEXT_PREV_ITEM: {
+            return changeSearchedIndex(state, state.searchedCurrentIndex - 1)
+        }
+        case types.FUND_FUND_DATA_GRID_FULLTEXT_RESULT:
+            var midState = {
+                ...state,
+                searchedItems: action.searchedItems,
+            }
+            return changeSearchedIndex(midState, 0)
         case types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL:
             return {
                 ...state,
@@ -85,12 +132,15 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 ...state,
                 pageSize: action.pageSize,
                 pageIndex: 0,
+                selectedIds: action.pageIndex > state.pageIndex ? state.selectedIds: [],
+                cellFocus: {row: 0, col: 0},
             }
         case types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS:
             return {
                 ...state,
                 visibleColumns: action.visibleColumns,
                 columnsOrder: action.columnsOrder,
+                cellFocus: {row: 0, col: 0},
             }
         case types.FUND_FUND_DATA_GRID_COLUMN_SIZE:
             var columnInfos = {...state.columnInfos}
@@ -110,6 +160,8 @@ export default function fundDataGrid(state = initialState, action = {}) {
             return {
                 ...state,
                 pageIndex: action.pageIndex,
+                selectedIds: [],
+                cellFocus: {row: 0, col: 0},
             }
         case types.FUND_FUND_DATA_GRID_FILTER_CHANGE:
             var filter = {...state.filter}
@@ -126,6 +178,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 ...state,
                 filter: filter,
                 fetchedFilter: false,
+                cellFocus: {row: 0, col: 0},
             }
         case types.FUND_FUND_DATA_GRID_FILTER_REQUEST:
             return {
@@ -139,7 +192,9 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 fetchedFilter: true,
                 itemsCount: action.itemsCount,
                 pageIndex: 0,
+                selectedIds: [],
                 currentDataKey: '', // vynucení načtení dat!!!
+                cellFocus: {row: 0, col: 0},
             }
         case types.CHANGE_NODES:
             return {

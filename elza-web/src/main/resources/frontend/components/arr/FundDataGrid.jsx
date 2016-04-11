@@ -6,13 +6,14 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {FundBulkModificationsForm, Icon, ListBox, DataGridColumnsSettings, AbstractReactComponent, i18n, Loading,
-    DataGrid, FundFilterSettings, DataGridPagination, FundDataGridCellForm} from 'components';
+    DataGrid, FundFilterSettings, DataGridPagination, FundDataGridCellForm, SearchWithGoto} from 'components';
 import {MenuItem} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import * as types from 'actions/constants/ActionTypes';
 import {fundDataGridSetColumnsSettings, fundDataGridSetSelection, fundDataGridSetColumnSize, fundDataGridFetchFilterIfNeeded,
     fundDataGridFetchDataIfNeeded, fundDataGridSetPageIndex, fundDataGridSetPageSize,
-    fundDataGridFilterChange, fundBulkModifications, fundDataGridFilterClearAll, fundDataGridPrepareEdit, fundDataGridFilterUpdateData} from 'actions/arr/fundDataGrid'
+    fundDataGridFilterChange, fundBulkModifications, fundDataGridFilterClearAll, fundDataGridPrepareEdit, fundDataGridFilterUpdateData,
+    fundDataFulltextSearch, fundDataFulltextPrevItem, fundDataFulltextNextItem, fundDataChangeCellFocus} from 'actions/arr/fundDataGrid'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 import {fundSubNodeFormHandleClose} from 'actions/arr/subNodeForm'
 import {getSetFromIdsList, getMapFromList} from 'stores/app/utils'
@@ -31,12 +32,15 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         this.bindMethods('handleSelectedIdsChange', 'handleColumnResize', 'handleColumnSettings', 'handleChangeColumnsSettings',
             'handleBulkModifications', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer', 'resizeGrid', 'handleFilterClearAll',
-            'handleFilterUpdateData', 'handleContextMenu', 'handleSelectInNewTab', 'handleSelectInTab', 'handleEdit', 'handleEditClose');
+            'handleFilterUpdateData', 'handleContextMenu', 'handleSelectInNewTab', 'handleSelectInTab', 'handleEdit', 'handleEditClose',
+            'handleFulltextSearch', 'handleFulltextChange', 'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleChangeFocus');
 
         var colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
         if (!colState) {
             colState = {cols: []}
         }
+
+        colState.showFilterResult = false
 
         this.state = colState
     }
@@ -410,6 +414,33 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(fundSelectSubNode(versionId, row.node.id, row.parentNode, true, null, true));
     }
 
+    handleFulltextChange(value) {
+        this.setState({showFilterResult: false})
+    }
+
+    handleFulltextSearch(value) {
+        const {versionId} = this.props
+
+        this.setState({showFilterResult: true})
+
+        this.dispatch(fundDataFulltextSearch(versionId, value))
+    }
+
+    handleFulltextPrevItem() {
+        const {versionId} = this.props
+        this.dispatch(fundDataFulltextPrevItem(versionId))
+    }
+
+    handleFulltextNextItem() {
+        const {versionId} = this.props
+        this.dispatch(fundDataFulltextNextItem(versionId))
+    }
+
+    handleChangeFocus(row, col) {
+        const {versionId} = this.props
+        this.dispatch(fundDataChangeCellFocus(versionId, row, col))
+    }
+
     /**
      * Otevření uzlu v záložce.
      * @param row {Object} řádek dat
@@ -422,16 +453,31 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
     render() {
         const {fundId, fundDataGrid, versionId, rulDataTypes, descItemTypes} = this.props;
-        const {cols} = this.state;
+        const {cols, showFilterResult} = this.state;
 
         if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !rulDataTypes.fetched) {
             return <Loading/>
         }
 
+        // Hledání
+        var search = (
+            <SearchWithGoto
+                itemsCount={fundDataGrid.searchedItems.length}
+                selIndex={fundDataGrid.searchedCurrentIndex}
+                showFilterResult={showFilterResult}
+                onFulltextSearch={this.handleFulltextSearch}
+                onFulltextChange={this.handleFulltextChange}
+                onFulltextPrevItem={this.handleFulltextPrevItem}
+                onFulltextNextItem={this.handleFulltextNextItem}
+            />
+        )
+
+        // ---
         return (
             <div ref='gridContainer' className='fund-datagrid-container-wrap'>
                 <div ref='grid' className='fund-datagrid-container'>
                     <div className='actions-container'>
+                        {search}
                         <Button onClick={this.handleColumnSettings} title={i18n('arr.fund.columnSettings.action')}><Icon glyph='fa-columns'/></Button>
                         <Button onClick={this.handleFilterUpdateData}>{i18n('arr.fund.filterSettings.updateData.action')}</Button>
                         <Button onClick={this.handleFilterClearAll}>{i18n('arr.fund.filterSettings.clearAll.action')}</Button>
@@ -441,8 +487,11 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                             ref='dataGrid'
                             rows={fundDataGrid.items}
                             cols={cols}
+                            focusRow={fundDataGrid.cellFocus.row}
+                            focusCol={fundDataGrid.cellFocus.col}
                             selectedIds={fundDataGrid.selectedIds}
                             onColumnResize={this.handleColumnResize}
+                            onChangeFocus={this.handleChangeFocus}
                             onSelectedIdsChange={this.handleSelectedIdsChange}
                             onContextMenu={this.handleContextMenu}
                             onEdit={this.handleEdit}

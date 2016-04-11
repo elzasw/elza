@@ -17,6 +17,9 @@ const __minColWidth = 16
 var keyDownHandlers = {
     changeFocus: function(newFocus) {
         this.setState({ focus: newFocus, selectedRowIndexes: {[newFocus.row]: true} }, this.ensureFocusVisible(newFocus))
+
+        const {onChangeFocus} = this.props
+        onChangeFocus && onChangeFocus(newFocus.row, newFocus.col)
     },
     'F2': function(e) {
         const {focus} = this.state
@@ -75,12 +78,15 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.setState(this.getStateFromProps(nextProps, this.state))
+        this.setState(this.getStateFromProps(nextProps, this.state),
+        () => {
+            this.ensureFocusVisible(this.state.focus)
+        })
     }
 
     shouldComponentUpdate(nextProps, nextState) {
         if (this.state !== nextState) {
-            return true;  // zde NECHCEME!!! - stavse meni vzdy, protoze se vola getStateFromProps, po jeho pripadne uprave je mozne toto odkomentovat!
+            return true;  // zde NECHCEME!!! - stav se meni vzdy, protoze se vola getStateFromProps, po jeho pripadne uprave je mozne toto odkomentovat!
         }
 
         var eqProps = ['rows', 'cols', 'selectedIds', 'onColumnResize', 'onSelectedIdsChange']
@@ -105,7 +111,23 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             selectedIds[id] = true
         })
 
-        var focus = currState.focus || props.focus || {row: 0, col: 0}
+        var focusRow
+        if (typeof props.focusRow !== 'undefined') {
+            focusRow = props.focusRow
+        } else if (currState.focus) {
+            focusRow = currState.focus.row
+        } else {
+            focusRow = 0
+        }
+        var focusCol
+        if (typeof props.focusCol !== 'undefined') {
+            focusCol = props.focusCol
+        } else if (currState.focus) {
+            focusCol = currState.focus.col
+        } else {
+            focusCol = 0
+        }
+        var focus = {row: focusRow, col: focusCol}
 
         return {
             focus: focus,
@@ -118,6 +140,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
     componentDidMount() {
         document.addEventListener('mouseup', this.handleMouseUp);
         document.addEventListener('mousemove', this.handleMouseMove);
+        this.ensureFocusVisible(this.state.focus)
     }
 
     componentWillUnmount() {
@@ -163,6 +186,9 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         }
 
         this.setState({ focus: newFocus, selectedRowIndexes: newSelectedRowIndexes }, this.ensureFocusVisible(newFocus))
+        
+        const {onChangeFocus} = this.props
+        onChangeFocus && onChangeFocus(newFocus.row, newFocus.col)
     }
 
     unFocus() {
