@@ -397,6 +397,31 @@ public class ArrangementController {
 
         return new ArrayList<>(funds.values());
     }
+    
+    /**
+     * Načtení souboru na základě id.
+     * @param fundId id souboru
+     * @return konkrétní AP
+     */
+    @RequestMapping(value = "/getFund/{fundId}", method = RequestMethod.GET)
+    public ArrFundVO getFund(@PathVariable("fundId") final Integer fundId) {
+        Map<Integer, ArrFundVO> funds = new LinkedHashMap<>();
+        fundVersionRepository.findAllFetchFunds().forEach(version -> {
+            if (version.getFund().getFundId().equals(fundId)) {
+                ArrFund fund = version.getFund();
+                ArrFundVO fundVO;
+                if (funds.get(fund.getFundId()) == null) {
+                    fundVO = factoryVo.createFundVO(fund, false);
+                    funds.put(fund.getFundId(), fundVO);
+                } else {
+                    fundVO = funds.get(fund.getFundId());
+                }
+                fundVO.getVersions().add(factoryVo.createFundVersion(version));
+            }
+        });
+
+        return funds.values().iterator().next();
+    }
 
     /**
      * Načte AS pro dané verze.

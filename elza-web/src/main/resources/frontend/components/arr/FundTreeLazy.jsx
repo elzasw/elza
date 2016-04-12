@@ -18,35 +18,45 @@ import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, g
 // Na kolik znaků se má název položky stromu oříznout, jen pokud je nastaven vstupní atribut, že se má název ořezávat
 const TREE_NAME_MAX_CHARS = 60
 
+// Odsazení odshora, musí být definováno, jinak nefunguje ensureItemVisible
+const TREE_TOP_PADDING = 20
+
 var keyDownHandlers = {
     ArrowUp: function(e) {
         const {nodes, selectedId, multipleSelection, onNodeClick} = this.props
+        e.stopPropagation()
+        e.preventDefault()
 
         if (!multipleSelection && selectedId !== null) {
             var index = indexById(nodes, selectedId)
             if (index !== null && index > 0) {
-                onNodeClick(nodes[index - 1])
+                onNodeClick(nodes[index - 1], true)
             }
         }
     },
     ArrowDown: function(e) {
         const {nodes, selectedId, multipleSelection, onNodeClick} = this.props
+        e.stopPropagation()
+        e.preventDefault()
 
         if (!multipleSelection) {
             if (selectedId !== null) {  // něco je označeno
                 var index = indexById(nodes, selectedId)
                 if (index !== null && index + 1 < nodes.length) {
-                    onNodeClick(nodes[index + 1])
+                    onNodeClick(nodes[index + 1], true)
                 }
             } else {    // není nic označeno, označíme první položku stromu
                 if (nodes.length > 0) {
-                    onNodeClick(nodes[0])
+                    onNodeClick(nodes[0], true)
                 }
             }
         }
     },
     ArrowLeft: function(e) {
         const {nodes, selectedId, multipleSelection, expandedIds, onOpenCloseNode, onNodeClick} = this.props
+        e.stopPropagation()
+        e.preventDefault()
+
         if (!multipleSelection && selectedId !== null) {
             var index = indexById(nodes, selectedId)
             if (index !== null) {
@@ -55,13 +65,16 @@ var keyDownHandlers = {
                     onOpenCloseNode(node, false)
                 } else {    // jdeme na parenta
                     var parent = getNodeParent(nodes, selectedId)
-                    parent && onNodeClick(parent)
+                    parent && onNodeClick(parent, true)
                 }
             }
         }
     },
     ArrowRight: function(e) {
         const {nodes, selectedId, multipleSelection, expandedIds, onOpenCloseNode, onNodeClick} = this.props
+        e.stopPropagation()
+        e.preventDefault()
+
         if (!multipleSelection && selectedId !== null) {
             var index = indexById(nodes, selectedId)
             if (index !== null) {
@@ -71,7 +84,7 @@ var keyDownHandlers = {
                         onOpenCloseNode(node, true)
                     } else {    // jdeme na prvního potomka
                         var firstChild = getNodeFirstChild(nodes, selectedId);
-                        firstChild && onNodeClick(firstChild)
+                        firstChild && onNodeClick(firstChild, true)
                     }
                 } else {    // nemá potomky, nic neděláme
                 }
@@ -188,15 +201,26 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
     }
 
     render() {
-        const {onFulltextNextItem, onFulltextPrevItem, onFulltextSearch, onFulltextChange, filterText, searchedIds, filterCurrentIndex, filterResult} = this.props;
+        const {className, multipleSelection, onFulltextNextItem, onFulltextPrevItem, onFulltextSearch, onFulltextChange, filterText, searchedIds, filterCurrentIndex, filterResult} = this.props;
 
         var index;
         if (this.props.ensureItemVisible) {
-            index = indexById(this.props.nodes, this.props.selectedId);
+            if (multipleSelection) {
+                if (Object.keys(this.props.selectedIds).length === 1) {
+                    index = indexById(this.props.nodes, Object.keys(this.props.selectedIds)[0]);
+                }
+            } else {
+                index = indexById(this.props.nodes, this.props.selectedId);
+            }
+        }
+
+        var cls = 'fa-tree-lazy-main-container'
+        if (className) {
+            cls += " " + className
         }
 
         return (
-            <div className='fa-tree-lazy-main-container'>
+            <div className={cls}>
                 <div className='fa-traa-header-container'>
                     <SearchWithGoto
                         filterText={filterText}
@@ -212,6 +236,7 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
                 <div className='fa-tree-lazy-container' ref="treeContainer" onKeyDown={this.handleKeyDown} tabIndex={0}>
                     <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
                     {this.state.treeContainer && <VirtualList
+                        scrollTopPadding={TREE_TOP_PADDING}
                         tagName='div'
                         scrollToIndex={index}
                         container={this.state.treeContainer}

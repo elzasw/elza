@@ -152,7 +152,7 @@ export default function fundTree(state = initialState, action) {
                 var newState = {
                     ...state,
                     lastSelectedId: null,
-                    ensureItemVisible: false,
+                    ensureItemVisible: action.ensureItemVisible,
                     filterCurrentIndex: newCurrentIndex
                 }
                 newState.selectedIds = {...state.selectedIds};
@@ -220,7 +220,7 @@ export default function fundTree(state = initialState, action) {
 
                     return {
                         ...state, 
-                        ensureItemVisible: false, 
+                        ensureItemVisible: action.ensureItemVisible, 
                         selectedId: action.nodeId,
                         filterCurrentIndex: newCurrentIndex
                     }

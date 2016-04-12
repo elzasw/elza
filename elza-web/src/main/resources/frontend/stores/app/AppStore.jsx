@@ -25,6 +25,7 @@ import registryRegionData from './registry/registryRegionData';
 import registryRegionRecordTypes from './registry/registryRegionRecordTypes';
 import toastr from '../../components/shared/toastr/ToastrStore';
 import partyRegion from './party/partyRegion';
+import fundRegion from './fund/fundRegion';
 import contextMenu from './global/contextMenu';
 import modalDialog from './global/modalDialog';
 import webSocket from './global/webSocket';
@@ -58,6 +59,7 @@ let reducer = combineReducers({
     toastr,
     developer,
     partyRegion,
+    fundRegion,
     contextMenu,
     modalDialog,
     webSocket,

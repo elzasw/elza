@@ -74,8 +74,8 @@ var FundTreeMovementsRight = class FundTreeMovementsRight extends AbstractReactC
      * @param node {Object} uzel
      * @param e {Object} event
      */
-    handleNodeClick(node, e) {
-        this.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, node.id, false, false));
+    handleNodeClick(node, ensureItemVisible, e) {
+        this.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, node.id, false, false, null, ensureItemVisible));
     }
 
     /**

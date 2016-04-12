@@ -2,6 +2,8 @@
 
 @rowHeight: 16px;
 
+@TREE_TOP_PADDING: 20px;    // nutné definovat i v komponentě!
+
 .fa-tree-lazy-main-container {
     height: 100%;
 
@@ -12,7 +14,7 @@
         background: white;
         border: 1px solid #DDDDDD;
         position: relative;
-        padding-top: 20px;
+        padding-top: @TREE_TOP_PADDING;
         width: 100%;
 
         div {

@@ -18,13 +18,6 @@ class WebApi{
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/fulltext', null,  data);
     }
 
-    getFundFileTree() {
-        return AjaxUtils.ajaxGet('/api/arrangementManager/getFunds')
-            .then(json=>{
-                return json.map(i=>{return {id:i.fundId, name:i.name}});
-            });
-    }
-
     getFundsByVersionIds(versionIds) {
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/getVersions', null, {ids: versionIds});
     }
@@ -659,6 +652,56 @@ class WebApi{
 
     logout() {
         return AjaxUtils.ajaxCallRaw('/logout', {}, "GET", "", "application/x-www-form-urlencoded", true);
+    }
+
+    findFunds(fulltext) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFunds')
+            .then(json => ({funds: json, fundCount: 500}))
+
+        return new Promise(function (resolve, reject) {
+            var funds = [
+                {id: 1, name: 'Nazev 1', number: '111'},
+                {id: 2, name: 'Nazev 2', number: '222'},
+                {id: 3, name: 'Nazev 3', number: '333'},
+                {id: 4, name: 'Nazev 4', number: '444'},
+                {id: 5, name: 'Nazev 5', number: '555'},
+            ]
+
+            var ff = []
+            funds.forEach(f => {
+                if (f.name.toLowerCase().indexOf(fulltext.toLowerCase()) !== -1
+                    || f.number.toLowerCase().indexOf(fulltext.toLowerCase()) !== -1) {
+                    ff.push(f)
+                }
+            })
+
+            resolve({
+                fundCount: 500,
+                funds: ff,
+            })
+        })
+    }
+
+    getFundDetail(fundId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFund/' + fundId)
+            .then(json => {
+                return {
+                    ...json,
+                    versionId: json.versions[0].id,
+                }
+            })
+
+        return new Promise(function (resolve, reject) {
+            resolve({
+                id: fundId,
+                versionId: fundId,
+                name: 'Nazev ' + fundId,
+                versions: [
+                    {id: 1, versionId: 2, createDate: 1460469000591},
+                    {id: 11, versionId: 1, createDate: 1460462260849, lockDate: 1460469000591},
+                ]
+            })
+        })
     }
 }
 

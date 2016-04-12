@@ -73,6 +73,7 @@ var messages = {
     "search.action.noResult": "nenalezeny žádné záznamy",
     
     "fundTree.action.openInNewTab": "Otevřít v nové záložce",
+    "fundTree.action.open": "Otevřít v aktuální záložce",
     "fundTree.node.name.undefined": "<JP ID={0}>",
     "accordion.title.left.name.undefined": "<JP-Accordion left ID={0}>",
     "accordion.title.right.name.undefined": "<JP-Accordion right ID={0}>",
@@ -88,6 +89,10 @@ var messages = {
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",
     "arr.panel.reset": "Zrušit omezení",
 
+    "arr.fund.version": "Verze {0}",
+    "arr.fund.action.newVersion": "Nová verze",
+    "arr.fund.action.deleteVersion": "Vymazání AS",
+    "arr.fund.action.showInArr": "Zobrazit v pořádání",
     "arr.fund.filterSettings.clearAll.action": "Odebrat všechny filtry",
     "arr.fund.filterSettings.updateData.action": "Aktualizovat data podle filtru",
     "arr.fund.columnSettings.title": "Nastavení sloupců",

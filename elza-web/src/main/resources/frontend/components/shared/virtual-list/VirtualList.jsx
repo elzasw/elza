@@ -77,12 +77,25 @@ return true;
 
         nextProps.container.addEventListener('scroll', this.onScrollDebounced);
 
-        if (nextProps.scrollToIndex) {
+        if (typeof nextProps.scrollToIndex !== 'undefined') {
+            var scrollTopPadding = this.props.scrollTopPadding || 0
+
             this.setState(state, () => {
                 var box = ReactDOM.findDOMNode(this.refs.box)
-                var itemTop = nextProps.scrollToIndex * this.props.itemHeight;
-                if (itemTop < this.state.bufferStart || itemTop > this.state.bufferStart + box.parentNode.clientHeight) {
-                    box.parentNode.scrollTop = itemTop;
+                var itemTop = nextProps.scrollToIndex * this.props.itemHeight + this.props.scrollTopPadding
+
+                var from = this.state.bufferStart + this.props.scrollTopPadding
+                var to = from + box.parentNode.clientHeight - 2*this.props.scrollTopPadding
+
+                //console.log(itemTop, from, to)
+                if (itemTop <= from) {
+                    if (itemTop - this.props.itemHeight < this.props.scrollTopPadding) {
+                        box.parentNode.scrollTop = 0
+                    } else {
+                        box.parentNode.scrollTop = itemTop - this.props.itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc nahore
+                    }
+                } else if (itemTop + this.props.itemHeight > to) {
+                    box.parentNode.scrollTop = itemTop + this.props.itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc dole
                 }
             });
         } else {

@@ -45,6 +45,9 @@ exports.AddRegistryForm = require('./registry/AddRegistryForm');
 exports.EditRegistryForm = require('./registry/EditRegistryForm');
 exports.RegistryLabel = require('./registry/RegistryLabel');
 
+exports.FundDetail = require('./fund/FundDetail');
+exports.FundDetailTree = require('./fund/FundDetailTree');
+
 exports.FundDataGridCellForm = require('./arr/FundDataGridCellForm');
 exports.FundFileTree = require('./arr/FundFileTree');
 exports.NodePanel = require('./arr/NodePanel');
