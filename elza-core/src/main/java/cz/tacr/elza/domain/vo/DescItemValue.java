@@ -16,7 +16,8 @@ public class DescItemValue {
 
     private String specCode;
 
-    public DescItemValue() {
+    public DescItemValue(final String value) {
+        this.value = value;
     }
 
     public DescItemValue(final String value, final String specCode) {
@@ -41,4 +42,12 @@ public class DescItemValue {
     }
 
 
+    public static DescItemValue create(final TitleValue titleValue) {
+        if (titleValue instanceof UnitdateTitleValue) {
+            return new UnitdateDescItemValue(titleValue.getValue(), titleValue.getSpecCode(),
+                    ((UnitdateTitleValue) titleValue).getCalendarTypeId());
+        } else {
+            return new DescItemValue(titleValue.getValue(), titleValue.getSpecCode());
+        }
+    }
 }

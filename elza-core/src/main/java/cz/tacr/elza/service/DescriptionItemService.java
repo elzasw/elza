@@ -52,6 +52,7 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
+import cz.tacr.elza.domain.vo.UnitdateTitleValue;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.repository.DataPacketRefRepository;
@@ -828,7 +829,7 @@ public class DescriptionItemService {
 
         for (ArrData data : dataList) {
 
-            String value = null;
+            TitleValue value = null;
             String code = data.getDescItem().getDescItemType().getCode();
             String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
                     .getCode();
@@ -854,35 +855,37 @@ public class DescriptionItemService {
                 parUnitdate.setValueTo(unitDate.getValueTo());
                 parUnitdate.setValueToEstimated(unitDate.getValueToEstimated());
 
-                value = UnitDateConvertor.convertToString(parUnitdate);
+                value = new UnitdateTitleValue(UnitDateConvertor.convertToString(parUnitdate),
+                        unitDate.getCalendarType().getCalendarTypeId());
             } else if (data.getDataType().getCode().equals("STRING")) {
                 ArrDataString stringtData = (ArrDataString) data;
-                value = stringtData.getValue();
+                value = new TitleValue(stringtData.getValue());
             } else if (data.getDataType().getCode().equals("TEXT") || data.getDataType().getCode().equals("FORMATTED_TEXT")) {
                 ArrDataText textData = (ArrDataText) data;
-                value = textData.getValue();
+                value = new TitleValue(textData.getValue());
             } else if (data.getDataType().getCode().equals("UNITID")) {
                 ArrDataUnitid unitId = (ArrDataUnitid) data;
-                value = unitId.getValue();
+                value = new TitleValue(unitId.getValue());
             } else if (data.getDataType().getCode().equals("COORDINATES")) {
                 ArrDataCoordinates coordinates = (ArrDataCoordinates) data;
-                value = coordinates.getValue();
+                value = new TitleValue(coordinates.getValue());
             } else if (data.getDataType().getCode().equals("INT")) {
                 ArrDataInteger intData = (ArrDataInteger) data;
-                value = intData.getValue().toString();
+                value = new TitleValue(intData.getValue().toString());
             } else if (data.getDataType().getCode().equals("DECIMAL")) {
                 ArrDataDecimal decimalData = (ArrDataDecimal) data;
-                value = decimalData.getValue().toPlainString();
+                value = new TitleValue(decimalData.getValue().toPlainString());
             }
 
-            String iconValue = getIconValue(data);
-
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
+            if (value != null) {
+                String iconValue = getIconValue(data);
+                addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
+            }
         }
 
         List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, version);
         for (ArrData data : enumData) {
-            String value = data.getDescItem().getDescItemSpec().getName();
+            TitleValue value = new TitleValue(data.getDescItem().getDescItemSpec().getName());
             String iconValue = getIconValue(data);
             String code = data.getDescItem().getDescItemType().getCode();
             String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
@@ -895,7 +898,7 @@ public class DescriptionItemService {
 
         List<ArrDataPartyRef> partyData = dataPartyRefRepository.findByDataIdsAndVersionFetchPartyRecord(partyRefDataIds, descItemTypes, version);
         for (ArrDataPartyRef data : partyData) {
-            String value = data.getParty().getRecord().getRecord();
+            TitleValue value = new TitleValue(data.getParty().getRecord().getRecord());
             String iconValue = getIconValue(data);
             String code = data.getDescItem().getDescItemType().getCode();
             String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
@@ -908,7 +911,7 @@ public class DescriptionItemService {
 
         List<ArrDataRecordRef> recordData = dataRecordRefRepository.findByDataIdsAndVersionFetchRecord(recordRefDataIds, descItemTypes, version);
         for (ArrDataRecordRef data : recordData) {
-            String value = data.getRecord().getRecord();
+            TitleValue value = new TitleValue(data.getRecord().getRecord());
             String iconValue = getIconValue(data);
             String code = data.getDescItem().getDescItemType().getCode();
             String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
@@ -923,11 +926,11 @@ public class DescriptionItemService {
         for (ArrDataPacketRef data : packetData) {
             ArrPacket packet = data.getPacket();
             RulPacketType packetType = packet.getPacketType();
-            String value;
+            TitleValue value;
             if (packetType == null) {
-                value = packet.getStorageNumber();
+                value = new TitleValue(packet.getStorageNumber());
             } else {
-                value = packetType.getName() + " " + packet.getStorageNumber();
+                value = new TitleValue(packetType.getName() + " " + packet.getStorageNumber());
             }
             String iconValue = getIconValue(data);
             String code = data.getDescItem().getDescItemType().getCode();
@@ -942,9 +945,10 @@ public class DescriptionItemService {
         return valueMap;
     }
 
-    private void addValuesToMap(Map<Integer, Map<String, TitleValues>> valueMap, String value, String code,
+    private void addValuesToMap(Map<Integer, Map<String, TitleValues>> valueMap, final TitleValue titleValue, String code,
                                 String specCode, Integer nodeId, String iconValue, final Integer position) {
-        if (value == null && iconValue == null) {
+
+        if (titleValue== null && iconValue == null) {
             return;
         }
 
@@ -961,9 +965,7 @@ public class DescriptionItemService {
         }
 
 
-        TitleValue titleValue = new TitleValue();
         titleValue.setIconValue(iconValue);
-        titleValue.setValue(value);
         titleValue.setSpecCode(specCode);
         titleValue.setPosition(position);
 

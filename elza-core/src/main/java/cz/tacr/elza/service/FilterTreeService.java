@@ -251,9 +251,7 @@ public class FilterTreeService {
                     while (valueIterator.hasNext()) {
                         TitleValue titleValue = valueIterator.next();
 
-                        String value = titleValue.getValue();
-                        String spec = titleValue.getSpecCode();
-                        values.addValue(new DescItemValue(value, spec));
+                        values.addValue(DescItemValue.create(titleValue));
                         nodeValuesMap.put(descItymTypeId, values);
                     }
                 }

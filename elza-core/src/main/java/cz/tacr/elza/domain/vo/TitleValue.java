@@ -17,6 +17,9 @@ public class TitleValue extends DescItemValue {
 
     private Integer position;
 
+    public TitleValue(final String value) {
+        super(value);
+    }
 
     public String getIconValue() {
         return iconValue;
