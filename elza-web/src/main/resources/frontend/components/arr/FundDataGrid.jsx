@@ -136,7 +136,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     headerColRenderer(col) {
         const {fundDataGrid} = this.props
 
-        var cls = ''
+        var cls = 'cell'
 
         let filtered
         if (fundDataGrid.filter[col.refType.id]) {
@@ -147,8 +147,8 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
         return (
             <div className={cls} title={col.refType.name}>
-                {col.refType.shortcut}
-                {showBulkModifications && <Button onClick={this.handleBulkModifications.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.bulkModifications.action')}><Icon glyph='fa-edit'/></Button>}
+                <div className="title">{col.refType.shortcut}</div>
+                {showBulkModifications && <Button onClick={this.handleBulkModifications.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.bulkModifications.action')}><Icon glyph='fa-pencil'/></Button>}
                 <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.filterSettings.action')}><Icon glyph='fa-filter'/></Button>
             </div>
         )
@@ -495,10 +495,14 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             <div ref='gridContainer' className='fund-datagrid-container-wrap'>
                 <div ref='grid' className='fund-datagrid-container'>
                     <div className='actions-container'>
-                        {search}
-                        <Button onClick={this.handleColumnSettings} title={i18n('arr.fund.columnSettings.action')}><Icon glyph='fa-columns'/></Button>
-                        <Button onClick={this.handleFilterUpdateData}>{i18n('arr.fund.filterSettings.updateData.action')}</Button>
-                        <Button onClick={this.handleFilterClearAll}>{i18n('arr.fund.filterSettings.clearAll.action')}</Button>
+                        <div className="actions-search">
+                            {search}
+                        </div>
+                        <div className="actions-buttons">
+                            <Button onClick={this.handleFilterUpdateData}><Icon glyph='fa-refresh'/>{i18n('arr.fund.filterSettings.updateData.action')}</Button>
+                            <Button onClick={this.handleFilterClearAll}><Icon glyph='fa-trash'/>{i18n('arr.fund.filterSettings.clearAll.action')}</Button>
+                            <Button onClick={this.handleColumnSettings} title={i18n('arr.fund.columnSettings.action')}><Icon glyph='fa-columns'/></Button>
+                        </div>
                     </div>
                     <div className='grid-container'>
                         <DataGrid

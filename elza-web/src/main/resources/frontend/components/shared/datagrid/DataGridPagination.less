@@ -1,10 +1,21 @@
+@import "~variables.less";
+
+@element-height: 24px;
+@element-line-height: 22px;
+
 .pagination-container {
     flex-shrink: 0;
+    height: @element-height;
+
     .pagination {
         margin: 0;
 
         a {
             cursor: default;
+            height: @element-height;
+            line-height: @element-line-height;
+            padding: 0px 12px;
+            color: black;
             
             &.disabled {
                 cursor: not-allowed;
@@ -13,12 +24,20 @@
         
         .input > span {
             padding: 0;
-            height: 31px;
-            input, select {
+            height: @element-height;
+            line-height: @element-height;
+            padding: 0;
+            color: black;
+
+            input {
                 height: 100%;
                 border: none;
+                padding: 0 5px;
             }
-            input {
+            select {
+                border: none;
+                height: @element-height;
+                background: transparent;
             }
         }
     }

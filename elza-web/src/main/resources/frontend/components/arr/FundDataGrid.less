@@ -1,6 +1,30 @@
 .fund-datagrid-container-wrap {
     .fund-datagrid-container {
         .actions-container {
+            display: flex;
+            justify-content: space-between;
+            .actions-search {
+                width: 200px;
+                flex-shrink: 0;
+            }
+            .actions-buttons {
+                display: flex;
+                .btn {
+                    border: none;
+                    background: transparent;
+                    margin-left: 5px;
+                    &:hover {
+                        background-color: #C0C0C0;
+                    }
+                    .icon {
+                        color: #000000;
+                        height: 1.35em;
+                        line-height: 1.35em;
+                        width: 1.35em;
+                        vertical-align: middle;
+                    }
+                }
+            }
         }
         .grid-container {
             .filtered {
@@ -8,6 +32,21 @@
             }
             
             .cell-value-wrapper {
+            }
+            .header-container {
+                table {
+                    th {
+                        border-top: none;
+                        border-left: none;
+                    }
+                }
+            }
+            .body-container {
+                table {
+                    td {
+                        border-left: none;
+                    }
+                }
             }
         }
     }
