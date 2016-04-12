@@ -200,6 +200,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
             return {
                 ...state,
                 currentDataKey: '',
+                subNodeForm: subNodeForm(state.subNodeForm, action),
             }
         case types.FUND_FUND_DATA_GRID_DATA_REQUEST:
             return {
