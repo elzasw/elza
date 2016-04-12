@@ -415,7 +415,7 @@ return true;
      * @return {Object} view
      */
     renderDescItem(descItemType, descItem, descItemIndex, actions, locked) {
-        const {refType, infoType, rulDataType, calendarTypes, packets, packetTypes, versionId} = this.props;
+        const {refType, infoType, singleDescItemTypeEdit, rulDataType, calendarTypes, packets, packetTypes, versionId} = this.props;
 
         var cls = 'desc-item-type-desc-item-container';
         if (actions.length > 0) {
@@ -460,6 +460,7 @@ return true;
             case 'PARTY_REF':
                 parts.push(<DescItemPartyRef key={itemComponentKey}
                     {...descItemProps}
+                    singleDescItemTypeEdit={singleDescItemTypeEdit}
                     onDetail={this.handleDetailParty.bind(this, descItemIndex)}
                     onCreateParty={this.handleCreateParty.bind(this, descItemIndex)}
                     versionId={versionId}
@@ -468,6 +469,7 @@ return true;
             case 'RECORD_REF':
                 parts.push(<DescItemRecordRef key={itemComponentKey}
                     {...descItemProps}
+                    singleDescItemTypeEdit={singleDescItemTypeEdit}
                     onDetail={this.handleDetailRecord.bind(this, descItemIndex)}
                     onCreateRecord={this.handleCreateRecord.bind(this, descItemIndex)}
                     versionId={versionId}
@@ -476,6 +478,7 @@ return true;
             case 'PACKET_REF':
                 parts.push(<DescItemPacketRef key={itemComponentKey}
                     {...descItemProps}
+                    singleDescItemTypeEdit={singleDescItemTypeEdit}
                     onCreatePacket={this.handleCreatePacket.bind(this, descItemIndex)}
                     packets={packets}
                     packetTypes={packetTypes}

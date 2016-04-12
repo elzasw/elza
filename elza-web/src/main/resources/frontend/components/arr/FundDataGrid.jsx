@@ -24,6 +24,7 @@ import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {getSpecsIds, hasDescItemTypeValue} from 'components/arr/ArrUtils'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
 import {fundSelectSubNode} from 'actions/arr/nodes'
+import {createFundRoot} from './ArrUtils.jsx'
 
 require('./FundDataGrid.less')
 
@@ -414,9 +415,15 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
      * @param row {Object} řádek dat
      */
     handleSelectInNewTab(row) {
-        const {versionId} = this.props
+        const {versionId, fund} = this.props
         this.dispatch(contextMenuHide());
-        this.dispatch(fundSelectSubNode(versionId, row.node.id, row.parentNode, true, null, true));
+
+        var parentNode = row.parentNode
+        if (parentNode == null) {   // root
+            parentNode = createFundRoot(fund);
+        }
+
+        this.dispatch(fundSelectSubNode(versionId, row.node.id, parentNode, true, null, true));
     }
 
     handleFulltextChange(value) {
@@ -451,13 +458,19 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
      * @param row {Object} řádek dat
      */
     handleSelectInTab(row) {
-        const {versionId} = this.props
+        const {versionId, fund} = this.props
         this.dispatch(contextMenuHide());
-        this.dispatch(fundSelectSubNode(versionId, row.node.id, row.parentNode, false, null, true));
+
+        var parentNode = row.parentNode
+        if (parentNode == null) {   // root
+            parentNode = createFundRoot(fund);
+        }
+
+        this.dispatch(fundSelectSubNode(versionId, row.node.id, parentNode, false, null, true));
     }
 
     render() {
-        const {fundId, fundDataGrid, versionId, rulDataTypes, descItemTypes, packetTypes} = this.props;
+        const {fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, packetTypes} = this.props;
         const {cols, showFilterResult} = this.state;
 
         if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {

@@ -82,12 +82,15 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked} = this.props;
-        var footer = this.renderFooter();
+        const {descItem, locked, singleDescItemTypeEdit} = this.props;
         var value = descItem.party ? descItem.party : null;
 
-        var actions = new Array;
+        var footer
+        if (!singleDescItemTypeEdit) {
+            footer = this.renderFooter()
+        }
 
+        var actions = new Array;
         if (descItem.party) {
             actions.push(<div onClick={this.handleDetail.bind(this, descItem.party.partyId)} className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
         }

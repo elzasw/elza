@@ -6,7 +6,7 @@ require ('./FundExtendedView.less');
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {FundDataGrid, DataGrid, DataGridPagination, AbstractReactComponent, i18n, Tabs, Icon, FundTreeMain, FundTreeMovementsLeft, FundTreeMovementsRight} from 'components';
+import {FundDataGrid, AbstractReactComponent, i18n, Tabs, Icon, FundTreeMain, FundTreeMovementsLeft, FundTreeMovementsRight} from 'components';
 import * as types from 'actions/constants/ActionTypes';
 import {Button} from 'react-bootstrap';
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes'
@@ -136,6 +136,7 @@ var FundExtendedView = class FundExtendedView extends AbstractReactComponent {
                 <FundDataGrid
                     versionId={fund.versionId}
                     fundId={fund.id}
+                    fund={fund}
                     closed={fund.closed}
                     fundDataGrid={fund.fundDataGrid}
                     descItemTypes={descItemTypes}

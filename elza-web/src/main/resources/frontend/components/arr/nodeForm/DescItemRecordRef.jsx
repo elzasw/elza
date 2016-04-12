@@ -75,12 +75,15 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked} = this.props;
-        var footer = this.renderFooter();
+        const {descItem, locked, singleDescItemTypeEdit} = this.props;
         var value = descItem.record ? descItem.record : null;
 
-        var actions = new Array;
+        var footer
+        if (!singleDescItemTypeEdit) {
+            footer = this.renderFooter();
+        }
 
+        var actions = new Array;
         if (descItem.record) {
             actions.push(<div onClick={this.handleDetail.bind(this, descItem.record.recordId)} className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
         }

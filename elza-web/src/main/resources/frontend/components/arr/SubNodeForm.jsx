@@ -430,7 +430,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param recordId {Integer} identifikátor rejstříku
      */
     handleDetailRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex, recordId) {
-        const {versionId, fund} = this.props;
+        const {fund, singleDescItemTypeEdit} = this.props;
+        singleDescItemTypeEdit && this.dispatch(modalDialogHide())
         this.dispatch(registrySelect(recordId, fund));
         this.dispatch(routerNavigate('registry'));
     }
@@ -485,7 +486,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param partyId {Integer} identifikátor osoby
      */
     handleDetailParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyId) {
-        const {fund} = this.props;
+        const {fund, singleDescItemTypeEdit} = this.props;
+        singleDescItemTypeEdit && this.dispatch(modalDialogHide())
         this.dispatch(partySelect(partyId, fund));
         this.dispatch(routerNavigate('party'));
     }

@@ -42,7 +42,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked, packetTypes, packets} = this.props;
+        const {descItem, locked, packetTypes, packets, singleDescItemTypeEdit} = this.props;
 
         return (
             <div className='desc-item-value desc-item-value-parts'>
@@ -57,7 +57,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                             <option key={packet.id} value={packet.id}>{this.packetName(packet)}</option>
                     ))}
                 </select>
-                {!locked && <div className='desc-item-type-actions'><NoFocusButton onClick={this.props.onCreatePacket} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>}
+                {!locked && !singleDescItemTypeEdit && <div className='desc-item-type-actions'><NoFocusButton onClick={this.props.onCreatePacket} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>}
             </div>
         )
     }
