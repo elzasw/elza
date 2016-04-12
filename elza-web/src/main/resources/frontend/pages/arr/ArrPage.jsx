@@ -11,7 +11,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Tabs, Icon, Ribbon, i18n} from 'components';
-import {FundExtendedView, FundForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FundFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs, ImportForm} from 'components';
+import {FundExtendedView, FundForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FundFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
@@ -55,7 +55,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
             'handleApproveFundVersion', 'handleCallApproveFundVersion', 'getActiveFundId', 'handleBulkActionsDialog',
-            'handleValidationDialog', 'handleEditFundVersion', 'handleCallEditFundVersion', 'handleShortcuts', 'handleImport',
+            'handleValidationDialog', 'handleEditFundVersion', 'handleCallEditFundVersion', 'handleShortcuts',
             'renderDeveloperPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs');
 
         this.state = {fundFileTreeOpened: false, developerExpandedSpecsIds: {}};
@@ -263,15 +263,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         })
     }
 
-    handleImport() {
-        this.dispatch(
-            modalDialogShow(this,
-                i18n('import.title.fund'),
-                <ImportForm fund={true}/>
-            )
-        );
-    }
-
     /**
      * Sestavení Ribbonu.
      * @return {Object} view
@@ -282,11 +273,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var altActions = [];
 
         var itemActions = [];
-        altActions.push(
-            <Button key="fa-import" onClick={this.handleImport}><Icon glyph='fa-download'/>
-                <div><span className="btnText">{i18n('ribbon.action.arr.fund.import')}</span></div>
-            </Button>
-        );
+
         if (activeInfo.activeFund && !activeInfo.activeFund.closed) {
             itemActions.push(
                 <Button key="edit-version" onClick={this.handleEditFundVersion}><Icon glyph="fa-pencil"/>
@@ -297,6 +284,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 </Button>,
                 <Button key="bulk-actions" onClick={this.handleBulkActionsDialog}><Icon glyph="fa-cogs"/>
                     <div><span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span></div>
+                </Button>,
+                <Button key="fas" onClick={()=>{}}><Icon glyph="fa-cogs"/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.fas')}</span></div>
                 </Button>,
                 <Button key="validation" onClick={this.handleValidationDialog}>
                     <Icon className={activeInfo.activeFund.versionValidation.isFetching ? "fa-spin" : ""} glyph={

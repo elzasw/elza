@@ -16,7 +16,7 @@ const browserHistory = useRouterHistory(useBasename(createHistory))({
     basename: serverContextPath + ''
 });
 
-import {ArrPage, HomePage, RegistryPage, PartyPage, AdminLayout, AdminPage, AdminPackagesPage, AdminFulltextPage, Layout} from 'pages';
+import {ArrPage, HomePage, RegistryPage, PartyPage, FundPage, AdminLayout, AdminPage, AdminPackagesPage, AdminFulltextPage, Layout} from 'pages';
 
 // Aplikace
 exports.start = function() {
@@ -32,6 +32,7 @@ exports.start = function() {
 var routes = (
         <Route name="layout" path="/" component={Layout}>
             <IndexRoute component={HomePage} />
+            <Route path="fund" component={FundPage} />
             <Route path="arr" component={ArrPage} />
             <Route path="registry" component={RegistryPage} />
             <Route path="party" component={PartyPage} />

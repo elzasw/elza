@@ -120,12 +120,8 @@ var HomePage = class HomePage extends AbstractReactComponent {
     }
 
     handleAddFund() {
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.title.add'), <FundForm create
-                                                                              onSubmitForm={this.handleCallAddFund}/>));
-    }
-
-    handleCallAddFund(data) {
-        this.dispatch(createFund(data));
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.title.add'),
+            <FundForm create onSubmitForm={(data) => {this.dispatch(createFund(data))}}/>));
     }
 
     buildRibbon() {
