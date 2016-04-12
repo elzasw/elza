@@ -28,6 +28,7 @@ import partyRegion from './party/partyRegion';
 import contextMenu from './global/contextMenu';
 import modalDialog from './global/modalDialog';
 import webSocket from './global/webSocket';
+import login from './global/login';
 import splitter from './global/splitter';
 import developer from './global/developer';
 import focus from './global/focus';
@@ -60,6 +61,7 @@ let reducer = combineReducers({
     contextMenu,
     modalDialog,
     webSocket,
+    login,
     splitter,
     focus,
     adminRegion,

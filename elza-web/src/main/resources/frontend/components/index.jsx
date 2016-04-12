@@ -24,6 +24,7 @@ exports.Accordion = require('./shared/accordion/Accordion');
 exports.ContextMenu = require('./shared/context-menu/ContextMenu');
 exports.ModalDialog = require('./shared/dialog/ModalDialog');
 exports.WebSocket = require('./shared/web-socket/WebSocket');
+exports.Login = require('./shared/login/Login');
 exports.ModalDialogWrapper = require('./shared/dialog/ModalDialogWrapper');
 exports.Autocomplete = require('./shared/autocomplete/Autocomplete');
 exports.Splitter = require('./shared/splitter/Splitter');

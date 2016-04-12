@@ -42,7 +42,7 @@ function requestCounter(method, url, data) {
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
  */
-function ajaxCallRaw(url, params, method, data, contentType = false) {
+function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError = false) {
 
     url = updateQueryStringParameters(url, params);
 
@@ -102,6 +102,12 @@ function ajaxCallRaw(url, params, method, data, contentType = false) {
                         validation: true,
                         data: xhr.responseJSON
                     };
+                } else if (xhr.status == 401) {
+                    result = {
+                        type: 'unauthorized',
+                        unauthorized: true,
+                        data: xhr.responseJSON
+                    };
                 } else { // ostatni
                     result = {
                         type: 'error',
@@ -113,7 +119,7 @@ function ajaxCallRaw(url, params, method, data, contentType = false) {
                     };
                 }
 
-                if (result.error) {
+                if (!ignoreError && result.error) {
 
                     var messages = [];
                     if (result.message) {
@@ -205,6 +211,12 @@ function ajaxCall(url, params, method, data) {
                     result = {
                         type: 'validation',
                         validation: true,
+                        data: xhr.responseJSON
+                    };
+                } else if (xhr.status == 401) {
+                    result = {
+                        type: 'unauthorized',
+                        unauthorized: true,
                         data: xhr.responseJSON
                     };
                 } else { // ostatni

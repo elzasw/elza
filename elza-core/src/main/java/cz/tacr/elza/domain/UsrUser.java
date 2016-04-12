@@ -29,9 +29,8 @@ public class UsrUser implements cz.tacr.elza.api.UsrUser<ParParty>, Serializable
     @Column(length = 250, nullable = false, unique = true)
     private String username;
 
-    @Lob
-    @Column(length = 32, nullable = false)
-    private byte[] password;
+    @Column(length = 64, nullable = false)
+    private String password;
 
     @Column(nullable = false)
     private Boolean active;
@@ -70,12 +69,12 @@ public class UsrUser implements cz.tacr.elza.api.UsrUser<ParParty>, Serializable
     }
 
     @Override
-    public byte[] getPassword() {
+    public String getPassword() {
         return password;
     }
 
     @Override
-    public void setPassword(final byte[] password) {
+    public void setPassword(final String password) {
         this.password = password;
     }
 

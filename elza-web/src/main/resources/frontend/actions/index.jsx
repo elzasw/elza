@@ -1,1 +1,2 @@
-exports.WebApi = require('./WebApi');
+exports.WebApi = require('./WebApi').WebApi;
+exports.WebApiCls = require('./WebApi').WebApiCls;

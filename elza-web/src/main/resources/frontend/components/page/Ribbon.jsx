@@ -14,12 +14,13 @@ import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
+import {logout} from 'actions/global/login';
 
 var Ribbon = class Ribbon extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('trySetFocus')
+        this.bindMethods('trySetFocus', 'handleLogout')
 
         this.state = {};
     }
@@ -75,15 +76,24 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
                 {this.props.altSection}
                 {this.props.altSection && <RibbonSplit />}
                 {this.props.itemSection}
+
+                <RibbonGroup className="large right">
+                    <Button onClick={this.handleLogout} ref='ribbonDefaultFocus'><Icon glyph="fa-sign-out" /><div><span className="btnText">{i18n('ribbon.action.logout')}</span></div></Button>
+                </RibbonGroup>
             </RibbonMenu>
         )
+    }
+
+    handleLogout() {
+        this.dispatch(logout());
     }
 }
 
 function mapStateToProps(state) {
-    const {focus} = state
+    const {focus, login} = state
     return {
         focus,
+        login
     }
 }
 

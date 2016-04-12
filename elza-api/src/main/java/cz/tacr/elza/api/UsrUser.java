@@ -43,12 +43,12 @@ public interface UsrUser<P> extends Serializable {
     /**
      * @return uživatelské heslo
      */
-    byte[] getPassword();
+    String getPassword();
 
     /**
      * @param password uživatelské heslo
      */
-    void setPassword(byte[] password);
+    void setPassword(String password);
 
     /**
      * @return je účet aktivní?

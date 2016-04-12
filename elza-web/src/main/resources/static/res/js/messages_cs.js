@@ -58,6 +58,7 @@ var messages = {
     "ribbon.action.party.import" : "Import osob",
     "ribbon.action.arr.fund.import" : "Import pomůcky",
     "ribbon.action.registry.import" : "Import Hesel",
+    "ribbon.action.logout" : "Odhlásit",
 
     "home.action.arr": "Archivní pomůcky",
     "home.action.party": "Osoby",
@@ -375,6 +376,11 @@ var messages = {
     "validate.validateInt.notInt": "Nejedná se o celé číslo",
     "validate.validateInt.outOfRange": "Zadané číslo je mimo rozsah celého čísla typu INT",
     "validate.validateDouble.outOfRange": "Zadané číslo je mimo rozsah desetinného čísla typu Decimal(18,6)",
+
+    "login.form.title": "Přihlášení uživatele",
+    "login.field.username": "Uživatelské jméno",
+    "login.field.password": "Heslo",
+    "login.action.login": "Přihlásit",
 
     "____": ""
 };

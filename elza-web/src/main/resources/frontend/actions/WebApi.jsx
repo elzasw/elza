@@ -652,6 +652,17 @@ class WebApi{
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/filterUniqueValues/' + versionId, 
             { descItemTypeId, fulltext: filterText, max }, descItemSpecIds)
     }
+
+    login(username, password) {
+        return AjaxUtils.ajaxCallRaw('/login', {}, "POST", "username=" + username + "&password=" + password, "application/x-www-form-urlencoded");
+    }
+
+    logout() {
+        return AjaxUtils.ajaxCallRaw('/logout', {}, "GET", "", "application/x-www-form-urlencoded", true);
+    }
 }
 
-module.exports = new WebApi();
+module.exports = {
+    WebApi: new WebApi(),
+    WebApiCls: WebApi
+}

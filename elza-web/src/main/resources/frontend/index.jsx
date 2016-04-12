@@ -13,6 +13,8 @@ import ReactDOM from 'react-dom';
 import { createHistory, useBasename } from 'history'
 import { Route, Link, History, Lifecycle } from 'react-router'
 import { Utils } from 'components'
+import {WebApi, WebApiCls} from 'actions'
+import {loginFail} from 'actions/global/login';
 
 // Globální init
 Utils.init();
@@ -74,6 +76,44 @@ function scheduleStoreSave() {
     }, 1000)
 }
 scheduleStoreSave();
+
+// seznam callbacků, které kvůli nepříhlášení se musí ještě vykonat
+var calbacks = [];
+
+const login = (callback) => {
+    calbacks.push(callback);
+    AppStore.store.dispatch(loginFail(() => {
+        calbacks.forEach(callback => callback());
+        calbacks = [];
+    }));
+}
+
+// zjištění všech metod z api
+var methods = Object.getOwnPropertyNames(WebApiCls.prototype);
+
+// přetížení všech metod ve WebApi, původní metody mají prefix podtržítka
+for(var i in  methods) {
+    var method =  methods[i];
+    WebApi["_" + method] = WebApi[method];
+    WebApi[method] = (...x) => {
+        return new Promise((resolve, reject) => {
+            var ret = WebApi["_" + x[0]].call(...x);
+
+            ret.then((json) => {
+                resolve(json);
+            }).catch((err) => {
+                if (err.unauthorized) {
+                    login(() => {
+                        WebApi[x[0]].call(...x).then(resolve).catch(reject);
+                    });
+                } else {
+                    reject(err);
+                }
+            });
+        });
+
+    }.bind(this, method);
+}
 
 // Aplikace
 var Router = require('./router');

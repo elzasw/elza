@@ -6,7 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import { AppStore, ResizeStore } from 'stores';
-import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket} from 'components';
+import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket, Login} from 'components';
 var AppRouter = require ('./AppRouter')
 var ShortcutsManager = require('react-shortcuts')
 var Shortcuts = require('react-shortcuts/component')
@@ -75,6 +75,7 @@ var Layout = class Layout extends AbstractReactComponent {
                     <ContextMenu {...this.props.contextMenu}/>
                     <ModalDialog {...this.props.modalDialog}/>
                     <WebSocket />
+                    <Login />
                     <AppRouter/>
                 </div>
             </Shortcuts>
