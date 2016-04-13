@@ -5,6 +5,7 @@ import nodes from './nodes'
 import {fund, fundInitState} from './fund'
 import fundTree from './fundTree'
 import nodeSetting from './nodeSetting'
+import visiblePolicy from './visiblePolicy'
 import {consolidateState} from 'components/Utils'
 import {Toastr, i18n} from 'components';
 import {isBulkAction} from 'actions/arr/bulkActions'
@@ -27,6 +28,7 @@ const initialState = {
     extendedView: false,
     showRegisterJp: false,
     packets: {},
+    visiblePolicy: visiblePolicy(),
     funds: [],
 }
 
@@ -313,6 +315,15 @@ export default function arrRegion(state = initialState, action) {
             }
 
             return state
+
+        case types.VISIBLE_POLICY_REQUEST:
+        case types.VISIBLE_POLICY_RECEIVE:
+        case types.SET_VISIBLE_POLICY_REQUEST:
+        case types.SET_VISIBLE_POLICY_RECEIVE:
+            return {
+                ...state,
+                visiblePolicy: visiblePolicy(state.visiblePolicy, action),
+            }
 
         default:
             return state

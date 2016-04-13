@@ -60,6 +60,7 @@ exports.SubNodeForm = require('./arr/SubNodeForm');
 exports.SubNodeRegister = require('./arr/SubNodeRegister');
 exports.AddNodeDropdown = require('./arr/AddNodeDropdown');
 exports.FundForm = require('./arr/FundForm');
+exports.VisiblePolicyForm = require('./arr/VisiblePolicyForm');
 exports.AddPacketForm = require('./arr/AddPacketForm');
 exports.GoToPositionForm = require('./arr/GoToPositionForm');
 exports.FundBulkModificationsForm = require('./arr/FundBulkModificationsForm');

@@ -12,6 +12,7 @@ import registryRegionList from './registryRegionList';
 import partyList from './partyList';
 import scopesData from './scopesData';
 import descItemTypes from './descItemTypes';
+import visiblePolicyTypes from './visiblePolicyTypes';
 
 const initialState = {
     ruleSet: ruleSet(undefined, {type:''}),
@@ -25,7 +26,8 @@ const initialState = {
     registryRegionList: registryRegionList(undefined, {type:''}),
     partyList: partyList(undefined, {type:''}),
     scopesData: scopesData(undefined, {type:''}),
-    descItemTypes: descItemTypes()
+    descItemTypes: descItemTypes(),
+    visiblePolicyTypes: visiblePolicyTypes()
 }
 
 export default function refTables(state = initialState, action) {
@@ -105,6 +107,13 @@ export default function refTables(state = initialState, action) {
             return {
                 ...state,
                 descItemTypes: descItemTypes(state.descItemTypes, action),
+            }
+
+        case types.REF_VISIBLE_POLICY_TYPES_REQUEST:
+        case types.REF_VISIBLE_POLICY_TYPES_RECEIVE:
+            return {
+                ...state,
+                visiblePolicyTypes: visiblePolicyTypes(state.visiblePolicyTypes, action),
             }
 
         case types.CHANGE_PACKAGE:

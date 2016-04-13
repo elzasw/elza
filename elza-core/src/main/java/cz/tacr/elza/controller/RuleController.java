@@ -121,6 +121,12 @@ public class RuleController {
         return factoryVo.createPolicyTypes(policyTypes);
     }
 
+    @RequestMapping(value = "/policy/types", method = RequestMethod.GET)
+    public List<RulPolicyTypeVO> getAllPolicyTypes() {
+        List<RulPolicyType> policyTypes = policyService.getPolicyTypes();
+        return factoryVo.createPolicyTypes(policyTypes);
+    }
+
     @Transactional
     @RequestMapping(value = "/policy/{nodeId}/{fundVersionId}", method = RequestMethod.PUT)
     public void setVisiblePolicy(@PathVariable(value = "nodeId") final Integer nodeId,

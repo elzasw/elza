@@ -219,6 +219,7 @@ var messages = {
     "subNodeForm.addNodeBefore": "JP před",
     "subNodeForm.addSubNode": "JP pod",
     "subNodeForm.deleteNode": "Smazat JP",
+    "subNodeForm.visiblePolicy": "Způsob kontroly",
 
     "subNodeForm.descItemTypeAdd": "Přidat prvek",
     "subNodeForm.descItemTypeUnlockAll": "Odemknout vše",
@@ -386,6 +387,11 @@ var messages = {
     "login.field.username": "Uživatelské jméno",
     "login.field.password": "Heslo",
     "login.action.login": "Přihlásit",
+
+    "visiblePolicy.form.title": "Nastavení zobrazení pravidel kontroly JP",
+    "visiblePolicy.action.save": "Upravit",
+    "visiblePolicy.action.reset": "Vymazat",
+    "visiblePolicy.action.reset.confirm": "Opravdu vymazat? Po vymazání definice budou přebírána pravidla kontroly z nadřízené jednotky popisu.",
 
     "____": ""
 };

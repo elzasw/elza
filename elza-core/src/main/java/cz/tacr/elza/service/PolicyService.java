@@ -58,6 +58,15 @@ public class PolicyService {
     }
 
     /**
+     * Vrací typy oprávnění.
+     *
+     * @return seznam typů oprávnění
+     */
+    public List<RulPolicyType> getPolicyTypes() {
+        return policyTypeRepository.findAll();
+    }
+
+    /**
      * Získání nastavení oprávnění pro uzel.
      *
      * @param nodeId         identifikátor node ke kterému hledám oprávnění
@@ -248,7 +257,7 @@ public class PolicyService {
         Assert.notNull(policyTypeIdsMap);
         Assert.notNull(includeSubtree);
 
-        List<RulPolicyType> policyTypes = policyTypeRepository.findByIds(policyTypeIdsMap.keySet());
+        List<RulPolicyType> policyTypes = policyTypeIdsMap.size() == 0 ? new ArrayList<>() : policyTypeRepository.findByIds(policyTypeIdsMap.keySet());
 
         Assert.isTrue(policyTypes.size() == policyTypeIdsMap.size(), "Neplatný identifikátor typu oprávnění " + policyTypeIdsMap);
 

@@ -741,6 +741,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                         <NoFocusButton onClick={this.handleDeleteNode}><Icon
                             glyph="fa-trash"/>{i18n('subNodeForm.deleteNode')}</NoFocusButton>
                     }
+                    <NoFocusButton onClick={this.props.onVisiblePolicy}><Icon
+                        glyph="fa-eye"/>{i18n('subNodeForm.visiblePolicy')}</NoFocusButton>
                 </div>
             </div>
         )

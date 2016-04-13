@@ -646,6 +646,22 @@ class WebApi{
             { descItemTypeId, fulltext: filterText, max }, descItemSpecIds)
     }
 
+    getVisiblePolicy(nodeId, fundVersionId, includeParents = true) {
+        return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/policy/' + nodeId + '/' + fundVersionId + '/' + includeParents);
+    }
+
+    getVisiblePolicyTypes() {
+        return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/policy/types');
+    }
+
+    setVisiblePolicy(nodeId, fundVersionId, policyTypeIdsMap, includeSubtree = false) {
+        var data = {
+            includeSubtree,
+            policyTypeIdsMap
+        }
+        return AjaxUtils.ajaxPut('/api/ruleSetManagerV2/policy/' + nodeId + '/' + fundVersionId, null, data);
+    }
+
     login(username, password) {
         return AjaxUtils.ajaxCallRaw('/login', {}, "POST", "username=" + username + "&password=" + password, "application/x-www-form-urlencoded");
     }

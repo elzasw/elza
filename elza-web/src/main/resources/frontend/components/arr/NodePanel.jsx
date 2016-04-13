@@ -9,7 +9,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Icon, ListBox, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown,
-        Search, GoToPositionForm} from 'components';
+        Search, GoToPositionForm, VisiblePolicyForm} from 'components';
 import {Button, Tooltip, OverlayTrigger, Input} from 'react-bootstrap';
 import {fundSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister'
@@ -35,6 +35,8 @@ import {setFocus, canSetFocus, focusWasSet, isFocusFor, isFocusExactFor} from 'a
 require ('./NodePanel.less');
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
 import {fundSubNodeFormDescItemTypeAdd} from 'actions/arr/subNodeForm'
+import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy'
+import {visiblePolicyTypesFetchIfNeeded} from 'actions/refTables/visiblePolicyTypes'
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -125,12 +127,12 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('renderParents', 'renderRow',
-            'renderChildren', 'handleOpenItem',
+            'renderChildren', 'handleOpenItem', 'handleSetVisiblePolicy',
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd',
             'handleChangeFilterText', 'renderRowItem', 'handleFindPosition', 'handleFindPositionSubmit',
-            'handleShortcuts', 'trySetFocus', 'handleAddDescItemType', 'handleAccordionKeyDown',
+            'handleShortcuts', 'trySetFocus', 'handleAddDescItemType', 'handleAccordionKeyDown', 'handleVisiblePolicy',
             'ensureItemVisibleNoForm'
             );
 
@@ -256,6 +258,21 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         }
     }
 
+    handleVisiblePolicy() {
+        const {node, versionId} = this.props;
+        var form = <VisiblePolicyForm nodeId={node.selectedSubNodeId} fundVersionId={versionId} onSubmitForm={this.handleSetVisiblePolicy} />;
+        this.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
+    }
+
+    handleSetVisiblePolicy(data) {
+        const {node, versionId} = this.props;
+        var mapIds = {};
+        data.records.forEach((val, index) => {
+            mapIds[parseInt(val.id)] = val.checked;
+        });
+        this.dispatch(setVisiblePolicyRequest(node.selectedSubNodeId, versionId, mapIds));
+    }
+
     /**
      * Zobrazení dialogu pro přidání atributu.
      */
@@ -364,6 +381,7 @@ return true
             }
 
         }
+        this.dispatch(visiblePolicyTypesFetchIfNeeded());
         this.dispatch(fundNodeInfoFetchIfNeeded(versionId, node.id, node.nodeKey));
         this.dispatch(calendarTypesFetchIfNeeded());
     }
@@ -809,6 +827,7 @@ return true
                 descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
                 closed={closed}
                 onAddDescItemType={this.handleAddDescItemType}
+                onVisiblePolicy={this.handleVisiblePolicy}
             />
         } else {
             form = <Loading value={i18n('global.data.loading.form')}/>
