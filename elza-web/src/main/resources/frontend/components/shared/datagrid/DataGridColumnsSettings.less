@@ -1,3 +1,5 @@
+@listbox-height: 300px;
+
 .datagrid-columns-settings-container {
     .panels-container {
         display: flex;
@@ -8,19 +10,29 @@
             width: 50%;
             
             .listbox-container {
-                height: 400px;
+                height: @listbox-height;
                 overflow: auto;
             }
         }
         .center {
-            
+            width: 40px;
+            height: @listbox-height;
+            display: table;
+
+            .action-buttons {
+                display: table-cell;
+                vertical-align: middle;
+                .btn {
+                    margin: 5px 10px;
+                }
+            }
         }
         .right {
             flex-grow: 1;
             width: 50%;
             
             .listbox-container {
-                height: 400px;
+                height: @listbox-height;
                 overflow: auto;
             }
         }

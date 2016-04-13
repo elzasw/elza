@@ -137,8 +137,10 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
                                 />
                             </div>
                             <div className='center'>
-                                <Button onClick={this.handleAddVisible}>&gt;</Button>
-                                <Button onClick={this.handleRemoveVisible}>&lt;</Button>
+                                <div className="action-buttons">
+                                    <Button onClick={this.handleAddVisible}>&gt;</Button>
+                                    <Button onClick={this.handleRemoveVisible}>&lt;</Button>
+                                </div>
                             </div>
                             <div className='right'>
                                 <ListBox

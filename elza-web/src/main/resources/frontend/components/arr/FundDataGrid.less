@@ -1,3 +1,5 @@
+@import "~variables.less";
+
 .fund-datagrid-container-wrap {
     .fund-datagrid-container {
         .actions-container {
@@ -14,7 +16,7 @@
                     background: transparent;
                     margin-left: 5px;
                     &:hover {
-                        background-color: #C0C0C0;
+                        background-color: @button-bg-hover;
                     }
                     .icon {
                         color: #000000;
@@ -28,7 +30,7 @@
         }
         .grid-container {
             .filtered {
-                background: yellow;
+                background: @button-bg-hover;
             }
             
             .cell-value-wrapper {

@@ -151,20 +151,22 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
         return (
             <div className={cls}>
                 {lbl}
-                <div className='actions-container'>
-                    <Button bsStyle="link" onClick={this.handleSelectAll}>{i18n('global.title.selectAll')}</Button>
-                    /
-                    <Button bsStyle="link" onClick={this.handleUnselectAll}>{i18n('global.title.unselectAll')}</Button>
+                <div className="search-action-container">
+                    {searchable && <div className='search-container'>
+                        <Search
+                            placeholder={i18n('search.input.search')}
+                            filterText={filterText}
+                            onChange={this.handleSearchChange}
+                            onSearch={this.handleSearch}
+                            onClear={this.handleSearchClear}
+                        />
+                    </div>}
+                    <div className='actions-container'>
+                        <Button bsStyle="link" onClick={this.handleSelectAll}>{i18n('global.title.selectAll')}</Button>
+                        /
+                        <Button bsStyle="link" onClick={this.handleUnselectAll}>{i18n('global.title.unselectAll')}</Button>
+                    </div>
                 </div>
-                {searchable && <div className='search-container'>
-                    <Search
-                        placeholder={i18n('search.input.search')}
-                        filterText={filterText}
-                        onChange={this.handleSearchChange}
-                        onSearch={this.handleSearch}
-                        onClear={this.handleSearchClear}
-                    />
-                </div>}
                 <div className='list-container'>
                     <ListBox
                         items={items}
