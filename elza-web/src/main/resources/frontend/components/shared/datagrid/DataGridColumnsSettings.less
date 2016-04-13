@@ -5,13 +5,17 @@
         display: flex;
         height: 100%;
         
-        .left {
+        .left, .right {
             flex-grow: 1;
             width: 50%;
             
             .listbox-container {
                 height: @listbox-height;
                 overflow: auto;
+                
+                .listbox-item {
+                    padding: 0 5px;
+                }
             }
         }
         .center {
@@ -25,15 +29,6 @@
                 .btn {
                     margin: 5px 10px;
                 }
-            }
-        }
-        .right {
-            flex-grow: 1;
-            width: 50%;
-            
-            .listbox-container {
-                height: @listbox-height;
-                overflow: auto;
             }
         }
     }
