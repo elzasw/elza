@@ -4,12 +4,7 @@ import static com.jayway.restassured.RestAssured.given;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -88,7 +83,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractControllerTest.class);
     protected static final String CONTENT_TYPE_HEADER = "content-type";
     protected static final String JSON_CONTENT_TYPE = "application/json";
+    protected static final String WWW_FORM_CONTENT_TYPE = "application/x-www-form-urlencoded";
     private static final Header JSON_CT_HEADER = new Header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE);
+    private static final Header WWW_FORM_CT_HEADER = new Header(CONTENT_TYPE_HEADER, WWW_FORM_CONTENT_TYPE);
     private static final Header MULTIPART_HEADER = new Header(CONTENT_TYPE_HEADER, MediaType.MULTIPART_FORM_DATA_VALUE);
 
     protected static final String ADMIN_CONTROLLER_URL = "/api/admin";
@@ -214,13 +211,24 @@ public abstract class AbstractControllerTest extends AbstractTest {
     // Výchozí scope
     private final static String IMPORT_SCOPE = "GLOBAL";
 
+    private static Map<String, String> cookies = null;
+
     @Before
     public void setUp() throws Exception {
         super.setUp();
         RestAssured.port = port;                        // nastavi default port pro REST-assured
         RestAssured.baseURI = RestAssured.DEFAULT_URI;  // nastavi default URI pro REST-assured. Nejcasteni localhost
-
+        login();
         importXmlFile(null, null, XmlImportType.PARTY, IMPORT_SCOPE, 1, XmlImportControllerTest.getFile(XML_INSTITUTION));
+    }
+
+    protected void login() {
+        RequestSpecification requestSpecification = given();
+        requestSpecification.formParam("username", "admin");
+        requestSpecification.formParam("password", "admin");
+        requestSpecification.header(WWW_FORM_CT_HEADER).log().all().config(UTF8_ENCODER_CONFIG);
+        Response response = requestSpecification.post("/login");
+        cookies = response.getCookies();
     }
 
     public static Response delete(Function<RequestSpecification, RequestSpecification> params, String url) {
@@ -273,7 +281,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         RequestSpecification requestSpecification = params.apply(given());
 
-        requestSpecification.header(JSON_CT_HEADER).log().all().config(UTF8_ENCODER_CONFIG);
+        requestSpecification.header(JSON_CT_HEADER).log().all().config(UTF8_ENCODER_CONFIG).cookies(cookies);
 
         Response response = null;
         switch (method) {
@@ -323,7 +331,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         RequestSpecification requestSpecification = params.apply(given());
 
-        requestSpecification.header(MULTIPART_HEADER).log().all().config(UTF8_ENCODER_CONFIG);
+        requestSpecification.header(MULTIPART_HEADER).log().all().config(UTF8_ENCODER_CONFIG).cookies(cookies);
 
         Response response = requestSpecification.post(url);
         logger.info("Response status: " + response.statusLine() + ", response body:");
