@@ -28,6 +28,8 @@ import {createFundRoot} from './ArrUtils.jsx'
 
 require('./FundDataGrid.less')
 
+const COL_DEFAULT_WIDTH = 164
+
 var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -222,7 +224,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                     dataType: dataTypesMap[refType.dataTypeId],
                     title: refType.shortcut,
                     desc: refType.name,
-                    width: colInfo ? colInfo.width : 60,
+                    width: colInfo ? colInfo.width : COL_DEFAULT_WIDTH,
                     dataName: refType.id,
                     headerColRenderer: this.headerColRenderer,
                     cellRenderer: this.cellRenderer,
