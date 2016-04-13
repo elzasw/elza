@@ -78,12 +78,11 @@ export function createFund(data) {
 /**
  * Uzavření AS, nová aktuální AS bude mít předané ruleSetId a arrangementTypeId.
  * @param {int} versionId verze AS
- * @param {int} ruleSetId id pravidla
  * @param {int} arrangementTypeId id typu výstupu
  */
-export function approveFund(versionId, ruleSetId, dateRange) {
+export function approveFund(versionId, dateRange) {
     return dispatch => {
-        return WebApi.approveVersion(versionId, ruleSetId, dateRange)
+        return WebApi.approveVersion(versionId, dateRange)
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.fund.title.approved")));
                 dispatch(approveFundResult(json.versionId))

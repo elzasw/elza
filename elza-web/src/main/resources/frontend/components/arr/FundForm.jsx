@@ -24,7 +24,7 @@ const validate = (values, props) => {
     if ((props.create || props.update) && !values.name) {
         errors.name = i18n('global.validation.required');
     }
-    if ((props.create || props.approve) && !values.ruleSetId) {
+    if ((props.create || props.update) && !values.ruleSetId) {
         errors.ruleSetId = i18n('global.validation.required');
     }
     if ((props.create || props.update) && !values.institutionId) {
@@ -148,7 +148,7 @@ var FundForm = class FundForm extends AbstractReactComponent {
                     <form onSubmit={handleSubmit(submitForm)}>
                         {(this.props.create || this.props.update) &&
                         <Input type="text" label={i18n('arr.fund.name')} {...name} {...decorateFormField(name)} />}
-                        {(this.props.create || this.props.approve) &&
+                        {(this.props.create || this.props.update) &&
                         <Input type="select" label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
                             <option key='-ruleSetId'/>
                             {ruleSets.map(i=> {

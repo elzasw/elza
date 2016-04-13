@@ -17,7 +17,7 @@ import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {approveFund, showRegisterJp} from 'actions/arr/fund'
+import {showRegisterJp} from 'actions/arr/fund'
 import {scopesDirty} from 'actions/refTables/scopesData'
 import {versionValidate} from 'actions/arr/versionValidation'
 import {packetsFetchIfNeeded} from 'actions/arr/packets'
@@ -38,7 +38,6 @@ var keyModifier = Utils.getKeyModifier()
 
 var keymap = {
     Arr: {
-        approveFundVersion: keyModifier + 'z',
         bulkActions: keyModifier + 'h',
         registerJp: keyModifier + 'j',
         area0: keyModifier + '0',
@@ -54,8 +53,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
-            'handleApproveFundVersion', 'handleCallApproveFundVersion', 'getActiveFundId', 'handleBulkActionsDialog',
-            'handleValidationDialog', 'handleEditFundVersion', 'handleCallEditFundVersion', 'handleShortcuts',
+            'getActiveFundId', 'handleBulkActionsDialog',
+            'handleValidationDialog', 'handleShortcuts',
             'renderDeveloperPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs');
 
         this.state = {fundFileTreeOpened: false, developerExpandedSpecsIds: {}};
@@ -111,9 +110,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     handleShortcuts(action) {
         console.log("#handleShortcuts", '[' + action + ']', this);
         switch (action) {
-            case 'approveFundVersion':
-                this.handleApproveFundVersion()
-                break
             case 'bulkActions':
                 this.handleBulkActionsDialog()
                 break
@@ -147,37 +143,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         } else {
             return null;
         }
-    }
-
-    /**
-     * Vyvolání akce uzavření verze AS.
-     * @param data {Object} data pro uzavření - z formuláře
-     */
-    handleCallApproveFundVersion(data) {
-        var activeInfo = this.getActiveInfo();
-        this.dispatch(approveFund(activeInfo.activeFund.versionId, data.ruleSetId, data.dateRange));
-    }
-
-    /**
-     * Zobrazení dualogu uzavření verze AS.
-     */
-    handleApproveFundVersion() {
-        var activeInfo = this.getActiveInfo();
-        var data = {
-            name_: activeInfo.activeFund.name,
-            dateRange: activeInfo.activeFund.activeVersion.dateRange,
-            ruleSetId: activeInfo.activeFund.activeVersion.ruleSetId
-        }
-        this.dispatch(
-            modalDialogShow(
-                this,
-                i18n('arr.fund.title.approve'),
-                <FundForm
-                    approve
-                    initData={data}
-                    onSubmitForm={this.handleCallApproveFundVersion}/>
-            )
-        );
     }
 
     /**
@@ -227,42 +192,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('arr.fund.title.versionValidation'), <VersionValidationDialog />));
     }
 
-    handleEditFundVersion() {
-        var activeInfo = this.getActiveInfo();
-        var that = this;
-        barrier(
-            WebApi.getScopes(activeInfo.activeFund.versionId),
-            WebApi.getAllScopes()
-        )
-            .then(data => {
-                return {
-                    scopes: data[0].data,
-                    scopeList: data[1].data
-                }
-            })
-            .then(json => {
-                var data = {
-                    name: activeInfo.activeFund.name,
-                    institutionId: activeInfo.activeFund.institutionId,
-                    internalCode: activeInfo.activeFund.internalCode,
-                    regScopes: json.scopes
-                };
-                that.dispatch(modalDialogShow(that, i18n('arr.fund.title.update'),
-                    <FundForm update initData={data} scopeList={json.scopeList}
-                            onSubmitForm={that.handleCallEditFundVersion}/>));
-            });
-    }
-
-    handleCallEditFundVersion(data) {
-        let activeFund = this.getActiveInfo().activeFund;
-        data.id = activeFund.fundId;
-        this.dispatch(scopesDirty(activeFund.versionId));
-        WebApi.updateFund(data).then((json) => {
-            this.dispatch(modalDialogHide());
-            this.dispatch(modalDialogHide());
-        })
-    }
-
     /**
      * Sestavení Ribbonu.
      * @return {Object} view
@@ -276,12 +205,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         if (activeInfo.activeFund && !activeInfo.activeFund.closed) {
             itemActions.push(
-                <Button key="edit-version" onClick={this.handleEditFundVersion}><Icon glyph="fa-pencil"/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.update')}</span></div>
-                </Button>,
-                <Button key="approve-version" onClick={this.handleApproveFundVersion}><Icon glyph="fa-calendar-check-o"/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.approve')}</span></div>
-                </Button>,
                 <Button key="bulk-actions" onClick={this.handleBulkActionsDialog}><Icon glyph="fa-cogs"/>
                     <div><span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span></div>
                 </Button>,

@@ -32,6 +32,9 @@ export function storeRestoreFromStorage() {
                     if (stateRegion.arrRegion) {
                         dispatch(storeLoadData('ARR_REGION', stateRegion.arrRegion, false));
                     }
+                    if (stateRegion.fundRegion) {
+                        dispatch(storeLoadData('FUND_REGION', stateRegion.fundRegion, false));
+                    }
                     if (stateRegion.partyRegionFront && stateRegion.partyRegionFront.length > 0) {
                         dispatch(storeLoadData('PARTY_REGION', stateRegion.partyRegionFront[0], false));
                     }
@@ -105,6 +108,12 @@ export function storeLoadData(type, data, switchView = true) {
                 dispatch(storeLoad({arrRegion: data}));
                 if (switchView) {
                     dispatch(routerNavigate('/arr'));
+                }
+                break;
+            case 'FUND_REGION':
+                dispatch(storeLoad({fundRegion: data}));
+                if (switchView) {
+                    dispatch(routerNavigate('/fund'));
                 }
                 break;
             case 'ARR_REGION_FUND':

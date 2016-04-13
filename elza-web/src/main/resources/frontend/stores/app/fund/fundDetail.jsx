@@ -22,6 +22,29 @@ export default function fundDetail(state = initialState, action = {}) {
     }
 
     switch (action.type) {
+        case types.STORE_SAVE:
+            const {id} = state
+            return {
+                id,
+                fundTree: fundTree(state.fundTree, action),
+            }
+        case types.STORE_LOAD:
+            return {
+                ...state,
+                fetched: false,
+                fetching: false,
+                currentDataKey: '',
+                fundTree: fundTree(state.fundTree, action),
+            }
+        case types.CHANGE_FUND:
+            if (state.id === action.fundId) {
+                return {
+                    ...state,
+                    currentDataKey: '',
+                }
+            } else {
+                return state
+            }
         case types.FUNDS_SELECT_FUND:
             if (state.id !== action.id) {
                 return {

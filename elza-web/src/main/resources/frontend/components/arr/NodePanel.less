@@ -88,19 +88,6 @@
                 }
             }
         }
-        .parents {
-            height: @node-panel-parents-height;
-            overflow-y: auto;
-            border: 1px solid @node-panel-parents-border;
-            background: @node-panel-parents-bg;
-
-            .node {
-                cursor: pointer;
-                &:hover {
-                    background: @node-panel-parents-active-bg;
-                }
-            }
-        }
         .content {
             margin-bottom: @parts-margin;
             margin-top: @parts-margin;
@@ -197,18 +184,11 @@
             }
 
         }
-        .children {
+        .children, .parents {
             height: @node-panel-children-height;
             overflow-y: auto;
             border: 1px solid @node-panel-children-border;
             background: @node-panel-children-bg;
-
-            .node {
-                cursor: pointer;
-                &:hover {
-                    background: @node-panel-children-active-bg;
-                }
-            }
         }
     }
     .developer-panel {

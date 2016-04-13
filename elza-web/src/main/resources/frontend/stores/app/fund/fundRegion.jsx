@@ -24,6 +24,32 @@ export default function fundRegion(state = initialState, action = {}) {
     }
 
     switch (action.type) {
+        case types.STORE_SAVE:
+            return {
+                fundDetail: fundDetail(state.fundDetail, action)
+            }
+        case types.STORE_LOAD:
+            if (action.fundRegion) {
+                return {
+                    ...state,
+                    fetched: false,
+                    fetching: false,
+                    filterText: '',
+                    currentDataKey: '',
+                    funds: [],
+                    fundsCount: 0,
+                    ...action.fundRegion,
+                    fundDetail: fundDetail(action.fundRegion.fundDetail, action),
+                }
+            } else {
+                return state
+            }
+        case types.CHANGE_FUND:
+            return {
+                ...state,
+                currentDataKey: '',
+                fundDetail: fundDetail(state.fundDetail, action),
+            }
         case types.FUNDS_SELECT_FUND:
         case types.FUNDS_FUND_DETAIL_REQUEST:
         case types.FUNDS_FUND_DETAIL_RECEIVE:

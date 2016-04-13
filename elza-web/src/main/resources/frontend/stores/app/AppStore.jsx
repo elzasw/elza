@@ -153,6 +153,7 @@ var save = function(store) {
         partyRegion: partyRegion(store.partyRegion, action),
         registryRegion: registryRegion(store.registryRegion, action),
         arrRegion: arrRegion(store.arrRegion, action),
+        fundRegion: fundRegion(store.fundRegion, action),
         splitter: splitter(store.splitter, action)
     }
 

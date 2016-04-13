@@ -85,7 +85,10 @@
 
         .active {
             background: @tree-node-active-bg;
-        }  
+            &:hover {
+                background: @tree-node-active-hover-bg;
+            }
+        }
 
         .focus {
             .node-label {

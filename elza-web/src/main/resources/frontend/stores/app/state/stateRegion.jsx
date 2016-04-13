@@ -5,6 +5,7 @@ const initialState = {
     partyRegionFront: [],
     registryRegionFront: [],
     arrRegion: null,
+    fundRegion: null,
     arrRegionFront: [],
 }
 
@@ -57,6 +58,9 @@ export default function stateRegion(state = initialState, action) {
             if (action.registryRegion) {
                 var index = indexById(result.registryRegionFront, action.registryRegion.selectedId, 'selectedId');
                 result.registryRegionFront = updateFront(result.registryRegionFront, action.registryRegion, index);
+            }
+            if (action.fundRegion) {
+                result.fundRegion = action.fundRegion
             }
             if (action.arrRegion) {
                 result.arrRegion = action.arrRegion

@@ -1,10 +1,17 @@
+@import "~variables.less";
+
 .listbox-container {
     border: 1px solid #DDDDDD;
     .listbox-item {
-        padding: 0 5px;
-        cursor: default;
+        cursor:pointer;
+        &:hover {
+            background: @tree-node-label-active-bg
+        }
         &.active {
-            background: #C0C0C0;
+            background: @tree-node-active-bg;
+            &:hover {
+                background: @tree-node-active-hover-bg;
+            }            
         }
     }
 }

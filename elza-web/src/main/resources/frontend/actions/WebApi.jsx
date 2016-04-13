@@ -552,8 +552,8 @@ class WebApi{
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/updateFund', null, data)
     }
 
-    approveVersion(versionId, ruleSetId, dateRange) {
-        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/approveVersion', {dateRange: dateRange, ruleSetId: ruleSetId, versionId: versionId})
+    approveVersion(versionId, dateRange) {
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/approveVersion', {dateRange: dateRange, versionId: versionId})
             .then(json=>{
                 return json;
             });
@@ -704,6 +704,7 @@ class WebApi{
                 return {
                     ...json,
                     versionId: json.versions[0].id,
+                    activeVersion: json.versions[0],
                 }
             })
 
