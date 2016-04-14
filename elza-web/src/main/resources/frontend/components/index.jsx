@@ -49,7 +49,6 @@ exports.FundDetail = require('./fund/FundDetail');
 exports.FundDetailTree = require('./fund/FundDetailTree');
 
 exports.FundDataGridCellForm = require('./arr/FundDataGridCellForm');
-exports.FundFileTree = require('./arr/FundFileTree');
 exports.NodePanel = require('./arr/NodePanel');
 exports.NodeTabs = require('./arr/NodeTabs');
 exports.FundDataGrid = require('./arr/FundDataGrid');

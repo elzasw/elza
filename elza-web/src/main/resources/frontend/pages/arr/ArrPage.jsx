@@ -11,7 +11,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Tabs, Icon, Ribbon, i18n} from 'components';
-import {FundExtendedView, FundForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FundFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs} from 'components';
+import {FundExtendedView, FundForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
@@ -57,7 +57,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             'handleValidationDialog', 'handleShortcuts',
             'renderDeveloperPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs');
 
-        this.state = {fundFileTreeOpened: false, developerExpandedSpecsIds: {}};
+        this.state = {developerExpandedSpecsIds: {}};
     }
 
     componentDidMount() {
@@ -414,7 +414,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     render() {
-        const {developer, focus, splitter, arrRegion, fundFileTree, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+        const {developer, focus, splitter, arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
 
         var showRegisterJp = arrRegion.showRegisterJp;
 
@@ -476,14 +476,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             </div>
         )
 
-        var appContentExt = (
-            <ToggleContent className="fa-file-toggle-container" alwaysRender opened={this.state.fundFileTreeOpened}
-                           onShowHide={(opened)=>this.setState({fundFileTreeOpened: opened})}
-                           closedIcon="fa-chevron-right" openedIcon="fa-chevron-left">
-                <FundFileTree {...fundFileTree} onSelect={()=>this.setState({fundFileTreeOpened: false})}/>
-            </ToggleContent>
-        )
-
         return (
             <Shortcuts name='Arr' handler={this.handleShortcuts}>
                 <PageLayout
@@ -493,7 +485,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     leftPanel={leftPanel}
                     centerPanel={centerPanel}
                     rightPanel={rightPanel}
-                    appContentExt={appContentExt}
                 />
             </Shortcuts>
         )
@@ -501,11 +492,10 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, fundFileTree, refTables, form, focus, developer} = state
+    const {splitter, arrRegion, refTables, form, focus, developer} = state
     return {
         splitter,
         arrRegion,
-        fundFileTree,
         focus,
         developer,
         rulDataTypes: refTables.rulDataTypes,
@@ -518,7 +508,6 @@ function mapStateToProps(state) {
 ArrPage.propTypes = {
     splitter: React.PropTypes.object.isRequired,
     arrRegion: React.PropTypes.object.isRequired,
-    fundFileTree: React.PropTypes.object.isRequired,
     developer: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,

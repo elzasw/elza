@@ -19,7 +19,6 @@ const _logCollapsed = true;
  */
 import arrRegion from './arr/arrRegion';
 import refTables from './refTables/refTables';
-import fundFileTree from './arr/fundFileTree';
 import registryRegion from './registry/registryRegion';
 import registryRegionData from './registry/registryRegionData';
 import registryRegionRecordTypes from './registry/registryRegionRecordTypes';
@@ -52,7 +51,6 @@ import editRegistryForm from './registry/form/editRegistryForm';
 let reducer = combineReducers({
     arrRegion,
     refTables,
-    fundFileTree,
     registryRegion,
     registryRegionData,
     registryRegionRecordTypes,

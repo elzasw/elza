@@ -6,7 +6,6 @@ import {WebApi} from 'actions'
 import {Toastr, i18n} from 'components';
 import * as types from 'actions/constants/ActionTypes';
 import {modalDialogHide} from 'actions/global/modalDialog'
-import {fundFileTreeFetch} from 'actions/arr/fundFileTree'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions'
 import {nodesRequest, nodesReceive} from 'actions/arr/node'
 import {createFundRoot, getFundFromFundAndVersion} from 'components/arr/ArrUtils'
@@ -70,7 +69,6 @@ export function createFund(data) {
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.fund.title.added")));
                 dispatch(modalDialogHide());
-                dispatch(fundFileTreeFetch());
             });
     }
 }
@@ -87,7 +85,6 @@ export function approveFund(versionId, dateRange) {
                 dispatch(addToastrSuccess(i18n("arr.fund.title.approved")));
                 dispatch(approveFundResult(json.versionId))
                 dispatch(modalDialogHide())
-                dispatch(fundFileTreeFetch())
             });
     }
 }

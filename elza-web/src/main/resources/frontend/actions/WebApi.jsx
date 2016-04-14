@@ -214,10 +214,6 @@ class WebApi{
         });
     }
 
-    getFundFileTree() {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFunds');
-    }
-
     findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null){
         return AjaxUtils.ajaxGet('/api/registryManagerV2/findRecord', {
             search: search,

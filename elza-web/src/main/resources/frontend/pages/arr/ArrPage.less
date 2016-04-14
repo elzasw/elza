@@ -2,66 +2,13 @@
 
 @header-height: 64px;
 @header-minimized-height: 12px;
-@finding-tree-minimized-width: 32px;
-@finding-tree-maximized-width: 320px;
-@finding-tree-toggle-width: 12px;
-@finding-tree-toggle-height: 120px;
-@finding-tree-toggle-font-size: 11px;
 
 // fa file toggle
 .fa-page.app-container {
     .app-content {
         .splitter-center {
         }
-        
-        padding-left: @finding-tree-minimized-width;
-        .fa-file-toggle-container {
-            position: absolute;
-            top: @header-height;
-            left: 0px;
-            bottom: 0px;
-            z-index: 1000;
-            &.opened {
-                width: @finding-tree-maximized-width;
-            }
-            &.closed {
-                width: @finding-tree-minimized-width;
-            }
-            .content {
-                padding-right: @finding-tree-toggle-width;
-                height: 100%;
-            }
-            .toggle-container {
-                width: @finding-tree-toggle-width;
-                height: 100%;
-                background: @fa-file-tree-bg;
-                border-right: 1px solid @fa-file-tree-border;
-                position: absolute;
-                padding: 0;
-                margin: 0;
-                top: 0;
-                right:0;
-                display: flex;
-                align-items: center; 
-            }
-            .toggle.btn {
-                width: @finding-tree-toggle-width;
-                height: @finding-tree-toggle-height;
-                line-height: @finding-tree-toggle-height;
-                padding: 0;
-                margin: 0;
-                border-radius: 0;
-                background: @btn-min-max-bg;
-                border: 1px solid @btn-min-max-border;
-                border-right: none;
-                .icon {
-                    padding: 0;
-                    margin: 0;
-                    font-size: @finding-tree-toggle-font-size;
-                }
-            }                
-        }     
-        
+
         .developer-panel {
             flex-shrink: 0;
             overflow-y: auto;
