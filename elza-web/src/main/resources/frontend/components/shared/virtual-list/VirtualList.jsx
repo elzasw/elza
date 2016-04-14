@@ -4,9 +4,11 @@ var utils = require('./utils');
 
 var VirtualList = React.createClass({
     propTypes: {
-        items: React.PropTypes.array.isRequired,
+        items: React.PropTypes.array,   // v případě, že máme položky na klientovi, je zde seznam všech položek
+        lazyItemsCount: React.PropTypes.number,  //  v případě, že máme položky jen na serveru, zde je počet položek
         itemHeight: React.PropTypes.number.isRequired,
         renderItem: React.PropTypes.func.isRequired,
+        onViewChange: React.PropTypes.func,
         container: React.PropTypes.object.isRequired,
         tagName: React.PropTypes.string.isRequired,
         scrollDelay: React.PropTypes.number,
@@ -17,23 +19,25 @@ var VirtualList = React.createClass({
             container: typeof window !== 'undefined' ? window : undefined,
             tagName: 'div',
             scrollDelay: 0,
-            itemBuffer: 0
+            itemBuffer: 0,
+            scrollTopPadding: 0,
         };
     },
-    getVirtualState: function(props, isMounted) {
+    getVirtualState: function(props, isMounted, currState) {    // currState - aktuální stav komponenty
         // default values
         var state = {
             items: [],
             bufferStart: 0,
-            height: 0
+            height: 0,
         };
-        
+
+        const lazyItems = props.items ? false : true
+        const itemsCount = lazyItems ? props.lazyItemsCount : props.items.length
+
         // early return if nothing to render
-        if (typeof props.container === 'undefined' || props.items.length === 0 || props.itemHeight <= 0 || !isMounted) return state;
+        if (typeof props.container === 'undefined' || itemsCount === 0 || props.itemHeight <= 0 || !isMounted) return state;
         
-        var items = props.items;
-        
-        state.height = props.items.length * props.itemHeight;
+        state.height = itemsCount * props.itemHeight;
 
         var container = props.container;
 
@@ -49,27 +53,41 @@ var VirtualList = React.createClass({
 
         var viewTop = typeof container.scrollY !== 'undefined' ? container.scrollY : container.scrollTop;
 
-        var renderStats = VirtualList.getItems(viewTop, viewHeight, offsetTop, props.itemHeight, items.length, props.itemBuffer);
-        
+        var renderStats = VirtualList.getItems(viewTop, viewHeight, offsetTop, props.itemHeight, itemsCount, props.itemBuffer);
+
         // no items to render
         if (renderStats.itemsInView.length === 0) return state;
 
-        state.items = items.slice(renderStats.firstItemIndex, renderStats.lastItemIndex + 1);
+        if (lazyItems) {
+            state.items = []
+            for (var a=renderStats.firstItemIndex; a<renderStats.lastItemIndex + 1; a++) {
+                state.items.push(a)
+            }
+        } else {
+            state.items = props.items.slice(renderStats.firstItemIndex, renderStats.lastItemIndex + 1);
+        }
         state.bufferStart = renderStats.firstItemIndex * props.itemHeight;
-        
+
+        state.prevFirstItemIndex = renderStats.firstItemIndex
+
+        if (renderStats.firstItemIndex !== currState.prevFirstItemIndex) {
+            const {onViewChange} = this.props
+            onViewChange && onViewChange(renderStats.firstItemIndex, renderStats.lastItemIndex)
+        }
+
         return state;
     },
     getInitialState: function() {
         return {
-            ...this.getVirtualState(this.props, false),
-            isMounted: false
+            ...this.getVirtualState(this.props, false, {prevFirstItemIndex: -1}),
+            isMounted: false,
         }
     },
     shouldComponentUpdate: function(nextProps, nextState) {
 return true;
     },
     componentWillReceiveProps: function(nextProps) {
-        var state = this.getVirtualState(nextProps, this.state.isMounted);
+        var state = this.getVirtualState(nextProps, this.state.isMounted, this.state);
 
         this.props.container.removeEventListener('scroll', this.onScrollDebounced);
 
@@ -77,7 +95,7 @@ return true;
 
         nextProps.container.addEventListener('scroll', this.onScrollDebounced);
 
-        if (typeof nextProps.scrollToIndex !== 'undefined') {
+        if (typeof nextProps.scrollToIndex !== 'undefined' && this.props.scrollToIndex !== nextProps.scrollToIndex) {
             var scrollTopPadding = this.props.scrollTopPadding || 0
 
             this.setState(state, () => {
@@ -87,7 +105,7 @@ return true;
                 var from = this.state.bufferStart + this.props.scrollTopPadding
                 var to = from + box.parentNode.clientHeight - 2*this.props.scrollTopPadding
 
-                //console.log(itemTop, from, to)
+                //console.log('itemTop', itemTop, 'from', from, 'to', to, 'itemHeight', this.props.itemHeight)
                 if (itemTop <= from) {
                     if (itemTop - this.props.itemHeight < this.props.scrollTopPadding) {
                         box.parentNode.scrollTop = 0
@@ -95,7 +113,8 @@ return true;
                         box.parentNode.scrollTop = itemTop - this.props.itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc nahore
                     }
                 } else if (itemTop + this.props.itemHeight > to) {
-                    box.parentNode.scrollTop = itemTop + this.props.itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc dole
+                    // box.parentNode.scrollTop = itemTop + this.props.itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc dole
+                    box.parentNode.scrollTop = itemTop - this.props.itemHeight
                 }
             });
         } else {
@@ -106,7 +125,7 @@ return true;
         this.onScrollDebounced = utils.debounce(this.onScroll, this.props.scrollDelay, false);
     },
     componentDidMount: function() {
-        var state = this.getVirtualState(this.props, true);
+        var state = this.getVirtualState(this.props, true, this.state);
         
         this.setState({
             ...state,
@@ -119,7 +138,7 @@ return true;
         this.props.container.removeEventListener('scroll', this.onScrollDebounced);
     },
     onScroll: function() {
-        var state = this.getVirtualState(this.props, this.state.isMounted);
+        var state = this.getVirtualState(this.props, this.state.isMounted, this.state);
         
         this.setState(state);
     },

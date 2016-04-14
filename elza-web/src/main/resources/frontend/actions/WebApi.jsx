@@ -4,6 +4,14 @@
 
 import {AjaxUtils} from 'components';
 
+function getData(data, timeout = 1000) {
+    return new Promise(function (resolve, reject) {
+        setTimeout(function() {
+            resolve(data);
+        }, timeout);
+    });
+}
+
 class WebApi{
     constructor() {
     }
@@ -206,14 +214,6 @@ class WebApi{
         });
     }
 
-    getData(data, timeout = 1000) {
-        return new Promise(function (resolve, reject) {
-            setTimeout(function() {
-                resolve(data);
-            }, timeout);
-        });
-    }
-
     findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null){
         return AjaxUtils.ajaxGet('/api/registryManagerV2/findRecord', {
             search: search,
@@ -362,7 +362,7 @@ class WebApi{
             children: node.children,
             siblings: siblings,
         }
-        return this.getData(data, 1);
+        return getData(data, 1);
     }
 
     getFundNodeForm(versionId, nodeId) {
@@ -477,7 +477,7 @@ class WebApi{
                 ]
             }
         };
-        return this.getData(data, 1);
+        return getData(data, 1);
     }
 
     getNodeParents(versionId, nodeId) {
@@ -715,6 +715,24 @@ class WebApi{
                 ]
             })
         })
+    }
+
+    getLazyItems(fromIndex, count) {
+        const MAX = 1000
+        var data = {
+            items: [],
+            count: MAX,
+        }
+
+        for (var a=0; a<count && a +fromIndex < MAX; a++) {
+            const i = a + fromIndex;
+            data.items.push({
+                id: i,
+                name: 'Item ' + i,
+            })
+        }
+
+        return getData(data, 1)
     }
 }
 

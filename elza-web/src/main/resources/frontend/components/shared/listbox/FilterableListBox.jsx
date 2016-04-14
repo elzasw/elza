@@ -1,5 +1,5 @@
 /**
- *  ListBox komponenta s možností filtrování a hledání.
+ *  ListBox komponenta s možností filtrování, hledání a označování.
  *
  **/
 

@@ -6,6 +6,7 @@ exports.LongText = require('./LongText');
 exports.Utils = require('./Utils');
 
 exports.ListBox = require('./shared/listbox/ListBox');
+exports.LazyListBox = require('./shared/listbox/LazyListBox');
 exports.FilterableListBox = require('./shared/listbox/FilterableListBox');
 exports.NoFocusButton = require('./shared/button/NoFocusButton');
 exports.Toastr = require('./shared/toastr/index');
