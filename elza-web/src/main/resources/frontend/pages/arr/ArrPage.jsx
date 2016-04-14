@@ -421,8 +421,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var funds = arrRegion.funds;
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
         var leftPanel;
-        if (arrRegion.extendedView) {   // rozšířené zobrazení stromu AS
-        } else {
+        if (!arrRegion.extendedView && activeFund) {
             leftPanel = (
                 <FundTreeTabs
                     funds={funds}
@@ -470,11 +469,14 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             }
         }
 
-        var rightPanel = (
-            <div className="fa-right-container">
-                {developer.enabled && this.renderDeveloperPanel()}
-            </div>
-        )
+        var rightPanel;
+        if (activeFund) {
+            rightPanel = (
+                <div className="fa-right-container">
+                    {developer.enabled && this.renderDeveloperPanel()}
+                </div>
+            )
+        }
 
         return (
             <Shortcuts name='Arr' handler={this.handleShortcuts}>
