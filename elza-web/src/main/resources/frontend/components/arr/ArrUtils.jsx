@@ -171,13 +171,11 @@ export function getParentNode(node, fundTreeNodes) {
  * Vytvoření referenčního označení.
  *
  * @param node {Object} jednotka popisu
+ * @param elProps {Object} další properties pro přidání do renderovaných elementů
  */
-export function createReferenceMark(node, onClick = null) {
+export function createReferenceMark(node, elProps) {
     var levels = [];
-    var props = {};
-    if (onClick != null) {
-        props.onClick = onClick;
-    }
+
     if (node.referenceMark) {
         node.referenceMark.forEach((i, index) => {
             if (index % 2 == 0) {
@@ -186,14 +184,14 @@ export function createReferenceMark(node, onClick = null) {
                     if (i > 99) {
                         cls = "level small";
                     }
-                    levels.push(<span {...props} key={'level' + index} className={cls}>{i}</span>)
+                    levels.push(<span {...elProps} key={'level' + index} className={cls}>{i}</span>)
                 } else {
                     var iStr = i + "";
-                    levels.push(<span {...props} key={'level' + index} title={i} className="level small">.{iStr.substr(-3)}</span>)
+                    levels.push(<span {...elProps} key={'level' + index} title={i} className="level small">.{iStr.substr(-3)}</span>)
                 }
             } else {
                 if (index + 1 < node.referenceMark.length) {
-                    levels.push(<span {...props} key={'sep' + index} className="separator">{i}</span>)
+                    levels.push(<span {...elProps} key={'sep' + index} className="separator">{i}</span>)
                 }
             }
         });

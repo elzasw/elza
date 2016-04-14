@@ -182,7 +182,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
         this.dispatch(routerNavigate('/arr'))
 
         // Otevření archivního souboru
-        var fundObj = getFundFromFundAndVersion(item, item);
+        var fundObj = getFundFromFundAndVersion(item, item.versions[0]);
         this.dispatch(selectFundTab(fundObj));
     }
 

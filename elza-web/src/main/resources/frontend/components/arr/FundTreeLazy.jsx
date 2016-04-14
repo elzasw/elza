@@ -23,19 +23,19 @@ const TREE_TOP_PADDING = 20
 
 var keyDownHandlers = {
     ArrowUp: function(e) {
-        const {nodes, selectedId, multipleSelection, onNodeClick} = this.props
+        const {nodes, selectedId, multipleSelection} = this.props
         e.stopPropagation()
         e.preventDefault()
 
         if (!multipleSelection && selectedId !== null) {
             var index = indexById(nodes, selectedId)
             if (index !== null && index > 0) {
-                onNodeClick(nodes[index - 1], true)
+                this.handleNodeClick(nodes[index - 1], true)
             }
         }
     },
     ArrowDown: function(e) {
-        const {nodes, selectedId, multipleSelection, onNodeClick} = this.props
+        const {nodes, selectedId, multipleSelection} = this.props
         e.stopPropagation()
         e.preventDefault()
 
@@ -43,17 +43,17 @@ var keyDownHandlers = {
             if (selectedId !== null) {  // něco je označeno
                 var index = indexById(nodes, selectedId)
                 if (index !== null && index + 1 < nodes.length) {
-                    onNodeClick(nodes[index + 1], true)
+                    this.handleNodeClick(nodes[index + 1], true)
                 }
             } else {    // není nic označeno, označíme první položku stromu
                 if (nodes.length > 0) {
-                    onNodeClick(nodes[0], true)
+                    this.handleNodeClick(nodes[0], true)
                 }
             }
         }
     },
     ArrowLeft: function(e) {
-        const {nodes, selectedId, multipleSelection, expandedIds, onOpenCloseNode, onNodeClick} = this.props
+        const {nodes, selectedId, multipleSelection, expandedIds, onOpenCloseNode} = this.props
         e.stopPropagation()
         e.preventDefault()
 
@@ -65,13 +65,13 @@ var keyDownHandlers = {
                     onOpenCloseNode(node, false)
                 } else {    // jdeme na parenta
                     var parent = getNodeParent(nodes, selectedId)
-                    parent && onNodeClick(parent, true)
+                    parent && this.handleNodeClick(parent, true)
                 }
             }
         }
     },
     ArrowRight: function(e) {
-        const {nodes, selectedId, multipleSelection, expandedIds, onOpenCloseNode, onNodeClick} = this.props
+        const {nodes, selectedId, multipleSelection, expandedIds, onOpenCloseNode} = this.props
         e.stopPropagation()
         e.preventDefault()
 
@@ -84,7 +84,7 @@ var keyDownHandlers = {
                         onOpenCloseNode(node, true)
                     } else {    // jdeme na prvního potomka
                         var firstChild = getNodeFirstChild(nodes, selectedId);
-                        firstChild && onNodeClick(firstChild, true)
+                        firstChild && this.handleNodeClick(firstChild, true)
                     }
                 } else {    // nemá potomky, nic neděláme
                 }
@@ -116,7 +116,8 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['ensureItemVisible', 'filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching', 'fetched', 'searchedIds', 'filterCurrentIndex']
+        var eqProps = ['ensureItemVisible', 'filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching',
+            'fetched', 'searchedIds', 'filterCurrentIndex', 'handleNodeClick', 'handleNodeDoubleClick']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -142,16 +143,21 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
      * @return {Object} view
      */
     renderNode(node) {
-        var {onNodeClick, onOpenCloseNode, onContextMenu} = this.props;
+        var {onNodeDoubleClick, onOpenCloseNode, onContextMenu} = this.props;
 
         var expanded = node.hasChildren && this.props.expandedIds[node.id];
+
+        const clickProps = {
+            onClick: this.handleNodeClick.bind(this, node, false),
+            onDoubleClick: this.handleNodeDoubleClick.bind(this, node, false),
+        }
 
         var expCol;
         if (node.hasChildren) {
             var expColCls = 'exp-col ' + (expanded ? 'fa fa-minus-square-o' : 'fa fa-plus-square-o');
             expCol = <span className={expColCls} onClick={onOpenCloseNode.bind(this, node, !expanded)}></span>
         } else {
-            expCol = <span onClick={onNodeClick.bind(this, node)} className='exp-col'>&nbsp;</span>
+            expCol = <span {...clickProps} className='exp-col'>&nbsp;</span>
         }
 
         var active = false;
@@ -167,7 +173,7 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
             focus: this.props.focusId === node.id,
         })
 
-        var levels = createReferenceMark(node, onNodeClick.bind(this, node));
+        var levels = createReferenceMark(node, clickProps);
 
         var name = node.name ? node.name : i18n('fundTree.node.name.undefined', node.id);
         var title = name
@@ -177,13 +183,13 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
             }
         }
 
-        var icon = <Icon onClick={onNodeClick.bind(this, node)} className="node-icon" glyph={getGlyph(node.icon)} />
+        var icon = <Icon {...clickProps} className="node-icon" glyph={getGlyph(node.icon)} />
 
         var label = (
             <span
                 title={title}
                 className='node-label'
-                onClick={onNodeClick.bind(this, node)}
+                {...clickProps}
                 onContextMenu={onContextMenu.bind(this, node)}
                 >
                 {name}
@@ -198,6 +204,16 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
                 {label}
             </div>
         )
+    }
+
+    handleNodeClick(node, ensureItemVisible, e) {
+        const {onNodeClick} = this.props
+        onNodeClick && onNodeClick(node, ensureItemVisible, e)
+    }
+
+    handleNodeDoubleClick(node, ensureItemVisible, e) {
+        const {onNodeDoubleClick} = this.props
+        onNodeDoubleClick && onNodeDoubleClick(node, ensureItemVisible, e)
     }
 
     render() {
@@ -268,6 +284,7 @@ FundTreeLazy.propTypes = {
     isFetching: React.PropTypes.bool.isRequired,
     fetched: React.PropTypes.bool.isRequired,
     onNodeClick: React.PropTypes.func,
+    onNodeDoubleClick: React.PropTypes.func,
     onOpenCloseNode: React.PropTypes.func,
     onContextMenu: React.PropTypes.func,
 }

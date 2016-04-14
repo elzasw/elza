@@ -23,7 +23,7 @@ var FundDetailTree = class FundDetailTree extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('callFundSelectSubNode', 'handleNodeClick', 'handleSelectInNewTab', 'handleSelectInTab',
+        this.bindMethods('callFundSelectSubNode', 'handleNodeClick', 'handleNodeDoubleClick', 'handleSelectInNewTab', 'handleSelectInTab',
         'handleContextMenu', 'handleFulltextChange', 'handleFulltextSearch',
         'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleCollapse',
         'trySetFocus');
@@ -126,7 +126,7 @@ return true
 
         // Otevření archivního souboru
         const {fund} = this.props
-        var fundObj = getFundFromFundAndVersion(fund, fund);
+        var fundObj = getFundFromFundAndVersion(fund, fund.versions[0]);
         this.dispatch(selectFundTab(fundObj));
 
         // Vybrání položky - jako formulář
@@ -138,12 +138,21 @@ return true
     }
 
     /**
+     * Označení uzlu ve stromu.
+     * @param node
+     * @param e
+     */
+    handleNodeClick(node, ensureItemVisible, e) {
+        this.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node.id, false, false, null))
+    }
+
+    /**
      * Otevření uzlu v aktuální záložce (pokud aktuální není, otevře se v nové).
      * @param node {Object} uzel
      * @param e {Object} event
      */
-    handleNodeClick(node, e) {
-        this.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node.id, false, false, null))
+    handleNodeDoubleClick(node, ensureItemVisible, e) {
+        this.callFundSelectSubNode(node, false, ensureItemVisible);
     }
 
     handleFulltextChange(value) {
@@ -181,6 +190,7 @@ return true
                 onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node))}}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
+                onNodeDoubleClick={this.handleNodeDoubleClick}
                 onFulltextChange={this.handleFulltextChange}
                 onFulltextSearch={this.handleFulltextSearch}
                 onFulltextPrevItem={this.handleFulltextPrevItem}
