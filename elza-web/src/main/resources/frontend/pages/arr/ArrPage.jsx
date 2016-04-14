@@ -11,7 +11,8 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Tabs, Icon, Ribbon, i18n} from 'components';
-import {FundExtendedView, FundForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs} from 'components';
+import {FundExtendedView, FundForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit,
+    ToggleContent, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs, ListBox} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
@@ -31,8 +32,9 @@ import {isFundRootId} from 'components/arr/ArrUtils';
 import {setFocus} from 'actions/global/focus'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 import {propsEquals} from 'components/Utils'
+import {fundSelectSubNode} from 'actions/arr/nodes'
 
-var _developerSelectedTab = 0
+var _selectedTab = 0
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -53,9 +55,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
-            'getActiveFundId', 'handleBulkActionsDialog',
-            'handleValidationDialog', 'handleShortcuts',
-            'renderDeveloperPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs');
+            'getActiveFundId', 'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleSetVisiblePolicies',
+            'handleValidationDialog', 'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicy',
+            'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs');
 
         this.state = {developerExpandedSpecsIds: {}};
     }
@@ -258,6 +260,39 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
     }
 
+    renderFundErrors(activeFund) {
+        return (
+            <div>chyby</div>
+        )
+    }
+
+    handleSelectVisiblePoliciesNode(available, activeFund, index) {
+        var node = available[index];
+        console.warn(available, activeFund, index, node);
+        this.dispatch(fundSelectSubNode(activeFund.versionId, node.id, {}));
+    }
+
+    handleSetVisiblePolicies(a, b) {
+        console.warn(a, b)
+    }
+
+    renderFundVisiblePolicies(activeFund) {
+
+        var available = [{id: 161, title: '161'}, {id: 162, title: '162'}];
+
+        return (
+            <div className="visiblePolicies-container">
+                <ListBox className="visiblePolicies-listbox"
+                    items={available}
+                    /*activeIndexes={this.state.leftSelected}*/
+                    renderItemContent={(node, isActive) => <div key={node.id} className="visiblePolicies-item">{node.title}</div>}
+                    onChangeSelection={this.handleSelectVisiblePoliciesNode.bind(this, available, activeFund)}
+                    onDoubleClick={this.handleSetVisiblePolicies}
+                />
+            </div>
+        )
+    }
+
     renderDeveloperDescItems(activeFund, node) {
         var rows = []
         if (node.subNodeForm.fetched) {
@@ -319,7 +354,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             })
         }
 
-        return <div className='desc-items-container'>{rows}</div>
+        return <div className='developer-panel'>
+            <div className='desc-items-container'>{rows}</div>
+        </div>
     }
 
     renderDeveloperScenarios(activeFund, node) {
@@ -379,42 +416,49 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 </div>
             )
         }
-        return <div className='desc-items-container'>{rows}</div>
+        return <div className='developer-panel'>
+            <div className='desc-items-container'>{rows}</div>
+        </div>
     }
 
-    renderDeveloperPanel() {
-        const {arrRegion} = this.props;
-        var funds = arrRegion.funds;
+    renderPanel() {
+        const {developer, arrRegion} = this.props;
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
-        if (!activeFund) {
-            return
-        }
 
         var node
         if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
             node = activeFund.nodes.nodes[activeFund.nodes.activeIndex]
         }
-        if (!node) {
-            return
+
+        var items = [];
+        items.push({id: 0, title: i18n('arr.panel.title.errors')});
+        items.push({id: 1, title: i18n('arr.panel.title.visiblePolicies')});
+
+        // pouze v developer modu
+        if (developer.enabled && node) {
+            items.push({id: 2, title: i18n('developer.title.descItems')});
+            items.push({id: 3, title: i18n('developer.title.scenarios')});
         }
+
         return (
-            <div className='developer-panel'>
-                <Tabs.Container>
-                    <Tabs.Tabs items={[{id: 0, title: i18n('developer.title.descItems')}, {id: 1, title: i18n('developer.title.scenarios')}]}
-                               activeItem={{id: _developerSelectedTab}}
-                               onSelect={(item)=>{_developerSelectedTab = item.id;this.setState({})}}
-                    />
-                    <Tabs.Content>
-                        {_developerSelectedTab === 0 && this.renderDeveloperDescItems(activeFund, node)}
-                        {_developerSelectedTab === 1 && this.renderDeveloperScenarios(activeFund, node)}
-                    </Tabs.Content>
-                </Tabs.Container>
-            </div>
+            <Tabs.Container>
+
+                <Tabs.Tabs items={items}
+                           activeItem={{id: _selectedTab}}
+                           onSelect={(item)=>{_selectedTab = item.id; this.setState({})}}
+                />
+                <Tabs.Content>
+                    {_selectedTab === 0 && this.renderFundErrors(activeFund)}
+                    {_selectedTab === 1 && this.renderFundVisiblePolicies(activeFund)}
+                    {developer.enabled && node && _selectedTab === 2 && this.renderDeveloperDescItems(activeFund, node)}
+                    {developer.enabled && node && _selectedTab === 3 && this.renderDeveloperScenarios(activeFund, node)}
+                </Tabs.Content>
+            </Tabs.Container>
         )
     }
 
     render() {
-        const {developer, focus, splitter, arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+        const {focus, splitter, arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
 
         var showRegisterJp = arrRegion.showRegisterJp;
 
@@ -467,13 +511,17 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     />
                 )
             }
+        } else {
+            centerPanel = (
+                <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>
+            )
         }
 
         var rightPanel;
         if (activeFund) {
             rightPanel = (
                 <div className="fa-right-container">
-                    {developer.enabled && this.renderDeveloperPanel()}
+                    {this.renderPanel()}
                 </div>
             )
         }

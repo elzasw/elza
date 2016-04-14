@@ -88,6 +88,8 @@ var messages = {
     
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",
     "arr.panel.reset": "Zrušit omezení",
+    "arr.panel.title.errors": "Chyby",
+    "arr.panel.title.visiblePolicies": "Způsob kontroly",
 
     "arr.fund.version": "Verze {0}",
     "arr.fund.action.delete": "Vymazání AS",
@@ -193,6 +195,8 @@ var messages = {
 
     "arr.fund.prev": "Předchozí",
     "arr.fund.next": "Následující",
+
+    "arr.fund.noselect": "Není vybrán žádný archivní soubor",
 
     "arr.node.status.ok": "Ok",
     "arr.node.status.okx": "Ok*",
