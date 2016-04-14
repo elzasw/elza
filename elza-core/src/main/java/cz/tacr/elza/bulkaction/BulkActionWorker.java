@@ -47,19 +47,27 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
     private BulkActionState bulkActionState;
 
     /**
+     * Identfikátor uživatele, který spustil hromadnou akci (null, pokud to bylo systémové - od admina)
+     */
+    private Integer userId;
+
+    /**
      * Konstruktor úlohy.
      *
+     * @param userId           identfikátor uživatele, který spustil hromadnou akci
      * @param bulkAction       hromadná akce
      * @param bulkActionConfig nastavení hromadné akce
      * @param versionId        identifikátor verze archivní pomůcky
      * @param inputNodeIds     seznam vstupních uzlů (podstromů AS)
      */
-    public BulkActionWorker(final BulkAction bulkAction,
+    public BulkActionWorker(final Integer userId,
+                            final BulkAction bulkAction,
                             final BulkActionConfig bulkActionConfig,
                             final Integer versionId,
                             final List<Integer> inputNodeIds) {
         bulkActionState = new BulkActionState();
         bulkActionState.setBulkActionCode(bulkActionConfig.getCode());
+        this.userId = userId;
         this.bulkAction = bulkAction;
         this.bulkActionConfig = bulkActionConfig;
         this.versionId = versionId;
@@ -81,7 +89,7 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
         bulkActionState.setProcessId((int) Thread.currentThread().getId());
         bulkActionState.setState(State.RUNNING);
         try {
-            bulkAction.run(versionId, inputNodeIds, bulkActionConfig, bulkActionState);
+            bulkAction.run(userId, versionId, inputNodeIds, bulkActionConfig, bulkActionState);
 
             //Thread.sleep(10000); // PRO TESTOVÁNÍ A DALŠÍ VÝVOJ
 

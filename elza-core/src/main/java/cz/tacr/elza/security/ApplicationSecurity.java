@@ -79,11 +79,13 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
                     }
 
                     grantedAuths.add(new SimpleGrantedAuthority("USER"));
-                    Authentication auth = new UsernamePasswordAuthenticationToken(username, encodePassword, grantedAuths);
+                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword, grantedAuths);
+                    auth.setDetails(new UserDetail(user));
                     return auth;
                 } else if (allowDefaultUser && username.equals(defaultUsername) && encodePassword.equalsIgnoreCase(defaultPassword)) {
                     grantedAuths.add(new SimpleGrantedAuthority("ADMIN"));
-                    Authentication auth = new UsernamePasswordAuthenticationToken(username, encodePassword, grantedAuths);
+                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword, grantedAuths);
+                    auth.setDetails(new UserDetail(defaultUsername));
                     return auth;
                 } else {
                     // TODO: smazat po vytvoření správy uživatelů

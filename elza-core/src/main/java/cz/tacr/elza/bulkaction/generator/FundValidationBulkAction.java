@@ -100,7 +100,8 @@ public class FundValidationBulkAction extends BulkAction {
 
     @Override
     @Transactional
-    public void run(final Integer fundVersionId,
+    public void run(final Integer userId,
+                    final Integer fundVersionId,
                     final List<Integer> inputNodeIds,
                     final BulkActionConfig bulkAction,
                     final BulkActionState bulkActionState) {
@@ -117,7 +118,7 @@ public class FundValidationBulkAction extends BulkAction {
         checkVersion(version);
         this.version = version;
 
-        this.change = createChange();
+        this.change = createChange(userId);
         this.bulkActionState.setRunChange(this.change);
 
         // v případě, že existuje nějaké přepočítávání uzlů, je nutné to ukončit

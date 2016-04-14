@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.security.UserDetail;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -38,20 +40,6 @@ import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundRegisterScope;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
@@ -89,6 +77,9 @@ public class ArrangementService {
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private UpdateConformityInfoService updateConformityInfoService;
@@ -391,7 +382,14 @@ public class ArrangementService {
 
     public ArrChange createChange() {
         ArrChange change = new ArrChange();
+        UserDetail userDetail = userService.getLoggedUserDetail();
         change.setChangeDate(LocalDateTime.now());
+
+        if (userDetail != null && userDetail.getId() != null) {
+            UsrUser user = new UsrUser();
+            user.setUserId(userDetail.getId());
+            change.setUser(user);
+        }
 
         return changeRepository.save(change);
     }

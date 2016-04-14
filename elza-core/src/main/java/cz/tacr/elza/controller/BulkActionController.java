@@ -5,6 +5,8 @@ import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.BulkActionStateVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +29,9 @@ public class BulkActionController {
 
     @Autowired
     private BulkActionService bulkActionService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private ClientFactoryVO factoryVo;
@@ -55,7 +60,9 @@ public class BulkActionController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     BulkActionStateVO run(final @PathVariable("versionId") Integer fundVersionId, final @PathVariable("code") String code) {
         BulkActionConfig action = bulkActionService.getBulkAction(code);
-        return factoryVo.createBulkActionState(bulkActionService.run(action, fundVersionId));
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        Integer userId = userDetail != null ? userDetail.getId() : null;
+        return factoryVo.createBulkActionState(bulkActionService.run(userId, action, fundVersionId));
     }
 
     @RequestMapping(value = "/states/{versionId}",

@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.security.UserDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
@@ -36,12 +37,28 @@ public class UserService {
     }
 
     /**
-     * Vrací přihlášeného uživatele.
+     * Vrací přihlášeného uživatele - DO.
      *
      * @return přihlášený uživatel (null pokud je přihlášený admin nebo je to akce bez přihlášení)
      */
     public UsrUser getLoggedUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            return null;
+        }
         return userRepository.findByUsername(auth.getName());
+    }
+
+    /**
+     * Vrací detail přihlášeního uživatele - VO.
+     *
+     * @return detail přihlášeného uživatele (null pokud není nikdo přihlášený)
+     */
+    public UserDetail getLoggedUserDetail() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            return null;
+        }
+        return (UserDetail) auth.getDetails();
     }
 }

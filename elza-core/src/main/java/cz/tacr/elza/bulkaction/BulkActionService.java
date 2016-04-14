@@ -150,11 +150,13 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     /**
      * Spuštění instance hromadné akce ve verzi archivního souboru.
      *
+     * @param userId            identfikátor uživatele, který spustil hromadnou akci
      * @param bulkActionConfig  nastavení hromadné akce
      * @param fundVersionId     identifikátor verze archivní pomůcky
      * @return stav instance hromadné akce
      */
-    public BulkActionState run(final BulkActionConfig bulkActionConfig,
+    public BulkActionState run(final Integer userId,
+                               final BulkActionConfig bulkActionConfig,
                                final Integer fundVersionId) {
         BulkActionConfig bulkActionConfigOrig = bulkActionConfigManager.get(bulkActionConfig.getCode());
 
@@ -180,18 +182,20 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         }
         List<Integer> inputNodeIds = Arrays.asList(version.getRootNode().getNodeId());
 
-        return run(fundVersionId, bulkActionConfigOrig, inputNodeIds);
+        return run(userId, fundVersionId, bulkActionConfigOrig, inputNodeIds);
     }
 
     /**
      * Spuštění instance hromadné akce ve verzi archivní pomůcky.
      *
+     * @param userId            identfikátor uživatele, který spustil hromadnou akci
      * @param bulkActionConfig  nastavení hromadné akce
      * @param fundVersionId     identifikátor verze archivní pomůcky
      * @param inputNodeIds      seznam vstupních uzlů (podstromů AS)
      * @return stav instance hromadné akce
      */
-    public BulkActionState run(final BulkActionConfig bulkActionConfig,
+    public BulkActionState run(final Integer userId,
+                               final BulkActionConfig bulkActionConfig,
                                final Integer fundVersionId,
                                final List<Integer> inputNodeIds) {
         BulkActionConfig bulkActionConfigOrig = bulkActionConfigManager.get(bulkActionConfig.getCode());
@@ -217,21 +221,25 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
                     + ")!");
         }
 
-        return run(fundVersionId, bulkActionConfigOrig, inputNodeIds);
+        return run(userId, fundVersionId, bulkActionConfigOrig, inputNodeIds);
     }
 
     /**
      * Spuštění instance hromadné akce.
      *
+     * @param userId                identfikátor uživatele, který spustil hromadnou akci
      * @param fundVersionId         id verze archivního souboru
      * @param bulkActionConfig      nastavení hromadné akce
      * @param inputNodeIds          seznam vstupních uzlů (podstromů AS)
      * @return stav instance hromadné akce
      */
-    private BulkActionState run(final Integer fundVersionId, final BulkActionConfig bulkActionConfig, final List<Integer> inputNodeIds) {
+    private BulkActionState run(final Integer userId,
+                                final Integer fundVersionId,
+                                final BulkActionConfig bulkActionConfig,
+                                final List<Integer> inputNodeIds) {
         BulkAction bulkAction = bulkActionFactory
                 .getByCode((String) bulkActionConfig.getProperty("code_type_bulk_action"));
-        BulkActionWorker bulkActionWorker = new BulkActionWorker(bulkAction, bulkActionConfig, fundVersionId, inputNodeIds);
+        BulkActionWorker bulkActionWorker = new BulkActionWorker(userId, bulkAction, bulkActionConfig, fundVersionId, inputNodeIds);
         addWorker(bulkActionWorker);
         runNextWorker();
         return bulkActionWorker.getBulkActionState();
@@ -578,11 +586,17 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * Vytvoření nové změny.
      *
      * @return vytvořená změna
+     * @param userId
      */
     @Transactional(value = javax.transaction.Transactional.TxType.REQUIRES_NEW)
-    public ArrChange createChange() {
+    public ArrChange createChange(final Integer userId) {
         ArrChange change = new ArrChange();
         change.setChangeDate(LocalDateTime.now());
+        if (userId != null) {
+            UsrUser user = new UsrUser();
+            user.setUserId(userId);
+            change.setUser(user);
+        }
         return changeRepository.save(change);
     }
 

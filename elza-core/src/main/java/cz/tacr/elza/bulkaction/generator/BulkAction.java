@@ -44,12 +44,14 @@ public abstract class BulkAction {
     /**
      * Abstrakní metoda pro spuštění hromadné akce.
      *
-     * @param fundVersionId      identifikátor verze archivní pomůcky
-     * @param inputNodeIds       seznam vstupních uzlů (podstromů AS)
-     * @param bulkActionConfig nastavení hromadné akce
-     * @param bulkActionState  stav hromadné akce
+     * @param userId            identfikátor uživatele, který spustil hromadnou akci
+     * @param fundVersionId     identifikátor verze archivní pomůcky
+     * @param inputNodeIds      seznam vstupních uzlů (podstromů AS)
+     * @param bulkActionConfig  nastavení hromadné akce
+     * @param bulkActionState   stav hromadné akce
      */
-    abstract public void run(final Integer fundVersionId,
+    abstract public void run(final Integer userId,
+                             final Integer fundVersionId,
                              final List<Integer> inputNodeIds,
                              final BulkActionConfig bulkActionConfig,
                              final BulkActionState bulkActionState);
@@ -81,8 +83,8 @@ public abstract class BulkAction {
      *
      * @return vytvořená změna
      */
-    protected ArrChange createChange() {
-        return bulkActionService.createChange();
+    protected ArrChange createChange(final Integer userId) {
+        return bulkActionService.createChange(userId);
     }
 
     /**
