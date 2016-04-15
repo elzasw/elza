@@ -9,12 +9,15 @@ import java.util.List;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 14.04.2016
  */
-public class ListCountResult<T> {
+public class FundListCountResult {
 
-    private List<T> list;
+    private List<ArrFundVO> list;
     private int count;
 
-    public ListCountResult(final List<T> list, final int count) {
+    public FundListCountResult() {
+    }
+
+    public FundListCountResult(final List<ArrFundVO> list, final int count) {
         this.list = list;
         this.count = count;
     }
@@ -27,11 +30,11 @@ public class ListCountResult<T> {
         this.count = count;
     }
 
-    public List<T> getList() {
+    public List<ArrFundVO> getList() {
         return list;
     }
 
-    public void setList(final List<T> list) {
+    public void setList(final List<ArrFundVO> list) {
         this.list = list;
     }
 }

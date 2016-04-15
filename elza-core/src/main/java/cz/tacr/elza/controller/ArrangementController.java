@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,7 @@ import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.ListCountResult;
+import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeData;
@@ -81,6 +80,7 @@ import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.PacketService;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.exception.DeleteFailedException;
 
 
 /**
@@ -386,7 +386,7 @@ public class ArrangementController {
      * @return seznam AP
      */
     @RequestMapping(value = "/getFunds", method = RequestMethod.GET)
-    public ListCountResult getFunds(@RequestParam(value = "fulltext", required = false) final String fulltext,
+    public FundListCountResult getFunds(@RequestParam(value = "fulltext", required = false) final String fulltext,
                                         @RequestParam(value = "max") final Integer max) {
 
         List<ArrFundVO> fundList = new LinkedList<>();
@@ -396,7 +396,7 @@ public class ArrangementController {
             fundList.add(fundVO);
         });
 
-        return new ListCountResult(fundList, fundRepository.findCountByFulltext(fulltext));
+        return new FundListCountResult(fundList, fundRepository.findCountByFulltext(fulltext));
     }
 
     /**
@@ -413,10 +413,16 @@ public class ArrangementController {
         return fundVO;
     }
 
+    /**
+     * Smazání celého archivního souboru. (pouze pokud neexistuje výstup (arr_named_output))
+     *
+     * @param fundId id archivního souboru
+     * @throws DeleteFailedException Nelze smazat archivní soubor, pro který existuje alespoň jeden výstup.
+     */
     @Transactional
     @RequestMapping(value = "/deleteFund/{fundId}", method = RequestMethod.DELETE)
-    public void deleteFund(@PathVariable("fundId") final Integer fundId){
-         //TODO kubovy dopsat
+    public void deleteFund(@PathVariable("fundId") final Integer fundId) throws DeleteFailedException {
+
         arrangementService.deleteFund(fundId);
     }
 
@@ -434,9 +440,7 @@ public class ArrangementController {
             return Collections.EMPTY_LIST;
         }
 
-
         List<ArrFundVersion> versions = fundVersionRepository.findAll(idsParam.getIds());
-
 
         List<ArrFundVO> result = new LinkedList<>();
         for (ArrFundVersion version : versions) {

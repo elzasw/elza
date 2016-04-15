@@ -16,8 +16,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.security.UserDetail;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -40,6 +38,22 @@ import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundRegisterScope;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNamedOutput;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
@@ -52,6 +66,7 @@ import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NamedOutputRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
@@ -59,9 +74,11 @@ import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVersion;
+import cz.tacr.elza.service.exception.DeleteFailedException;
 
 
 /**
@@ -156,6 +173,9 @@ public class ArrangementService {
 
     @Autowired
     private PolicyService policyService;
+
+    @Autowired
+    private NamedOutputRepository namedOutputRepository;
 
     /**
      * Vytvoření archivního souboru.
@@ -418,23 +438,33 @@ public class ArrangementService {
         }
 
         ArrFundVersion version = getOpenVersionByFundId(fundId);
+        ArrFund fund = version.getFund();
+
+        List<ArrNamedOutput> namedOutputs = namedOutputRepository.findByFund(fund);
+        if(!namedOutputs.isEmpty()){
+            throw new DeleteFailedException("Nelze smazat archivní soubor, pro který existuje alespoň jeden výstup.");
+        }
 
 
         ArrNode rootNode = version.getRootNode();
         ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
         ArrNode node = rootLevel.getNode();
 
-        fundVersionRepository.findVersionsByFundIdOrderByCreateDateAsc(fundId)
+        fundVersionRepository.findVersionsByFundIdOrderByCreateDateDesc(fundId)
                 .forEach(deleteVersion ->
                                 deleteVersion(deleteVersion)
                 );
 
-        deleteLevelCascadeForce(rootLevel);
+
+        policyService.deleteFundVisiblePolicies(fund);
+
+
+        deleteFundLevels(rootLevel);
         nodeRepository.delete(node);
 
 
-        packetRepository.findByFund(version.getFund()).forEach(packet -> packetRepository.delete(packet));
-        ArrFund fund = fundRepository.findOne(fundId);
+        packetRepository.findByFund(fund).forEach(packet -> packetRepository.delete(packet));
+
         faRegisterRepository.findByFund(fund).forEach(
                 faScope -> faRegisterRepository.delete(faScope)
         );
@@ -520,12 +550,25 @@ public class ArrangementService {
     }
 
 
-    private void deleteLevelCascadeForce(final ArrLevel level) {
-        Set<ArrNode> nodes = new HashSet<>();
+    /**
+     * Smaže uzly pro celou archivní pomůcku.
+     *
+     * @param rootLevel kořenový uzel archivní pomůcky
+     */
+    private void deleteFundLevels(final ArrLevel rootLevel) {
+        Assert.notNull(rootLevel);
+
+        Set<ArrNode> nodesToDelete = new HashSet<>();
+        deleteLevelCascadeForce(rootLevel, nodesToDelete);
+
+        nodesToDelete.forEach(this::deleteNodeForce);
+    }
+
+    private void deleteLevelCascadeForce(final ArrLevel level, final Set<ArrNode> nodesToDelete) {
         ArrNode parentNode = level.getNode();
         for (ArrLevel childLevel : levelRepository.findByParentNode(parentNode)) {
-            nodes.add(childLevel.getNode());
-            deleteLevelCascadeForce(childLevel);
+            nodesToDelete.add(childLevel.getNode());
+            deleteLevelCascadeForce(childLevel, nodesToDelete);
         }
 
         for (ArrDescItem descItem : descItemRepository.findByNodeOrderByCreateChangeAsc(parentNode)) {
@@ -533,9 +576,6 @@ public class ArrangementService {
         }
 
         levelRepository.delete(level);
-        nodes.forEach(node -> {
-            deleteNodeForce(node);
-        });
     }
 
     private void deleteNodeForce(ArrNode node) {

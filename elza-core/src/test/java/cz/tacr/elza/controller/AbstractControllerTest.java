@@ -4,7 +4,13 @@ import static com.jayway.restassured.RestAssured.given;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -35,6 +41,7 @@ import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
@@ -104,10 +111,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     // ARRANGEMENT
     protected static final String CREATE_FUND = ARRANGEMENT_CONTROLLER_URL + "/funds";
     protected static final String UPDATE_FUND = ARRANGEMENT_CONTROLLER_URL + "/updateFund";
+    protected static final String FUND = ARRANGEMENT_CONTROLLER_URL + "/getFund/{fundId}";
     protected static final String FUNDS = ARRANGEMENT_CONTROLLER_URL + "/getFunds";
     protected static final String APPROVE_VERSION = ARRANGEMENT_CONTROLLER_URL + "/approveVersion";
     protected static final String ADD_LEVEL = ARRANGEMENT_CONTROLLER_URL + "/levels";
     protected static final String DELETE_LEVEL = ARRANGEMENT_CONTROLLER_URL + "/levels";
+    protected static final String DELETE_FUND = ARRANGEMENT_CONTROLLER_URL + "/deleteFund/{fundId}";
     protected static final String SCENARIOS = ARRANGEMENT_CONTROLLER_URL + "/scenarios";
     protected static final String CALENDAR_TYPES = ARRANGEMENT_CONTROLLER_URL + "/calendarTypes";
     protected static final String FA_TREE = ARRANGEMENT_CONTROLLER_URL + "/fundTree";
@@ -444,9 +453,21 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return archivní pomůcky
      */
     protected List<ArrFundVO> getFunds() {
-        Response response = get(FUNDS);
-        return Arrays.asList(response.getBody().as(ArrFundVO[].class));
+        Response response = get(spec -> spec.queryParameter("max", 200), FUNDS);
+        FundListCountResult as = response.getBody().as(FundListCountResult.class);
+        return as.getList();
     }
+
+    /**
+     * Vrátí archivní pomůcku.
+     *
+     * @return archivní pomůcka
+     */
+    protected ArrFundVO getFund(final Integer fundId) {
+        Response response = get(spec -> spec.pathParameters("fundId", fundId), FUND);
+        return response.getBody().as(ArrFundVO.class);
+    }
+
 
     /**
      * Přidání nového uzlu.
@@ -605,6 +626,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
         moveParam.setTransportNodes(transportNodes);
         moveParam.setTransportNodeParent(transportNodeParent);
         return moveParam;
+    }
+
+    /**
+     * Smazání archivního souboru.
+     * @param fundId id souboru
+     */
+    protected void deleteFund(final Integer fundId){
+        delete(spec -> spec.pathParameters("fundId", fundId), DELETE_FUND);
     }
 
     /**

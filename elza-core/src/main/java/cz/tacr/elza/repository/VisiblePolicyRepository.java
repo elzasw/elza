@@ -16,7 +16,7 @@ import java.util.List;
 public interface VisiblePolicyRepository extends JpaRepository<UIVisiblePolicy, Integer> {
 
     @Query("SELECT p FROM ui_visible_policy p JOIN p.node n JOIN n.fund f WHERE f = ?1")
-    List<UIVisiblePolicy> findByFundAndPolicyTypes(ArrFund fund);
+    List<UIVisiblePolicy> findByFund(ArrFund fund);
 
     List<UIVisiblePolicy> findByNode(ArrNode node);
 

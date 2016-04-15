@@ -16,8 +16,8 @@ import java.util.List;
 @Repository
 public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion, Integer> {
 
-    @Query(value = "select v from arr_fund_version v join v.createChange ch join v.fund fa where fa.fundId = :fundId order by ch.changeDate asc")
-    List<ArrFundVersion> findVersionsByFundIdOrderByCreateDateAsc(@Param(value = "fundId") Integer fundId);
+    @Query(value = "select v from arr_fund_version v join v.createChange ch join v.fund fa where fa.fundId = :fundId order by ch.changeDate desc")
+    List<ArrFundVersion> findVersionsByFundIdOrderByCreateDateDesc(@Param(value = "fundId") Integer fundId);
 
 
     @Query(value = "select v from arr_fund_version v join v.fund fa where fa.fundId = :fundId and v.lockChange is null")

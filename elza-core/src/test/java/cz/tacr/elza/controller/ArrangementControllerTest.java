@@ -82,6 +82,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // všechny formuláře / stromy / ...
         forms(fundVersion);
 
+        //smazání fondu
+        deleteFund(fund);
     }
 
     /**
@@ -465,14 +467,28 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         return updatedFund;
     }
 
+    private void deleteFund(final ArrFundVO fund){
+        deleteFund(fund.getId());
+
+        fundRepository.findAll().forEach(f -> {
+            //není nalezen fond se smazaným id = je smazán
+            Assert.isTrue(!f.getFundId().equals(fund.getId()));
+        });
+    }
+
     /**
      * Vytvoření AP.
      */
     private ArrFundVO createdFund() {
         ArrFundVO fund = createFund(NAME_AP, "IC1");
         Assert.notNull(fund);
+
+        fund = getFund(fund.getId());
+        Assert.notNull(fund);
+
         return fund;
     }
+
 
     @Test
     public void packetsTest() {

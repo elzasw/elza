@@ -653,7 +653,7 @@ public class ClientFactoryVO {
         if (includeVersions) {
 
             List<ArrFundVersion> versions = fundVersionRepository
-                    .findVersionsByFundIdOrderByCreateDateAsc(fund.getFundId());
+                    .findVersionsByFundIdOrderByCreateDateDesc(fund.getFundId());
 
             List<ArrFundVersionVO> versionVOs = new ArrayList<>(versions.size());
             for (ArrFundVersion version : versions) {

@@ -1,19 +1,30 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVisiblePolicy;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Serviska pro správu oprávnění pro zobrazování chyb.
@@ -271,7 +282,7 @@ public class PolicyService {
 
         if (includeSubtree) {
             LinkedHashSet<Integer> versionIdsTable = levelTreeCacheWalker.walkThroughDFS(treeNode);
-            List<UIVisiblePolicy> visiblePolicies = visiblePolicyRepository.findByFundAndPolicyTypes(fundVersion.getFund());
+            List<UIVisiblePolicy> visiblePolicies = visiblePolicyRepository.findByFund(fundVersion.getFund());
 
             List<UIVisiblePolicy> deleteVisiblePolicies = visiblePolicies.stream()
                     .filter(visiblePolicy -> versionIdsTable.contains(visiblePolicy.getNode().getNodeId())).
@@ -329,6 +340,21 @@ public class PolicyService {
             for (TreeNode child : childs) {
                 addParentNodeIds(child, parentNodeIds);
             }
+        }
+    }
+
+
+    /**
+     * Smaže všechna nastavení archivního fondu.
+     *
+     * @param fund archivní fond
+     */
+    public void deleteFundVisiblePolicies(final ArrFund fund) {
+        Assert.notNull(fund);
+
+        List<UIVisiblePolicy> policies = visiblePolicyRepository.findByFund(fund);
+        if (!policies.isEmpty()) {
+            visiblePolicyRepository.delete(policies);
         }
     }
 

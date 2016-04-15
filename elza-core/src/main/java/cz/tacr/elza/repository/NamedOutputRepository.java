@@ -38,4 +38,6 @@ public interface NamedOutputRepository extends JpaRepository<ArrNamedOutput, Int
     @Query("SELECT DISTINCT no FROM arr_output o JOIN o.namedOutput no WHERE no.fund=?1 AND no.deleted = false AND o.lockChange IS NOT NULL")
     List<ArrNamedOutput> findHistoricalNamedOutputByFund(ArrFund fund);
 
+
+    List<ArrNamedOutput> findByFund(ArrFund fund);
 }

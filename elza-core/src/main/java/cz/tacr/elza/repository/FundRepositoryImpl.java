@@ -1,5 +1,7 @@
 package cz.tacr.elza.repository;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -9,6 +11,8 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.vo.ArrFundOpenVersion;
 
 
@@ -27,8 +31,7 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
     @Override
     public List<ArrFundOpenVersion> findByFulltext(final String fulltext, final int max) {
 
-
-        String hql = "SELECT NEW cz.tacr.elza.domain.vo.ArrFundOpenVersion(f, max(v)) FROM arr_fund f JOIN f.versions v"
+        String hql = "SELECT f, max(v) FROM arr_fund f JOIN f.versions v"
                 + createFulltextWhereClause(fulltext);
         hql += " GROUP BY f ORDER BY f.name";
 
@@ -38,8 +41,13 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
             query.setParameter("text", text.toLowerCase());
         }
         query.setMaxResults(max);
+        List<Object[]> arrayList = query.getResultList();
+        List<ArrFundOpenVersion> result = new ArrayList<>(arrayList.size());
+        arrayList.forEach(array ->
+                        result.add(new ArrFundOpenVersion((ArrFund) array[0], (ArrFundVersion) array[1]))
+        );
 
-        return query.getResultList();
+        return result;
     }
 
     @Override
