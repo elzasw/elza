@@ -718,7 +718,7 @@ class WebApi{
     }
 
     getLazyItems(fromIndex, count) {
-        const MAX = 1000
+        const MAX = 1000000
         var data = {
             items: [],
             count: MAX,
