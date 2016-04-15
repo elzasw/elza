@@ -666,9 +666,9 @@ class WebApi{
         return AjaxUtils.ajaxCallRaw('/logout', {}, "GET", "", "application/x-www-form-urlencoded", true);
     }
 
-    findFunds(fulltext) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFunds')
-            .then(json => ({funds: json, fundCount: 500}))
+    findFunds(fulltext, max=200) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFunds', {fulltext, max})
+            .then(json => ({funds: json.list, fundCount: json.count}))
 
         return new Promise(function (resolve, reject) {
             var funds = [
