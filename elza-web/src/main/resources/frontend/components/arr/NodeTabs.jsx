@@ -56,7 +56,10 @@ return true
     }
 
     handleTabSelect(item) {
-        this.dispatch(fundSelectNodeTab(item.index))
+        const {versionId} = this.props
+
+        this.dispatch(fundSelectNodeTab(versionId, item.id, item.key, item.index))
+        // this.dispatch(fundSelectNodeTab(item.index))
         this.dispatch(setFocus('arr', 2, 'tabs'))
     }
 
