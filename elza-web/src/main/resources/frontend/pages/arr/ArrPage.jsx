@@ -262,17 +262,18 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
     renderFundErrors(activeFund) {
         return (
-            <LazyListBox
-                className="errors-listbox-container"
-                getItems={(fromIndex, count) => {
-                            return WebApi.getLazyItems(fromIndex, count)
-                        }}
-                renderItemContent={(item) => item !== null ? <div>{item.name}</div> : '...'}
-                itemHeight={32} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
-                onFocus={item=>{console.log("FOCUS", item)}}
-                onSelect={item=>{console.log("SELECT BY ENTER", item)}}
-                onDoubleClick={item=>{console.log("DOUBLECLICK", item)}}
-            />
+            <div className="errors-listbox-container">
+                <LazyListBox
+                    getItems={(fromIndex, count) => {
+                                return WebApi.getLazyItems(fromIndex, count)
+                            }}
+                    renderItemContent={(item) => item !== null ? <div>{item.name}</div> : '...'}
+                    itemHeight={32} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
+                    onFocus={item=>{console.log("FOCUS", item)}}
+                    onSelect={item=>{console.log("SELECT BY ENTER", item)}}
+                    onDoubleClick={item=>{console.log("DOUBLECLICK", item)}}
+                />
+            </div>
         )
     }
 
@@ -529,11 +530,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         var rightPanel;
         if (activeFund) {
-            rightPanel = (
-                <div className="fa-right-container">
-                    {this.renderPanel()}
-                </div>
-            )
+            rightPanel = this.renderPanel()
         }
 
         return (
