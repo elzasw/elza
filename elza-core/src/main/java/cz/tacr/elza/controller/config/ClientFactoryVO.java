@@ -27,10 +27,12 @@ import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrChangeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNamedOutputVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.BulkActionStateVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
@@ -70,6 +72,7 @@ import cz.tacr.elza.domain.ArrNamedOutput;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParParty;
@@ -661,8 +664,8 @@ public class ClientFactoryVO {
             }
             fundVO.setVersions(versionVOs);
 
-            fundVO.setValidNamedOutputs(createNamedOutputs(namedOutputRepository.findValidNamedOutputByFund(fund)));
-            fundVO.setHistoricalNamedOutputs(createNamedOutputs(namedOutputRepository.findHistoricalNamedOutputByFund(fund)));
+            fundVO.setValidNamedOutputs(createNamedOutputs(namedOutputRepository.findValidNamedOutputByFund(fund), false));
+            fundVO.setHistoricalNamedOutputs(createNamedOutputs(namedOutputRepository.findHistoricalNamedOutputByFund(fund), true));
         }
 
         return fundVO;
@@ -698,17 +701,58 @@ public class ClientFactoryVO {
      * Vytvoří třídy výstupů archivního souboru.
      *
      * @param namedOutputs seznam DO
+     * @param loadOutputs  mají se do objektu načíst verze? (arr_output)
      * @return seznam VO
      */
-    public List<ArrNamedOutputVO> createNamedOutputs(final Collection<ArrNamedOutput> namedOutputs) {
+    public List<ArrNamedOutputVO> createNamedOutputs(final Collection<ArrNamedOutput> namedOutputs,
+                                                     final boolean loadOutputs) {
         Assert.notNull(namedOutputs);
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
         List<ArrNamedOutputVO> result = new ArrayList<>(namedOutputs.size());
         for (ArrNamedOutput namedOutput : namedOutputs) {
-            result.add(mapper.map(namedOutput, ArrNamedOutputVO.class));
+
+            ArrNamedOutputVO namedOutputVO = mapper.map(namedOutput, ArrNamedOutputVO.class);
+
+            if (loadOutputs) {
+                namedOutputVO.setOutputs(createOutputsVO(namedOutput.getOutputs()));
+            }
+
+            result.add(namedOutputVO);
         }
+        return result;
+    }
+
+    /**
+     * Vytvoření objektů verzí výstupu archivního souboru.
+     *
+     * @param outputs verze výstupu archivního souboru
+     * @return seznam verzí seřazený od nejstarší po nejmladší
+     */
+    private List<ArrOutputVO> createOutputsVO(final List<ArrOutput> outputs) {
+        Assert.notNull(outputs);
+
+        List<ArrOutputVO> result = new ArrayList<>(outputs.size());
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        for (ArrOutput output : outputs) {
+            result.add(mapper.map(output, ArrOutputVO.class));
+        }
+
+        Collections.sort(result, (o1, o2) -> {
+            ArrChangeVO lock1 = o1.getLockChange();
+            ArrChangeVO lock2 = o2.getLockChange();
+
+            if (lock1 != null && lock2 != null) {
+                return lock1.getChangeDate().compareTo(lock2.getChangeDate());
+            } else if (lock1 == null) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
+
         return result;
     }
 

@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
@@ -33,6 +35,9 @@ public class ArrNamedOutput implements cz.tacr.elza.api.ArrNamedOutput<ArrFund> 
 
     @Column(nullable = false)
     private Boolean deleted;
+
+    @OneToMany(mappedBy = "namedOutput", fetch = FetchType.LAZY)
+    private List<ArrOutput> outputs;
 
     @Override
     public Integer getNamedOutputId() {
@@ -92,5 +97,13 @@ public class ArrNamedOutput implements cz.tacr.elza.api.ArrNamedOutput<ArrFund> 
     @Override
     public void setDeleted(final Boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public List<ArrOutput> getOutputs() {
+        return outputs;
+    }
+
+    public void setOutputs(final List<ArrOutput> outputs) {
+        this.outputs = outputs;
     }
 }

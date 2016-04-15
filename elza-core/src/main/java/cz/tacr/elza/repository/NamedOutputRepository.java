@@ -35,7 +35,7 @@ public interface NamedOutputRepository extends JpaRepository<ArrNamedOutput, Int
      * @param fund archivní fond
      * @return seznam platných historických AP pro fond
      */
-    @Query("SELECT DISTINCT no FROM arr_output o JOIN o.namedOutput no WHERE no.fund=?1 AND no.deleted = false AND o.lockChange IS NOT NULL")
+    @Query("SELECT DISTINCT no FROM arr_named_output no JOIN FETCH no.outputs o LEFT JOIN FETCH o.lockChange lc WHERE no.fund=?1 AND no.deleted = false AND o.lockChange IS NOT NULL")
     List<ArrNamedOutput> findHistoricalNamedOutputByFund(ArrFund fund);
 
 

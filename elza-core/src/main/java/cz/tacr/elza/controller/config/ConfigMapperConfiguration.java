@@ -603,7 +603,9 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrFundVersion.class, ArrFundVersionVO.class).byDefault().field(
                 "fundVersionId", "id").
                 exclude("arrangementType").register();
-        mapperFactory.classMap(ArrNamedOutput.class, ArrNamedOutputVO.class).byDefault().field("namedOutputId", "id").register();
+        mapperFactory.classMap(ArrNamedOutput.class, ArrNamedOutputVO.class).exclude("outputs").byDefault()
+                .field("namedOutputId", "id").register();
+        mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class).byDefault().field("outputId", "id").register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
 
         mapperFactory.classMap(RegVariantRecord.class, RegVariantRecordVO.class).customize(

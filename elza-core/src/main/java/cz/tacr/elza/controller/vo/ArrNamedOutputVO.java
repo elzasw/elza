@@ -1,5 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.List;
+
+
 /**
  * VO Výstup z archivního souboru.
  *
@@ -17,6 +20,8 @@ public class ArrNamedOutputVO {
     private Boolean temporary;
 
     private Boolean deleted;
+
+    private List<ArrOutputVO> outputs;
 
     public Integer getId() {
         return id;
@@ -56,5 +61,13 @@ public class ArrNamedOutputVO {
 
     public void setDeleted(final Boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public List<ArrOutputVO> getOutputs() {
+        return outputs;
+    }
+
+    public void setOutputs(final List<ArrOutputVO> outputs) {
+        this.outputs = outputs;
     }
 }
