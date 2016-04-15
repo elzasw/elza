@@ -12,7 +12,7 @@ import {indexById} from 'stores/app/utils.jsx'
 const scrollIntoView = require('dom-scroll-into-view')
 
 const _LLB_FETCH_DELAY = 10
-const _LLB_FETCH_BOUNDARY = 2
+const _LLB_FETCH_BOUNDARY = 200
 
 function changeFocus(newActiveIndex) {
     if (this.state.lastFocus !== newActiveIndex) {

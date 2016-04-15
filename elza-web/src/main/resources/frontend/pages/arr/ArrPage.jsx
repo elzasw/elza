@@ -12,7 +12,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Tabs, Icon, Ribbon, i18n} from 'components';
 import {FundExtendedView, FundForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit,
-    ToggleContent, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs, ListBox} from 'components';
+    ToggleContent, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs, ListBox, LazyListBox} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
@@ -24,8 +24,6 @@ import {versionValidate} from 'actions/arr/versionValidation'
 import {packetsFetchIfNeeded} from 'actions/arr/packets'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes'
 import {developerNodeScenariosRequest} from 'actions/global/developer'
-var ShortcutsManager = require('react-shortcuts');
-var Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components'
 import {barrier} from 'components/Utils';
 import {isFundRootId} from 'components/arr/ArrUtils';
@@ -33,6 +31,8 @@ import {setFocus} from 'actions/global/focus'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 import {propsEquals} from 'components/Utils'
 import {fundSelectSubNode} from 'actions/arr/nodes'
+var ShortcutsManager = require('react-shortcuts');
+var Shortcuts = require('react-shortcuts/component');
 
 var _selectedTab = 0
 
@@ -262,7 +262,17 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
     renderFundErrors(activeFund) {
         return (
-            <div>chyby</div>
+            <LazyListBox
+                className="errors-listbox-container"
+                getItems={(fromIndex, count) => {
+                            return WebApi.getLazyItems(fromIndex, count)
+                        }}
+                renderItemContent={(item) => item !== null ? <div>{item.name}</div> : '...'}
+                itemHeight={32} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
+                onFocus={item=>{console.log("FOCUS", item)}}
+                onSelect={item=>{console.log("SELECT BY ENTER", item)}}
+                onDoubleClick={item=>{console.log("DOUBLECLICK", item)}}
+            />
         )
     }
 

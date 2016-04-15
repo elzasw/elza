@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components';
-import {LazyListBox, Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
+import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
 import {NodeTabs, FundTreeTabs} from 'components';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -234,18 +234,6 @@ var HomePage = class HomePage extends AbstractReactComponent {
                     <Button onClick={() => this.dispatch(storeSave())}>STORE</Button>
                     <Button onClick={() => this.dispatch(storeLoad())}>LOAD</Button></div>}
                 {this.renderHistory()}
-
-                <LazyListBox
-                    className="pokusny-listbost-container"
-                    getItems={(fromIndex, count) => {
-                        return WebApi.getLazyItems(fromIndex, count)
-                    }}
-                    renderItemContent={(item) => item !== null ? <div>{item.name}</div> : '...'}
-                    itemHeight={24} // nutne dat stejne cislo i do css jako .pokusny-listbost-container .listbox-item { height: 24px; }
-                    onFocus={item=>{console.log("FOCUS", item)}}
-                    onSelect={item=>{console.log("SELECT BY ENTER", item)}}
-                    onDoubleClick={item=>{console.log("DOUBLECLICK", item)}}
-                    />
             </div>
         )
 
