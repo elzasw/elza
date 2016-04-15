@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.PolicyNode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -246,6 +247,47 @@ public class LevelTreeCacheService {
             }
         }
         return result;
+    }
+
+    /**
+     * Vyhledá a seřadí JP.
+     *
+     * @param nodeIds        seznam id potřebných uzlů
+     * @param fundVersion    verze AS
+     * @return seznam JP
+     */
+    public List<PolicyNode> getPolicyNodes(final Set<Integer> nodeIds, final ArrFundVersion fundVersion) {
+
+        List<Integer> nodeIdsSort = sortNodesByTreePosition(nodeIds, fundVersion);
+
+        Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(fundVersion);
+        List<Integer> allNodeIds = new ArrayList<>();
+
+        for (Integer nodeId : nodeIdsSort) {
+            TreeNode treeNode = versionTreeCache.get(nodeId);
+            allNodeIds.add(nodeId);
+            TreeNode parent = treeNode.getParent();
+            if (parent != null) {
+                allNodeIds.add(parent.getId());
+            }
+        }
+
+        Collection<TreeNodeClient> treeNodes = getFaTreeNodes(fundVersion.getFundVersionId(), allNodeIds);
+        Map<Integer, TreeNodeClient> mapTreeNodes = treeNodes.stream().collect(Collectors.toMap(TreeNodeClient::getId, (p) -> p));
+
+        List<PolicyNode> policyNodes = new ArrayList<>(nodeIdsSort.size());
+        for (Integer nodeId : nodeIdsSort) {
+            PolicyNode policyNode = new PolicyNode();
+            policyNode.setId(nodeId);
+            policyNode.setName(mapTreeNodes.get(nodeId).getName());
+            TreeNode parent = versionTreeCache.get(nodeId).getParent();
+            if (parent != null) {
+                policyNode.setParentNode(mapTreeNodes.get(parent.getId()));
+            }
+            policyNodes.add(policyNode);
+        }
+
+        return policyNodes;
     }
 
     /**

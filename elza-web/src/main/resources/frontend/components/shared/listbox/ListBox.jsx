@@ -335,10 +335,8 @@ var ListBox = class ListBox extends AbstractReactComponent {
             index = null
         }
 
-        if (index < 0) {
-            index = props.items.length > 0 ? 0 : null
-        } else if (index >= props.items.length) {
-            index = props.items.length - 1
+        if (index < 0 || index >= props.items.length) {
+            index = null
         }
         return index
     }

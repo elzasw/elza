@@ -287,7 +287,9 @@ class WebApi{
             });
     }
 
-
+    getFundPolicy(fundVersionId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/fund/policy/' + fundVersionId, {});
+    }
 
     getScopes(versionId = null) {
         return AjaxUtils.ajaxGet('/api/registryManagerV2/fundScopes', {versionId: versionId})

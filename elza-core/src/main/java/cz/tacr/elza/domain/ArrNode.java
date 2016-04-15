@@ -7,6 +7,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 /**
@@ -34,6 +35,12 @@ public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.a
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
     @JoinColumn(name = "fundId", nullable = false)
     private ArrFund fund;
+
+    @OneToMany(mappedBy = "node", fetch = FetchType.LAZY)
+    private List<UIVisiblePolicy> policies;
+
+    @OneToMany(mappedBy = "node", fetch = FetchType.LAZY)
+    private List<ArrLevel> levels;
 
     @Override
     public Integer getNodeId() {
@@ -95,5 +102,21 @@ public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.a
     @Override
     public String toString() {
         return "ArrNode{" + "nodeId=" + nodeId + ", lastUpdate=" + lastUpdate + "uuid=" + uuid + '}';
+    }
+
+    public List<UIVisiblePolicy> getPolicies() {
+        return policies;
+    }
+
+    public void setPolicies(final List<UIVisiblePolicy> policies) {
+        this.policies = policies;
+    }
+
+    public List<ArrLevel> getLevels() {
+        return levels;
+    }
+
+    public void setLevels(final List<ArrLevel> levels) {
+        this.levels = levels;
     }
 }

@@ -12,7 +12,8 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Tabs, Icon, Ribbon, i18n} from 'components';
 import {FundExtendedView, FundForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit,
-    ToggleContent, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs, ListBox, LazyListBox} from 'components';
+    ToggleContent, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs, ListBox, LazyListBox,
+    VisiblePolicyForm, Loading} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
@@ -29,8 +30,11 @@ import {barrier} from 'components/Utils';
 import {isFundRootId} from 'components/arr/ArrUtils';
 import {setFocus} from 'actions/global/focus'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
+import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy'
 import {propsEquals} from 'components/Utils'
 import {fundSelectSubNode} from 'actions/arr/nodes'
+import {createFundRoot} from 'components/arr/ArrUtils.jsx'
+import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 
@@ -55,9 +59,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
-            'getActiveFundId', 'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleSetVisiblePolicies',
-            'handleValidationDialog', 'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicy',
-            'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs');
+            'getActiveFundId', 'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
+            'handleValidationDialog', 'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
+            'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect');
 
         this.state = {developerExpandedSpecsIds: {}};
     }
@@ -80,8 +84,10 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
         var activeFund = this.getActiveInfo(nextProps.arrRegion).activeFund;
         if (activeFund) {
+            /*
             var validation = activeFund.versionValidation;
             this.requestValidationData(validation.isDirty, validation.isFetching, activeFund.versionId);
+             */
 
             if (nextProps.developer.enabled) {
                 var node;
@@ -279,26 +285,66 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
     handleSelectVisiblePoliciesNode(available, activeFund, index) {
         var node = available[index];
-        console.warn(available, activeFund, index, node);
-        this.dispatch(fundSelectSubNode(activeFund.versionId, node.id, {}));
+        if (node.parentNode == null) {
+            node.parentNode = createFundRoot(activeFund);
+        }
+        this.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode));
     }
 
-    handleSetVisiblePolicies(a, b) {
-        console.warn(a, b)
+    handleShowVisiblePolicies(activeFund) {
+        var node;
+        if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
+            node = activeFund.nodes.nodes[activeFund.nodes.activeIndex]
+        }
+        if (!node) {
+            return;
+        }
+        var form = <VisiblePolicyForm nodeId={node.selectedSubNodeId} fundVersionId={activeFund.versionId} onSubmitForm={this.handleSetVisiblePolicy.bind(this, node, activeFund.versionId)} />;
+        this.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
+    }
+
+    handleSetVisiblePolicy(node, versionId, data) {
+        var mapIds = {};
+        data.records.forEach((val, index) => {
+            mapIds[parseInt(val.id)] = val.checked;
+        });
+        this.dispatch(setVisiblePolicyRequest(node.selectedSubNodeId, versionId, mapIds));
     }
 
     renderFundVisiblePolicies(activeFund) {
 
-        var available = [{id: 161, title: '161'}, {id: 162, title: '162'}];
+        var nodesPolicy = activeFund.fundNodesPolicy;
+
+        if (!nodesPolicy.fetched) {
+            return <Loading />
+        }
+        var activeIndex = -1;
+        var activeNode = null;
+        if (activeFund.nodes.activeIndex != null) {
+            activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+        }
+
+        if (activeNode != null) {
+            nodesPolicy.items.forEach((item, index)=>{
+                if (activeNode.selectedSubNodeId == item.id) {
+                    activeIndex = index;
+                }
+            });
+
+        }
+
+        if (nodesPolicy.items.length == 0) {
+            return <div>no items</div>
+        }
 
         return (
             <div className="visiblePolicies-container">
                 <ListBox className="visiblePolicies-listbox"
-                    items={available}
-                    /*activeIndexes={this.state.leftSelected}*/
-                    renderItemContent={(node, isActive) => <div key={node.id} className="visiblePolicies-item">{node.title}</div>}
-                    onChangeSelection={this.handleSelectVisiblePoliciesNode.bind(this, available, activeFund)}
-                    onDoubleClick={this.handleSetVisiblePolicies}
+                    items={nodesPolicy.items}
+                         activeIndex={activeIndex}
+                    renderItemContent={(node, isActive) => <div key={node.id} className="visiblePolicies-item">{node.name}</div>}
+                    onChangeSelection={this.handleSelectVisiblePoliciesNode.bind(this, nodesPolicy.items, activeFund)}
+                    onDoubleClick={this.handleShowVisiblePolicies.bind(this, activeFund)}
                 />
             </div>
         )
@@ -432,6 +478,18 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         </div>
     }
 
+    handleTabSelect(item) {
+        const {arrRegion} = this.props;
+        _selectedTab = item.id;
+
+        if (_selectedTab === 1) {
+            var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+            this.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId));
+        }
+
+        this.setState({});
+    }
+
     renderPanel() {
         const {developer, arrRegion} = this.props;
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
@@ -456,7 +514,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
                 <Tabs.Tabs items={items}
                            activeItem={{id: _selectedTab}}
-                           onSelect={(item)=>{_selectedTab = item.id; this.setState({})}}
+                           onSelect={this.handleTabSelect}
                 />
                 <Tabs.Content>
                     {_selectedTab === 0 && this.renderFundErrors(activeFund)}
@@ -484,6 +542,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     focus={focus}
                 />
             )
+
+
         }
 
         var packets = [];

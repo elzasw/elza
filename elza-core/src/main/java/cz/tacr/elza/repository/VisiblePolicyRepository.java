@@ -11,7 +11,12 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.List;
 
-
+/**
+ * Repozitory pro {@link UIVisiblePolicy}
+ *
+ * @author Martin Šlapa
+ * @since 15.04.2016
+ */
 @Repository
 public interface VisiblePolicyRepository extends JpaRepository<UIVisiblePolicy, Integer> {
 

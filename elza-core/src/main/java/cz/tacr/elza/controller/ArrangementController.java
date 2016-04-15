@@ -14,6 +14,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.PolicyNode;
+import cz.tacr.elza.service.PolicyService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -151,6 +153,9 @@ public class ArrangementController {
     private DescItemSpecRepository descItemSpecRepository;
     @Autowired
     private FundRepository fundRepository;
+
+    @Autowired
+    private PolicyService policyService;
 
     /**
      * Seznam typů obalů.
@@ -1210,6 +1215,12 @@ public class ArrangementController {
                 new HashSet<>(descItemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
         descriptionItemService.deleteDescItemValues(version, descItemType, nodesDO, specifications);
+    }
+
+    @RequestMapping(value = "/fund/policy/{fundVersionId}", method = RequestMethod.GET)
+    public List<PolicyNode> getAllNodesVisiblePolicy(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
+        return policyService.getTreePolicy(version);
     }
 
     public static class VersionValidationItem {

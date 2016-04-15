@@ -5,6 +5,7 @@ import nodes from './nodes'
 import fundDataGrid from './fundDataGrid'
 import bulkActions from './bulkActions'
 import versionValidation from './versionValidation'
+import fundNodesPolicy from './fundNodesPolicy'
 import {consolidateState} from 'components/Utils'
 import {isBulkAction} from 'actions/arr/bulkActions'
 import {isFundTreeAction} from 'actions/arr/fundTree'
@@ -35,6 +36,7 @@ export function fundInitState(fundWithVersion) {
         fundTreeMovementsLeft: fundTree(undefined, {type: ''}),
         fundTreeMovementsRight: fundTree(undefined, {type: ''}),
         nodes: nodes(undefined, {type: ''}),
+        fundNodesPolicy: fundNodesPolicy(),
         bulkActions: bulkActions(undefined, {type: ''}),
         versionValidation: versionValidation(undefined, {type: ''})
     }
@@ -105,11 +107,19 @@ export function fund(state, action) {
         || isNodesAction(action)
         || isSubNodeRegisterAction(action)
         || isDeveloperScenariosAction(action)
-        || isFundChangeAction(action)
     ) {
         var result = {...state,
             nodes: nodes(state.nodes, action),
             fundTree: fundTree(state.fundTree, action),
+        }
+        return consolidateState(state, result);
+    }
+
+    if (false || isFundChangeAction(action)) {
+        var result = {...state,
+            nodes: nodes(state.nodes, action),
+            fundTree: fundTree(state.fundTree, action),
+            fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
         }
         return consolidateState(state, result);
     }
@@ -126,6 +136,7 @@ export function fund(state, action) {
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
                 nodes: nodes(state.nodes, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
+                fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
                 bulkActions: bulkActions(undefined, {type: ''}),
                 versionValidation: versionValidation(undefined, {type: ''})
             }
@@ -217,6 +228,13 @@ export function fund(state, action) {
             }
 
             return state;
+
+        case types.FUND_FUND_NODES_POLICY_RECEIVE:
+        case types.FUND_FUND_NODES_POLICY_REQUEST:
+            return {
+                ...state,
+                fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
+            }
 
         default:
             return state;

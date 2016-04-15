@@ -1,18 +1,6 @@
 package cz.tacr.elza.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
+import cz.tacr.elza.controller.vo.PolicyNode;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -20,11 +8,25 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVisiblePolicy;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Serviska pro správu oprávnění pro zobrazování chyb.
@@ -55,6 +57,22 @@ public class PolicyService {
 
     @Autowired
     private EventNotificationService eventNotificationService;
+
+    @Autowired
+    private NodeRepository nodeRepository;
+
+    /**
+     * Vyhledá JP, které mají ve verzi nastavené visible policy.
+     *
+     * @param fundVersion   verze fondu
+     * @return seznam JP
+     */
+    public List<PolicyNode> getTreePolicy(final ArrFundVersion fundVersion) {
+        Assert.notNull(fundVersion);
+        Set<Integer> nodeIds = nodeRepository.findNodeIdsForFondWithPolicy(fundVersion.getFund());
+        List<PolicyNode> policyNodes = levelTreeCacheService.getPolicyNodes(nodeIds, fundVersion);
+        return policyNodes;
+    }
 
     /**
      * Vrací typy oprávnění podle verze fondu.
