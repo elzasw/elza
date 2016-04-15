@@ -29,6 +29,7 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataPacketRef;
@@ -129,7 +130,7 @@ public class FilterTreeService {
         }
 
 
-        return createResult(subIds, levelTreeCacheService.getVersionTreeCache(version), descItemTypeMap, nodeValuesMap);
+        return createResult(version, subIds, levelTreeCacheService.getVersionTreeCache(version), descItemTypeMap, nodeValuesMap);
     }
 
     /**
@@ -210,31 +211,36 @@ public class FilterTreeService {
     /**
      * Vytvoří výslednou mapu.
      *
+     *
+     * @param version
      * @param filteredIds     id filtrovaných uzlů
      * @param descItemTypeMap mapa typů atributů (kod typu -> typ)
      * @param valuesMap       mapa nalezených hodnot atributů (id uzlu -> kod typu -> hodnota atributu)
      * @return seznam uzlů s hodnotami atributů
      */
-    private List<FilterNode> createResult(final List<Integer> filteredIds,
+    private List<FilterNode> createResult(final ArrFundVersion version, final List<Integer> filteredIds,
                                           final Map<Integer, TreeNode> versionCache,
                                           final Map<String, RulDescItemType> descItemTypeMap,
                                           final Map<Integer, Map<String, TitleValues>> valuesMap) {
 
         List<FilterNode> result = new ArrayList<>(filteredIds.size());
 
-        //načtení verzí všech uzlů a jejich rodičů
-        Set<Integer> filterWithParentIds = new HashSet<>();
+        //načtení verzí všech uzlů
+        Set<Integer> parentIds = new HashSet<>();
         for (Integer filteredId : filteredIds) {
             TreeNode node = versionCache.get(filteredId);
             TreeNode parentNode = node.getParent();
-            filterWithParentIds.add(node.getId());
             if (parentNode != null) {
-                filterWithParentIds.add(parentNode.getId());
+                parentIds.add(parentNode.getId());
             }
         }
-        Map<Integer, ArrNode> filterWithParentIdsMap = ElzaTools
-                .createEntityMap(nodeRepository.findAll(filterWithParentIds), n -> n.getNodeId());
+        Map<Integer, ArrNode> filterIdsMap = ElzaTools
+                .createEntityMap(nodeRepository.findAll(filteredIds), n -> n.getNodeId());
 
+        Map<Integer, TreeNodeClient> parentIdsMap = ElzaTools.createEntityMap(
+                levelTreeCacheService.getNodesByIds(parentIds, version.getFundVersionId()),
+                n -> n.getId()
+        );
 
         for (Integer filteredId : filteredIds) {
 
@@ -262,15 +268,12 @@ public class FilterTreeService {
             TreeNode treeNode = versionCache.get(filteredId);
             TreeNode treeParentNode = treeNode.getParent();
 
-            ArrNode arrNode = filterWithParentIdsMap.get(treeNode.getId());
+            ArrNode arrNode = filterIdsMap.get(treeNode.getId());
             ArrNodeVO arrNodeVo = new ArrNodeVO(arrNode.getNodeId(), arrNode.getVersion());
-            ArrNodeVO arrParentNodeVo = null;
+            TreeNodeClient arrParentNodeVo = null;
             if(treeParentNode != null)  {
-                ArrNode arrParentNode = filterWithParentIdsMap.get(treeParentNode.getId());
-                arrParentNodeVo = new ArrNodeVO(arrParentNode.getNodeId(), arrParentNode.getVersion());
-
+                arrParentNodeVo = parentIdsMap.get(treeParentNode.getId());
             }
-
 
             result.add(new FilterNode(arrNodeVo, arrParentNodeVo, nodeValuesMap));
         }
