@@ -17,7 +17,7 @@ public class FilterNode {
 
 
     private ArrNodeVO node;
-    private ArrNodeVO parentNode;
+    private TreeNodeClient parentNode;
 
     /**
      * Mapa hodnot atributů na uzlu (typ atributu -> hodnota)
@@ -27,7 +27,7 @@ public class FilterNode {
     public FilterNode() {
     }
 
-    public FilterNode(final ArrNodeVO node, final ArrNodeVO parentNode, final Map<Integer, DescItemValues> valuesMap) {
+    public FilterNode(final ArrNodeVO node, final TreeNodeClient parentNode, final Map<Integer, DescItemValues> valuesMap) {
         this.node = node;
         this.parentNode = parentNode;
         this.valuesMap = valuesMap;
@@ -41,11 +41,11 @@ public class FilterNode {
         this.node = node;
     }
 
-    public ArrNodeVO getParentNode() {
+    public TreeNodeClient getParentNode() {
         return parentNode;
     }
 
-    public void setParentNode(final ArrNodeVO parentNode) {
+    public void setParentNode(final TreeNodeClient parentNode) {
         this.parentNode = parentNode;
     }
 
