@@ -401,10 +401,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Úprava archivní pomůcky.
      *
      * @param fund ap k úpravě
+     * @param ruleSetId id pravidel otevřené verze
      * @return ap
      */
-    protected ArrFundVO fundAid(final ArrFundVO fund) {
-        Response response = post(spec -> spec.body(fund), UPDATE_FUND);
+    protected ArrFundVO fundAid(final ArrFundVO fund, final Integer ruleSetId) {
+        Response response = post(spec ->
+                spec.queryParameter("ruleSetId", ruleSetId)
+                        .body(fund), UPDATE_FUND);
         return response.getBody().as(ArrFundVO.class);
     }
 
@@ -416,9 +419,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return nová verze ap
      */
     protected ArrFundVersionVO approveVersion(final ArrFundVersionVO fundVersion,
-                                              final RulRuleSetVO ruleSet,
                                               final String dateRange) {
-        return approveVersion(fundVersion.getId(), ruleSet.getId(), dateRange);
+        return approveVersion(fundVersion.getId(), dateRange);
     }
 
     /**
@@ -426,16 +428,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @param versionId         identifikátor verze archivní pomůcky
      * @param dateRange identifikátor výstupu
-     * @param ruleSetId         identifikátor pravidel
      * @return nová verze ap
      */
     protected ArrFundVersionVO approveVersion(final Integer versionId,
-                                              final Integer ruleSetId,
                                               final String dateRange) {
         Response response = put(spec -> spec
                 .queryParameter("versionId", versionId)
-                .queryParameter("dateRange", dateRange)
-                .queryParameter("ruleSetId", ruleSetId), APPROVE_VERSION);
+                .queryParameter("dateRange", dateRange), APPROVE_VERSION);
         return response.getBody().as(ArrFundVersionVO.class);
     }
 

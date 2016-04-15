@@ -197,12 +197,14 @@ public class ArrangementService {
 
     /**
      * @param fund
-     * @param scopes
-     * @return Upravená archivní pomůcka
+     * @param ruleSet
+     *@param scopes  @return Upravená archivní pomůcka
      */
     @Transactional
-    public ArrFund updateFund(final ArrFund fund, final List<RegScope> scopes) {
+    public ArrFund updateFund(final ArrFund fund, final RulRuleSet ruleSet, final List<RegScope> scopes) {
         Assert.notNull(fund);
+        Assert.notNull(ruleSet);
+
         ArrFund originalFund = fundRepository.findOne(fund.getFundId());
         Assert.notNull(originalFund);
 
@@ -217,6 +219,15 @@ public class ArrangementService {
                 scope.setCode(StringUtils.upperCase(Normalizer.normalize(StringUtils.replace(StringUtils.substring(scope.getName(), 0, 50).trim(), " ", "_"), Normalizer.Form.NFD)));
                 scopeRepository.save(scope);
             }
+        }
+
+
+        ArrFundVersion openVersion = getOpenVersionByFundId(originalFund.getFundId());
+        if(!ruleSet.equals(openVersion.getRuleSet())){
+            openVersion.setRuleSet(ruleSet);
+            fundVersionRepository.save(openVersion);
+
+            ruleService.conformityInfoAll(openVersion);
         }
 
         synchRegScopes(originalFund, scopes);
@@ -439,16 +450,13 @@ public class ArrangementService {
      * - spustí přepočet stavů uzlů pro novou verzi
      *
      * @param version         verze, která se má uzavřít
-     * @param ruleSet         pravidla podle kterých se vytváří popis v nové verzi
      * @param dateRange       vysčítaná informace o časovém rozsahu fondu
      * @return nová verze archivní pomůcky
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
      */
     public ArrFundVersion approveVersion(final ArrFundVersion version,
-                                         final RulRuleSet ruleSet,
                                          final String dateRange) {
         Assert.notNull(version);
-        Assert.notNull(ruleSet);
 
         ArrFund fund = version.getFund();
 
@@ -473,7 +481,7 @@ public class ArrangementService {
         version.setLockChange(change);
         fundVersionRepository.save(version);
 
-        ArrFundVersion newVersion = createVersion(change, fund, ruleSet, version.getRootNode(), dateRange);
+        ArrFundVersion newVersion = createVersion(change, fund, version.getRuleSet(), version.getRootNode(), dateRange);
         ruleService.conformityInfoAll(newVersion);
 
         eventNotificationService.publishEvent(

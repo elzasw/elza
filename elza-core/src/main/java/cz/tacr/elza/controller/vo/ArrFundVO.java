@@ -30,6 +30,10 @@ public class ArrFundVO {
 
     private List<RegScopeVO> regScopes;
 
+    private List<ArrNamedOutputVO> validNamedOutputs;
+
+    private List<ArrNamedOutputVO> historicalNamedOutputs;
+
     public Integer getId() {
         return id;
     }
@@ -84,6 +88,22 @@ public class ArrFundVO {
 
     public void setInstitutionId(final Integer institutionId) {
         this.institutionId = institutionId;
+    }
+
+    public List<ArrNamedOutputVO> getValidNamedOutputs() {
+        return validNamedOutputs;
+    }
+
+    public void setValidNamedOutputs(final List<ArrNamedOutputVO> validNamedOutputs) {
+        this.validNamedOutputs = validNamedOutputs;
+    }
+
+    public List<ArrNamedOutputVO> getHistoricalNamedOutputs() {
+        return historicalNamedOutputs;
+    }
+
+    public void setHistoricalNamedOutputs(final List<ArrNamedOutputVO> historicalNamedOutputs) {
+        this.historicalNamedOutputs = historicalNamedOutputs;
     }
 
     @Override

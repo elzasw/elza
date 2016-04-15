@@ -36,6 +36,7 @@ import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.ListCountResult;
 import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeData;
@@ -67,6 +68,7 @@ import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -147,6 +149,8 @@ public class ArrangementController {
 
     @Autowired
     private DescItemSpecRepository descItemSpecRepository;
+    @Autowired
+    private FundRepository fundRepository;
 
     /**
      * Seznam typů obalů.
@@ -377,27 +381,24 @@ public class ArrangementController {
     /**
      * Seznam AP.
      *
+     * @param fulltext     fulltext podle názvu a interního čísla AS
+    * @param max            maximální počet záznamů
      * @return seznam AP
      */
     @RequestMapping(value = "/getFunds", method = RequestMethod.GET)
-    public List<ArrFundVO> getFunds() {
-        Map<Integer, ArrFundVO> funds = new LinkedHashMap<>();
-        fundVersionRepository.findAllFetchFunds().forEach(version -> {
-            ArrFund fund = version.getFund();
-            ArrFundVO fundVO;
-            if (funds.get(fund.getFundId()) == null) {
-                fundVO = factoryVo.createFundVO(fund, false);
-                funds.put(fund.getFundId(), fundVO);
-            } else {
-                fundVO = funds.get(fund.getFundId());
-            }
-            fundVO.getVersions().add(factoryVo.createFundVersion(version));
+    public ListCountResult getFunds(@RequestParam(value = "fulltext", required = false) final String fulltext,
+                                        @RequestParam(value = "max") final Integer max) {
+
+        List<ArrFundVO> fundList = new LinkedList<>();
+        fundRepository.findByFulltext(fulltext, max).forEach(f -> {
+            ArrFundVO fundVO = factoryVo.createFundVO(f.getFund(), false);
+            fundVO.setVersions(Arrays.asList(factoryVo.createFundVersion(f.getOpenVersion())));
+            fundList.add(fundVO);
         });
 
-
-        return new ArrayList<>(funds.values());
+        return new ListCountResult(fundList, fundRepository.findCountByFulltext(fulltext));
     }
-    
+
     /**
      * Načtení souboru na základě id.
      * @param fundId id souboru
@@ -405,23 +406,20 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/getFund/{fundId}", method = RequestMethod.GET)
     public ArrFundVO getFund(@PathVariable("fundId") final Integer fundId) {
-        Map<Integer, ArrFundVO> funds = new LinkedHashMap<>();
-        fundVersionRepository.findAllFetchFunds().forEach(version -> {
-            if (version.getFund().getFundId().equals(fundId)) {
-                ArrFund fund = version.getFund();
-                ArrFundVO fundVO;
-                if (funds.get(fund.getFundId()) == null) {
-                    fundVO = factoryVo.createFundVO(fund, false);
-                    funds.put(fund.getFundId(), fundVO);
-                } else {
-                    fundVO = funds.get(fund.getFundId());
-                }
-                fundVO.getVersions().add(factoryVo.createFundVersion(version));
-            }
-        });
 
-        return funds.values().iterator().next();
+        ArrFund fund = fundRepository.findOne(fundId);
+        ArrFundVO fundVO = factoryVo.createFundVO(fund, true);
+
+        return fundVO;
     }
+
+    @Transactional
+    @RequestMapping(value = "/deleteFund/{fundId}", method = RequestMethod.DELETE)
+    public void deleteFund(@PathVariable("fundId") final Integer fundId){
+         //TODO kubovy dopsat
+        arrangementService.deleteFund(fundId);
+    }
+
 
     /**
      * Načte AS pro dané verze.
@@ -506,7 +504,6 @@ public class ArrangementController {
      * Uzavře otevřenou verzi archivní pomůcky a otevře novou verzi.
      *
      * @param versionId         verze, která se má uzavřít
-     * @param ruleSetId         id pravidel podle kterých se vytváří popis v nové verzi
      * @param dateRange         vysčítaná informace o časovém rozsahu fondu
      * @return nová verze archivní pomůcky
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
@@ -514,18 +511,14 @@ public class ArrangementController {
     @Transactional
     @RequestMapping(value = "/approveVersion", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrFundVersionVO approveVersion(@RequestParam("versionId") final Integer versionId,
-                                           @RequestParam("ruleSetId") final Integer ruleSetId,
                                            @RequestParam(value = "dateRange", required = false) final String dateRange) {
         Assert.notNull(versionId);
-        Assert.notNull(ruleSetId);
 
         ArrFundVersion version = fundVersionRepository.findOne(versionId);
-        RulRuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
 
         Assert.notNull(version, "Nebyla nalezena verze s id " + versionId);
-        Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + ruleSetId);
 
-        ArrFundVersion nextVersion = arrangementService.approveVersion(version, ruleSet, dateRange);
+        ArrFundVersion nextVersion = arrangementService.approveVersion(version, dateRange);
         return factoryVo.createFundVersion(nextVersion);
     }
 
@@ -668,17 +661,20 @@ public class ArrangementController {
 
     /**
      * Úprava archivní pomůcky
-     *
+     * @param ruleSetId id pravidel, která budou nastavena otevřené verzi
      * @param arrFundVO Archivní pomůcka k úpravě
      * @return
      */
     @Transactional
     @RequestMapping(value = "/updateFund", method = RequestMethod.POST)
-    public ArrFundVO updateFund(@RequestBody ArrFundVO arrFundVO) {
+    public ArrFundVO updateFund(@RequestParam("ruleSetId") final Integer ruleSetId,
+            @RequestBody ArrFundVO arrFundVO) {
         Assert.notNull(arrFundVO);
+
         return factoryVo.createFundVO(
                 arrangementService.updateFund(
                         factoryDO.createFund(arrFundVO),
+                        ruleSetRepository.findOne(ruleSetId),
                         factoryDO.createScopeList(arrFundVO.getRegScopes()
                         )
                 ),

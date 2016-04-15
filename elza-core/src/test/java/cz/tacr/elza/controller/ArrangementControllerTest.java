@@ -23,7 +23,6 @@ import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RulPacketTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -439,8 +438,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      */
     private ArrFundVersionVO approvedVersion(final ArrFundVersionVO fundVersion) {
         Assert.notNull(fundVersion);
-        List<RulRuleSetVO> ruleSets = getRuleSets();
-        ArrFundVersionVO newFundVersion = approveVersion(fundVersion, ruleSets.get(0), fundVersion.getDateRange());
+        ArrFundVersionVO newFundVersion = approveVersion(fundVersion, fundVersion.getDateRange());
 
         Assert.isTrue(!fundVersion.getId().equals(newFundVersion.getId()),
                 "Musí být odlišné identifikátory");
@@ -455,7 +453,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      */
     private ArrFundVO updatedFund(final ArrFundVO fund) {
         fund.setName(RENAME_AP);
-        ArrFundVO updatedFund = fundAid(fund);
+        Integer ruleSetId = null;
+        for (ArrFundVersionVO versionVO : fund.getVersions()) {
+            if (versionVO.getLockDate() == null) {
+                ruleSetId = versionVO.getRuleSetId();
+            }
+        }
+
+        ArrFundVO updatedFund = fundAid(fund, ruleSetId);
         Assert.isTrue(RENAME_AP.equals(updatedFund.getName()), "Jméno AP musí být stejné");
         return updatedFund;
     }

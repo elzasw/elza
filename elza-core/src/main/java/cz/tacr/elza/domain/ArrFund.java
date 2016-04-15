@@ -2,6 +2,7 @@ package cz.tacr.elza.domain;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.persistence.*;
 
@@ -36,6 +37,9 @@ public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.a
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ParInstitution.class)
     @JoinColumn(name = "institutionId", nullable = false)
     private ParInstitution institution;
+
+    @OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
+    private List<ArrFundVersion> versions;
 
     @Override
     public Integer getFundId() {
@@ -85,6 +89,14 @@ public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.a
     @Override
     public void setInstitution(final ParInstitution institution) {
         this.institution = institution;
+    }
+
+    public List<ArrFundVersion> getVersions() {
+        return versions;
+    }
+
+    public void setVersions(final List<ArrFundVersion> versions) {
+        this.versions = versions;
     }
 
     @Override

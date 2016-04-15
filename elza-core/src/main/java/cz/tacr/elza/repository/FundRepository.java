@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
  * @since 22.7.15
  */
 @Repository
-public interface FundRepository extends JpaRepository<ArrFund, Integer> {
+public interface FundRepository extends JpaRepository<ArrFund, Integer> , FundRepositoryCustom {
 
     @Query(value = "select fa from arr_fund_version v join v.fund fa join v.rootNode n where n.uuid = :uuid and v.lockChange is null")
     ArrFund findFundByRootNodeUUID(@Param(value = "uuid") String uuid);
