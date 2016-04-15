@@ -545,7 +545,7 @@ class WebApi{
     }
 
     updateFund(data) {
-        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/updateFund', null, data)
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/updateFund', {ruleSetId: data.ruleSetId}, data)
     }
 
     approveVersion(versionId, dateRange) {
