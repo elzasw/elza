@@ -1,5 +1,6 @@
 var messages = {
     "global.data.loading": "Načítání dat...",
+    "global.data.noitem": "Žádné položky",
 
     "global.data.loading.register": "Načítání rejstříků",
     "global.data.loading.form": "Načítání formuláře JP",
@@ -45,7 +46,6 @@ var messages = {
     "ribbon.action.arr.fund.approve": "Nová verze AS",
     "ribbon.action.arr.fund.bulkActions": "Hromadné akce",
     "ribbon.action.arr.fund.fas": "Archivní pomůcky",
-    "ribbon.action.arr.fund.validation": "Validace AS",
     "ribbon.action.arr.show-register-jp": "Rejstříky k JP",
     "ribbon.action.registry": "Rejstříková hesla",
     "ribbon.action.party": "Subjekty",

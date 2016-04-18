@@ -9,7 +9,7 @@ export function fundNodesPolicyFetchIfNeeded(fundVersionId) {
         var funds = state.arrRegion.funds;
         var fund = null;
         funds.forEach(item => {
-            if (item.versionId = fundVersionId) {
+            if (item.versionId == fundVersionId) {
                 fund = item;
             }
         });

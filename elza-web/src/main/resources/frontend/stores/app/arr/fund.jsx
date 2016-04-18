@@ -140,10 +140,9 @@ export function fund(state, action) {
                 versionValidation: versionValidation(undefined, {type: ''})
             }
         case types.STORE_SAVE:
-            const {id, fundId, versionId, name, lockDate} = state;
+            const {id, versionId, name, lockDate} = state;
             return {
                 id,
-                fundId,
                 versionId,
                 name,
                 lockDate,

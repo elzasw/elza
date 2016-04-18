@@ -7,7 +7,7 @@ require ('./LazyListBox.less');
 
 import React from "react";
 import ReactDOM from 'react-dom';
-import {VirtualList, AbstractReactComponent} from "components";
+import {VirtualList, AbstractReactComponent, i18n} from "components";
 import {indexById} from 'stores/app/utils.jsx'
 var classNames = require('classnames');
 const scrollIntoView = require('dom-scroll-into-view')

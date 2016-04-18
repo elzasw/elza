@@ -11,7 +11,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Tabs, Icon, Ribbon, i18n} from 'components';
-import {FundExtendedView, FundForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit,
+import {FundExtendedView, FundForm, BulkActionsDialog, RibbonMenu, RibbonGroup, RibbonSplit,
     ToggleContent, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs, ListBox, LazyListBox,
     VisiblePolicyForm, Loading} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
@@ -60,7 +60,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
             'getActiveFundId', 'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
-            'handleValidationDialog', 'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
+            'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode');
 
         this.state = {developerExpandedSpecsIds: {}};
@@ -84,11 +84,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
         var activeFund = this.getActiveInfo(nextProps.arrRegion).activeFund;
         if (activeFund) {
-            /*
-            var validation = activeFund.versionValidation;
-            this.requestValidationData(validation.isDirty, validation.isFetching, activeFund.versionId);
-             */
-
+            if (_selectedTab === 1) {
+                this.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId));
+            }
             if (nextProps.developer.enabled) {
                 var node;
                 if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
@@ -196,10 +194,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         );
     }
 
-    handleValidationDialog() {
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.title.versionValidation'), <VersionValidationDialog />));
-    }
-
     /**
      * Sestavení Ribbonu.
      * @return {Object} view
@@ -218,14 +212,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 </Button>,
                 <Button key="fas" onClick={()=>{}}><Icon glyph="fa-cogs"/>
                     <div><span className="btnText">{i18n('ribbon.action.arr.fund.fas')}</span></div>
-                </Button>,
-                <Button key="validation" onClick={this.handleValidationDialog}>
-                    <Icon className={activeInfo.activeFund.versionValidation.isFetching ? "fa-spin" : ""} glyph={
-                    activeInfo.activeFund.versionValidation.isFetching ? "fa-refresh" : (
-                        activeInfo.activeFund.versionValidation.count > 0 ? "fa-exclamation-triangle" : "fa-check"
-                    )
-                }/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.validation')}</span></div>
                 </Button>
             )
         }
@@ -298,8 +284,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode));
     }
 
-    handleSelectVisiblePoliciesNode(available, activeFund, index) {
-        var node = available[index];
+    handleSelectVisiblePoliciesNode(activeFund, node) {
         if (node.parentNode == null) {
             node.parentNode = createFundRoot(activeFund);
         }
@@ -349,7 +334,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
 
         if (nodesPolicy.items.length == 0) {
-            return <div>no items</div>
+            return <div>{i18n('global.data.noitem')}</div>
         }
 
         return (
@@ -358,8 +343,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     items={nodesPolicy.items}
                          activeIndex={activeIndex}
                     renderItemContent={(node, isActive) => <div key={node.id} className="visiblePolicies-item">{node.name}</div>}
-                    onChangeSelection={this.handleSelectVisiblePoliciesNode.bind(this, nodesPolicy.items, activeFund)}
-                    onDoubleClick={this.handleShowVisiblePolicies.bind(this, activeFund)}
+                    onSelect={this.handleSelectVisiblePoliciesNode.bind(this, activeFund)}
+                    /*onDoubleClick={this.handleShowVisiblePolicies.bind(this, activeFund)}*/
                 />
             </div>
         )

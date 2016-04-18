@@ -69,24 +69,6 @@ var FundForm = class FundForm extends AbstractReactComponent {
         return result;
     }
 
-
-    /**
-     * Zkontroluje zda existují nějaké nespuštěné hromadné akce
-     *
-     * @returns {boolean}
-     */
-    isMandatoryBulkActionsDone() {
-        /*if (this.props.bulkActions.actions.length != this.props.bulkActions.states.length) {
-            return false;
-        }
-        this.props.bulkActions.states.forEach((item) => {
-            if (typeof item.runChange !== 'object') {
-                return false;
-            }
-         });*/
-        return this.props.bulkActions.actions.length == 0;
-    }
-
     /**
      * Vyhledávání v redux form fields - prohledává index.value
      * @param arr prohledávaný objekt
@@ -124,11 +106,8 @@ var FundForm = class FundForm extends AbstractReactComponent {
         if (this.props.approve) {
             if (this.isBulkActionRunning()) {
                 approveButton = <span className="text-danger">{i18n('arr.fund.approveVersion.runningBulkAction')}</span>;
-            } else if (this.isMandatoryBulkActionsDone() && this.props.versionValidation.count < 1) {
-                approveButton = <Button onClick={handleSubmit(submitForm)}>{i18n('arr.fund.approveVersion.approve')}</Button>
             } else {
-                approveButton = <Button bsStyle="danger"
-                                        onClick={handleSubmit(submitForm)}>{i18n('arr.fund.approveVersion.approveForce')}</Button>
+                approveButton = <Button onClick={handleSubmit(submitForm)}>{i18n('arr.fund.approveVersion.approve')}</Button>
             }
         }
         var ruleSets = this.props.refTables.ruleSet.items;
@@ -137,14 +116,6 @@ var FundForm = class FundForm extends AbstractReactComponent {
         return (
             <div>
                 <Modal.Body>
-                    {
-                        this.props.approve &&
-                        <div>
-                            <VersionValidationState count={this.props.versionValidation.count}
-                                                    errExist={this.props.versionValidation.count > 0}
-                                                    isFetching={this.props.versionValidation.isFetching}/>
-                        </div>
-                    }
                     <form onSubmit={handleSubmit(submitForm)}>
                         {(this.props.create || this.props.update) &&
                         <Input type="text" label={i18n('arr.fund.name')} {...name} {...decorateFormField(name)} />}
