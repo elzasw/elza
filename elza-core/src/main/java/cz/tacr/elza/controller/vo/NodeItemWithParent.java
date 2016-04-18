@@ -1,12 +1,12 @@
 package cz.tacr.elza.controller.vo;
 
 /**
- * Objekt reprezentující JP v seznamu pro nastavené visible policy.
+ * Objekt reprezentující název JP v seznamu s rodičem.
  *
  * @author Martin Šlapa
  * @since 15.04.2016
  */
-public class PolicyNode {
+public class NodeItemWithParent {
 
     /**
      * identifikátor nodu

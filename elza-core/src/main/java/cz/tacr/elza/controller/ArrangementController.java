@@ -14,7 +14,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.PolicyNode;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.service.PolicyService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1217,10 +1217,58 @@ public class ArrangementController {
         descriptionItemService.deleteDescItemValues(version, descItemType, nodesDO, specifications);
     }
 
+    @RequestMapping(value = "/validation/{fundVersionId}/{fromIndex}/{toIndex}", method = RequestMethod.GET)
+    public ValidationItems getValidation(@PathVariable("fundVersionId") final Integer fundVersionId,
+                                                 @PathVariable(value = "fromIndex") final Integer fromIndex,
+                                                 @PathVariable(value = "toIndex") final Integer toIndex) {
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
+        return arrangementService.getValidationNodes(version, fromIndex, toIndex);
+    }
+
     @RequestMapping(value = "/fund/policy/{fundVersionId}", method = RequestMethod.GET)
-    public List<PolicyNode> getAllNodesVisiblePolicy(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+    public List<NodeItemWithParent> getAllNodesVisiblePolicy(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
         return policyService.getTreePolicy(version);
+    }
+
+    /**
+     * Výstupní objekt pro chybové jednotky popisu.
+     */
+    public static class ValidationItems {
+
+        /**
+         * JP s chybou.
+         */
+        private List<NodeItemWithParent> items;
+
+        /**
+         * Celkový počet chyb v AS.
+         */
+        private Integer count;
+
+        public ValidationItems() {
+        }
+
+        public ValidationItems(final List<NodeItemWithParent> items, final Integer count) {
+            this.items = items;
+            this.count = count;
+        }
+
+        public List<NodeItemWithParent> getItems() {
+            return items;
+        }
+
+        public void setItems(final List<NodeItemWithParent> items) {
+            this.items = items;
+        }
+
+        public Integer getCount() {
+            return count;
+        }
+
+        public void setCount(final Integer count) {
+            this.count = count;
+        }
     }
 
     public static class VersionValidationItem {

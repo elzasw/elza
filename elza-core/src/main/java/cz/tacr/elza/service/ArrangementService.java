@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -16,6 +17,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Iterables;
+import cz.tacr.elza.controller.ArrangementController;
+import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.domain.UIVisiblePolicy;
+import cz.tacr.elza.repository.VisiblePolicyRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -176,6 +182,9 @@ public class ArrangementService {
 
     @Autowired
     private NamedOutputRepository namedOutputRepository;
+
+    @Autowired
+    private VisiblePolicyRepository visiblePolicyRepository;
 
     /**
      * Vytvoření archivního souboru.
@@ -1024,6 +1033,157 @@ public class ArrangementService {
         }
 
         return result;
+    }
+
+    /**
+     * Vrací výsek chybných JP podle indexů.
+     *
+     * @param fundVersion   verze archivní pomůcky
+     * @param indexFrom     od indexu
+     * @param indexTo       do indexu
+     * @return
+     */
+    public ArrangementController.ValidationItems getValidationNodes(final ArrFundVersion fundVersion,
+                                                                    final Integer indexFrom,
+                                                                    final Integer indexTo) {
+        Assert.notNull(fundVersion);
+        Assert.notNull(indexFrom);
+        Assert.notNull(indexTo);
+
+        if (indexFrom < 0 || indexFrom >= indexTo) {
+            throw new IllegalArgumentException("Neplatné vstupní parametry");
+        }
+
+        Integer rootNodeId = fundVersion.getRootNode().getNodeId();
+        TreeNode rootTreeNode = null;
+        Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(fundVersion);
+
+        for (TreeNode treeNode : versionTreeCache.values()) {
+            if (treeNode.getId().equals(rootNodeId)) {
+                rootTreeNode = treeNode;
+                break;
+            }
+        }
+
+        if (rootTreeNode == null) {
+            throw new IllegalArgumentException("Nenalezen kořen stromu ve verzi " + fundVersion.getFundVersionId());
+        }
+
+        List<UIVisiblePolicy> policies = visiblePolicyRepository.findByFund(fundVersion.getFund());
+
+        // nodeId / policyTypeId / visible
+        Map<Integer, Map<Integer, Boolean>> policiesMap = new HashMap<>();
+
+        for (UIVisiblePolicy policy : policies) {
+            Integer nodeId = policy.getNode().getNodeId();
+            Integer policyTypeId = policy.getPolicyType().getPolicyTypeId();
+            Boolean visible = policy.getVisible();
+            Map<Integer, Boolean> policyTypes = policiesMap.get(nodeId);
+            if (policyTypes == null) {
+                policyTypes = new HashMap<>();
+                policiesMap.put(nodeId, policyTypes);
+            }
+            policyTypes.put(policyTypeId, visible);
+        }
+
+        List<ArrNodeConformityError> errors = nodeConformityErrorsRepository.findErrorsByFundVersion(fundVersion);
+        List<ArrNodeConformityMissing> missings = nodeConformityMissingRepository.findMissingsByFundVersion(fundVersion);
+
+        // nodeId / policyTypeIds
+        Map<Integer, Set<Integer>> nodeProblemsMap = new HashMap<>();
+
+        for (ArrNodeConformityError error : errors) {
+            Integer nodeId = error.getNodeConformity().getNode().getNodeId();
+            Integer policyTypeId = error.getPolicyType().getPolicyTypeId();
+            addNodeProblem(nodeProblemsMap, nodeId, policyTypeId);
+        }
+
+        for (ArrNodeConformityMissing missing : missings) {
+            Integer nodeId = missing.getNodeConformity().getNode().getNodeId();
+            Integer policyTypeId = missing.getPolicyType().getPolicyTypeId();
+            addNodeProblem(nodeProblemsMap, nodeId, policyTypeId);
+        }
+
+        Set<Integer> nodes = new HashSet<>();
+
+        Map<Integer, Boolean> defaultPolicy = policyService.getPolicyTypes(fundVersion).stream()
+                .collect(Collectors.toMap(i -> i.getPolicyTypeId(), i -> true));
+        recursiveAddNodes(nodes, rootTreeNode, defaultPolicy, policiesMap, nodeProblemsMap);
+        int countAll = nodes.size();
+
+        int count = indexTo - indexFrom;
+        Iterable<Integer> nodeIds = Iterables.limit(Iterables.skip(nodes, indexFrom), count);
+        Set<Integer> nodesLimited = new HashSet<>(count);
+        for (Integer integer : nodeIds) {
+            nodesLimited.add(integer);
+        }
+
+        return new ArrangementController.ValidationItems(levelTreeCacheService.getNodeItemsWithParents(nodesLimited, fundVersion), countAll);
+    }
+
+    /**
+     * Přidání chyby k nodu
+     *
+     * @param nodeProblemsMap typy problémů
+     * @param nodeId          identifikátor uzlu
+     * @param policyTypeId    identifikátor typu
+     */
+    private void addNodeProblem(final Map<Integer, Set<Integer>> nodeProblemsMap, final Integer nodeId, final Integer policyTypeId) {
+        Set<Integer> policyTypeIds = nodeProblemsMap.get(nodeId);
+        if (policyTypeIds == null) {
+            policyTypeIds = new HashSet<>();
+            nodeProblemsMap.put(nodeId, policyTypeIds);
+        }
+        policyTypeIds.add(policyTypeId);
+    }
+
+    /**
+     * Rekurzivní procházení a přidávání JP s chybou
+     *
+     * @param nodeIds           seznam chybných JP (postupně přidávaný)
+     * @param treeNode          aktuálně procházená JP
+     * @param parentPolicyTypes viditelnost rodiče
+     * @param policiesMap       mapa všech nastavení nad JP
+     * @param nodeProblemsMap   mapa všech chybných JP podle typu
+     */
+    private void recursiveAddNodes(final Set<Integer> nodeIds,
+                                   final TreeNode treeNode,
+                                   final Map<Integer, Boolean> parentPolicyTypes,
+                                   final Map<Integer, Map<Integer, Boolean>> policiesMap,
+                                   final Map<Integer, Set<Integer>> nodeProblemsMap) {
+        Integer nodeId = treeNode.getId();
+        Boolean status = false;
+
+        Set<Integer> nodeProblems = nodeProblemsMap.get(nodeId);
+        Map<Integer, Boolean> policyTypes = policiesMap.get(nodeId);
+
+        Map<Integer, Boolean> nodePolicyTypes = parentPolicyTypes;
+
+        if (policyTypes != null) {
+            nodePolicyTypes = new HashMap<>(parentPolicyTypes);
+            for (Integer policyTypeId : nodePolicyTypes.keySet()) {
+                nodePolicyTypes.put(policyTypeId, policyTypes.get(policyTypeId));
+            }
+        }
+
+        if (nodeProblems != null) {
+            for (Map.Entry<Integer, Boolean> entry : nodePolicyTypes.entrySet()) {
+                if (entry.getValue().equals(true) && nodeProblems.contains(entry.getKey())) {
+                    status = true;
+                    break;
+                }
+            }
+        }
+
+        if (status) {
+            nodeIds.add(nodeId);
+        }
+
+        if (treeNode.getChilds() != null) {
+            for (TreeNode node : treeNode.getChilds()) {
+                recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap);
+            }
+        }
     }
 
 }

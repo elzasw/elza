@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrFundVersion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -41,4 +42,7 @@ public interface NodeConformityMissingRepository extends JpaRepository<ArrNodeCo
 
     @Query("SELECT c FROM arr_node_conformity_missing c JOIN c.nodeConformity n WHERE n.nodeConformityId in (?1)")
     List<ArrNodeConformityMissing> findByConformityIds(Collection<Integer> conformityInfoIds);
+
+    @Query("SELECT c FROM arr_node_conformity_missing c JOIN FETCH c.nodeConformity n WHERE n.fundVersion = ?1 AND n.state = 'ERR'")
+    List<ArrNodeConformityMissing> findMissingsByFundVersion(ArrFundVersion fundVersion);
 }

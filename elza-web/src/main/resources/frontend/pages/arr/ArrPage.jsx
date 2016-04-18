@@ -61,7 +61,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
             'getActiveFundId', 'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
             'handleValidationDialog', 'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
-            'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect');
+            'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode');
 
         this.state = {developerExpandedSpecsIds: {}};
     }
@@ -267,20 +267,34 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     renderFundErrors(activeFund) {
+
+        var activeNode = null;
+        if (activeFund.nodes.activeIndex != null) {
+            activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+        }
+        // TODO: aktivni node
+
         return (
             <div className="errors-listbox-container">
                 <LazyListBox
-                    getItems={(fromIndex, count) => {
-                                return WebApi.getLazyItems(fromIndex, count)
+                    getItems={(fromIndex, toIndex) => {
+                                return WebApi.getValidationItems(activeFund.versionId, fromIndex, toIndex)
                             }}
                     renderItemContent={(item) => item !== null ? <div>{item.name}</div> : '...'}
                     itemHeight={32} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
-                    onFocus={item=>{console.log("FOCUS", item)}}
-                    onSelect={item=>{console.log("SELECT BY ENTER", item)}}
-                    onDoubleClick={item=>{console.log("DOUBLECLICK", item)}}
+                    /*onFocus={item=>{console.log("FOCUS", item)}}*/
+                    onSelect={this.handleSelectErrorNode.bind(this, activeFund)}
+                    /*onDoubleClick={item=>{console.log("DOUBLECLICK", item)}}*/
                 />
             </div>
         )
+    }
+
+    handleSelectErrorNode(activeFund, node) {
+        if (node.parentNode == null) {
+            node.parentNode = createFundRoot(activeFund);
+        }
+        this.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode));
     }
 
     handleSelectVisiblePoliciesNode(available, activeFund, index) {

@@ -1,6 +1,6 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.controller.vo.PolicyNode;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -67,11 +67,11 @@ public class PolicyService {
      * @param fundVersion   verze fondu
      * @return seznam JP
      */
-    public List<PolicyNode> getTreePolicy(final ArrFundVersion fundVersion) {
+    public List<NodeItemWithParent> getTreePolicy(final ArrFundVersion fundVersion) {
         Assert.notNull(fundVersion);
         Set<Integer> nodeIds = nodeRepository.findNodeIdsForFondWithPolicy(fundVersion.getFund());
-        List<PolicyNode> policyNodes = levelTreeCacheService.getPolicyNodes(nodeIds, fundVersion);
-        return policyNodes;
+        List<NodeItemWithParent> nodeItemWithParents = levelTreeCacheService.getNodeItemsWithParents(nodeIds, fundVersion);
+        return nodeItemWithParents;
     }
 
     /**

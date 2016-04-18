@@ -719,7 +719,7 @@ class WebApi{
         })
     }
 
-    getLazyItems(fromIndex, count) {
+    /*getValidationItems(fundVersionId, fromIndex, count) {
         const MAX = 1000000
         var data = {
             items: [],
@@ -735,6 +735,10 @@ class WebApi{
         }
 
         return getData(data, 1)
+    }*/
+
+    getValidationItems(fundVersionId, fromIndex, toIndex) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/validation/' + fundVersionId + '/' + fromIndex + '/'+ toIndex);
     }
 }
 

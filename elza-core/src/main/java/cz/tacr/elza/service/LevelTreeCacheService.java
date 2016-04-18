@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.PolicyNode;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -256,7 +256,7 @@ public class LevelTreeCacheService {
      * @param fundVersion    verze AS
      * @return seznam JP
      */
-    public List<PolicyNode> getPolicyNodes(final Set<Integer> nodeIds, final ArrFundVersion fundVersion) {
+    public List<NodeItemWithParent> getNodeItemsWithParents(final Set<Integer> nodeIds, final ArrFundVersion fundVersion) {
 
         List<Integer> nodeIdsSort = sortNodesByTreePosition(nodeIds, fundVersion);
 
@@ -275,19 +275,19 @@ public class LevelTreeCacheService {
         Collection<TreeNodeClient> treeNodes = getFaTreeNodes(fundVersion.getFundVersionId(), allNodeIds);
         Map<Integer, TreeNodeClient> mapTreeNodes = treeNodes.stream().collect(Collectors.toMap(TreeNodeClient::getId, (p) -> p));
 
-        List<PolicyNode> policyNodes = new ArrayList<>(nodeIdsSort.size());
+        List<NodeItemWithParent> nodeItemWithParents = new ArrayList<>(nodeIdsSort.size());
         for (Integer nodeId : nodeIdsSort) {
-            PolicyNode policyNode = new PolicyNode();
-            policyNode.setId(nodeId);
-            policyNode.setName(mapTreeNodes.get(nodeId).getName());
+            NodeItemWithParent nodeItemWithParent = new NodeItemWithParent();
+            nodeItemWithParent.setId(nodeId);
+            nodeItemWithParent.setName(mapTreeNodes.get(nodeId).getName());
             TreeNode parent = versionTreeCache.get(nodeId).getParent();
             if (parent != null) {
-                policyNode.setParentNode(mapTreeNodes.get(parent.getId()));
+                nodeItemWithParent.setParentNode(mapTreeNodes.get(parent.getId()));
             }
-            policyNodes.add(policyNode);
+            nodeItemWithParents.add(nodeItemWithParent);
         }
 
-        return policyNodes;
+        return nodeItemWithParents;
     }
 
     /**
