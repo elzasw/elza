@@ -147,7 +147,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var arrRegion = this.props.arrRegion;
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
         if (activeFund) {
-            return activeFund.fundId;
+            return activeFund.id;
         } else {
             return null;
         }
