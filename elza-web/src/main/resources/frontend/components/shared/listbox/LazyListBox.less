@@ -8,6 +8,7 @@
   height: 100%;
   overflow: auto;
   border: 1px solid #DDDDDD;
+  padding: 1px;
 
   .listbox-item {
     height: @lazy-listbox-height;
@@ -20,6 +21,9 @@
       &:hover {
         background: @tree-node-active-hover-bg;
       }
+    }
+    &.focus {
+      outline: 1px solid @tree-node-active-bg;
     }
   }
 }

@@ -283,7 +283,7 @@ export default function arrRegion(state = initialState, action) {
                 packets: packets
             }
         case types.CHANGE_CONFORMITY_INFO:
-            var index = indexById(state.funds, action.fundVersionId);
+            var index = indexById(state.funds, action.fundVersionId, "versionId");
 
             // změna se ho netýká, vracím původní stav
             if (index == null) {

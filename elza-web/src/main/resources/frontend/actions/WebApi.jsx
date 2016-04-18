@@ -719,24 +719,6 @@ class WebApi{
         })
     }
 
-    /*getValidationItems(fundVersionId, fromIndex, count) {
-        const MAX = 1000000
-        var data = {
-            items: [],
-            count: MAX,
-        }
-
-        for (var a=0; a<count && a +fromIndex < MAX; a++) {
-            const i = a + fromIndex;
-            data.items.push({
-                id: i,
-                name: 'Item ' + i,
-            })
-        }
-
-        return getData(data, 1)
-    }*/
-
     getValidationItems(fundVersionId, fromIndex, toIndex) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/validation/' + fundVersionId + '/' + fromIndex + '/'+ toIndex);
     }

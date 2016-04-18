@@ -281,6 +281,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                                 return WebApi.getValidationItems(activeFund.versionId, fromIndex, toIndex)
                             }}
                     renderItemContent={(item) => item !== null ? <div>{item.name}</div> : '...'}
+                    selectedItem={activeNode ? activeNode.selectedSubNodeId : null}
                     itemHeight={32} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
                     /*onFocus={item=>{console.log("FOCUS", item)}}*/
                     onSelect={this.handleSelectErrorNode.bind(this, activeFund)}
