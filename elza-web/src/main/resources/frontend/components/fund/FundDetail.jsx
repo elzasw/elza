@@ -59,23 +59,27 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
                 />
 
                 <div className='fund-detail-info'>
-                    {fundDetail.versions.map(ver => {
-                        if (ver.lockDate) {
-                            return (
-                                <div className='fund-version'>
-                                    <label>{i18n('arr.fund.version', dateToString(new Date(ver.createDate)))}</label>
-                                    <Button onClick={this.handleShowInArr.bind(this, ver)} bsStyle='link'>{i18n('arr.fund.action.showInArr')}</Button>
-                                </div>
-                            )
-                        } else {
-                            return (
-                                <div className='fund-version'>
-                                    <label>{i18n('arr.fund.currentVersion')}</label>
-                                    <Button onClick={this.handleShowInArr.bind(this, ver)} bsStyle='link'>{i18n('arr.fund.action.showInArr')}</Button>
-                                </div>
-                            )
-                        }
-                    })}
+                    <h1>{i18n('arr.fund.detail')}</h1>
+
+                    <div className="versions-container">
+                        {fundDetail.versions.map(ver => {
+                            if (ver.lockDate) {
+                                return (
+                                    <div className='fund-version'>
+                                        <div className="version-label">{i18n('arr.fund.version', dateToString(new Date(ver.lockDate)))}</div>
+                                        <Button onClick={this.handleShowInArr.bind(this, ver)} bsStyle='link'>{i18n('arr.fund.action.showInArr')}</Button>
+                                    </div>
+                                )
+                            } else {
+                                return (
+                                    <div className='fund-version'>
+                                        <div className="version-label">{i18n('arr.fund.currentVersion')}</div>
+                                        <Button onClick={this.handleShowInArr.bind(this, ver)} bsStyle='link'>{i18n('arr.fund.action.showInArr')}</Button>
+                                    </div>
+                                )
+                            }
+                        })}
+                    </div>
                 </div>
             </div>
         );

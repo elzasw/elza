@@ -2,16 +2,33 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    
+    padding: 10px;
+
     .fund-detail-tree {
         width: 100%;
-        height: 70%;
-        padding: 10px;
+        height: 60%;
     }
     
     .fund-detail-info {
         width: 100%;
-        height: 30%;
-        padding: 10px;
+        height: 40%;
+        display: flex;
+        flex-direction: column;
+
+        h1 {
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+        .versions-container {
+            height: 100%;
+            overflow: auto;
+
+            .fund-version {
+                display: flex;
+                .version-label {
+                    min-width: 200px;
+                }
+            }
+        }
     }
 }

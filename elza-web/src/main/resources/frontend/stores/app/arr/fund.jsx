@@ -24,9 +24,8 @@ import {getNodeKeyType} from 'stores/app/utils.jsx'
 export function fundInitState(fundWithVersion) {
     var result = {
         ...fundWithVersion,
-        id: fundWithVersion.versionId,
+        id: fundWithVersion.id,
         closed: fundWithVersion.closed,
-        fundId: fundWithVersion.fundId,
         versionId: fundWithVersion.versionId,
         name: fundWithVersion.name,
         isFetching: false,

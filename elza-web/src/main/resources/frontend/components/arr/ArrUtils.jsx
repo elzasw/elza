@@ -8,7 +8,7 @@ import {getSetFromIdsList} from 'stores/app/utils.jsx'
 
 export function getFundFromFundAndVersion(fund, version) {
     var fundVersionClosed = version.lockDate != null;
-    var fund = Object.assign({}, fund, {fundId: fund.id, versionId: version.id, lockDate: version.lockDate, id: version.id, activeVersion: version, closed: fundVersionClosed});
+    var fund = Object.assign({}, fund, {versionId: version.id, lockDate: version.lockDate, activeVersion: version, closed: fundVersionClosed});
     return fund;
 }
 

@@ -92,6 +92,11 @@ var messages = {
     "arr.panel.title.visiblePolicies": "Způsob kontroly",
 
     "arr.fund.version": "Verze {0}",
+    "arr.fund.namedOutput.active": "Přehled platných AP",
+    "arr.fund.namedOutput.hist": "Přehled historichkých AP",
+    "arr.fund.namedOutput.action.showPDF": "Zobrazit PDF",
+    "arr.fund.namedOutput.version": "Verze {0}",
+    "arr.fund.detail": "Detail AS",
     "arr.fund.action.delete": "Vymazání AS",
     "arr.fund.action.delete.confirm": "Opravdu chcete vymazat celý AS {0}?",
     "arr.fund.action.showInArr": "Zobrazit v pořádání",

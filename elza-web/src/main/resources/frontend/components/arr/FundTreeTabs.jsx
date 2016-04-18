@@ -122,13 +122,14 @@ var FundTreeTabs = class FundTreeTabs extends AbstractReactComponent {
         var tabs = funds.map((fund) => {
             return {
                 id: fund.id,
-                key: fund.id,
+                versionId: fund.versionId,
+                key: fund.versionId,
                 title: fund.name,
                 desc: fund.lockDate ? dateToString(new Date(fund.lockDate)) : ''
             }
         });
 
-        var activeItem = tabs[indexById(tabs, activeFund.id)]
+        var activeItem = tabs[indexById(tabs, activeFund.versionId, "versionId")]
 
         return (
             <Tabs.Container className='fa-tabs-container'>

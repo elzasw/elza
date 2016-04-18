@@ -15,9 +15,9 @@ export function panel(state = panelInitialState, action = {}) {
             var result = {...state};
             var fund = action.fa;
             if (fund != null) {
-                result.id = fund.fundId;
+                result.id = fund.id;
                 result.name = fund.name;
-                result.versionId = fund.id;
+                result.versionId = fund.versionId;
             }
             return consolidateState(state, result);
 

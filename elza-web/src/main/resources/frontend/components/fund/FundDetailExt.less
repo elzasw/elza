@@ -1,0 +1,36 @@
+.fund-detail-ext-container {
+  overflow: hidden;
+  overflow-y: auto;
+  height: 100%;
+
+  .outputs-container {
+    h1 {
+      font-size: 16px;
+    }
+
+    .output {
+      display: flex;
+
+      &.with-versions {
+        flex-direction: column;
+      }
+
+      .output-label {
+        font-size: 14px;
+        flex-grow: 1;
+      }
+
+      .versions-container {
+        padding-left: 16px;
+        .version {
+          display: flex;
+
+          .version-label {
+            font-size: 12px;
+            flex-grow: 1;
+          }
+        }
+      }
+    }
+  }
+}

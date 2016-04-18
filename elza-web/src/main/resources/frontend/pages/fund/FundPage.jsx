@@ -11,7 +11,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components';
 import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent, ImportForm,
-    Search, ListBox, FundDetail} from 'components';
+    Search, ListBox, FundDetail, FundDetailExt} from 'components';
 import {NodeTabs, FundTreeTabs} from 'components';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -238,11 +238,14 @@ var FundPage = class FundPage extends AbstractReactComponent {
             <FundDetail
                 fundDetail={fundRegion.fundDetail}
                 focus={focus}
-                />
+            />
         )
 
         var rightPanel = (
-            <div>...</div>
+            <FundDetailExt
+                fundDetail={fundRegion.fundDetail}
+                focus={focus}
+            />
         )
 
         return (

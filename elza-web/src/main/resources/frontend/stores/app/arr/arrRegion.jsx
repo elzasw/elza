@@ -33,7 +33,7 @@ const initialState = {
 }
 
 function selectFundTab(state, action) {
-    var index = indexById(state.funds, action.fund.id);
+    var index = indexById(state.funds, action.fund.versionId, "versionId");
     if (index == null) {    // není zatím v seznamu, přidáme jí tam
         return {
             ...state,
@@ -194,7 +194,7 @@ export default function arrRegion(state = initialState, action) {
 
             var i = 0;
             state.funds.forEach(fund => {
-                if (fund.fundId = action.fundId) {
+                if (fund.id = action.fundId) {
                     state = processFund(state, action, i++);
                 }
             });
@@ -204,7 +204,7 @@ export default function arrRegion(state = initialState, action) {
             var index = state.activeIndex;
             return processFund(state, action, index);
         case types.FUND_CLOSE_FUND_TAB:
-            var index = indexById(state.funds, action.fund.id);
+            var index = indexById(state.funds, action.fund.versionId, "versionId");
             var newActiveIndex = state.activeIndex;
             if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
                 newActiveIndex = selectedAfterClose(state.funds, index);
@@ -303,7 +303,7 @@ export default function arrRegion(state = initialState, action) {
             var funds = state.funds;
             var update = false;
 
-            funds.forEach(fund => {if (fund.id == action.versionId) {
+            funds.forEach(fund => {if (fund.versionId == action.versionId) {
                 if (fund.closed == false) {
                     update = true;
                     fund.closed = true;
