@@ -419,10 +419,10 @@ return true;
             return;
         }
         const file = fileList[0];
-        if (!file.type.match('.*kml.*')) {
+        /*if (!file.type.match('.*kml.*')) {
             this.dispatch(addToastrDanger('Invalid File', 'Only KML is supported'));
             return;
-        }
+        }*/
 
         this.props.onDescItemUpload(file);
         this.refs.uploadInput.value = null;
@@ -726,7 +726,7 @@ return true;
                 addAction = <div className='desc-item-type-actions'>
                     <NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton>
                     <NoFocusButton onClick={this.handleSelectFile} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-upload" /></NoFocusButton>
-                    <input className="hidden" type="file" ref='uploadInput' onChange={this.handleUpload} />
+                    <input className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleUpload} />
                 </div>
             } else {
                 addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>
