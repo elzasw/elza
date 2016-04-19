@@ -72,7 +72,7 @@ var FundDetailExt = class FundDetailExt extends AbstractReactComponent {
             )
         })
 
-        const histOutputs = fundDetail.validNamedOutputs.map(namedOutput => {
+        const histOutputs = fundDetail.historicalNamedOutputs.map(namedOutput => {
             return (
                 <div className="output with-versions">
                     <div className="output-label">{namedOutput.name}</div>
