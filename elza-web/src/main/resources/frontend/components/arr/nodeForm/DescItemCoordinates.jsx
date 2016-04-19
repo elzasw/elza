@@ -90,6 +90,7 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
                         this.state.type == "POINT" ?
                             <input
                                 {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                                ref='focusEl'
                                 disabled={locked}
                                 onChange={this.handleChangeData.bind(this)}
                                 value={this.state.data}
