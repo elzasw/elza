@@ -1,4 +1,5 @@
 import * as types from 'actions/constants/ActionTypes';
+import {indexById} from 'stores/app/utils.jsx'
 
 const initialState = {
     dirty: false,
@@ -27,19 +28,30 @@ export default function fundNodesPolicy(state = initialState, action = {}) {
             };
 
         case types.CHANGE_VISIBLE_POLICY:
-        case types.STORE_LOAD:
             return {
                 ...state,
                 dirty: true,
             }
 
-        /*case types.STORE_LOAD:
-            return {
-                ...state,
-                dirty: true,
+        case types.CHANGE_CONFORMITY_INFO:
+
+            var update = false;
+
+            for(var i = 0; i < action.nodeIds; i++) {
+                if (indexById(state.items, action.nodeIds[i]) != null) {
+                    update = true;
+                    break;
+                }
             }
-        case types.STORE_SAVE:
-            return state;*/
+
+            if (update) {
+                return {
+                    ...state,
+                    dirty: true,
+                }
+            }
+
+            return state;
 
         default:
             return state;

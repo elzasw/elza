@@ -328,7 +328,6 @@ export default function arrRegion(state = initialState, action) {
         case types.FUND_FUND_NODES_POLICY_RECEIVE:
         case types.FUND_FUND_NODES_POLICY_REQUEST:
             var index = indexById(state.funds, action.versionId, "versionId");
-            console.warn(index, action.versionId);
             return processFund(state, action, index);
 
         default:

@@ -213,7 +213,8 @@ export function fund(state, action) {
                 fundTree: fundTree(state.fundTree, action),
                 nodes: nodes(state.nodes, action),
                 versionValidation: versionValidation(state.versionValidation, action),
-                bulkActions: bulkActions(state.bulkActions, action)
+                bulkActions: bulkActions(state.bulkActions, action),
+                fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action)
             }
             return consolidateState(state, result);
         case types.FUND_FUND_APPROVE_VERSION:
