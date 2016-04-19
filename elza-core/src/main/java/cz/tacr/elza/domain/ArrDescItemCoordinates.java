@@ -1,5 +1,8 @@
 package cz.tacr.elza.domain;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTWriter;
+
 /**
  * Rozšiřuje atribut archivního popisu o jeho hodnotu.
  *
@@ -8,20 +11,20 @@ package cz.tacr.elza.domain;
  */
 public class ArrDescItemCoordinates extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemCoordinates<ArrChange, RulDescItemType, RulDescItemSpec, ArrNode> {
 
-    private String value;
+    private Geometry value;
 
     @Override
-    public String getValue() {
+    public Geometry getValue() {
         return value;
     }
 
     @Override
-    public void setValue(String value) {
+    public void setValue(Geometry value) {
         this.value = value;
     }
 
     @Override
     public String toString() {
-        return value;
+        return new WKTWriter().writeFormatted(value);
     }
 }

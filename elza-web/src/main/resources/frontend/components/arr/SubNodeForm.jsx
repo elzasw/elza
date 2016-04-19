@@ -12,7 +12,8 @@ import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
 import {fundSubNodeFormDescItemTypeAdd, fundSubNodeFormValueChange, fundSubNodeFormDescItemTypeDelete,
         fundSubNodeFormValueChangeSpec,fundSubNodeFormValueBlur, fundSubNodeFormValueFocus, fundSubNodeFormValueAdd,
-        fundSubNodeFormValueDelete, fundSubNodeFormValuesCopyFromPrev, fundSubNodeFormValueChangePosition} from 'actions/arr/subNodeForm'
+        fundSubNodeFormValueDelete, fundSubNodeFormValuesCopyFromPrev, fundSubNodeFormValueChangePosition,
+        fundSubNodeFormValueUploadCoordinates} from 'actions/arr/subNodeForm'
 var classNames = require('classnames');
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import DescItemString from './nodeForm/DescItemString'
@@ -340,6 +341,16 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     /**
+     * Přidání nové hodnoty coordinates pomocí uploadu
+     * @param descItemTypeId {Integer} Id descItemTypeId
+     * @param file {File} Soubor
+     */
+    handleDescItemUpload(descItemTypeId, file) {
+        this.dispatch(fundSubNodeFormValueUploadCoordinates(this.props.versionId, this.props.nodeKey, descItemTypeId, file));
+    }
+
+
+    /**
      * Vytvoření nového obalu.
      *
      * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
@@ -658,6 +669,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onCreateRecord={this.handleCreateRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDetailRecord={this.handleDetailRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onDescItemUpload={this.handleDescItemUpload.bind(this, descItemType.id)}
                 onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChangePosition={this.handleChangePosition.bind(this, descItemGroupIndex, descItemTypeIndex)}

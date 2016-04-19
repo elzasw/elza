@@ -11,6 +11,10 @@
     <name>ELZA API</name>
 
     <dependencies>
+        <dependency>
+            <groupId>com.vividsolutions</groupId>
+            <artifactId>jts</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

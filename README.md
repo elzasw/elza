@@ -77,6 +77,25 @@ Aplikace je konfigurována pomocí souboru `elza.yaml`. Umístění konfiguračn
 * war Tomcat `webapps/elza/WEB-INF/classes`
 * embed načítá v aktuální cestě nebo složce config
 
+### Databázový server
+Od MT14 je nutné mít připravený databázový server pro datový typ Geometry.
+
+#### PostgreSQL
+Pro tento DB server je vyžadována verze 9.1 a vyšší a rozšíření [PostGis](http://postgis.net/).
+Po instalaci je nutné rozšíření zprovoznit přes ```psql``` nebo PgAdmin.
+Následující příkaz zprovozní rozšíření nad vybranou databází.
+```
+CREATE EXTENSION postgis;
+```
+#### MySQL
+Je vyžadována verze 5.0.1 - není potřeba žádná speciální instalace.
+
+#### Oracle
+Tento DB server je vyžadována verze Enterprise. Pouze verze Enterprise umí pracovat s datovým typem Geometry.
+
+#### MSSQL
+Je vyžadována verze MSSQL 2008 - není potřeba žádná speciální instalace.
+
 ### Databázové připojení
 Do konfigurace vložte nastavení datového zdroje. Při prvním připojení se datové struktury vytvoří automaticky.
 

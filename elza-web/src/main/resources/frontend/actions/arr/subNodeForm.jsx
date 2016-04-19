@@ -64,6 +64,32 @@ export function fundSubNodeFormValueAdd(versionId, nodeKey, valueLocation) {
 }
 
 /**
+ * Akce přidání coordinates jako DescItem - Probíhá uploadem - doplnění hodnot pomocí WS
+ * @param {int} versionId verze AS
+ * @param {int} nodeKey klíč záložky
+ * @param {int} descItemTypeId Konkrétní typ desc item
+ * @param {File} file Soubor k uploadu
+ */
+export function fundSubNodeFormValueUploadCoordinates(versionId, nodeKey, descItemTypeId, file) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var subNodeForm = getSubNodeFormStore(state, versionId, nodeKey);
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('fundVersionId', versionId);
+        formData.append('descItemTypeId', descItemTypeId);
+        formData.append('nodeId', subNodeForm.data.node.id);
+        formData.append('nodeVersion', subNodeForm.data.node.version);
+        WebApi.kmlImport(formData).then(() => {
+            this.dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successFund')));
+        }).catch(() => {
+            //TBD
+        });
+    }
+}
+
+/**
  * Akce validace hodnoty na serveru - týká se jen hodnot datace.
  * @param {int} versionId verze AS
  * @param {int} nodeKey Klíč záložky
@@ -100,7 +126,7 @@ function fundSubNodeFormValueValidateResult(versionId, nodeKey, valueLocation, r
 }
 
 /**
- * Akce změny hodnotya její promítnutí do store, případné uložení na server, pokud je toto vynuceno parametrem forceStore.
+ * Akce změny hodnoty a její promítnutí do store, případné uložení na server, pokud je toto vynuceno parametrem forceStore.
  * @param {int} versionId verze AS
  * @param {int} nodeKey Klíč záložky
  * @param {Object} valueLocation konkrétní umístění hodnoty

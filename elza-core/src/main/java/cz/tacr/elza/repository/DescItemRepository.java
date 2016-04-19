@@ -104,6 +104,9 @@ public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer>,
     @Query("SELECT i FROM arr_desc_item i WHERE i.descItemObjectId = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByDescItemObjectIdAndLockChangeId(Integer descItemObjectId, ArrChange change);
 
+    @Query("SELECT i FROM arr_desc_item i WHERE i.descItemObjectId = ?1 AND i.createChange >= ?2 AND (i.deleteChange >= ?2 OR i.deleteChange IS NULL)")
+    List<ArrDescItem> findByDescItemObjectIdAndBetweenVersionChangeId(Integer descItemObjectId, ArrChange change);
+
     @Query(value = "SELECT max(i.descItemObjectId) FROM arr_desc_item i")
     Integer findMaxDescItemObjectId();
 

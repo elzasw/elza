@@ -4,97 +4,116 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent} from 'components';
+import {AbstractReactComponent, KmlMapDialog, i18n} from 'components';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils'
+import {Button} from 'react-bootstrap';
 
 var DescItemCoordinates = class DescItemCoordinates extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleChange', 'focus');
+        this.bindMethods('handleChangeData','handleChangeSelect', 'focus', 'getStringType', 'getDownloadUrl');
 
-        this.state = {
-            values: this.splitValue(props.descItem.value)
+        this.state = this.parseData(props.descItem.value);
+    }
+
+    parseData(value) {
+        if (value === null) {
+            return {type: "POINT", data:null};
         }
+        const state = {type: null, data: null};
+        const start = value.indexOf("(");
+        state.type = value.substr(0, start).trim();
+        if (state.type === "POINT") {
+            state.data = value.substr(start+1,value.length-start-2).split(", ").join("\n").split(" ").join(",");
+        } else {
+            state.data = value.substr(start+2,value.length-start-4);
+        }
+        return state;
     }
 
     componentWillReceiveProps(nextProps) {
-        this.setState({
-            values: this.splitValue(nextProps.descItem.value)
-        })
+        this.setState(this.parseData(nextProps.descItem.value))
     }
 
     focus() {
         this.refs.focusEl.focus()
     }
 
-    handleChange(valueIndex, e) {
-        var newValues = {...this.state.values};
-
-        switch (valueIndex) {
-            case 0:
-                newValues.value1 = e.target.value;
-                break;
-            case 1:
-                newValues.value2 = e.target.value;
-                break;
-        }
-
-        var newValue = "x=" + newValues.value1 + "&y=" + newValues.value2;
-        if (newValue != this.props.descItem.value) {
-            this.props.onChange(newValue);
+    handleChangeData(e) {
+        const val = this.getDataFormatted(this.state.type, e.target.value);
+        if (val != this.props.descItem.value) {
+            this.props.onChange(val);
         }
     }
 
-    splitValue(value) {
-        var values;
-        
-        if (typeof value !== 'undefined' && value !== null) {
-            values = value.split("&");
-        } else {
-            values = ['', '']
+    getDataFormatted(type, val) {
+        var points = val.split(",").join(" ").split("\n").join(", ");
+        if (type === "POLYGON") {
+            points = "(" + points + ", " + points.substr(0, points.indexOf(",")) + ")";
         }
-        
-        var result = {
-            value1: values[0],
-            value2: values[1],
-        }
+        return type + "(" + points + ")";
+    }
 
-        if (result.value1.startsWith("x=")) {
-            result.value1 = result.value1.substring(2);
+    handleChangeSelect(e) {
+        const val = this.getDataFormatted(e.target.value, this.state.data);
+        if (val != this.props.descItem.value) {
+            this.props.onChange(val);
         }
-        if (result.value2.startsWith("y=")) {
-            result.value2 = result.value2.substring(2);
-        }
+    }
 
-        return result;
+    getStringType() {
+        switch (this.state.type) {
+            case "POINT":
+                return "B";
+            case "POLYGON":
+                return "P";
+            case "LINESTRING":
+                return "L";
+            default:
+                return "N";
+        }
+    }
+
+    getDownloadUrl() {
+        return window.location.origin + "/api/kmlManagerV1/" + this.props.descItem.descItemObjectId + "/" + this.props.fundVersionId + "/exportDescItemCoordinates";
     }
 
     render() {
         const {descItem, locked} = this.props;
-
         return (
-            <div className='desc-item-value  desc-item-value-parts'>
-                <input
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, ['part1'])}
-                    ref='focusEl'
-                    type="text"
-                    disabled={locked}
-                    value={this.state.values.value1}
-                    onChange={this.handleChange.bind(this, 0)}
-                />
-                <input
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, ['part2'])}
-                    type="text"
-                    disabled={locked}
-                    value={this.state.values.value2}
-                    onChange={this.handleChange.bind(this, 1)}
-                />
+            <div >
+                <div className='desc-item-value  desc-item-value-parts'>
+                    <Button bsStyle="default" disabled>{this.getStringType()}</Button>
+                    {
+                        this.state.type == "POINT" ?
+                            <input
+                                {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                                disabled={locked}
+                                onChange={this.handleChangeData.bind(this)}
+                                value={this.state.data}
+                            />: <div>
+                            <span>{i18n('subNodeForm.countOfCoordinates', this.state.data)}</span>
+                            <Button bsStyle="default" href={this.getDownloadUrl()}><i className="fa fa-download" /></Button>
+                        </div>
+                    }
+                </div>
             </div>
         )
     }
-}
+};
 
-module.exports = connect(null, null, null, { withRef: true })(DescItemCoordinates);
+function mapStateToProps(state) {
+    const {arrRegion} = state;
+    var fundVersionId = null;
+    if (arrRegion.activeIndex != null) {
+        fundVersionId = arrRegion.funds[arrRegion.activeIndex].versionId;
+    }
+
+    return {
+        fundVersionId: fundVersionId
+    }
+}
+module.exports = connect(mapStateToProps, null, null, { withRef: true })(DescItemCoordinates);
 

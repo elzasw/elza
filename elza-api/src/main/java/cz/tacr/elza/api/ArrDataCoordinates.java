@@ -1,5 +1,7 @@
 package cz.tacr.elza.api;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import java.io.Serializable;
 
 
@@ -11,8 +13,8 @@ import java.io.Serializable;
 public interface ArrDataCoordinates extends Serializable{
 
 
-    String getValue();
+    Geometry getValue();
 
 
-    void setValue(final String value);
+    void setValue(final Geometry value);
 }

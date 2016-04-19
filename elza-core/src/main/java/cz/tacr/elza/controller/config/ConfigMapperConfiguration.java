@@ -2,12 +2,18 @@ package cz.tacr.elza.controller.config;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateSequence;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
+import com.vividsolutions.jts.io.WKTWriter;
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.domain.*;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
@@ -32,18 +38,6 @@ import cz.tacr.elza.controller.vo.nodes.DescItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemCoordinatesVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemDecimalVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemEnumVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemIntVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPacketVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPartyRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemRecordRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitdateVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitidVO;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.repository.CalendarTypeRepository;
@@ -140,8 +134,33 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().register();
 
-        mapperFactory.classMap(ArrDescItemCoordinates.class, ArrDescItemCoordinatesVO.class).byDefault().field(
-                "descItemId", "id").register();
+
+        mapperFactory.classMap(ArrDescItemCoordinates.class, ArrDescItemCoordinatesVO.class).customize(
+                new CustomMapper<ArrDescItemCoordinates, ArrDescItemCoordinatesVO>() {
+            @Override
+            public void mapAtoB(final ArrDescItemCoordinates coordinates,
+                                final ArrDescItemCoordinatesVO coordinatesVO,
+                                final MappingContext context) {
+                String type = coordinates.getValue().getGeometryType().toUpperCase();
+                if (type.equals("POINT")) {
+                    coordinatesVO.setValue(new WKTWriter().writeFormatted(coordinates.getValue()));
+                } else {
+                    coordinatesVO.setValue(type + "( " + coordinates.getValue().getCoordinates().length + " )");
+                }
+            }
+
+            @Override
+            public void mapBtoA(final ArrDescItemCoordinatesVO coordinatesVO,
+                                final ArrDescItemCoordinates coordinates,
+                                final MappingContext context) {
+                WKTReader reader = new WKTReader();
+                try {
+                    coordinates.setValue(reader.read(coordinatesVO.getValue()));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).field("descItemId", "id").exclude("value").byDefault().register();
         mapperFactory.classMap(ArrDescItemEnum.class, ArrDescItemEnumVO.class).byDefault().field(
                 "descItemId", "id").register();
         mapperFactory.classMap(ArrDescItemFormattedText.class, ArrDescItemFormattedTextVO.class).byDefault().field(

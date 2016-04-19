@@ -13,6 +13,7 @@
     <properties>
         <vaadin.theme.path>VAADIN/themes/elza</vaadin.theme.path>
         <drools.version>6.1.0.Final</drools.version>
+        <geotools.version>14.3</geotools.version>
     </properties>
 
     <dependencies>
@@ -95,7 +96,11 @@
 		<dependency>
 		  <groupId>org.hibernate</groupId>
 		  <artifactId>hibernate-entitymanager</artifactId>
-		</dependency>    
+		</dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-spatial</artifactId>
+        </dependency>
         <!-- TODO Burianek dokumentace Rest API
         <dependency>
             <groupId>io.springfox</groupId>
@@ -142,6 +147,22 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-geojson</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools.xsd</groupId>
+            <artifactId>gt-xsd-core</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools.xsd</groupId>
+            <artifactId>gt-xsd-kml</artifactId>
+            <version>${geotools.version}</version>
         </dependency>
 
     </dependencies>

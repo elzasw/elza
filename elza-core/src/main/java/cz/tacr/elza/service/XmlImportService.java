@@ -30,6 +30,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamSource;
 
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -471,7 +473,13 @@ public class XmlImportService {
                     ArrDataCoordinates arrData = new ArrDataCoordinates();
                     arrData.setDataType(dataType);
                     arrData.setDescItem(arrDescItem);
-                    arrData.setValue(XmlImportUtils.trimStringValue(descItemCoordinates.getValue(), StringLength.LENGTH_250, stopOnError));
+                    try {
+                        arrData.setValue(new WKTReader().read(descItemCoordinates.getValue()));
+                    } catch (ParseException e) {
+                        if (stopOnError) {
+                            throw new InvalidDataException(e.getMessage());
+                        }
+                    }
 
                     dataRepository.save(arrData);
                 } else if (descItem instanceof DescItemDecimal) {

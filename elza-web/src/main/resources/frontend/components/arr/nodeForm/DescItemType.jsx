@@ -6,8 +6,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {Utils, Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components';
 import {Tooltip, OverlayTrigger} from 'react-bootstrap';
+import {addToastrDanger} from 'components/shared/toastr/ToastrActions'
 import {connect} from 'react-redux'
 var classNames = require('classnames');
+import {WebApi} from 'actions'
 import DescItemString from './DescItemString'
 import DescItemUnitid from './DescItemUnitid'
 import DescItemText from './DescItemText'
@@ -50,7 +52,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 'handleChange', 'handleChangeSpec', 'handleCreatePacket', 'handleCreateParty', 'handleCreateRecord',
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
                 'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver',
-                'handleDragLeave', 'getShowDeleteDescItemType', 'getShowDeleteDescItem', 'focus', 'handleDescItemTypeShortcuts', 'handleDescItemShortcuts');
+                'handleDragLeave', 'getShowDeleteDescItemType', 'getShowDeleteDescItem', 'focus', 'handleDescItemTypeShortcuts',
+                'handleDescItemShortcuts', 'handleSelectFile', 'handleUpload');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -405,6 +408,26 @@ return true;
         }
     }
 
+    handleSelectFile() {
+        this.refs.uploadInput.click();
+    }
+
+    handleUpload() {
+        const fileList = this.refs.uploadInput.files;
+
+        if (fileList.length != 1) {
+            return;
+        }
+        const file = fileList[0];
+        if (!file.type.match('.*kml.*')) {
+            this.dispatch(addToastrDanger('Invalid File', 'Only KML is supported'));
+            return;
+        }
+
+        this.props.onDescItemUpload(file);
+        this.refs.uploadInput.value = null;
+    }
+
     /**
      * Renderování hodnoty atributu.
      * @param descItemType {Object} atribut
@@ -492,7 +515,7 @@ return true;
                 break;
             case 'UNITID':
                 parts.push(<DescItemUnitid key={itemComponentKey}
-                    {...descItemProps} 
+                    {...descItemProps}
                     />)
                 break;
 
@@ -698,7 +721,17 @@ return true;
 
         var addAction;
         if (infoType.rep === 1 && !(locked || closed)) {
-            addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>
+            if (this.props.rulDataType.code === "COORDINATES") {
+                console.log(React.createElement('input', { type: 'file' }));
+                addAction = <div className='desc-item-type-actions'>
+                    <NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton>
+                    <NoFocusButton onClick={this.handleSelectFile} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-upload" /></NoFocusButton>
+                    <input className="hidden" type="file" ref='uploadInput' onChange={this.handleUpload} />
+                </div>
+            } else {
+                addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>
+            }
+
         }
 
         var showDeleteDescItemType = this.getShowDeleteDescItemType()
@@ -757,6 +790,7 @@ DescItemType.propTypes = {
     onDescItemTypeCopyFromPrev: React.PropTypes.func.isRequired,
     onDescItemRemove: React.PropTypes.func.isRequired,
     onDescItemAdd: React.PropTypes.func.isRequired,
+    onDescItemUpload: React.PropTypes.func.isRequired,
     refType: React.PropTypes.object.isRequired,
     infoType: React.PropTypes.object.isRequired,
     descItemType: React.PropTypes.object.isRequired,

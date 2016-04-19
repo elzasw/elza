@@ -229,6 +229,8 @@ var messages = {
     "subNodeForm.addSubNode": "JP pod",
     "subNodeForm.deleteNode": "Smazat JP",
     "subNodeForm.visiblePolicy": "Způsob kontroly",
+    
+    "subNodeForm.countOfCoordinates": "Počet bodů: {0}",
 
     "subNodeForm.descItemTypeAdd": "Přidat prvek",
     "subNodeForm.descItemTypeUnlockAll": "Odemknout vše",

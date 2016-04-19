@@ -2,17 +2,13 @@ package cz.tacr.elza.service;
 
 import java.beans.PropertyDescriptor;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -269,6 +265,39 @@ public class DescriptionItemService {
     }
 
     /**
+     * Vytvoření hodnoty atributu.
+     * - s kontrolou verze uzlu
+     * - se spuštěním validace uzlu
+     *
+     * @param descItems              hodnota atributu
+     * @param nodeId                identifikátor uzlu
+     * @param nodeVersion           verze uzlu (optimistické zámky)
+     * @param fundVersionId   identifikátor verze archivní pomůcky
+     * @return vytvořená hodnota atributu
+     */
+    public List<ArrDescItem> createDescriptionItems(final List<ArrDescItem> descItems,
+                                             final Integer nodeId,
+                                             final Integer nodeVersion,
+                                             final Integer fundVersionId) {
+        Assert.notNull(descItems);
+        Assert.notEmpty(descItems);
+        Assert.notNull(nodeId);
+        Assert.notNull(nodeVersion);
+        Assert.notNull(fundVersionId);
+
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+        Assert.notNull(node);
+
+        // uložení uzlu (kontrola optimistických zámků)
+        node.setVersion(nodeVersion);
+        saveNode(node);
+
+        return createDescriptionItems(descItems, node, version, null);
+    }
+
+    /**
      * Vytvoření hodnoty atributu. Při ukládání nedojde ke zvýšení verze uzlu.
      * - se spuštěním validace uzlu
      *
@@ -292,13 +321,50 @@ public class DescriptionItemService {
         ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, version, change);
 
         // validace uzlu
-        ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(descItem.getNode().getNodeId()),
-                NodeTypeOperation.SAVE_DESC_ITEM, Arrays.asList(descItem), null, null);
+        ruleService.conformityInfo(version.getFundVersionId(), Collections.singletonList(descItem.getNode().getNodeId()),
+                NodeTypeOperation.SAVE_DESC_ITEM, Collections.singletonList(descItem), null, null);
 
         // sockety
         publishChangeDescItem(version, descItemCreated);
 
         return descItemCreated;
+    }
+
+    /**
+     * Vytvoření hodnoty atributu. Při ukládání nedojde ke zvýšení verze uzlu.
+     * - se spuštěním validace uzlu
+     *
+     * @param descItems hodnota atributu
+     * @param node     uzel, kterému přidáme hodnotu
+     * @param version  verze stromu
+     * @return vytvořená hodnota atributu
+     */
+    public List<ArrDescItem> createDescriptionItems(final List<ArrDescItem> descItems,
+                                             final ArrNode node,
+                                             final ArrFundVersion version,
+                                             @Nullable final ArrChange createChange) {
+
+        ArrChange change = createChange == null ? arrangementService.createChange() : createChange;
+        List<ArrDescItem> createdItems = new ArrayList<>();
+        for (ArrDescItem descItem :
+                descItems) {
+            descItem.setNode(node);
+            descItem.setCreateChange(change);
+            descItem.setDeleteChange(null);
+            descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+
+            ArrDescItem created = createDescriptionItemWithData(descItem, version, change);
+            createdItems.add(created);
+
+            // sockety
+            publishChangeDescItem(version, created);
+        }
+
+        // validace uzlu
+        ruleService.conformityInfo(version.getFundVersionId(), Collections.singletonList(node.getNodeId()),
+                NodeTypeOperation.SAVE_DESC_ITEM, createdItems, null, null);
+
+        return createdItems;
     }
 
     /**
@@ -866,9 +932,6 @@ public class DescriptionItemService {
             } else if (data.getDataType().getCode().equals("UNITID")) {
                 ArrDataUnitid unitId = (ArrDataUnitid) data;
                 value = new TitleValue(unitId.getValue());
-            } else if (data.getDataType().getCode().equals("COORDINATES")) {
-                ArrDataCoordinates coordinates = (ArrDataCoordinates) data;
-                value = new TitleValue(coordinates.getValue());
             } else if (data.getDataType().getCode().equals("INT")) {
                 ArrDataInteger intData = (ArrDataInteger) data;
                 value = new TitleValue(intData.getValue().toString());

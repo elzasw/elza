@@ -635,6 +635,10 @@ class WebApi{
         return AjaxUtils.ajaxCallRaw('/api/xmlImportManagerV2/import', {}, "POST", data);
     }
 
+    kmlImport(data) {
+        return AjaxUtils.ajaxCallRaw('/api/kmlManagerV1/import', {}, "POST", data);
+    }
+
     getInstitutions() {
         return AjaxUtils.ajaxGet('/api/partyManagerV2/institutions');
     }

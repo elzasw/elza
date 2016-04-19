@@ -4,13 +4,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import com.vividsolutions.jts.geom.Geometry;
+import org.hibernate.annotations.Type;
 import org.hibernate.search.annotations.Indexed;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
-
 
 /**
  * popis {@link cz.tacr.elza.api.ArrDataCoordinates}.
@@ -23,21 +22,17 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataCoordinates extends ArrData implements cz.tacr.elza.api.ArrDataCoordinates {
 
-    @Column(length = StringLength.LENGTH_250, nullable = false)
-    private String value;
+    @Column(nullable = false)
+    @Type(type="org.hibernate.spatial.GeometryType")
+    private Geometry value;
 
     @Override
-    public String getValue() {
+    public Geometry getValue() {
         return value;
     }
 
     @Override
-    public void setValue(final String value) {
+    public void setValue(final Geometry value) {
         this.value = value;
-    }
-
-    @Override
-    public String getFulltextValue() {
-        return value;
     }
 }
