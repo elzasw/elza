@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.api.ArrPacket;
+
 /**
  * VO obalu.
  *
@@ -24,9 +26,9 @@ public class ArrPacketVO {
     private String storageNumber;
 
     /**
-     * je obal nevalidní?
+     * stav obalu
      */
-    private Boolean invalidPacket;
+    private ArrPacket.State state;
 
     public Integer getId() {
         return id;
@@ -52,11 +54,11 @@ public class ArrPacketVO {
         this.storageNumber = storageNumber;
     }
 
-    public Boolean getInvalidPacket() {
-        return invalidPacket;
+    public ArrPacket.State getState() {
+        return state;
     }
 
-    public void setInvalidPacket(final Boolean invalidPacket) {
-        this.invalidPacket = invalidPacket;
+    public void setState(final ArrPacket.State state) {
+        this.state = state;
     }
 }

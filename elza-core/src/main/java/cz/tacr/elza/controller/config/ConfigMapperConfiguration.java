@@ -267,7 +267,7 @@ public class ConfigMapperConfiguration {
                                         final ArrPacketVO packetVO,
                                         final MappingContext context) {
                         packetVO.setId(packet.getPacketId());
-                        packetVO.setInvalidPacket(packet.getInvalidPacket());
+                        packetVO.setState(packet.getState());
                         if (packet.getPacketType() != null) {
                             packetVO.setPacketTypeId(packet.getPacketType().getPacketTypeId());
                         }
@@ -279,7 +279,7 @@ public class ConfigMapperConfiguration {
                                         final ArrPacket packet,
                                         final MappingContext context) {
                         packet.setPacketId(packetVO.getId());
-                        packet.setInvalidPacket(packetVO.getInvalidPacket());
+                        packet.setState(packetVO.getState());
                         packet.setStorageNumber(packetVO.getStorageNumber());
                     }
                 }

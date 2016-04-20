@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import cz.tacr.elza.api.ArrPacket;
 import org.apache.commons.lang.math.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -136,7 +137,7 @@ public class XmlDataGenerator {
     private Packet createPacket(int index) {
         Packet packet = new Packet();
 
-        packet.setInvalid(RandomUtils.nextBoolean());
+        packet.setState(ArrPacket.State.OPEN);
         packet.setPacketTypeCode("packetTypeCode");
         packet.setStorageNumber("storageNumber-" + index);
 

@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrPacket;
 
 import java.util.List;
@@ -32,4 +33,6 @@ public interface PacketRepositoryCustom {
      */
     long findPacketByTextAndTypeCount(String searchPacket, Integer packetTypeId);
 
+
+    List<ArrPacket> findPackets(ArrFund fund, Integer limit, String text, ArrPacket.State state);
 }

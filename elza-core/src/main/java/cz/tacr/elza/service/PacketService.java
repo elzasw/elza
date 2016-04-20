@@ -1,7 +1,12 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.repository.DataPacketRefRepository;
+import cz.tacr.elza.utils.ObjectListIterator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -16,6 +21,8 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+
+import javax.annotation.Nullable;
 
 
 /**
@@ -38,6 +45,9 @@ public class PacketService {
 
     @Autowired
     private EventNotificationService eventNotificationService;
+
+    @Autowired
+    private DataPacketRefRepository dataPacketRefRepository;
 
     /**
      * Vrací seznam typů obalů.
@@ -124,15 +134,142 @@ public class PacketService {
         return packet;
     }
 
-    /**
-     * Deaktivace obalu.
-     *
-     * @param packet deaktivovaný obal
-     * @return deaktivovaný obal
-     */
-    public ArrPacket deactivatePacket(final ArrPacket packet) {
-        Assert.notNull(packet);
-        packet.setInvalidPacket(Boolean.TRUE);
-        return updatePacket(packet);
+    public List<ArrPacket> generatePackets(final ArrFund fund,
+                                           final RulPacketType packetType,
+                                           final String prefix,
+                                           final Integer fromNumber,
+                                           final Integer lenNumber,
+                                           final Integer count,
+                                           final Integer[] packetIds) {
+        Assert.notNull(fund);
+        Assert.notNull(packetType);
+        if (count <= 0
+            || fromNumber < 0
+            || lenNumber <= 0
+            || (packetIds != null && packetIds.length <= 0)
+            || prefix.length() < 1) {
+            throw new IllegalArgumentException("Neplatný vstup");
+        }
+
+        List<ArrPacket> packets = new ArrayList<>();
+
+        List<String> storageNumbers = packetRepository.findStorageNumbers(fund, prefix, Arrays.asList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED));
+        if (packetIds == null) {
+            for (int i = 0; i < count; i++) {
+                ArrPacket packet = new ArrPacket();
+                packet.setFund(fund);
+                packet.setState(ArrPacket.State.OPEN);
+                packet.setPacketType(packetType);
+                String storageNumber = createAndCheckStorageNumber(prefix, lenNumber, storageNumbers, fromNumber + i);
+                storageNumbers.add(storageNumber);
+                packet.setStorageNumber(storageNumber);
+                packets.add(packet);
+            }
+            packetRepository.save(packets);
+        } else {
+
+            ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<>(Arrays.asList(packetIds));
+            while (nodeIdsIterator.hasNext()) {
+                packets.addAll(packetRepository.findPackets(fund, nodeIdsIterator.next()));
+            }
+
+            for (int i = 0; i < packets.size(); i++) {
+                ArrPacket packet = packets.get(i);
+                packet.setPacketType(packetType);
+                String storageNumber = createAndCheckStorageNumber(prefix, lenNumber, storageNumbers, fromNumber + i);
+                storageNumbers.add(storageNumber);
+                packet.setStorageNumber(storageNumber);
+            }
+            packetRepository.save(packets);
+        }
+
+        return packets;
+
     }
+
+    private String createAndCheckStorageNumber(final String prefix,
+                                               final Integer lenNumber,
+                                               final List<String> storageNumbers,
+                                               final int number) {
+        String storageNumber = prefix + String.format("%0" + lenNumber + "d", number);
+        checkStorageNumber(storageNumbers, storageNumber);
+        return storageNumber;
+    }
+
+    private void checkStorageNumber(final List<String> storageNumbers, final String storageNumber) {
+        if (storageNumbers.contains(storageNumber)) {
+            throw new IllegalStateException("Packet " + storageNumber + " již existuje!");
+        }
+    }
+
+    public List<ArrPacket> findPackets(final ArrFund fund, @Nullable final String prefix, final ArrPacket.State state) {
+        Assert.notNull(fund);
+        Assert.notNull(state);
+        return packetRepository.findPackets(fund, prefix, state);
+    }
+
+    public List<ArrPacket> findPackets(final ArrFund fund, final Integer limit, @Nullable final String text) {
+        Assert.notNull(fund);
+        Assert.notNull(limit);
+        Assert.isTrue(limit > 0, "Limit musí být alespoň 1");
+        return packetRepository.findPackets(fund, limit, text, ArrPacket.State.OPEN);
+    }
+
+    public void deletePackets(final ArrFund fund, final Integer[] packetIds) {
+        Assert.notNull(fund);
+        Assert.notNull(packetIds);
+        Assert.isTrue(packetIds.length > 0, "Musí být alespoň jeden ke smazání");
+
+        ObjectListIterator<Integer> packetIdsIterator = new ObjectListIterator<>(Arrays.asList(packetIds));
+        while (packetIdsIterator.hasNext()) {
+            packetRepository.deletePackets(fund, packetIdsIterator.next());
+        }
+    }
+
+    public void setStatePackets(final ArrFund fund, final Integer[] packetIds, final ArrPacket.State state) {
+        Assert.notNull(fund);
+        Assert.notNull(packetIds);
+        Assert.notNull(state);
+        Assert.isTrue(packetIds.length > 0, "Musí být alespoň jeden ke změně stavu");
+
+        List<ArrPacket> packets = new ArrayList<>();
+        ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<>(Arrays.asList(packetIds));
+        while (nodeIdsIterator.hasNext()) {
+            packets.addAll(packetRepository.findPackets(fund, nodeIdsIterator.next()));
+        }
+
+        if (state.equals(ArrPacket.State.CANCELED)) {
+            ArrFundVersion openVersion = fund.getVersions().stream().filter(x -> x.getLockChange() == null).findFirst().get();
+
+            ObjectListIterator<Integer> packetIdsIterator = new ObjectListIterator<>(Arrays.asList(packetIds));
+            int count = 0;
+            while (packetIdsIterator.hasNext()) {
+                count += dataPacketRefRepository.countInFundVersionByPacketIds(packetIdsIterator.next(), openVersion);
+            }
+
+            if (count > 0) {
+                throw new IllegalArgumentException("V otevřené verzi fondu existuje přiřazený obal");
+            }
+
+            for (ArrPacket packet : packets) {
+                if (packet.getState().equals(state)) {
+                    throw new IllegalArgumentException("Nelze nastavovat stav na stejný: " + state);
+                }
+                packet.setState(state);
+            }
+        } else {
+            List<String> storageNumbers = packetRepository.findStorageNumbers(fund, Arrays.asList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED));
+            for (ArrPacket packet : packets) {
+                if (packet.getState().equals(state)) {
+                    throw new IllegalArgumentException("Nelze nastavovat stav na stejný: " + state);
+                }
+
+                checkStorageNumber(storageNumbers, packet.getStorageNumber());
+                packet.setState(state);
+            }
+        }
+
+        packetRepository.save(packets);
+    }
+
 }

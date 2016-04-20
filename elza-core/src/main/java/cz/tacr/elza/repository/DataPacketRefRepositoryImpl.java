@@ -49,4 +49,16 @@ public class DataPacketRefRepositoryImpl implements DataPacketRefRepositoryCusto
 
         return result;
     }
+
+    @Override
+    public int countInFundVersionByPacketIds(final List<Integer> packetIds, final ArrFundVersion version) {
+        String hql = "SELECT count(d) FROM arr_data_packet_ref d " +
+                "JOIN d.packet p JOIN d.descItem di JOIN di.node n JOIN n.fund f JOIN f.versions v " +
+                "WHERE v = :version AND p.packetId IN :packetIds";
+
+        Query query = entityManager.createQuery(hql);
+        query.setParameter("packetIds", packetIds);
+        query.setParameter("version", version);
+        return query.getFirstResult();
+    }
 }

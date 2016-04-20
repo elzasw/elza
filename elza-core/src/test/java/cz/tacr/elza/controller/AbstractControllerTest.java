@@ -424,7 +424,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Uzavření verze archivní pomůcky.
      *
      * @param fundVersion verze archivní pomůcky
-     * @param ruleSet   typ výstupu
+     * @param dateRange
      * @return nová verze ap
      */
     protected ArrFundVersionVO approveVersion(final ArrFundVersionVO fundVersion,

@@ -2,6 +2,8 @@ package cz.tacr.elza.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -54,8 +56,9 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrF
     @Column(length = StringLength.LENGTH_50, nullable = false)
     private String storageNumber;
 
-    @Column(nullable = false)
-    private Boolean invalidPacket;
+    @Column(length = 50, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private State state;
 
     @Override
     public Integer getPacketId() {
@@ -98,13 +101,13 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrF
     }
 
     @Override
-    public Boolean getInvalidPacket() {
-        return invalidPacket;
+    public State getState() {
+        return state;
     }
 
     @Override
-    public void setInvalidPacket(Boolean invalidPacket) {
-        this.invalidPacket = invalidPacket;
+    public void setState(State state) {
+        this.state = state;
     }
 
     @Override

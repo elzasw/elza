@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
@@ -12,6 +13,7 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import cz.tacr.elza.domain.ArrFund;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ArrPacket;
@@ -60,6 +62,25 @@ public class PacketRepositoryImpl implements PacketRepositoryCustom {
 
         return entityManager.createQuery(query)
                 .getSingleResult();
+    }
+
+    @Override
+    public List<ArrPacket> findPackets(final ArrFund fund, final Integer limit, final String text, final ArrPacket.State state) {
+        String like = "";
+        if (text != null) {
+            like = " upper(p.storageNumber) LIKE CONCAT('%', upper(:text), '%') AND ";
+        }
+        String hql = "SELECT p FROM arr_packet p WHERE p.fund = :fund AND " + like + " p.state = :state ORDER BY p.storageNumber ASC";
+
+        Query query = entityManager.createQuery(hql);
+        query.setMaxResults(limit);
+        query.setParameter("fund", fund);
+        if (text != null) {
+            query.setParameter("text", text);
+        }
+        query.setParameter("state", state);
+
+        return query.getResultList();
     }
 
     /**

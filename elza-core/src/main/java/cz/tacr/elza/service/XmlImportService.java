@@ -819,7 +819,7 @@ public class XmlImportService {
     private ArrPacket importPacket(Packet packet, ArrFund fund, boolean stopOnError) throws InvalidDataException {
         ArrPacket arrPacket = new ArrPacket();
         arrPacket.setFund(fund);
-        arrPacket.setInvalidPacket(packet.isInvalid());
+        arrPacket.setState(packet.getState());
 
         String packetTypeCode = packet.getPacketTypeCode();
         if (packetTypeCode != null) {

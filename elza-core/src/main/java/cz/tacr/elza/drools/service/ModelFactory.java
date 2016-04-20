@@ -105,7 +105,7 @@ public class ModelFactory {
 
         Packet result = new Packet();
         result.setStorageNumber(packet.getStorageNumber());
-        result.setInvalidPacket(packet.getInvalidPacket());
+        result.setState(packet.getState());
 
         if (packet.getPacketType() != null) {
             RulPacketType packetType = packet.getPacketType();

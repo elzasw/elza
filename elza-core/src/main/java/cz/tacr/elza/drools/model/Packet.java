@@ -1,5 +1,7 @@
 package cz.tacr.elza.drools.model;
 
+import cz.tacr.elza.api.ArrPacket;
+
 /**
  * Objekt obalu atributu.
  *
@@ -9,7 +11,7 @@ package cz.tacr.elza.drools.model;
 public class Packet {
 
     private String storageNumber;
-    private boolean invalidPacket;
+    private ArrPacket.State state;
     private VOPacketType packetType;
 
     public String getStorageNumber() {
@@ -20,12 +22,12 @@ public class Packet {
         this.storageNumber = storageNumber;
     }
 
-    public boolean isInvalidPacket() {
-        return invalidPacket;
+    public ArrPacket.State getState() {
+        return state;
     }
 
-    public void setInvalidPacket(final boolean invalidPacket) {
-        this.invalidPacket = invalidPacket;
+    public void setState(final ArrPacket.State state) {
+        this.state = state;
     }
 
     public VOPacketType getPacketType() {

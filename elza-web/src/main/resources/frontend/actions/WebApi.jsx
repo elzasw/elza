@@ -443,21 +443,41 @@ class WebApi{
                 });
     }
 
-    getPackets(fundId) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/packets/' + fundId)
+    getPackets(fundId, text = null, limit = 100) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/packets/' + fundId + '/find/form', null, {'limit': limit, 'text': text})
                 .then(json=>{
                     return json
                 });
     }
 
+    findPackets(fundId, state = 'OPEN', prefix = null) {
+        var data = {
+            prefix,
+            state,
+        };
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/packets/' + fundId + '/find', null, data);
+    }
+
+    deletePackets(fundId, packetIds) {
+        return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/packets/' + fundId + '/find', null, {packetIds});
+    }
+
+    setStatePackets(fundId, packetIds, state) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/packets/' + fundId, null, {packetIds, state});
+    }
+
+    generatePackets(fundId, prefix, packetTypeId, fromNumber, lenNumber, count, packetIds) {
+        var data = {
+            prefix, packetTypeId, fromNumber, lenNumber, count, packetIds
+        };
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/packets/' + fundId + '/generate', null, data);
+    }
+
     insertPacket(fundId, storageNumber, packetTypeId, invalidPacket) {
-
-        var data = {packetTypeId: packetTypeId, storageNumber: storageNumber, invalidPacket: invalidPacket};
-
-        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/packets/' + fundId, {}, data)
-                .then(json=>{
-                    return json
-                });
+        var data = {
+            packetTypeId: packetTypeId, storageNumber: storageNumber, invalidPacket: invalidPacket
+        };
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/packets/' + fundId, {}, data);
     }
 
     getFundNodeForm1(versionId, nodeId) {

@@ -10,4 +10,6 @@ import cz.tacr.elza.domain.RulDescItemType;
 public interface DataPacketRefRepositoryCustom {
 
     List<ArrDataPacketRef> findByDataIdsAndVersionFetchPacket(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFundVersion version);
+
+    int countInFundVersionByPacketIds(List<Integer> packetIds, ArrFundVersion version);
 }

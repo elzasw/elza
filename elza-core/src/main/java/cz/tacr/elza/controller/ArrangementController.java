@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.service.PolicyService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -151,11 +152,15 @@ public class ArrangementController {
 
     @Autowired
     private DescItemSpecRepository descItemSpecRepository;
+
     @Autowired
     private FundRepository fundRepository;
 
     @Autowired
     private PolicyService policyService;
+
+    @Autowired
+    private PacketTypeRepository packetTypeRepository;
 
     /**
      * Seznam typů obalů.
@@ -171,22 +176,6 @@ public class ArrangementController {
     }
 
     /**
-     * Seznam obalů pro AP.
-     *
-     * @param fundId identifikátor AP
-     * @return obaly pro AP
-     */
-    @RequestMapping(value = "/packets/{fundId}",
-            method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ArrPacketVO> getPackets(@PathVariable(value = "fundId") final Integer fundId) {
-        Assert.notNull(fundId);
-        List<ArrPacket> packets = packetService.getPackets(fundId);
-        return factoryVo.createPacketList(packets);
-    }
-
-    /**
      * Vložení nového obalu pro AP.
      *
      * @param fundId  identifikátor AP
@@ -195,11 +184,11 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/packets/{fundId}",
-            method = RequestMethod.POST,
+            method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrPacketVO insertPacket(@PathVariable(value = "fundId") final Integer fundId,
-                                          @RequestBody final ArrPacketVO packetVO) {
+                                    @RequestBody final ArrPacketVO packetVO) {
         Assert.notNull(fundId);
         Assert.notNull(packetVO);
 
@@ -208,45 +197,121 @@ public class ArrangementController {
     }
 
     /**
-     * Smazání obalu.
+     * Vyhledání obalů podle textu - pro formulář JP.
      *
-     * @param fundId  identifikátor AP
-     * @param packetId      identfikátor obalu pro smazání
-     * @return obal
+     * @param fundId    id archivního fondu
+     * @param input     vstupní parametry
+     * @return  seznam obalů
      */
-    @Transactional
-    @RequestMapping(value = "/packets/{fundId}/{packetId}",
-            method = RequestMethod.DELETE,
+    @RequestMapping(value = "/packets/{fundId}/find/form",
+            method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrPacketVO deactivatePacket(@PathVariable(value = "fundId") final Integer fundId,
-                                        @PathVariable(value = "packetId") final Integer packetId) {
+    public List<ArrPacketVO> findPacketsForm(@PathVariable(value = "fundId") final Integer fundId,
+                                             @RequestBody final PacketFindFormParam input) {
         Assert.notNull(fundId);
-        Assert.notNull(packetId);
+        Assert.notNull(input);
+        Assert.notNull(input.getLimit());
 
-        ArrPacket packet = packetService.getPacket(fundId, packetId);
-        return factoryVo.createPacket(packetService.deactivatePacket(packet));
+        ArrFund fund = fundRepository.getOneCheckExist(fundId);
+        List<ArrPacket> packets = packetService.findPackets(fund, input.getLimit(), input.getText());
+        return factoryVo.createPacketList(packets);
     }
 
     /**
-     * Upravení obalu.
+     * Vyhledání obalů pro správu.
      *
-     * @param fundId identifikátor AP
-     * @param packetVO     obal
-     * @return obal
+     * @param fundId    id archivního fondu
+     * @param input     vstupní parametry
+     * @return seznam obalů
+     */
+    @RequestMapping(value = "/packets/{fundId}/find",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ArrPacketVO> findPackets(@PathVariable(value = "fundId") final Integer fundId,
+                                         @RequestBody final PacketFindParam input) {
+        Assert.notNull(fundId);
+        Assert.notNull(input);
+        Assert.notNull(input.getState());
+
+        ArrFund fund = fundRepository.getOneCheckExist(fundId);
+        List<ArrPacket> packets = packetService.findPackets(fund, input.getPrefix(), input.getState());
+        return factoryVo.createPacketList(packets);
+    }
+
+    /**
+     * Smazání obalů.
+     *
+     * @param fundId    id archivního fondu
+     * @param input     vstupní parametry
      */
     @Transactional
     @RequestMapping(value = "/packets/{fundId}",
+            method = RequestMethod.DELETE,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public void deletePackets(@PathVariable(value = "fundId") final Integer fundId,
+                              @RequestBody final PacketDeleteParam input) {
+        Assert.notNull(fundId);
+        Assert.notNull(input);
+
+        ArrFund fund = fundRepository.getOneCheckExist(fundId);
+        packetService.deletePackets(fund, input.getPacketIds());
+    }
+
+    /**
+     * Změna stavu obalů.
+     *
+     * @param fundId    id archivního fondu
+     * @param input     vstupní parametry
+     */
+    @Transactional
+    @RequestMapping(value = "/packets/{fundId}",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public void setStatePackets(@PathVariable(value = "fundId") final Integer fundId,
+                                @RequestBody final PacketSetStateParam input) {
+        Assert.notNull(fundId);
+        Assert.notNull(input);
+
+        ArrFund fund = fundRepository.getOneCheckExist(fundId);
+        packetService.setStatePackets(fund, input.getPacketIds(), input.getState());
+    }
+
+    /**
+     * Vygenerování/přegenerování obalů.
+     *
+     * @param fundId    id archivního fondu
+     * @param input     vstupní parametry
+     */
+    @Transactional
+    @RequestMapping(value = "/packets/{fundId}/generate",
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrPacketVO updatePacket(@PathVariable(value = "fundId") final Integer fundId,
-                                    @RequestBody final ArrPacketVO packetVO) {
+    public void generatePackets(@PathVariable(value = "fundId") final Integer fundId,
+                                @RequestBody final PacketGenerateParam input) {
         Assert.notNull(fundId);
-        Assert.notNull(packetVO);
+        Assert.notNull(input);
 
-        ArrPacket packet = factoryDO.createPacket(packetVO, fundId);
-        return factoryVo.createPacket(packetService.updatePacket(packet));
+        Assert.notNull(input.getFromNumber());
+        Assert.notNull(input.getLenNumber());
+        Assert.notNull(input.getPrefix());
+        Assert.notNull(input.getCount());
+        Assert.notNull(input.getPacketTypeId());
+
+        ArrFund fund = fundRepository.getOneCheckExist(fundId);
+        RulPacketType packetType = packetTypeRepository.getOneCheckExist(input.getPacketTypeId());
+
+        packetService.generatePackets(fund,
+                packetType,
+                input.getPrefix(),
+                input.getFromNumber(),
+                input.getLenNumber(),
+                input.getCount(),
+                input.getPacketIds());
     }
 
     /**
@@ -1427,6 +1492,191 @@ public class ArrangementController {
         }
     }
 
+    /**
+     * Vstupní parametry změnu stavu obalů.
+     */
+    public static class PacketSetStateParam extends PacketDeleteParam {
+
+        /**
+         * Stav obalu
+         */
+        private ArrPacket.State state;
+
+        public ArrPacket.State getState() {
+            return state;
+        }
+
+        public void setState(final ArrPacket.State state) {
+            this.state = state;
+        }
+    }
+
+    /**
+     * Vstupní parametry pro smazání obalů.
+     */
+    public static class PacketDeleteParam {
+
+        /**
+         * Seznam id obalů
+         */
+        private Integer[] packetIds;
+
+        public Integer[] getPacketIds() {
+            return packetIds;
+        }
+
+        public void setPacketIds(final Integer[] packetIds) {
+            this.packetIds = packetIds;
+        }
+    }
+
+    /**
+     * Vstupní parametry pro vyhledání obalů ve formuláři.
+     */
+    public static class PacketFindFormParam {
+
+        /**
+         * Maximální počet výsledků
+         */
+        private Integer limit;
+
+        /**
+         * Vyhledávaný text - může být null
+         */
+        private String text;
+
+        public Integer getLimit() {
+            return limit;
+        }
+
+        public void setLimit(final Integer limit) {
+            this.limit = limit;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public void setText(final String text) {
+            this.text = text;
+        }
+    }
+
+    /**
+     * Vstupní parametry pro vyhledávání - ve správě obalů.
+     */
+    public static class PacketFindParam {
+
+        /**
+         * Prefix pro vyhledávání
+         */
+        private String prefix;
+
+        /**
+         * Stav obalu
+         */
+        private ArrPacket.State state;
+
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public void setPrefix(final String prefix) {
+            this.prefix = prefix;
+        }
+
+        public ArrPacket.State getState() {
+            return state;
+        }
+
+        public void setState(final ArrPacket.State state) {
+            this.state = state;
+        }
+    }
+
+    /**
+     * Vstupní parametry pro generování/přegenoravání packetů.
+     */
+    public static class PacketGenerateParam {
+
+        /**
+         * Požadovaný prefix
+         */
+        private String prefix;
+
+        /**
+         * Identifikátor typu obalu
+         */
+        private Integer packetTypeId;
+
+        /**
+         * Od čísla, od kterého se má začít generovat
+         */
+        private Integer fromNumber;
+
+        /**
+         * počet cifer (kvůli přidaným nulám)
+         */
+        private Integer lenNumber;
+
+        /**
+         * Počet obalů, které se mají vygenerovat
+         */
+        private Integer count;
+
+        /**
+         * Seznam identifikátorů packetů, které se mají přegenerovat
+         */
+        private Integer[] packetIds;
+
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public void setPrefix(final String prefix) {
+            this.prefix = prefix;
+        }
+
+        public Integer getPacketTypeId() {
+            return packetTypeId;
+        }
+
+        public void setPacketTypeId(final Integer packetTypeId) {
+            this.packetTypeId = packetTypeId;
+        }
+
+        public Integer getFromNumber() {
+            return fromNumber;
+        }
+
+        public void setFromNumber(final Integer fromNumber) {
+            this.fromNumber = fromNumber;
+        }
+
+        public Integer getLenNumber() {
+            return lenNumber;
+        }
+
+        public void setLenNumber(final Integer lenNumber) {
+            this.lenNumber = lenNumber;
+        }
+
+        public Integer getCount() {
+            return count;
+        }
+
+        public void setCount(final Integer count) {
+            this.count = count;
+        }
+
+        public Integer[] getPacketIds() {
+            return packetIds;
+        }
+
+        public void setPacketIds(final Integer[] packetIds) {
+            this.packetIds = packetIds;
+        }
+    }
 
     /**
      * Vstupní parametry pro metodu /faTree {@link #getFundTree(FaTreeParam)}.

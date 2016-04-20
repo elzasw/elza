@@ -3,7 +3,22 @@ package cz.tacr.elza.controller.config;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
 import ma.glasnost.orika.MapperFacade;
@@ -231,6 +246,7 @@ public class ClientFactoryDO {
         }
 
         packet.setFund(fund);
+        packet.setState(ArrPacket.State.OPEN);
 
         return packet;
     }

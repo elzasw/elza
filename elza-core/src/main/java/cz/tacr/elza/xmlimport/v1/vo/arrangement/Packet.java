@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
 
+import cz.tacr.elza.api.ArrPacket;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -30,9 +31,9 @@ public class Packet {
     @XmlAttribute(name = "storage-number")
     private String storageNumber;
 
-    /** Neplatný/neaktivní */
-    @XmlAttribute(name = "invalid")
-    private boolean invalid;
+    /** Stav */
+    @XmlAttribute(name = "state")
+    private ArrPacket.State state;
 
     public String getPacketTypeCode() {
         return packetTypeCode;
@@ -50,12 +51,12 @@ public class Packet {
         this.storageNumber = storageNumber;
     }
 
-    public boolean isInvalid() {
-        return invalid;
+    public ArrPacket.State getState() {
+        return state;
     }
 
-    public void setInvalid(boolean invalid) {
-        this.invalid = invalid;
+    public void setState(final ArrPacket.State state) {
+        this.state = state;
     }
 
     @Override
