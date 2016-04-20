@@ -17,6 +17,9 @@ public class TitleValue extends DescItemValue {
 
     private Integer position;
 
+    public TitleValue() {
+    }
+
     public TitleValue(final String value) {
         super(value);
     }

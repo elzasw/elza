@@ -2,13 +2,18 @@ package cz.tacr.elza.service;
 
 import java.beans.PropertyDescriptor;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -45,6 +50,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
@@ -938,6 +944,9 @@ public class DescriptionItemService {
             } else if (data.getDataType().getCode().equals("DECIMAL")) {
                 ArrDataDecimal decimalData = (ArrDataDecimal) data;
                 value = new TitleValue(decimalData.getValue().toPlainString());
+            } else if(data.getDataType().getCode().equals("COORDINATES")){
+                ArrDataCoordinates coordinates = (ArrDataCoordinates) data;
+                value = new CoordinatesTitleValue(coordinates.getValue());
             }
 
             if (value != null) {
