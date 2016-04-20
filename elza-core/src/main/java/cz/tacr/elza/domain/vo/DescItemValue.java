@@ -16,6 +16,9 @@ public class DescItemValue {
 
     private String specCode;
 
+    public DescItemValue() {
+    }
+
     public DescItemValue(final String value) {
         this.value = value;
     }
