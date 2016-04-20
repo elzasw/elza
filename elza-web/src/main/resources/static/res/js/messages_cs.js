@@ -231,6 +231,7 @@ var messages = {
     "subNodeForm.visiblePolicy": "Způsob kontroly",
     
     "subNodeForm.countOfCoordinates": "Počet bodů: {0}",
+    "subNodeForm.errorPointCoordinates": "Chybně zadaný bod. Zadávejte ve tvaru \"15.5154,49.535\"",
 
     "subNodeForm.descItemTypeAdd": "Přidat prvek",
     "subNodeForm.descItemTypeUnlockAll": "Odemknout vše",

@@ -72,3 +72,16 @@ elza:
 spring:
   app:
       buildType: DEV
+  jpa:
+      properties:
+          hibernate:
+              # PostgreSQL
+              dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
+              # H2
+              #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
+              # MySQL
+              #dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
+              # Oracle
+              #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
+              # MSSQL
+              #dialect: org.hibernate.dialect.SQLServer2008Dialect

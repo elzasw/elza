@@ -4,10 +4,11 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, KmlMapDialog, i18n} from 'components';
+import {AbstractReactComponent, i18n} from 'components';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils'
 import {Button} from 'react-bootstrap';
+import {normalizeDoubleWithDot} from 'components/validate'
 
 var DescItemCoordinates = class DescItemCoordinates extends AbstractReactComponent {
     constructor(props) {
@@ -15,11 +16,15 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
 
         this.bindMethods('handleChangeData','handleChangeSelect', 'focus', 'getStringType', 'getDownloadUrl');
 
-        this.state = this.parseData(props.descItem.value);
+        this.state = this.convertToClient(props.descItem.value);
     }
 
-    parseData(value) {
-        if (value === null) {
+    componentWillReceiveProps(nextProps) {
+        this.setState(this.convertToClient(nextProps.descItem.value));
+    }
+
+    convertToClient(value) {
+        if (value === null || value == '' || typeof value === "object") {
             return {type: "POINT", data:null};
         }
         const state = {type: null, data: null};
@@ -33,8 +38,14 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
         return state;
     }
 
-    componentWillReceiveProps(nextProps) {
-        this.setState(this.parseData(nextProps.descItem.value))
+    convertFromClient(type, val) {
+        let points = val.split(",").map(function(dat) {
+            return normalizeDoubleWithDot(dat);
+        }).join(" ").split("\n").join(", ");
+        if (type === "POLYGON") {
+            points = "(" + points + ", " + points.substr(0, points.indexOf(",")) + ")";
+        }
+        return type + "(" + points + ")";
     }
 
     focus() {
@@ -42,22 +53,14 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
     }
 
     handleChangeData(e) {
-        const val = this.getDataFormatted(this.state.type, e.target.value);
+        const val = this.convertFromClient(this.state.type, e.target.value);
         if (val != this.props.descItem.value) {
             this.props.onChange(val);
         }
     }
 
-    getDataFormatted(type, val) {
-        var points = val.split(",").join(" ").split("\n").join(", ");
-        if (type === "POLYGON") {
-            points = "(" + points + ", " + points.substr(0, points.indexOf(",")) + ")";
-        }
-        return type + "(" + points + ")";
-    }
-
     handleChangeSelect(e) {
-        const val = this.getDataFormatted(e.target.value, this.state.data);
+        const val = this.convertFromClient(e.target.value, this.state.data);
         if (val != this.props.descItem.value) {
             this.props.onChange(val);
         }

@@ -1177,6 +1177,7 @@
         <addUniqueConstraint tableName="arr_packet" columnNames="finding_aid_id, storage_number" />
 
         <addNotNullConstraint columnName="fa_only"
+                              columnDataType="boolean"
                               defaultNullValue="false"
                               tableName="rul_desc_item_type"/>
 
@@ -1184,7 +1185,7 @@
                               columnName="party_type_id"
                               tableName="par_party"/>
 
-        <addNotNullConstraint tableName="arr_node" columnName="uuid"/>
+        <addNotNullConstraint tableName="arr_node" columnName="uuid" columnDataType="char(36)"/>
 
         <addNotNullConstraint columnDataType="int"
                               columnName="last_arr_fa_change_id"

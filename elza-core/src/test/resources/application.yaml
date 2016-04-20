@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:hsqldb:mem:scratchdb
+    url: jdbc:h2:mem:scratchdb
   jpa:
     show-sql: false
     #pametova databaze automaticky zapina hibernate.ddl-auto: create
@@ -13,6 +13,7 @@ spring:
                   default:
                       indexBase: ${elza.workingDir}/lucene/indexes/
                       directory_provider: filesystem
+              dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
 
 elza:
   treenode:

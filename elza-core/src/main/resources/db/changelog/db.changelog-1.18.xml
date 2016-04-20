@@ -11,8 +11,8 @@
         <delete tableName="arr_node_conformity_missing" />
         <delete tableName="arr_node_conformity" />
 
-        <addNotNullConstraint tableName="arr_node_conformity_error" columnName="policy_type_id" />
-        <addNotNullConstraint tableName="arr_node_conformity_missing" columnName="policy_type_id" />
+        <addNotNullConstraint tableName="arr_node_conformity_error" columnName="policy_type_id" columnDataType="int" />
+        <addNotNullConstraint tableName="arr_node_conformity_missing" columnName="policy_type_id" columnDataType="int" />
 
     </changeSet>
 

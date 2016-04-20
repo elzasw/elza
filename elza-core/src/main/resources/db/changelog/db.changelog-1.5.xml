@@ -62,7 +62,7 @@
         <update tableName="reg_record">
             <column name="scope_id" value='1' type="int"/>
         </update>
-        <addNotNullConstraint tableName="reg_record" columnName="scope_id"/>
+        <addNotNullConstraint tableName="reg_record" columnName="scope_id" columnDataType="int"/>
         <insert tableName="db_hibernate_sequences">
             <column name="sequence_name" value="reg_scope|scope_id"/>
             <column name="next_val" value="2"/>

@@ -419,10 +419,10 @@ return true;
             return;
         }
         const file = fileList[0];
-        /*if (!file.type.match('.*kml.*')) {
+        if (!file.type.match('.*\.kml')) {
             this.dispatch(addToastrDanger('Invalid File', 'Only KML is supported'));
             return;
-        }*/
+        }
 
         this.props.onDescItemUpload(file);
         this.refs.uploadInput.value = null;
@@ -722,7 +722,6 @@ return true;
         var addAction;
         if (infoType.rep === 1 && !(locked || closed)) {
             if (this.props.rulDataType.code === "COORDINATES") {
-                console.log(React.createElement('input', { type: 'file' }));
                 addAction = <div className='desc-item-type-actions'>
                     <NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton>
                     <NoFocusButton onClick={this.handleSelectFile} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-upload" /></NoFocusButton>
