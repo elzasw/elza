@@ -7,10 +7,10 @@
     <changeSet id="15" author="slapa">
 
         <dropNotNullConstraint tableName="arr_node_conformity_error"
-                               columnName="policy_type_id"/>
+                               columnName="policy_type_id" columnDataType="int" />
 
         <dropNotNullConstraint tableName="arr_node_conformity_missing"
-                               columnName="policy_type_id"/>
+                               columnName="policy_type_id" columnDataType="int" />
 
     </changeSet>
 

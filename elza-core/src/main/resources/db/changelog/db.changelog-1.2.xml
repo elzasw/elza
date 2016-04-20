@@ -29,7 +29,7 @@
             <column name="history" type="text" />
             <column name="source_information" type="text" />
         </addColumn>
-        <dropNotNullConstraint tableName="par_party" columnName="preferred_name_id" />
+        <dropNotNullConstraint tableName="par_party" columnName="preferred_name_id" columnDataType="int" />
 
         <createTable tableName="par_unitdate">
             <column name="unitdate_id" type="int">

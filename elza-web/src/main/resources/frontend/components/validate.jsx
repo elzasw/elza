@@ -94,6 +94,24 @@ export function normalizeDouble(number) {
     return output;
 }
 
+
+/**
+ * Částečná normalizace - vrací čísla s '.' nikoliv ','
+ * Normalizace čísla - lze pouze číslice - (přes string rychlejší než ukládat do pole)
+ * @param number decimal(18,6)
+ **/
+export function normalizeDoubleWithDot(number) {
+    var pole = '' + number;
+    var output = '';
+    var existComa = false;
+    for (var i = 0, len = pole.length; i < len; i++) {
+        if ((i === 0 && pole[i] === '-') || parseInt(pole[i]) || pole[i] === '0' || ((pole[i] == ',' || pole[i] == '.') && !existComa && (existComa = true))) {
+            output += pole[i]
+        }
+    }
+    return output;
+}
+
 /**
  * Normalizace textu na delku výchozí 255 znaků
  * @param text String

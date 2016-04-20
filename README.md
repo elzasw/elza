@@ -98,6 +98,7 @@ Je vyžadována verze MSSQL 2008 - není potřeba žádná speciální instalace
 
 ### Databázové připojení
 Do konfigurace vložte nastavení datového zdroje. Při prvním připojení se datové struktury vytvoří automaticky.
+Nutno také vybrat dialekt dle použité databáze.
 
 ```
 elza:
@@ -105,6 +106,21 @@ elza:
         url: jdbc:postgresql://server/databaze
         username: uzivatel
         password: heslo
+
+spring:
+  jpa:
+      properties:
+          hibernate:
+              # PostgreSQL
+              dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
+              # H2
+              #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
+              # MySQL
+              #dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
+              # Oracle
+              #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
+              # MSSQL
+              #dialect: org.hibernate.dialect.SQLServer2008Dialect
 ```
 
 ### Logování událostí

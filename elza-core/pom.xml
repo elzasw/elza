@@ -119,11 +119,23 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
-            <!--verze 2.3.2 ma bug s unique a null-->
+            &lt;!&ndash;verze 2.3.2 ma bug s unique a null&ndash;&gt;
             <version>2.3.3</version>
+            <scope>test</scope>
+        </dependency>-->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.191</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.opengeo</groupId>
+            <artifactId>geodb-parent</artifactId>
+            <version>0.8</version>
             <scope>test</scope>
         </dependency>
         <dependency>

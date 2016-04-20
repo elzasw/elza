@@ -244,7 +244,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         node = descItemResult.getNode();
 
         type = findDescItemTypeByCode("ZP2015_POSITION");
-        descItem = buildDescItem(type.getCode(), null, "1e;20x", 1, null);
+        descItem = buildDescItem(type.getCode(), null, "POINT (14 49)", 1, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getNode();
 

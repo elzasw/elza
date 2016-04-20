@@ -88,6 +88,20 @@ function validate(descItem, refType, valueServerError) {
             }
             break;
         case 'COORDINATES':
+            if (descItem.value.indexOf("POINT") === 0) {
+                let left = descItem.value.indexOf('(') + 1;
+                let right = descItem.value.indexOf(')');
+                if ((right - left) == 0) {
+                    error.value = i18n('subNodeForm.validate.value.notEmpty');
+                    break;
+                }
+                let data = descItem.value.substr(left, descItem.value.indexOf(')') - left).split(' ');
+                if (descItem.value === '' || descItem.value === ' ' || data.length != 2 || data[0] == null || data[0] == '' || data[1] == null || data[1] == '') {
+                    error.value = i18n("subNodeForm.errorPointCoordinates");
+                } else {
+                    error.value = null;
+                }
+            }
             break;
         case 'DECIMAL':
             if (!descItem.value || descItem.value.length === 0) {
