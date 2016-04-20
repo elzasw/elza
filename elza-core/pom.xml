@@ -134,7 +134,7 @@
         </dependency>
         <dependency>
             <groupId>org.opengeo</groupId>
-            <artifactId>geodb-parent</artifactId>
+            <artifactId>geodb</artifactId>
             <version>0.7</version>
             <scope>test</scope>
         </dependency>
