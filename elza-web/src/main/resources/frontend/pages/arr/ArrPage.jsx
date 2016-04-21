@@ -21,7 +21,7 @@ import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {showRegisterJp} from 'actions/arr/fund'
 import {scopesDirty} from 'actions/refTables/scopesData'
-import {versionValidate} from 'actions/arr/versionValidation'
+import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation'
 import {packetsFetchIfNeeded} from 'actions/arr/packets'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes'
 import {developerNodeScenariosRequest} from 'actions/global/developer'
@@ -62,7 +62,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             'getActiveFundId', 'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
             'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
-            'renderFundPackets');
+            'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext');
 
         this.state = {developerExpandedSpecsIds: {}};
     }
@@ -200,11 +200,15 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
      * @return {Object} view
      */
     buildRibbon() {
+        const {arrRegion} = this.props;
+
         var activeInfo = this.getActiveInfo();
 
         var altActions = [];
 
         var itemActions = [];
+
+        var contextActions = [];
 
         if (activeInfo.activeFund && !activeInfo.activeFund.closed) {
             itemActions.push(
@@ -228,6 +232,27 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             </Button>
         )
 
+        var indexFund = arrRegion.activeIndex;
+        if (indexFund !== null) {
+            var activeFund = arrRegion.funds[indexFund];
+
+            var nodeIndex = activeFund.nodes.activeIndex;
+            if (nodeIndex !== null) {
+                var activeNode = activeFund.nodes.nodes[nodeIndex];
+
+                if (activeNode.selectedSubNodeId !== null) {
+                    contextActions.push(
+                        <Button key="next-error" onClick={this.handleErrorPrevious.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}><Icon glyph="fa-arrow-left"/>
+                            <div><span className="btnText">{i18n('ribbon.action.arr.validation.error.previous')}</span></div>
+                        </Button>,
+                        <Button key="previous-error" onClick={this.handleErrorNext.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}><Icon glyph="fa-arrow-right"/>
+                            <div><span className="btnText">{i18n('ribbon.action.arr.validation.error.next')}</span></div>
+                        </Button>
+                    )
+                }
+            }
+        }
+
         var altSection;
         if (altActions.length > 0) {
             altSection = <RibbonGroup key="alt" className="large">{altActions}</RibbonGroup>
@@ -238,9 +263,22 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             itemSection = <RibbonGroup key="item" className="large">{itemActions}</RibbonGroup>
         }
 
+        var contextSection;
+        if (contextActions.length > 0) {
+            contextSection = <RibbonGroup key="context" className="large">{contextActions}</RibbonGroup>
+        }
+
         return (
-            <Ribbon arr altSection={altSection} itemSection={itemSection}/>
+            <Ribbon arr altSection={altSection} itemSection={itemSection} contextSection={contextSection}/>
         )
+    }
+
+    handleErrorNext(versionId, nodeId) {
+        this.dispatch(versionValidationErrorNext(versionId, nodeId));
+    }
+
+    handleErrorPrevious(versionId, nodeId) {
+        this.dispatch(versionValidationErrorPrevious(versionId, nodeId));
     }
 
     handleShowHideSpecs(descItemTypeId) {
@@ -269,7 +307,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                             }}
                     renderItemContent={(item) => item !== null ? <div>{item.name}</div> : '...'}
                     selectedItem={activeNode ? activeNode.selectedSubNodeId : null}
-                    itemHeight={32} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
+                    itemHeight={25} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
                     /*onFocus={item=>{console.log("FOCUS", item)}}*/
                     onSelect={this.handleSelectErrorNode.bind(this, activeFund)}
                     /*onDoubleClick={item=>{console.log("DOUBLECLICK", item)}}*/

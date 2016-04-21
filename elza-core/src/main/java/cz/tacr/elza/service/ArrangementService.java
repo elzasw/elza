@@ -18,7 +18,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Iterables;
+import com.sun.istack.internal.Nullable;
 import cz.tacr.elza.controller.ArrangementController;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
@@ -1054,6 +1056,20 @@ public class ArrangementService {
             throw new IllegalArgumentException("Neplatné vstupní parametry");
         }
 
+        List<Integer> nodes = createErrorTree(fundVersion, null);
+        int countAll = nodes.size();
+
+        int count = indexTo - indexFrom;
+        Iterable<Integer> nodeIds = Iterables.limit(Iterables.skip(nodes, indexFrom), count);
+        Set<Integer> nodesLimited = new HashSet<>(count);
+        for (Integer integer : nodeIds) {
+            nodesLimited.add(integer);
+        }
+
+        return new ArrangementController.ValidationItems(levelTreeCacheService.getNodeItemsWithParents(nodesLimited, fundVersion), countAll);
+    }
+
+    private List<Integer> createErrorTree(final ArrFundVersion fundVersion, @Nullable final FoundNode foundNode) {
         Integer rootNodeId = fundVersion.getRootNode().getNodeId();
         TreeNode rootTreeNode = null;
         Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(fundVersion);
@@ -1104,21 +1120,55 @@ public class ArrangementService {
             addNodeProblem(nodeProblemsMap, nodeId, policyTypeId);
         }
 
-        Set<Integer> nodes = new HashSet<>();
+        List<Integer> nodes = new ArrayList<>();
 
         Map<Integer, Boolean> defaultPolicy = policyService.getPolicyTypes(fundVersion).stream()
                 .collect(Collectors.toMap(i -> i.getPolicyTypeId(), i -> true));
-        recursiveAddNodes(nodes, rootTreeNode, defaultPolicy, policiesMap, nodeProblemsMap);
+        recursiveAddNodes(nodes, rootTreeNode, defaultPolicy, policiesMap, nodeProblemsMap, foundNode);
+        return nodes;
+    }
+
+    /**
+     * Vyhledává chyby po/před zvolené JP.
+     *
+     * @param fundVersion   verze archivního fondu
+     * @param nodeId        identifikátor uzlu, od kterého vyhledávám
+     * @param direction     směr hledání
+     * @return výsledek hledání
+     */
+    public ArrangementController.ValidationItems findErrorNode(final ArrFundVersion fundVersion,
+                                                               final Integer nodeId,
+                                                               final Integer direction) {
+        Assert.notNull(fundVersion);
+        Assert.notNull(nodeId);
+        Assert.notNull(direction);
+        Assert.isTrue(direction != 0);
+
+        FoundNode foundNode = new FoundNode(nodeId);
+        List<Integer> nodes = createErrorTree(fundVersion, foundNode);
         int countAll = nodes.size();
 
-        int count = indexTo - indexFrom;
-        Iterable<Integer> nodeIds = Iterables.limit(Iterables.skip(nodes, indexFrom), count);
-        Set<Integer> nodesLimited = new HashSet<>(count);
-        for (Integer integer : nodeIds) {
-            nodesLimited.add(integer);
-        }
+        if (foundNode.getNode() == null || countAll == 0) {
+            return new ArrangementController.ValidationItems(null, countAll);
+        } else {
+            Set<Integer> nodesLimited = new HashSet<>();
 
-        return new ArrangementController.ValidationItems(levelTreeCacheService.getNodeItemsWithParents(nodesLimited, fundVersion), countAll);
+            Integer index = direction > 0 ? foundNode.getIndex() + 1 : foundNode.getIndex() - 1;
+
+            if (!nodes.contains(nodeId) && direction > 0) {
+                index--;
+            }
+
+            if (index < 0) {
+                index = nodes.size() - 1;
+            } else if (index > nodes.size() - 1) {
+                index = 0;
+            }
+            nodesLimited.add(nodes.get(index));
+            List<NodeItemWithParent> nodeItemsWithParents = levelTreeCacheService.getNodeItemsWithParents(nodesLimited, fundVersion);
+
+            return new ArrangementController.ValidationItems(nodeItemsWithParents, countAll);
+        }
     }
 
     /**
@@ -1146,13 +1196,19 @@ public class ArrangementService {
      * @param policiesMap       mapa všech nastavení nad JP
      * @param nodeProblemsMap   mapa všech chybných JP podle typu
      */
-    private void recursiveAddNodes(final Set<Integer> nodeIds,
+    private void recursiveAddNodes(final List<Integer> nodeIds,
                                    final TreeNode treeNode,
                                    final Map<Integer, Boolean> parentPolicyTypes,
                                    final Map<Integer, Map<Integer, Boolean>> policiesMap,
-                                   final Map<Integer, Set<Integer>> nodeProblemsMap) {
+                                   final Map<Integer, Set<Integer>> nodeProblemsMap,
+                                   final FoundNode foundNode) {
         Integer nodeId = treeNode.getId();
         Boolean status = false;
+
+        if (foundNode != null && foundNode.getNodeId().equals(nodeId)) {
+            foundNode.setIndex(nodeIds.size());
+            foundNode.setNode(treeNode);
+        }
 
         Set<Integer> nodeProblems = nodeProblemsMap.get(nodeId);
         Map<Integer, Boolean> policyTypes = policiesMap.get(nodeId);
@@ -1181,8 +1237,44 @@ public class ArrangementService {
 
         if (treeNode.getChilds() != null) {
             for (TreeNode node : treeNode.getChilds()) {
-                recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap);
+                recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap, foundNode);
             }
+        }
+    }
+
+    /**
+     * Pomocná třída pro vyhledávání další chyby.
+     */
+    private class FoundNode {
+
+        private Integer nodeId;
+
+        private TreeNode node;
+
+        private Integer index;
+
+        public FoundNode(final Integer nodeId) {
+            this.nodeId = nodeId;
+        }
+
+        public TreeNode getNode() {
+            return node;
+        }
+
+        public void setNode(final TreeNode node) {
+            this.node = node;
+        }
+
+        public Integer getIndex() {
+            return index;
+        }
+
+        public void setIndex(final Integer index) {
+            this.index = index;
+        }
+
+        public Integer getNodeId() {
+            return nodeId;
         }
     }
 

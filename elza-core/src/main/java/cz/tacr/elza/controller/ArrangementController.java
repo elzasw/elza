@@ -1294,6 +1294,14 @@ public class ArrangementController {
         return arrangementService.getValidationNodes(version, fromIndex, toIndex);
     }
 
+    @RequestMapping(value = "/validation/{fundVersionId}/find/{nodeId}/{direction}", method = RequestMethod.GET)
+    public ValidationItems findValidationError(@PathVariable("fundVersionId") final Integer fundVersionId,
+                                               @PathVariable(value = "nodeId") final Integer nodeId,
+                                               @PathVariable(value = "direction") final Integer direction) {
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
+        return arrangementService.findErrorNode(version, nodeId, direction);
+    }
+
     @RequestMapping(value = "/fund/policy/{fundVersionId}", method = RequestMethod.GET)
     public List<NodeItemWithParent> getAllNodesVisiblePolicy(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);

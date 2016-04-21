@@ -746,6 +746,10 @@ class WebApi{
     getValidationItems(fundVersionId, fromIndex, toIndex) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/validation/' + fundVersionId + '/' + fromIndex + '/'+ toIndex);
     }
+
+    findValidationError(fundVersionId, nodeId, direction) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/validation/' + fundVersionId + '/find/' + nodeId + '/'+ direction);
+    }
 }
 
 module.exports = {
