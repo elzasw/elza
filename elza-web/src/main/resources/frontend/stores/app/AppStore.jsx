@@ -7,6 +7,14 @@ import {lenToBytesStr, roughSizeOfObject} from 'components/Utils';
 import {splitterResize} from 'actions/global/splitter';
 import {normalizeInt} from 'components/validate';
 
+const normalizePacketSize = (value, previousValue, allValues, previousAllValues) => {
+    var vv = normalizeInt(value, previousValue, allValues, previousAllValues)
+    if (vv > 32) {
+        return previousValue
+    }
+    return vv
+}
+
 //import devTools from 'remote-redux-devtools';
 
 // Nastavení úrovně logování
@@ -81,7 +89,7 @@ let reducer = combineReducers({
     }).normalize({
         addPacketForm: {
             'start': normalizeInt,
-            'size': normalizeInt,
+            'size': normalizePacketSize,
             'count': normalizeInt,
         }
     })

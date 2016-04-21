@@ -98,19 +98,26 @@ export function fundPacketsCreate(fundId, type, data) {
         switch (type) {
             case "SINGLE":
                 WebApi.insertPacket(fundId, data.storageNumber, data.packetTypeId, false)
+                    .then(() => {
+                        dispatch(modalDialogHide())
+                    })
                 break
             case "MORE":
                 WebApi.generatePackets(fundId, data.prefix, data.packetTypeId, data.start, data.size, data.count, null)
+                    .then(() => {
+                        dispatch(modalDialogHide())
+                    })
                 break
         }
-        dispatch(modalDialogHide())
     }
 }
 
 export function fundPacketsChangeNumbers(fundId, data, ids) {
     return (dispatch, getState) => {
         WebApi.generatePackets(fundId, data.prefix, data.packetTypeId, data.start, data.size, data.count, ids)
-        dispatch(modalDialogHide())
+            .then(() => {
+                dispatch(modalDialogHide())
+            })
     }
 }
 

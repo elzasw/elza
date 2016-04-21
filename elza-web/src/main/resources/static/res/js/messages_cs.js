@@ -230,6 +230,9 @@ var messages = {
     "arr.packet.size": "Délka",
     "arr.packet.start": "Počáteční hodnota",
     "arr.packet.count": "Počet obalů",
+    "arr.packet.example": "Ukázka: {0}",
+    "arr.packet.changeNumbers.packetType.empty": "Typy budou zachovány",
+    "arr.packet.changeNumbers.packetType.notEmpty": "Typy budou změněny na \"{0}\"",
 
     "subNodeForm.deleteDescItem": "Odstranit hodnotu",
     "subNodeForm.deleteDescItemType": "Odstranit prvek popisu včetně všech hodnot",
