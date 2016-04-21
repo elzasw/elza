@@ -43,6 +43,7 @@ import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
@@ -66,6 +67,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.FilterExpiredException;
+import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
@@ -1123,13 +1125,16 @@ public class ArrangementController {
      * Provede filtraci uzlů podle filtru a uloží filtrované id do session.
      *
      * @param versionId id verze
+     * @param filters filtry
+     *
      * @return počet všech záznamů splňujících filtry
      */
     @RequestMapping(value = "/filterNodes/{versionId}", method = RequestMethod.GET)
-    public Integer filterNodes(@PathVariable("versionId") final Integer versionId) {
-
+    public Integer filterNodes(@PathVariable("versionId") final Integer versionId,
+            @RequestBody(required = false) final Filters filters) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        return filterTreeService.filterData(version, null);
+        List<DescItemTypeFilter> descItemFilters = factoryDO.createFilters(filters);
+        return filterTreeService.filterData(version, descItemFilters);
     }
 
     /**

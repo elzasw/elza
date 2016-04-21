@@ -14,6 +14,7 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -43,6 +44,7 @@ import cz.tacr.elza.domain.vo.DescItemValues;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.FilterExpiredException;
+import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
@@ -86,12 +88,24 @@ public class FilterTreeService {
      * @param version verze stromu
      * @return počet všech záznamů splňujících filtry
      */
-    public int filterData(ArrFundVersion version, final Object filter) {
-
+    public int filterData(ArrFundVersion version, final List<DescItemTypeFilter> descItemFilters) {
         Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(version);
         TreeNode rootNode = versionTreeCache.get(version.getRootNode().getNodeId());
 
         LinkedHashSet<Integer> versionIdsTable = levelTreeCacheWalker.walkThroughDFS(rootNode);
+
+        if (CollectionUtils.isNotEmpty(descItemFilters)) {
+            Set<Integer> nodeIdsByFilters = nodeRepository.findNodeIdsByFilters(version, descItemFilters);
+
+            Iterator<Integer> iterator = versionIdsTable.iterator();
+            while (iterator.hasNext()) {
+                Integer nodeId = iterator.next();
+
+                if (!nodeIdsByFilters.contains(nodeId)) {
+                    iterator.remove();
+                }
+            }
+        }
 
         FilterTreeSession session = storeFilteredTreeIntersection(version.getFundVersionId(), versionIdsTable,
                 versionIdsTable);

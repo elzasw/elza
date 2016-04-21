@@ -6,6 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -26,6 +27,7 @@ public class ArrDataDecimal extends ArrData implements cz.tacr.elza.api.ArrDataD
     @Column(nullable = false)
     private BigDecimal value;
 
+    @Field(name = "valueNr")
     @Override
     public BigDecimal getValue() {
         return value;

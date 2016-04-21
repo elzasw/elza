@@ -6,6 +6,7 @@ import java.util.Set;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.filter.DescItemTypeFilter;
 
 
 /**
@@ -39,4 +40,14 @@ public interface NodeRepositoryCustom {
     Set<Integer> findByFulltextAndVersionLockChangeId(String text, Integer fundId, Integer lockChangeId);
 
     List<ArrNode> findByNodeConformityIsNull();
+
+    /**
+     * Najde id nodů v dané verzi odpovídající filtrům. Pokud nejsou filtry předány vrátí se id všech nodů ve verzi.
+     *
+     * @param version verze
+     * @param filters filtry, můžou být null
+     *
+     * @return id nodů odpovídající parametrům
+     */
+    Set<Integer> findNodeIdsByFilters(ArrFundVersion version, List<DescItemTypeFilter> filters);
 }
