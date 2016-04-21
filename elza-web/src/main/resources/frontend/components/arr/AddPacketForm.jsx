@@ -18,8 +18,20 @@ import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
 const validate = (values, props) => {
     const errors = {};
 
-    if (!values.storageNumber) {
-        errors.storageNumber = i18n('global.validation.required');
+    if (props.createSingle) {
+        if (!values.storageNumber) {
+            errors.storageNumber = i18n('global.validation.required');
+        }
+    } else if (props.createMany || props.changeNumbers) {
+        if (!values.prefix) {
+            errors.prefix = i18n('global.validation.required');
+        }
+        if (!values.start) {
+            errors.start = i18n('global.validation.required');
+        }
+        if (!values.count) {
+            errors.count = i18n('global.validation.required');
+        }
     }
 
     return errors;
@@ -40,7 +52,7 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {packetTypeId, storageNumber, invalidPacket}, handleSubmit, onClose, packetTypes} = this.props;
+        const {fields: {packetTypeId, storageNumber, prefix, start, size, count}, handleSubmit, onClose, packetTypes, createSingle, createMany, changeNumbers} = this.props;
 
         var submitForm = submitReduxForm.bind(this, validate)
 
@@ -52,8 +64,11 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
                             <option key='-packetTypeId'></option>
                             {packetTypes.items.map(i=> {return <option key={i.id} value={i.id}>{i.name}</option>})}
                         </Input>
-                        <Input type="text" label={i18n('arr.packet.storageNumber')} {...storageNumber} {...decorateFormField(storageNumber)} />
-                        <Input type="checkbox" label={i18n('arr.packet.invalidPacket')} {...invalidPacket} {...decorateFormField(invalidPacket)} value={true}  />
+                        {createSingle && <Input type="text" label={i18n('arr.packet.storageNumber')} {...storageNumber} {...decorateFormField(storageNumber)} />}
+                        {(createMany || changeNumbers) && <Input type="text" label={i18n('arr.packet.prefix')} {...prefix} {...decorateFormField(prefix)} />}
+                        {(createMany || changeNumbers) && <Input type="text" label={i18n('arr.packet.start')} {...start} {...decorateFormField(start)} />}
+                        {(createMany || changeNumbers) && <Input type="text" label={i18n('arr.packet.size')} {...size} {...decorateFormField(size)} />}
+                        {(createMany || changeNumbers) && <Input disabled={changeNumbers} type="text" label={i18n('arr.packet.count')} {...count} {...decorateFormField(count)} />}
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
@@ -67,13 +82,11 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
 
 module.exports = reduxForm({
     form: 'addPacketForm',
-    fields: ['packetTypeId', 'storageNumber', 'invalidPacket'],
+    fields: ['packetTypeId', 'storageNumber', 'prefix', 'start', 'size', 'count'],
+    normalize: ['start', 'size', 'count']
 },state => ({
     initialValues: state.form.addPacketForm.initialValues,
     packetTypes: state.refTables.packetTypes
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addPacketForm', data})}
 )(AddPacketForm)
-
-
-

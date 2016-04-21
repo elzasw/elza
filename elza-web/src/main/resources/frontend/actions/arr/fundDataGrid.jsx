@@ -183,24 +183,14 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
                 const newFund = objectById(state.arrRegion.funds, versionId, 'versionId')
                 if (newFund !== null) {
                     const newFundDataGrid = fund.fundDataGrid
-                    const newDataKey = _fundDataGridKey(fundDataGrid)
+                    const newDataKey = _fundDataGridKey(newFundDataGrid)
 
-                    if (newDataKey === dataKey) {
+                    if (newDataKey === dataKey) {   // ještě je pořád v tom stavu, pro jaký se načítala data
                         var items = nodes.map(node => {
                             const {valuesMap, ...nodeRest} = node
                             return {id: nodeRest.node.id, ...nodeRest, ...node.valuesMap}
                         })
-
-                        const newState = getState();
-                        const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId')
-                        if (newFund) {
-                            const newFundDataGrid = newFund.fundDataGrid
-                            const newDataKey = _fundDataGridKey(newFundDataGrid)
-
-                            if (newDataKey === dataKey) {   // ještě je pořád v tom stavu, pro jaký se načítala data
-                                dispatch(_dataReceive(versionId, items))
-                            }
-                        }
+                        dispatch(_dataReceive(versionId, items))
                     }
                 }
             })

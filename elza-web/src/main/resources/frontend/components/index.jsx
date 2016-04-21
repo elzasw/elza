@@ -6,6 +6,7 @@ exports.LongText = require('./LongText');
 exports.Utils = require('./Utils');
 
 exports.ListBox = require('./shared/listbox/ListBox');
+exports.ListBox = require('./shared/listbox/ListBox');
 exports.LazyListBox = require('./shared/listbox/LazyListBox');
 exports.FilterableListBox = require('./shared/listbox/FilterableListBox');
 exports.NoFocusButton = require('./shared/button/NoFocusButton');
@@ -51,6 +52,7 @@ exports.FundDetailExt = require('./fund/FundDetailExt');
 exports.FundDetailTree = require('./fund/FundDetailTree');
 
 exports.FundDataGridCellForm = require('./arr/FundDataGridCellForm');
+exports.FundPackets = require('./arr/FundPackets');
 exports.NodePanel = require('./arr/NodePanel');
 exports.NodeTabs = require('./arr/NodeTabs');
 exports.FundDataGrid = require('./arr/FundDataGrid');

@@ -13,7 +13,7 @@ import {Link, IndexLink} from 'react-router';
 import {Tabs, Icon, Ribbon, i18n} from 'components';
 import {FundExtendedView, FundForm, BulkActionsDialog, RibbonMenu, RibbonGroup, RibbonSplit,
     ToggleContent, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs, ListBox, LazyListBox,
-    VisiblePolicyForm, Loading} from 'components';
+    VisiblePolicyForm, Loading, FundPackets} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
@@ -38,7 +38,7 @@ import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 
-var _selectedTab = 0
+var _selectedTab = 2
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -61,7 +61,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
             'getActiveFundId', 'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
             'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
-            'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode');
+            'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
+            'renderFundPackets');
 
         this.state = {developerExpandedSpecsIds: {}};
     }
@@ -502,11 +503,12 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var items = [];
         items.push({id: 0, title: i18n('arr.panel.title.errors')});
         items.push({id: 1, title: i18n('arr.panel.title.visiblePolicies')});
+        items.push({id: 2, title: i18n('arr.panel.title.packets')});
 
         // pouze v developer modu
         if (developer.enabled && node) {
-            items.push({id: 2, title: i18n('developer.title.descItems')});
-            items.push({id: 3, title: i18n('developer.title.scenarios')});
+            items.push({id: 3, title: i18n('developer.title.descItems')});
+            items.push({id: 4, title: i18n('developer.title.scenarios')});
         }
 
         return (
@@ -519,10 +521,24 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 <Tabs.Content>
                     {_selectedTab === 0 && this.renderFundErrors(activeFund)}
                     {_selectedTab === 1 && this.renderFundVisiblePolicies(activeFund)}
-                    {developer.enabled && node && _selectedTab === 2 && this.renderDeveloperDescItems(activeFund, node)}
-                    {developer.enabled && node && _selectedTab === 3 && this.renderDeveloperScenarios(activeFund, node)}
+                    {_selectedTab === 2 && this.renderFundPackets(activeFund)}
+                    {developer.enabled && node && _selectedTab === 3 && this.renderDeveloperDescItems(activeFund, node)}
+                    {developer.enabled && node && _selectedTab === 4 && this.renderDeveloperScenarios(activeFund, node)}
                 </Tabs.Content>
             </Tabs.Container>
+        )
+    }
+
+    renderFundPackets() {
+        const {arrRegion} = this.props;
+        var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+
+        return (
+            <FundPackets
+                versionId={activeFund.versionId}
+                fundId={activeFund.id}
+                {...activeFund.fundPackets}
+                />
         )
     }
 

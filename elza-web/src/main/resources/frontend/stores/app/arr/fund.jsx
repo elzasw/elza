@@ -6,6 +6,7 @@ import fundDataGrid from './fundDataGrid'
 import bulkActions from './bulkActions'
 import versionValidation from './versionValidation'
 import fundNodesPolicy from './fundNodesPolicy'
+import fundPackets from './fundPackets'
 import {consolidateState} from 'components/Utils'
 import {isBulkAction} from 'actions/arr/bulkActions'
 import {isFundTreeAction} from 'actions/arr/fundTree'
@@ -19,6 +20,7 @@ import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister'
 import {isDeveloperScenariosAction} from 'actions/global/developer'
 import {isFundDataGridAction} from 'actions/arr/fundDataGrid'
 import {isFundChangeAction} from 'actions/global/change'
+import {isFundPacketsAction} from 'actions/arr/fundPackets'
 import {getNodeKeyType} from 'stores/app/utils.jsx'
 
 export function fundInitState(fundWithVersion) {
@@ -31,6 +33,7 @@ export function fundInitState(fundWithVersion) {
         isFetching: false,
         dirty: false,
         fundDataGrid: fundDataGrid(),
+        fundPackets: fundPackets(),
         fundTree: fundTree(undefined, {type: ''}),
         fundTreeMovementsLeft: fundTree(undefined, {type: ''}),
         fundTreeMovementsRight: fundTree(undefined, {type: ''}),
@@ -64,6 +67,11 @@ function updateFundTree(state, action) {
 export function fund(state, action) {
     if (isBulkAction(action)) {
         var result = {...state, bulkActions: bulkActions(state.bulkActions, action)}
+        return consolidateState(state, result);
+    }
+
+    if (isFundPacketsAction(action)) {
+        var result = {...state, fundPackets: fundPackets(state.fundPackets, action)}
         return consolidateState(state, result);
     }
 
@@ -137,6 +145,7 @@ export function fund(state, action) {
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
                 fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
                 bulkActions: bulkActions(undefined, {type: ''}),
+                fundPackets: fundPackets(),
                 versionValidation: versionValidation(undefined, {type: ''})
             }
         case types.STORE_SAVE:
@@ -151,6 +160,11 @@ export function fund(state, action) {
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
                 nodes: nodes(state.nodes, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
+            }
+        case types.CHANGE_PACKETS:
+            return {
+                ...state,
+                fundPackets: fundPackets(state.fundPackets, action)
             }
         case types.FUND_FUNDS_REQUEST:
             if (action.fundMap[state.versionId]) {

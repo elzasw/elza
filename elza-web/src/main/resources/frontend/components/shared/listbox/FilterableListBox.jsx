@@ -5,11 +5,10 @@
 
 require ('./FilterableListBox.less')
 
-import React from 'react';
-import {Search, ListBox, AbstractReactComponent, i18n} from 'components';
-import {Input, Button} from 'react-bootstrap';
-import ReactDOM from 'react-dom';
-import {getSetFromIdsList} from 'stores/app/utils.jsx'
+import React from "react";
+import {Search, ListBox, AbstractReactComponent, i18n} from "components";
+import {Input, Button} from "react-bootstrap";
+import {getSetFromIdsList} from "stores/app/utils.jsx";
 var __FilterableListBox_timer = null
 
 var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
@@ -24,10 +23,12 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
         //   selectionType === 'unselected', selectedIds obsahuje seznam NEvybraných id
 
         const {selectionType, selectedIds} = props
+        const supportInverseSelection = props.supportInverseSelection !== undefined ? props.supportInverseSelection : true
         var state = {
-            selectionType: selectionType || 'unselected',
+            selectionType: supportInverseSelection ? (selectionType || 'unselected') : 'selected',
             selectedIds: {},
-            filterText: ''
+            filterText: props.filterText || '',
+            supportInverseSelection,
         }
 
         if (selectedIds) {
@@ -38,7 +39,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (typeof nextProps.selectionType !== 'undefined' || typeof nextProps.selectedIds !== 'undefined') {
+        if (typeof nextProps.selectedIds !== 'undefined') {
             let nextSelectedIds
             if (typeof nextProps.selectedIds !== 'undefined') {
                 nextSelectedIds = getSetFromIdsList(nextProps.selectedIds)
@@ -49,6 +50,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
             this.setState({
                 selectedIds: nextSelectedIds,
                 selectionType: nextProps.selectionType || this.state.selectionType,
+                filterText: nextProps.filterText || this.state.filterText || '',
             })
         }
     }
@@ -58,16 +60,19 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
         const {onChange} = this.props
 
         var newSelectedIds = {...selectedIds}
+        var unselectedIds = []
 
         if (selectionType === 'selected') {
             if (selectedIds[item.id]) { // je označená, odznačíme ji
                 delete newSelectedIds[item.id]
+                unselectedIds.push(item.id)
             } else {    // není označená, označíme ji
                 newSelectedIds[item.id] = true
             }
         } else {
-            if (selectedIds[item.id]) { // je odznačená, označíme ji
+            if (selectedIds[item.id]) { // je odznačená, odznačíme ji
                 delete newSelectedIds[item.id]
+                unselectedIds.push(item.id)
             } else {    // není odznačená, označíme ji
                 newSelectedIds[item.id] = true
             }
@@ -77,23 +82,36 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
             selectedIds: newSelectedIds
         })
 
-        onChange && onChange(selectionType, Object.keys(newSelectedIds))
+        onChange && onChange(selectionType, Object.keys(newSelectedIds), unselectedIds, "TOGGLE_ITEM")
     }
 
     handleSelectAll() {
-        const {onChange} = this.props
-        const type = 'unselected'
+        const {onChange, items} = this.props
+        const {supportInverseSelection} = this.state
+        let type
+        let selectedIds
+        if (supportInverseSelection) {
+            type = 'unselected'
+            selectedIds = {}
+        } else {
+            type = 'selected'
+            selectedIds = {}
+            items.forEach(item => {
+                selectedIds[item.id] = true
+            })
+        }
 
         this.setState({
             selectionType: type,
-            selectedIds: {},
+            selectedIds: selectedIds,
         })
 
-        onChange && onChange(type, [])
+        onChange && onChange(type, Object.keys(selectedIds), [], "SELECT_ALL")
     }
 
     handleUnselectAll() {
-        const {onChange} = this.props
+        const {onChange, items} = this.props
+        const {supportInverseSelection, selectedIds} = this.state
         const type = 'selected'
 
         this.setState({
@@ -101,7 +119,16 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
             selectedIds: {},
         })
 
-        onChange && onChange(type, [])
+        var unselectedIds = []
+        if (!supportInverseSelection) {
+            items.forEach(item => {
+                if (selectedIds[item.id]) {
+                    unselectedIds.push(item.id)
+                }
+            })
+        }
+
+        onChange && onChange(type, [], unselectedIds, "UNSELECT_ALL")
     }
 
     renderItemContent(item, isActive) {
@@ -139,7 +166,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
     }
 
     render() {
-        const {label, className, items, searchable} = this.props
+        const {label, className, items, searchable, altSearch} = this.props
         const {filterText} = this.state
         const lbl = label ? <h4>{label}</h4> : null
 
@@ -152,14 +179,15 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
             <div className={cls}>
                 {lbl}
                 <div className="search-action-container">
-                    {searchable && <div className='search-container'>
-                        <Search
+                    {(searchable || altSearch) && <div className='search-container'>
+                        {searchable && <Search
                             placeholder={i18n('search.input.search')}
                             filterText={filterText}
                             onChange={this.handleSearchChange}
                             onSearch={this.handleSearch}
                             onClear={this.handleSearchClear}
-                        />
+                        />}
+                        {altSearch}
                     </div>}
                     <div className='actions-container'>
                         <Button bsStyle="link" onClick={this.handleSelectAll}>{i18n('global.title.selectAll')}</Button>

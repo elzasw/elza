@@ -5,6 +5,7 @@ import createLogger from 'redux-logger'
 import {reducer as formReducer} from 'redux-form';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils';
 import {splitterResize} from 'actions/global/splitter';
+import {normalizeInt} from 'components/validate';
 
 //import devTools from 'remote-redux-devtools';
 
@@ -77,6 +78,12 @@ let reducer = combineReducers({
         relationForm: relationForm,
         addRegistryForm: addRegistryForm,
         editRegistryForm: editRegistryForm,
+    }).normalize({
+        addPacketForm: {
+            'start': normalizeInt,
+            'size': normalizeInt,
+            'count': normalizeInt,
+        }
     })
 });
 

@@ -459,7 +459,7 @@ class WebApi{
     }
 
     deletePackets(fundId, packetIds) {
-        return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/packets/' + fundId + '/find', null, {packetIds});
+        return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/packets/' + fundId, null, {packetIds});
     }
 
     setStatePackets(fundId, packetIds, state) {

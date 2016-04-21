@@ -21,6 +21,7 @@ import {isDeveloperScenariosAction} from 'actions/global/developer'
 import {isNodeSettingsAction} from 'actions/arr/nodeSetting'
 import {isFundDataGridAction} from 'actions/arr/fundDataGrid'
 import {isFundChangeAction} from 'actions/global/change'
+import {isFundPacketsAction} from 'actions/arr/fundPackets'
 
 const initialState = {
     activeIndex: null,
@@ -89,6 +90,7 @@ export default function arrRegion(state = initialState, action) {
         || isDeveloperScenariosAction(action)
         || isFundDataGridAction(action)
         || isFundChangeAction(action)
+        || isFundPacketsAction(action)
     ) {
         var index = indexById(state.funds, action.versionId, "versionId")
         if (index !== null) {
@@ -254,10 +256,25 @@ export default function arrRegion(state = initialState, action) {
 
             packets[action.fundId] = fundPackets;
 
-            return {
+            var result = {
                 ...state,
                 packets
             }
+
+            var someFundChanged = false
+            var funds = state.funds.map(fundObj => {
+                if (fundObj.id === action.fundId) {
+                    someFundChanged = true
+                    return fund(fundObj, action)
+                } else {
+                    return fundObj
+                }
+            })
+            if (someFundChanged) {
+                result.funds = funds
+            }
+
+            return result
         case types.PACKETS_RECEIVE:
             var packets = state.packets;
             var fundPackets = packets[action.fundId];

@@ -1,0 +1,87 @@
+@import "~variables.less";
+
+.node-form-standard-actions {
+  .btn {
+    padding: 2px;
+    border: none;
+    margin: 0;
+    background: transparent;
+    height: 2em;
+    font-size: 0.9em;
+    .icon {
+      color: @node-form-actions-color;
+      height: 1.35em;
+      line-height: 1.35em;
+      width: 1.35em;
+      vertical-align: middle;
+    }
+  }
+  .btn:hover {
+    background-color: @node-form-actions-hover;
+  }
+}
+
+.fund-packets {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  > .actions-container {
+    flex-shrink: 0;
+    height: 1.8em;
+    margin-bottom: 6px;
+
+    .actions {
+      white-space: nowrap;
+      width: 100%;
+
+      .node-form-standard-actions;
+    }
+  }
+
+  .filterable-listbox-container {
+    display: flex;
+    flex-direction: column;
+    .search-action-container {
+      flex-shrink: 0;
+    }
+    .list-container {
+      display: flex;
+      flex-direction: column;
+
+      .listbox-container {
+        overflow: hidden;
+        overflow-y: auto;
+      }
+    }
+  }
+
+  .search-action-container {
+    display: block;
+    > .search-container {
+      display: flex;
+
+      > * {
+        margin-right: 6px;
+        &:last-child {
+          margin-right: 0;
+        }
+      }
+    }
+    .actions-container {
+      text-align: right;
+    }
+  }
+
+  .state-filter {
+    .form-group {
+      display: flex;
+      label {
+        font-weight: normal;
+      }
+      select {
+        width: auto;
+      }
+    }
+  }
+}
