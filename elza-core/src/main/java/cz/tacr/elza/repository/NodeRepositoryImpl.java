@@ -1,8 +1,11 @@
 package cz.tacr.elza.repository;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -10,6 +13,7 @@ import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.queries.ChainedFilter;
 import org.apache.lucene.search.BooleanQuery;
@@ -27,10 +31,13 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.filter.DescItemTypeFilter;
+import cz.tacr.elza.filter.condition.DescItemCondition;
 import cz.tacr.elza.utils.NodeUtils;
 
 
@@ -91,7 +98,6 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     @Override
     public List<ArrNode> findByNodeConformityIsNull() {
-
         String hql = "SELECT n FROM arr_node n WHERE n.nodeId NOT IN (SELECT nc.node.nodeId FROM arr_node_conformity nc) AND n.nodeId IN (SELECT l.node.nodeId FROM arr_level l WHERE l.deleteChange IS NULL)";
 
         javax.persistence.Query query = entityManager.createQuery(hql);
@@ -117,6 +123,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         Class<ArrData> entityClass = ArrData.class;
         QueryBuilder queryBuilder = createQueryBuilder(entityClass);
+        QueryBuilder recordQueryBuilder = createQueryBuilder(ArrDataRecordRef.class);
 
         Query textQuery = createTextQuery(text, queryBuilder);
         Query fundIdQuery = queryBuilder.keyword().onField("fundId").matching(fundId).createQuery();
@@ -144,7 +151,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         BooleanJunction<BooleanJunction> textConditions = queryBuilder.bool();
         for (String token : tokens) {
             String searchValue = "*" + token + "*";
-            Query createQuery = queryBuilder.keyword().wildcard().onField("fulltextValue").matching(searchValue).createQuery();
+            Query createQuery = queryBuilder.keyword().wildcard().onField(DescItemCondition.FULLTEXT_ATT).matching(searchValue).createQuery();
             textConditions.should(createQuery);
         }
 
@@ -233,6 +240,76 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     private void buildFullTextEntityManager() {
         fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
         BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
+    }
+
+    @Override
+    public Set<Integer> findNodeIdsByFilters(ArrFundVersion version, List<DescItemTypeFilter> filters) {
+        Assert.notNull(version);
+
+        List<String> descItemIds = findDescItemIdsByFilters(filters);
+        if (descItemIds.isEmpty()) {
+            return Collections.EMPTY_SET;
+        }
+
+        Integer lockChangeId = version.getLockChange() == null ? null : version.getLockChange().getChangeId();
+        String descItemIdsString = StringUtils.join(descItemIds, " ");
+        List<Integer> nodeIds = findNodeIdsByValidDescItems(lockChangeId, descItemIdsString);
+
+        return new HashSet<>(nodeIds);
+    }
+
+    private List<String> findDescItemIdsByFilters(List<DescItemTypeFilter> filters) {
+        if (CollectionUtils.isEmpty(filters)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        Map<Integer, List<String>> allDescItemIds = null;
+        for (DescItemTypeFilter filter : filters) {
+            QueryBuilder queryBuilder = createQueryBuilder(filter.getCls());
+            Query query = filter.createLuceneQuery(queryBuilder);
+            List<Object> rows = createFullTextQuery(query, ArrData.class).setProjection("nodeId", "descItemId").getResultList();
+            Map<Integer, List<String>> nodeIdToDescItemIds = new HashMap<>(rows.size());
+            for (Object row: rows) {
+                Object[] rowArray = (Object[]) row;
+                Integer nodeId = (Integer) rowArray[0];
+                String descItemId = (String) rowArray[1];
+                List<String> descItemIds = nodeIdToDescItemIds.get(nodeId);
+                if (descItemIds == null) {
+                    descItemIds = new LinkedList<>();
+                    nodeIdToDescItemIds.put(nodeId, descItemIds);
+                }
+                descItemIds.add(descItemId);
+            }
+
+            if (allDescItemIds == null) {
+                allDescItemIds = new HashMap<>(nodeIdToDescItemIds);
+            } else {
+                Set<Integer> existingNodes = new HashSet<>(allDescItemIds.keySet());
+                existingNodes.retainAll(nodeIdToDescItemIds.keySet());
+
+                Map<Integer, List<String>> updatedAllDescItemIds = new HashMap<>(nodeIdToDescItemIds.size());
+                for (Integer nodeId : existingNodes) {
+                    List<String> rowDescItemIds = nodeIdToDescItemIds.get(nodeId);
+                    List<String> existingDescItemIds = allDescItemIds.get(nodeId);
+
+                    if (existingDescItemIds == null) {
+                        updatedAllDescItemIds.put(nodeId, rowDescItemIds);
+                    } else if (rowDescItemIds == null) {
+                        updatedAllDescItemIds.put(nodeId, existingDescItemIds);
+                    } else {
+                        existingDescItemIds.addAll(rowDescItemIds);
+                        updatedAllDescItemIds.put(nodeId, existingDescItemIds);
+                    }
+                }
+                allDescItemIds = updatedAllDescItemIds;
+            }
+        }
+
+        List<String> result = new LinkedList<>();
+        for (List<String> descItemIds : allDescItemIds.values()) {
+            result.addAll(descItemIds);
+        }
+        return result;
     }
 
 }

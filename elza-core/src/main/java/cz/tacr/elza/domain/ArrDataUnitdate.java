@@ -7,6 +7,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.springframework.data.rest.core.annotation.RestResource;
 
@@ -46,9 +47,11 @@ public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrData
     @Column(length = 50, nullable = false)
     private String format;
 
+    @Field
     @Column(nullable = false)
     private Long normalizedFrom;
 
+    @Field
     @Column(nullable = false)
     private Long normalizedTo;
 

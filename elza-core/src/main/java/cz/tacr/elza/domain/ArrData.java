@@ -42,6 +42,8 @@ public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType
 
     public static final String DESC_ITEM = "descItem";
 
+    public static final String LUCENE_DESC_ITEM_TYPE_ID = "descItemTypeId";
+
     @Id
     @GeneratedValue
     private Integer dataId;
@@ -66,9 +68,30 @@ public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType
         return descItem.getDescItemId().toString();
     }
 
+    @Field(store = Store.YES)
+    public Integer getNodeId() {
+        return descItem.getNode().getNodeId();
+    }
+
     @Field
     public Integer getFundId() {
         return descItem.getNode().getFund().getFundId();
+    }
+
+    @Field(store = Store.NO)
+    public Integer getDescItemTypeId() {
+        return descItem.getDescItemType().getDescItemTypeId();
+    }
+
+    @Field
+    @Analyzer(definition = "customanalyzer")
+    public String getSpecification() {
+        RulDescItemSpec descItemSpec = descItem.getDescItemSpec();
+        if (descItemSpec == null) {
+            return null;
+        }
+
+        return descItemSpec.getName();
     }
 
     @Override

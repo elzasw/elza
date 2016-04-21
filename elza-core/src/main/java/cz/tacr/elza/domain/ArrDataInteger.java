@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -24,6 +25,7 @@ public class ArrDataInteger extends ArrData implements cz.tacr.elza.api.ArrDataI
     @Column(nullable = false)
     private Integer value;
 
+    @Field(name = "valueNr")
     @Override
     public Integer getValue() {
         return value;
