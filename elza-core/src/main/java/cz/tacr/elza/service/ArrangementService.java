@@ -18,7 +18,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Iterables;
-import com.sun.istack.internal.Nullable;
+import javax.annotation.Nullable;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
