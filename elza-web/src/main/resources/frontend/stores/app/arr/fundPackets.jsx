@@ -14,6 +14,23 @@ const initialState = {
 
 export default function fundPackets(state = initialState, action = {}) {
     switch (action.type) {
+        case types.STORE_LOAD:
+            return {
+                ...state,
+                selectedIds: [],
+                packets: null,
+                isFetching: false,
+                fetched: false,
+                currentDataKey: '',
+            }
+            break
+        case types.STORE_SAVE:
+            const {filterText, filterState} = state;
+            return {
+                filterText,
+                filterState,
+            }
+            break
         case types.CHANGE_PACKETS:
             return {
                 ...state,

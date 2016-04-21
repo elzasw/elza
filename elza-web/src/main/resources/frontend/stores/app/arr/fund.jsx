@@ -143,9 +143,9 @@ export function fund(state, action) {
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
                 nodes: nodes(state.nodes, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
+                fundPackets: fundPackets(state.fundPackets, action),
                 fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
                 bulkActions: bulkActions(undefined, {type: ''}),
-                fundPackets: fundPackets(),
                 versionValidation: versionValidation(undefined, {type: ''})
             }
         case types.STORE_SAVE:
@@ -160,6 +160,7 @@ export function fund(state, action) {
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
                 nodes: nodes(state.nodes, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
+                fundPackets: fundPackets(state.fundPackets, action),
             }
         case types.CHANGE_PACKETS:
             return {
