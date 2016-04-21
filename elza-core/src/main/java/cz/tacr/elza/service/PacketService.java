@@ -301,9 +301,9 @@ public class PacketService {
             for (ArrPacket packet : packets) {
                 if (packet.getState().equals(state)) {
                     throw new IllegalArgumentException("Nelze nastavovat stav na stejný: " + state);
+                } else if (packet.getState().equals(ArrPacket.State.CANCELED)) {
+                    checkStorageNumber(storageNumbers, packet.getStorageNumber());
                 }
-
-                checkStorageNumber(storageNumbers, packet.getStorageNumber());
                 packet.setState(state);
             }
         }

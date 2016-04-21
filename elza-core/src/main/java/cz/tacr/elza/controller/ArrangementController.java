@@ -304,7 +304,8 @@ public class ArrangementController {
         Assert.notNull(input.getCount());
 
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
-        RulPacketType packetType = packetTypeRepository.getOneCheckExist(input.getPacketTypeId());
+        RulPacketType packetType = input.getPacketTypeId() != null ?
+                packetTypeRepository.getOneCheckExist(input.getPacketTypeId()) : null;
 
         packetService.generatePackets(fund,
                 packetType,
