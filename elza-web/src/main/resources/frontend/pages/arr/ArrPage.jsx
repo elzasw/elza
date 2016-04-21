@@ -208,10 +208,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         var itemActions = [];
 
-        var contextActions = [];
-
         if (activeInfo.activeFund && !activeInfo.activeFund.closed) {
-            itemActions.push(
+            altActions.push(
                 <Button key="bulk-actions" onClick={this.handleBulkActionsDialog}><Icon glyph="fa-cogs"/>
                     <div><span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span></div>
                 </Button>,
@@ -223,7 +221,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         var show = this.props.arrRegion.showRegisterJp;
 
-        itemActions.push(
+        altActions.push(
             <Button active={show} onClick={this.handleRegisterJp} key="toggle-record-jp">
                 <Icon glyph="fa-th-list"/>
                 <div>
@@ -241,7 +239,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 var activeNode = activeFund.nodes.nodes[nodeIndex];
 
                 if (activeNode.selectedSubNodeId !== null) {
-                    contextActions.push(
+                    itemActions.push(
                         <Button key="next-error" onClick={this.handleErrorPrevious.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}><Icon glyph="fa-arrow-left"/>
                             <div><span className="btnText">{i18n('ribbon.action.arr.validation.error.previous')}</span></div>
                         </Button>,
@@ -263,13 +261,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             itemSection = <RibbonGroup key="item" className="large">{itemActions}</RibbonGroup>
         }
 
-        var contextSection;
-        if (contextActions.length > 0) {
-            contextSection = <RibbonGroup key="context" className="large">{contextActions}</RibbonGroup>
-        }
-
         return (
-            <Ribbon arr altSection={altSection} itemSection={itemSection} contextSection={contextSection}/>
+            <Ribbon arr altSection={altSection} itemSection={itemSection}/>
         )
     }
 

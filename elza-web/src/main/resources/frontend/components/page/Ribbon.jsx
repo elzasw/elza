@@ -74,10 +74,8 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
 
                 {section}
                 {this.props.altSection}
-                {this.props.altSection && <RibbonSplit />}
+                {this.props.itemSection && <RibbonSplit />}
                 {this.props.itemSection}
-                {this.props.contextSection && <RibbonSplit />}
-                {this.props.contextSection}
 
                 <RibbonGroup className="large right">
                     <Button onClick={this.handleLogout} ref='ribbonDefaultFocus'><Icon glyph="fa-sign-out" /><div><span className="btnText">{i18n('ribbon.action.logout')}</span></div></Button>
