@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import cz.tacr.elza.api.ArrPacket;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,10 +49,13 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     public static final Logger logger = LoggerFactory.getLogger(ArrangementControllerTest.class);
 
     public static final String STORAGE_NUMBER = "Test 123";
+    public static final String STORAGE_NUMBER_FOUND = "Te";
+    public static final String STORAGE_NUMBER_NOT_FOUND = "Sf";
     public static final String STORAGE_NUMBER_CHANGE = "Test 321";
 
     public static final String NAME_AP = "UseCase ščřžý";
     public static final String RENAME_AP = "Renamed UseCase";
+    public static final Integer LIMIT = 100;
 
     @Test
     public void arrangementTest() {
@@ -493,7 +495,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
 
     @Test
-    @Ignore
     public void packetsTest() {
 
         ArrFundVO fund = createFund("Packet Test AP", "IC2");
@@ -516,21 +517,64 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Assert.isTrue(packet.getPacketTypeId().equals(insertedPacket.getPacketTypeId()));
         Assert.isTrue(packet.getStorageNumber().equals(insertedPacket.getStorageNumber()));
 
-        List<ArrPacketVO> packets = getPackets(fund);
+        List<ArrPacketVO> packets = findPackets(fund, "", ArrPacket.State.OPEN);
         Assert.isTrue(packets.size() == 1);
         packet = packets.get(0);
-
         Assert.isTrue(packet.getId().equals(insertedPacket.getId()));
 
+        packets = findFormPackets(fund, null, LIMIT);
+        Assert.isTrue(packets.size() == 1);
+        packet = packets.get(0);
+        Assert.isTrue(packet.getId().equals(insertedPacket.getId()));
+
+        packets = findFormPackets(fund, STORAGE_NUMBER_FOUND, LIMIT);
+        Assert.isTrue(packets.size() == 1);
+        packet = packets.get(0);
+        Assert.isTrue(packet.getId().equals(insertedPacket.getId()));
+
+        packets = findFormPackets(fund, STORAGE_NUMBER_NOT_FOUND, LIMIT);
+        Assert.isTrue(packets.size() == 0);
+
         packet.setStorageNumber(STORAGE_NUMBER_CHANGE);
-        ArrPacketVO updatedPacket = updatePacket(fund, packet);
+        List<ArrPacketVO> setStatePackets = Arrays.asList(packet);
+        setStatePackets(fund, setStatePackets, ArrPacket.State.CANCELED);
 
-        Assert.isTrue(packet.getId().equals(updatedPacket.getId()));
+        packets = findFormPackets(fund, null, LIMIT);
+        Assert.isTrue(packets.size() == 0);
 
-        ArrPacketVO deactivatePacket = deactivatePacket(fund, updatedPacket);
+        packet.setStorageNumber(STORAGE_NUMBER_CHANGE);
+        setStatePackets = Arrays.asList(packet);
+        setStatePackets(fund, setStatePackets, ArrPacket.State.OPEN);
 
-        Assert.notNull(deactivatePacket);
-        //Assert.isTrue(deactivatePacket.getInvalidPacket().equals(true));
+        List<ArrPacketVO> deletePackets = Arrays.asList(packet);
+        deletePackets(fund, deletePackets);
+
+        packets = findFormPackets(fund, null, LIMIT);
+        Assert.isTrue(packets.size() == 0);
+
+        generatePackets(fund, "TEST-", packetTypes.get(0).getId(), 10, 5, 7, null);
+        packets = findPackets(fund, "TEST-", ArrPacket.State.OPEN);
+        Assert.isTrue(packets.size() == 7);
+
+        Assert.isTrue(packets.get(0).getStorageNumber().equals("TEST-00010"));
+        Assert.isTrue(packets.get(1).getStorageNumber().equals("TEST-00011"));
+        Assert.isTrue(packets.get(2).getStorageNumber().equals("TEST-00012"));
+        Assert.isTrue(packets.get(3).getStorageNumber().equals("TEST-00013"));
+        Assert.isTrue(packets.get(4).getStorageNumber().equals("TEST-00014"));
+        Assert.isTrue(packets.get(5).getStorageNumber().equals("TEST-00015"));
+        Assert.isTrue(packets.get(6).getStorageNumber().equals("TEST-00016"));
+
+        generatePackets(fund, "PAM-", packetTypes.get(0).getId(), 1, 4, 7, packets);
+        packets = findPackets(fund, "PAM-", ArrPacket.State.OPEN);
+        Assert.isTrue(packets.size() == 7);
+
+        Assert.isTrue(packets.get(0).getStorageNumber().equals("PAM-0001"));
+        Assert.isTrue(packets.get(1).getStorageNumber().equals("PAM-0002"));
+        Assert.isTrue(packets.get(2).getStorageNumber().equals("PAM-0003"));
+        Assert.isTrue(packets.get(3).getStorageNumber().equals("PAM-0004"));
+        Assert.isTrue(packets.get(4).getStorageNumber().equals("PAM-0005"));
+        Assert.isTrue(packets.get(5).getStorageNumber().equals("PAM-0006"));
+        Assert.isTrue(packets.get(6).getStorageNumber().equals("PAM-0007"));
     }
 
     @Test

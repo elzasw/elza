@@ -59,21 +59,6 @@ public class PacketService {
     }
 
     /**
-     * Vyhledá obaly podle archivní pomůcky.
-     *
-     * @param fundId identifikátor archivní pomůcky
-     * @return seznam obalů
-     */
-    public List<ArrPacket> getPackets(final Integer fundId) {
-        Assert.notNull(fundId);
-
-        ArrFund fund = fundRepository.findOne(fundId);
-        Assert.notNull(fund, "Archivní pomůcka neexistuje (ID=" + fundId + ")");
-
-        return packetRepository.findByFund(fund);
-    }
-
-    /**
      * Vytvoření obalu.
      *
      * @param packet obal
@@ -82,7 +67,16 @@ public class PacketService {
     public ArrPacket insertPacket(final ArrPacket packet) {
         Assert.notNull(packet);
         Assert.isNull(packet.getPacketId());
-        return updatePacket(packet);
+        Assert.notNull(packet.getStorageNumber());
+        Assert.notNull(packet.getState());
+
+        checkPacketDuplicate(packet);
+
+        EventId event = EventFactory
+                .createIdEvent(EventType.PACKETS_CHANGE, packet.getFund().getFundId());
+        eventNotificationService.publishEvent(event);
+
+        return packetRepository.save(packet);
     }
 
     /**
@@ -101,24 +95,6 @@ public class PacketService {
     }
 
     /**
-     * Úprava obalu.
-     *
-     * @param packet upravovaný obal
-     * @return upravený obal
-     */
-    public ArrPacket updatePacket(final ArrPacket packet) {
-        Assert.notNull(packet);
-
-        checkPacketDuplicate(packet);
-
-        EventId event = EventFactory
-                .createIdEvent(EventType.PACKETS_CHANGE, packet.getFund().getFundId());
-        eventNotificationService.publishEvent(event);
-
-        return packetRepository.save(packet);
-    }
-
-    /**
      * Vrací obal podle identifikátoru archivní pomůcky a identifikátoru obalu.
      *
      * @param fundId identifikátor archivní pomůcky
@@ -134,6 +110,18 @@ public class PacketService {
         return packet;
     }
 
+    /**
+     * Vygenerování / přegenerování obalů.
+     *
+     * @param fund          archivní fond
+     * @param packetType    typ obalu
+     * @param prefix        prefix
+     * @param fromNumber    generuj od čísla
+     * @param lenNumber     počet cifer v pořadí
+     * @param count         počet generovaných obalů
+     * @param packetIds     přegenerovaný id obalů
+     * @return  seznam obalů
+     */
     public List<ArrPacket> generatePackets(final ArrFund fund,
                                            final RulPacketType packetType,
                                            final String prefix,
@@ -142,7 +130,6 @@ public class PacketService {
                                            final Integer count,
                                            final Integer[] packetIds) {
         Assert.notNull(fund);
-        Assert.notNull(packetType);
         if (count <= 0
             || fromNumber < 0
             || lenNumber <= 0
@@ -183,10 +170,23 @@ public class PacketService {
             packetRepository.save(packets);
         }
 
+        EventId event = EventFactory
+                .createIdEvent(EventType.PACKETS_CHANGE, fund.getFundId());
+        eventNotificationService.publishEvent(event);
+
         return packets;
 
     }
 
+    /**
+     * Sestavení a kontrola storage number.
+     *
+     * @param prefix            prefix
+     * @param lenNumber         počet cifer v pořadí
+     * @param storageNumbers    seznam existujících označení
+     * @param number            pořadové číslo
+     * @return  výsledné storage number
+     */
     private String createAndCheckStorageNumber(final String prefix,
                                                final Integer lenNumber,
                                                final List<String> storageNumbers,
@@ -196,18 +196,40 @@ public class PacketService {
         return storageNumber;
     }
 
+    /**
+     * Kontrola existence storage number.
+     *
+     * @param storageNumbers    seznam existujících označení
+     * @param storageNumber     kontrolované storage number
+     */
     private void checkStorageNumber(final List<String> storageNumbers, final String storageNumber) {
         if (storageNumbers.contains(storageNumber)) {
             throw new IllegalStateException("Packet " + storageNumber + " již existuje!");
         }
     }
 
+    /**
+     * Vyhledání obalů.
+     *
+     * @param fund      archivní fond
+     * @param prefix    prefix
+     * @param state     stav
+     * @return  seznam nalezených obalů
+     */
     public List<ArrPacket> findPackets(final ArrFund fund, @Nullable final String prefix, final ArrPacket.State state) {
         Assert.notNull(fund);
         Assert.notNull(state);
         return packetRepository.findPackets(fund, prefix, state);
     }
 
+    /**
+     * Vyhledání obalů.
+     *
+     * @param fund  archivní fond
+     * @param limit maximální počet
+     * @param text  fulltext pro vyhledávání
+     * @return  seznam nalezených obalů
+     */
     public List<ArrPacket> findPackets(final ArrFund fund, final Integer limit, @Nullable final String text) {
         Assert.notNull(fund);
         Assert.notNull(limit);
@@ -215,6 +237,12 @@ public class PacketService {
         return packetRepository.findPackets(fund, limit, text, ArrPacket.State.OPEN);
     }
 
+    /**
+     * Smazání obalů.
+     *
+     * @param fund  archivní fond
+     * @param packetIds seznam identifikátorů ke smazání
+     */
     public void deletePackets(final ArrFund fund, final Integer[] packetIds) {
         Assert.notNull(fund);
         Assert.notNull(packetIds);
@@ -224,8 +252,19 @@ public class PacketService {
         while (packetIdsIterator.hasNext()) {
             packetRepository.deletePackets(fund, packetIdsIterator.next());
         }
+
+        EventId event = EventFactory
+                .createIdEvent(EventType.PACKETS_CHANGE, fund.getFundId());
+        eventNotificationService.publishEvent(event);
     }
 
+    /**
+     * Hromadná změna stavu obalů.
+     *
+     * @param fund  archivní fond
+     * @param packetIds seznam identifikátorů ke změně stavu
+     * @param state stav
+     */
     public void setStatePackets(final ArrFund fund, final Integer[] packetIds, final ArrPacket.State state) {
         Assert.notNull(fund);
         Assert.notNull(packetIds);
@@ -268,6 +307,10 @@ public class PacketService {
                 packet.setState(state);
             }
         }
+
+        EventId event = EventFactory
+                .createIdEvent(EventType.PACKETS_CHANGE, fund.getFundId());
+        eventNotificationService.publishEvent(event);
 
         packetRepository.save(packets);
     }

@@ -15,6 +15,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.api.ArrPacket;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -132,10 +133,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_DESC_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL
             + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}";
     protected static final String PACKET_TYPES = ARRANGEMENT_CONTROLLER_URL + "/packets/types";
-    protected static final String PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}";
+    protected static final String FIND_FORM_PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}/find/form";
+    protected static final String FIND_PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}/find";
     protected static final String INSERT_PACKET = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}";
-    protected static final String DEACTIVATE_PACKET = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}/{packetId}";
+    protected static final String DELETE_PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}";
     protected static final String UPDATE_PACKET = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}";
+    protected static final String SET_STATE_PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}";
+    protected static final String GENERATE_PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}/generate";
     protected static final String FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fulltext";
     protected static final String FIND_REGISTER_LINKS = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}";
     protected static final String FIND_REGISTER_LINKS_FORM = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/form";
@@ -1011,8 +1015,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param fund AP
      * @return obaly pro AP
      */
-    protected List<ArrPacketVO> getPackets(final ArrFundVO fund) {
-        return getPackets(fund.getId());
+    protected List<ArrPacketVO> findPackets(final ArrFundVO fund, final String prefix, final ArrPacket.State state) {
+        ArrangementController.PacketFindParam input = new ArrangementController.PacketFindParam();
+        input.setState(state);
+        input.setPrefix(prefix);
+        return findPackets(fund.getId(), input);
     }
 
     /**
@@ -1021,9 +1028,96 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param fundId identifikátor AP
      * @return obaly pro AP
      */
-    protected List<ArrPacketVO> getPackets(final Integer fundId) {
-        return Arrays.asList(get(spec ->
-                spec.pathParameter("fundId", fundId), PACKETS).getBody().as(ArrPacketVO[].class));
+    protected List<ArrPacketVO> findPackets(final Integer fundId, final ArrangementController.PacketFindParam input) {
+        return Arrays.asList(post(spec ->
+                spec.body(input).pathParameter("fundId", fundId), FIND_PACKETS).getBody().as(ArrPacketVO[].class));
+    }
+
+    /**
+     * Seznam obalů pro JP.
+     *
+     * @param fund AP
+     * @return obaly pro JP
+     */
+    protected List<ArrPacketVO> findFormPackets(final ArrFundVO fund, final String text, final Integer limit) {
+        ArrangementController.PacketFindFormParam input = new ArrangementController.PacketFindFormParam();
+        input.setLimit(limit);
+        input.setText(text);
+        return findFormPackets(fund.getId(), input);
+    }
+
+    /**
+     * Seznam obalů pro JP.
+     *
+     * @param fundId identifikátor AP
+     * @return obaly pro JP
+     */
+    protected List<ArrPacketVO> findFormPackets(final Integer fundId, final ArrangementController.PacketFindFormParam input) {
+        return Arrays.asList(post(spec ->
+                spec.body(input).pathParameter("fundId", fundId), FIND_FORM_PACKETS).getBody().as(ArrPacketVO[].class));
+    }
+
+    /**
+     * Změna stavu obalů.
+     *
+     * @param fundId identifikátor fondu
+     * @param input parametry změny
+     * @return obaly pro JP
+     */
+    protected void setStatePackets(final Integer fundId, final ArrangementController.PacketSetStateParam input) {
+        post(spec -> spec.body(input).pathParameter("fundId", fundId), SET_STATE_PACKETS);
+    }
+
+    /**
+     * Změna stavu obalů.
+     *
+     * @param fund identifikátor AP
+     * @param packets obaly
+     * @param state nastavovaný stav
+     * @return obaly pro JP
+     */
+    protected void setStatePackets(final ArrFundVO fund, final List<ArrPacketVO> packets, final ArrPacket.State state) {
+        ArrangementController.PacketSetStateParam param = new ArrangementController.PacketSetStateParam();
+        param.setState(state);
+        param.setPacketIds(packets.stream().map(t -> t.getId()).toArray(size -> new Integer[size]));
+        setStatePackets(fund.getId(), param);
+    }
+
+    /**
+     * Generování obalů.
+     *
+     * @param fund  archivní fond
+     * @param prefix    prefix označení obalu
+     * @param packetTypeId  identifikátor typu obalu
+     * @param fromNumber čísluj od
+     * @param lenNumber  počet cifer
+     * @param count      počet obalů
+     * @param packets    obaly k přečíslování
+     */
+    protected void generatePackets(final ArrFundVO fund, final String prefix, final Integer packetTypeId,
+                                   final Integer fromNumber, final Integer lenNumber, final Integer count,
+                                   final List<ArrPacketVO> packets) {
+        ArrangementController.PacketGenerateParam input = new ArrangementController.PacketGenerateParam();
+        input.setPrefix(prefix);
+        input.setPacketTypeId(packetTypeId);
+        input.setFromNumber(fromNumber);
+        input.setLenNumber(lenNumber);
+        input.setCount(count);
+        input.setPacketTypeId(packetTypeId);
+        if (packets != null) {
+            input.setPacketIds(packets.stream().map(t -> t.getId()).toArray(size -> new Integer[size]));
+        }
+        generatePackets(fund.getId(), input);
+    }
+
+    /**
+     * Generování obalů.
+     *
+     * @param fundId idedntifikátor fondu
+     * @param input vstupní parametry
+     */
+    protected void generatePackets(final Integer fundId, ArrangementController.PacketGenerateParam input) {
+        put(spec -> spec.body(input).pathParameter("fundId", fundId), GENERATE_PACKETS);
     }
 
     /**
@@ -1045,33 +1139,32 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return obal
      */
     protected ArrPacketVO insertPacket(final Integer fundId, final ArrPacketVO packetVO) {
-        return post(spec -> spec
+        return put(spec -> spec
                 .pathParameter("fundId", fundId)
                 .body(packetVO), INSERT_PACKET).getBody().as(ArrPacketVO.class);
     }
 
     /**
-     * Smazání obalu.
+     * Smazání obalů.
      *
      * @param fund    AP
-     * @param packet        obal pro smazání
-     * @return obal
+     * @param packets seznam obalů pro smazání
      */
-    protected ArrPacketVO deactivatePacket(final ArrFundVO fund, final ArrPacketVO packet) {
-        return deactivatePacket(fund.getId(), packet.getId());
+    protected void deletePackets(final ArrFundVO fund, final List<ArrPacketVO> packets) {
+        ArrangementController.PacketDeleteParam param = new ArrangementController.PacketDeleteParam();
+        param.setPacketIds(packets.stream().map(t -> t.getId()).toArray(size -> new Integer[size]));
+        deletePackets(fund.getId(), param);
     }
 
     /**
-     * Smazání obalu.
+     * Smazání obalů.
      *
      * @param fundId  identifikátor AP
-     * @param packetId      identfikátor obalu pro smazání
+     * @param param   parametry smazání
      * @return obal
      */
-    protected ArrPacketVO deactivatePacket(final Integer fundId, final Integer packetId) {
-        return delete(spec -> spec
-                .pathParameter("fundId", fundId)
-                .pathParameter("packetId", packetId), DEACTIVATE_PACKET).getBody().as(ArrPacketVO.class);
+    protected void deletePackets(final Integer fundId, final ArrangementController.PacketDeleteParam param) {
+        delete(spec -> spec.pathParameter("fundId", fundId).body(param), DELETE_PACKETS);
     }
 
     /**

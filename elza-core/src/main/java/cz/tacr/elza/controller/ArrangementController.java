@@ -300,7 +300,6 @@ public class ArrangementController {
         Assert.notNull(input.getLenNumber());
         Assert.notNull(input.getPrefix());
         Assert.notNull(input.getCount());
-        Assert.notNull(input.getPacketTypeId());
 
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
         RulPacketType packetType = packetTypeRepository.getOneCheckExist(input.getPacketTypeId());
