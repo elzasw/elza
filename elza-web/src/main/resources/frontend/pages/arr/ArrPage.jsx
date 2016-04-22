@@ -39,7 +39,7 @@ var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
-var _selectedTab = 1
+var _selectedTab = 0
 
 var keyModifier = Utils.getKeyModifier()
 

@@ -153,6 +153,14 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
             newState.itemsCount = nextProps.itemsCount
         }
 
+        if (nextProps.fetchNow) {
+            if (this.props.selectedItem) {
+                newState.activeIndex = null
+                newState.selectedIndex = null
+            }
+            this.callFetch(this.state.itemsFromIndex, this.state.itemsToIndex)
+        }
+
         this.setState(newState)
         this.tryUpdateSelectedIndex(this.state.itemsFromIndex, this.state.itemsToIndex, this.state.items)
     }

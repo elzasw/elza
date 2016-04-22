@@ -32,6 +32,7 @@ var ListBox2 = class ListBox2 extends AbstractReactComponent {
                 {...this.props}
                 getItems={this.handleGetItems}
                 itemHeight={itemHeight || 24}
+                fetchNow={true}
             />
         );
     }
