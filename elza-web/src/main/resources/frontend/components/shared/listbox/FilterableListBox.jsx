@@ -16,7 +16,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
         super(props)
 
         this.bindMethods('renderItemContent', 'handleCheckItem', 'handleSelectAll',
-            'handleUnselectAll', 'handleSearch', 'handleSearchClear', 'handleSearchChange')
+            'handleUnselectAll', 'handleSearch', 'handleSearchClear', 'handleSearchChange', 'focus')
 
         // Typ výběru:
         //   selectionType === 'selected', selectedIds obsahuje seznam vybraných id
@@ -165,6 +165,10 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
         }, () => this.handleSearch())
     }
 
+    focus() {
+        this.refs.listBox.focus()
+    }
+    
     render() {
         const {label, className, items, searchable, altSearch} = this.props
         const {filterText} = this.state
@@ -197,6 +201,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
                 </div>
                 <div className='list-container'>
                     <ListBox
+                        ref="listBox"
                         items={items}
                         renderItemContent={this.renderItemContent}
                         onCheck={this.handleCheckItem}

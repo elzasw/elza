@@ -12,7 +12,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Tabs, Icon, Ribbon, i18n} from 'components';
 import {FundExtendedView, FundForm, BulkActionsDialog, RibbonMenu, RibbonGroup, RibbonSplit,
-    ToggleContent, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs, ListBox, LazyListBox,
+    ToggleContent, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs, ListBox2, LazyListBox,
     VisiblePolicyForm, Loading, FundPackets} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -37,8 +37,9 @@ import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
-var _selectedTab = 2
+var _selectedTab = 1
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -46,7 +47,6 @@ var keymap = {
     Arr: {
         bulkActions: keyModifier + 'h',
         registerJp: keyModifier + 'j',
-        area0: keyModifier + '0',
         area1: keyModifier + '1',
         area2: keyModifier + '2',
         area3: keyModifier + '3',
@@ -62,7 +62,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             'getActiveFundId', 'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
             'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
-            'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext');
+            'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext', 'trySetFocus');
 
         this.state = {developerExpandedSpecsIds: {}};
     }
@@ -74,6 +74,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         if (fundId !== null) {
             this.dispatch(packetsFetchIfNeeded(fundId));
         }
+        this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
@@ -108,6 +109,35 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 }
             }
         }
+        this.trySetFocus(nextProps)
+    }
+
+    trySetFocus(props) {
+        var {focus} = props
+
+        if (canSetFocus()) {
+            if (isFocusFor(focus, 'arr', 3)) {
+                switch (_selectedTab) {
+                    case 0:
+                        this.refs.fundErrors && this.setState({}, () => {
+                            ReactDOM.findDOMNode(this.refs.fundErrors).focus()
+                        })
+                        break
+                    case 1:
+                        this.refs.fundVisiblePolicies && this.setState({}, () => {
+                            ReactDOM.findDOMNode(this.refs.fundVisiblePolicies).focus()
+                        })
+                        break
+                    case 2:
+                        this.refs.fundPackets && this.refs.fundPackets.getWrappedInstance().focus()
+                        break
+                    default:
+                        ref = null
+                        break
+                }
+                focusWasSet()
+            }
+        }
     }
 
     requestValidationData(isDirty, isFetching, versionId) {
@@ -122,9 +152,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 break
             case 'registerJp':
                 this.handleRegisterJp()
-                break
-            case 'area0':
-                this.dispatch(setFocus('arr', 0))
                 break
             case 'area1':
                 this.dispatch(setFocus('arr', 1))
@@ -285,25 +312,22 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     renderFundErrors(activeFund) {
-
         var activeNode = null;
         if (activeFund.nodes.activeIndex != null) {
             activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
         }
-        // TODO: aktivni node
 
         return (
             <div className="errors-listbox-container">
                 <LazyListBox
+                    ref="fundErrors"
                     getItems={(fromIndex, toIndex) => {
                                 return WebApi.getValidationItems(activeFund.versionId, fromIndex, toIndex)
                             }}
                     renderItemContent={(item) => item !== null ? <div>{item.name}</div> : '...'}
                     selectedItem={activeNode ? activeNode.selectedSubNodeId : null}
                     itemHeight={25} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
-                    /*onFocus={item=>{console.log("FOCUS", item)}}*/
                     onSelect={this.handleSelectErrorNode.bind(this, activeFund)}
-                    /*onDoubleClick={item=>{console.log("DOUBLECLICK", item)}}*/
                 />
             </div>
         )
@@ -350,19 +374,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         if (!nodesPolicy.fetched) {
             return <Loading />
         }
-        var activeIndex = -1;
         var activeNode = null;
         if (activeFund.nodes.activeIndex != null) {
             activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
-        }
-
-        if (activeNode != null) {
-            nodesPolicy.items.forEach((item, index)=>{
-                if (activeNode.selectedSubNodeId == item.id) {
-                    activeIndex = index;
-                }
-            });
-
         }
 
         if (nodesPolicy.items.length == 0) {
@@ -371,10 +385,11 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         return (
             <div className="visiblePolicies-container">
-                <ListBox className="visiblePolicies-listbox"
+                <ListBox2 className="visiblePolicies-listbox"
+                    ref="fundVisiblePolicies"
                     items={nodesPolicy.items}
-                         activeIndex={activeIndex}
-                    renderItemContent={(node, isActive) => <div key={node.id} className="visiblePolicies-item">{node.name}</div>}
+                    selectedItem={activeNode.selectedSubNodeId}
+                    renderItemContent={(node, isActive) => <div>{node.name}</div>}
                     onSelect={this.handleSelectVisiblePoliciesNode.bind(this, activeFund)}
                     /*onDoubleClick={this.handleShowVisiblePolicies.bind(this, activeFund)}*/
                 />
@@ -566,6 +581,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         return (
             <FundPackets
+                ref="fundPackets"
                 versionId={activeFund.versionId}
                 fundId={activeFund.id}
                 packetTypes={packetTypes}

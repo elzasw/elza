@@ -20,7 +20,7 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
 
         this.bindMethods('handleSelectionChange', 'handleTextSearch', 'handleFilterStateChange', 'handleChangeState',
             'handleChangeNumbers', 'handleDelete', 'handleAddOne', 'handleAddMany', 'handleCreatePacketFormSubmit',
-            'handleChangePacketNumberSubmit');
+            'handleChangePacketNumberSubmit', 'focus', 'focus');
     }
 
     componentDidMount() {
@@ -126,6 +126,10 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
         const {fundId} = this.props
         this.dispatch(fundPacketsChangeNumbers(fundId, data, selectedIds))
     }
+    
+    focus() {
+        this.refs.listBox.focus()
+    }
 
     render() {
         const {versionId, packetTypes, filterState, filterText, fetched, packets, selectedIds} = this.props
@@ -177,6 +181,7 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
                 </div>
 
                 <FilterableListBox
+                    ref="listBox"
                     items={items}
                     searchable
                     filterText={filterText}
@@ -191,4 +196,4 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(FundPackets);
+module.exports = connect(null, null, null, { withRef: true })(FundPackets);

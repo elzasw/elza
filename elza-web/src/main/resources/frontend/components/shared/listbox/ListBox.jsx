@@ -126,7 +126,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('handleKeyDown', 'ensureItemVisible', 'getNextSelectableItemIndex', 'getPrevSelectableItemIndex',
-            'dragStart', 'dragEnd', 'dragOver', 'handleClick', 'unFocus')
+            'dragStart', 'dragEnd', 'dragOver', 'handleClick', 'unFocus', 'focus')
 
         if (props.multiselect) {
             var activeIndexes = {}
@@ -356,7 +356,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
     }
 
     focus() {
-        this.refs.container.focus()
+        this.setState({}, () => {ReactDOM.findDOMNode(this.refs.container).focus()})
     }
 
     render() {
@@ -401,7 +401,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
                 ref='container'
                 onDragOver={this.dragOver}
             >
-                {rows}  
+                {rows}
             </div>
         );
     }

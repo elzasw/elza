@@ -178,7 +178,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
     }
 
     callCallbackAction(index, onCallbackName) {
-        console.log("CALLBACK", index, onCallbackName)
+        // console.log("CALLBACK", index, onCallbackName)
 
         const {items, itemsFromIndex, itemsToIndex} = this.state
         if (index >= itemsFromIndex && index < itemsToIndex) {  // máme data daného objektu, můžeme akci provést hned
@@ -401,11 +401,15 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
         )
     }
 
+    focus() {
+        ReactDOM.findDOMNode(this.refs.mainContainer).focus()
+    }
+    
     render() {
         const {className, items, renderItemContent} = this.props;
         const {activeIndex, activeIndexes} = this.state;
 
-        var cls = "lazy-listbox-container";
+        var cls = "lazy-listbox-container listbox-container";
         if (className) {
             cls += " " + className;
         }
