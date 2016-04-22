@@ -14,10 +14,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.repository.PacketTypeRepository;
-import cz.tacr.elza.service.PolicyService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -39,6 +37,7 @@ import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FundListCountResult;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeData;
@@ -76,6 +75,7 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
@@ -83,6 +83,7 @@ import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.FilterTreeService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.PacketService;
+import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.exception.DeleteFailedException;
@@ -879,6 +880,7 @@ public class ArrangementController {
     public NodeWithParent addLevel(@RequestBody final AddLevelParam addLevelParam) {
         Assert.notNull(addLevelParam);
         Assert.notNull(addLevelParam.getVersionId());
+
         Assert.notNull(addLevelParam.getDirection());
 
         ArrFundVersion version = fundVersionRepository.findOne(addLevelParam.getVersionId());
@@ -1167,15 +1169,20 @@ public class ArrangementController {
      *
      * @param versionId id verze stromu
      * @param fulltext  fulltext
+     * @param luceneQuery v hodnotě fulltext je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext
      * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
      * @throws FilterExpiredException není nastaven filtr, nejprve zavolat {@link FilterTreeService#filterData(ArrFundVersion,
-     *                                Object)}
+     *                                Object)
+     * @throws InvalidQueryException
      */
     @RequestMapping(value = "/getFilteredFulltext/{versionId}", method = RequestMethod.GET)
     public List<FilterNodePosition> getFilteredFulltextNodes(@PathVariable("versionId") final Integer versionId,
-                                                             @RequestParam("fulltext") final String fulltext) {
+                                                             @RequestParam("fulltext") final String fulltext,
+                                                             @RequestParam(value = "luceneQuery", required = false)
+                                                             final Boolean luceneQuery) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        return filterTreeService.getFilteredFulltextIds(version, fulltext);
+
+        return filterTreeService.getFilteredFulltextIds(version, fulltext, BooleanUtils.isTrue(luceneQuery));
     }
 
     /**

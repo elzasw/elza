@@ -16,6 +16,8 @@ import javax.persistence.PersistenceContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.queries.ChainedFilter;
+import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
+import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.NumericRangeFilter;
@@ -36,6 +38,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.filter.condition.DescItemCondition;
 import cz.tacr.elza.utils.NodeUtils;
@@ -93,6 +96,24 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         return new HashSet<>(nodeIds);
     }
 
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<Integer> findByLuceneQueryAndVersionLockChangeId(String queryText, Integer fundId, Integer lockChangeId)
+            throws InvalidQueryException {
+        Assert.notNull(fundId);
+
+        List<String> descItemIds = findDescItemIdsByLuceneQuery(queryText, fundId);
+        if (descItemIds.isEmpty()) {
+            return Collections.EMPTY_SET;
+        }
+
+        String descItemIdsString = StringUtils.join(descItemIds, " ");
+        List<Integer> nodeIds = findNodeIdsByValidDescItems(lockChangeId, descItemIdsString);
+
+        return new HashSet<>(nodeIds);
+    }
+
     /**
      * @return vrací seznam uzlů, které nemají žádnou vazbu na conformity info
      */
@@ -132,6 +153,46 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         List<String> result = (List<String>) createFullTextQuery(query, entityClass).setProjection("descItemId").getResultList().stream().map(row -> {
             return ((Object[]) row)[0];
         }).collect(Collectors.toList());
+
+        return result;
+    }
+
+    /**
+     * Vyhledá id atributů podle předané hodnoty. Hledá napříč archivními pomůckami a jejich verzemi.
+     * Vyhledávání probíhá podle lucene dotazu.
+     *
+     * @param queryText lucene dotaz (např: +specification:*čís* -fulltextValue:ddd)
+     * @param fundId    id fondu
+     * @return id atributů které mají danou hodnotu
+     * @throws InvalidQueryException neplatný lucene dotaz
+     */
+    private List<String> findDescItemIdsByLuceneQuery(final String queryText, final Integer fundId)
+            throws InvalidQueryException{
+        if (StringUtils.isBlank(queryText)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        Class<ArrData> entityClass = ArrData.class;
+        QueryBuilder queryBuilder = createQueryBuilder(entityClass);
+
+
+        StandardQueryParser parser = new StandardQueryParser();
+        parser.setAllowLeadingWildcard(true);
+
+        Query query;
+        try {
+            Query textQuery = parser.parse(queryText, "fulltextValue");
+            Query fundIdQuery = queryBuilder.keyword().onField("fundId").matching(fundId).createQuery();
+            query = queryBuilder.bool().must(textQuery).must(fundIdQuery).createQuery();
+
+        } catch (QueryNodeException e) {
+            throw new InvalidQueryException(e);
+        }
+
+        List<String> result = (List<String>) createFullTextQuery(query, entityClass).setProjection(
+                "descItemId").getResultList().stream().map(row ->
+                        ((Object[]) row)[0]
+        ).collect(Collectors.toList());
 
         return result;
     }

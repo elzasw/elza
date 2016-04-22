@@ -6,6 +6,7 @@ import java.util.Set;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 
 
@@ -38,6 +39,22 @@ public interface NodeRepositoryCustom {
      * @return množina id uzlů odopovídající hledané hodnotě
      */
     Set<Integer> findByFulltextAndVersionLockChangeId(String text, Integer fundId, Integer lockChangeId);
+
+
+    /**
+     * Najde uzly s danou hodnotou podle lucene dotazu.
+     *
+     * @param queryText např: +specification:*čís* -fulltextValue:ddd
+     * @param fundId id fondu do kterého uzly patří
+     * @param lockChangeId id verze ve které se má hledat, může být null
+     *
+     * @return množina id uzlů odopovídající hledané hodnotě
+     * @throws InvalidQueryException neplatný lucene dotaz
+     */
+    @SuppressWarnings("unchecked")
+    Set<Integer> findByLuceneQueryAndVersionLockChangeId(String queryText, Integer fundId, Integer lockChangeId)
+        throws InvalidQueryException;
+
 
     List<ArrNode> findByNodeConformityIsNull();
 

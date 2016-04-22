@@ -17,9 +17,11 @@ import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
+import org.hibernate.search.bridge.builtin.IntegerBridge;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -69,16 +71,19 @@ public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType
     }
 
     @Field(store = Store.YES)
+    @FieldBridge(impl = IntegerBridge.class)
     public Integer getNodeId() {
         return descItem.getNode().getNodeId();
     }
 
     @Field
+    @FieldBridge(impl = IntegerBridge.class)
     public Integer getFundId() {
         return descItem.getNode().getFund().getFundId();
     }
 
     @Field(store = Store.NO)
+    @FieldBridge(impl = IntegerBridge.class)
     public Integer getDescItemTypeId() {
         return descItem.getDescItemType().getDescItemTypeId();
     }

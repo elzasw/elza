@@ -17,13 +17,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Iterables;
 import javax.annotation.Nullable;
-import cz.tacr.elza.controller.ArrangementController;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.domain.UIVisiblePolicy;
-import cz.tacr.elza.repository.VisiblePolicyRepository;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -35,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.google.common.collect.Iterables;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.ArrNodeConformity.State;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
@@ -42,9 +39,12 @@ import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -61,11 +61,13 @@ import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
+import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -82,6 +84,7 @@ import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -798,6 +801,28 @@ public class ArrangementService {
         Integer fundId = version.getFund().getFundId();
 
         return nodeRepository.findByFulltextAndVersionLockChangeId(searchValue, fundId, lockChangeId);
+    }
+
+    /**
+     * Vyhledání id nodů podle lucene dotazu. např: +specification:*čís* -fulltextValue:ddd
+     *
+     * @param version     verze AP
+     * @param nodeId      id uzlu pod kterým se má hledat, může být null
+     * @param searchValue lucene dotaz (např: +specification:*čís* -fulltextValue:ddd)
+     * @param depth       hloubka v jaké se hledá pod předaným nodeId
+     * @return seznam id uzlů které vyhovují parametrům
+     * @throws InvalidQueryException neplatný lucene dotaz
+     */
+    public Set<Integer> findNodeIdsByLuceneQuery(ArrFundVersion version, Integer nodeId,
+                                                 String searchValue, Depth depth) throws InvalidQueryException {
+        Assert.notNull(version);
+        Assert.notNull(depth);
+
+        ArrChange lockChange = version.getLockChange();
+        Integer lockChangeId = lockChange == null ? null : lockChange.getChangeId();
+        Integer fundId = version.getFund().getFundId();
+
+        return nodeRepository.findByLuceneQueryAndVersionLockChangeId(searchValue, fundId, lockChangeId);
     }
 
     /**

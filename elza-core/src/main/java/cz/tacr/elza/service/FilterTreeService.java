@@ -154,10 +154,12 @@ public class FilterTreeService {
      *
      * @param version  verze stromu
      * @param fulltext fulltext
+     * @param luceneQuery v hodnotě fulltext je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext
      * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
      * @throws FilterExpiredException není nastaven filtr, nejprve zavolat {@link #filterData(ArrFundVersion, Object)}
      */
-    public List<FilterNodePosition> getFilteredFulltextIds(final ArrFundVersion version, final String fulltext)
+    public List<FilterNodePosition> getFilteredFulltextIds(final ArrFundVersion version, final String fulltext,
+                                                           final boolean luceneQuery)
             throws FilterExpiredException {
         Assert.notNull(version);
 
@@ -176,7 +178,12 @@ public class FilterTreeService {
         Collection<Integer> fulltextIds;
         if (StringUtils.isBlank(fulltext)) {
             fulltextIds = filteredIds;
+        } else if (luceneQuery) {
+            fulltextIds = arrangementService
+                    .findNodeIdsByLuceneQuery(version, version.getRootNode().getNodeId(), fulltext,
+                            ArrangementController.Depth.SUBTREE);
         } else {
+
             fulltextIds = arrangementService
                     .findNodeIdsByFulltext(version, version.getRootNode().getNodeId(), fulltext,
                             ArrangementController.Depth.SUBTREE);
