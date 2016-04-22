@@ -42,14 +42,18 @@
   .filterable-listbox-container {
     display: flex;
     flex-direction: column;
+      flex-grow: 1;
     .search-action-container {
       flex-shrink: 0;
     }
     .list-container {
       display: flex;
+      flex-grow: 1;
+      display: flex;
       flex-direction: column;
 
       .listbox-container {
+        flex-grow: 1;
         overflow: hidden;
         overflow-y: auto;
       }
@@ -60,6 +64,10 @@
     display: block;
     > .search-container {
       display: flex;
+      width: auto;
+      .search-container {
+        width: 100%;
+      }
 
       > * {
         margin-right: 6px;

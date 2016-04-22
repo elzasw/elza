@@ -49,7 +49,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel',
-                'handleChange', 'handleChangeSpec', 'handleCreatePacket', 'handleCreateParty', 'handleCreateRecord',
+                'handleChange', 'handleChangeSpec', 'handleCreateParty', 'handleCreateRecord',
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
                 'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver',
                 'handleDragLeave', 'getShowDeleteDescItemType', 'getShowDeleteDescItem', 'focus', 'handleDescItemTypeShortcuts',
@@ -194,15 +194,6 @@ return true;
      */
     handleChange(descItemIndex, value) {
         this.props.onChange(descItemIndex, value);
-    }
-
-    /**
-     * Vytvoření nového obalu.
-     *
-     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
-     */
-    handleCreatePacket(descItemIndex) {
-        this.props.onCreatePacket(descItemIndex);
     }
 
     /**
@@ -438,7 +429,7 @@ return true;
      * @return {Object} view
      */
     renderDescItem(descItemType, descItem, descItemIndex, actions, locked) {
-        const {refType, infoType, singleDescItemTypeEdit, rulDataType, calendarTypes, packets, packetTypes, versionId} = this.props;
+        const {refType, fundId, infoType, singleDescItemTypeEdit, rulDataType, calendarTypes, packets, packetTypes, versionId} = this.props;
 
         var cls = 'desc-item-type-desc-item-container';
         if (actions.length > 0) {
@@ -502,8 +493,8 @@ return true;
                 parts.push(<DescItemPacketRef key={itemComponentKey}
                     {...descItemProps}
                     singleDescItemTypeEdit={singleDescItemTypeEdit}
-                    onCreatePacket={this.handleCreatePacket.bind(this, descItemIndex)}
                     packets={packets}
+                    fundId={fundId}
                     packetTypes={packetTypes}
                     />)
                 break;
@@ -778,7 +769,6 @@ DescItemType.propTypes = {
     onChangePosition: React.PropTypes.func.isRequired,
     onBlur: React.PropTypes.func.isRequired,
     onFocus: React.PropTypes.func.isRequired,
-    onCreatePacket: React.PropTypes.func.isRequired,
     onCreateParty: React.PropTypes.func.isRequired,
     onDetailParty: React.PropTypes.func.isRequired,
     onCreateRecord: React.PropTypes.func.isRequired,
@@ -801,7 +791,8 @@ DescItemType.propTypes = {
     closed: React.PropTypes.bool.isRequired,
     copy: React.PropTypes.bool.isRequired,
     conformityInfo: React.PropTypes.object.isRequired,
-    versionId: React.PropTypes.number.isRequired
+    versionId: React.PropTypes.number.isRequired,
+    fundId: React.PropTypes.number.isRequired,
 }
 
 DescItemType.childContextTypes = {

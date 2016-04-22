@@ -1,19 +1,50 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components';
 import {connect} from 'react-redux'
-import {decorateValue} from './DescItemUtils'
+import {decorateValue, decorateAutocompleteValue} from './DescItemUtils'
+import {WebApi} from 'actions'
 
 var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('packetName', 'findType', 'focus');
+        this.bindMethods('packetName', 'findType', 'focus', 'handleSearchChange', 'handleChange', 'renderPacket');
+
+        this.state = {packetTypes: []};
+    }
+
+    handleSearchChange(text) {
+        const {fundId} = this.props
+
+        WebApi.getPackets(fundId, text, 200)
+            .then(json => {
+                this.setState({
+                    packetTypes: json
+                })
+            })
     }
 
     focus() {
         this.refs.focusEl.focus()
+    }
+
+    renderPacket(item, isHighlighted, isSelected) {
+        var cls = 'item';
+        if (isHighlighted) {
+            cls += ' focus'
+        }
+        if (isSelected) {
+            cls += ' active'
+        }
+
+        return (
+            <div className={cls} key={item.id}>
+                {false && this.packetName(item)}
+                {item.storageNumber}
+            </div>
+        )
     }
 
     findType(packetTypeId) {
@@ -30,7 +61,6 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
         return null;
     }
 
-
     packetName(packet) {
         var type = this.findType(packet.packetTypeId);
 
@@ -41,12 +71,17 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
         }
     }
 
+    handleChange(id, valueObj) {
+        this.props.onChange(valueObj);
+    }
+
     render() {
         const {descItem, locked, packetTypes, packets, singleDescItemTypeEdit} = this.props;
+        var value = descItem.packet ? descItem.packet : null;
 
         return (
             <div className='desc-item-value desc-item-value-parts'>
-                <select
+                {false && <select
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
                         ref='focusEl'
                         value={descItem.value}
@@ -56,8 +91,22 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                     {packets.map(packet => (
                             <option key={packet.id} value={packet.id}>{this.packetName(packet)}</option>
                     ))}
-                </select>
-                {!locked && !singleDescItemTypeEdit && <div className='desc-item-type-actions'><NoFocusButton onClick={this.props.onCreatePacket} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>}
+                </select>}
+
+
+                <Autocomplete
+                    {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-packet'])}
+                    ref='focusEl'
+                    customFilter
+                    value={value}
+                    disabled={locked}
+                    items={this.state.packetTypes}
+                    onSearchChange={this.handleSearchChange}
+                    onChange={this.handleChange}
+                    renderItem={this.renderPacket}
+                    getItemName={(item) => item ? item.storageNumber : ''}
+                />
+
             </div>
         )
     }

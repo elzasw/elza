@@ -121,14 +121,20 @@ export function fundPacketsChangeNumbers(fundId, data, ids) {
     }
 }
 
-export function fundPacketsDelete(fundId, ids) {
+export function fundPacketsDelete(versionId, fundId, ids) {
     return (dispatch, getState) => {
         WebApi.deletePackets(fundId, ids)
+            .then(() => {
+                dispatch(fundPacketsChangeSelection(versionId, []))
+            })
     }
 }
 
-export function fundPacketsChangeState(fundId, selectedIds, newState) {
+export function fundPacketsChangeState(versionId, fundId, selectedIds, newState) {
     return (dispatch, getState) => {
         WebApi.setStatePackets(fundId, selectedIds, newState)
+            .then(() => {
+                dispatch(fundPacketsChangeSelection(versionId, []))
+            })
     }
 }

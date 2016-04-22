@@ -290,15 +290,6 @@ export default function arrRegion(state = initialState, action) {
                 ...state,
                 packets
             }
-        case types.CREATE_PACKET_RECEIVE:
-            var packets = Object.assign({}, state.packets);
-
-            packets[action.fundId].items.push(action.data);
-
-            return {
-                ...state,
-                packets: packets
-            }
         case types.CHANGE_CONFORMITY_INFO:
             var index = indexById(state.funds, action.fundVersionId, "versionId");
 

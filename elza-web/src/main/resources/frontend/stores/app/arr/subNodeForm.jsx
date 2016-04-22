@@ -176,6 +176,10 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItem.value = action.value.partyId;
                     loc.descItem.party = action.value;
                     break;
+                case 'PACKET_REF':
+                    loc.descItem.value = action.value.id;
+                    loc.descItem.packet = action.value;
+                    break;
                 case 'RECORD_REF':
                     loc.descItem.value = action.value.recordId;
                     loc.descItem.record = action.value;

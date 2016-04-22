@@ -561,13 +561,14 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     renderFundPackets() {
-        const {arrRegion} = this.props;
+        const {arrRegion, packetTypes} = this.props;
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
 
         return (
             <FundPackets
                 versionId={activeFund.versionId}
                 fundId={activeFund.id}
+                packetTypes={packetTypes}
                 {...activeFund.fundPackets}
                 />
         )

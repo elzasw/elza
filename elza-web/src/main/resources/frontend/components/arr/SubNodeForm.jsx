@@ -22,7 +22,6 @@ import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
 import {lockDescItemType, unlockDescItemType, unlockAllDescItemType,
         copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting'
 import {addNode,deleteNode} from '../../actions/arr/node'
-import {createPacket} from 'actions/arr/packets'
 import {isFundRootId} from './ArrUtils.jsx'
 import {partySelect, partyAdd} from 'actions/party/party'
 import {registrySelect, registryAdd} from 'actions/registry/registryRegionList'
@@ -40,7 +39,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions',
             'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
-            'handleCreatePacket', 'handleCreatePacketSubmit', 'handleAddChildNode', 'handleCreateParty',
+            'handleAddChildNode', 'handleCreateParty',
             'handleCreatedParty', 'handleCreateRecord', 'handleCreatedRecord', 'handleDeleteNode',
             'handleDescItemTypeCopyFromPrev', 'trySetFocus', 'initFocus', 'getFlatDescItemTypes', 'getNodeSetting',
             'addNodeAfterClick', 'addNodeBeforeClick', 'addNodeChildClick'
@@ -349,49 +348,6 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         this.dispatch(fundSubNodeFormValueUploadCoordinates(this.props.versionId, this.props.nodeKey, descItemTypeId, file));
     }
 
-
-    /**
-     * Vytvoření nového obalu.
-     *
-     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
-     * @param descItemTypeIndex {Integer} index atributu v seznamu
-     * @param descItemIndex {Integer} index honodty atributu v seznamu
-     */
-    handleCreatePacket(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
-        var valueLocation = {
-            descItemGroupIndex,
-            descItemTypeIndex,
-            descItemIndex
-        }
-
-        const {fundId} = this.props;
-
-        var initData = {
-            packetTypeId: null,
-            storageNumber: "",
-            invalidPacket: false
-        };
-
-        this.dispatch(modalDialogShow(this, i18n('arr.packet.title.add'), <AddPacketForm initData={initData} create fundId={fundId} onSubmitForm={this.handleCreatePacketSubmit.bind(this, valueLocation)} />));
-    }
-
-    /**
-     * Vytvoření obalu po vyplnění formuláře.
-     *
-     * @param valueLocation pozice hodnoty atributu
-     * @param form {Object} data z formuláře
-     */
-    handleCreatePacketSubmit(valueLocation, form) {
-        const {fundId, versionId, selectedSubNodeId, nodeKey} = this.props;
-
-        var storageNumber = form.storageNumber;
-        var packetTypeId = form.packetTypeId === "" ? null : parseInt(form.packetTypeId);
-        var invalidPacket = form.invalidPacket;
-
-        this.dispatch(createPacket(fundId, storageNumber, packetTypeId, invalidPacket, valueLocation,
-                versionId, selectedSubNodeId, nodeKey));
-    }
-
     /**
      * Vytvoření nového hesla.
      *
@@ -629,7 +585,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) {
-        const {subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, rulDataTypes, calendarTypes, closed,
+        const {fundId, subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, rulDataTypes, calendarTypes, closed,
                 nodeSettings, nodeId, packetTypes, packets, conformityInfo, versionId} = this.props;
 
         var refType = subNodeForm.refTypesMap[descItemType.id]
@@ -663,7 +619,6 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 calendarTypes={calendarTypes}
                 packetTypes={packetTypes}
                 packets={packets}
-                onCreatePacket={this.handleCreatePacket.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onCreateParty={this.handleCreateParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDetailParty={this.handleDetailParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onCreateRecord={this.handleCreateRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
@@ -686,6 +641,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 conformityInfo={conformityInfo}
                 descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
                 versionId={versionId}
+                fundId={fundId}
             />
         )
     }
@@ -815,6 +771,7 @@ function mapStateToProps(state) {
 
 SubNodeForm.propTypes = {
     versionId: React.PropTypes.number.isRequired,
+    fundId: React.PropTypes.number.isRequired,
     parentNode: React.PropTypes.object.isRequired,
     selectedSubNode: React.PropTypes.object.isRequired,
     selectedSubNodeId: React.PropTypes.number.isRequired,

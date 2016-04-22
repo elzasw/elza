@@ -59,38 +59,3 @@ export function packetsRequest(fundId) {
     }
 }
 
-/**
- * Byl vytvořen nový obal, akce pro informování o jeho vytvoření.
- * @param {int} fundId id AS
- * @param {Object} data nově vytvořeného obalu
- */
-export function createPacketReceive(fundId, data) {
-    return {
-        type: types.CREATE_PACKET_RECEIVE,
-        data: data,
-        fundId: fundId
-    }
-}
-
-/**
- * Vytvoření nového obalu.
- * @param {int} fundId id AS
- * @param {string} storageNumber ukládací číslo
- * @param {int} packetTypeId id typu obalu
- * @param {bool} invalidPacket je obal nevalidní?
- * @param {Object} valueLocation konkrétní umístění hodnoty ve formuláři
- * @param {int} versionId verze AS
- * @param {int} selectedSubNodeId pod jakým uzlem bylo editováno - hodnota se edituje pod uzlem a z editace je možné založit nový obal
- * @param {int} nodeKey klíč záložky
- */
-export function createPacket(fundId, storageNumber, packetTypeId, invalidPacket, valueLocation, versionId, selectedSubNodeId, nodeKey) {
-    return dispatch => {
-        return WebApi.insertPacket(fundId, storageNumber, packetTypeId, invalidPacket)
-                .then(json => dispatch(createPacketReceive(fundId, json)))
-                .then(action => {
-                    dispatch(fundSubNodeFormValueChange(versionId, nodeKey, valueLocation, action.data.id, true));
-                    dispatch(modalDialogHide())
-                });
-    }
-}
-

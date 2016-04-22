@@ -69,8 +69,8 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
     }
 
     handleChangeState(state) {
-        const {fundId, selectedIds} = this.props
-        this.dispatch(fundPacketsChangeState(fundId, selectedIds, state))
+        const {fundId, versionId, selectedIds} = this.props
+        this.dispatch(fundPacketsChangeState(versionId, fundId, selectedIds, state))
     }
 
     handleChangeNumbers() {
@@ -87,8 +87,8 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
     }
 
     handleDelete() {
-        const {fundId, selectedIds} = this.props
-        this.dispatch(fundPacketsDelete(fundId, selectedIds))
+        const {fundId, versionId, selectedIds} = this.props
+        this.dispatch(fundPacketsDelete(versionId, fundId, selectedIds))
     }
 
     handleAddOne() {
@@ -128,14 +128,22 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
     }
 
     render() {
-        const {versionId, filterState, filterText, fetched, packets, selectedIds} = this.props
+        const {versionId, packetTypes, filterState, filterText, fetched, packets, selectedIds} = this.props
 
         if (!fetched) {
             return <Loading/>
         }
 
+        const packetTypesMap = getMapFromList(packetTypes.items)
         const items = packets.map(packet => {
-            return {id: packet.id, name: packet.storageNumber}
+            let name
+            // if (typeof packet.packetTypeId !== 'undefined' && packet.packetTypeId !== null) {
+            //     name = packet.storageNumber + " [" + packetTypesMap[packet.packetTypeId].name + "]"
+            // } else {
+            //     name = packet.storageNumber
+            // }
+            name = packet.storageNumber
+            return {id: packet.id, name: name}
         })
 
         const altSearch = (
@@ -152,6 +160,10 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
             <div className='fund-packets'>
                 <div className="actions-container">
                     <div className="actions">
+                        <DropdownButton noCaret title={<div><Icon glyph='fa-plus' /> {i18n('arr.fund.packets.action.add')}</div>}>
+                            <MenuItem onClick={this.handleAddOne} eventKey='changeNumbers'>{i18n('arr.fund.packets.action.add.single')}</MenuItem>
+                            <MenuItem onClick={this.handleAddMany} eventKey='changeNumbers'>{i18n('arr.fund.packets.action.add.more')}</MenuItem>
+                        </DropdownButton>
                         <DropdownButton noCaret disabled={selectedIds.length === 0} title={<div><Icon glyph='fa-edit' /> {i18n('arr.fund.packets.action.checkedItems')}</div>}>
                             <MenuItem onClick={this.handleChangeState.bind(this, "OPEN")} eventKey='toOpen'>{i18n('arr.fund.packets.action.changeState.toOpen')}</MenuItem>
                             <MenuItem onClick={this.handleChangeState.bind(this, "CLOSED")} eventKey='toClosed'>{i18n('arr.fund.packets.action.changeState.toClosed')}</MenuItem>
@@ -160,10 +172,6 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
                             <MenuItem onClick={this.handleChangeNumbers} eventKey='changeNumbers'>{i18n('arr.fund.packets.action.changeNumbers')}</MenuItem>
                             <MenuItem divider />
                             <MenuItem onClick={this.handleDelete} eventKey='delete'>{i18n('arr.fund.packets.action.delete')}</MenuItem>
-                        </DropdownButton>
-                        <DropdownButton noCaret title={<div><Icon glyph='fa-plus' /> {i18n('arr.fund.packets.action.add')}</div>}>
-                            <MenuItem onClick={this.handleAddOne} eventKey='changeNumbers'>{i18n('arr.fund.packets.action.add.single')}</MenuItem>
-                            <MenuItem onClick={this.handleAddMany} eventKey='changeNumbers'>{i18n('arr.fund.packets.action.add.more')}</MenuItem>
                         </DropdownButton>
                     </div>
                 </div>
