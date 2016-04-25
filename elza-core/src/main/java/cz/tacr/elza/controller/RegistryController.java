@@ -12,7 +12,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -25,21 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.RegRecordSimple;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRecordWithCount;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.RelationRoleTypeRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RegistryService;
 
@@ -74,6 +62,9 @@ public class RegistryController {
 
     @Autowired
     private VariantRecordRepository variantRecordRepository;
+
+    @Autowired
+    private RegCoordinatesRepository regCoordinatesRepository;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -255,6 +246,8 @@ public class RegistryController {
         result.setChilds(factoryVo.createRegRecords(childs, recordIdPartyIdMap, false, null));
 
         result.setVariantRecords(factoryVo.createRegVariantRecords(variantRecordRepository.findByRegRecordId(recordId)));
+
+        result.setCoordinates(factoryVo.createRegCoordinates(regCoordinatesRepository.findByRegRecordId(recordId)));
 
         return result;
     }
@@ -485,7 +478,6 @@ public class RegistryController {
     @Transactional
     @RequestMapping(value = "/scopes", method = RequestMethod.DELETE)
     public void deleteScope(@RequestParam final Integer scopeId) {
-
         RegScope scope = scopeRepository.findOne(scopeId);
         registryService.deleteScope(scope);
     }
@@ -494,8 +486,56 @@ public class RegistryController {
      * Vrací výchozí třídy rejstříků z databáze.
      */
     @RequestMapping(value = "/defaultScopes", method = RequestMethod.GET)
-    public List<RegScopeVO> getDefaultScopes(){
+    public List<RegScopeVO> getDefaultScopes() {
         List<RegScope> scopes = registryService.findDefaultScopes();
         return factoryVo.createScopes(scopes);
+    }
+
+    /**
+     * Vytvoří nové souřadnice k rejsříkovému heslu
+     */
+    @Transactional
+    @RequestMapping(value = "/createRegCoordinates", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public RegCoordinatesVO createRegCoordinates(@RequestBody final RegCoordinatesVO coordinatesVO) {
+        Assert.isNull(coordinatesVO.getCoordinatesId(),
+                "Při vytváření záznamu nesmí být vyplněno ID (coordinatesId).");
+        RegCoordinates coordinates = factoryDO.createRegCoordinates(coordinatesVO);
+        coordinates = registryService.saveRegCoordinates(coordinates);
+        return factoryVo.createRegCoordinates(coordinates);
+    }
+
+    /**
+     * Aktualizace souřadnic rejstříkového hesla.
+     *
+     * @param coordinatesVO VO souřadnice hesla
+     * @return aktualizovaný záznam
+     */
+    @Transactional
+    @RequestMapping(value = "/updateRegCoordinates", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public RegCoordinatesVO updateRegCoordinates(@RequestBody final RegCoordinatesVO coordinatesVO) {
+        Assert.notNull(coordinatesVO.getCoordinatesId(), "Očekáváno ID pro update.");
+        RegCoordinates coordinates = regCoordinatesRepository.findOne(coordinatesVO.getCoordinatesId());
+        Assert.notNull(coordinates, "Nebyl nalezen záznam pro update s id " + coordinatesVO.getCoordinatesId());
+        RegCoordinates coordinatesDO = factoryDO.createRegCoordinates(coordinatesVO);
+        coordinates = registryService.saveRegCoordinates(coordinatesDO);
+        regRecordRepository.flush();
+        return factoryVo.createRegCoordinates(coordinates);
+    }
+
+    /**
+     * Smazání souřadnic rejstříkového hesla.
+     *
+     * @param coordinatesId id souřadnic rejstříkového hesla
+     */
+    @Transactional
+    @RequestMapping(value = "/deleteRegCoordinates", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"coordinatesId"})
+    public void deleteRegCoordinates(@RequestParam(value = "coordinatesId") final Integer coordinatesId) {
+        Assert.notNull(coordinatesId);
+        RegCoordinates variantRecord = regCoordinatesRepository.findOne(coordinatesId);
+        if (variantRecord == null) {
+            return;
+        }
+
+        regCoordinatesRepository.delete(coordinatesId);
     }
 }

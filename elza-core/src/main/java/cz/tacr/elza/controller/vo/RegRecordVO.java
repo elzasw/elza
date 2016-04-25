@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.Collections;
 import java.util.List;
 
 
@@ -70,7 +71,12 @@ public class RegRecordVO {
     /**
      * Seznam variantních rejstříkových hesel.
      */
-    private List<RegVariantRecordVO> variantRecords;
+    private List<RegVariantRecordVO> variantRecords = Collections.EMPTY_LIST;
+
+    /**
+     * Seznam souřadnic
+     */
+    private List<RegCoordinatesVO> coordinates = Collections.EMPTY_LIST;
 
     /** Cesta od toho rejstříku až ke kořeni. První záznam je přímý nadřízený, poslední je kořen. */
     private List<RecordParent> parents;
@@ -191,6 +197,14 @@ public class RegRecordVO {
 
     public void setVariantRecords(final List<RegVariantRecordVO> variantRecords) {
         this.variantRecords = variantRecords;
+    }
+
+    public List<RegCoordinatesVO> getCoordinates() {
+        return coordinates;
+    }
+
+    public void setCoordinates(final List<RegCoordinatesVO> coordinates) {
+        this.coordinates = coordinates;
     }
 
     public boolean isAddRecord() {

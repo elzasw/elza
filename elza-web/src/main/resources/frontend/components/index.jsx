@@ -46,6 +46,7 @@ exports.RegistryPanel = require('./registry/RegistryPanel');
 exports.AddRegistryForm = require('./registry/AddRegistryForm');
 exports.EditRegistryForm = require('./registry/EditRegistryForm');
 exports.RegistryLabel = require('./registry/RegistryLabel');
+exports.RegistryCoordinates = require('./registry/RegistryCoordinates');
 
 exports.FundDetail = require('./fund/FundDetail');
 exports.FundDetailExt = require('./fund/FundDetailExt');

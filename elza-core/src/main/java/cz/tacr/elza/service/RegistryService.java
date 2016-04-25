@@ -1,20 +1,14 @@
 package cz.tacr.elza.service;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,16 +18,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.repository.ExternalSourceRepository;
-import cz.tacr.elza.repository.FundRegisterScopeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -84,6 +68,9 @@ public class RegistryService {
 
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private RegCoordinatesRepository regCoordinatesRepository;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -703,4 +690,53 @@ public class RegistryService {
 
         return defaultScopes;
     }
+
+    /**
+     * Uložení či update souřadnic rejsříkového hesla.
+     *
+     * @param coordinates souřadnice
+     * @return výslendný objekt uložený do db
+     */
+    public RegCoordinates saveRegCoordinates(final RegCoordinates coordinates) {
+        Assert.notNull(coordinates);
+
+        RegRecord regRecord = coordinates.getRegRecord();
+        Assert.notNull(regRecord, "RegRecord musí být vyplněno.");
+        Integer recordId = regRecord.getRecordId();
+        Assert.notNull(recordId, "RegRecord nemá vyplněno ID.");
+
+        regRecord = regRecordRepository.findOne(recordId);
+        Assert.notNull(regRecord, "RegRecord nebylo nalezeno podle id " + recordId);
+        coordinates.setRegRecord(regRecord);
+
+        Assert.notNull(coordinates.getValue(), "Hodnota value musí být vyplněna");
+        RegCoordinates savedCords = regCoordinatesRepository.save(coordinates);
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_UPDATE, recordId));
+        return savedCords;
+    }
+
+    /**
+     * Uložení či update List souřadnic rejsříkového hesla. - využito pro import kml
+     *
+     * @param coordinatesList souřadnice
+     * @return výslendný objekt uložený do db
+     */
+    public List<RegCoordinates> saveRegCoordinates(final List<RegCoordinates> coordinatesList) {
+        Assert.notEmpty(coordinatesList);
+        List<Integer> notifiedIds = new ArrayList<>();
+        for (RegCoordinates cord : coordinatesList) {
+            Assert.notNull(cord);
+            Assert.notNull(cord.getRegRecord(), "RegRecord musí být vyplněno.");
+            Integer recordId = cord.getRegRecord().getRecordId();
+            Assert.notNull(recordId, "RegRecord nemá vyplněno ID.");
+            Assert.notNull(cord.getValue(), "Hodnota value musí být vyplněna");
+            if (!notifiedIds.contains(recordId)) {
+                eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_UPDATE, recordId));
+                notifiedIds.add(recordId);
+            }
+        }
+
+        return regCoordinatesRepository.save(coordinatesList);
+    }
+
 }

@@ -15,22 +15,7 @@ import javax.annotation.Nullable;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
 import ma.glasnost.orika.MapperFacade;
@@ -59,7 +44,6 @@ import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.ValuesTypes;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
@@ -323,6 +307,22 @@ public class ClientFactoryDO {
         packet.setState(ArrPacket.State.OPEN);
 
         return packet;
+    }
+
+    /**
+     * Vytvoří souřadnice rejstříků
+     *
+     * @param coordinatesVO souřadnice VO
+     * @return souřadnice
+     */
+    public RegCoordinates createRegCoordinates(final RegCoordinatesVO coordinatesVO) {
+        Assert.notNull(coordinatesVO);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        RegRecord regRecord = regRecordRepository.findOne(coordinatesVO.getRegRecordId());
+        Assert.notNull(regRecord, "Rejstříkové heslo neexistuje (ID=" + coordinatesVO.getRegRecordId() + ")");
+        RegCoordinates coordinates = mapper.map(coordinatesVO, RegCoordinates.class);
+        coordinates.setRegRecord(regRecord);
+        return coordinates;
     }
 
     /**

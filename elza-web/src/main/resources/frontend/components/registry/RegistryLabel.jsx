@@ -11,27 +11,28 @@ import {connect} from 'react-redux'
 var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
     constructor(props){
         super(props);
-        this.handleVariantChange = this.handleVariantChange.bind(this);
-        this.handleVariantKeyUp = this.handleVariantKeyUp.bind(this);
-        this.focus = this.focus.bind(this);
+        this.bindMethods(
+            'handleChange',
+            'handleKeyUp',
+            'focus'
+        );
+
         this.state = {
-            variant: this.props.value,
-        }
-
-    }
-
-    componentWillReceiveProps(nextProps){
-
-    }
-
-    handleVariantKeyUp(e){
-        if (e.keyCode == 13 && this.props.onEnter){
-            this.props.onEnter(e);
+            variant: this.props.value
         }
     }
 
+    componentWillReceiveProps(nextProps) {
+        this.setState({
+            variant: nextProps.value
+        })
+    }
 
-    handleVariantChange(e){
+    handleKeyUp(e) {
+        e.keyCode == 13 && this.props.onEnter && this.props.onEnter(e);
+    }
+
+    handleChange(e) {
         this.setState({
             variant: e.target.value                                  // uložení zadaného řezezce ve stavu komponenty
         });
@@ -42,54 +43,34 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
     }
 
     render() {
-        var body = null;
-
-        switch (this.props.type) {
-            case 'selectWithChild':
-                body = <DropDownTree
-                    disabled={this.props.disabled}
-                    items = {this.props.items}
-                    selectedItemID = {this.props.value}
-                    onSelect = {this.props.onSelect}
-                    />
-                break;
-            case 'variant':
-
-                body = <div className="desc-item-value-container">
+        const {label, disabled, onBlur, onClickDelete} = this.props;
+        return (
+            <div className="registry-label">
+                <div className='title' title={label}>{label}</div>
+                <div className="desc-item-value-container">
                     <span>
                         <Input
-                            disabled={this.props.disabled}
+                            disabled={disabled}
                             ref='input'
                             type='text'
                             value={this.state.variant}
-                            onChange={this.handleVariantChange}
-                            onKeyUp={this.handleVariantKeyUp}
-                            onBlur={this.props.onBlur}
-                            />
-                        </span>
-                    {this.props.onClickDelete && <NoFocusButton disabled={this.props.disabled} onClick = {this.props.onClickDelete}><Icon glyph='fa-times' /></NoFocusButton>}
-
-                </div>
-                break;
-        }
-
-        var actions = [];
-        return (
-            <div className="registry-label">
-                <div className='title' title={this.props.label}>
-                    {this.props.label}
-                </div>
-                <div>
-                    {body}
-                </div>
-                <div className='actions'>
-                    {actions}
+                            onChange={this.handleChange}
+                            onKeyUp={this.handleKeyUp}
+                            onBlur={onBlur}
+                        />
+                    </span>
+                    <NoFocusButton disabled={disabled} onClick = {onClickDelete}><Icon glyph='fa-times' /></NoFocusButton>
                 </div>
             </div>
         )
     }
+};
 
-
-}
+RegistryLabel.propTypes = {
+    disabled: React.PropTypes.bool.isRequired,
+    onEnter: React.PropTypes.func.isRequired,
+    onBlur: React.PropTypes.func.isRequired,
+    value: React.PropTypes.string.isRequired
+};
 
 module.exports = connect(null, null, null, { withRef: true })(RegistryLabel);

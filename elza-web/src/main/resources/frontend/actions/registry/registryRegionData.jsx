@@ -2,40 +2,41 @@
  * Web api pro komunikaci se serverem.
  */
 import {WebApi} from 'actions'
-
+import {i18n} from 'components'
+import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions'
 import * as types from 'actions/constants/ActionTypes';
 
-export function registryRegionData(registry) {
+export function registryRegionDataSelectRegistry(registry) {
     return {
-        type: types.REGISTRY_SELECT_REGISTRY,
+        type: types.REGISTRY_RECORD_SELECT,
         registry
     }
 }
 
 export function registrySearchData(registry) {
     return {
-        type: types.REGISTRY_SEARCH_REGISTRY,
+        type: types.REGISTRY_RECORD_SEARCH,
         registry
     }
 }
 
 export function registryChangeParent(registry) {
     return {
-        type: types.REGISTRY_CHANGED_PARENT_REGISTRY,
+        type: types.REGISTRY_PARENT_RECORD_CHANGED,
         registry
     }
 }
 
 export function registryChangeDetail(registry) {
     return {
-        type: types.REGISTRY_CHANGE_REGISTRY_DETAIL,
+        type: types.REGISTRY_RECORD_DETAIL_CHANGE,
         registry
     }
 }
 
-export function registryRemoveRegistry(registry) {
+export function registryDeleteRegistry(registry) {
     return {
-        type: types.REGISTRY_REMOVE_REGISTRY,
+        type: types.REGISTRY_RECORD_REMOVE,
         registry
     }
 }
@@ -43,7 +44,7 @@ export function registryRemoveRegistry(registry) {
 export function registryStartMove() {
 
     return {
-        type: types.REGISTRY_MOVE_REGISTRY_START,
+        type: types.REGISTRY_MOVE_REGISTRY_START
     }
 }
 
@@ -53,19 +54,19 @@ export function registryStopMove() {
     }
 }
 
-export function registryReloadNavigation(){
+export function registryReloadNavigation() {
     return {
         type: types.REGISTRY_RELOAD_NAVIGATION
     }
 }
 
-export function registryRecordMove(data){
+export function registryRecordMove(data) {
     return (dispatch) => {
         dispatch(registryRecordUpdate(data, registryStopMove));
     }
 }
 
-export function registryRecordUpdate(data, callback = null){
+export function registryRecordUpdate(data, callback = null) {
     return (dispatch) => {
         WebApi.updateRegistry(data).then(json => {
             dispatch(registryUpdated(json));
@@ -85,69 +86,68 @@ export function registryUpdated(json) {
 }
 
 
-export function registryCancelMove(registry) {
+export function registryCancelMove() {
     return {
-        type: types.REGISTRY_MOVE_REGISTRY_CANCEL,
-        registry
+        type: types.REGISTRY_MOVE_REGISTRY_CANCEL
     }
 }
 
 export function registryUnsetParents() {
     return {
-        type: types.REGISTRY_UNSET_PARENT
+        type: types.REGISTRY_PARENT_RECORD_UNSET
     }
 }
 
-export function registryClearSearch(){
+export function registryClearSearch() {
     return {
-        type: types.REGISTRY_CLEAR_SEARCH,
+        type: types.REGISTRY_CLEAR_SEARCH
     }
 }
 
 
-export function updateRegistryVariantRecord(data){
+export function registryVariantUpdate(data) {
     return (dispatch, getState) => {
-        var state = getState();
-        var aktualizovat = false;
-        state.registryRegionData.item.variantRecords.map(variant => {
-            if (variant.variantRecordId == data.variantRecordId && variant.record !== data.record){
-                aktualizovat = true;
+        const {registryRegion} = getState();
+        var needFetch = false;
+        registryRegion.registryRegionData.item.variantRecords.map(variant => {
+            if (variant.variantRecordId == data.variantRecordId && variant.record !== data.record) {
+                needFetch = true;
             }
         });
-        if (aktualizovat === true) {
+        if (needFetch === true) {
             return WebApi.editRegistryVariant(data).then(json => {
-                dispatch(reciveRegistryVariantRecord(json));
+                dispatch(receiveRegistryVariantRecord(json));
             });
         }
     }
 }
 
-export function reciveRegistryVariantRecord(json){
+export function receiveRegistryVariantRecord(json) {
     return {
         item: json,
-        type: types.REGISTRY_VARIANT_RECORD_RECIVED
+        type: types.REGISTRY_VARIANT_RECORD_RECEIVED
     }
 }
 
-export function registryVariantAddRecordRow(){
+export function registryVariantAddRow() {
     return{
-        type: types.REGISTRY_VARIANT_RECORD_ADD_NEW_CLEAN
+        type: types.REGISTRY_VARIANT_RECORD_CREATE
     }
 }
 
-export function registryAddVariant(data, variantRecordInternalId){
+export function registryVariantCreate(data, variantRecordInternalId) {
     return (dispatch) => {
         WebApi.addRegistryVariant(data).then(json => {
-            dispatch(registryVariantInserted(json, variantRecordInternalId));
+            dispatch(registryVariantCreated(json, variantRecordInternalId));
         });
     }
 }
 
-export function registryVariantInserted(json, variantRecordInternalId){
+export function registryVariantCreated(json, variantRecordInternalId) {
     return {
-        json: json,
-        variantRecordInternalId: variantRecordInternalId,
-        type: types.REGISTRY_VARIANT_RECORD_INSERTED
+        json,
+        variantRecordInternalId,
+        type: types.REGISTRY_VARIANT_RECORD_CREATED
     }
 }
 
@@ -159,16 +159,16 @@ export function registryVariantDelete(variantRecordId){
     }
 }
 
-export function registryVariantDeleted(variantRecordId){
+export function registryVariantDeleted(variantRecordId) {
     return {
-        variantRecordId: variantRecordId,
+        variantRecordId,
         type: types.REGISTRY_VARIANT_RECORD_DELETED
     }
 }
 
-export function registryVariantInternalDelete(variantRecordInternalId){
+export function registryVariantInternalDelete(variantRecordInternalId) {
     return {
-        variantRecordInternalId: variantRecordInternalId,
+        variantRecordInternalId,
         type: types.REGISTRY_VARIANT_RECORD_INTERNAL_DELETED
     }
 }
@@ -183,7 +183,87 @@ export function registryRecordNoteUpdate(data){
 
 export function registryRecordNoteUpdated(json){
     return {
-        json: json,
+        json,
         type: types.REGISTRY_RECORD_NOTE_UPDATED
     };
+}
+
+/// Coordinates
+export function registryRecordCoordinatesUpdate(data) {
+    return (dispatch, getState) => {
+        return WebApi.updateRegCoordinates(data).then(json => {
+            dispatch(registryRecordCoordinatesReceive(json));
+        });
+    }
+}
+
+export function registryRecordCoordinatesReceive(json) {
+    return {
+        item: json,
+        type: types.REGISTRY_RECORD_COORDINATES_RECEIVED
+    }
+}
+
+export function registryRecordCoordinatesAddRow() {
+    return {
+        type: types.REGISTRY_RECORD_COORDINATES_CREATE
+    }
+}
+
+export function registryRecordCoordinatesCreate(data, coordinatesId) {
+    return (dispatch) => {
+        WebApi.createRegCoordinates(data).then(json => {
+            dispatch(registryRecordCoordinatesCreated(json, coordinatesId));
+        });
+    }
+}
+
+export function registryRecordCoordinatesCreated(json, coordinatesInternalId) {
+    return {
+        json,
+        coordinatesInternalId,
+        type: types.REGISTRY_RECORD_COORDINATES_CREATED
+    }
+}
+
+export function registryRecordCoordinatesDelete(coordinatesId) {
+    return (dispatch) => {
+        WebApi.deleteRegCoordinates(coordinatesId).then(json => {
+            dispatch(registryRecordCoordinatesDeleted(coordinatesId));
+        });
+    }
+}
+
+export function registryRecordCoordinatesDeleted(coordinatesId) {
+    return {
+        coordinatesId,
+        type: types.REGISTRY_RECORD_COORDINATES_DELETED
+    }
+}
+
+export function registryRecordCoordinatesInternalDelete(coordinatesInternalId) {
+    return {
+        coordinatesInternalId,
+        type: types.REGISTRY_RECORD_COORDINATES_INTERNAL_DELETE
+    }
+}
+
+export function registryRecordCoordinatesChange(item) {
+    return {
+        item,
+        type: types.REGISTRY_RECORD_COORDINATES_CHANGE
+    }
+}
+
+export function registryRecordCoordinatesUpload(file, regRecordId) {
+    return (dispatch) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('regRecordId', regRecordId);
+        WebApi.regCoordinatesImport(formData).then(() => {
+            dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successCoordinates')));
+        }).catch(() => {
+            dispatch(addToastrDanger(i18n('import.toast.error'), i18n('import.toast.errorCoordinates')));
+        });
+    }
 }

@@ -13,6 +13,8 @@ import {valuesEquals} from 'components/Utils.jsx'
 import {setFocus} from 'actions/global/focus'
 import {getNodeKeyType} from 'stores/app/utils.jsx'
 import * as types from 'actions/constants/ActionTypes';
+import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions'
+import {i18n} from 'components'
 
 export function isSubNodeFormCacheAction(action) {
     switch (action.type) {
@@ -81,10 +83,10 @@ export function fundSubNodeFormValueUploadCoordinates(versionId, nodeKey, descIt
         formData.append('descItemTypeId', descItemTypeId);
         formData.append('nodeId', subNodeForm.data.node.id);
         formData.append('nodeVersion', subNodeForm.data.node.version);
-        WebApi.kmlImport(formData).then(() => {
-            this.dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successFund')));
+        WebApi.arrCoordinatesImport(formData).then(() => {
+            dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successCoordinates')));
         }).catch(() => {
-            //TBD
+            dispatch(addToastrDanger(i18n('import.toast.error'), i18n('import.toast.errorCoordinates')));
         });
     }
 }

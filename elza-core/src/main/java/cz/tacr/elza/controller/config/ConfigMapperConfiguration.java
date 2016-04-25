@@ -649,6 +649,34 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().register();
 
+        mapperFactory.classMap(RegCoordinates.class, RegCoordinatesVO.class).customize(
+                new CustomMapper<RegCoordinates, RegCoordinatesVO>() {
+                    @Override
+                    public void mapAtoB(final RegCoordinates coordinates,
+                                        final RegCoordinatesVO coordinatesVO,
+                                        final MappingContext context) {
+                        String type = coordinates.getValue().getGeometryType().toUpperCase();
+                        if (type.equals("POINT")) {
+                            coordinatesVO.setValue(new WKTWriter().writeFormatted(coordinates.getValue()));
+                        } else {
+                            coordinatesVO.setValue(type + "( " + coordinates.getValue().getCoordinates().length + " )");
+                        }
+                        coordinatesVO.setRegRecordId(coordinates.getRegRecord().getRecordId());
+                    }
+
+                    @Override
+                    public void mapBtoA(final RegCoordinatesVO coordinatesVO,
+                                        final RegCoordinates coordinates,
+                                        final MappingContext context) {
+                        WKTReader reader = new WKTReader();
+                        try {
+                            coordinates.setValue(reader.read(coordinatesVO.getValue()));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).exclude("value").byDefault().register();
+
         mapperFactory.classMap(XmlImportConfig.class, XmlImportConfigVO.class).byDefault().register();
     }
 

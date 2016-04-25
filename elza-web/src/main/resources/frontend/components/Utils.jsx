@@ -1,3 +1,6 @@
+
+import {normalizeDoubleWithDot} from 'components/validate'
+
 /**
  * Utility metody.
  */
@@ -438,7 +441,76 @@ function valuesEquals(v1, v2) {
     return false
 }
 
+/**
+ * Převede WKT text coordinates na objekt { type: TYP, data: "bod,bod" }
+ *
+ * Aktuálně server posílá takto pouze body
+ * Polygony a linie posílá jako TYPE( X ) kde X je rovno počtu bodů
+ *
+ * @param value
+ * @returns object
+ */
+function objectFromWKT(value) {
+    if (value === null || value == '' || typeof value === "object") {
+        return {type: "POINT", data: null};
+    }
+    const state = {type: null, data: null};
+    const start = value.indexOf("(");
+    state.type = value.substr(0, start).trim();
+    if (state.type === "POINT") {
+        state.data = value.substr(start + 1, value.length - start - 2).split(", ").join("\n").split(" ").join(",");
+    } else {
+        state.data = value.substr(start + 2, value.length - start - 4);
+    }
+    return state;
+}
+
+/**
+ * Převádí typ a body na WKT
+ *
+ * Vyžaduje funkci normalizeDoubleWithDot
+ *
+ * type = POINT, val = 1.423,13.456 => POINT( 1.423 13.456 )
+ * type = LINESTRING, val = 1.423,13.456\n12.423,13.456 => LINESTRING( 1.423 13.456, 12.423 13.456)
+ * type = POLYGON, val = 1.423,13.456\n12.423,13.456\n1.423,1.456 => POLYGON(( 1.423 13.456, 12.423 13.456, 1.423 1.456, 1.423 13.456 ))
+ *
+ * @param type POINT,LINESTRING,POLYGON
+ * @param val body(s desetinou ".") oddělené čárkou a 1 bod na 1 řádku
+ * @returns string WK Text
+ */
+function wktFromTypeAndData(type, val) {
+    let points = val.split(",").map(function (dat) {
+        return normalizeDoubleWithDot(dat);
+    }).join(" ").split("\n").join(", ");
+    if (type === "POLYGON") {
+        points = "(" + points + ", " + points.substr(0, points.indexOf(",")) + ")";
+    }
+    return type + "(" + points + ")";
+}
+
+/**
+ * Převede WKT typ na písmenkovou reprezentaci
+ *
+ * @param type
+ * @returns string
+ */
+function wktType(type) {
+    switch (type) {
+        case "POINT":
+            return "B";
+        case "POLYGON":
+            return "P";
+        case "LINESTRING":
+            return "L";
+        default:
+            return "N";
+    }
+}
+
 module.exports = {
+    wktType,
+    wktFromTypeAndData,
+    objectFromWKT,
     valuesEquals: valuesEquals,
     dateToString: dateToString,
     dateTimeToString: dateTimeToString,

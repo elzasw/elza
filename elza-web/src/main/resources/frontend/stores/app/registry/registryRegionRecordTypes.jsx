@@ -17,7 +17,7 @@ const initialState = {
 export default function registryRegionRecordTypes(state = initialState, action = {}) {
 
     switch (action.type) {
-        case types.REGISTRY_RECIVE_REGISTRY_RECORD_TYPES:
+        case types.REGISTRY_RECORD_TYPES_RECEIVE:
             return Object.assign({}, state, {
                 item: action.item,
                 registryTypeId: action.registryTypeId,

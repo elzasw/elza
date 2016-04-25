@@ -9,14 +9,13 @@ import * as types from 'actions/constants/ActionTypes';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, DropDownTree} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
-import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
 import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList'
 
 const validate = (values, props) => {
     const errors = {};
-    if (!values.nameMain) {
-        errors.nameMain = i18n('global.validation.required');
+    if (!values.record) {
+        errors.record = i18n('global.validation.required');
     }
 
     if (!values.characteristics) {
@@ -49,43 +48,28 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
 
 
     render() {
-        const {fields: { nameMain, characteristics, registerTypeId}, handleSubmit, onClose} = this.props;
+        const {fields: { record, characteristics, registerTypeId}, handleSubmit, onClose, initData, registryRegionRecordTypes, parentRecordId} = this.props;
 
-        var submitForm = submitReduxForm.bind(this, validate)
+        const submitForm = submitReduxForm.bind(this, validate);
 
-        var disabled = false;
+        const itemsForDropDownTree = registryRegionRecordTypes.item != null ? registryRegionRecordTypes.item : [];
 
-        if (this.props.parentRecordId){
-            disabled = true;
-        }
-
-        var itemsForDropDownTree = [];
-        if (this.props.registryRegionRecordTypes.item) {
-            itemsForDropDownTree = this.props.registryRegionRecordTypes.item;
-        }
-
-        var registerTypesIdValue = null;
-        if (this.props.registryRegionData.item.registerTypeId && !registerTypeId.value){
-            registerTypesIdValue = this.props.registryRegionData.item.registerTypeId;
-        }
-        else{
-            registerTypesIdValue = registerTypeId.value;
-        }
+        const registerTypesIdValue = initData.registerTypeId && !registerTypeId.value ? initData.item.registerTypeId : registerTypeId.value;
 
         return (
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit(submitForm)}>
                         <DropDownTree
-                            label={i18n('registry.add.typ.rejstriku')}
+                            label={i18n('registry.update.type')}
                             items = {itemsForDropDownTree}
                             addRegistryRecord={true}
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
                             value={registerTypesIdValue}
-                            disabled={disabled}
-                            />
-                        <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)}/>
+                            disabled={parentRecordId != null}
+                        />
+                        <Input type="text" label={i18n('registry.name')} {...record} {...decorateFormField(record)}/>
                         <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)}/>
 
                     </form>
@@ -101,15 +85,14 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
 
 module.exports = reduxForm({
         form: 'editRegistryForm',
-        fields: ['nameMain', 'characteristics', 'registerTypeId'],
+        fields: ['record', 'characteristics', 'registerTypeId']
     },state => ({
         initialValues: state.form.editRegistryForm.initialValues,
         refTables: state.refTables,
-        registryRegionData: state.registryRegionData,
         registryRegionRecordTypes: state.registryRegionRecordTypes
     }),
     {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'editRegistryForm', data})}
-)(EditRegistryForm)
+)(EditRegistryForm);
 
 
 

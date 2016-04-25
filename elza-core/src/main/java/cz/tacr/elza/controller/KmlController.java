@@ -8,10 +8,9 @@ import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.RegistryService;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -39,7 +38,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- *
+ * Controller pro import a export KML souborů
  *
  * @author Petr Compel
  * @since 18. 4. 2016
@@ -58,16 +57,22 @@ public class KmlController {
     private DescItemFactory descItemFactory;
 
     @Autowired
-    private ClientFactoryDO factoryDO;
-
-    @Autowired
     private DescriptionItemService descriptionItemService;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
 
+    @Autowired
+    private RegRecordRepository regRecordRepository;
+
+    @Autowired
+    private RegCoordinatesRepository regCoordinatesRepository;
+
+    @Autowired
+    private RegistryService registryService;
+
     @Transactional
-    @RequestMapping(value = "/api/kmlManagerV1/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(value = "/api/kmlManagerV1/import/arrCoordinates", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public int importArrCoordinates(
             @RequestParam(required = false, value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(required = false, value = "descItemTypeId") final Integer descItemTypeId,
@@ -113,11 +118,51 @@ public class KmlController {
         return descriptionItemService.createDescriptionItems(toCreate, nodeId, nodeVersion, fundVersionId).size();
     }
 
+    @Transactional
+    @RequestMapping(value = "/api/kmlManagerV1/import/regCoordinates", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public int importRegCoordinates(
+            @RequestParam(required = false, value = "regRecordId") final Integer regRecordId,
+            @RequestParam(required = true, value = "file") final MultipartFile importFile) throws IOException, ParserConfigurationException, SAXException {
+        Assert.notNull(regRecordId);
 
-    @RequestMapping(value = "/api/kmlManagerV1/{descItemObjectId}/{fundVersionId}/exportDescItemCoordinates",
+        RegRecord record = regRecordRepository.findOne(regRecordId);
+        if (record == null) {
+            throw new IllegalStateException("Typ s ID=" + regRecordId + " neexistuje");
+        }
+
+        Parser parser = new Parser(new KMLConfiguration());
+        /*Configuration configuration = data.contains("http://www.opengis.net/kml/2.2")
+                ? new org.geotools.kml.v22.KMLConfiguration()
+                : new org.geotools.kml.KMLConfiguration();*/
+        SimpleFeature f = (SimpleFeature) parser.parse(importFile.getInputStream());
+        Collection<SimpleFeature> placemarks = (Collection<SimpleFeature>) f.getAttribute("Feature");
+        List<RegCoordinates> toCreate = new ArrayList<>();
+        for (SimpleFeature placemark : placemarks) {
+            Geometry geometry = (Geometry) placemark.getAttribute("Geometry");
+            switch (geometry.getGeometryType()) {
+                case "Point":
+                case "LineString":
+                case "Polygon":
+                    break;
+                default:
+                    continue;
+            }
+            String decription = (String) placemark.getAttribute("Description");
+            RegCoordinates coordinates = new RegCoordinates();
+            coordinates.setValue(geometry);
+            coordinates.setRegRecord(record);
+            coordinates.setDescription(decription);
+            toCreate.add(coordinates);
+        }
+
+        return registryService.saveRegCoordinates(toCreate).size();
+    }
+
+
+    @RequestMapping(value = "/api/kmlManagerV1/export/arrCoordinates/{descItemObjectId}/{fundVersionId}",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_XML_VALUE)
-    public void exportCoordinates(HttpServletResponse response,
+    public void exportArrCoordinates(HttpServletResponse response,
                                   @PathVariable(value = "descItemObjectId") final Integer descItemObjectId,
                                   @PathVariable(value = "fundVersionId") final Integer fundVersionId) throws IOException {
         Assert.notNull(descItemObjectId);
@@ -146,6 +191,23 @@ public class KmlController {
         }
         ArrDescItemCoordinates cords = (ArrDescItemCoordinates) one;
 
+        toKml(response, cords.getValue());
+
+    }
+
+    @RequestMapping(value = "/api/kmlManagerV1/export/regCoordinates/{coordinatesId}",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_XML_VALUE)
+    public void exportRegCoordinates(HttpServletResponse response, @PathVariable(value = "coordinatesId") final Integer coordinatesId) throws IOException {
+        Assert.notNull(coordinatesId);
+        RegCoordinates cords = regCoordinatesRepository.findOne(coordinatesId);
+
+        Assert.notNull(cords);
+
+        toKml(response, cords.getValue());
+    }
+
+    private void toKml(HttpServletResponse response, Geometry geometry) throws IOException  {
         response.setHeader("Content-Disposition", "attachment;filename=export.kml");
 
         ServletOutputStream out = response.getOutputStream();
@@ -155,7 +217,7 @@ public class KmlController {
 
         SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
         typeBuilder.setName("geometry");
-        String geotype = cords.getValue().getGeometryType();
+        String geotype = geometry.getGeometryType();
         switch (geotype) {
             case "Point":
                 typeBuilder.add("geometry", Point.class, DefaultGeographicCRS.WGS84);
@@ -175,7 +237,7 @@ public class KmlController {
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(TYPE);
         DefaultFeatureCollection features = new DefaultFeatureCollection();
 
-        featureBuilder.add(cords.getValue());
+        featureBuilder.add(geometry);
         features.add( featureBuilder.buildFeature("1") );
 
         encoder.encode(features, KML.kml, out);

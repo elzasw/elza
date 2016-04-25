@@ -83,7 +83,7 @@ cols.push({
 var HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleAddFund', 'handleCallAddFund', 'renderHistory',
+        this.bindMethods('handleAddFund', 'renderHistory',
             'renderHistoryItem', 'getFundDesc', 'trySetFocus');
 
         this.buildRibbon = this.buildRibbon.bind(this);

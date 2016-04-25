@@ -9,15 +9,29 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Input, Button} from 'react-bootstrap';
-import {Icon, NoFocusButton, AbstractReactComponent, RegistryLabel, Loading, EditRegistryForm} from 'components';
-import {i18n} from 'components';
+import {Icon, NoFocusButton, AbstractReactComponent, RegistryLabel, Loading, EditRegistryForm, RegistryCoordinates, i18n} from 'components';
 import {WebApi} from 'actions'
 import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions/registry/registryRegionList'
-import {registryChangeDetail, registryRegionData, updateRegistryVariantRecord} from 'actions/registry/registryRegionData'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 import {routerNavigate} from 'actions/router'
 import {partySelect} from 'actions/party/party'
-import {registryRecordUpdate, registryVariantAddRecordRow, registryAddVariant, registryVariantDelete, registryVariantInternalDelete, registryRecordNoteUpdate  } from 'actions/registry/registryRegionData'
+import {
+    registryChangeDetail,
+    registryRecordUpdate,
+    registryVariantAddRow,
+    registryVariantCreate,
+    registryVariantDelete,
+    registryVariantUpdate,
+    registryVariantInternalDelete,
+    registryRecordNoteUpdate,
+    registryRecordCoordinatesAddRow,
+    registryRecordCoordinatesCreate,
+    registryRecordCoordinatesChange,
+    registryRecordCoordinatesDelete,
+    registryRecordCoordinatesInternalDelete,
+    registryRecordCoordinatesUpdate,
+    registryRecordCoordinatesUpload
+} from 'actions/registry/registryRegionData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {Utils} from 'components'
 var ShortcutsManager = require('react-shortcuts');
@@ -25,70 +39,80 @@ var Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 import {setFocus} from 'actions/global/focus'
 
-var keyModifier = Utils.getKeyModifier()
+var keyModifier = Utils.getKeyModifier();
 
 var keymap = {
     RegistryPanel: {
         editRecord: keyModifier + 'e',
         goToPartyPerson: keyModifier + 'b',
-        addRegistryVariant: keyModifier + 'i',
+        addRegistryVariant: keyModifier + 'i'
     },
     VariantRecord: {
-        deleteRegistryVariant: keyModifier + 'd',
-    },
-}
-var shortcutManager = new ShortcutsManager(keymap)
+        deleteRegistryVariant: keyModifier + 'd'
+    }
+};
+var shortcutManager = new ShortcutsManager(keymap);
 
 var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleEditRecord', 'handleDeleteVariant', 'handleCallAddRegistryVariant',
-            'handleBlurVariant', 'handleClickAddVariant', 'handleOnEnterAdd', 'handleBlurVariant',
-            'handlePoznamkaBlur', 'handleChangeNote', 'handleShortcuts', 'canEdit', 'handleGoToPartyPerson',
-            'handleVariantRecordShortcuts', 'trySetFocus');
+        this.bindMethods(
+            'canEdit',
+            'handleCoordinatesAdd',
+            'handleCoordinatesBlur',
+            'handleCoordinatesChange',
+            'handleCoordinatesDownload',
+            'handleCoordinatesUploadButtonClick',
+            'handleCoordinatesUpload',
+            'handleNoteBlur',
+            'handleNoteChange',
+            'handleRecordUpdate',
+            'handleRecordUpdateCall',
+            'handleVariantAdd',
+            'handleVariantBlur',
+            'handleVariantCreateCall',
+            'handleVariantDelete',
+            'handleGoToPartyPerson',
+            'handleShortcuts',
+            'handleVariantRecordShortcuts',
+            'trySetFocus',
+        );
         this.state = {}
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.selectedId !== null) {
-            this.dispatch(getRegistryIfNeeded(nextProps.selectedId));
-        }
-        var notes = '';
-        if (nextProps.registryRegionData.item){
-            notes = nextProps.registryRegionData.item.note;
-        }
-
-        this.dispatch(getRegistryIfNeeded(nextProps.selectedId));
-        this.setState({
-            note: notes
-        });
-
-        this.trySetFocus(nextProps)
+        this.prepareData(nextProps);
     }
 
-    componentDidMount(){
-        if (this.props.selectedId !== null) {
-            this.dispatch(getRegistryIfNeeded(this.props.selectedId));
+    componentDidMount() {
+        this.prepareData(this.props);
+    }
+
+    prepareData(props) {
+        if (props.selectedId !== null) {
+            this.dispatch(getRegistryIfNeeded(props.selectedId));
         }
-        this.dispatch(refRecordTypesFetchIfNeeded());
-        this.state = {
-            note: ''
-        }
-        this.trySetFocus(this.props)
+
+        this.dispatch(getRegistryIfNeeded(props.selectedId));
+        this.setState({
+            note: props.registryRegionData.item ? props.registryRegionData.item.note : ''
+        });
+
+        this.trySetFocus(props)
     }
 
     trySetFocus(props) {
-        var {focus} = props
+        var {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, 'registry', 2, 'variantRecords')) {   // focus na konkrétní variantní rejstříkové heslo
                 this.setState({}, () => {
-                   this.refs['variant-' + focus.item.index].getWrappedInstance().focus()
+                   this.refs['variant-' + focus.item.index].getWrappedInstance().focus();
                    focusWasSet()
                 })
             } else if (isFocusFor(focus, 'registry', 2)) {
                 this.setState({}, () => {
-                   this.refs.registryTitle.focus()
+                   this.refs.registryTitle.focus();
                    focusWasSet()
                 })
             }
@@ -104,7 +128,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         switch (action) {
             case 'deleteRegistryVariant':
                 if (this.canEdit()) {
-                    this.handleDeleteVariant(variantRecord, index)
+                    this.handleVariantDelete(variantRecord, index)
                 }
                 break
         }
@@ -116,47 +140,48 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         switch (action) {
             case 'editRecord':
                 if (this.canEdit()) {
-                    this.handleEditRecord()
+                    this.handleRecordUpdate()
                 }
-                break
+                break;
             case 'goToPartyPerson':
                 if (this.props.registryRegionData.item.partyId) {
                     this.handleGoToPartyPerson()
                 }
-                break
+                break;
             case 'addRegistryVariant':
                 if (this.canEdit()) {
-                    this.handleClickAddVariant()
+                    this.handleVariantAdd()
                 }
                 break
         }
     }
+    
+    handleCoordinatesChange(item) {
+        this.dispatch(registryRecordCoordinatesChange(item))
+    }
 
-    handleChangeNote(e){
+    handleNoteChange(e) {
         this.setState({
-            note: e.target.value                                  // uložení zadaného řezezce ve stavu komponenty
+            note: e.target.value
         });
     }
 
-    handleCallEditRegistry(value){
-        var data = Object.assign({}, this.props.registryRegionData.item)
-        data.record = value.nameMain;
-        data.characteristics = value.characteristics;
-        data.scopeId = this.props.registryRegionData.item.scopeId;
-        data.registerTypeId = value.registerTypeId;
-
-        this.dispatch(registryRecordUpdate(data));
+    handleRecordUpdateCall(value) {
+        this.dispatch(registryRecordUpdate({
+            ...this.props.registryRegionData.item,
+            ...value
+        }));
         this.dispatch(modalDialogHide());
 
         // Nastavení focus
         this.dispatch(setFocus('registry', 2))
     }
 
-    handleDeleteVariant(item, index){
-        if(confirm(i18n('registry.removeRegistryQuestion'))) {
+    handleVariantDelete(item, index) {
+        if(confirm(i18n('registry.deleteRegistryQuestion'))) {
             // Zjištění nového indexu focusu po smazání - zjisšťujeme zde, abychom měli aktuální stav store
-            const {registryRegionData} = this.props
-            var setFocusFunc
+            const {registryRegionData} = this.props;
+            var setFocusFunc;
             if (index + 1 < registryRegionData.item.variantRecords.length) {    // má položku za, nový index bude aktuální
                 setFocusFunc = () => setFocus('registry', 2, 'variantRecords', {index: index})
             } else if (index > 0) { // má položku před
@@ -168,7 +193,8 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             // Smazání
             if (item.variantRecordId) {
                 this.dispatch(registryVariantDelete(item.variantRecordId))
-            } else if (item.variantRecordInternalId){
+            } else {
+                console.log(item);
                 this.dispatch(registryVariantInternalDelete(item.variantRecordInternalId))
             }
 
@@ -176,216 +202,280 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             this.dispatch(setFocusFunc())
         }
     }
+    handleCoordinatesDownload(objectId) {
+        window.open(window.location.origin + "/api/kmlManagerV1/" + objectId + "/" + this.props.fund.versionId + "/exportDescItemCoordinates");
+    }
 
-    handleClickAddVariant(){
+    handleCoordinatesDelete(item, index) {
+        if(confirm(i18n('registry.deteleCoordinatesQuestion'))) {
+            // Zjištění nového indexu focusu po smazání - zjisšťujeme zde, abychom měli aktuální stav store
+            const {registryRegionData} = this.props;
+            var setFocusFunc;
+            if (index + 1 < registryRegionData.item.coordinates.length) {    // má položku za, nový index bude aktuální
+                setFocusFunc = () => setFocus('registry', 2, 'coordinates', {index: index})
+            } else if (index > 0) { // má položku před
+                setFocusFunc = () => setFocus('registry', 2, 'coordinates', {index: index - 1})
+            } else {    // byla smazána poslední položka, focus dostane formulář
+                setFocusFunc = () => setFocus('registry', 2)
+            }
+
+            // Smazání
+            if (item.coordinatesId) {
+                this.dispatch(registryRecordCoordinatesDelete(item.coordinatesId))
+            } else {
+                this.dispatch(registryRecordCoordinatesInternalDelete(item.coordinatesInternalId))
+            }
+
+            // Nastavení focus
+            this.dispatch(setFocusFunc())
+        }
+    }
+
+    handleVariantAdd() {
         // Index Musíme zjistit předem, protože po dispatch přidání záznamu se store změní
-        var newIndex = this.props.registryRegionData.item.variantRecords.length
+        const newIndex = this.props.registryRegionData.item.variantRecords.length;
 
         // Přidání nového proádného záznamu
-        this.dispatch(registryVariantAddRecordRow());
+        this.dispatch(registryVariantAddRow());
 
         // Nastavení focus
         this.dispatch(setFocus('registry', 2, 'variantRecords', {index: newIndex}))
     }
 
-    handleOnEnterAdd(item, e){
-        this.handleCallAddRegistryVariant(item, e);
+    handleCoordinatesAdd() {
+        // Index Musíme zjistit předem, protože po dispatch přidání záznamu se store změní
+        const newIndex = this.props.registryRegionData.item.coordinates.length;
+
+        // Přidání nového proádného záznamu
+        this.dispatch(registryRecordCoordinatesAddRow());
+
+        // Nastavení focus
+        this.dispatch(setFocus('registry', 2, 'coordinates', {index: newIndex}))
     }
 
-    handleCallAddRegistryVariant(item, element){
-        if (!element.target.value){
+    handleVariantCreateCall(item, element) {
+        if (!element.target.value) {
             return false;
         }
         var data = {record: element.target.value, regRecordId: this.props.registryRegionData.item.recordId};
-        this.dispatch(registryAddVariant(data, item.variantRecordInternalId));
+        this.dispatch(registryVariantCreate(data, item.variantRecordInternalId));
     }
 
-    handleEditRecord(){
-        const parentId = this.props.registryRegionData.item.parentRecordId
+    handleCoordinatesCreate(item) {
+        !item.hasError && this.dispatch(registryRecordCoordinatesCreate(item, item.coordinatesInternalId));
+    }
 
-        var registryParentTypesId = this.props.registryRegion.registryTypesId;
-        if (this.props.registryRegionData){
-            registryParentTypesId = this.props.registryRegionData.item.registerTypeId;
-        }
-
+    handleRecordUpdate() {
+        const {item} = this.props.registryRegionData;
         this.dispatch(
             modalDialogShow(
                 this,
-                i18n('registry.editRegistry'),
+                i18n('registry.update.title'),
                 <EditRegistryForm
                     key='editRegistryForm'
-                    initData={{
-                            nameMain: this.props.registryRegionData.item.record,
-                            characteristics: this.props.registryRegionData.item.characteristics,
-                            registerTypeId: this.props.registryRegionData.item.registerTypeId
-                        }}
-                    parentRecordId = {parentId}
-                    parentRegisterTypeId = {registryParentTypesId}
-                    create
-                    onSubmitForm={this.handleCallEditRegistry.bind(this)}
+                    initData={item}
+                    parentRecordId={item.parentRecordId}
+                    parentRegisterTypeId={item.registerTypeId}
+                    onSubmit={this.handleRecordUpdateCall}
                 />
             )
         );
     }
 
-    handleOnEnterUpdate(item, element) {
-        this.handleBlurVariant(item, element);
-    }
-    handleBlurVariant(item, element){
-        if (!element.target.value){
+    handleVariantBlur(item, element) {
+        if (!element.target.value) {
             return false;
         }
 
-        var data= {
+        this.dispatch(registryVariantUpdate({
             variantRecordId: item.variantRecordId,
             regRecordId: this.props.registryRegionData.item.recordId,
             record: element.target.value,
             version: item.version
-        };
-
-        this.dispatch(updateRegistryVariantRecord(data));
+        }));
     }
-    handlePoznamkaBlur(event, element) {
-        var data = Object.assign({}, this.props.registryRegionData.item);
-        data.note = event.target.value;
-        if (event.target.value !== this.props.registryRegionData.item.note) {
-            this.dispatch(registryRecordNoteUpdate(data));
+
+    handleCoordinatesBlur(item) {
+        console.log(item);
+        if (item.hasError === undefined) {
+            this.handleCoordinatesChange(item);
+        }
+        if(!item.hasError) {
+            this.dispatch(registryRecordCoordinatesUpdate(item));
         }
     }
 
-    handleGoToPartyPerson(){
-        const partyId = this.props.registryRegionData.item.partyId
+    handleNoteBlur(event, element) {
+        if (event.target.value !== this.props.registryRegionData.item.note) {
+            this.dispatch(registryRecordNoteUpdate({
+                ...this.props.registryRegionData.item,
+                note: event.target.value
+            }));
+        }
+    }
 
-        this.dispatch(partySelect(partyId));
+    handleCoordinatesUploadButtonClick() {
+        this.refs.uploadInput.getInputDOMNode().click();
+    }
+
+    handleCoordinatesUpload() {
+        const fileList = this.refs.uploadInput.getInputDOMNode().files;
+
+        if (fileList.length != 1) {
+            return;
+        }
+
+        this.dispatch(registryRecordCoordinatesUpload(fileList[0], this.props.registryRegionData.item.recordId));
+
+        this.refs.uploadInput.value = null;
+    }
+
+    handleGoToPartyPerson() {
+        this.dispatch(partySelect(this.props.registryRegionData.item.partyId));
         this.dispatch(routerNavigate('party'));
     }
 
     canEdit() {
-        if (this.props.registryRegionData.fetched) {
-            if (this.props.registryRegionData && this.props.registryRegionData.item.partyId){
-                return false
-            } else {
-                return true
-            }
-        }
-        return false
+        return this.props.registryRegionData.fetched && !this.props.registryRegionData.item.partyId
     }
 
     render() {
-        if (this.props.registryRegionData.fetched) {
-            var disableEdit = !this.canEdit()
+        const {selectedId, registryRegionData: { item, fetched }} = this.props;
+        var detailRegistry = false;
+        if (fetched) {
+            const disableEdit = !this.canEdit();
 
-            var addVariant = <NoFocusButton disabled={disableEdit} className="registry-variant-add" onClick={this.handleClickAddVariant} ><Icon glyph='fa-plus' /></NoFocusButton>
+            const addVariant = <NoFocusButton disabled={disableEdit} className="registry-variant-add" onClick={this.handleVariantAdd} ><Icon glyph='fa-plus' /></NoFocusButton>
+            const addCoordinate = <div className="registry-coordinate-add">
+                    <NoFocusButton disabled={disableEdit} onClick={this.handleCoordinatesAdd} title={i18n('registry.coordinates.addPoint')}  ><Icon glyph='fa-plus' /></NoFocusButton>
+                    <NoFocusButton onClick={this.handleCoordinatesUploadButtonClick} title={i18n('registry.coordinates.upload')} disabled={disableEdit}><Icon glyph="fa-upload" /></NoFocusButton>
+                    <Input className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload} />
+            </div>;
 
-            var typesToRoot = this.props.registryRegionData.item.typesToRoot.slice();
-            var parents = this.props.registryRegionData.item.parents.slice();
-            var hiearchie =[];
-            typesToRoot.reverse().map((val) => {
+            const hiearchie = [];
+
+            item.typesToRoot.slice().reverse().map((val) => {
                 hiearchie.push(val.name);
             });
 
 
-            parents.reverse().map((val) => {
+            item.parents.slice().reverse().map((val) => {
                 hiearchie.push(val.name);
             });
 
-            var detailRegistry = (
+            detailRegistry = (
                 <Shortcuts name='RegistryPanel' handler={this.handleShortcuts}>
                     <div ref='registryTitle' className="registry-title" tabIndex={0}>
                         <div className='registry-content'>
                             <h1 className='registry'>
-                                {this.props.registryRegionData.item.record}
-                                <NoFocusButton disabled={disableEdit} className="registry-record-edit" onClick={this.handleEditRecord}>
+                                {item.record}
+                                <NoFocusButton disabled={disableEdit} className="registry-record-edit" onClick={this.handleRecordUpdate}>
                                     <Icon glyph='fa-pencil'/>
                                 </NoFocusButton>
-                                {this.props.registryRegionData.item.partyId && <NoFocusButton className="registry-record-party" onClick={this.handleGoToPartyPerson}>
+                                {item.partyId && <NoFocusButton className="registry-record-party" onClick={this.handleGoToPartyPerson}>
                                     <Icon glyph='fa-user'/>
                                 </NoFocusButton>}
                             </h1>
                             <div className='line charakteristik'>
-                                <label>{i18n('registry.detail.charakteristika')}</label>
-                                <div>{this.props.registryRegionData.item.characteristics}</div>
+                                <label>{i18n('registry.detail.characteristics')}</label>
+                                <div>{item.characteristics}</div>
                             </div>
                             <div className='line hiearch'>
-                                <label>{i18n('registry.detail.typ.rejstriku')}</label>
+                                <label>{i18n('registry.detail.type')}</label>
                                 <div>{hiearchie.join(' > ')}</div>
                             </div>
 
                             <div className='line variant-name'>
-                                <label>{i18n('registry.detail.variant.name')}</label>
-                                { (this.props.registryRegionData.item) && this.props.registryRegionData.item.variantRecords && this.props.registryRegionData.item.variantRecords.map((item, index) => {
+                                <label>{i18n('registry.detail.variantRegistry')}</label>
+                                {
+                                    item.variantRecords && item.variantRecords.map((item, index) => {
                                         var variantKey;
-                                        var blurField = this.handleBlurVariant.bind(this,item);
-                                        var enterKey = this.handleOnEnterUpdate.bind(this,item);
-                                        var clickDelete = this.handleDeleteVariant.bind(this, item, index);
+                                        var blurField = this.handleVariantBlur.bind(this, item);
+                                        var clickDelete = this.handleVariantDelete.bind(this, item, index);
 
-
-                                        if(item.variantRecordInternalId) {
-                                            variantKey = 'internalId'+item.variantRecordInternalId;
-                                            blurField = this.handleCallAddRegistryVariant.bind(this, item);
-                                            enterKey = this.handleOnEnterAdd.bind(this, item);
-                                        }
-                                        else if (item.variantRecordId){
+                                        if (!item.variantRecordId) {
+                                            variantKey = 'internalId' + item.variantRecordInternalId;
+                                            blurField = this.handleVariantCreateCall.bind(this, item);
+                                        } else {
                                             variantKey = item.variantRecordId;
                                         }
 
                                         return (
-                                            <Shortcuts name='VariantRecord' handler={this.handleVariantRecordShortcuts.bind(this, item, index)}>
+                                            <Shortcuts key={variantKey} name='VariantRecord'
+                                                       handler={this.handleVariantRecordShortcuts.bind(this, item, index)}>
                                                 <RegistryLabel
-                                                    key={variantKey}
                                                     ref={'variant-' + index}
-                                                    type='variant'
                                                     value={item.record}
                                                     item={item}
                                                     disabled={disableEdit}
                                                     onBlur={blurField}
-                                                    onEnter={enterKey}
+                                                    onEnter={blurField}
                                                     onClickDelete={clickDelete}
-                                                    />
+                                                />
                                             </Shortcuts>
-
                                         )
                                     })
                                 }
-
                                 {addVariant}
                             </div>
+                            <div className='line variant-name'>
+                                <label>{i18n('registry.detail.coordinates')}</label>
+                                {
+                                    item.coordinates && item.coordinates.map((item, index) => {
+                                        let variantKey;
+                                        let blurField = this.handleCoordinatesBlur.bind(this, item);
+
+                                        if (!item.coordinatesId) {
+                                            variantKey = 'internalId' + item.coordinatesInternalId;
+                                            blurField = this.handleCoordinatesCreate.bind(this, item);
+                                        } else {
+                                            variantKey = item.coordinatesId;
+                                        }
+                                        return <RegistryCoordinates
+                                            ref={'coordinates-' + index}
+                                            key={variantKey}
+                                            item={item}
+                                            disabled={disableEdit}
+                                            onChange={this.handleCoordinatesChange}
+                                            onBlur={blurField}
+                                            onEnterKey={blurField}
+                                            onDelete={this.handleCoordinatesDelete.bind(this, item, index)}
+                                            onDownload={this.handleCoordinatesDownload.bind(this, item.coordinatesId)}
+                                        />
+                                    })
+                                }
+                                {addCoordinate}
+                            </div>
                             <div className='line note'>
-                                <label>{i18n('registry.detail.poznamka')}</label>
-                                <Input disabled={disableEdit} type='textarea' value={this.state.note} onChange={this.handleChangeNote} onBlur={this.handlePoznamkaBlur.bind(this)} />
+                                <label>{i18n('registry.detail.note')}</label>
+                                <Input disabled={disableEdit} type='textarea' value={this.state.note} onChange={this.handleNoteChange} onBlur={this.handleNoteBlur.bind(this)} />
                             </div>
                         </div>
                     </div>
                 </Shortcuts>
             )
         }
-
-        if (this.props.selectedId !== null) {
-            return (
-                <div className='registry'>
-                    {detailRegistry || <Loading/>}
-                </div>
-            )
-        } else {
-            return (
-                <div className='registry'>
-                </div>
-            )
-        }
+        return (
+            <div className='registry'>
+                {selectedId !== null ? (detailRegistry || <Loading/>) : null}
+            </div>
+        )
     }
-}
+};
 
 function mapStateToProps(state) {
-    const {registryRegionData, refTables, registryRegion, focus} = state
+    const {refTables, registryRegion: {registryRegionData}, focus} = state;
 
     return {
-        registryRegionData, refTables, registryRegion, focus
+        registryRegionData,
+        refTables,
+        focus
     }
 }
 
 RegistryPanel.childContextTypes = {
     shortcuts: React.PropTypes.object.isRequired
-}
+};
 
-module.exports = connect(mapStateToProps)(RegistryPanel);
+module.exports = connect(mapStateToProps, null, null, { withRef: true })(RegistryPanel);
 

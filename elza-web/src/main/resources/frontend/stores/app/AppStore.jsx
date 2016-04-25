@@ -61,7 +61,6 @@ let reducer = combineReducers({
     arrRegion,
     refTables,
     registryRegion,
-    registryRegionData,
     registryRegionRecordTypes,
     toastr,
     developer,
@@ -158,11 +157,11 @@ if (_logStoreSize) {
 }
 
 var save = function(store) {
-    var action = {
+    const action = {
         type: types.STORE_SAVE
     }
 
-    var result = {
+    const result = {
         partyRegion: partyRegion(store.partyRegion, action),
         registryRegion: registryRegion(store.registryRegion, action),
         arrRegion: arrRegion(store.arrRegion, action),
@@ -170,9 +169,10 @@ var save = function(store) {
         splitter: splitter(store.splitter, action)
     }
 
-    var rrd = registryRegionData(store.registryRegionData, action)
-    result.registryRegion._info = rrd._info
-    result.registryRegion.selectedId = rrd.selectedId
+    //var rrd = registryRegionData(store.registryRegionData, action)
+    //console.log(result.registryRegion);
+    result.registryRegion._info = result.registryRegion.registryRegionData._info
+    result.registryRegion.selectedId = result.registryRegion.registryRegionData.selectedId
 
     return result
 }

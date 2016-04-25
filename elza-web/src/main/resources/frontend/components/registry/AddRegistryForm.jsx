@@ -1,6 +1,6 @@
 /**
  * Formulář přidání nového rejstříkového hesla
- * <AddRegistryForm create onSubmit={this.handleCallAddRegistry} />
+ * <AddRegistryForm onSubmit={this.handleCallAddRegistry} />
  */
 
 import React from 'react';
@@ -17,8 +17,8 @@ import {WebApi} from 'actions'
 
 const validate = (values, props) => {
     const errors = {};
-    if (!values.nameMain) {
-        errors.nameMain = i18n('global.validation.required');
+    if (!values.record) {
+        errors.record = i18n('global.validation.required');
     }
 
     if (!values.characteristics) {
@@ -45,7 +45,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
 
     }
 
-    componentWillReceiveProps(nextProps){
+    componentWillReceiveProps(nextProps) {
         this.dispatch(getRegistryRecordTypesIfNeeded());
     }
 
@@ -59,35 +59,33 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     }
 
     prepareState(props = this.props){
-        if (props.parentRecordId !== null) {
+        const {parentRecordId, registryRegion, registryRegionRecordTypes} = props;
+        if (parentRecordId !== null) {
             this.setState({disabled: true});
-            WebApi.getRegistry(props.parentRecordId).then(json => {
-                this.props.load({registerTypeId: json.registerTypeId, scopeId: json.scopeId});
+            WebApi.getRegistry(parentRecordId).then(json => {
+                this.props.load(json);
             });
         } else {
             this.setState({disabled: false});
-            var registerTypesId = null;
-            if (this.isValueUseable(props.registryRegionRecordTypes.item, props.registryRegion.registryTypesId) && props.registryRegion.registryTypesId){
-                registerTypesId = props.registryRegion.registryTypesId;
-            }
-
-            if (registerTypesId) {
-                this.props.load({registerTypeId: registerTypesId});
+            if (registryRegion.registryTypesId && this.isValueUseable(registryRegionRecordTypes.item, registryRegion.registryTypesId)){
+                this.props.load({registerTypeId: registryRegion.registryTypesId});
             }
         }
 
     }
 
     isValueUseable(items, value) {
-        if (!items){return null;}
-        var index = indexById(items, value, "id");
-        if (index != null) {
+        if (!items) {
+            return null;
+        }
+        const index = indexById(items, value, "id");
+        if (index !== null) {
             return items[index]['addRecord'];
-        }else{
-            var neededValue = null;
+        } else {
+            let neededValue = null;
             items.map(
                 (val) => {
-                    if (neededValue === null && val['children']){
+                    if (neededValue === null && val['children']) {
                         neededValue = this.isValueUseable(val['children'], value);
                     }
                 }
@@ -98,44 +96,37 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: { nameMain, characteristics, registerTypeId, scopeId}, handleSubmit, onClose} = this.props;
+        const {fields: {record, characteristics, registerTypeId, scopeId}, handleSubmit, onClose, versionId, refTables: {scopesData}, registryRegionRecordTypes, registryRegion} = this.props;
 
         var okSubmitForm = submitReduxFormWithProp.bind(this, validate, 'store')
         var okAndDetailSubmitForm = submitReduxFormWithProp.bind(this, validate, 'storeAndViewDetail')
 
         var itemsForDropDownTree = [];
-        if (this.props.registryRegionRecordTypes.item) {
-            itemsForDropDownTree = this.props.registryRegionRecordTypes.item;
+        if (registryRegionRecordTypes.item) {
+            itemsForDropDownTree = registryRegionRecordTypes.item;
         }
 
 
-        var registerTypesIdValue = null;
-        if (this.isValueUseable(this.props.registryRegionRecordTypes.item, this.props.registryRegion.registryTypesId) && this.props.registryRegion.registryTypesId && !registerTypeId.value){
-            registerTypesIdValue = this.props.registryRegion.registryTypesId;
-        }
-        else{
-            registerTypesIdValue = registerTypeId.value;
+        var registerTypesIdValue = registerTypeId.value;
+        if (registryRegion.registryTypesId && !registerTypeId.value && this.isValueUseable(registryRegionRecordTypes.item, registryRegion.registryTypesId)){
+            registerTypesIdValue = registryRegion.registryTypesId;
         }
 
-        var scopeIdValue = null;
-        if (!scopeId.value){
-            if (this.props.refTables.scopesData.scopes
-                && this.props.refTables.scopesData.scopes[indexById(this.props.refTables.scopesData.scopes, this.props.versionId, 'versionId')]
-                && this.props.refTables.scopesData.scopes[indexById(this.props.refTables.scopesData.scopes, this.props.versionId, 'versionId')].scopes
-            ) {
-                scopeIdValue = this.props.refTables.scopesData.scopes[indexById(this.props.refTables.scopesData.scopes, this.props.versionId, 'versionId')].scopes[0].id;
+        var scopeIdValue = scopeId.value;
+        if (!scopeId.value) {
+            let index = scopesData.scopes ? indexById(scopesData.scopes, versionId, 'versionId') : false;
+            if (index && scopesData.scopes[index].scopes) {
+                scopeIdValue = scopesData.scopes[index].scopes[0].id;
             }
-        }else{
-            scopeIdValue = scopeId.value
         }
 
         return (
             <div key={this.props.key}>
                 <Modal.Body>
                     <form onSubmit={handleSubmit(okSubmitForm)}>
-                        <Scope disabled={this.state.disabled} versionId={this.props.versionId} label={i18n('registry.scope.class')} {...scopeId} value={scopeIdValue} {...decorateFormField(scopeId)}/>
+                        <Scope disabled={this.state.disabled} versionId={versionId} label={i18n('registry.scopeClass')} {...scopeId} value={scopeIdValue} {...decorateFormField(scopeId)}/>
                         <DropDownTree
-                            label={i18n('registry.add.typ.rejstriku')}
+                            label={i18n('registry.add.type')}
                             items = {itemsForDropDownTree}
                             addRegistryRecord={true}
                             {...registerTypeId}
@@ -143,7 +134,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
                             value={registerTypesIdValue}
                             disabled={this.state.disabled}
                             />
-                        <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)}/>
+                        <Input type="text" label={i18n('registry.name')} {...record} {...decorateFormField(record)}/>
                         <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} />
                     </form>
                 </Modal.Body>
@@ -159,17 +150,16 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
 
 module.exports = reduxForm({
     form: 'addRegistryForm',
-    fields: ['nameMain', 'characteristics', 'registerTypeId', 'scopeId'],
+    fields: ['record', 'characteristics', 'registerTypeId', 'scopeId'],
 },state => ({
         initialValues: state.form.addRegistryForm.initialValues,
         refTables: state.refTables,
         registryRegion: state.registryRegion,
-        registryRegionData: state.registryRegionData,
         registryRegionRecordTypes: state.registryRegionRecordTypes
 
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addRegistryForm', data})}
-)(AddRegistryForm)
+)(AddRegistryForm);
 
 
 

@@ -270,21 +270,19 @@ class WebApi{
     versionValidateCount(versionId) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/validateVersionCount/' + versionId, null)
     }
-    
-    insertRegistry(nameMain, characteristics, registerTypeId, parentId, scopeId) {
-        var data = {
-            record: nameMain,
-            characteristics: characteristics,
+
+    createRecord(record, characteristics, registerTypeId, parentId, scopeId) {
+        return AjaxUtils.ajaxPut('/api/registryManagerV2/createRecord', null, {
+            record,
+            characteristics,
             local: false,
-            scopeId: scopeId,
+            scopeId,
             parentRecordId: parentId,
-            registerTypeId: registerTypeId
-            
-        }
-        return AjaxUtils.ajaxPut('/api/registryManagerV2/createRecord', null,  data)
-            .then(json=>{
-                return json;
-            });
+            registerTypeId
+        })
+        .then(json=> {
+            return json;
+        });
     }
 
     getFundPolicy(fundVersionId) {
@@ -299,17 +297,14 @@ class WebApi{
     }
 
     getAllScopes() {
-        return AjaxUtils.ajaxGet('/api/registryManagerV2/scopes')
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/scopes', null)
             .then(json=> {
                 return json
             });
     }
 
-    removeRegistry(registryId) {
-        var data = {
-            recordId: registryId
-        }
-        return AjaxUtils.ajaxDelete('/api/registryManagerV2/deleteRecord', data)
+    deleteRegistry(recordId) {
+        return AjaxUtils.ajaxDelete('/api/registryManagerV2/deleteRecord', {recordId}, null)
             .then(json=>{
                 return json;
             });
@@ -329,7 +324,7 @@ class WebApi{
     }
 
     deleteVariantRecord(variantRecordId) {
-        return AjaxUtils.ajaxDelete('/api/registryManagerV2/deleteVariantRecord', {variantRecordId: variantRecordId})
+        return AjaxUtils.ajaxDelete('/api/registryManagerV2/deleteVariantRecord', {variantRecordId}, null)
             .then(json=>{
                 return json;
             });
@@ -344,6 +339,27 @@ class WebApi{
 
     editRegistryVariant(data){
         return AjaxUtils.ajaxPut('/api/registryManagerV2/updateVariantRecord', null, data)
+            .then(json=>{
+                return json;
+            });
+    }
+
+    deleteRegCoordinates(coordinatesId) {
+        return AjaxUtils.ajaxDelete('/api/registryManagerV2/deleteRegCoordinates', {coordinatesId}, null)
+            .then(json=>{
+                return json;
+            });
+    }
+
+    createRegCoordinates(data){
+        return AjaxUtils.ajaxPut('/api/registryManagerV2/createRegCoordinates', null, data)
+            .then(json=>{
+                return json;
+            });
+    }
+
+    updateRegCoordinates(data){
+        return AjaxUtils.ajaxPut('/api/registryManagerV2/updateRegCoordinates', null, data)
             .then(json=>{
                 return json;
             });
@@ -655,8 +671,11 @@ class WebApi{
         return AjaxUtils.ajaxCallRaw('/api/xmlImportManagerV2/import', {}, "POST", data);
     }
 
-    kmlImport(data) {
-        return AjaxUtils.ajaxCallRaw('/api/kmlManagerV1/import', {}, "POST", data);
+    arrCoordinatesImport(data) {
+        return AjaxUtils.ajaxCallRaw('/api/kmlManagerV1/import/arrCoordinates', {}, "POST", data);
+    }
+    regCoordinatesImport(data) {
+        return AjaxUtils.ajaxCallRaw('/api/kmlManagerV1/import/regCoordinates', {}, "POST", data);
     }
 
     getInstitutions() {

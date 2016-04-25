@@ -5,7 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Utils, Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components';
-import {Tooltip, OverlayTrigger} from 'react-bootstrap';
+import {Tooltip, OverlayTrigger,Input} from 'react-bootstrap';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions'
 import {connect} from 'react-redux'
 var classNames = require('classnames');
@@ -53,14 +53,14 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
                 'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver',
                 'handleDragLeave', 'getShowDeleteDescItemType', 'getShowDeleteDescItem', 'focus', 'handleDescItemTypeShortcuts',
-                'handleDescItemShortcuts', 'handleSelectFile', 'handleUpload');
+                'handleDescItemShortcuts', 'handleCoordinatesUploadButtonClick', 'handleCoordinatesUpload');
     }
 
     componentWillReceiveProps(nextProps) {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-return true;
+        return true;
         var eqProps = ['descItemType', 'rulDataType', 'calendarTypes', 'packetTypes', 'packets', 'locked', 'copy']
         return !propsEquals(this.props, nextProps, eqProps);
     }
@@ -110,15 +110,15 @@ return true;
 
         const refPrefix = refType.useSpecification ? 'spec_' : ''
 
-        var ref
+        var ref, descItem;
         if (typeof item.descItemObjectId !== 'undefined' && item.descItemObjectId !== null) {   // konkrétní hodnota
-            var descItem = descItemType.descItems[indexById(descItemType.descItems, item.descItemObjectId, 'descItemObjectId')]
+            descItem = descItemType.descItems[indexById(descItemType.descItems, item.descItemObjectId, 'descItemObjectId')]
             ref = this.refs[refPrefix + descItem.formKey]
         } else if (typeof item.descItemIndex !== 'undefined' && item.descItemIndex !== null) {   // konkrétní index
-            var descItem = descItemType.descItems[item.descItemIndex]
+            descItem = descItemType.descItems[item.descItemIndex]
             ref = this.refs[refPrefix + descItem.formKey]
         } else {    // obecně atribut - dáme na první hodnotu
-            var descItem = descItemType.descItems[0]
+            descItem = descItemType.descItems[0]
             ref = this.refs[refPrefix + descItem.formKey]
         }
 
@@ -130,7 +130,7 @@ return true;
                     console.error('Cannot find focus method for desc item', ref)
                 }
             } else {    // focus bude na vlastní hodnotu atributu
-                var descItem = ref.getWrappedInstance()
+                descItem = ref.getWrappedInstance()
                 if (descItem.focus) {
                     descItem.focus()
                 } else {
@@ -181,7 +181,7 @@ return true;
                 value={descItem.descItemSpecId}
                 title={descItem.error.spec}
             >
-                <option key="novalue"></option>
+                <option key="novalue" />
                 {options}
             </select>
         )
@@ -209,7 +209,7 @@ return true;
      * Zobrazení detailu rejstříku
      *
      * @param descItemIndex {Integer} index hodnoty atributu v seznamu
-     * @param record {Integer} identifikátor typu osoby
+     * @param recordId {Integer} identifikátor typu osoby
      */
     handleDetailRecord(descItemIndex, recordId) {
         this.props.onDetailRecord(descItemIndex, recordId);
@@ -399,25 +399,22 @@ return true;
         }
     }
 
-    handleSelectFile() {
-        this.refs.uploadInput.click();
+    handleCoordinatesUploadButtonClick() {
+        this.refs.uploadInput.getInputDOMNode().click();
     }
 
-    handleUpload() {
-        const fileList = this.refs.uploadInput.files;
+    handleCoordinatesUpload() {
+        const fileList = this.refs.uploadInput.getInputDOMNode().files;
 
         if (fileList.length != 1) {
             return;
         }
         const file = fileList[0];
-        if (!file.type.match('.*\.kml')) {
-            this.dispatch(addToastrDanger('Invalid File', 'Only KML is supported'));
-            return;
-        }
 
-        this.props.onDescItemUpload(file);
-        this.refs.uploadInput.value = null;
+        this.props.onCoordinatesUpload(file);
+        this.refs.uploadInput.getInputDOMNode().value = null;
     }
+
 
     /**
      * Renderování hodnoty atributu.
@@ -534,6 +531,7 @@ return true;
             case 'COORDINATES':
                 parts.push(<DescItemCoordinates key={itemComponentKey}
                     {...descItemProps}
+                    onDownload={this.props.onCoordinatesDownload.bind(this, descItem.descItemObjectId)}
                     />)
                 break;
             case 'ENUM':
@@ -615,7 +613,7 @@ return true;
         }
 
         var descItemsShowDeleteItem = false
-        for (var a=0; a<descItemType.descItems.length; a++) {
+        for (var a = 0; a < descItemType.descItems.length; a++) {
             let descItem = descItemType.descItems[a]
 
             if (descItemNeedStore(descItem, refType)) {
@@ -627,12 +625,9 @@ return true;
             }
         }
 
-        if (descItemsShowDeleteItem) {
-            return true
-        }
-
-        return false
+        return descItemsShowDeleteItem
     }
+
 
     /**
      * Renderování nadpisu atributu - včetně akcí pro atribut.
@@ -714,20 +709,20 @@ return true;
         if (infoType.rep === 1 && !(locked || closed)) {
             if (this.props.rulDataType.code === "COORDINATES") {
                 addAction = <div className='desc-item-type-actions'>
-                    <NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton>
-                    <NoFocusButton onClick={this.handleSelectFile} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-upload" /></NoFocusButton>
-                    <input className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleUpload} />
+                    <NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton>
+                    <NoFocusButton onClick={this.handleCoordinatesUploadButtonClick} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-upload" /></NoFocusButton>
+                    <Input className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload} />
                 </div>
             } else {
-                addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>
+                addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton></div>
             }
 
         }
 
-        var showDeleteDescItemType = this.getShowDeleteDescItemType()
+        var showDeleteDescItemType = this.getShowDeleteDescItemType();
 
         var descItems = descItemType.descItems.map((descItem, descItemIndex) => {
-            var actions = new Array;
+            var actions = [];
 
             if (infoType.rep === 1) {
                 actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
@@ -743,7 +738,7 @@ return true;
             }
 
             return this.renderDescItem(descItemType, descItem, descItemIndex, actions, locked || closed)
-        })
+        });
 
         var cls = classNames({
             'desc-item-type': true,
@@ -761,7 +756,7 @@ return true;
             </Shortcuts>
         )
     }
-}
+};
 
 DescItemType.propTypes = {
     onChange: React.PropTypes.func.isRequired,
@@ -770,6 +765,8 @@ DescItemType.propTypes = {
     onBlur: React.PropTypes.func.isRequired,
     onFocus: React.PropTypes.func.isRequired,
     onCreateParty: React.PropTypes.func.isRequired,
+    onCoordinatesDownload: React.PropTypes.func.isRequired,
+    onCoordinatesUpload: React.PropTypes.func.isRequired,
     onDetailParty: React.PropTypes.func.isRequired,
     onCreateRecord: React.PropTypes.func.isRequired,
     onDetailRecord: React.PropTypes.func.isRequired,
@@ -779,7 +776,6 @@ DescItemType.propTypes = {
     onDescItemTypeCopyFromPrev: React.PropTypes.func.isRequired,
     onDescItemRemove: React.PropTypes.func.isRequired,
     onDescItemAdd: React.PropTypes.func.isRequired,
-    onDescItemUpload: React.PropTypes.func.isRequired,
     refType: React.PropTypes.object.isRequired,
     infoType: React.PropTypes.object.isRequired,
     descItemType: React.PropTypes.object.isRequired,
@@ -797,6 +793,6 @@ DescItemType.propTypes = {
 
 DescItemType.childContextTypes = {
     shortcuts: React.PropTypes.object.isRequired
-}
+};
 
 module.exports = connect(null, null, null, { withRef: true })(DescItemType);

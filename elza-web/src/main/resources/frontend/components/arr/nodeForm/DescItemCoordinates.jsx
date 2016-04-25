@@ -5,47 +5,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent, i18n} from 'components';
+import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils'
 import {Button} from 'react-bootstrap';
-import {normalizeDoubleWithDot} from 'components/validate'
 
 var DescItemCoordinates = class DescItemCoordinates extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleChangeData','handleChangeSelect', 'focus', 'getStringType', 'getDownloadUrl');
+        this.bindMethods('handleChangeData', 'handleChangeSelect', 'focus');
 
-        this.state = this.convertToClient(props.descItem.value);
+        this.state = objectFromWKT(props.descItem.value);
     }
 
     componentWillReceiveProps(nextProps) {
-        this.setState(this.convertToClient(nextProps.descItem.value));
-    }
-
-    convertToClient(value) {
-        if (value === null || value == '' || typeof value === "object") {
-            return {type: "POINT", data:null};
-        }
-        const state = {type: null, data: null};
-        const start = value.indexOf("(");
-        state.type = value.substr(0, start).trim();
-        if (state.type === "POINT") {
-            state.data = value.substr(start+1,value.length-start-2).split(", ").join("\n").split(" ").join(",");
-        } else {
-            state.data = value.substr(start+2,value.length-start-4);
-        }
-        return state;
-    }
-
-    convertFromClient(type, val) {
-        let points = val.split(",").map(function(dat) {
-            return normalizeDoubleWithDot(dat);
-        }).join(" ").split("\n").join(", ");
-        if (type === "POLYGON") {
-            points = "(" + points + ", " + points.substr(0, points.indexOf(",")) + ")";
-        }
-        return type + "(" + points + ")";
+        this.setState(objectFromWKT(nextProps.descItem.value));
     }
 
     focus() {
@@ -53,53 +28,38 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
     }
 
     handleChangeData(e) {
-        const val = this.convertFromClient(this.state.type, e.target.value);
+        const val = wktFromTypeAndData(this.state.type, e.target.value);
         if (val != this.props.descItem.value) {
             this.props.onChange(val);
         }
     }
 
     handleChangeSelect(e) {
-        const val = this.convertFromClient(e.target.value, this.state.data);
+        const val = wktFromTypeAndData(e.target.value, this.state.data);
         if (val != this.props.descItem.value) {
             this.props.onChange(val);
         }
     }
 
-    getStringType() {
-        switch (this.state.type) {
-            case "POINT":
-                return "B";
-            case "POLYGON":
-                return "P";
-            case "LINESTRING":
-                return "L";
-            default:
-                return "N";
-        }
-    }
-
-    getDownloadUrl() {
-        return window.location.origin + "/api/kmlManagerV1/" + this.props.descItem.descItemObjectId + "/" + this.props.fundVersionId + "/exportDescItemCoordinates";
-    }
-
     render() {
         const {descItem, locked} = this.props;
         return (
-            <div >
+            <div>
                 <div className='desc-item-value  desc-item-value-parts'>
-                    <Button bsStyle="default" disabled>{this.getStringType()}</Button>
+                    <Button bsStyle="default" disabled>{wktType(this.state.type)}</Button>
                     {
                         this.state.type == "POINT" ?
                             <input
                                 {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
                                 ref='focusEl'
                                 disabled={locked}
-                                onChange={this.handleChangeData.bind(this)}
+                                onChange={this.handleChangeData}
                                 value={this.state.data}
-                            />: <div>
+                            /> : <div>
                             <span>{i18n('subNodeForm.countOfCoordinates', this.state.data)}</span>
-                            <Button bsStyle="default" href={this.getDownloadUrl()}><i className="fa fa-download" /></Button>
+                            <Button bsStyle="default" onClick={this.props.onDownload}>
+                                <i className="fa fa-download"/>
+                            </Button>
                         </div>
                     }
                 </div>
@@ -108,16 +68,11 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
     }
 };
 
-function mapStateToProps(state) {
-    const {arrRegion} = state;
-    var fundVersionId = null;
-    if (arrRegion.activeIndex != null) {
-        fundVersionId = arrRegion.funds[arrRegion.activeIndex].versionId;
-    }
+DescItemCoordinates.propTypes = {
+    onChange: React.PropTypes.func.isRequired,
+    onDownload: React.PropTypes.func.isRequired,
+    descItem: React.PropTypes.object.isRequired
+};
 
-    return {
-        fundVersionId: fundVersionId
-    }
-}
-module.exports = connect(mapStateToProps, null, null, { withRef: true })(DescItemCoordinates);
+module.exports = connect(null, null, null, {withRef: true})(DescItemCoordinates);
 

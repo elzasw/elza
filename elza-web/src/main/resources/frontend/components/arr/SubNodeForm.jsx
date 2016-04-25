@@ -342,9 +342,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     /**
      * Přidání nové hodnoty coordinates pomocí uploadu
      * @param descItemTypeId {Integer} Id descItemTypeId
-     * @param file {File} Soubor
+     * @param file {File} soubor
      */
-    handleDescItemUpload(descItemTypeId, file) {
+    handleCoordinatesUpload(descItemTypeId, file) {
         this.dispatch(fundSubNodeFormValueUploadCoordinates(this.props.versionId, this.props.nodeKey, descItemTypeId, file));
     }
 
@@ -577,6 +577,10 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         return false
     }
 
+    handleCoordinatesDownload(objectId) {
+        window.open(window.location.origin + "/api/kmlManagerV1/" + objectId + "/" + this.props.fund.versionId + "/exportDescItemCoordinates");
+    }
+
     /**
      * Renderování atributu.
      * @param descItemType {Object} atribut
@@ -624,8 +628,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onCreateRecord={this.handleCreateRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDetailRecord={this.handleDetailRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onDescItemUpload={this.handleDescItemUpload.bind(this, descItemType.id)}
+                onCoordinatesUpload={this.handleCoordinatesUpload.bind(this, descItemType.id)}
                 onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onCoordinatesDownload={this.handleCoordinatesDownload.bind(this)}
                 onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChangePosition={this.handleChangePosition.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChangeSpec={this.handleChangeSpec.bind(this, descItemGroupIndex, descItemTypeIndex)}
