@@ -105,6 +105,9 @@ export default function registryRegionData(state = initialState, action = {}) {
             }
         }
         case types.CHANGE_REGISTRY_UPDATE: {
+            if (state.selectedId !== action.changedIds[0]) {
+                return state;
+            }
             return {
                 ...state,
                 dirty: true
@@ -239,7 +242,7 @@ export default function registryRegionData(state = initialState, action = {}) {
         }
         case types.REGISTRY_RECORD_COORDINATES_CREATED: {
             const record = {...state.item};
-            
+
             record.coordinates.map((variant, key) => {
                 if (variant.coordinatesInternalId == action.coordinatesInternalId && !variant.coordinatesId) {
                     record.coordinates[key] = {

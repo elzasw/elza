@@ -531,8 +531,8 @@ public class RegistryController {
     @RequestMapping(value = "/deleteRegCoordinates", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"coordinatesId"})
     public void deleteRegCoordinates(@RequestParam(value = "coordinatesId") final Integer coordinatesId) {
         Assert.notNull(coordinatesId);
-        RegCoordinates variantRecord = regCoordinatesRepository.findOne(coordinatesId);
-        if (variantRecord == null) {
+        RegCoordinates coordinates = regCoordinatesRepository.findOne(coordinatesId);
+        if (coordinates == null) {
             return;
         }
 

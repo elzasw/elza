@@ -166,6 +166,7 @@ export default function registryRegion(state = initialState, action = {}) {
         case types.CHANGE_REGISTRY_UPDATE: {
             return {
                 ...state,
+                registryRegionData: registryRegionData(state.registryRegionData, action),
                 dirty: true
             }
         }

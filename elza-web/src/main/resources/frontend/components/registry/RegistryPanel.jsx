@@ -276,7 +276,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                     initData={item}
                     parentRecordId={item.parentRecordId}
                     parentRegisterTypeId={item.registerTypeId}
-                    onSubmit={this.handleRecordUpdateCall}
+                    onSubmitForm={this.handleRecordUpdateCall}
                 />
             )
         );

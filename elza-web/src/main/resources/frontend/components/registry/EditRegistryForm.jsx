@@ -54,7 +54,7 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
 
         const itemsForDropDownTree = registryRegionRecordTypes.item != null ? registryRegionRecordTypes.item : [];
 
-        const registerTypesIdValue = initData.registerTypeId && !registerTypeId.value ? initData.item.registerTypeId : registerTypeId.value;
+        const registerTypesIdValue = initData.registerTypeId && !registerTypeId.value ? initData.registerTypeId : registerTypeId.value;
 
         return (
             <div>
@@ -81,7 +81,7 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
             </div>
         )
     }
-}
+};
 
 module.exports = reduxForm({
         form: 'editRegistryForm',

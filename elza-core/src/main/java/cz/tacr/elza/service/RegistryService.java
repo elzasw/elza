@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
+import cz.tacr.elza.xmlimport.v1.vo.record.VariantRecord;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -399,7 +400,10 @@ public class RegistryService {
         Assert.notNull(regRecord, "RegRecord nebylo nalezeno podle id " + recordId);
         variantRecord.setRegRecord(regRecord);
 
-        return variantRecordRepository.save(variantRecord);
+        RegVariantRecord saved = variantRecordRepository.save(variantRecord);
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_UPDATE, recordId));
+
+        return saved;
     }
 
     public Map<RegRecord, List<RegRecord>> findChildren(List<RegRecord> records) {
