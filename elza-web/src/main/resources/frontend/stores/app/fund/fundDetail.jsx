@@ -36,6 +36,16 @@ export default function fundDetail(state = initialState, action = {}) {
                 currentDataKey: '',
                 fundTree: fundTree(state.fundTree, action),
             }
+        case types.DELETE_FUND:
+            if (state.id === action.fundId) {
+                return {
+                    ...state,
+                    id: null,
+                    currentDataKey: '',
+                }
+            } else {
+                return state
+            }
         case types.CHANGE_FUND:
             if (state.id === action.fundId) {
                 return {

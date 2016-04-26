@@ -27,7 +27,7 @@ import {selectFundTab} from 'actions/arr/fund'
 import {routerNavigate} from 'actions/router'
 import {fundsFetchIfNeeded, fundsSelectFund, fundsFundDetailFetchIfNeeded, fundsSearch} from 'actions/fund/fund'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils'
-import {approveFund} from 'actions/arr/fund'
+import {approveFund, deleteFund} from 'actions/arr/fund'
 import {barrier} from 'components/Utils';
 import {scopesDirty} from 'actions/refTables/scopesData'
 
@@ -174,6 +174,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
         const fundDetail = fundRegion.fundDetail
 
         if (confirm(i18n('arr.fund.action.delete.confirm', fundDetail.name))) {
+            this.dispatch(deleteFund(fundDetail.id))
         }
     }
 

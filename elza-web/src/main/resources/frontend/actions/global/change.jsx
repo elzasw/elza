@@ -116,6 +116,12 @@ export function changeFund(fundId) {
         fundId
     }
 }
+export function deleteFund(fundId) {
+    return {
+        type: types.DELETE_FUND,
+        fundId
+    }
+}
 
 export function changeFundRecord(versionId, nodeId, version) {
     return {

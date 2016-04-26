@@ -7,7 +7,7 @@ import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
         changeNodes, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
-    changeMoveLevel, changeRegistryRecord, changeFund, changeFundRecord, changeInstitution,
+    changeMoveLevel, changeRegistryRecord, changeFund, deleteFund, changeFundRecord, changeInstitution,
     changeVisiblePolicy} from 'actions/global/change';
 
 
@@ -153,6 +153,7 @@ function processEvents(values) {
                 break;
 
             case 'FUND_UPDATE':
+            case 'FUND_CREATE':
                 fundChange(value);
                 break;
             case 'FUND_RECORD_CHANGE':
@@ -161,6 +162,10 @@ function processEvents(values) {
 
             case 'VISIBLE_POLICY_CHANGE':
                 visiblePolicyChange(value);
+                break;
+
+            case 'FUND_DELETE':
+                fundDelete(value);
                 break;
 
             default:
@@ -205,6 +210,10 @@ function registryChange(value) {
 
 function fundChange(value) {
     store.dispatch(changeFund(value.ids[0]));
+}
+
+function fundDelete(value) {
+    store.dispatch(deleteFund(value.ids[0]));
 }
 
 function fundRecordChange(value) {

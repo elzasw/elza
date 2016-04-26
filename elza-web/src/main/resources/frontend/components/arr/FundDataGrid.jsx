@@ -13,7 +13,8 @@ import * as types from 'actions/constants/ActionTypes';
 import {fundDataGridSetColumnsSettings, fundDataGridSetSelection, fundDataGridSetColumnSize, fundDataGridFetchFilterIfNeeded,
     fundDataGridFetchDataIfNeeded, fundDataGridSetPageIndex, fundDataGridSetPageSize,
     fundDataGridFilterChange, fundBulkModifications, fundDataGridFilterClearAll, fundDataGridPrepareEdit, fundDataGridFilterUpdateData,
-    fundDataFulltextSearch, fundDataFulltextPrevItem, fundDataFulltextNextItem, fundDataChangeCellFocus} from 'actions/arr/fundDataGrid'
+    fundDataFulltextSearch, fundDataFulltextPrevItem, fundDataFulltextNextItem, fundDataChangeCellFocus, fundDataFulltextClear,
+    fundDataFulltextExtended} from 'actions/arr/fundDataGrid'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes'
 import {fundSubNodeFormHandleClose} from 'actions/arr/subNodeForm'
@@ -37,14 +38,13 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.bindMethods('handleSelectedIdsChange', 'handleColumnResize', 'handleColumnSettings', 'handleChangeColumnsSettings',
             'handleBulkModifications', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer', 'resizeGrid', 'handleFilterClearAll',
             'handleFilterUpdateData', 'handleContextMenu', 'handleSelectInNewTab', 'handleSelectInTab', 'handleEdit', 'handleEditClose',
-            'handleFulltextSearch', 'handleFulltextChange', 'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleChangeFocus');
+            'handleFulltextSearch', 'handleFulltextChange', 'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleChangeFocus',
+            'handleToggleExtendedSearch');
 
         var colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
         if (!colState) {
             colState = {cols: []}
         }
-
-        colState.showFilterResult = false
 
         this.state = colState
     }
@@ -429,14 +429,12 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     handleFulltextChange(value) {
-        this.setState({showFilterResult: false})
+        const {versionId} = this.props
+        this.dispatch(fundDataFulltextClear(versionId))
     }
 
     handleFulltextSearch(value) {
         const {versionId} = this.props
-
-        this.setState({showFilterResult: true})
-
         this.dispatch(fundDataFulltextSearch(versionId, value))
     }
 
@@ -471,9 +469,14 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(fundSelectSubNode(versionId, row.node.id, parentNode, false, null, true));
     }
 
+    handleToggleExtendedSearch() {
+        const {versionId} = this.props
+        this.dispatch(fundDataFulltextExtended(versionId))
+    }
+    
     render() {
         const {fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, packetTypes} = this.props;
-        const {cols, showFilterResult} = this.state;
+        const {cols} = this.state;
 
         if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
             return <Loading/>
@@ -484,7 +487,10 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             <SearchWithGoto
                 itemsCount={fundDataGrid.searchedItems.length}
                 selIndex={fundDataGrid.searchedCurrentIndex}
-                showFilterResult={showFilterResult}
+                textAreaInput={fundDataGrid.searchExtended}
+                filterText={fundDataGrid.searchText}
+                placeholder={i18n(fundDataGrid.searchExtended ? 'arr.fund.extendedSearch.text' : 'search.input.search')}
+                showFilterResult={fundDataGrid.showFilterResult}
                 onFulltextSearch={this.handleFulltextSearch}
                 onFulltextChange={this.handleFulltextChange}
                 onFulltextPrevItem={this.handleFulltextPrevItem}
@@ -499,6 +505,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                     <div className='actions-container'>
                         <div className="actions-search">
                             {search}
+                            <Button onClick={this.handleToggleExtendedSearch} title={i18n(fundDataGrid.searchExtended ? 'arr.fund.simpleSearch' : 'arr.fund.extendedSearch')}><Icon glyph={fundDataGrid.searchExtended ? 'fa-search-minus' : 'fa-search-plus'}/></Button>
                         </div>
                         <div className="actions-buttons">
                             <Button onClick={this.handleFilterUpdateData}><Icon glyph='fa-refresh'/>{i18n('arr.fund.filterSettings.updateData.action')}</Button>

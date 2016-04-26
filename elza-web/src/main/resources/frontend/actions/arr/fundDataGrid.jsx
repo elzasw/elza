@@ -23,6 +23,8 @@ export function isFundDataGridAction(action) {
         case types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL:
         case types.FUND_FUND_DATA_GRID_PREPARE_EDIT:
         case types.FUND_FUND_DATA_GRID_FULLTEXT_RESULT:
+        case types.FUND_FUND_DATA_GRID_FULLTEXT_CLEAR:
+        case types.FUND_FUND_DATA_GRID_FULLTEXT_EXTENDED:
         case types.FUND_FUND_DATA_GRID_FULLTEXT_NEXT_ITEM:
         case types.FUND_FUND_DATA_GRID_FULLTEXT_PREV_ITEM:
         case types.FUND_FUND_DATA_GRID_CHANGE_CELL_FOCUS:
@@ -55,10 +57,20 @@ export function fundBulkModifications(versionId, descItemTypeId, specsIds, opera
 
 export function fundDataFulltextSearch(versionId, filterText) {
     return (dispatch, getState) => {
-        WebApi.getFilteredFulltextNodes(versionId, filterText)
-            .then(json => {
-                dispatch(fundDataFulltextSearchResult(versionId, filterText, json))
-            })
+        if (filterText !== '') {
+            const state = getState();
+            const fund = objectById(state.arrRegion.funds, versionId, 'versionId')
+            if (!fund) {
+                return
+            }
+
+            const fundDataGrid = fund.fundDataGrid
+
+            WebApi.getFilteredFulltextNodes(versionId, filterText, fundDataGrid.searchExtended)
+                .then(json => {
+                    dispatch(fundDataFulltextSearchResult(versionId, filterText, json))
+                })
+        }
     }
 }
 
@@ -77,6 +89,20 @@ export function fundDataChangeCellFocus(versionId, row, col) {
         versionId,
         row,
         col,
+    }
+}
+
+export function fundDataFulltextExtended(versionId) {
+    return {
+        type: types.FUND_FUND_DATA_GRID_FULLTEXT_EXTENDED,
+        versionId,
+    }
+}
+
+export function fundDataFulltextClear(versionId) {
+    return {
+        type: types.FUND_FUND_DATA_GRID_FULLTEXT_CLEAR,
+        versionId,
     }
 }
 

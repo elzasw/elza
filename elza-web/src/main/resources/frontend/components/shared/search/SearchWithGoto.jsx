@@ -13,7 +13,7 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
     constructor(props) {
         super(props)
 
-        this.bindMethods('handleFulltextChange', 'handleOnSearch')
+        this.bindMethods('handleFulltextChange', 'handleOnSearch', 'handleClear')
 
         this.state = {
             filterText: props.filterText || '',
@@ -21,10 +21,15 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
         }
     }
 
-    componentWillReceiveProps(nexProps){
+    componentWillReceiveProps(nextProps){
+        var filterText = this.state.filterText
+        if (nextProps.filterText !== 'undefined' && nextProps.filterText !== this.props.filterText) {
+            filterText = nextProps.filterText
+        }
+        
         this.setState({
-            filterText: typeof nexProps.filterText !== 'undefined' ? nexProps.filterText : this.state.filterText,
-            showFilterResult: typeof nexProps.showFilterResult !== 'undefined' ? nexProps.showFilterResult : this.state.showFilterResult,
+            filterText: filterText,
+            showFilterResult: typeof nextProps.showFilterResult !== 'undefined' ? nextProps.showFilterResult : this.state.showFilterResult,
         })
     }
 
@@ -61,8 +66,15 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
         })
     }
 
+    handleClear() {
+        const {onFulltextSearch} = this.props
+
+        this.handleFulltextChange('');
+        onFulltextSearch('')
+    }
+
     render() {
-        const {itemsCount, selIndex, onFulltextSearch, onFulltextNextItem, onFulltextPrevItem} = this.props;
+        const {itemsCount, textAreaInput, placeholder, selIndex, onFulltextNextItem, onFulltextPrevItem} = this.props;
         const {filterText, showFilterResult} = this.state;
 
         var actionAddons = []
@@ -94,10 +106,11 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
 
         return (
             <Search
-                placeholder={i18n('search.input.search')}
+                placeholder={placeholder || i18n('search.input.search')}
+                textAreaInput={textAreaInput}
                 filterText={filterText}
                 onChange={e => this.handleFulltextChange(e.target.value)}
-                onClear={e => {this.handleFulltextChange(''); onFulltextSearch(this.state.filterText)}}
+                onClear={this.handleClear}
                 onSearch={this.handleOnSearch}
                 actionAddons={actionAddons}
             />
@@ -108,6 +121,7 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
 SearchWithGoto.propTypes = {
     filterText: React.PropTypes.string,
     itemsCount: React.PropTypes.number.isRequired,
+    textAreaInput: React.PropTypes.bool,
     selIndex: React.PropTypes.number.isRequired,
     showFilterResult: React.PropTypes.bool.isRequired,
     onFulltextChange: React.PropTypes.func,

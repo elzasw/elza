@@ -22,6 +22,9 @@ const initialState = {
     nodeId: null,   // id node právě editovaného řádku
     parentNodeId: null,   // id parent node právě editovaného řádku
     descItemTypeId: null,   // id atributu právě editovaného řádku
+    searchText: '',
+    searchExtended: false,
+    showFilterResult: false,
     searchedItems: [], // výsledky hledání dat
     searchedCurrentIndex: 0,    // index aktuálně vybrané položky ve výsledcích hledání
     cellFocus: {row: 0, col: 0},
@@ -102,10 +105,24 @@ export default function fundDataGrid(state = initialState, action = {}) {
         case types.FUND_FUND_DATA_GRID_FULLTEXT_PREV_ITEM: {
             return changeSearchedIndex(state, state.searchedCurrentIndex - 1)
         }
+        case types.FUND_FUND_DATA_GRID_FULLTEXT_EXTENDED:
+            return {
+                ...state,
+                searchText: '',
+                showFilterResult: false,
+                searchExtended: !state.searchExtended,
+            }
+        case types.FUND_FUND_DATA_GRID_FULLTEXT_CLEAR:
+            return {
+                ...state,
+                showFilterResult: false,
+            }
         case types.FUND_FUND_DATA_GRID_FULLTEXT_RESULT:
             var midState = {
                 ...state,
                 searchedItems: action.searchedItems,
+                searchText: action.filterText,
+                showFilterResult: action.filterText !== '',
             }
             return changeSearchedIndex(midState, 0)
         case types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL:

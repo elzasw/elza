@@ -44,6 +44,12 @@ export default function fundRegion(state = initialState, action = {}) {
             } else {
                 return state
             }
+        case types.DELETE_FUND:
+            return {
+                ...state,
+                currentDataKey: '',
+                fundDetail: fundDetail(state.fundDetail, action)
+            }
         case types.CHANGE_FUND:
             return {
                 ...state,

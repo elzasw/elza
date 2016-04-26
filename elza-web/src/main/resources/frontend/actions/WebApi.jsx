@@ -613,8 +613,8 @@ class WebApi{
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/deleteDataValues/' + versionId, {descItemTypeId}, {nodes, specIds: specsIds})
     }
 
-    getFilteredFulltextNodes(versionId, fulltext) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFilteredFulltext/' + versionId, {fulltext})
+    getFilteredFulltextNodes(versionId, fulltext, luceneQuery=false) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFilteredFulltext/' + versionId, {fulltext, luceneQuery})
     }
 
     getPackages() {
@@ -768,6 +768,10 @@ class WebApi{
 
     findValidationError(fundVersionId, nodeId, direction) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/validation/' + fundVersionId + '/find/' + nodeId + '/'+ direction);
+    }
+
+    deleteFund(fundId) {
+        return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/deleteFund/' + fundId);
     }
 }
 

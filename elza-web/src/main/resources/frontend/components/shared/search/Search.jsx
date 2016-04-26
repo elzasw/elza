@@ -32,11 +32,11 @@ var Search = class Search extends React.Component {
             filterText: this.props.filterText || this.props.value,                          // hledaný text
         }
     }
-    componentWillReceiveProps(nexProps){
-        if (this.props.filterText !== nexProps.filterText || this.props.value !== nexProps.value) {
-            this.state = {                                                  // inicializace stavu komponenty
-                filterText: nexProps.filterText || nexProps.value,                          // hledaný text
-            }
+    componentWillReceiveProps(nextProps){
+        if (this.props.filterText !== nextProps.filterText || this.props.value !== nextProps.value) {
+            this.setState({                                                  // inicializace stavu komponenty
+                filterText: nextProps.filterText || nextProps.value || '',                          // hledaný text
+            })
         }
     }
 
@@ -45,17 +45,22 @@ var Search = class Search extends React.Component {
     }
 
     handleClear(e){
-        this.state = {
+        this.setState({
             filterText: null,
-        }
+        })
         if (this.props) {
             this.props.onClear();
         }
     }
 
     handleKeyUp(e){
-        if (e.keyCode == 13){
-            this.handleSearch(true, e.shiftKey);
+        const {textAreaInput} = this.props
+        if (textAreaInput) {
+            // u text area neřešíme
+        } else {
+            if (e.keyCode == 13){
+                this.handleSearch(true, e.shiftKey);
+            }
         }
     }
 
@@ -70,6 +75,7 @@ var Search = class Search extends React.Component {
     }
 
     render() {                          // metoda pro renderovani obsahu komponenty
+        const {textAreaInput, placeholder} = this.props
 
         var cls = "search-container";   // třída komponenty                 
         if (this.props.className) {
@@ -102,7 +108,7 @@ var Search = class Search extends React.Component {
                 {beforeInput}
                 <div className='search-input'>
                     <Input
-                        type="text"
+                        type={textAreaInput ? 'textarea' : 'text'}
                         value={this.state.filterText}
                         ref="input"
                         labelClassName="label-class"

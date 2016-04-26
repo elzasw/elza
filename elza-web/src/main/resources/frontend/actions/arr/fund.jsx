@@ -89,6 +89,12 @@ export function approveFund(versionId, dateRange) {
     }
 }
 
+export function deleteFund(fundId) {
+    return dispatch => {
+        WebApi.deleteFund(fundId)
+    }
+}
+
 /**
  * Vybrání záložky pro strom AS.
  * @param {Object} fund finding aid objekt s informací o verzi
