@@ -1,6 +1,11 @@
 package cz.tacr.elza.security;
 
+import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.controller.vo.UserPermission;
 import cz.tacr.elza.domain.UsrUser;
+
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * Detail uživatele v session.
@@ -11,21 +16,38 @@ import cz.tacr.elza.domain.UsrUser;
  */
 public class UserDetail {
 
+    /**
+     * Uživatelské jméno.
+     */
     private String username;
 
+    /**
+     * Identifikátor uživatele.
+     */
     private Integer id;
 
+    /**
+     * Je uživatel aktivní?
+     */
     private Boolean active;
 
-    public UserDetail(final UsrUser user) {
+    /**
+     * Seznam oprávnění uživatele.
+     */
+    private Collection<UserPermission> userPermission;
+
+    public UserDetail(final UsrUser user, final Collection<UserPermission> userPermission) {
         this.id = user.getUserId();
         this.username = user.getUsername();
         this.active = user.getActive();
+        this.userPermission = userPermission;
     }
 
     public UserDetail(final String systemUser) {
         this.username = systemUser;
         this.active = true;
+        this.userPermission = new HashSet<>();
+        this.userPermission.add(new UserPermission(UsrPermission.Permission.ADMINISTRATOR));
     }
 
     public String getUsername() {
@@ -40,4 +62,7 @@ public class UserDetail {
         return active;
     }
 
+    public Collection<UserPermission> getUserPermission() {
+        return userPermission;
+    }
 }

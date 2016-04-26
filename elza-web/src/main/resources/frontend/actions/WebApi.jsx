@@ -703,6 +703,10 @@ class WebApi{
         return AjaxUtils.ajaxPut('/api/ruleSetManagerV2/policy/' + nodeId + '/' + fundVersionId, null, data);
     }
 
+    getUserPermissions() {
+        return AjaxUtils.ajaxGet('/api/user/permission');
+    }
+
     login(username, password) {
         return AjaxUtils.ajaxCallRaw('/login', {}, "POST", "username=" + username + "&password=" + password, "application/x-www-form-urlencoded");
     }

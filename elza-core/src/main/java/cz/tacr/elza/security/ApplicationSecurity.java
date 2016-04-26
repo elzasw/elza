@@ -16,14 +16,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Autentikační třída pro API.
@@ -67,7 +61,6 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
                 String password = authentication.getCredentials().toString();
                 String encodePassword = userService.encodePassword(username, password);
 
-                List<GrantedAuthority> grantedAuths = new ArrayList<>();
                 UsrUser user = userService.findByUsername(username);
                 if (user != null) {
                     if (!user.getPassword().equals(encodePassword)) {
@@ -78,13 +71,11 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
                         throw new LockedException("User is not active");
                     }
 
-                    grantedAuths.add(new SimpleGrantedAuthority("USER"));
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword, grantedAuths);
-                    auth.setDetails(new UserDetail(user));
+                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword, null);
+                    auth.setDetails(new UserDetail(user, userService.calcUserPermission(user)));
                     return auth;
                 } else if (allowDefaultUser && username.equals(defaultUsername) && encodePassword.equalsIgnoreCase(defaultPassword)) {
-                    grantedAuths.add(new SimpleGrantedAuthority("ADMIN"));
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword, grantedAuths);
+                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword, null);
                     auth.setDetails(new UserDetail(defaultUsername));
                     return auth;
                 } else {
