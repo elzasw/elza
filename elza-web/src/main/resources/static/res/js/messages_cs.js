@@ -275,6 +275,7 @@ var messages = {
     "registry.characteristics": "Charakteristika",
     "registry.shown": "Zobrazeno",
     "registry.deleteRegistryQuestion": "Opravdu chcete smazat rejstříkové heslo?",
+    "registry.deleteCoordinatesQuestion": "Opravdu chcete smazat tyto souřadnice?",
     "registry.moveRegistry": "Přesunout heslo",
     "registry.deleteRegistry": "Smazat heslo",
     "registry.cancelMove": "Zrušit přesun",

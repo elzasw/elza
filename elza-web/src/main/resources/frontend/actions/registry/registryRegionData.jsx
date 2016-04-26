@@ -1,12 +1,12 @@
 /**
- * Web api pro komunikaci se serverem.
+ * Akce pro registry region data / recordy
  */
 import {WebApi} from 'actions'
 import {i18n} from 'components'
 import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions'
 import * as types from 'actions/constants/ActionTypes';
 
-export function registryRegionDataSelectRegistry(registry) {
+export function registryRegionDataSelectRecord(registry) {
     return {
         type: types.REGISTRY_RECORD_SELECT,
         registry

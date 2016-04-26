@@ -1,23 +1,32 @@
 /**
  * Styly pro editaci rejstrikoveho hesla
 */
-
 .reg-coordinates {
-
+    max-width: 50%;
+    display:flex;
     .value {
+        width:50%;
+        flex-grow: 1;
         display:flex;
         .error {
             background: #FFDCDC;
         }
-        .value-text{
 
-        }
+    }
+    .value-text {
+        width:50%;
+        flex-grow: 1;
     }
     .description {
-        margin-top: 3px;
+        position:relative;
+        width:50%;
+        //margin-top: 3px;
+        flex-grow:1;
         display:flex;
-        label {
-            margin: 3px;
+        .download {
+            position:absolute;
+            top:2px;
+            right:0;
         }
     }
 

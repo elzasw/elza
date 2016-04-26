@@ -202,12 +202,13 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             this.dispatch(setFocusFunc())
         }
     }
+    
     handleCoordinatesDownload(objectId) {
-        window.open(window.location.origin + "/api/kmlManagerV1/" + objectId + "/" + this.props.fund.versionId + "/exportDescItemCoordinates");
+        window.open(window.location.origin + '/api/kmlManagerV1/export/regCoordinates/' + objectId);
     }
 
     handleCoordinatesDelete(item, index) {
-        if(confirm(i18n('registry.deteleCoordinatesQuestion'))) {
+        if(confirm(i18n('registry.deleteCoordinatesQuestion'))) {
             // Zjištění nového indexu focusu po smazání - zjisšťujeme zde, abychom měli aktuální stav store
             const {registryRegionData} = this.props;
             var setFocusFunc;
@@ -296,11 +297,10 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
 
     handleCoordinatesBlur(item) {
-        console.log(item);
         if (item.hasError === undefined) {
             this.handleCoordinatesChange(item);
         }
-        if(!item.hasError) {
+        if(!item.hasError && (item.oldValue.description !== item.description || item.oldValue.value !== item.value)) {
             this.dispatch(registryRecordCoordinatesUpdate(item));
         }
     }
@@ -418,8 +418,11 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                                 }
                                 {addVariant}
                             </div>
-                            <div className='line variant-name'>
-                                <label>{i18n('registry.detail.coordinates')}</label>
+                            <div className='line'>
+                                <div className='reg-coordinates-labels'>
+                                    <label>{i18n('registry.detail.coordinates')}</label>
+                                    <label>{i18n('registry.coordinates.description')}</label>
+                                </div>
                                 {
                                     item.coordinates && item.coordinates.map((item, index) => {
                                         let variantKey;

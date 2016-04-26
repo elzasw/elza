@@ -12,19 +12,28 @@ const initialState = {
     registryTypeId: undefined,
     item: null,
     LastUpdated: null
-}
+};
 
 export default function registryRegionRecordTypes(state = initialState, action = {}) {
 
     switch (action.type) {
-        case types.REGISTRY_RECORD_TYPES_RECEIVE:
-            return Object.assign({}, state, {
+        case types.REGISTRY_RECORD_TYPES_REQUEST: {
+            return {
+                ...state,
+                registryTypeId: action.registryTypeId,
+                isFetching: true
+            }
+        }
+        case types.REGISTRY_RECORD_TYPES_RECEIVE: {
+            return {
+                ...state,
                 item: action.item,
                 registryTypeId: action.registryTypeId,
                 isFetching: false,
                 fetched: true,
-                LastUpdated: action.receivedAt
-            })
+                lastUpdated: action.receivedAt
+            }
+        }
         default:
             return state
     }

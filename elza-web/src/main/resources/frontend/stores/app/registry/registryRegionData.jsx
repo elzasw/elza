@@ -9,13 +9,12 @@ import {indexById} from 'stores/app/utils.jsx'
 import {i18n} from 'components'
 
 const initialState = {
+    currentDataKey: null,
     coordinatesInternalId: 1,
     coordinates: [],
-    dirty: false,
     isFetching: false,
     fetched: false,
     selectedId: null,
-    requireReload: false,
     item: null,
     LastUpdated: null,
     variantRecordInternalId: 1,
@@ -57,7 +56,7 @@ export default function registryRegionData(state = initialState, action = {}) {
                 fetched: false,
                 isFetching: false,
                 item: null,
-                dirty: false
+                currentDataKey: null
             }
         }
         case types.STORE_SAVE: {
@@ -74,15 +73,16 @@ export default function registryRegionData(state = initialState, action = {}) {
             return {
                 ...state,
                 isFetching: false,
-                fetched: true,
+                fetched: false,
                 selectedId: action.registry.selectedId,
+                currentDataKey: action.registry.selectedId,
                 item: action.registry
             }
         }
         case types.REGISTRY_RECORD_DETAIL_REQUEST: {
             return {
                 ...state,
-                selectedId: action.registryId,
+                currentDataKey: action.dataKey,
                 isFetching: true
             }
         }
@@ -93,24 +93,56 @@ export default function registryRegionData(state = initialState, action = {}) {
             }
         }
         case types.REGISTRY_RECORD_DETAIL_RECEIVE: {
-            return {
+            if (action.item.recordId !== state.currentDataKey) {
+                return state;
+            }
+            const newState = {
                 ...state,
                 selectedId: action.selectedId,
                 item: action.item,
-                dirty: false,
                 isFetching: false,
                 fetched: true,
-                requireReload: false,
-                LastUpdated: action.receivedAt
+                lastUpdated: action.receivedAt
+            };
+            if (state.item) {
+                if (state.item.variantRecords) {
+                    state.item.variantRecords.map((variant) => {
+                        if (!variant.variantRecordId) {
+                            newState.item.variantRecords.push(variant);
+                        }
+                    });
+                }
+                if (state.item.coordinates) {
+                    state.item.coordinates.map((cord) => {
+                        /*
+                        Kod pro částečnou změnu přes přenačtení
+                        if (cord.coordinatesId) {
+                            const index = indexById(newState.item.coordinates, cord.coordinatesId, 'coordinatesId');
+                            if (index && cord.oldValue) {
+                                const newCord = newState.item.coordinates[index];
+                                if (cord.oldValue.description === cord.description && cord.oldValue.value !== cord.value && cord.description !== newCord.description) {
+                                    newState.item.coordinates[index].value = cord.value;
+                                } else if (cord.oldValue.value === cord.value && cord.oldValue.description !== cord.description && cord.value !== newCord.value) {
+                                    newState.item.coordinates[index].description = cord.description;
+                                }
+                            }
+                        } else {
+                        */
+                        if (!cord.coordinatesId) {
+                            newState.item.coordinates.push(cord);
+                        }
+                    });
+                }
             }
+            return newState;
         }
         case types.CHANGE_REGISTRY_UPDATE: {
-            if (state.selectedId !== action.changedIds[0]) {
+            if (state.currentDataKey != action.changedIds[0]) {
                 return state;
             }
             return {
                 ...state,
-                dirty: true
+                currentDataKey: null
             }
         }
         case types.REGISTRY_RECORD_UPDATED: {
@@ -154,7 +186,7 @@ export default function registryRegionData(state = initialState, action = {}) {
                     record.variantRecords[key] = {
                         ...record.variantRecords[key],
                         ...action.json,
-                        variantRecordInternalId: null,
+                        variantRecordInternalId: null
                     };
                 }
             });
@@ -210,13 +242,20 @@ export default function registryRegionData(state = initialState, action = {}) {
             if (index === null) {
                 return state;
             }
+            const oldCord = state.item.coordinates[index];
             return {
                 ...state,
                 item: {
                     ...state.item,
                     coordinates: [
                         ...state.item.coordinates.slice(0,index),
-                        validateCoordinate(action.item),
+                        {
+                            ...validateCoordinate(action.item),
+                            oldValue: action.item.oldValue ? action.item.oldValue : {
+                                description: oldCord.description,
+                                value: oldCord.value
+                            }
+                        },
                         ...state.item.coordinates.slice(index+1)
                     ]
                 }
@@ -224,7 +263,6 @@ export default function registryRegionData(state = initialState, action = {}) {
         }
         case types.REGISTRY_RECORD_COORDINATES_CREATE: {
             const record = {...state.item};
-            console.log(record);
             record.coordinates.push({
                 coordinatesId: null,
                 description: null,

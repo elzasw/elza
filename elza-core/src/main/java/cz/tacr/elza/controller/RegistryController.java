@@ -516,7 +516,12 @@ public class RegistryController {
         Assert.notNull(coordinatesVO.getCoordinatesId(), "Očekáváno ID pro update.");
         RegCoordinates coordinates = regCoordinatesRepository.findOne(coordinatesVO.getCoordinatesId());
         Assert.notNull(coordinates, "Nebyl nalezen záznam pro update s id " + coordinatesVO.getCoordinatesId());
+
         RegCoordinates coordinatesDO = factoryDO.createRegCoordinates(coordinatesVO);
+        if (!"POINT".equals(coordinates.getValue().getGeometryType())) {
+            coordinatesDO.setValue(coordinates.getValue());
+        }
+
         coordinates = registryService.saveRegCoordinates(coordinatesDO);
         regRecordRepository.flush();
         return factoryVo.createRegCoordinates(coordinates);

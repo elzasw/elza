@@ -21,7 +21,7 @@ import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {indexById} from 'stores/app/utils.jsx'
 import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
-import {registryRegionDataSelectRegistry,
+import {registryRegionDataSelectRecord,
         registrySearchData,
         registryClearSearch,
         registryChangeParent,
@@ -173,7 +173,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     handleCallAddRegistry(data) {
         const {registryRegion: {filterText, registryParentId, registryTypesId, panel: {versionId}}} = this.props;
         this.dispatch(fetchRegistry(filterText, registryParentId, registryTypesId, versionId));
-        this.dispatch(registryRegionDataSelectRegistry({
+        this.dispatch(registryRegionDataSelectRecord({
             ...data,
             selectedId: data.recordId
         }));
@@ -299,8 +299,8 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         )
     }
 
-    handleSelect(registry, event) {
-        this.dispatch(registryRegionDataSelectRegistry({...registry, selectedId: registry.recordId}));
+    handleSelect(record, event) {
+        this.dispatch(registryRegionDataSelectRecord({...record, selectedId: record.recordId}));
     }
 
     handleDoubleClick(item, event) {
@@ -390,7 +390,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         // výsledky z vyhledávání
         if (!registryParentId) {
-            var path = [];
+            const path = [];
             if (item.parents) {
                 item.parents.map((val) => {
                     if (parentsShown.indexOf(val.id) === -1) {
@@ -408,7 +408,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             }
 
             return (
-                <div key={'record-id-' + item.recordId} title={path} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
+                <div key={'record-id-' + item.recordId} title={path} className={cls} onDoubleClick={doubleClick}>
                     <div><Icon glyph={iconName} /></div>
                     <div title={item.record} className={clsItem}>{item.record}</div>
                     <div className="path" >{path.join(' | ')}</div>
@@ -417,7 +417,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         }  else {
             // jednořádkový výsledek
             return (
-                <div key={'record-id-' + item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
+                <div key={'record-id-' + item.recordId} className={cls} onDoubleClick={doubleClick}>
                     <div><Icon glyph={iconName} key={item.recordId} /></div>
                     <div key={'record-' + item.recordId + '-name'} title={item.record} className={clsItem}>{item.record}</div>
                 </div>

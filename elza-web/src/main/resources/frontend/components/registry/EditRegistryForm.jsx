@@ -14,6 +14,8 @@ import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionLis
 
 const validate = (values, props) => {
     const errors = {};
+    console.log(props);
+    console.log(values);
     if (!values.record) {
         errors.record = i18n('global.validation.required');
     }
@@ -55,7 +57,6 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
         const itemsForDropDownTree = registryRegionRecordTypes.item != null ? registryRegionRecordTypes.item : [];
 
         const registerTypesIdValue = initData.registerTypeId && !registerTypeId.value ? initData.registerTypeId : registerTypeId.value;
-
         return (
             <div>
                 <Modal.Body>

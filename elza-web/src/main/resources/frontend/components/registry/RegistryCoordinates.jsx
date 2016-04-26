@@ -48,7 +48,6 @@ var RegistryCoordinates = class RegistryCoordinates extends AbstractReactCompone
     }
 
     handleChangeValue(e) {
-        console.log(e);
         const val = wktFromTypeAndData(this.state.type, e.target.value);
         if (val != this.props.item.value) {
             this.props.onChange({
@@ -61,45 +60,45 @@ var RegistryCoordinates = class RegistryCoordinates extends AbstractReactCompone
     render() {
         const {item, disabled, onDelete} = this.props;
         const title = item.error && item.error.value ? item.error.value : '';
+        const isPoint = this.state.type == 'POINT';
         return (
             <div className='reg-coordinates'>
-                <div>
-                    <div className='value'>
+                {
+                    isPoint ?
+                        <div className='value'>
+                            <Button bsStyle='default' disabled>{wktType(this.state.type)}</Button>
+                            <Input
+                                type='text'
+                                ref='focusEl'
+                                className={title !== '' ? 'error' : ''}
+                                title={title}
+                                onFocus={this.props.onFocus}
+                                onBlur={this.props.onBlur}
+                                disabled={disabled}
+                                onKeyUp={this.handleKeyUp}
+                                onChange={this.handleChangeValue}
+                                value={this.state.data}
+                            />
+                        </div>
+                         : <div className='value-text'>
                         <Button bsStyle='default' disabled>{wktType(this.state.type)}</Button>
-                        {
-                            this.state.type == 'POINT' ?
-                                <Input
-                                    type='string'
-                                    ref='focusEl'
-                                    className={'form-control value' + (title !== '' ? ' error' : '')}
-                                    title={title}
-                                    onFocus={this.props.onFocus}
-                                    onBlur={this.props.onBlur}
-                                    disabled={disabled}
-                                    onKeyUp={this.handleKeyUp}
-                                    onChange={this.handleChangeValue}
-                                    value={this.state.data}
-                                /> : <div>
-                                <span className='value-text'>{i18n('subNodeForm.countOfCoordinates', this.state.data)}</span>
-                                <Button bsStyle='default' onClick={this.props.onDownload} title={i18n('registry.coordinates.download')}>
-                                    <i className='fa fa-download'/>
-                                </Button>
-                            </div>
-                        }
+                        {i18n('subNodeForm.countOfCoordinates', this.state.data)}
                     </div>
-                    <div className='description'>
-                        <label>{i18n('registry.coordinates.description')}</label>
-                        <Input
-                            type='string'
-                            className='form-control'
-                            disabled={disabled}
-                            value={item.description}
-                            onKeyUp={this.handleKeyUp}
-                            onChange={this.handleChangeDescription}
-                        />
-                    </div>
+                }
+                <div className='description'>
+                    <Input
+                        type='string'
+                        className='form-control'
+                        disabled={disabled}
+                        value={item.description}
+                        onKeyUp={this.handleKeyUp}
+                        onChange={this.handleChangeDescription}
+                    />
+                    {!isPoint ? <i className='fa fa-download download btn' onClick={this.props.onDownload} title={i18n('registry.coordinates.download')} /> : null}
                 </div>
-                <NoFocusButton disabled={disabled} onClick={onDelete}><Icon glyph='fa-times' /></NoFocusButton>
+                <div>
+                    <NoFocusButton disabled={disabled} onClick={onDelete}><Icon glyph='fa-times' /></NoFocusButton>
+                </div>
             </div>
         )
     }

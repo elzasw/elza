@@ -578,7 +578,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     handleCoordinatesDownload(objectId) {
-        window.open(window.location.origin + "/api/kmlManagerV1/" + objectId + "/" + this.props.fund.versionId + "/exportDescItemCoordinates");
+        window.open(window.location.origin + '/api/kmlManagerV1/export/arrCoordinates/' + objectId + '/' + this.props.fund.versionId);
     }
 
     /**
@@ -586,6 +586,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param descItemType {Object} atribut
      * @param descItemTypeIndex {Integer} index atributu v seznamu
      * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param nodeSetting {object}
      * @return {Object} view
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) {

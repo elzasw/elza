@@ -159,22 +159,20 @@ if (_logStoreSize) {
 var save = function(store) {
     const action = {
         type: types.STORE_SAVE
-    }
+    };
 
-    const result = {
+    //var rrd = registryRegionData(store.registryRegionData, action)
+    //console.log(result.registryRegion);
+    // result.registryRegion._info = result.registryRegion.registryRegionData._info
+    // result.registryRegion.selectedId = result.registryRegion.registryRegionData.selectedId
+
+    return {
         partyRegion: partyRegion(store.partyRegion, action),
         registryRegion: registryRegion(store.registryRegion, action),
         arrRegion: arrRegion(store.arrRegion, action),
         fundRegion: fundRegion(store.fundRegion, action),
         splitter: splitter(store.splitter, action)
     }
-
-    //var rrd = registryRegionData(store.registryRegionData, action)
-    //console.log(result.registryRegion);
-    result.registryRegion._info = result.registryRegion.registryRegionData._info
-    result.registryRegion.selectedId = result.registryRegion.registryRegionData.selectedId
-
-    return result
 }
 
 module.exports = {
