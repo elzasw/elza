@@ -30,7 +30,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             selectedValueItemsType: 'unselected',
             selectedSpecItems: [],
             selectedSpecItemsType: 'unselected',
-            conditionSelectedCode: 'none',
+            conditionSelectedCode: 'NONE',
             conditionValues: []
         }
 
@@ -76,16 +76,18 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 this.setState({
                     valueItems: [],
                 })
-                return 
+                return
             }
         }
 
-        WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, specIds, 200)
-            .then(json => {
-                this.setState({
-                    valueItems: json.map(i => ({id: i, name: i})),
+        if (dataType.code !== 'UNITDATE' && dataType.code !== 'TEXT' && dataType.code !== 'COORDINATES') {
+            WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, specIds, 200)
+                .then(json => {
+                    this.setState({
+                        valueItems: json.map(i => ({id: i, name: i})),
+                    })
                 })
-            })
+        }
     }
 
     handleSpecItemsChange(data) {
@@ -151,51 +153,51 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             case 'FORMATTED_TEXT':
             case 'UNITID':
                 items = [
-                    {values: 0, code: 'none', name: i18n('arr.fund.filterSettings.condition.none')},
-                    {values: 0, code: 'empty', name: i18n('arr.fund.filterSettings.condition.empty')},
-                    {values: 0, code: 'notEmpty', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                    {values: 1, code: 'contain', name: i18n('arr.fund.filterSettings.condition.string.contain')},
-                    {values: 1, code: 'notContain', name: i18n('arr.fund.filterSettings.condition.string.notContain')},
-                    {values: 1, code: 'begin', name: i18n('arr.fund.filterSettings.condition.begin')},
-                    {values: 1, code: 'end', name: i18n('arr.fund.filterSettings.condition.end')},
-                    {values: 1, code: 'eq', name: i18n('arr.fund.filterSettings.condition.eq')},
+                    {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
+                    {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
+                    {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 1, code: 'CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.contain')},
+                    {values: 1, code: 'NOT_CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.notContain')},
+                    {values: 1, code: 'BEGIN', name: i18n('arr.fund.filterSettings.condition.begin')},
+                    {values: 1, code: 'END', name: i18n('arr.fund.filterSettings.condition.end')},
+                    {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
                 ]
                 break
             case 'INT':
             case 'DECIMAL':
                 items = [
-                    {values: 0, code: 'none', name: i18n('arr.fund.filterSettings.condition.none')},
-                    {values: 0, code: 'empty', name: i18n('arr.fund.filterSettings.condition.empty')},
-                    {values: 0, code: 'notEmpty', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                    {values: 1, code: 'gt', name: i18n('arr.fund.filterSettings.condition.gt')},
-                    {values: 1, code: 'ge', name: i18n('arr.fund.filterSettings.condition.ge')},
-                    {values: 1, code: 'lt', name: i18n('arr.fund.filterSettings.condition.lt')},
-                    {values: 1, code: 'le', name: i18n('arr.fund.filterSettings.condition.le')},
-                    {values: 1, code: 'eq', name: i18n('arr.fund.filterSettings.condition.eq')},
-                    {values: 1, code: 'ne', name: i18n('arr.fund.filterSettings.condition.ne')},
-                    {values: 2, code: 'interval', name: i18n('arr.fund.filterSettings.condition.interval')},
-                    {values: 2, code: 'notInterval', name: i18n('arr.fund.filterSettings.condition.notInterval')},
+                    {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
+                    {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
+                    {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 1, code: 'GT', name: i18n('arr.fund.filterSettings.condition.gt')},
+                    {values: 1, code: 'GE', name: i18n('arr.fund.filterSettings.condition.ge')},
+                    {values: 1, code: 'LT', name: i18n('arr.fund.filterSettings.condition.lt')},
+                    {values: 1, code: 'LE', name: i18n('arr.fund.filterSettings.condition.le')},
+                    {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
+                    {values: 1, code: 'NE', name: i18n('arr.fund.filterSettings.condition.ne')},
+                    {values: 2, code: 'INTERVAL', name: i18n('arr.fund.filterSettings.condition.interval')},
+                    {values: 2, code: 'NOT_INTERVAL', name: i18n('arr.fund.filterSettings.condition.notInterval')},
                 ]
                 break
             case 'PARTY_REF':
             case 'RECORD_REF':
                 items = [
-                    {values: 0, code: 'none', name: i18n('arr.fund.filterSettings.condition.none')},
-                    {values: 0, code: 'empty', name: i18n('arr.fund.filterSettings.condition.empty')},
-                    {values: 0, code: 'notEmpty', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                    {values: 1, code: 'contain', name: i18n('arr.fund.filterSettings.condition.string.contain')},
+                    {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
+                    {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
+                    {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 1, code: 'CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.contain')},
                 ]
                 break
             case 'UNITDATE':
                 items = [
-                    {values: 0, code: 'none', name: i18n('arr.fund.filterSettings.condition.none')},
-                    {values: 0, code: 'empty', name: i18n('arr.fund.filterSettings.condition.empty')},
-                    {values: 0, code: 'notEmpty', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                    {values: 1, code: 'eq', name: i18n('arr.fund.filterSettings.condition.eq')},
-                    {values: 1, code: 'lt', name: i18n('arr.fund.filterSettings.condition.unitdate.lt')},
-                    {values: 1, code: 'gt', name: i18n('arr.fund.filterSettings.condition.unitdate.gt')},
-                    {values: 1, code: 'subset', name: i18n('arr.fund.filterSettings.condition.unitdate.subset')},
-                    {values: 1, code: 'intersect', name: i18n('arr.fund.filterSettings.condition.unitdate.intersect')},
+                    {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
+                    {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
+                    {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
+                    {values: 1, code: 'LT', name: i18n('arr.fund.filterSettings.condition.unitdate.lt')},
+                    {values: 1, code: 'GT', name: i18n('arr.fund.filterSettings.condition.unitdate.gt')},
+                    {values: 1, code: 'SUBSET', name: i18n('arr.fund.filterSettings.condition.unitdate.subset')},
+                    {values: 1, code: 'INTERSECT', name: i18n('arr.fund.filterSettings.condition.unitdate.intersect')},
                 ]
                 break
             case 'COORDINATES':
@@ -249,7 +251,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             outData = data
         } else if ((refType.useSpecification || dataType.code === 'PACKET_REF') && (data.specsType === 'selected' || data.specs.length > 0)) {     // je zadáno filtrování podle specifikace
             outData = data
-        } else if (data.conditionType !== 'none') { // je zadáno filtrování podle podmínky
+        } else if (data.conditionType !== 'NONE') { // je zadáno filtrování podle podmínky
             outData = data
         }
 

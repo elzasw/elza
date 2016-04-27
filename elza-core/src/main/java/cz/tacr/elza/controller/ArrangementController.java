@@ -457,7 +457,6 @@ public class ArrangementController {
     @RequestMapping(value = "/getFunds", method = RequestMethod.GET)
     public FundListCountResult getFunds(@RequestParam(value = "fulltext", required = false) final String fulltext,
                                         @RequestParam(value = "max") final Integer max) {
-
         List<ArrFundVO> fundList = new LinkedList<>();
         fundRepository.findByFulltext(fulltext, max).forEach(f -> {
             ArrFundVO fundVO = factoryVo.createFundVO(f.getFund(), false);
@@ -1128,7 +1127,7 @@ public class ArrangementController {
      *
      * @return počet všech záznamů splňujících filtry
      */
-    @RequestMapping(value = "/filterNodes/{versionId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/filterNodes/{versionId}", method = RequestMethod.PUT)
     public Integer filterNodes(@PathVariable("versionId") final Integer versionId,
             @RequestBody(required = false) final Filters filters) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
