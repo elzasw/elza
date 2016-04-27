@@ -239,7 +239,7 @@ public class ArrangementService {
      *@param scopes  @return Upravená archivní pomůcka
      */
     @Transactional
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WRITE_ONE})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
     public ArrFund updateFund(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                               final RulRuleSet ruleSet,
                               final List<RegScope> scopes) {
@@ -507,7 +507,7 @@ public class ArrangementService {
      * @return nová verze archivní pomůcky
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WRITE_ONE})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
     public ArrFundVersion approveVersion(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                          final String dateRange) {
         Assert.notNull(version);
@@ -707,7 +707,7 @@ public class ArrangementService {
      * @param node    uzel
      * @return seznam hodnot atributů
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_READ_ALL, UsrPermission.Permission.FUND_READ_ONE})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrDescItem> getDescItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                           final ArrNode node) {
 
@@ -1025,7 +1025,7 @@ public class ArrangementService {
         return versionValidationItems;
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WRITE_ALL, UsrPermission.Permission.REG_SCOPE_WRITE_ONE})
+    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
     public ArrFundRegisterScope addScopeToFund(final ArrFund fund,
                                                @AuthParam(type = AuthParam.Type.SCOPE) final RegScope scope) {
         Assert.notNull(fund);

@@ -63,7 +63,7 @@ public class PacketService {
      * @param packet obal
      * @return nový obal
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR_ONE})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrPacket insertPacket(@AuthParam(type = AuthParam.Type.FUND) final ArrPacket packet) {
         Assert.notNull(packet);
         Assert.isNull(packet.getPacketId());
@@ -106,7 +106,7 @@ public class PacketService {
      * @param packetIds     přegenerovaný id obalů
      * @return  seznam obalů
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR_ONE})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrPacket> generatePackets(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                            final RulPacketType packetType,
                                            final String prefix,
@@ -201,7 +201,7 @@ public class PacketService {
      * @param state     stav
      * @return  seznam nalezených obalů
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR_ONE})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrPacket> findPackets(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                        @Nullable final String prefix,
                                        final ArrPacket.State state) {
@@ -233,7 +233,7 @@ public class PacketService {
      * @param fund  archivní fond
      * @param packetIds seznam identifikátorů ke smazání
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR_ONE})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deletePackets(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                               final Integer[] packetIds) {
         Assert.notNull(fund);
@@ -257,7 +257,7 @@ public class PacketService {
      * @param packetIds seznam identifikátorů ke změně stavu
      * @param state stav
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR_ONE})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void setStatePackets(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                 final Integer[] packetIds,
                                 final ArrPacket.State state) {

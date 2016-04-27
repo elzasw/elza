@@ -92,6 +92,14 @@ public interface UsrPermission<U extends UsrUser, G extends UsrGroup, F extends 
 
     /**
      * Oprávnění.
+     *
+     * - WR - write
+     * - RD - read
+     * - RW - read/write
+     *
+     * - FUND - Archivní soubor
+     * - REG - Rejstříky
+     *
      */
     enum Permission {
 
@@ -105,13 +113,13 @@ public interface UsrPermission<U extends UsrUser, G extends UsrGroup, F extends 
          * čtení vybraného AS
          * - má náhled jen na konrétní přiřazený AS ve všech verzích včeně OUPUT bez aktivních operací
          */
-        FUND_READ_ONE(PermissionType.FUND),
+        FUND_RD(PermissionType.FUND),
 
         /**
          * čtení všech AS
          * - má náhled na všechny AS ve všech verzích včeně OUPUT bez aktivních operací
          */
-        FUND_READ_ALL,
+        FUND_RD_ALL,
 
         /**
          * pořádání vybrané AS (pořádání je myšleno pořádání již vytvořeného AS, tvorba/úprava JP, tvorba úvodu, práce
@@ -124,7 +132,7 @@ public interface UsrPermission<U extends UsrUser, G extends UsrGroup, F extends 
          * - může přiřazovat rejstřík, ale jen v rozsahu práv na rejstříky (scope rejstříků), když nebude mít ani čtení
          *   rejstříků, tak nemůže nic přiřadit, opačně buď může přiřadit, nebo i zakládat nový ....
          */
-        FUND_ARR_ONE(PermissionType.FUND),
+        FUND_ARR(PermissionType.FUND),
 
         /**
          * pořádání všech AS
@@ -137,25 +145,25 @@ public interface UsrPermission<U extends UsrUser, G extends UsrGroup, F extends 
          * - přístup do části rejstříků včetně osob
          * - může jen pasivně číst rejstříková hesla z vybraného scope
          */
-        REG_SCOPE_READ_ONE(PermissionType.SCOPE),
+        REG_SCOPE_RD(PermissionType.SCOPE),
 
         /**
          * čtení všech scope rejstříků
          * - obdobně jako výše jen pro všechna rejstříková hesla
          */
-        REG_SCOPE_READ_ALL,
+        REG_SCOPE_RD_ALL,
 
         /**
          * zápis/úprava vybraného scope rejstříku
          * - obdobně jako výše, ale může hesla upravovat, přidávat, rušit, ale jen pro přiřazený scope
          */
-        REG_SCOPE_WRITE_ONE(PermissionType.SCOPE),
+        REG_SCOPE_WR(PermissionType.SCOPE),
 
         /**
          * zápis/úprava všech scope rejstříků
          * - obdboně jako výše pro všechna rejstříková hesla
          */
-        REG_SCOPE_WRITE_ALL,
+        REG_SCOPE_WR_ALL,
 
         /**
          * tvorba výstupů vybraného AS (AP, ad-hoc tisky)
@@ -163,20 +171,20 @@ public interface UsrPermission<U extends UsrUser, G extends UsrGroup, F extends 
          * - může i verzovat OUTPUT což vyvolá verzi AS, ale beze změny pravidel
          * - nemůže exportovat, jen vytvářet
          */
-        FUND_NO_WRITE_ONE(PermissionType.FUND),
+        FUND_OUTPUT_WR(PermissionType.FUND),
 
         /**
          * tvorba výstupů všech AS
          * - obdobně jako výše ale pro všechny AS
          */
-        FUND_NO_WRITE_ALL,
+        FUND_OUTPUT_WR_ALL,
 
         /**
          * verzování a editace vybrané AS
          * - verzování a změna pravidel vpřiřazeného AS + přiřazení scope rejstříku + změna pravidel
          * - nemůže mazat AS
          */
-        FUND_VER_WRITE_ONE(PermissionType.FUND),
+        FUND_VER_WR(PermissionType.FUND),
 
         /**
          * administrace všech AS (verzování, zakládání AS, zrušení AS, import)
@@ -189,7 +197,7 @@ public interface UsrPermission<U extends UsrUser, G extends UsrGroup, F extends 
          * export vybrané AS
          * - možnost exportu AS či OUTPUT přiřazeného AS
          */
-        FUND_EXPORT_ONE(PermissionType.FUND),
+        FUND_EXPORT(PermissionType.FUND),
 
         /**
          * export všech AS
@@ -207,25 +215,25 @@ public interface UsrPermission<U extends UsrUser, G extends UsrGroup, F extends 
          * spouštění hromadných akcí vybrané AS
          * - možnost spuštění hromadných akcí přiřazeného AS
          */
-        FUND_BULK_ACTION_ONE(PermissionType.FUND),
+        FUND_BA(PermissionType.FUND),
 
         /**
          * spouštění hromadných akcí všech AS
          * - obdobně jako výše ale pro všechny AS
          */
-        FUND_BULK_ACTION_ALL,
+        FUND_BA_ALL,
 
         /**
          * drobné úpravy uzavřených vybraných AS
          * - zatím neřešíme
          */
-        FUND_CL_VER_WRITE_ONE(PermissionType.FUND),
+        FUND_CL_VER_WR(PermissionType.FUND),
 
         /**
          * drobné úpravy uzavřených všech AS
          * - zatím neřešíme
          */
-        FUND_CL_VER_WRITE_ALL;
+        FUND_CL_VER_WR_ALL;
 
         /**
          * Typ oprávnění
