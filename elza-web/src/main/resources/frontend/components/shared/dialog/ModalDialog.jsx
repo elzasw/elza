@@ -5,6 +5,8 @@ import {ModalDialogWrapper, AbstractReactComponent} from 'components';
 import {modalDialogHide} from 'actions/global/modalDialog'
 import {propsEquals} from 'components/Utils'
 
+require ('./ModalDialog.less')
+
 var ModalDialog = class extends AbstractReactComponent {
     constructor(props) {
         super(props);
