@@ -12,7 +12,7 @@ require ('./AdminPackagesPage.less');
 import {connect} from 'react-redux'
 import {Ribbon, AdminPackagesList, AdminPackagesUpload} from 'components';
 import {PageLayout} from 'pages';
-import {WebApi} from 'actions';
+import {UrlFactory} from 'actions';
 
 var AdminPackagesPage = class AdminPackagesPage extends React.Component {
     constructor(props) {
@@ -32,7 +32,7 @@ var AdminPackagesPage = class AdminPackagesPage extends React.Component {
 
         var centerPanel = (
             <div>
-                <AdminPackagesList getExportUrl={WebApi.getPackageExportUrl} {...this.props.packages} />
+                <AdminPackagesList getExportUrl={UrlFactory.exportPackage} {...this.props.packages} />
                 <AdminPackagesUpload />
             </div>
         )
@@ -55,10 +55,10 @@ var AdminPackagesPage = class AdminPackagesPage extends React.Component {
  * @returns {{packages: *}}
  */
 function mapStateToProps(state) {
-    const {splitter, adminRegion} = state
+    const {splitter, adminRegion: {packages}} = state
     return {
         splitter,
-        packages: adminRegion.packages
+        packages
     }
 }
 

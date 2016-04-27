@@ -27,8 +27,7 @@ var AdminPackagesList = class AdminPackagesList extends AbstractReactComponent {
     }
 
     render() {
-
-        var items = this.props.items.map((item) => {
+        const items = this.props.items.map((item) => {
             return (
                     <tr key={item.code}>
                         <td>{item.code}</td>
@@ -45,29 +44,29 @@ var AdminPackagesList = class AdminPackagesList extends AbstractReactComponent {
             );
         });
 
-        var table = (
-                <Table striped bordered condensed hover>
-                    <thead>
-                        <tr>
-                            <th>{i18n('admin.packages.label.code')}</th>
-                            <th>{i18n('admin.packages.label.name')}</th>
-                            <th>{i18n('admin.packages.label.version')}</th>
-                            <th>{i18n('admin.packages.label.description')}</th>
-                            <th>{i18n('admin.packages.label.action')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {items}
-                    </tbody>
-                </Table>
-        );
 
         return (
-                <div>
-                    {table}
-                </div>
+            <Table striped bordered condensed hover>
+                <thead>
+                <tr>
+                    <th>{i18n('admin.packages.label.code')}</th>
+                    <th>{i18n('admin.packages.label.name')}</th>
+                    <th>{i18n('admin.packages.label.version')}</th>
+                    <th>{i18n('admin.packages.label.description')}</th>
+                    <th>{i18n('admin.packages.label.action')}</th>
+                </tr>
+                </thead>
+                <tbody>
+                {items}
+                </tbody>
+            </Table>
         );
     }
-}
+};
+
+AdminPackagesList.propTypes = {
+    getExportUrl: React.PropTypes.func.isRequired,
+    items: React.PropTypes.array.isRequired
+};
 
 module.exports = connect()(AdminPackagesList);

@@ -1,7 +1,3 @@
-/**
- * Web api pro komunikaci se serverem.
- */
-
 import {AjaxUtils} from 'components';
 
 function getData(data, timeout = 1000) {
@@ -12,6 +8,20 @@ function getData(data, timeout = 1000) {
     });
 }
 
+/**
+ * Továrna URL
+ *
+ * Jednoduché statické metody vracející pouze String - URL
+ */
+class UrlFactory {
+    static exportPackage(code) {
+        return '/api/ruleSetManagerV2/exportPackage/' + code;
+    }
+}
+
+/**
+ * Web api pro komunikaci se serverem.
+ */
 class WebApi{
     constructor() {
     }
@@ -631,10 +641,6 @@ class WebApi{
                 });
     }
 
-    getPackageExportUrl(code) {
-        return '/api/ruleSetManagerV2/exportPackage/' + code;
-    }
-
     importPackage(data) {
         return AjaxUtils.ajaxCallRaw('/api/ruleSetManagerV2/importPackage', {}, "POST", data)
                 .then(json=>{
@@ -792,5 +798,6 @@ class WebApi{
 
 module.exports = {
     WebApi: new WebApi(),
-    WebApiCls: WebApi
-}
+    WebApiCls: WebApi,
+    UrlFactory: UrlFactory,
+};
