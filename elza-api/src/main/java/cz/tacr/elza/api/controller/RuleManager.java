@@ -5,7 +5,6 @@ import java.util.List;
 
 import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.ArrFundVersion;
-import cz.tacr.elza.api.RulArrangementType;
 import cz.tacr.elza.api.RulDataType;
 import cz.tacr.elza.api.RulDescItemSpec;
 import cz.tacr.elza.api.RulDescItemType;
@@ -43,15 +42,6 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @return všechny sady pravidel
      */
     List<? extends RulRuleSet> getRuleSets();
-
-    /**
-     * Vrátí všechny typy výstupu pro daná pravidla tvorby.
-     *
-     * @param ruleSetId id pravidel tvorby
-     *
-     * @return typy výstupu pro daná pravidla
-     */
-    List<? extends RulArrangementType> getArrangementTypes(Integer ruleSetId);
 
     /**
      * Vrátí všechny typy atributů archivního popisu k zadaným pravidlům tvorby.

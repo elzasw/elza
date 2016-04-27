@@ -67,7 +67,6 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
@@ -119,9 +118,6 @@ public class ArrangementController {
 
     @Autowired
     private RuleSetRepository ruleSetRepository;
-
-    @Autowired
-    private ArrangementTypeRepository arrangementTypeRepository;
 
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ns2:xml-import xmlns:ns2="http://v1_0_0.import.elza.tacr.cz">
-    <fund arr-type-code="MAN" rule-set-code="ZP2015" institution-code="in1">
+    <fund rule-set-code="ZP2015" institution-code="in1">
         <!--finding-aid-->
         <name>Import z XML</name>
         <root-level>

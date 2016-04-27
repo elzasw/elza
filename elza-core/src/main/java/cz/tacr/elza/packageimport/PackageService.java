@@ -67,11 +67,6 @@ public class PackageService {
     public static final String POLICY_TYPE_XML = "rul_policy_type.xml";
 
     /**
-     * typy v zipu
-     */
-    public static final String ARRANGEMENT_TYPE_XML = "rul_arrangement_type.xml";
-
-    /**
      * specifikace atributů v zipu
      */
     public static final String DESC_ITEM_SPEC_XML = "rul_desc_item_spec.xml";
@@ -114,9 +109,6 @@ public class PackageService {
 
     @Autowired
     private RuleSetRepository ruleSetRepository;
-
-    @Autowired
-    private ArrangementTypeRepository arrangementTypeRepository;
 
     @Autowired
     private DataTypeRepository dataTypeRepository;
@@ -187,8 +179,6 @@ public class PackageService {
 
             PolicyTypes policyTypes = convertXmlStreamToObject(PolicyTypes.class, mapEntry.get(POLICY_TYPE_XML));
 
-            ArrangementTypes arrangementTypes = convertXmlStreamToObject(ArrangementTypes.class,
-                    mapEntry.get(ARRANGEMENT_TYPE_XML));
             DescItemSpecs descItemSpecs = convertXmlStreamToObject(DescItemSpecs.class,
                     mapEntry.get(DESC_ITEM_SPEC_XML));
             DescItemTypes descItemTypes = convertXmlStreamToObject(DescItemTypes.class,
@@ -201,7 +191,7 @@ public class PackageService {
 
             processPacketTypes(packetTypes, rulPackage);
 
-            List<RulRuleSet> rulRuleSets = processRuleSets(ruleSets, arrangementTypes, rulPackage);
+            List<RulRuleSet> rulRuleSets = processRuleSets(ruleSets, rulPackage);
 
             processPolicyTypes(policyTypes, rulPackage, rulRuleSets);
 
@@ -914,12 +904,10 @@ public class PackageService {
      * Zpracování pravidel.
      *
      * @param ruleSets         seznam importovaných pravidel
-     * @param arrangementTypes seznam typů pořádání
      * @param rulPackage       balíček
      * @return seznam pravidel
      */
     private List<RulRuleSet> processRuleSets(final RuleSets ruleSets,
-                                             final ArrangementTypes arrangementTypes,
                                              final RulPackage rulPackage) {
 
         List<RulRuleSet> rulRuleSets = ruleSetRepository.findByRulPackage(rulPackage);
@@ -944,85 +932,12 @@ public class PackageService {
 
         rulRuleSetsNew = ruleSetRepository.save(rulRuleSetsNew);
 
-
-        processArrangementTypes(arrangementTypes, rulPackage, rulRuleSetsNew);
-
-
         List<RulRuleSet> rulRuleSetsDelete = new ArrayList<>(rulRuleSets);
         rulRuleSetsDelete.removeAll(rulRuleSetsNew);
         ruleSetRepository.delete(rulRuleSetsDelete);
 
         return rulRuleSetsNew;
 
-    }
-
-    /**
-     * Zpracování typu pořádání.
-     *
-     * @param arrangementTypes seznam importovaných typů pořádání
-     * @param rulPackage       balíček
-     * @param rulRuleSets      seznam pravidel
-     */
-    private void processArrangementTypes(final ArrangementTypes arrangementTypes,
-                                         final RulPackage rulPackage,
-                                         final List<RulRuleSet> rulRuleSets) {
-
-        List<RulArrangementType> rulArrangementTypes = arrangementTypeRepository.findByRulPackage(rulPackage);
-
-        List<RulArrangementType> rulArrangementTypesNew = new ArrayList<>();
-
-        if (!CollectionUtils.isEmpty(arrangementTypes.getArrangementTypes())) {
-            for (ArrangementType arrangementType : arrangementTypes.getArrangementTypes()) {
-                List<RulArrangementType> findItems = rulArrangementTypes.stream()
-                        .filter((r) -> r.getCode().equals(arrangementType.getCode())).collect(
-                                Collectors.toList());
-                RulArrangementType item;
-                if (findItems.size() > 0) {
-                    item = findItems.get(0);
-                } else {
-                    item = new RulArrangementType();
-                }
-
-                convertRulArrangementType(rulPackage, arrangementType, item, rulRuleSets);
-                rulArrangementTypesNew.add(item);
-            }
-        }
-
-        arrangementTypeRepository.save(rulArrangementTypesNew);
-
-        List<RulArrangementType> rulArrangementTypesDelete = new ArrayList<>(rulArrangementTypes);
-        rulArrangementTypesDelete.removeAll(rulArrangementTypesNew);
-        arrangementTypeRepository.delete(rulArrangementTypesDelete);
-    }
-
-    /**
-     * Převod VO na DAO typu pořádání.
-     *
-     * @param rulPackage         balíček
-     * @param arrangementType    VO typu pořádání
-     * @param rulArrangementType DAO typu pořádání
-     * @param rulRuleSets        seznam pravidel
-     */
-    private void convertRulArrangementType(final RulPackage rulPackage,
-                                           final ArrangementType arrangementType,
-                                           final RulArrangementType rulArrangementType,
-                                           final List<RulRuleSet> rulRuleSets) {
-        rulArrangementType.setCode(arrangementType.getCode());
-        rulArrangementType.setName(arrangementType.getName());
-        List<RulRuleSet> findItems = rulRuleSets.stream()
-                .filter((r) -> r.getCode().equals(arrangementType.getRuleSet()))
-                .collect(Collectors.toList());
-
-        RulRuleSet item;
-
-        if (findItems.size() > 0) {
-            item = findItems.get(0);
-        } else {
-            throw new IllegalStateException("Kód " + arrangementType.getRuleSet() + " neexistuje v RulRuleSet");
-        }
-
-        rulArrangementType.setRuleSet(item);
-        rulArrangementType.setPackage(rulPackage);
     }
 
     /**
@@ -1132,8 +1047,6 @@ public class PackageService {
 
         descItemTypeRepository.deleteByRulPackage(rulPackage);
 
-        arrangementTypeRepository.deleteByRulPackage(rulPackage);
-
         File dirActions = new File(bulkActionConfigManager.getPath());
         File dirRules = new File(rulesExecutor.getRootPath());
 
@@ -1217,7 +1130,6 @@ public class PackageService {
 
             exportPackageInfo(rulPackage, zos);
             exportRuleSet(rulPackage, zos);
-            exportArrangementTypes(rulPackage, zos);
             exportDescItemSpecs(rulPackage, zos);
             exportDescItemTypes(rulPackage, zos);
             exportPackageActions(rulPackage, zos);
@@ -1255,27 +1167,6 @@ public class PackageService {
 
         return file;
 
-    }
-
-    /**
-     * Exportování typů pořádání.
-     *
-     * @param rulPackage balíček
-     * @param zos        stream zip souboru
-     */
-    private void exportArrangementTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
-        ArrangementTypes arrangementTypes = new ArrangementTypes();
-        List<RulArrangementType> rulArrangementTypes = arrangementTypeRepository.findByRulPackage(rulPackage);
-        List<ArrangementType> arrangementTypeList = new ArrayList<>(rulArrangementTypes.size());
-        arrangementTypes.setArrangementTypes(arrangementTypeList);
-
-        for (RulArrangementType rulArrangementType : rulArrangementTypes) {
-            ArrangementType arrangementType = new ArrangementType();
-            covertArrangementType(rulArrangementType, arrangementType);
-            arrangementTypeList.add(arrangementType);
-        }
-
-        addObjectToZipFile(arrangementTypes, zos, ARRANGEMENT_TYPE_XML);
     }
 
     /**
@@ -1437,19 +1328,6 @@ public class PackageService {
     private void covertRuleSet(final RulRuleSet rulRuleSet, final RuleSet ruleSet) {
         ruleSet.setCode(rulRuleSet.getCode());
         ruleSet.setName(rulRuleSet.getName());
-    }
-
-    /**
-     * Převod DAO na VO typu pořádání.
-     *
-     * @param rulArrangementType DAO typu pořádání
-     * @param arrangementType    VO typu pořádání
-     */
-    private void covertArrangementType(final RulArrangementType rulArrangementType,
-                                       final ArrangementType arrangementType) {
-        arrangementType.setCode(rulArrangementType.getCode());
-        arrangementType.setName(rulArrangementType.getName());
-        arrangementType.setRuleSet(rulArrangementType.getRuleSet().getCode());
     }
 
     /**

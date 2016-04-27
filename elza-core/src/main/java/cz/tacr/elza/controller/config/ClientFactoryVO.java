@@ -597,22 +597,6 @@ public class ClientFactoryVO {
     }
 
     /**
-     * Vytvoří typ výstupu.
-     *
-     * @param arrType typ výstupu
-     * @return VO typ výstupu
-     */
-    public RulArrangementTypeVO createArrangementType(RulArrangementType arrType) {
-        Assert.notNull(arrType);
-
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        RulArrangementTypeVO rulArrangementTypeVO = mapper.map(arrType, RulArrangementTypeVO.class);
-        rulArrangementTypeVO.setRuleSetId(arrType.getRuleSet().getRuleSetId());
-
-        return rulArrangementTypeVO;
-    }
-
-    /**
      * Vytvoření ArrFund a načtení verzí.
      *
      * @param fund      DO

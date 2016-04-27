@@ -86,14 +86,12 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -216,9 +214,6 @@ public class XmlImportService {
 
     @Autowired
     private RuleSetRepository ruleSetRepository;
-
-    @Autowired
-    private ArrangementTypeRepository arrangementTypeRepository;
 
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
@@ -645,21 +640,15 @@ public class XmlImportService {
     }
 
     private ArrFund createFund(Fund fund, ArrChange change, XmlImportConfig config, boolean stopOnError) throws FatalXmlImportException, InvalidDataException {
-        RulArrangementType arrangementType;
         RulRuleSet ruleSet;
         if (StringUtils.isBlank(config.getTransformationName())) {
             String arrangementTypeCode = fund.getArrangementTypeCode();
-            arrangementType = arrangementTypeRepository.findByCode(arrangementTypeCode);
-            if (arrangementType == null) {
-                throw new FatalXmlImportException("Nebyl nalezen typ výstupu s kódem " + arrangementTypeCode);
-            }
             String ruleSetCode = fund.getRuleSetCode();
             ruleSet = ruleSetRepository.findByCode(ruleSetCode);
             if (ruleSet == null) {
                 throw new FatalXmlImportException("Nebyla nalezena pravidla s kódem " + ruleSetCode);
             }
         } else {
-            arrangementType = arrangementTypeRepository.findOne(config.getArrangementTypeId());
             ruleSet = ruleSetRepository.findOne(config.getRuleSetId());
         }
 

@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;

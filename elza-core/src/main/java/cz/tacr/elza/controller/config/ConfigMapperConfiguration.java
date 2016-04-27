@@ -567,8 +567,6 @@ public class ConfigMapperConfiguration {
                 }).field("registerTypeId", "id").byDefault()
                 .register();
         mapperFactory.classMap(RegScope.class, RegScopeVO.class).field("scopeId", "id").byDefault().register();
-        mapperFactory.classMap(RulArrangementType.class, RulArrangementTypeVO.class).byDefault().field(
-                "arrangementTypeId", "id").register();
         mapperFactory.classMap(RulDataType.class, RulDataTypeVO.class).byDefault().field("dataTypeId", "id").register();
 
 
