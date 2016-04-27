@@ -1,37 +1,21 @@
 package cz.tacr.elza.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.stream.StreamSource;
 
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -41,6 +25,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.domain.ArrCalendarType;
@@ -128,6 +115,7 @@ import cz.tacr.elza.service.exception.NonFatalXmlImportException;
 import cz.tacr.elza.service.exception.PartyImportException;
 import cz.tacr.elza.service.exception.RecordImportException;
 import cz.tacr.elza.service.exception.XmlImportException;
+import cz.tacr.elza.utils.XmlUtils;
 import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
 import cz.tacr.elza.xmlimport.v1.utils.XmlImportUtils;
 import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
@@ -161,7 +149,6 @@ import cz.tacr.elza.xmlimport.v1.vo.party.Relation;
 import cz.tacr.elza.xmlimport.v1.vo.party.RoleType;
 import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 import cz.tacr.elza.xmlimport.v1.vo.record.VariantRecord;
-import liquibase.util.file.FilenameUtils;
 
 /**
  * Import dat z xml.
@@ -171,8 +158,6 @@ import liquibase.util.file.FilenameUtils;
  */
 @Service
 public class XmlImportService {
-
-    private static final String XSLT_EXTENSION = ".xslt";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -278,7 +263,7 @@ public class XmlImportService {
      * @throws XmlImportException chyba při importu
      */
     @Transactional
-    public void importData(XmlImportConfig config) throws XmlImportException {
+    public void importData(final XmlImportConfig config) throws XmlImportException {
         // transformace dat
         XmlImport xmlImport = readData(config);
 
@@ -344,7 +329,7 @@ public class XmlImportService {
         }
     }
 
-    private void deleteFundIfExists(Level rootLevel) {
+    private void deleteFundIfExists(final Level rootLevel) {
         ArrFund fund;
         String rootUuid = rootLevel.getUuid();
         if (StringUtils.isNotBlank(rootUuid)) {
@@ -356,8 +341,8 @@ public class XmlImportService {
         }
     }
 
-    private Map<String, ArrPacket> importPackets(XmlImport xmlImport, Set<String> usedPackets, boolean stopOnError,
-            ArrFund fund) throws NonFatalXmlImportException {
+    private Map<String, ArrPacket> importPackets(final XmlImport xmlImport, final Set<String> usedPackets, final boolean stopOnError,
+            final ArrFund fund) throws NonFatalXmlImportException {
         Map<String, ArrPacket> xmlIdIntIdPacketMap;
         try {
             xmlIdIntIdPacketMap = importPackets(xmlImport.getPackets(), usedPackets, fund, stopOnError);
@@ -370,8 +355,8 @@ public class XmlImportService {
         return xmlIdIntIdPacketMap;
     }
 
-    private Map<String, ParParty> importParties(XmlImport xmlImport, Set<String> usedParties, boolean stopOnError,
-            Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
+    private Map<String, ParParty> importParties(final XmlImport xmlImport, final Set<String> usedParties, final boolean stopOnError,
+            final Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
         Map<String, ParParty> xmlIdIntIdPartyMap;
         try {
             xmlIdIntIdPartyMap = importParties(xmlImport.getParties(), usedParties, stopOnError, xmlIdIntIdRecordMap);
@@ -384,8 +369,8 @@ public class XmlImportService {
         return xmlIdIntIdPartyMap;
     }
 
-    private Map<String, RegRecord> importRecords(XmlImport xmlImport, Set<String> usedRecords, boolean stopOnError,
-            RegScope regScope) throws NonFatalXmlImportException {
+    private Map<String, RegRecord> importRecords(final XmlImport xmlImport, final Set<String> usedRecords, final boolean stopOnError,
+            final RegScope regScope) throws NonFatalXmlImportException {
         Map<String, RegRecord> xmlIdIntIdRecordMap;
         try {
             xmlIdIntIdRecordMap = importRecords(xmlImport.getRecords(), usedRecords, stopOnError, regScope);
@@ -398,9 +383,9 @@ public class XmlImportService {
         return xmlIdIntIdRecordMap;
     }
 
-    private void importFund(Fund fund, ArrChange change, ArrNode rootNode, Map<String, RegRecord> xmlIdIntIdRecordMap,
-                            Map<String, ParParty> xmlIdIntIdPartyMap, Map<String, ArrPacket> xmlIdIntIdPacketMap,
-                            XmlImportConfig config, final ArrFund arrFund) throws LevelImportException, InvalidDataException {
+    private void importFund(final Fund fund, final ArrChange change, final ArrNode rootNode, final Map<String, RegRecord> xmlIdIntIdRecordMap,
+                            final Map<String, ParParty> xmlIdIntIdPartyMap, final Map<String, ArrPacket> xmlIdIntIdPacketMap,
+                            final XmlImportConfig config, final ArrFund arrFund) throws LevelImportException, InvalidDataException {
         Level rootLevel = fund.getRootLevel();
         int position = 1;
 
@@ -412,9 +397,9 @@ public class XmlImportService {
         }
     }
 
-    private void importLevel(Level level, int position, ArrNode parent, XmlImportConfig config, ArrChange change,
-                             Map<String, RegRecord> xmlIdIntIdRecordMap, Map<String, ParParty> xmlIdIntIdPartyMap,
-                             Map<String, ArrPacket> xmlIdIntIdPacketMap, final ArrFund arrFund)
+    private void importLevel(final Level level, final int position, final ArrNode parent, final XmlImportConfig config, final ArrChange change,
+                             final Map<String, RegRecord> xmlIdIntIdRecordMap, final Map<String, ParParty> xmlIdIntIdPartyMap,
+                             final Map<String, ArrPacket> xmlIdIntIdPacketMap, final ArrFund arrFund)
             throws LevelImportException, InvalidDataException {
         ArrNode arrNode = arrangementService.createNode(XmlImportUtils.trimStringValue(level.getUuid(), StringLength.LENGTH_36,
                 config.isStopOnError()), arrFund);
@@ -444,9 +429,9 @@ public class XmlImportService {
         }
     }
 
-    private void importDescItems(ArrNode node, Level level, ArrChange change, XmlImportConfig config,
-            Map<String, RegRecord> xmlIdIntIdRecordMap, Map<String, ParParty> xmlIdIntIdPartyMap, Map<String, ArrPacket> xmlIdIntIdPacketMap,
-            boolean stopOnError) throws LevelImportException, InvalidDataException {
+    private void importDescItems(final ArrNode node, final Level level, final ArrChange change, final XmlImportConfig config,
+            final Map<String, RegRecord> xmlIdIntIdRecordMap, final Map<String, ParParty> xmlIdIntIdPartyMap, final Map<String, ArrPacket> xmlIdIntIdPacketMap,
+            final boolean stopOnError) throws LevelImportException, InvalidDataException {
         List<AbstractDescItem> descItems = level.getDescItems();
         if (descItems != null) {
             for (AbstractDescItem descItem : descItems) {
@@ -604,10 +589,9 @@ public class XmlImportService {
                 }
             }
         }
-
     }
 
-    private ArrDescItem createArrDescItem(ArrChange change, ArrNode node, AbstractDescItem descItem) throws LevelImportException {
+    private ArrDescItem createArrDescItem(final ArrChange change, final ArrNode node, final AbstractDescItem descItem) throws LevelImportException {
         ArrDescItem arrDescItem = new ArrDescItem();
 
         arrDescItem.setCreateChange(change);
@@ -639,7 +623,7 @@ public class XmlImportService {
         return arrDescItem;
     }
 
-    private ArrFund createFund(Fund fund, ArrChange change, XmlImportConfig config, boolean stopOnError) throws FatalXmlImportException, InvalidDataException {
+    private ArrFund createFund(final Fund fund, final ArrChange change, final XmlImportConfig config, final boolean stopOnError) throws FatalXmlImportException, InvalidDataException {
         RulRuleSet ruleSet;
         if (StringUtils.isBlank(config.getTransformationName())) {
             String arrangementTypeCode = fund.getArrangementTypeCode();
@@ -681,8 +665,8 @@ public class XmlImportService {
         return institution;
     }
 
-    private void checkData(XmlImport xmlImport, Set<String> usedRecords, Set<String> usedParties, Set<String> usedPackets,
-            boolean importAllRecords, boolean importAllParties, boolean importFund) throws FatalXmlImportException {
+    private void checkData(final XmlImport xmlImport, final Set<String> usedRecords, final Set<String> usedParties, final Set<String> usedPackets,
+            final boolean importAllRecords, final boolean importAllParties, final boolean importFund) throws FatalXmlImportException {
         Fund fund = xmlImport.getFund();
         List<AbstractParty> parties = xmlImport.getParties();
 
@@ -712,7 +696,7 @@ public class XmlImportService {
         }
     }
 
-    private void addPartyRecords(Set<String> usedRecords, AbstractParty party) {
+    private void addPartyRecords(final Set<String> usedRecords, final AbstractParty party) {
         usedRecords.add(party.getRecord().getRecordId());
         List<Relation> events = party.getEvents();
         if (events != null) {
@@ -730,7 +714,7 @@ public class XmlImportService {
         }
     }
 
-    private boolean addUsedRecord(Record record, boolean importAllRecords, Set<String> usedRecords) {
+    private boolean addUsedRecord(final Record record, final boolean importAllRecords, final Set<String> usedRecords) {
         boolean usedChild = false;
 
         if (record.getRecords() != null) {
@@ -752,7 +736,7 @@ public class XmlImportService {
         return false;
     }
 
-    private void checkLevel(Level level, Set<String> usedRecords, Set<String> usedParties, Set<String> usedPackets) {
+    private void checkLevel(final Level level, final Set<String> usedRecords, final Set<String> usedParties, final Set<String> usedPackets) {
         if (level.getRecords() != null) {
             level.getRecords().forEach(record -> {
                 usedRecords.add(record.getRecordId());
@@ -782,8 +766,8 @@ public class XmlImportService {
         }
     }
 
-    private Map<String, ArrPacket> importPackets(List<Packet> packets, Set<String> usedPackets, ArrFund fund,
-            boolean stopOnError) throws InvalidDataException {
+    private Map<String, ArrPacket> importPackets(final List<Packet> packets, final Set<String> usedPackets, final ArrFund fund,
+            final boolean stopOnError) throws InvalidDataException {
         Map<String, ArrPacket> xmlIdIntIdPacketMap = new HashMap<>();
         if (CollectionUtils.isEmpty(packets)) {
             return xmlIdIntIdPacketMap;
@@ -805,7 +789,7 @@ public class XmlImportService {
         return xmlIdIntIdPacketMap;
     }
 
-    private ArrPacket importPacket(Packet packet, ArrFund fund, boolean stopOnError) throws InvalidDataException {
+    private ArrPacket importPacket(final Packet packet, final ArrFund fund, final boolean stopOnError) throws InvalidDataException {
         ArrPacket arrPacket = new ArrPacket();
         arrPacket.setFund(fund);
         arrPacket.setState(packet.getState());
@@ -820,8 +804,8 @@ public class XmlImportService {
         return packetRepository.save(arrPacket);
     }
 
-    private Map<String, ParParty> importParties(List<AbstractParty> parties, Set<String> usedParties, boolean stopOnError,
-            Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
+    private Map<String, ParParty> importParties(final List<AbstractParty> parties, final Set<String> usedParties, final boolean stopOnError,
+            final Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
         Map<String, ParParty> xmlIdIntIdPartyMap = new HashMap<>();
         if (CollectionUtils.isEmpty(parties)) {
             return xmlIdIntIdPartyMap;
@@ -856,7 +840,7 @@ public class XmlImportService {
         return xmlIdIntIdPartyMap;
     }
 
-    private void importCreators(AbstractParty party, Map<String, ParParty> xmlIdIntIdPartyMap) throws PartyImportException {
+    private void importCreators(final AbstractParty party, final Map<String, ParParty> xmlIdIntIdPartyMap) throws PartyImportException {
         List<AbstractParty> creators = party.getCreators();
         if (CollectionUtils.isEmpty(creators)) {
             return;
@@ -881,7 +865,7 @@ public class XmlImportService {
         }
     }
 
-    private ParParty importParty(AbstractParty party, boolean stopOnError, Map<String, RegRecord> xmlIdIntIdRecordMap)
+    private ParParty importParty(final AbstractParty party, final boolean stopOnError, final Map<String, RegRecord> xmlIdIntIdRecordMap)
         throws NonFatalXmlImportException {
         ParParty parParty;
         boolean isPartyGroup = false;
@@ -919,7 +903,7 @@ public class XmlImportService {
         return partyRepository.save(parParty);
     }
 
-    private void importPartyInstituion(AbstractParty party, ParParty parParty, boolean stopOnError) throws PartyImportException {
+    private void importPartyInstituion(final AbstractParty party, final ParParty parParty, final boolean stopOnError) throws PartyImportException {
         Institution institution = party.getInstitution();
         if (institution == null) {
             return;
@@ -949,7 +933,7 @@ public class XmlImportService {
         partyService.saveInstitution(parInstitution);
     }
 
-    private void importEvents(List<Relation> events, ParParty parParty, boolean stopOnError, Map<String, RegRecord> xmlIdIntIdRecordMap)
+    private void importEvents(final List<Relation> events, final ParParty parParty, final boolean stopOnError, final Map<String, RegRecord> xmlIdIntIdRecordMap)
         throws NonFatalXmlImportException {
         if (events != null) {
             for (Relation relation : events) {
@@ -964,8 +948,8 @@ public class XmlImportService {
         }
     }
 
-    private ParRelation importRelation(ParParty parParty, Relation relation, Map<String, RegRecord> xmlIdIntIdRecordMap,
-            boolean stopOnError)
+    private ParRelation importRelation(final ParParty parParty, final Relation relation, final Map<String, RegRecord> xmlIdIntIdRecordMap,
+            final boolean stopOnError)
         throws PartyImportException, InvalidDataException {
         ParRelation parRelation = createRelation(parParty, relation, stopOnError);
         relationRepository.save(parRelation);
@@ -987,7 +971,7 @@ public class XmlImportService {
         return parRelation;
     }
 
-    private ParRelationEntity createRoleType(Map<String, RegRecord> xmlIdIntIdRecordMap, ParRelation parRelation, RoleType roleType)
+    private ParRelationEntity createRoleType(final Map<String, RegRecord> xmlIdIntIdRecordMap, final ParRelation parRelation, final RoleType roleType)
             throws PartyImportException {
         ParRelationEntity parRelationEntity = new ParRelationEntity();
         Record record = roleType.getRecord();
@@ -1009,7 +993,7 @@ public class XmlImportService {
         return parRelationEntity;
     }
 
-    private ParRelation createRelation(ParParty parParty, Relation relation, boolean stopOnError) throws PartyImportException,
+    private ParRelation createRelation(final ParParty parParty, final Relation relation, final boolean stopOnError) throws PartyImportException,
             InvalidDataException {
         ParRelation parRelation = new ParRelation();
 
@@ -1042,7 +1026,7 @@ public class XmlImportService {
         return parRelation;
     }
 
-    private void importPartyGroupIdentifiers(PartyGroup partyGroup, ParPartyGroup parPartyGroup, boolean stopOnError) throws InvalidDataException {
+    private void importPartyGroupIdentifiers(final PartyGroup partyGroup, final ParPartyGroup parPartyGroup, final boolean stopOnError) throws InvalidDataException {
         List<PartyGroupId> partyGroupIds = partyGroup.getPartyGroupIds();
         if (partyGroupIds != null) {
             List<ParPartyGroupIdentifier> parPartyGroupIdentifiers = new ArrayList<ParPartyGroupIdentifier>(partyGroupIds.size());
@@ -1067,7 +1051,7 @@ public class XmlImportService {
         }
     }
 
-    private ParPartyGroupIdentifier createPartyGroupIdentifier(ParPartyGroup parPartyGroup, PartyGroupId partyGroupId, boolean stopOnError)
+    private ParPartyGroupIdentifier createPartyGroupIdentifier(final ParPartyGroup parPartyGroup, final PartyGroupId partyGroupId, final boolean stopOnError)
             throws InvalidDataException {
         ParPartyGroupIdentifier parPartyGroupIdentifier = new ParPartyGroupIdentifier();
         parPartyGroupIdentifier.setIdentifier(XmlImportUtils.trimStringValue(partyGroupId.getId(), StringLength.LENGTH_50, stopOnError));
@@ -1081,7 +1065,7 @@ public class XmlImportService {
         return parPartyGroupIdentifier;
     }
 
-    private ParUnitdate importComplexDate(ComplexDate complexDate) throws InvalidDataException {
+    private ParUnitdate importComplexDate(final ComplexDate complexDate) throws InvalidDataException {
         ParUnitdate parUnitdate = XmlImportUtils.convertComplexDateToUnitdate(complexDate);
 
         if (parUnitdate == null) {
@@ -1091,7 +1075,7 @@ public class XmlImportService {
         return unitdateRepository.save(parUnitdate);
     }
 
-    private void importPartyNames(AbstractParty party, ParParty parParty, boolean stopOnError) throws InvalidDataException, PartyImportException {
+    private void importPartyNames(final AbstractParty party, final ParParty parParty, final boolean stopOnError) throws InvalidDataException, PartyImportException {
         ParPartyName parPartyName = importPartyName(party.getPreferredName(), parParty, stopOnError);
         parParty.setPreferredName(parPartyName);
 
@@ -1111,7 +1095,7 @@ public class XmlImportService {
         partyRepository.save(parParty);
     }
 
-    private ParPerson createPerson(Person person, Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
+    private ParPerson createPerson(final Person person, final Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
         Assert.notNull(person);
 
         ParPerson parPerson = new ParPerson();
@@ -1120,7 +1104,7 @@ public class XmlImportService {
         return parPerson;
     }
 
-    private ParPartyGroup createPartyGroup(PartyGroup partyGroup, Map<String, RegRecord> xmlIdIntIdRecordMap, boolean stopOnError) throws NonFatalXmlImportException {
+    private ParPartyGroup createPartyGroup(final PartyGroup partyGroup, final Map<String, RegRecord> xmlIdIntIdRecordMap, final boolean stopOnError) throws NonFatalXmlImportException {
         Assert.notNull(partyGroup);
 
         ParPartyGroup parPartyGroup = new ParPartyGroup();
@@ -1134,7 +1118,7 @@ public class XmlImportService {
         return parPartyGroup;
     }
 
-    private ParEvent createEvent(Event event, Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
+    private ParEvent createEvent(final Event event, final Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
         Assert.notNull(event);
 
         ParEvent parEvent = new ParEvent();
@@ -1143,7 +1127,7 @@ public class XmlImportService {
         return parEvent;
     }
 
-    private ParDynasty createDynasty(Dynasty dynasty, Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
+    private ParDynasty createDynasty(final Dynasty dynasty, final Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
         Assert.notNull(dynasty);
 
         ParDynasty parDynasty = new ParDynasty();
@@ -1154,7 +1138,7 @@ public class XmlImportService {
         return parDynasty;
     }
 
-    private void fillCommonAttributes(ParParty parParty, AbstractParty party, Map<String, RegRecord> xmlIdIntIdRecordMap)
+    private void fillCommonAttributes(final ParParty parParty, final AbstractParty party, final Map<String, RegRecord> xmlIdIntIdRecordMap)
         throws PartyImportException, InvalidDataException {
         String partyTypeCode = party.getPartyTypeCode();
         ParPartyType partyType = partyTypeRepository.findPartyTypeByCode(partyTypeCode);
@@ -1183,7 +1167,7 @@ public class XmlImportService {
         parParty.setTo(importComplexDate(party.getFromDate()));
     }
 
-    private ParPartyName importPartyName(PartyName partyName, ParParty parParty, boolean stopOnError) throws InvalidDataException, PartyImportException {
+    private ParPartyName importPartyName(final PartyName partyName, final ParParty parParty, final boolean stopOnError) throws InvalidDataException, PartyImportException {
         ParPartyName parPartyName = new ParPartyName();
 
         parPartyName.setNote(partyName.getNote());
@@ -1229,8 +1213,8 @@ public class XmlImportService {
         return parPartyName;
     }
 
-    private ParPartyNameComplement createPartyNameComplement(ParPartyName parPartyName,
-            PartyNameComplement partyNameComplement, boolean stopOnError) throws PartyImportException, InvalidDataException {
+    private ParPartyNameComplement createPartyNameComplement(final ParPartyName parPartyName,
+            final PartyNameComplement partyNameComplement, final boolean stopOnError) throws PartyImportException, InvalidDataException {
         ParPartyNameComplement parPartyNameComplement = new ParPartyNameComplement();
         parPartyNameComplement.setComplement(XmlImportUtils.trimStringValue(partyNameComplement.getComplement(), StringLength.LENGTH_1000, stopOnError));
 
@@ -1254,8 +1238,8 @@ public class XmlImportService {
      *
      * @return mapa externí id rejstříku -> interní id rejstříku
      */
-    private Map<String, RegRecord> importRecords(List<Record> records, Set<String> usedRecords, boolean stopOnError,
-            RegScope regScope) throws NonFatalXmlImportException {
+    private Map<String, RegRecord> importRecords(final List<Record> records, final Set<String> usedRecords, final boolean stopOnError,
+            final RegScope regScope) throws NonFatalXmlImportException {
         Map<String, RegRecord> xmlIdIntIdRecordMap = new HashMap<>();
         if (CollectionUtils.isEmpty(records)) {
             return xmlIdIntIdRecordMap;
@@ -1276,8 +1260,8 @@ public class XmlImportService {
         return xmlIdIntIdRecordMap;
     }
 
-    private void importRecord(Record record, RegRecord parent, boolean stopOnError, Set<String> usedRecords,
-            Map<String, RegRecord> xmlIdIntIdRecordMap, RegScope regScope) throws RecordImportException, InvalidDataException {
+    private void importRecord(final Record record, final RegRecord parent, final boolean stopOnError, final Set<String> usedRecords,
+            final Map<String, RegRecord> xmlIdIntIdRecordMap, final RegScope regScope) throws RecordImportException, InvalidDataException {
         String externalId = record.getExternalId();
         String externalSourceCode = record.getExternalSourceCode();
         RegRecord regRecord;
@@ -1323,7 +1307,7 @@ public class XmlImportService {
         }
     }
 
-    private void syncVariantRecords(Record record, RegRecord regRecord, boolean isNew, boolean stopOnError) throws InvalidDataException {
+    private void syncVariantRecords(final Record record, final RegRecord regRecord, final boolean isNew, final boolean stopOnError) throws InvalidDataException {
         List<RegVariantRecord> existingVariantRecords;
         if (isNew) {
             existingVariantRecords = new ArrayList<>();
@@ -1364,7 +1348,7 @@ public class XmlImportService {
         }
     }
 
-    private void updateRecord(Record record, RegRecord regRecord, RegRecord parent, boolean stopOnError) throws InvalidDataException {
+    private void updateRecord(final Record record, final RegRecord regRecord, final RegRecord parent, final boolean stopOnError) throws InvalidDataException {
         regRecord.setCharacteristics(record.getCharacteristics());
         regRecord.setNote(record.getNote());
         regRecord.setRecord(XmlImportUtils.trimStringValue(record.getPreferredName(), StringLength.LENGTH_1000, stopOnError));
@@ -1377,7 +1361,7 @@ public class XmlImportService {
         regRecord.setRegisterType(regType);
     }
 
-    private RegRecord createRecord(String externalId, String externalSourceCode, RegScope regScope, boolean stopOnError) throws InvalidDataException {
+    private RegRecord createRecord(final String externalId, final String externalSourceCode, final RegScope regScope, final boolean stopOnError) throws InvalidDataException {
         RegRecord regRecord = new RegRecord();
         regRecord.setExternalId(XmlImportUtils.trimStringValue(externalId, StringLength.LENGTH_250, stopOnError));
         regRecord.setScope(regScope);
@@ -1393,7 +1377,7 @@ public class XmlImportService {
      * @param record rejstřík
      * @throws IllegalStateException pokud nejsou vyplněny povinné atributy
      */
-    private void checkRequiredAttributes(Record record) {
+    private void checkRequiredAttributes(final Record record) {
         if (StringUtils.isBlank(record.getPreferredName())) {
             throw new IllegalStateException("Rejstřík s identifikátorem " + record.getRecordId() + " nemá vyplněné heslo.");
         }
@@ -1403,7 +1387,7 @@ public class XmlImportService {
         }
     }
 
-    private XmlImport readData(XmlImportConfig config) {
+    private XmlImport readData(final XmlImportConfig config) {
         Assert.notNull(config);
         Assert.notNull(config.getXmlFile());
         Assert.notNull(config.getRegScope());
@@ -1419,12 +1403,12 @@ public class XmlImportService {
                 throw new IllegalStateException("Chyba při otevírání vstupního souboru.", e);
             }
         } else {
-            File transformationFile = getTransformationFileByName(config.getTransformationName());
-            is = transformXml(xmlFile, transformationFile);
+            File transformationFile = getTransformationFileByName(transformationName);
+            is = XmlUtils.transformXml(xmlFile, transformationFile);
         }
 
         try {
-            return unmarshallData(is);
+            return XmlUtils.unmarshallData(is, XmlImport.class);
         } catch (JAXBException e) {
             throw new IllegalStateException("Chyba při převodu dat z xml ", e);
         } finally {
@@ -1436,114 +1420,9 @@ public class XmlImportService {
         }
     }
 
-    private File getTransformationFileByName(String transformationName) {
-        File transformationFile = new File(transformationsDirectory + File.separator + transformationName + XSLT_EXTENSION);
+    private File getTransformationFileByName(final String transformationName) {
+        File transformationFile = new File(transformationsDirectory + File.separator + transformationName + XmlUtils.XSLT_EXTENSION);
         return transformationFile;
-    }
-
-    private InputStream transformXml(MultipartFile xmlFile, File transformationFile)
-        throws TransformerFactoryConfigurationError {
-        Assert.notNull(xmlFile);
-
-        StreamSource xmlSource = null;
-        StreamSource xsltSource = null;
-        ByteStreamResult result = null;
-        byte[] byteArray = null;
-        try {
-            xmlSource = getStreamSource(xmlFile);
-            xsltSource = getTransformationSource(transformationFile);
-            result = new ByteStreamResult(new ByteArrayOutputStream());
-
-            TransformerFactory transFact = TransformerFactory.newInstance();
-            Transformer trans = transFact.newTransformer(xsltSource);
-            trans.setOutputProperty(OutputKeys.ENCODING, "utf-8");
-            trans.transform(xmlSource, result);
-
-            byteArray = result.toByteArray();
-        } catch (TransformerException ex) {
-            throw new IllegalStateException("Chyba při transformaci vstupních dat.", ex);
-        } finally {
-            if (xmlSource != null) {
-                try {
-                    xmlSource.getInputStream().close();
-                } catch (IOException ex) {
-                    logger.error("Chyba při zavírání souboru se vstupními daty.", ex);
-                }
-            }
-
-            if (xsltSource != null) {
-                try {
-                    xsltSource.getInputStream().close();
-                } catch (IOException ex) {
-                    logger.error("Chyba při zavírání souboru s transformací.", ex);
-                }
-            }
-
-            if (result != null && result.getOutputStream() != null) {
-                try {
-                    result.getOutputStream().close();
-                } catch (IOException ex) {
-                    logger.error("Chyba při zavírání výsledného souboru.", ex);
-                }
-            }
-        }
-
-        return new ByteArrayInputStream(byteArray);
-    }
-
-    private StreamSource getTransformationSource(File transformationFile) {
-        Assert.notNull(transformationFile);
-
-        return getStreamSource(transformationFile);
-    }
-
-    private StreamSource getStreamSource(File xmlFile) {
-        Assert.notNull(xmlFile);
-
-        try {
-            logger.info("Otevírání souboru " + xmlFile);
-            return new StreamSource(new FileInputStream(xmlFile));
-        } catch (IOException ex) {
-            throw new IllegalStateException("Chyba při otevírání souboru " + xmlFile, ex);
-        }
-    }
-
-    private StreamSource getStreamSource(MultipartFile xmlFile) {
-        Assert.notNull(xmlFile);
-
-        try {
-            logger.info("Otevírání souboru " + xmlFile);
-            return new StreamSource(xmlFile.getInputStream());
-        } catch (IOException ex) {
-            throw new IllegalStateException("Chyba při otevírání souboru " + xmlFile, ex);
-        }
-    }
-
-    /**
-     * Převede data z xml do objektu {@link XmlImport}
-     *
-     * @param inputStream stream
-     *
-     * @return {@link XmlImport}
-     */
-    private XmlImport unmarshallData(InputStream inputStream) throws JAXBException {
-        Assert.notNull(inputStream);
-
-        Unmarshaller unmarshaller = createUnmarshaller();
-
-        return  (XmlImport) unmarshaller.unmarshal(inputStream);
-    }
-
-    /**
-     * Vytvoří umarshaller pro importní data.
-     *
-     * @return umarshaller pro importní data
-     */
-    private Unmarshaller createUnmarshaller() throws JAXBException {
-        JAXBContext jaxbContext = JAXBContext.newInstance(XmlImport.class);
-        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
-        return unmarshaller;
     }
 
     /**
@@ -1552,31 +1431,6 @@ public class XmlImportService {
      * @return názvy šablon
      */
     public List<String> getTransformationNames() {
-        File transformDir = new File(transformationsDirectory);
-
-        if (!transformDir.exists()) {
-            transformDir.mkdirs();
-            return Collections.EMPTY_LIST;
-        }
-
-        if (!transformDir.isDirectory()) {
-            throw new IllegalStateException("Cesta " + transformDir.getAbsolutePath() + " není adresář.");
-        }
-
-        File[] listFiles = transformDir.listFiles((dir, name) -> name.endsWith(XSLT_EXTENSION));
-        if (listFiles == null) {
-            throw new IllegalStateException("Chyba při načítání souborů z adresáře " + transformDir.getAbsolutePath());
-        }
-        List<String> transformationNames = new ArrayList<>(listFiles.length);
-        for (File file : listFiles) {
-            String transformationName = FilenameUtils.getBaseName(file.getName());
-            transformationNames.add(transformationName.toLowerCase(Locale.getDefault()));
-        }
-
-        Collator collator = Collator.getInstance(Locale.getDefault());
-        collator.setStrength(Collator.PRIMARY);
-        Collections.sort(transformationNames, collator);
-
-        return transformationNames;
+        return XmlUtils.getTransformationNames(transformationsDirectory);
     }
 }

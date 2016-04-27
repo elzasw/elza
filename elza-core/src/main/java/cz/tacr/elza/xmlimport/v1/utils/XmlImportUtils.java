@@ -1,5 +1,6 @@
 package cz.tacr.elza.xmlimport.v1.utils;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -24,7 +25,7 @@ public final class XmlImportUtils {
 
     }
 
-    public static String trimStringValue(String text, int length, boolean stopOnError) throws InvalidDataException {
+    public static String trimStringValue(final String text, final int length, final boolean stopOnError) throws InvalidDataException {
         if (StringUtils.isEmpty(text)) {
             return text;
         }
@@ -86,13 +87,13 @@ public final class XmlImportUtils {
      *
      * @throws InvalidDataException pokud nenjsou správně vyplněny atributy
      */
-    public static void checkComplexDate(ComplexDate complexDate) throws InvalidDataException {
+    public static void checkComplexDate(final ComplexDate complexDate) throws InvalidDataException {
         if (!(onlyDate(complexDate) || onlyInterval(complexDate) || onlyTextDate(complexDate))) {
             throw new InvalidDataException("Nesprávně vyplněný datum. Musí být vyplněn jen konkrétní datum nebo jen interval nebo jen textové datum.");
         }
     }
 
-    private static boolean onlyTextDate(ComplexDate complexDate) {
+    private static boolean onlyTextDate(final ComplexDate complexDate) {
         Date specificDate = complexDate.getSpecificDate();
         Date specificDateFrom = complexDate.getSpecificDateFrom();
         Date specificDateTo = complexDate.getSpecificDateTo();
@@ -105,7 +106,7 @@ public final class XmlImportUtils {
         return false;
     }
 
-    private static boolean onlyInterval(ComplexDate complexDate) {
+    private static boolean onlyInterval(final ComplexDate complexDate) {
         Date specificDate = complexDate.getSpecificDate();
         Date specificDateFrom = complexDate.getSpecificDateFrom();
         Date specificDateTo = complexDate.getSpecificDateTo();
@@ -118,7 +119,7 @@ public final class XmlImportUtils {
         return false;
     }
 
-    private static boolean onlyDate(ComplexDate complexDate) {
+    private static boolean onlyDate(final ComplexDate complexDate) {
         Date specificDate = complexDate.getSpecificDate();
         Date specificDateFrom = complexDate.getSpecificDateFrom();
         Date specificDateTo = complexDate.getSpecificDateTo();
@@ -131,11 +132,23 @@ public final class XmlImportUtils {
         return false;
     }
 
-    public static String dateToString(Date date) {
+    public static String dateToString(final Date date) {
         if (date == null) {
             return null;
         }
 
         return FORMATTER_DATE_TIME.format(date);
+    }
+
+    public static Date stringToDate(final String stringDate) {
+        if (StringUtils.isBlank(stringDate)) {
+            return null;
+        }
+
+        try {
+            return FORMATTER_DATE_TIME.parse(stringDate);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("3patný formát datumu " + stringDate);
+        }
     }
 }

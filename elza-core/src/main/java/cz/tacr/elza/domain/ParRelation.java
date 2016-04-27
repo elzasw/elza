@@ -43,8 +43,8 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
 
     static {
         classTypeOrderMap.put(ParRelationType.ClassType.VZNIK.getClassType(), 1);
-        classTypeOrderMap.put(ParRelationType.ClassType.VZNIK.getClassType(), 2);
-        classTypeOrderMap.put(ParRelationType.ClassType.VZNIK.getClassType(), 3);
+        classTypeOrderMap.put(ParRelationType.ClassType.ZANIK.getClassType(), 2);
+        classTypeOrderMap.put(ParRelationType.ClassType.VZTAH.getClassType(), 3);
     }
 
 

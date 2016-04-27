@@ -5,6 +5,8 @@ elza:
   workingDir: ./work
   xmlImport:
     transformationDir: ${elza.workingDir}/transformations/
+  xmlExport:
+    transformationDir: ${elza.workingDir}/xmlExportTransformations/      
   bulkactions:
     bulkactionsDir: ${elza.workingDir}/bulkactions
   rulesDir: ${elza.workingDir}/rules

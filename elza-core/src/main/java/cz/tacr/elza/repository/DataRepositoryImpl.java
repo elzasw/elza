@@ -65,14 +65,18 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                                                 final ArrFundVersion version) {
 
 
-        String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH d.dataType dt WHERE ";
+        String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit LEFT JOIN FETCH di.descItemSpec dis JOIN FETCH d.dataType dt WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";
         } else {
             hql += "di.createChange < :lockChange AND (di.deleteChange IS NULL OR di.deleteChange > :lockChange) ";
         }
 
-        hql += "AND di.descItemType IN (:descItemTypes) AND n.nodeId IN (:nodeIds)";
+        hql += "AND n.nodeId IN (:nodeIds)";
+
+        if (CollectionUtils.isNotEmpty(descItemTypes)) {
+            hql += " AND di.descItemType IN (:descItemTypes)";
+        }
 
 
         Query query = entityManager.createQuery(hql);
@@ -81,7 +85,9 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             query.setParameter("lockChange", version.getLockChange());
         }
 
-        query.setParameter("descItemTypes", descItemTypes);
+        if (CollectionUtils.isNotEmpty(descItemTypes)) {
+            query.setParameter("descItemTypes", descItemTypes);
+        }
 
         List<ArrData> result = new LinkedList<>();
         ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<Integer>(nodeIds);
@@ -96,7 +102,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
 
     @Override
-    public List<ArrData> findByDataIdsAndVersionFetchSpecification(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFundVersion version) {
+    public List<ArrData> findByDataIdsAndVersionFetchSpecification(final Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, final ArrFundVersion version) {
         String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH di.descItemSpec dis JOIN FETCH d.dataType dt WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";
