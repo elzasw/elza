@@ -76,7 +76,7 @@ export function createFund(data) {
 /**
  * Uzavření AS, nová aktuální AS bude mít předané ruleSetId a arrangementTypeId.
  * @param {int} versionId verze AS
- * @param {int} arrangementTypeId id typu výstupu
+ * @param {int} dateRange
  */
 export function approveFund(versionId, dateRange) {
     return dispatch => {
@@ -92,6 +92,14 @@ export function approveFund(versionId, dateRange) {
 export function deleteFund(fundId) {
     return dispatch => {
         WebApi.deleteFund(fundId)
+    }
+}
+
+
+export function exportFund(fundId, transformationName) {
+    return dispatch => {
+        dispatch(modalDialogHide());
+        WebApi.exportFund(fundId, transformationName)
     }
 }
 

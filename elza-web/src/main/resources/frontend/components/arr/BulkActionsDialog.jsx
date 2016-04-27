@@ -12,11 +12,11 @@ var BulkActionsDialog = class BulkActionsDialog extends AbstractReactComponent {
     }
 
     render() {
-        const {onClose} = this.props;
+        const {onClose, mandatory} = this.props;
         return (
             <div>
                 <Modal.Body>
-                    <BulkActionsTable mandatory={this.props.mandatory} versionValidate={false}/>
+                    <BulkActionsTable mandatory={mandatory} versionValidate={false}/>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.close')}</Button>

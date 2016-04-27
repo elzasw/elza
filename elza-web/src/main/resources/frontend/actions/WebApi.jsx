@@ -665,7 +665,14 @@ class WebApi{
             .then(json=>{
                 return json
             });
-    }    
+    }
+
+    getExportTransformations() {
+        return AjaxUtils.ajaxGet('/api/export/transformations') // TODO ELZA-851 - čeká
+            .then(json=>{
+                return json
+            });
+    }
     
     xmlImport(data) {
         return AjaxUtils.ajaxCallRaw('/api/xmlImportManagerV2/import', {}, "POST", data);
@@ -776,6 +783,10 @@ class WebApi{
 
     deleteFund(fundId) {
         return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/deleteFund/' + fundId);
+    }
+
+    exportFund(versionId, transformationName) {
+        return AjaxUtils.ajaxPost('/api/export/fund', null, {versionId, transformationName});  // TODO ELZA-851 - čeká
     }
 }
 

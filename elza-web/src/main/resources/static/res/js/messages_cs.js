@@ -27,6 +27,7 @@ var messages = {
     "global.action.storeAndViewDetail": "Ok a přechod na detail",
     "global.action.show.more": "Zobrazit více",
     "global.action.import": "Importovat",
+    "global.action.export": "Exportovat",
     "search.input.search": "Vyhledat...",
     "search.not.found": "nenalezeno",
 
@@ -57,6 +58,7 @@ var messages = {
     "ribbon.action.admin.resetLocalStorage.title": "Smaže historii posledně otevřených položek a uvede zobrazení aplikace do výchozího stavu",
     "ribbon.action.party.import" : "Import osob",
     "ribbon.action.arr.fund.import" : "Import pomůcky",
+    "ribbon.action.arr.fund.export" : "Export",
     "ribbon.action.registry.import" : "Import Hesel",
     "ribbon.action.logout" : "Odhlásit",
 
@@ -426,6 +428,9 @@ var messages = {
     "import.stopOnError": "Zastavit při chybě",
     "import.file": "Soubor",
     "import.running": "Import probíhá",
+
+    "export.title.fund": "Import archivního souboru",
+    "export.transformationName": "Šablona transformace",
 
     "validate.validateInt.notInt": "Nejedná se o celé číslo",
     "validate.validateInt.outOfRange": "Zadané číslo je mimo rozsah celého čísla typu INT",

@@ -39,6 +39,7 @@ exports.Resizer = require('./shared/resizer/Resizer');
 
 exports.FormUtils = require('./form/FormUtils');
 exports.ImportForm = require('./form/ImportForm');
+exports.ExportForm = require('./form/ExportForm');
 
 exports.Ribbon = require('./page/Ribbon');
 

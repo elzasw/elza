@@ -14,8 +14,7 @@ import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionLis
 
 const validate = (values, props) => {
     const errors = {};
-    console.log(props);
-    console.log(values);
+
     if (!values.record) {
         errors.record = i18n('global.validation.required');
     }
@@ -52,7 +51,7 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
     render() {
         const {fields: { record, characteristics, registerTypeId}, handleSubmit, onClose, initData, registryRegionRecordTypes, parentRecordId} = this.props;
 
-        const submitForm = submitReduxForm.bind(this, validate);
+        const submitForm = handleSubmit(submitReduxForm.bind(this, validate));
 
         const itemsForDropDownTree = registryRegionRecordTypes.item != null ? registryRegionRecordTypes.item : [];
 
@@ -60,7 +59,7 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
         return (
             <div>
                 <Modal.Body>
-                    <form onSubmit={handleSubmit(submitForm)}>
+                    <form onSubmit={submitForm}>
                         <DropDownTree
                             label={i18n('registry.update.type')}
                             items = {itemsForDropDownTree}
@@ -76,7 +75,7 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.store')}</Button>
+                    <Button onClick={submitForm}>{i18n('global.action.store')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>

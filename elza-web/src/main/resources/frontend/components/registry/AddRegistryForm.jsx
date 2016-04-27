@@ -98,13 +98,10 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     render() {
         const {fields: {record, characteristics, registerTypeId, scopeId}, handleSubmit, onClose, versionId, refTables: {scopesData}, registryRegionRecordTypes, registryRegion} = this.props;
 
-        var okSubmitForm = submitReduxFormWithProp.bind(this, validate, 'store')
-        var okAndDetailSubmitForm = submitReduxFormWithProp.bind(this, validate, 'storeAndViewDetail')
+        const okSubmitForm = submitReduxFormWithProp.bind(this, validate, 'store');
+        const okAndDetailSubmitForm = submitReduxFormWithProp.bind(this, validate, 'storeAndViewDetail');
 
-        var itemsForDropDownTree = [];
-        if (registryRegionRecordTypes.item) {
-            itemsForDropDownTree = registryRegionRecordTypes.item;
-        }
+        const itemsForDropDownTree = registryRegionRecordTypes.item ? registryRegionRecordTypes.item : [];
 
 
         var registerTypesIdValue = registerTypeId.value;

@@ -10,8 +10,8 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components';
-import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent, ImportForm,
-    Search, ListBox, FundDetail, FundDetailExt} from 'components';
+import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent,
+    ImportForm, ExportForm, Search, ListBox, FundDetail, FundDetailExt} from 'components';
 import {NodeTabs, FundTreeTabs} from 'components';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -27,7 +27,7 @@ import {selectFundTab} from 'actions/arr/fund'
 import {routerNavigate} from 'actions/router'
 import {fundsFetchIfNeeded, fundsSelectFund, fundsFundDetailFetchIfNeeded, fundsSearch} from 'actions/fund/fund'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils'
-import {approveFund, deleteFund} from 'actions/arr/fund'
+import {approveFund, deleteFund, exportFund} from 'actions/arr/fund'
 import {barrier} from 'components/Utils';
 import {scopesDirty} from 'actions/refTables/scopesData'
 
@@ -35,7 +35,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleAddFund', 'handleImport', 'renderListItem', 'handleSelect', 'handleSearch',
+        this.bindMethods('handleAddFund', 'handleImport', 'handleExportDialog', 'handleExport', 'renderListItem', 'handleSelect', 'handleSearch',
             'handleSearchClear', 'handleApproveFundVersion', 'handleEditFundVersion', 'handleCallEditFundVersion', 'handleDeleteFund')
 
         this.buildRibbon = this.buildRibbon.bind(this);
@@ -65,12 +65,25 @@ var FundPage = class FundPage extends AbstractReactComponent {
         );
     }
 
+    handleExportDialog() {
+        const {fundRegion: {fundDetail}} = this.props;
+        this.dispatch(
+            modalDialogShow(this,
+                i18n('export.title.fund'),
+                <ExportForm fund={true} onSubmitForm={data => {this.dispatch(exportFund(fundDetail.versionId, data.transformationName))}} />
+            )
+        );
+    }
+
+    handleExport(values) {
+        console.log(values);
+    }
+
     /**
      * Zobrazení dualogu uzavření verze AS.
      */
     handleApproveFundVersion() {
-        const {fundRegion} = this.props
-        const fundDetail = fundRegion.fundDetail
+        const {fundRegion: {fundDetail}} = this.props
 
         var data = {
             dateRange: fundDetail.activeVersion.dateRange,
@@ -133,8 +146,13 @@ var FundPage = class FundPage extends AbstractReactComponent {
             <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div></Button>
         )
         altActions.push(
-            <Button key="fa-import" onClick={this.handleImport}><Icon glyph='fa-download'/>
+            <Button key="fa-import" onClick={this.handleImport}><Icon glyph='fa-upload'/>
                 <div><span className="btnText">{i18n('ribbon.action.arr.fund.import')}</span></div>
+            </Button>
+        )
+        altActions.push(
+            <Button key="fa-export" onClick={this.handleExportDialog}><Icon glyph='fa-download'/>
+                <div><span className="btnText">{i18n('ribbon.action.arr.fund.export')}</span></div>
             </Button>
         )
 

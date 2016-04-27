@@ -128,7 +128,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
             currRuleSet = ruleSets[indexById(ruleSets, currRuleSetId)];
             if (currRuleSet) {
                 ruleSetOptions = currRuleSet.arrangementTypes.map(
-                    i=> <option key={i.id} value={i.id}>{i.name}</option>
+                    i => <option key={i.id} value={i.id}>{i.name}</option>
                 );
             }
         }
