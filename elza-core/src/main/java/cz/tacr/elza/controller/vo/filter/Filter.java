@@ -11,13 +11,13 @@ import java.util.List;
 public class Filter {
 
     /** Typ vybraných hodnot. */
-    private ValuesTypes valuesTypes;
+    private ValuesTypes valuesType;
 
     /** Hodnoty. */
     private List<String> values;
 
     /** Typ vybraných specifikací. */
-    private ValuesTypes specsTypes ;
+    private ValuesTypes specsType;
 
     /** Specifikace. */
     private List<String> specs;
@@ -26,14 +26,14 @@ public class Filter {
     private Condition conditionType ;
 
     /** Parametry podmínky. */
-    private List<String> conditions;
+    private List<String> condition;
 
-    public ValuesTypes getValuesTypes() {
-        return valuesTypes;
+    public ValuesTypes getValuesType() {
+        return valuesType;
     }
 
-    public void setValuesTypes(ValuesTypes valuesTypes) {
-        this.valuesTypes = valuesTypes;
+    public void setValuesType(ValuesTypes valuesType) {
+        this.valuesType = valuesType;
     }
 
     public List<String> getValues() {
@@ -44,12 +44,12 @@ public class Filter {
         this.values = values;
     }
 
-    public ValuesTypes getSpecsTypes() {
-        return specsTypes;
+    public ValuesTypes getSpecsType() {
+        return specsType;
     }
 
-    public void setSpecsTypes(ValuesTypes specsTypes) {
-        this.specsTypes = specsTypes;
+    public void setSpecsType(ValuesTypes specsType) {
+        this.specsType = specsType;
     }
 
     public List<String> getSpecs() {
@@ -68,11 +68,11 @@ public class Filter {
         this.conditionType = conditionType;
     }
 
-    public List<String> getConditions() {
-        return conditions;
+    public List<String> getCondition() {
+        return condition;
     }
 
-    public void setConditions(List<String> conditions) {
-        this.conditions = conditions;
+    public void setCondition(List<String> condition) {
+        this.condition = condition;
     }
 }

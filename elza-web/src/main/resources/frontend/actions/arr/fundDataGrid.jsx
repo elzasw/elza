@@ -303,11 +303,24 @@ function _setPageIndex(versionId, pageIndex) {
  * Filtrování dat podle předaného filtru.
  */
 export function fundDataGridFilter(versionId, filter) {
-console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$ FILTER", versionId, filter)
     return (dispatch, getState) => {
         dispatch(_filterRequest(versionId))
 
-        WebApi.filterNodes(versionId, filter)
+        var callFilter = {...filter}
+
+        Object.keys(callFilter).forEach(key => {
+            callFilter[key] = {...callFilter[key]}
+            if (typeof callFilter[key].specsType !== 'undefined' && callFilter[key].specsType !== null) {
+                callFilter[key].specsType = callFilter[key].specsType.toUpperCase()
+            }
+            if (typeof callFilter[key].valuesType !== 'undefined' && callFilter[key].valuesType !== null) {
+                callFilter[key].valuesType = callFilter[key].valuesType.toUpperCase()
+            }
+        })
+
+// console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$ FILTER", versionId, callFilter)
+
+        WebApi.filterNodes(versionId, callFilter)
             .then(json => {
                 dispatch(_filterReceive(versionId, json))
             })

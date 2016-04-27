@@ -594,7 +594,8 @@ class WebApi{
     }
 
     filterNodes(versionId, filter) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/filterNodes/' + versionId)
+        // console.log(1111111, filter)
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/filterNodes/' + versionId, {}, {filters: filter})
     }
 
     getFilteredNodes(versionId, pageIndex, pageSize, descItemTypeIds) {

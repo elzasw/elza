@@ -16,7 +16,6 @@ import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
 import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
@@ -42,8 +41,6 @@ import cz.tacr.elza.controller.vo.filter.Condition;
 import cz.tacr.elza.controller.vo.filter.Filter;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.ValuesTypes;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
@@ -88,9 +85,6 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.DescriptionItemService;
-import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
 
 
 /**
@@ -429,8 +423,8 @@ public class ClientFactoryDO {
         Assert.notNull(filter);
 
         List<DescItemCondition> conditions = new LinkedList<DescItemCondition>();
-        createValuesEnumCondition(filter.getValuesTypes(), filter.getValues(), DescItemCondition.FULLTEXT_ATT, conditions);
-        createValuesEnumCondition(filter.getSpecsTypes(), filter.getSpecs(), DescItemCondition.SPECIFICATION_ATT, conditions);
+        createValuesEnumCondition(filter.getValuesType(), filter.getValues(), DescItemCondition.FULLTEXT_ATT, conditions);
+        createValuesEnumCondition(filter.getSpecsType(), filter.getSpecs(), DescItemCondition.SPECIFICATION_ATT, conditions);
 
         Condition conditionType = filter.getConditionType();
         if (conditionType != null && conditionType != Condition.NONE) {
@@ -439,12 +433,12 @@ public class ClientFactoryDO {
             DescItemCondition condition;
             switch(conditionType) {
                 case BEGIN: {
-                    String conditionValue = getConditionValue(filter.getConditions());
+                    String conditionValue = getConditionValue(filter.getCondition());
                     condition = new BeginDescItemCondition<String>(conditionValue, DescItemCondition.FULLTEXT_ATT);
                     break;
                 }
                 case CONTAIN: {
-                    String conditionValue = getConditionValue(filter.getConditions());
+                    String conditionValue = getConditionValue(filter.getCondition());
                     condition = new ContainDescItemCondition<String>(conditionValue, DescItemCondition.FULLTEXT_ATT);
                     break;
                 }
@@ -453,22 +447,22 @@ public class ClientFactoryDO {
                     break;
                 }
                 case END: {
-                    String conditionValue = getConditionValue(filter.getConditions());
+                    String conditionValue = getConditionValue(filter.getCondition());
                     condition = new EndDescItemCondition<String>(conditionValue, DescItemCondition.FULLTEXT_ATT);
                     break;
                 }
                 case EQ: {
-                    String conditionValue = getConditionValue(filter.getConditions());
+                    String conditionValue = getConditionValue(filter.getCondition());
                     condition = new EqDescItemCondition<String>(conditionValue, DescItemCondition.FULLTEXT_ATT);
                     break;
                 }
                 case GE: {
-                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getConditions());
+                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getCondition());
                     condition = new GeDescItemCondition<BigDecimal>(conditionValue, DescItemCondition.NUMERIC_ATT);
                     break;
                 }
                 case GT: {
-                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getConditions());
+                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getCondition());
                     String attributeName;
                     if (descItemType.getCode().equals("UNIDATE")) {
                         attributeName = DescItemCondition.NORMALIZED_TO_ATT;
@@ -479,25 +473,25 @@ public class ClientFactoryDO {
                     break;
                 }
                 case INTERSECT: {
-                    Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getConditions());
+                    Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                     condition = new IntersectDescItemCondition<Interval<Long>, Long>(conditionValue,
                             DescItemCondition.NORMALIZED_FROM_ATT,
                             DescItemCondition.NORMALIZED_TO_ATT);
                     break;
                 }
                 case INTERVAL: {
-                    Interval<BigDecimal> conditionValue = getConditionValueIntervalBigDecimal(filter.getConditions());
+                    Interval<BigDecimal> conditionValue = getConditionValueIntervalBigDecimal(filter.getCondition());
                     condition = new IntervalDescItemCondition<Interval<BigDecimal>, BigDecimal>(conditionValue,
                             DescItemCondition.NUMERIC_ATT);
                     break;
                 }
                 case LE: {
-                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getConditions());
+                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getCondition());
                     condition = new LeDescItemCondition<BigDecimal>(conditionValue, DescItemCondition.NUMERIC_ATT);
                     break;
                 }
                 case LT: {
-                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getConditions());
+                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getCondition());
                     String attributeName;
                     if (descItemType.getCode().equals("UNIDATE")) {
                         attributeName = DescItemCondition.NORMALIZED_FROM_ATT;
@@ -508,12 +502,12 @@ public class ClientFactoryDO {
                     break;
                 }
                 case NE: {
-                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getConditions());
+                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getCondition());
                     condition = new NeDescItemCondition<BigDecimal>(conditionValue, DescItemCondition.FULLTEXT_ATT);
                     break;
                 }
                 case NOT_CONTAIN: {
-                    String conditionValue = getConditionValue(filter.getConditions());
+                    String conditionValue = getConditionValue(filter.getCondition());
                     condition = new NotContainDescItemCondition<String>(conditionValue, DescItemCondition.FULLTEXT_ATT);
                     break;
                 }
@@ -521,13 +515,13 @@ public class ClientFactoryDO {
                     condition = new NotEmptyDescItemCondition(); // fulltextValue
                     break;
                 case NOT_INTERVAL: {
-                    Interval<BigDecimal> conditionValue = getConditionValueIntervalBigDecimal(filter.getConditions());
+                    Interval<BigDecimal> conditionValue = getConditionValueIntervalBigDecimal(filter.getCondition());
                     condition = new NotIntervalDescItemCondition<Interval<BigDecimal>, BigDecimal>(conditionValue,
                             DescItemCondition.NUMERIC_ATT);
                     break;
                 }
                 case SUBSET: {
-                    Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getConditions());
+                    Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                     condition = new SubsetDescItemCondition<Interval<Long>, Long>(conditionValue,
                             DescItemCondition.NORMALIZED_FROM_ATT,
                             DescItemCondition.NORMALIZED_TO_ATT);
