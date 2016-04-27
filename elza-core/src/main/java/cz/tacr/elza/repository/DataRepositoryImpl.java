@@ -458,7 +458,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 }
             };
         } else {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Data class: " + dataClassType);
         }
     }
 

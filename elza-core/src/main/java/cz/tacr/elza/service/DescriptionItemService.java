@@ -1104,7 +1104,7 @@ public class DescriptionItemService {
             case "UNITDATE":
                 return ArrDataUnitdate.class;
             case "UNITID":
-                return ArrDataUnitdate.class;
+                return ArrDataUnitid.class;
             case "COORDINATES":
                 return ArrDataCoordinates.class;
             case "PARTY_REF":

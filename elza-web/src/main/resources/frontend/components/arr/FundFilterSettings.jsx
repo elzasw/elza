@@ -76,16 +76,18 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 this.setState({
                     valueItems: [],
                 })
-                return 
+                return
             }
         }
 
-        WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, specIds, 200)
-            .then(json => {
-                this.setState({
-                    valueItems: json.map(i => ({id: i, name: i})),
+        if (dataType.code !== 'UNITDATE' && dataType.code !== 'TEXT' && dataType.code !== 'COORDINATES') {
+            WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, specIds, 200)
+                .then(json => {
+                    this.setState({
+                        valueItems: json.map(i => ({id: i, name: i})),
+                    })
                 })
-            })
+        }
     }
 
     handleSpecItemsChange(data) {
