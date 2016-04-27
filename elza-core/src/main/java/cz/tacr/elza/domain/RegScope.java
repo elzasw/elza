@@ -101,4 +101,9 @@ public class RegScope implements cz.tacr.elza.api.RegScope {
                 ", name='" + name + '\'' +
                 '}';
     }
+
+    @Override
+    public RegScope getScope() {
+        return this;
+    }
 }

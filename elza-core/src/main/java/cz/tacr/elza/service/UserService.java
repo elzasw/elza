@@ -40,10 +40,24 @@ public class UserService {
 
     private ShaPasswordEncoder encoder = new ShaPasswordEncoder(256);
 
+    /**
+     * Vyhledání uživatele podle username.
+     *
+     * @param username  uživatelské jméno
+     * @return  uživatel
+     * @throws UsernameNotFoundException
+     */
     public UsrUser findByUsername(final String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username);
     }
 
+    /**
+     * Zahashování hesla.
+     *
+     * @param username  uživatelské jméno
+     * @param password  uživatelské heslo v plaintextu
+     * @return zahashované heslo
+     */
     public String encodePassword(final String username, final String password) {
         return encoder.encodePassword(password, username + SALT);
     }
@@ -116,5 +130,54 @@ public class UserService {
             return new ArrayList<>();
         }
         return userDetail.getUserPermission();
+    }
+
+
+    /**
+     * Kontroluje oprávnění přihlášeného uživatele.
+     *
+     * @param permission    typ oprávnění
+     * @param entityId      identifikátor entity, ke které se ověřuje oprávnění
+     * @return má oprávnění?
+     */
+    public boolean hasPermission(final UsrPermission.Permission permission,
+                                 final Integer entityId) {
+        for (UserPermission userPermission : getUserPermission()) {
+            if (userPermission.getPermission().equals(permission)) {
+                switch (permission.getType()) {
+                    case FUND:
+                        if (userPermission.getFundIds().contains(entityId)) {
+                            return true;
+                        }
+                        break;
+
+                    case SCOPE:
+                        if (userPermission.getScopeIds().contains(entityId)) {
+                            return true;
+                        }
+                        break;
+
+                    default:
+                        throw new IllegalStateException(permission.getType().toString());
+                }
+                break;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Kontroluje oprávnění přihlášeného uživatele.
+     *
+     * @param permission typ oprávnění
+     * @return má oprávnění?
+     */
+    public boolean hasPermission(UsrPermission.Permission permission) {
+        for (UserPermission userPermission : getUserPermission()) {
+            if (userPermission.getPermission().equals(permission)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

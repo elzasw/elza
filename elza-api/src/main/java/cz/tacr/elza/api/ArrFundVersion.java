@@ -1,5 +1,7 @@
 package cz.tacr.elza.api;
 
+import cz.tacr.elza.api.interfaces.IArrFund;
+
 import java.io.Serializable;
 
 /**
@@ -18,7 +20,8 @@ import java.io.Serializable;
 public interface ArrFundVersion<FA extends ArrFund, FC extends ArrChange, FN extends ArrNode, RS extends RulRuleSet>
         extends
             Versionable,
-            Serializable {
+            Serializable,
+            IArrFund {
 
     Integer getFundVersionId();
 

@@ -1,12 +1,14 @@
 package cz.tacr.elza.api;
 
+import cz.tacr.elza.api.interfaces.IRegScope;
+
 /**
  * Třída rejstříku.
  *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 27.01.2016
  */
-public interface RegScope {
+public interface RegScope extends IRegScope {
 
     Integer getScopeId();
 

@@ -1,5 +1,7 @@
 package cz.tacr.elza.api;
 
+import cz.tacr.elza.api.interfaces.IArrFund;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -9,7 +11,7 @@ import java.time.LocalDateTime;
  * @author vavrejn
  *
  */
-public interface ArrFund<I extends ParInstitution> extends Versionable, Serializable {
+public interface ArrFund<I extends ParInstitution> extends Versionable, Serializable, IArrFund {
 
     Integer getFundId();
 

@@ -46,7 +46,7 @@ public class UserDetail {
         this.username = systemUser;
         this.active = true;
         this.userPermission = new HashSet<>();
-        this.userPermission.add(new UserPermission(UsrPermission.Permission.ADMINISTRATOR));
+        this.userPermission.add(new UserPermission(UsrPermission.Permission.ADMIN));
     }
 
     public String getUsername() {

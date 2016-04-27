@@ -19,6 +19,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.UsrPermission;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -203,6 +206,7 @@ public class ArrangementService {
      * @param dateRange     časový rozsah
      * @return vytvořený arch. soubor
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
     public ArrFund createFund(final String name,
                               final RulRuleSet ruleSet,
                               final ArrChange change,
@@ -235,7 +239,10 @@ public class ArrangementService {
      *@param scopes  @return Upravená archivní pomůcka
      */
     @Transactional
-    public ArrFund updateFund(final ArrFund fund, final RulRuleSet ruleSet, final List<RegScope> scopes) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WRITE_ONE})
+    public ArrFund updateFund(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                              final RulRuleSet ruleSet,
+                              final List<RegScope> scopes) {
         Assert.notNull(fund);
         Assert.notNull(ruleSet);
 
@@ -311,6 +318,7 @@ public class ArrangementService {
      * @param internalCode    interní označení
      * @return nová archivní pomůcka
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
     public ArrFund createFundWithScenario(final String name,
                                           final RulRuleSet ruleSet,
                                           final String internalCode,
@@ -354,7 +362,7 @@ public class ArrangementService {
     }
 
 
-    public ArrFundVersion createVersion(final ArrChange createChange,
+    private ArrFundVersion createVersion(final ArrChange createChange,
                                         final ArrFund fund,
                                         final RulRuleSet ruleSet,
                                         final ArrNode rootNode,
@@ -368,7 +376,7 @@ public class ArrangementService {
         return fundVersionRepository.save(version);
     }
 
-    public ArrLevel createLevel(final ArrChange createChange,
+    private ArrLevel createLevel(final ArrChange createChange,
                                 final ArrNode parentNode,
                                 final String uuid,
                                 final ArrFund fund) {
@@ -444,6 +452,7 @@ public class ArrangementService {
      *
      * @param fundId id archivní pomůcky
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
     public void deleteFund(final Integer fundId) {
         Assert.notNull(fundId);
 
@@ -498,7 +507,8 @@ public class ArrangementService {
      * @return nová verze archivní pomůcky
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
      */
-    public ArrFundVersion approveVersion(final ArrFundVersion version,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WRITE_ONE})
+    public ArrFundVersion approveVersion(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                          final String dateRange) {
         Assert.notNull(version);
 
@@ -697,7 +707,9 @@ public class ArrangementService {
      * @param node    uzel
      * @return seznam hodnot atributů
      */
-    public List<ArrDescItem> getDescItems(final ArrFundVersion version, final ArrNode node) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_READ_ALL, UsrPermission.Permission.FUND_READ_ONE})
+    public List<ArrDescItem> getDescItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
+                                          final ArrNode node) {
 
         List<ArrDescItem> itemList;
 
@@ -1013,7 +1025,9 @@ public class ArrangementService {
         return versionValidationItems;
     }
 
-    public ArrFundRegisterScope addScopeToFund(ArrFund fund, RegScope scope) {
+    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WRITE_ALL, UsrPermission.Permission.REG_SCOPE_WRITE_ONE})
+    public ArrFundRegisterScope addScopeToFund(final ArrFund fund,
+                                               @AuthParam(type = AuthParam.Type.SCOPE) final RegScope scope) {
         Assert.notNull(fund);
         Assert.notNull(scope);
 

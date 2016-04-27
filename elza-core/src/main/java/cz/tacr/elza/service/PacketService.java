@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.repository.DataPacketRefRepository;
 import cz.tacr.elza.utils.ObjectListIterator;
@@ -14,7 +17,6 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -36,9 +38,6 @@ public class PacketService {
 
     @Autowired
     private PacketRepository packetRepository;
-
-    @Autowired
-    private FundRepository fundRepository;
 
     @Autowired
     private PacketTypeRepository packetTypeRepository;
@@ -64,7 +63,8 @@ public class PacketService {
      * @param packet obal
      * @return nový obal
      */
-    public ArrPacket insertPacket(final ArrPacket packet) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR_ONE})
+    public ArrPacket insertPacket(@AuthParam(type = AuthParam.Type.FUND) final ArrPacket packet) {
         Assert.notNull(packet);
         Assert.isNull(packet.getPacketId());
         Assert.notNull(packet.getStorageNumber());
@@ -95,22 +95,6 @@ public class PacketService {
     }
 
     /**
-     * Vrací obal podle identifikátoru archivní pomůcky a identifikátoru obalu.
-     *
-     * @param fundId identifikátor archivní pomůcky
-     * @param packetId     identifikátor obalu
-     * @return obal
-     */
-    public ArrPacket getPacket(final Integer fundId, final Integer packetId) {
-        ArrPacket packet = packetRepository.findOne(packetId);
-        Assert.notNull(packet, "Obal neexistuje (ID=" + packetId + ")");
-        if (!packet.getFund().getFundId().equals(fundId)) {
-            throw new IllegalStateException("Obal nepatří pod archivní pomůcku");
-        }
-        return packet;
-    }
-
-    /**
      * Vygenerování / přegenerování obalů.
      *
      * @param fund          archivní fond
@@ -122,7 +106,8 @@ public class PacketService {
      * @param packetIds     přegenerovaný id obalů
      * @return  seznam obalů
      */
-    public List<ArrPacket> generatePackets(final ArrFund fund,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR_ONE})
+    public List<ArrPacket> generatePackets(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                            final RulPacketType packetType,
                                            final String prefix,
                                            final Integer fromNumber,
@@ -216,7 +201,10 @@ public class PacketService {
      * @param state     stav
      * @return  seznam nalezených obalů
      */
-    public List<ArrPacket> findPackets(final ArrFund fund, @Nullable final String prefix, final ArrPacket.State state) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR_ONE})
+    public List<ArrPacket> findPackets(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                                       @Nullable final String prefix,
+                                       final ArrPacket.State state) {
         Assert.notNull(fund);
         Assert.notNull(state);
         return packetRepository.findPackets(fund, prefix, state);
@@ -230,7 +218,9 @@ public class PacketService {
      * @param text  fulltext pro vyhledávání
      * @return  seznam nalezených obalů
      */
-    public List<ArrPacket> findPackets(final ArrFund fund, final Integer limit, @Nullable final String text) {
+    public List<ArrPacket> findPackets(final ArrFund fund,
+                                       final Integer limit,
+                                       @Nullable final String text) {
         Assert.notNull(fund);
         Assert.notNull(limit);
         Assert.isTrue(limit > 0, "Limit musí být alespoň 1");
@@ -243,7 +233,9 @@ public class PacketService {
      * @param fund  archivní fond
      * @param packetIds seznam identifikátorů ke smazání
      */
-    public void deletePackets(final ArrFund fund, final Integer[] packetIds) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR_ONE})
+    public void deletePackets(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                              final Integer[] packetIds) {
         Assert.notNull(fund);
         Assert.notNull(packetIds);
         Assert.isTrue(packetIds.length > 0, "Musí být alespoň jeden ke smazání");
@@ -265,7 +257,10 @@ public class PacketService {
      * @param packetIds seznam identifikátorů ke změně stavu
      * @param state stav
      */
-    public void setStatePackets(final ArrFund fund, final Integer[] packetIds, final ArrPacket.State state) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR_ONE})
+    public void setStatePackets(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                                final Integer[] packetIds,
+                                final ArrPacket.State state) {
         Assert.notNull(fund);
         Assert.notNull(packetIds);
         Assert.notNull(state);

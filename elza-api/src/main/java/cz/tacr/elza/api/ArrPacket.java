@@ -1,8 +1,10 @@
 package cz.tacr.elza.api;
 
+import cz.tacr.elza.api.interfaces.IArrFund;
+
 import java.io.Serializable;
 
-public interface ArrPacket <PT extends RulPacketType, FA extends ArrFund> extends Serializable {
+public interface ArrPacket <PT extends RulPacketType, FA extends ArrFund> extends Serializable, IArrFund {
 
     /**
      * Stav obalu.

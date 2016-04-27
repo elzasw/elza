@@ -103,4 +103,9 @@ public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.a
     public String toString() {
         return "ArrFund pk=" + fundId;
     }
+
+    @Override
+    public ArrFund getFund() {
+        return this;
+    }
 }

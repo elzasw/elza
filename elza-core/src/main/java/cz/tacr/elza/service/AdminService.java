@@ -5,6 +5,8 @@ import java.util.concurrent.Future;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.api.UsrPermission;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
@@ -32,6 +34,7 @@ public class AdminService {
     private Future<?> indexerStatus;
 
     /** Přeindexuje všechna data. */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public void reindex() {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
 
@@ -50,6 +53,7 @@ public class AdminService {
      * @return true pokud běží indexování, jinak false
      */
     @ResponseBody
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public boolean isIndexingRunning() {
         if (indexerStatus != null) {
             return !indexerStatus.isDone();

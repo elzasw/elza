@@ -71,7 +71,27 @@ public interface UsrPermission<U extends UsrUser, G extends UsrGroup, F extends 
     void setScope(S scope);
 
     /**
-     * Typy možných oprávnění.
+     * Typ oprávnění. Řeší, zda-li oprávnění má ještě nějaké návaznosti.
+     */
+    enum PermissionType {
+        /**
+         * Oprávnění se nevztahuje na konkrétní entitu.
+         */
+        ALL,
+
+        /**
+         * Oprávnění se vztahuje na konkrétní fund
+         */
+        FUND,
+
+        /**
+         * Oprávnění se vztahuje na konkrétní scope
+         */
+        SCOPE
+    }
+
+    /**
+     * Oprávnění.
      */
     enum Permission {
 
@@ -79,19 +99,19 @@ public interface UsrPermission<U extends UsrUser, G extends UsrGroup, F extends 
          * administrátor - všechna oprávnění
          * - má uživatel system
          */
-        ADMINISTRATOR,
+        ADMIN,
 
         /**
          * čtení vybraného AS
          * - má náhled jen na konrétní přiřazený AS ve všech verzích včeně OUPUT bez aktivních operací
          */
-        AS_READ_ONE,
+        FUND_READ_ONE(PermissionType.FUND),
 
         /**
          * čtení všech AS
          * - má náhled na všechny AS ve všech verzích včeně OUPUT bez aktivních operací
          */
-        AS_READ_ALL,
+        FUND_READ_ALL,
 
         /**
          * pořádání vybrané AS (pořádání je myšleno pořádání již vytvořeného AS, tvorba/úprava JP, tvorba úvodu, práce
@@ -104,20 +124,20 @@ public interface UsrPermission<U extends UsrUser, G extends UsrGroup, F extends 
          * - může přiřazovat rejstřík, ale jen v rozsahu práv na rejstříky (scope rejstříků), když nebude mít ani čtení
          *   rejstříků, tak nemůže nic přiřadit, opačně buď může přiřadit, nebo i zakládat nový ....
          */
-        AS_ARRANGEMENT_ONE,
+        FUND_ARR_ONE(PermissionType.FUND),
 
         /**
          * pořádání všech AS
          * - obdobně jako výše, ale pro všechny AS
          */
-        AS_ARRANGEMENT_ALL,
+        FUND_ARR_ALL,
 
         /**
          * čtení vybraného scope rejstříku (Pro přístup k rejstříkům a k osobám je řešen společným oprávněním.)
          * - přístup do části rejstříků včetně osob
          * - může jen pasivně číst rejstříková hesla z vybraného scope
          */
-        REG_SCOPE_READ_ONE,
+        REG_SCOPE_READ_ONE(PermissionType.SCOPE),
 
         /**
          * čtení všech scope rejstříků
@@ -129,7 +149,7 @@ public interface UsrPermission<U extends UsrUser, G extends UsrGroup, F extends 
          * zápis/úprava vybraného scope rejstříku
          * - obdobně jako výše, ale může hesla upravovat, přidávat, rušit, ale jen pro přiřazený scope
          */
-        REG_SCOPE_WRITE_ONE,
+        REG_SCOPE_WRITE_ONE(PermissionType.SCOPE),
 
         /**
          * zápis/úprava všech scope rejstříků
@@ -143,69 +163,85 @@ public interface UsrPermission<U extends UsrUser, G extends UsrGroup, F extends 
          * - může i verzovat OUTPUT což vyvolá verzi AS, ale beze změny pravidel
          * - nemůže exportovat, jen vytvářet
          */
-        AS_OUTPUT_WRITE_ONE,
+        FUND_NO_WRITE_ONE(PermissionType.FUND),
 
         /**
          * tvorba výstupů všech AS
          * - obdobně jako výše ale pro všechny AS
          */
-        AS_OUTPUT_WRITE_ALL,
+        FUND_NO_WRITE_ALL,
 
         /**
          * verzování a editace vybrané AS
          * - verzování a změna pravidel vpřiřazeného AS + přiřazení scope rejstříku + změna pravidel
          * - nemůže mazat AS
          */
-        AS_VERSION_WRITE_ONE,
+        FUND_VER_WRITE_ONE(PermissionType.FUND),
 
         /**
          * administrace všech AS (verzování, zakládání AS, zrušení AS, import)
          * - všechna práva na všechny AS včetně rejstříků, OUTPUT apodobně (vyjma uživatelů a případného dalšího systémového
          *   nastavení)
          */
-        AS_ADMINISTRATOR,
+        FUND_ADMIN,
 
         /**
          * export vybrané AS
          * - možnost exportu AS či OUTPUT přiřazeného AS
          */
-        AS_EXPORT_ONE,
+        FUND_EXPORT_ONE(PermissionType.FUND),
 
         /**
          * export všech AS
          * - obdobně jako výše ale pro všechny AS
          */
-        AS_EXPORT_ALL,
+        FUND_EXPORT_ALL,
 
         /**
          * správa oprávnění a uživatelů
          * - zatím neřešíme
          */
-        USR_PERMISSION,
+        USR_PERM,
 
         /**
          * spouštění hromadných akcí vybrané AS
          * - možnost spuštění hromadných akcí přiřazeného AS
          */
-        AS_BULK_ACTION_ONE,
+        FUND_BULK_ACTION_ONE(PermissionType.FUND),
 
         /**
          * spouštění hromadných akcí všech AS
          * - obdobně jako výše ale pro všechny AS
          */
-        AS_BULK_ACTION_ALL,
+        FUND_BULK_ACTION_ALL,
 
         /**
          * drobné úpravy uzavřených vybraných AS
          * - zatím neřešíme
          */
-        AS_CLOSE_VERSION_WRITE_ONE,
+        FUND_CL_VER_WRITE_ONE(PermissionType.FUND),
 
         /**
          * drobné úpravy uzavřených všech AS
          * - zatím neřešíme
          */
-        AS_CLOSE_VERSION_WRITE_ALL,
+        FUND_CL_VER_WRITE_ALL;
 
+        /**
+         * Typ oprávnění
+         */
+        private PermissionType type;
+
+        Permission() {
+            type = PermissionType.ALL;
+        }
+
+        Permission(final PermissionType type) {
+            this.type = type;
+        }
+
+        public PermissionType getType() {
+            return type;
+        }
     }
 }
