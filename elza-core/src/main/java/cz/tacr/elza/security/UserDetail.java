@@ -1,7 +1,6 @@
 package cz.tacr.elza.security;
 
 import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.controller.vo.UserPermission;
 import cz.tacr.elza.domain.UsrUser;
 
 import java.util.Collection;

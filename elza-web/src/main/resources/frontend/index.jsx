@@ -9,12 +9,12 @@ require ('./elza-styles.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-
 import { createHistory, useBasename } from 'history'
 import { Route, Link, History, Lifecycle } from 'react-router'
 import { Utils } from 'components'
 import {WebApi, WebApiCls} from 'actions'
 import {loginFail} from 'actions/global/login';
+import {userDetailChange} from 'actions/user/userDetail'
 
 // Globální init
 Utils.init();
@@ -114,6 +114,12 @@ for(var i in  methods) {
 
     }.bind(this, method);
 }
+
+// Načtení oprávnění a jeho uložení do store po přihlášení
+WebApi.getUserDetail()
+    .then(userDetail => {
+        AppStore.store.dispatch(userDetailChange(userDetail))
+    })
 
 // Aplikace
 var Router = require('./router');

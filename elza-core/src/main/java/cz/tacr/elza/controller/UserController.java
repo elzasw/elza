@@ -1,6 +1,9 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.vo.UserPermission;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.UserDetailVO;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,14 +25,17 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ClientFactoryVO factoryVO;
+
     /**
      * Získání oprávnění uživatele.
      *
      * @return výčet oprávnění uživatele.
      */
-    @RequestMapping(value = "/permission", method = RequestMethod.GET)
-    public Collection<UserPermission> getPermissions() {
-        return userService.getUserPermission();
+    @RequestMapping(value = "/detail", method = RequestMethod.GET)
+    public UserDetailVO getPermissions() {
+        final UserDetail userDetail = userService.getLoggedUserDetail();
+        return factoryVO.createUserDetail(userDetail);
     }
-
 }

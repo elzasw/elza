@@ -45,6 +45,7 @@ import adminRegion from './admin/adminRegion';
 import fundForm from './arr/form/fundForm';
 import addPacketForm from './arr/form/addPacketForm';
 import stateRegion from './state/stateRegion';
+import userDetail from './user/userDetail';
 import router from './router';
 
 import addPartyForm from './party/form/addPartyForm';
@@ -75,6 +76,7 @@ let reducer = combineReducers({
     adminRegion,
     stateRegion,
     router,
+    userDetail,
     form: formReducer.plugin({
         fundForm: fundForm,
         addPacketForm: addPacketForm,

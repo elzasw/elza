@@ -117,6 +117,12 @@ export const NODE_DESC_ITEM_TYPE_NOCOPY = 'NODE_DESC_ITEM_TYPE_NOCOPY'
 export const SHOW_REGISTER_JP = 'SHOW_REGISTER_JP'
 
 /**
+ * Přihlášený uživatel a jeho informace.
+ */
+export const USER_DETAIL_CHANGE = 'USER_DETAIL_CHANGE'
+export const USER_DETAIL_CLEAR = 'USER_DETAIL_CLEAR'
+
+/**
  * JP akce
  */
 export const FUND_NODE_CHANGE = 'FUND_NODE_CHANGE'

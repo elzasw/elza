@@ -1,4 +1,4 @@
-package cz.tacr.elza.controller.vo;
+package cz.tacr.elza.security;
 
 import cz.tacr.elza.api.UsrPermission;
 

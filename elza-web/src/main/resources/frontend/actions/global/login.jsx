@@ -1,5 +1,6 @@
 import * as types from 'actions/constants/ActionTypes';
 import {WebApi} from 'actions'
+import {userDetailChange, userDetailClear} from 'actions/user/userDetail'
 
 export function loginFail(callback) {
     return {
@@ -9,8 +10,14 @@ export function loginFail(callback) {
 }
 
 export function loginSuccess() {
-    return {
-        type: types.LOGIN_SUCCESS
+    return dispatch => {
+        dispatch({
+            type: types.LOGIN_SUCCESS
+        })
+        WebApi.getUserDetail()
+            .then(userDetail => {
+                dispatch(userDetailChange(userDetail))
+            })
     }
 }
 
@@ -21,10 +28,12 @@ export function logout() {
                 dispatch({
                     type: types.LOGOUT
                 });
+                dispatch(userDetailClear())
             }).catch(() => {
                 dispatch({
                     type: types.LOGOUT
                 });
+                dispatch(userDetailClear())
             });
     }
 }

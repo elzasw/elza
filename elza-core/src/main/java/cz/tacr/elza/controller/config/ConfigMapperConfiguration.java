@@ -15,6 +15,8 @@ import com.vividsolutions.jts.io.WKTWriter;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.security.UserPermission;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -676,6 +678,13 @@ public class ConfigMapperConfiguration {
                 }).exclude("value").byDefault().register();
 
         mapperFactory.classMap(XmlImportConfig.class, XmlImportConfigVO.class).byDefault().register();
+
+        mapperFactory.classMap(UserDetail.class, UserDetailVO.class)
+                .byDefault()
+                .field("userPermission", "userPermissions")
+                .register();
+
+        mapperFactory.classMap(UserPermission.class, UserPermissionVO.class).byDefault().register();
     }
 
     /**

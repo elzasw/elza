@@ -254,13 +254,14 @@ centerPanel =
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, stateRegion, focus} = state
+    const {splitter, arrRegion, refTables, stateRegion, focus, userDetail} = state
     return {
         splitter,
         arrRegion,
         refTables,
         stateRegion,
-        focus
+        focus,
+        userDetail,
     }
 }
 

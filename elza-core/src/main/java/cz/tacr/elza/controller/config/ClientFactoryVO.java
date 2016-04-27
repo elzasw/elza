@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.security.UserDetail;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
@@ -100,6 +101,17 @@ public class ClientFactoryVO {
 
     @Autowired
     private NamedOutputRepository namedOutputRepository;
+
+    /**
+     * Vytvoří objekt informací o přihlášeném uživateli.
+     * @param userDetail detail objekt
+     * @return detail VO objekt
+     */
+    public UserDetailVO createUserDetail(final UserDetail userDetail) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        UserDetailVO result = mapper.map(userDetail, UserDetailVO.class);
+        return result;
+    }
 
     /**
      * Vytvoří detailní objekt osoby. Načte všechna navázaná data.

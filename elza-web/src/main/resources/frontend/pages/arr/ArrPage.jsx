@@ -673,12 +673,13 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, form, focus, developer} = state
+    const {splitter, arrRegion, refTables, form, focus, developer, userDetail} = state
     return {
         splitter,
         arrRegion,
         focus,
         developer,
+        userDetail,
         rulDataTypes: refTables.rulDataTypes,
         calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,

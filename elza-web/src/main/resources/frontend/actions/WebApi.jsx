@@ -717,8 +717,8 @@ class WebApi{
         return AjaxUtils.ajaxPut('/api/ruleSetManagerV2/policy/' + nodeId + '/' + fundVersionId, null, data);
     }
 
-    getUserPermissions() {
-        return AjaxUtils.ajaxGet('/api/user/permission');
+    getUserDetail() {
+        return AjaxUtils.ajaxGet('/api/user/detail');
     }
 
     login(username, password) {

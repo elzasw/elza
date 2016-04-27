@@ -1,6 +1,6 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.controller.vo.UserPermission;
+import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.PermissionRepository;

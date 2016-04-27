@@ -47,6 +47,8 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
     }
 
     render() {
+        const {userDetail} = this.props
+
         var section = null;
 
         // Aktomatické sekce podle vybrané oblasti
@@ -78,6 +80,7 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
                 {this.props.itemSection}
 
                 <RibbonGroup className="large right">
+                    {userDetail.username}
                     <Button onClick={this.handleLogout} ref='ribbonDefaultFocus'><Icon glyph="fa-sign-out" /><div><span className="btnText">{i18n('ribbon.action.logout')}</span></div></Button>
                 </RibbonGroup>
             </RibbonMenu>
@@ -90,10 +93,11 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {focus, login} = state
+    const {focus, login, userDetail} = state
     return {
         focus,
-        login
+        login,
+        userDetail,
     }
 }
 
