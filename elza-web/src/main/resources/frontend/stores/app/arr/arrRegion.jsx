@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 
-import nodes from './nodes'
+import nodes from './nodes.jsx'
 import {fund, fundInitState} from './fund.jsx'
 import fundTree from './fundTree.jsx'
 import nodeSetting from './nodeSetting.jsx'

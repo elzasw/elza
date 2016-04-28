@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom';
 import {AbstractReactComponent} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {normalizeInt} from 'components/validate.jsx'
-import {decorateValue} from './DescItemUtils'
+import {decorateValue} from './DescItemUtils.jsx'
 
 var DescItemInt = class DescItemInt extends AbstractReactComponent {
     constructor(props) {

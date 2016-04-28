@@ -8,7 +8,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent} from 'components/index.jsx';
 import {connect} from 'react-redux'
-import {decorateValue} from './DescItemUtils'
+import {decorateValue} from './DescItemUtils.jsx'
 
 var DescItemText = class DescItemText extends AbstractReactComponent {
     constructor(props) {

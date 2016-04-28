@@ -1,18 +1,18 @@
 import * as types from 'actions/constants/ActionTypes.js';
 
 import ruleSet from './ruleSet.jsx'
-import institutions from './institutions'
-import partyNameFormTypes from './partyNameFormTypes'
-import partyTypes from './partyTypes'
-import recordTypes from './recordTypes'
-import rulDataTypes from './rulDataTypes';
-import calendarTypes from './calendarTypes';
-import packetTypes from './packetTypes';
+import institutions from './institutions.jsx'
+import partyNameFormTypes from './partyNameFormTypes.jsx'
+import partyTypes from './partyTypes.jsx'
+import recordTypes from './recordTypes.jsx'
+import rulDataTypes from './rulDataTypes.jsx';
+import calendarTypes from './calendarTypes.jsx';
+import packetTypes from './packetTypes.jsx';
 import registryRegionList from './registryRegionList.jsx';
 import partyList from './partyList.jsx';
 import scopesData from './scopesData.jsx';
-import descItemTypes from './descItemTypes';
-import visiblePolicyTypes from './visiblePolicyTypes';
+import descItemTypes from './descItemTypes.jsx';
+import visiblePolicyTypes from './visiblePolicyTypes.jsx';
 
 const initialState = {
     ruleSet: ruleSet(undefined, {type:''}),

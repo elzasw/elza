@@ -5,7 +5,7 @@
  * @since 22.12.2015
  */
 import * as types from 'actions/constants/ActionTypes.js';
-import packages from './packages'
+import packages from './packages.jsx'
 import fulltext from './fulltext.jsx'
 
 /**

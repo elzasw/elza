@@ -12,7 +12,7 @@ import {Button} from 'react-bootstrap';
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes.jsx'
 import {fundExtendedView} from 'actions/arr/fund.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {getNodeParents, getNodeParent} from './ArrUtils'
+import {getNodeParents, getNodeParent} from './ArrUtils.jsx'
 import {fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
 
 var FundExtendedView = class FundExtendedView extends AbstractReactComponent {

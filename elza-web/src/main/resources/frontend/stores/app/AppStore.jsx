@@ -27,10 +27,9 @@ const _logCollapsed = true;
  * Sestavení reducerů.
  */
 import arrRegion from './arr/arrRegion.jsx';
-import refTables from './refTables/refTables';
+import refTables from './refTables/refTables.jsx';
 import registryRegion from './registry/registryRegion.jsx';
-import registryRegionData from './registry/registryRegionData.jsx';
-import registryRegionRecordTypes from './registry/registryRegionRecordTypes';
+import registryRegionRecordTypes from './registry/registryRegionRecordTypes.jsx';
 import toastr from '../../components/shared/toastr/ToastrStore.jsx';
 import partyRegion from './party/partyRegion.jsx';
 import fundRegion from './fund/fundRegion.jsx';
@@ -40,7 +39,7 @@ import webSocket from './global/webSocket.jsx';
 import login from './global/login.jsx';
 import splitter from './global/splitter.jsx';
 import developer from './global/developer.jsx';
-import focus from './global/focus';
+import focus from './global/focus.jsx';
 import adminRegion from './admin/adminRegion.jsx';
 import fundForm from './arr/form/fundForm.jsx';
 import addPacketForm from './arr/form/addPacketForm.jsx';

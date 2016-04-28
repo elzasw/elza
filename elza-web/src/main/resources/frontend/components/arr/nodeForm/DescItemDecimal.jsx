@@ -8,7 +8,7 @@ import {AbstractReactComponent} from 'components/index.jsx';
 import {connect} from 'react-redux'
 var classNames = require('classnames');
 import {normalizeDouble} from 'components/validate.jsx'
-import {decorateValue} from './DescItemUtils'
+import {decorateValue} from './DescItemUtils.jsx'
 
 var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
     constructor(props) {

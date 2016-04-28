@@ -23,7 +23,7 @@ var React = require('react');
 import {Icon, i18n, AbstractReactComponent} from 'components/index.jsx';
 import {Alert} from 'react-bootstrap';
 import {connect} from 'react-redux'
-import {addToastr,removeToastr} from './ToastrActions'
+import {addToastr,removeToastr} from './ToastrActions.jsx'
 
 var Toastr = class Toastr extends AbstractReactComponent {
     constructor(props) {

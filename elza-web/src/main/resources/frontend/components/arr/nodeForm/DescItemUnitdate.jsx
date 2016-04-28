@@ -8,7 +8,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {connect} from 'react-redux'
-import {decorateValue} from './DescItemUtils'
+import {decorateValue} from './DescItemUtils.jsx'
 import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 
 var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
