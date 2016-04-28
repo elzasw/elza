@@ -4,6 +4,7 @@
 
 import * as types from 'actions/constants/ActionTypes';
 import {WebApi} from 'actions'
+import {indexById} from 'stores/app/utils.jsx'
 
 export function isFundOutput(action) {
     if (isFundOutputDetail(action)) {
@@ -95,7 +96,7 @@ export function fundOutputDetailFetchIfNeeded(versionId) {
 /**
  * Fetch dat pro seznam výstupů.
  */
-export function fundsFetchIfNeeded(versionId) {
+export function fundOutputFetchIfNeeded(versionId) {
     return (dispatch, getState) => {
         const fundOutput = _getFundOutput(versionId, getState)
         if (fundOutput == null) {
@@ -106,17 +107,17 @@ export function fundsFetchIfNeeded(versionId) {
 
         if (fundOutput.currentDataKey !== dataKey) {
             dispatch(fundOutputRequest(versionId, dataKey))
-            WebApi.getOutputs(versionId)
-                .then(json => {
-                    const newFundOutput = _getFundOutput(versionId, getState)
-                    if (newFundOutput == null) {
-                        return
-                    }
-                    const newDataKey = _fundOutputDataKey(newFundOutput)
-                    if (newDataKey === dataKey) {
-                        dispatch(fundOutputReceive(versionId, json))
-                    }
-                })
+            // WebApi.getOutputs(versionId)
+            //     .then(json => {
+            //         const newFundOutput = _getFundOutput(versionId, getState)
+            //         if (newFundOutput == null) {
+            //             return
+            //         }
+            //         const newDataKey = _fundOutputDataKey(newFundOutput)
+            //         if (newDataKey === dataKey) {
+            //             dispatch(fundOutputReceive(versionId, json))
+            //         }
+            //     })
         }
     }
 }

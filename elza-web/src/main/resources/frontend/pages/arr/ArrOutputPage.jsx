@@ -39,7 +39,7 @@ var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
-var _selectedTab = 0
+import {fundOutputFetchIfNeeded} from 'actions/arr/fundOutput.jsx'
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -56,15 +56,30 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        // this.bindMethods('');
+        this.bindMethods('getActiveFund');
     }
 
     componentDidMount() {
-        // this.dispatch(descItemTypesFetchIfNeeded());
+        const fund = this.getActiveFund(this.props)
+        if (fund) {
+            this.dispatch(fundOutputFetchIfNeeded(fund.versionId));
+        }
     }
 
     componentWillReceiveProps(nextProps) {
-        // this.dispatch(descItemTypesFetchIfNeeded());
+        const fund = this.getActiveFund(nextProps)
+        if (fund) {
+            this.dispatch(fundOutputFetchIfNeeded(fund.versionId));
+        }
+    }
+
+    getActiveFund(props) {
+        var arrRegion = props.arrRegion;
+        var activeFund = null;
+        if (arrRegion.activeIndex != null) {
+            activeFund = arrRegion.funds[arrRegion.activeIndex];
+        }
+        return activeFund
     }
 
     requestValidationData(isDirty, isFetching, versionId) {
