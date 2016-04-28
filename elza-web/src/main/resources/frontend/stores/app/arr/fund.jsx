@@ -158,6 +158,7 @@ export function fund(state, action) {
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
                 nodes: nodes(state.nodes, action),
+                fundOutput: fundOutput(state.fundOutput, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
                 fundPackets: fundPackets(state.fundPackets, action),
                 fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
@@ -175,6 +176,7 @@ export function fund(state, action) {
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
                 nodes: nodes(state.nodes, action),
+                fundOutput: fundOutput(state.fundOutput, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
                 fundPackets: fundPackets(state.fundPackets, action),
             }
