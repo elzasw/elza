@@ -826,6 +826,7 @@ DescItemType.propTypes = {
     conformityInfo: React.PropTypes.object.isRequired,
     versionId: React.PropTypes.number.isRequired,
     fundId: React.PropTypes.number.isRequired,
+    userDetail: React.PropTypes.object.isRequired,
 }
 
 DescItemType.childContextTypes = {

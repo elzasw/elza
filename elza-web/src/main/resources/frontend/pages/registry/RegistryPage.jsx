@@ -558,7 +558,12 @@ function mapStateToProps(state) {
 }
 
 RegistryPage.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
+    shortcuts: React.PropTypes.object.isRequired,
+    splitter: React.PropTypes.object.isRequired,
+    registryRegion: React.PropTypes.object.isRequired,
+    refTables: React.PropTypes.object.isRequired,
+    focus: React.PropTypes.object.isRequired,
+    userDetail: React.PropTypes.object.isRequired,
 };
 
 module.exports = connect(mapStateToProps)(RegistryPage);

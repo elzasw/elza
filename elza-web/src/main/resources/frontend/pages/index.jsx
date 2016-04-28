@@ -4,6 +4,7 @@ exports.AdminFulltextPage = require('./admin/AdminFulltextPage');
 
 exports.ArrPage = require('./arr/ArrPage');
 exports.FundActionsPage = require('./arr/FundActionsPage');
+exports.ArrOutputPage = require('./arr/ArrOutputPage');
 
 exports.RegistryPage = require('./registry/RegistryPage');
 exports.PartyPage = require('./party/PartyPage');

@@ -39,7 +39,6 @@ var AdminPage = class AdminPage extends AbstractReactComponent {
         var altActions = [];
 
         altActions.push(
-            <RibbonSplit />,
             <Button active={this.props.developer.enabled} key="developerMode" onClick={this.handleDeveloperMode}><Icon glyph="fa-cogs"/>
                 <div><span className="btnText">{i18n('ribbon.action.admin.developer')}</span></div>
             </Button>,
