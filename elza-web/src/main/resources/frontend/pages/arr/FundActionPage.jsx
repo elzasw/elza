@@ -2,7 +2,7 @@
  * Stránka archivních pomůcek.
  */
 
-require('./FundActionsPage.less');
+require('./FundActionPage.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -13,9 +13,10 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {WebApi} from 'actions/index.jsx';
+import {fundActionsFetchDetailIfNeeded, fundActionsFetchListIfNeeded, fundActionsActionRequest} from 'actions/arr/fundAction.jsx'
 
 
-var FundActionsPage = class FundActionsPage extends AbstractReactComponent {
+var FundActionPage = class FundActionPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -31,6 +32,7 @@ var FundActionsPage = class FundActionsPage extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        this.dispatch(fundActionsFetchDetailIfNeeded())
     }
 
     /**
@@ -43,11 +45,11 @@ var FundActionsPage = class FundActionsPage extends AbstractReactComponent {
         )
     }
 
-    renderCenter(fa) {
-        if (!fa) {
+    renderCenter(fund) {
+        if (!fund) {
             return <div className='center-container'>Není vybrán FA</div>;
         }
-        if (!fa) {}
+        if (!fund) {}
         return <div className='center-container'></div>
     }
 
@@ -71,12 +73,12 @@ var FundActionsPage = class FundActionsPage extends AbstractReactComponent {
     }
 
     handleSelectAction(item) {
-        this.dispatch(arrActionsSelectAction(item.id));
+        this.dispatch(fundActionsActionRequest(item.id));
     }
 
     render() {
         const {arrRegion, splitter} = this.props;
-        const fa = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : false;
+        const fund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : false;
 
         const leftPanel = <div className='actions-list-container'>
             <ListBox
@@ -93,7 +95,7 @@ var FundActionsPage = class FundActionsPage extends AbstractReactComponent {
                 onSelect={this.handleSelectAction}
             />
         </div>;
-        const centerPanel = this.renderCenter(fa);
+        const centerPanel = this.renderCenter(fund);
 
         return (
             <PageLayout
@@ -107,7 +109,7 @@ var FundActionsPage = class FundActionsPage extends AbstractReactComponent {
     }
 };
 
-FundActionsPage.propTypes = {
+FundActionPage.propTypes = {
 };
 
 function mapStateToProps(state) {
@@ -118,4 +120,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(FundActionsPage);
+module.exports = connect(mapStateToProps)(FundActionPage);

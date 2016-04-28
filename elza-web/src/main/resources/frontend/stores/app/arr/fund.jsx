@@ -8,6 +8,7 @@ import versionValidation from './versionValidation.jsx'
 import fundNodesPolicy from './fundNodesPolicy.jsx'
 import fundPackets from './fundPackets.jsx'
 import fundOutput from './fundOutput.jsx'
+import fundAction from './fundAction.jsx'
 import {consolidateState} from 'components/Utils.jsx'
 import {isBulkAction} from 'actions/arr/bulkActions.jsx'
 import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
@@ -22,6 +23,7 @@ import {isDeveloperScenariosAction} from 'actions/global/developer.jsx'
 import {isFundDataGridAction} from 'actions/arr/fundDataGrid.jsx'
 import {isFundChangeAction} from 'actions/global/change.jsx'
 import {isFundPacketsAction} from 'actions/arr/fundPackets.jsx'
+import {isFundActionAction} from 'actions/arr/fundAction.jsx'
 import {getNodeKeyType} from 'stores/app/utils.jsx'
 import {isFundOutput} from 'actions/arr/fundOutput.jsx'
 
@@ -34,6 +36,7 @@ export function fundInitState(fundWithVersion) {
         name: fundWithVersion.name,
         isFetching: false,
         dirty: false,
+        fundAction: fundAction(),
         fundOutput: fundOutput(),
         fundDataGrid: fundDataGrid(),
         fundPackets: fundPackets(),
@@ -73,6 +76,11 @@ export function fund(state, action) {
         return consolidateState(state, result);
     }
     
+    if (isFundActionAction(action)) {
+        var result = {...state, fundAction: fundAction(state.fundAction, action)}
+        return consolidateState(state, result);
+    }
+
     if (isFundOutput(action)) {
         var result = {...state, fundOutput: fundOutput(state.fundOutput, action)}
         return consolidateState(state, result);

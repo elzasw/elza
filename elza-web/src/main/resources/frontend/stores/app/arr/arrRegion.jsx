@@ -22,7 +22,7 @@ import {isNodeSettingsAction} from 'actions/arr/nodeSetting.jsx'
 import {isFundDataGridAction} from 'actions/arr/fundDataGrid.jsx'
 import {isFundChangeAction} from 'actions/global/change.jsx'
 import {isFundPacketsAction} from 'actions/arr/fundPackets.jsx'
-import {isFundActionsAction} from 'actions/fund/fundActions.jsx'
+import {isFundActionAction} from 'actions/arr/fundAction.jsx'
 import {isFundOutput} from 'actions/arr/fundOutput.jsx'
 
 const initialState = {
@@ -93,7 +93,7 @@ export default function arrRegion(state = initialState, action) {
         || isFundDataGridAction(action)
         || isFundChangeAction(action)
         || isFundPacketsAction(action)
-        || isFundActionsAction(action)
+        || isFundActionAction(action)
         || isFundOutput(action)
     ) {
         var index = indexById(state.funds, action.versionId, "versionId")
