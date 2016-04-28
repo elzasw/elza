@@ -341,7 +341,11 @@ function mapStateToProps(state) {
 }
 
 PartyPage.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
+    shortcuts: React.PropTypes.object.isRequired,
+    splitter: React.PropTypes.object.isRequired,
+    partyRegion: React.PropTypes.object.isRequired,
+    userDetail: React.PropTypes.object.isRequired,
+    refTables: React.PropTypes.object.isRequired,
 }
 
 

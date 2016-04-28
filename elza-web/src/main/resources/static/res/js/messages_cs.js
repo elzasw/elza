@@ -42,6 +42,7 @@ var messages = {
     "ribbon.action.home": "Domů",
     "ribbon.action.fund": "Archivní soubory",
     "ribbon.action.arr": "Pořádání",
+    "ribbon.action.arr.output": "Výstupy",
     "ribbon.action.arr.arr": "Archivní popis",
     "ribbon.action.arr.fund.add": "Nový AS",
     "ribbon.action.arr.fund.update": "Editace AS",

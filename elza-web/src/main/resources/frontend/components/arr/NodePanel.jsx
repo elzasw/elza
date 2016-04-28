@@ -950,6 +950,7 @@ NodePanel.propTypes = {
     fundId: React.PropTypes.number,
     showRegisterJp: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
+    userDetail: React.PropTypes.object.isRequired,
 }
 
 NodePanel.childContextTypes = {

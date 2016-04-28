@@ -47,7 +47,7 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
     }
 
     render() {
-        const {userDetail} = this.props
+        const {userDetail, altSection, itemSection} = this.props
 
         var section = null;
 
@@ -64,30 +64,38 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
             section = (
                 <RibbonGroup className="large">
                     <IndexLinkContainer to="/arr"><Button ref='ribbonDefaultFocus'><Icon glyph="fa-sitemap" /><div><span className="btnText">{i18n('ribbon.action.arr.arr')}</span></div></Button></IndexLinkContainer>
-                    <LinkContainer to="/arr/output"><Button><Icon glyph="fa-printer" /><div><span className="btnText">{i18n('ribbon.action.arr.output')}</span></div></Button></LinkContainer>
+                    <LinkContainer to="/arr/output"><Button><Icon glyph="fa-print" /><div><span className="btnText">{i18n('ribbon.action.arr.output')}</span></div></Button></LinkContainer>
                     <LinkContainer to="/arr/actions"><Button><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span></div></Button></LinkContainer>
                 </RibbonGroup>
             );
         }
 
+        const parts = []
+        parts.push(
+            <RibbonGroup className="large">
+                <IndexLinkContainer to="/"><Button ref='ribbonDefaultFocus'><Icon glyph="fa-home" /><div><span className="btnText">{i18n('ribbon.action.home')}</span></div></Button></IndexLinkContainer>
+                <LinkContainer to="/fund"><Button><Icon glyph="fa-paste" /><div><span className="btnText">{i18n('ribbon.action.fund')}</span></div></Button></LinkContainer>
+                <LinkContainer to="/arr"><Button><Icon glyph="fa-file-text" /><div><span className="btnText">{i18n('ribbon.action.arr')}</span></div></Button></LinkContainer>
+                <LinkContainer to="/registry"><Button><Icon glyph="fa-th-list" /><div><span className="btnText">{i18n('ribbon.action.registry')}</span></div></Button></LinkContainer>
+                <LinkContainer to="/party"><Button><Icon glyph="fa-users" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
+                <LinkContainer to="/admin"><Button><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.admin')}</span></div></Button></LinkContainer>
+            </RibbonGroup>
+        )
+        section && parts.push(section)
+        altSection && parts.push(altSection)
+        itemSection && parts.push(itemSection)
+
+        const partsWithSplit = []
+        {parts.forEach((part, index) => {
+            partsWithSplit.push(part)
+            if (index + 1 < parts.length) {
+                partsWithSplit.push(<RibbonSplit />)
+            }
+        })}
+
         return (
             <RibbonMenu opened onShowHide={this.handleRibbonShowHide}>
-                <RibbonGroup className="large">
-                    <IndexLinkContainer to="/"><Button ref='ribbonDefaultFocus'><Icon glyph="fa-home" /><div><span className="btnText">{i18n('ribbon.action.home')}</span></div></Button></IndexLinkContainer>
-                    <LinkContainer to="/fund"><Button><Icon glyph="fa-paste" /><div><span className="btnText">{i18n('ribbon.action.fund')}</span></div></Button></LinkContainer>
-                    <LinkContainer to="/arr"><Button><Icon glyph="fa-file-text" /><div><span className="btnText">{i18n('ribbon.action.arr')}</span></div></Button></LinkContainer>
-                    <LinkContainer to="/registry"><Button><Icon glyph="fa-th-list" /><div><span className="btnText">{i18n('ribbon.action.registry')}</span></div></Button></LinkContainer>
-                    <LinkContainer to="/party"><Button><Icon glyph="fa-users" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
-                    <LinkContainer to="/admin"><Button><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.admin')}</span></div></Button></LinkContainer>
-                </RibbonGroup>
-
-                <RibbonSplit />
-
-                {section}
-                {this.props.altSection}
-                {this.props.itemSection && <RibbonSplit />}
-                {this.props.itemSection}
-
+                {partsWithSplit}
                 <RibbonGroup className="large right">
                     {userDetail.username}
                     <Button onClick={this.handleLogout} ref='ribbonDefaultFocus'><Icon glyph="fa-sign-out" /><div><span className="btnText">{i18n('ribbon.action.logout')}</span></div></Button>
