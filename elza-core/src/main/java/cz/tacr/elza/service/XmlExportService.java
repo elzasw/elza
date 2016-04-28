@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -127,6 +127,9 @@ public class XmlExportService {
 
     @Autowired
     private ArrangementService arrangementService;
+
+    @Autowired
+    private LevelTreeCacheWalker levelTreeCacheWalker;
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
@@ -252,18 +255,9 @@ public class XmlExportService {
         XmlImport xmlImport = new XmlImport();
         xmlImport.setFund(createFund(arrFund, version));
 
-        boolean findParents = false;
-        Set<Integer> nodeIdsToExport = new HashSet<>();
-        if (CollectionUtils.isEmpty(nodeIds)) {
-            nodeIdsToExport.add(version.getRootNode().getNodeId());
-        } else {
-            findParents = true;
-            nodeIdsToExport.addAll(nodeIds);
-        }
-
         RelatedEntities relatedEntities = new RelatedEntities();
 
-        Level rootLevel = exportNodeTree(nodeIdsToExport, version, relatedEntities, findParents);
+        Level rootLevel = exportNodeTree(nodeIds, version, relatedEntities);
         xmlImport.getFund().setRootLevel(rootLevel);
 
         Map<Integer, Record> recordMap = exportRecords(xmlImport, relatedEntities);
@@ -950,44 +944,90 @@ public class XmlExportService {
     /**
      * Export stromu archivního popisu.
      *
-     * @param nodeIdsToExport id nodů které se mají exportovat
+     * @param nodeIds id nodů které se mají exportovat,pokud je prázdné exportuje se celý strom
      * @param version verze archivního fondu
      * @param relatedEntities vazby na entity které se budou exportova později
-     * @param findParents příznak zda se k nodům z parametru nodeIdsToExport mají dohledat rodiče
      */
-    private Level exportNodeTree(final Set<Integer> nodeIdsToExport, final ArrFundVersion version,
-            final RelatedEntities relatedEntities, final boolean findParents) {
-        Assert.notEmpty(nodeIdsToExport);
+    private Level exportNodeTree(final Set<Integer> nodeIds, final ArrFundVersion version,
+            final RelatedEntities relatedEntities) {
         Assert.notNull(version);
         Assert.notNull(relatedEntities);
 
-        // mapa pro id nodu z parametru nodeIdsToExport na jeho Level který se vytvoří při hledání parentů
-        Queue<LevelWithChildrenIds> childrenToExport = new LinkedList<>();
-        Level rootLevel;
-        if (findParents) {
-            rootLevel = exportParents(nodeIdsToExport, version, childrenToExport, relatedEntities);
+        Map<Integer, Level> nodeIdToLevel = new HashMap<>();
+        List<Integer> nodeIdsToExport = getNodeIdsToExport(nodeIds, version);
+
+        ObjectListIterator<Integer> iterator = new ObjectListIterator<>(nodeIdsToExport);
+        while (iterator.hasNext()) {
+            List<Integer> nodeIdsSubList = iterator.next();
+            List<ArrNode> nodes = getNodesByIdsOrdered(nodeIdsSubList);
+            nodes.forEach(arrNode -> {
+                Level level = exportLevel(arrNode, version, nodeIdToLevel, relatedEntities);
+                nodeIdToLevel.put(arrNode.getNodeId(), level);
+            });
+        }
+
+        return nodeIdToLevel.get(version.getRootNode().getNodeId());
+    }
+
+    /**
+     * Načte uzly podle identifikátorů a vrátí je ve stejném pořadí v jakém jsou předány identifikátory.
+     *
+     * @param nodeIds id uzlů
+     *
+     * @return uzly ve stejném pořadí jako předané identifikátory
+     */
+    private List<ArrNode> getNodesByIdsOrdered(final List<Integer> nodeIds) {
+        List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
+
+        Map<Integer, ArrNode> nodeMap = nodes.stream().collect(
+                Collectors.toMap(ArrNode::getNodeId, Function.identity()));
+
+        return nodeIds.stream().map(id -> nodeMap.get(id)).collect(Collectors.toList());
+    }
+
+    /**
+     * Načze id všech uzlů které se budou exportovat.
+     *
+     * @param nodeIds předané identifikátory, mohou být prázdné
+     * @param version verze
+     *
+     * @return id všech uzlů které se budou exportovat
+     */
+    private List<Integer> getNodeIdsToExport(final Set<Integer> nodeIds, final ArrFundVersion version) {
+        Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(version);
+        TreeNode rootNode = versionTreeCache.get(version.getRootNode().getNodeId());
+        LinkedHashSet<Integer> allNodes = levelTreeCacheWalker.walkThroughDFS(rootNode);
+
+        List<Integer> allNodeIdsToExport;
+        if (CollectionUtils.isEmpty(nodeIds)) {
+            allNodeIdsToExport = new ArrayList<>(allNodes);
         } else {
-            Assert.isTrue(nodeIdsToExport.size() == 1, "V tomto případě by v množině mělo být jen id kořenového uzlu.");
+            Set<Integer> usedNodeIds = new HashSet<>();
 
-            Integer nodeId = nodeIdsToExport.iterator().next();
-            ArrNode arrNode = nodeRepository.findOne(nodeId);
-            LevelWithChildrenIds levelWithChildrenIds = exportLevel(arrNode, version, null, relatedEntities);
-            childrenToExport.add(levelWithChildrenIds);
-
-            rootLevel = levelWithChildrenIds.getLevel();
-        }
-
-        while (!childrenToExport.isEmpty()) {
-            LevelWithChildrenIds parent = childrenToExport.poll();
-            List<Integer> childrenIds = parent.getChildrenIds();
-            if (!childrenIds.isEmpty()) {
-                nodeRepository.findAll(childrenIds).forEach(arrNode -> {
-                    childrenToExport.add(exportLevel(arrNode, version, parent.getLevel(), relatedEntities));
-                });
+            // přidání rodičů
+            for (Integer nodeId : nodeIds) {
+                List<Integer> parentIds = getParentIds(nodeId, versionTreeCache);
+                if (parentIds != null) {
+                    usedNodeIds.addAll(parentIds);
+                }
             }
+
+            //přidání potomků vstupních uzlů
+            for (Integer nodeId : nodeIds) {
+                Set<Integer> children = levelTreeCacheWalker.walkThroughDFS(versionTreeCache.get(nodeId));
+                usedNodeIds.addAll(children);
+            }
+
+            allNodeIdsToExport = allNodes.stream().map(id -> {
+                if (usedNodeIds.contains(id)) {
+                    return id;
+                }
+
+                return null;
+            }).filter(id ->  id != null).collect(Collectors.toList());
         }
 
-        return rootLevel;
+        return allNodeIdsToExport;
     }
 
     /**
@@ -995,12 +1035,12 @@ public class XmlExportService {
      *
      * @param arrNode do uzlu
      * @param version do verze
-     * @param parent exportovaný rodič
+     * @param nodeIdToLevel mapa id uzlu na exportovaný uzel
      * @param relatedEntities vazby na entity které se budou exportova později
      *
-     * @return exportovaný uzel s id potomků
+     * @return exportovaný uzel
      */
-    private LevelWithChildrenIds exportLevel(final ArrNode arrNode, final ArrFundVersion version, final Level parent,
+    private Level exportLevel(final ArrNode arrNode, final ArrFundVersion version, final Map<Integer, Level> nodeIdToLevel,
             final RelatedEntities relatedEntities) {
         ArrChange lockChange = version.getLockChange();
         ArrFund arrFund = version.getFund();
@@ -1020,11 +1060,13 @@ public class XmlExportService {
         nodeIds.add(arrNode.getNodeId());
         List<ArrData> dataList = dataRepository.findDescItemsByNodeIds(nodeIds, null, version);
 
-        Level level = createLevel(arrLevel, parent, dataList, relatedEntities);
+        Level parent = null;
+        ArrNode nodeParent = arrLevel.getNodeParent();
+        if (nodeParent != null) {
+            parent = nodeIdToLevel.get(nodeParent.getNodeId());
+        }
 
-        Map<Integer, TreeNode> treeCache = levelTreeCacheService.getVersionTreeCache(version);
-        List<Integer> childrenIds = treeCache.get(arrNode.getNodeId()).getChilds().stream().map(ch -> ch.getId()).collect(Collectors.toList());
-        return new LevelWithChildrenIds(level, childrenIds);
+        return createLevel(arrLevel, parent, dataList, relatedEntities);
     }
 
     /**
@@ -1225,94 +1267,6 @@ public class XmlExportService {
     }
 
     /**
-     * Export rodičů pro uzly navstupu exportu.
-     *
-     * @param nodeIdsToExport id nodů které se mají exportovat
-     * @param version verze archivního fondu
-     * @param childrenToExport naplní sem záznamy kterými se bude pokračovat v exportu po exportování rodičů
-     * @param relatedEntities vazby na entity které se budou exportova později
-     *
-     * @return root level
-     */
-    private Level exportParents(final Set<Integer> nodeIdsToExport, final ArrFundVersion version,
-        final Queue<LevelWithChildrenIds> childrenToExport, final RelatedEntities relatedEntities) {
-        Assert.notEmpty(nodeIdsToExport);
-
-        Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(version);
-        Map<Integer, List<Integer>> parentNodeIdToChildrenIdMap = new HashMap<>();
-        for (Integer nodeId : nodeIdsToExport) {
-            List<Integer> parentIds = getParentIds(nodeId, versionTreeCache);
-            putParentIdsToMap(nodeId, parentIds, parentNodeIdToChildrenIdMap);
-        }
-
-        Integer rootNodeId = null;
-        if (parentNodeIdToChildrenIdMap.isEmpty()) {
-            // do mapy se nedali  potomci takže na vstupu musel být root
-            rootNodeId = nodeIdsToExport.iterator().next();
-        } else {
-            // vezmeme jeden záznam a z něj posledního rodiče(kořen)
-            List<Integer> parentIds = parentNodeIdToChildrenIdMap.entrySet().iterator().next().getValue();
-            rootNodeId = parentIds.get(parentIds.size());
-        }
-
-        ArrNode rootNode = nodeRepository.findOne(rootNodeId);
-        LevelWithChildrenIds rootLevel = exportLevel(rootNode, version, null, relatedEntities);
-        List<Integer> childrenNodeIds = parentNodeIdToChildrenIdMap.get(rootNodeId);
-        if (CollectionUtils.isEmpty(childrenNodeIds)) {
-            return rootLevel.getLevel();
-        }
-
-        Queue<Integer> parentsToExport = new LinkedList<>();
-        parentsToExport.add(rootNodeId);
-        Level parent = rootLevel.getLevel();
-        while (!parentsToExport.isEmpty()) {
-            Integer nodeId = parentsToExport.poll();
-            List<Integer> childrenIds = parentNodeIdToChildrenIdMap.get(nodeId);
-            parentsToExport.addAll(childrenIds);
-
-            if (!childrenIds.isEmpty()) {
-                nodeRepository.findAll(childrenIds).forEach(arrNode -> {
-                    LevelWithChildrenIds levelWithChildrenIds = exportLevel(arrNode, version, parent, relatedEntities);
-                    if (nodeIdsToExport.contains(arrNode.getNodeId())) {
-                        childrenToExport.add(levelWithChildrenIds);
-                    }
-                });
-            }
-        }
-
-        return rootLevel.getLevel();
-    }
-
-    /**
-     * Naplní rodiče uzlů do mapy kde jsou id uzlů a seznam id jejich potomků.
-     *
-     * @param nodeId id uzlu
-     * @param parentIds seznam id rodičů
-     * @param parentNodeIdToChildrenIdMap mapa do které se naplní id uzlu a seznam id jeho potomků
-     */
-    private void putParentIdsToMap(final Integer nodeId, final List<Integer> parentIds,
-            final Map<Integer, List<Integer>> parentNodeIdToChildrenIdMap) {
-        Assert.notNull(nodeId);
-
-        if (parentIds == null) {
-            return;
-        }
-
-        Integer children = nodeId;
-        for (Integer parentId : parentIds) {
-            List<Integer> childrenIds = parentNodeIdToChildrenIdMap.get(parentId);
-            if (childrenIds == null) {
-                childrenIds = new LinkedList<>();
-                parentNodeIdToChildrenIdMap.put(parentId, childrenIds);
-            }
-            if (!childrenIds.contains(children)) {
-                childrenIds.add(children);
-            }
-            children = parentId;
-        }
-    }
-
-    /**
      * Najde v cache id rodičů předaného uzlu.
      *
      * @param nodeId id uzlu pro který hledáme rodiče
@@ -1367,33 +1321,7 @@ public class XmlExportService {
     }
 
     /**
-     * Exportovaný level a seznam id potomků.
-     */
-    private class LevelWithChildrenIds {
-
-        private Level level;
-
-        private List<Integer> childrenIds;
-
-        LevelWithChildrenIds(final Level level, final List<Integer> childrenIds) {
-            Assert.notNull(level);
-            Assert.notNull(childrenIds);
-
-            this.level = level;
-            this.childrenIds = childrenIds;
-        }
-
-        public Level getLevel() {
-            return level;
-        }
-
-        public List<Integer> getChildrenIds() {
-            return childrenIds;
-        }
-    }
-
-    /**
-     * Záznam s id rejstříku a jeho hloubkouve stromu rejstříků kvůli seřazení.
+     * Záznam s id rejstříku a jeho hloubkou ve stromu rejstříků kvůli seřazení.
      */
     private class RecordEntry {
 
