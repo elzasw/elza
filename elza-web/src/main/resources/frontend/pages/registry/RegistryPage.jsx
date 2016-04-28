@@ -236,7 +236,8 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         return selectedId &&
             registryRegionData.item &&
-            !registryRegionData.item.childs &&
+            registryRegionData.item.childs &&
+            registryRegionData.item.childs.length === 0 &&
             selectedId != registryParentId
     }
 
