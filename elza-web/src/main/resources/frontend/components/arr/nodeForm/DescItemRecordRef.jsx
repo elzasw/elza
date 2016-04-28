@@ -7,8 +7,8 @@ import {WebApi} from 'actions'
 import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components';
 import {connect} from 'react-redux'
 import {decorateAutocompleteValue} from './DescItemUtils'
-
 import {MenuItem, Button} from 'react-bootstrap';
+import * as perms from 'actions/user/Permission';
 
 var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     constructor(props) {
@@ -75,17 +75,22 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked, singleDescItemTypeEdit} = this.props;
+        const {userDetail, descItem, locked, singleDescItemTypeEdit} = this.props;
         var value = descItem.record ? descItem.record : null;
 
         var footer
         if (!singleDescItemTypeEdit) {
-            footer = this.renderFooter();
+            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR)) {
+                footer = this.renderFooter();
+            }
         }
 
         var actions = new Array;
         if (descItem.record) {
-            actions.push(<div onClick={this.handleDetail.bind(this, descItem.record.recordId)} className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
+            if (userDetail.hasOne(perms.REG_SCOPE_RD_ALL, {type: perms.REG_SCOPE_RD, scopeId: descItem.record.scopeId})) {
+                actions.push(<div onClick={this.handleDetail.bind(this, descItem.record.recordId)}
+                                  className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
+            }
         }
 
         return (
@@ -109,4 +114,11 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     }
 }
 
-module.exports = connect(null, null, null, { withRef: true })(DescItemRecordRef);
+function mapStateToProps(state) {
+    const {userDetail} = state
+    return {
+        userDetail,
+    }
+}
+
+module.exports = connect(mapStateToProps, null, null, { withRef: true })(DescItemRecordRef);

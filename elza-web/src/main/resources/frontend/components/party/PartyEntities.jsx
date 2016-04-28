@@ -12,7 +12,8 @@ import {AppActions} from 'stores';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {updateRelation, deleteRelation} from 'actions/party/party'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
-
+    import * as perms from 'actions/user/Permission';
+    
 /**
 * PARTY ENTITIES
 * *********************************************
@@ -205,6 +206,8 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
      * Vykreslení panelu vztahů
      */ 
     render() {
+        const {canEdit} = this.props
+        
         var entities = <div></div>;
 
         if(this.props.partyRegion.selectedPartyData && this.props.partyRegion.selectedPartyData.relations != null){
@@ -229,8 +232,8 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
                             {date ? <div className="block-row">{date}</div> : ""}
 
                             <div className="block-row actions">
-                                   <Button className="column" onClick={this.handleUpdateRelation.bind(this, i.relationId)}><Icon glyph="fa-pencil"/></Button>
-                                   <Button className="column" onClick={this.handleDeleteRelation.bind(this, i.relationId)}><Icon glyph="fa-trash"/></Button>
+                                {canEdit && <Button className="column" onClick={this.handleUpdateRelation.bind(this, i.relationId)}><Icon glyph="fa-pencil"/></Button>}
+                                {canEdit && <Button className="column" onClick={this.handleDeleteRelation.bind(this, i.relationId)}><Icon glyph="fa-trash"/></Button>}
                             </div>
                        </div>
                 })
@@ -242,9 +245,10 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {focus} = state
+    const {focus, userDetail} = state
     return {
-        focus
+        focus,
+        userDetail,
     }
 }
 

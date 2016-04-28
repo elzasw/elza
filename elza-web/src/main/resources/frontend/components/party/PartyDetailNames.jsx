@@ -230,6 +230,8 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
      * Vykreslení bloku jmen
      */ 
     render() {
+       const {canEdit} = this.props
+
         var party = this.props.partyRegion.selectedPartyData;
 
         return  <div className="partyNames">
@@ -241,20 +243,22 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
                                     cls += " text-bold";
                                 }
 
-                                var prefferedBtn = i.prefferedName ? "" :
+                                var prefferedBtn = i.prefferedName || !canEdit ? "" :
                                                    <Button className="column" onClick={this.handleSelectPrefferedName.bind(this, i.partyNameId)}><Icon glyph="fa-check"/></Button>;
+                                var deleteBtn = i.prefferedName || !canEdit ? "" :
+                                    <Button className="column" onClick={this.handleDeleteName.bind(this, i.partyNameId)}><Icon glyph="fa-trash"/></Button>;
                                 return <tr className="name">
                                 <td className={cls}>{i.displayName}</td>
                                     <td className="buttons">
-                                        <Button className="column" onClick={this.handleUpdateName.bind(this, i.partyNameId)}><Icon glyph="fa-pencil"/></Button>
-                                        {i.prefferedName ? "" : <Button className="column" onClick={this.handleDeleteName.bind(this, i.partyNameId)}><Icon glyph="fa-trash"/></Button>}
+                                        {canEdit && <Button className="column" onClick={this.handleUpdateName.bind(this, i.partyNameId)}><Icon glyph="fa-pencil"/></Button>}
+                                        {deleteBtn}
                                         {prefferedBtn}
                                     </td>
                                 <td className="description">{(i.preferred ? i18n('party.detail.name.preferred') : "" )}</td>
                             </tr>})}
                         </tbody>
                     </table>
-                    <Button className="column" onClick={this.handleAddName}><Icon glyph="fa-plus"/> { i18n('party.detail.name.new')}</Button>
+                    {canEdit && <Button className="column" onClick={this.handleAddName}><Icon glyph="fa-plus"/> { i18n('party.detail.name.new')}</Button>}
                 </div>
     }
 }

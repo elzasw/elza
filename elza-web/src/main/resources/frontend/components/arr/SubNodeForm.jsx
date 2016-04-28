@@ -14,7 +14,6 @@ import {fundSubNodeFormDescItemTypeAdd, fundSubNodeFormValueChange, fundSubNodeF
         fundSubNodeFormValueChangeSpec,fundSubNodeFormValueBlur, fundSubNodeFormValueFocus, fundSubNodeFormValueAdd,
         fundSubNodeFormValueDelete, fundSubNodeFormValuesCopyFromPrev, fundSubNodeFormValueChangePosition,
         fundSubNodeFormValueUploadCoordinates} from 'actions/arr/subNodeForm'
-var classNames = require('classnames');
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import DescItemString from './nodeForm/DescItemString'
 import DescItemType from './nodeForm/DescItemType'
@@ -27,9 +26,10 @@ import {partySelect, partyAdd} from 'actions/party/party'
 import {registrySelect, registryAdd} from 'actions/registry/registryRegionList'
 import {routerNavigate} from 'actions/router'
 import {setInputFocus} from 'components/Utils'
-//import {} from './AddNodeDropdown.jsx'
-var Shortcuts = require('react-shortcuts/component')
 import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
+import * as perms from 'actions/user/Permission';
+var classNames = require('classnames');
+var Shortcuts = require('react-shortcuts/component')
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -736,12 +736,18 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     render() {
-        const {subNodeForm, closed, nodeSettings, nodeId, singleDescItemTypeEdit} = this.props;
+        const {fundId, subNodeForm, closed, nodeSettings, nodeId, singleDescItemTypeEdit, userDetail} = this.props;
         var formData = subNodeForm.formData
 
         var nodeSetting = this.getNodeSetting()
 
-        var formActions = (closed || singleDescItemTypeEdit) ? null : this.renderFormActions();
+        var formActions
+        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+            if (!closed && !singleDescItemTypeEdit) {
+                formActions = this.renderFormActions()
+            }
+        }
+
         var descItemGroups = []
         formData.descItemGroups.forEach((group, groupIndex) => {
             const i = this.renderDescItemGroup(group, groupIndex, nodeSetting)
@@ -762,7 +768,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, focus} = state
+    const {arrRegion, focus, userDetail} = state
     var fund = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
@@ -770,8 +776,9 @@ function mapStateToProps(state) {
 
     return {
         nodeSettings: arrRegion.nodeSettings,
-        fund: fund,
+        fund,
         focus,
+        userDetail,
     }
 }
 

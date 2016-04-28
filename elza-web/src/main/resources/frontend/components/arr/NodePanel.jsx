@@ -32,11 +32,12 @@ var Shortcuts = require('react-shortcuts/component');
 const scrollIntoView = require('dom-scroll-into-view')
 var classNames = require('classnames');
 import {setFocus, canSetFocus, focusWasSet, isFocusFor, isFocusExactFor} from 'actions/global/focus'
-require ('./NodePanel.less');
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
 import {fundSubNodeFormDescItemTypeAdd} from 'actions/arr/subNodeForm'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy'
 import {visiblePolicyTypesFetchIfNeeded} from 'actions/refTables/visiblePolicyTypes'
+import * as perms from 'actions/user/Permission';
+require ('./NodePanel.less');
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -741,7 +742,7 @@ return true
 
     render() {
         const {developer, calendarTypes, versionId, rulDataTypes, node,
-                packetTypes, packets, fundId,
+                packetTypes, packets, fundId, userDetail,
                 showRegisterJp, fund, closed, descItemTypes} = this.props;
 
         if (!node.nodeInfoFetched) {
@@ -756,21 +757,28 @@ return true
             children = <div key='children' className='children'><Loading value={i18n('global.data.loading.node.children')} /></div>
         }
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
-        var actions = (
+
+        var actions = []
+        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+            if (node.nodeInfoFetched && !isFundRootId(node.id) && !closed) {
+                actions.push(
+                    <AddNodeDropdown key="end"
+                                    ref='addNodeChild'
+                                     title={i18n('nodePanel.addSubNode')}
+                                     glyph="fa-plus-circle"
+                                     action={this.handleAddNodeAtEnd}
+                                     node={this.props.node}
+                                     version={fund.versionId}
+                                     direction="CHILD"
+                    />
+                )
+            }
+        }
+
+        var actionsPanel = (
             <div key='actions' className='actions-container'>
                 <div key='actions' className='actions'>
-                    {
-                        node.nodeInfoFetched && !isFundRootId(node.id) && !closed &&
-                        <AddNodeDropdown key="end"
-                                        ref='addNodeChild'
-                                         title={i18n('nodePanel.addSubNode')}
-                                         glyph="fa-plus-circle"
-                                         action={this.handleAddNodeAtEnd}
-                                         node={this.props.node}
-                                         version={fund.versionId}
-                                         direction="CHILD"
-                        />
-                    }
+                    {actions}
                     <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.nodeKey))}><Icon glyph="fa-backward" />{i18n('arr.fund.subNodes.prevPage')}</div>
                     <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(fundSubNodesNextPage(versionId, node.id, node.nodeKey))}><Icon glyph="fa-forward" />{i18n('arr.fund.subNodes.nextPage')}</div>
 
@@ -852,7 +860,7 @@ return true
         return (
             <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts}>
                 <div key='main' className='main'>
-                    {actions}
+                    {actionsPanel}
                     {parents}
                     {this.renderAccordion(form, record)}
                     {children}
@@ -920,11 +928,12 @@ return true
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, developer, focus} = state
+    const {arrRegion, developer, focus, userDetail} = state
     return {
         nodeSettings: arrRegion.nodeSettings,
         developer,
         focus,
+        userDetail,
     }
 }
 

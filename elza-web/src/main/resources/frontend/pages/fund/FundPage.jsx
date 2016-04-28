@@ -30,6 +30,7 @@ import {getFundFromFundAndVersion} from 'components/arr/ArrUtils'
 import {approveFund, deleteFund, exportFund} from 'actions/arr/fund'
 import {barrier} from 'components/Utils';
 import {scopesDirty} from 'actions/refTables/scopesData'
+import * as perms from 'actions/user/Permission';
 
 var FundPage = class FundPage extends AbstractReactComponent {
     constructor(props) {
@@ -141,35 +142,45 @@ var FundPage = class FundPage extends AbstractReactComponent {
     }
 
     buildRibbon() {
+        const {fundRegion, userDetail} = this.props
+
         var altActions = [];
-        altActions.push(
-            <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div></Button>
-        )
-        altActions.push(
-            <Button key="fa-import" onClick={this.handleImport}><Icon glyph='fa-upload'/>
-                <div><span className="btnText">{i18n('ribbon.action.arr.fund.import')}</span></div>
-            </Button>
-        )
-        altActions.push(
-            <Button key="fa-export" onClick={this.handleExportDialog}><Icon glyph='fa-download'/>
-                <div><span className="btnText">{i18n('ribbon.action.arr.fund.export')}</span></div>
-            </Button>
-        )
+        if (userDetail.hasOne(perms.FUND_ADMIN)) {
+            altActions.push(
+                <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div></Button>
+            )
+            altActions.push(
+                <Button key="fa-import" onClick={this.handleImport}><Icon glyph='fa-upload'/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.import')}</span></div>
+                </Button>
+            )
+        }
+        if (userDetail.hasOne(perms.FUND_EXPORT_ALL, {type: perms.FUND_EXPORT, fundId: fundRegion.fundDetail.id})) {
+            altActions.push(
+                <Button key="fa-export" onClick={this.handleExportDialog}><Icon glyph='fa-download'/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.export')}</span></div>
+                </Button>
+            )
+        }
 
         var itemActions = [];
-        const {fundRegion} = this.props
         if (fundRegion.fundDetail.id !== null && !fundRegion.fundDetail.fetching && fundRegion.fundDetail.fetched) {
-            itemActions.push(
-                <Button key="edit-version" onClick={this.handleEditFundVersion}><Icon glyph="fa-pencil"/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.update')}</span></div>
-                </Button>,
-                <Button key="approve-version" onClick={this.handleApproveFundVersion}><Icon glyph="fa-calendar-check-o"/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.approve')}</span></div>
-                </Button>,
-                <Button key="fa-delete" onClick={this.handleDeleteFund}><Icon glyph='fa-times-circle'/>
-                    <div><span className="btnText">{i18n('arr.fund.action.delete')}</span></div>
-                </Button>,
-            )
+            if (userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId: fundRegion.fundDetail.id})) {
+                itemActions.push(
+                    <Button key="edit-version" onClick={this.handleEditFundVersion}><Icon glyph="fa-pencil"/>
+                        <div><span className="btnText">{i18n('ribbon.action.arr.fund.update')}</span></div>
+                    </Button>,
+                    <Button key="approve-version" onClick={this.handleApproveFundVersion}><Icon glyph="fa-calendar-check-o"/>
+                        <div><span className="btnText">{i18n('ribbon.action.arr.fund.approve')}</span></div>
+                    </Button>)
+            }
+            if (userDetail.hasOne(perms.FUND_ADMIN)) {
+                itemActions.push(
+                    <Button key="fa-delete" onClick={this.handleDeleteFund}><Icon glyph='fa-times-circle'/>
+                        <div><span className="btnText">{i18n('arr.fund.action.delete')}</span></div>
+                    </Button>,
+                )
+            }
         }
 
         var altSection;
@@ -281,11 +292,12 @@ var FundPage = class FundPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {focus, splitter, fundRegion} = state
+    const {focus, splitter, fundRegion, userDetail} = state
     return {
         focus,
         splitter,
         fundRegion,
+        userDetail,
     }
 }
 

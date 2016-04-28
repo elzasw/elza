@@ -168,6 +168,8 @@ var PartyDetailIdentifiers = class PartyDetailIdentifiers extends AbstractReactC
      * Vykreslení bloku identifikátorů
      */ 
     render() {
+       const {canEdit} = this.props
+
         var party = this.props.partyRegion.selectedPartyData;
         return  <div className="party-identifiers">
                     <table>
@@ -175,13 +177,13 @@ var PartyDetailIdentifiers = class PartyDetailIdentifiers extends AbstractReactC
                             {party.partyGroupIdentifiers.map(i=> {return <tr className="identifier">
                                 <th className="identifier column">{i.identifier}</th> 
                                 <td className="buttons">
-                                    <Button classIdentifier="column" onClick={this.handleUpdateIdentifier.bind(this, i.partyGroupIdentifierId)}><Icon glyph="fa-pencil" /></Button>
-                                    <Button classIdentifier="column" onClick={this.handleDeleteIdentifier.bind(this, i.partyGroupIdentifierId)}><Icon glyph="fa-trash" /></Button>
+                                    {canEdit && <Button classIdentifier="column" onClick={this.handleUpdateIdentifier.bind(this, i.partyGroupIdentifierId)}><Icon glyph="fa-pencil" /></Button>}
+                                    {canEdit && <Button classIdentifier="column" onClick={this.handleDeleteIdentifier.bind(this, i.partyGroupIdentifierId)}><Icon glyph="fa-trash" /></Button>}
                                 </td>
                             </tr>})}
                         </tbody>
                     </table>
-                    <Button className="column" onClick={this.handleAddIdentifier}><Icon glyph="fa-plus" /> { i18n('party.detail.identifier.new')}</Button>
+                    {canEdit && <Button className="column" onClick={this.handleAddIdentifier}><Icon glyph="fa-plus" /> { i18n('party.detail.identifier.new')}</Button>}
                 </div>
     }
 }

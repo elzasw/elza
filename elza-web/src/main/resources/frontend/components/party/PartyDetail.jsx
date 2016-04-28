@@ -19,6 +19,7 @@ import {setInputFocus} from 'components/Utils'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
+import * as perms from 'actions/user/Permission';
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -223,6 +224,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
      * Vykreslení detailu osoby
      */ 
     render() {
+        const {userDetail} = this.props
 
         var party = this.props.partyRegion.selectedPartyData;
 
@@ -234,12 +236,17 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
             return <div className="partyDetail">{i18n('party.detail.noSelection')}</div>
         }
 
+        var canEdit = false
+        if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: party.record.scopeId})) {
+            canEdit = true
+        }
+
         return (
             <Shortcuts name='PartyDetail' handler={this.handleShortcuts}>
                 <div ref='partyDetail' className={"partyDetail"}>
                     <h1>{party.record.record}</h1>
                     <div className="line">
-                    <Input type="textarea" label={i18n('party.detail.characteristics')} name="characteristics" value={party.characteristics != undefined ? party.characteristics : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
+                    <Input disabled={!canEdit} type="textarea" label={i18n('party.detail.characteristics')} name="characteristics" value={party.characteristics != undefined ? party.characteristics : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
                     </div>
 
                     <div className="line typ">
@@ -252,19 +259,19 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                             <div>
                                 <label>{i18n('party.nameValidFrom')}</label>
                                 <div className="date">
-                                    <Input type="select" name="fromCalendar" value={this.state.fromCalendar} onChange={this.changeValue.bind(this,party.from != undefined && party.from.textDate != undefined)} onBlur={this.updateValue}>
+                                    <Input disabled={!canEdit} type="select" name="fromCalendar" value={this.state.fromCalendar} onChange={this.changeValue.bind(this,party.from != undefined && party.from.textDate != undefined)} onBlur={this.updateValue}>
                                         {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
                                     </Input>
-                                    <Input type="text"  name="fromText" value={party.from == null || party.from.textDate == null ? '' : party.from.textDate} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue} />
+                                    <Input disabled={!canEdit} type="text"  name="fromText" value={party.from == null || party.from.textDate == null ? '' : party.from.textDate} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue} />
                                 </div>
                             </div>
                             <div>
                                 <label>{i18n('party.nameValidTo')}</label>
                                 <div className="date">
-                                    <Input type="select" name="toCalendar" value={this.state.toCalendar} onChange={this.changeValue.bind(this, party.to != undefined && party.to.textDate != undefined)} onBlur={this.updateValue} >
+                                    <Input disabled={!canEdit} type="select" name="toCalendar" value={this.state.toCalendar} onChange={this.changeValue.bind(this, party.to != undefined && party.to.textDate != undefined)} onBlur={this.updateValue} >
                                         {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
                                     </Input>
-                                    <Input type="text" name="toText" value={party.to == null || party.to.textDate == null ? '' : party.to.textDate} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue} />
+                                    <Input disabled={!canEdit} type="text" name="toText" value={party.to == null || party.to.textDate == null ? '' : party.to.textDate} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue} />
                                 </div>
                             </div>
                         </div>
@@ -272,32 +279,32 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
 
                     <div className="line party-names">
                         <label>{i18n('party.detail.names')}</label>
-                        <PartyDetailNames partyRegion={this.props.partyRegion} /> 
+                        <PartyDetailNames canEdit={canEdit} partyRegion={this.props.partyRegion} />
                     </div>
 
                     {party.partyType.partyTypeId == this.state.groupId ? <div className="line party-identifiers">
                         <label>{i18n('party.detail.identifiers')}</label>
-                        <PartyDetailIdentifiers partyRegion={this.props.partyRegion} refTables={this.props.refTables}/>
+                        <PartyDetailIdentifiers canEdit={canEdit} partyRegion={this.props.partyRegion} refTables={this.props.refTables}/>
                     </div> :  null}
 
 
                     {party.partyType.partyTypeId == this.state.dynastyId ? <div className="line">
-                        <Input type="textarea" label={i18n('party.detail.genealogy')} name="genealogy" value={party.genealogy != undefined ? party.genealogy : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/> </div>:  null}
+                        <Input disabled={!canEdit} type="textarea" label={i18n('party.detail.genealogy')} name="genealogy" value={party.genealogy != undefined ? party.genealogy : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/> </div>:  null}
 
-                    <div className="line"><Input type="textarea" label={i18n('party.detail.note')} name="note" value={party.record.note != undefined ? party.record.note : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
-                    <div className="line"><Input type="textarea" label={i18n('party.detail.history')} name="history" value={party.history != undefined ? party.history : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
-                    <div className="line"><Input type="textarea" label={i18n('party.detail.sources')} name="sourceInformation" value={party.sourceInformation == null ? '' : party.sourceInformation} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
+                    <div className="line"><Input disabled={!canEdit} type="textarea" label={i18n('party.detail.note')} name="note" value={party.record.note != undefined ? party.record.note : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
+                    <div className="line"><Input disabled={!canEdit} type="textarea" label={i18n('party.detail.history')} name="history" value={party.history != undefined ? party.history : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
+                    <div className="line"><Input disabled={!canEdit} type="textarea" label={i18n('party.detail.sources')} name="sourceInformation" value={party.sourceInformation == null ? '' : party.sourceInformation} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
 
                     {party.partyType.partyTypeId == this.state.groupId ? <div className="line group-panel">
-                        <Input type="text" label={i18n('party.detail.groupOrganization')} name="organization" value={party.organization != undefined ? party.organization : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
-                        <Input type="text" label={i18n('party.detail.groupFoundingNorm')} name="foundingNorm" value={party.foundingNorm != undefined ? party.foundingNorm : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
-                        <Input type="text" label={i18n('party.detail.groupScopeNorm')} name="scopeNorm" value={party.scopeNorm != undefined ? party.scopeNorm : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
-                        <Input type="text" label={i18n('party.detail.groupScope')} name="scope" value={party.scope != undefined ? party.scope : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
+                        <Input disabled={!canEdit} type="text" label={i18n('party.detail.groupOrganization')} name="organization" value={party.organization != undefined ? party.organization : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
+                        <Input disabled={!canEdit} type="text" label={i18n('party.detail.groupFoundingNorm')} name="foundingNorm" value={party.foundingNorm != undefined ? party.foundingNorm : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
+                        <Input disabled={!canEdit} type="text" label={i18n('party.detail.groupScopeNorm')} name="scopeNorm" value={party.scopeNorm != undefined ? party.scopeNorm : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
+                        <Input disabled={!canEdit} type="text" label={i18n('party.detail.groupScope')} name="scope" value={party.scope != undefined ? party.scope : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
                     </div> :  ''}
 
                     <div className="line party-creators">
                         <label>{i18n('party.detail.creators')}</label>
-                        <PartyDetailCreators partyRegion={this.props.partyRegion} refTables={this.props.refTables}/> 
+                        <PartyDetailCreators canEdit={canEdit} partyRegion={this.props.partyRegion} refTables={this.props.refTables}/>
                     </div>
                 </div>
             </Shortcuts>
@@ -306,10 +313,11 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {partyRegion, focus} = state
+    const {partyRegion, focus, userDetail} = state
     return {
         partyRegion,
-        focus
+        focus,
+        userDetail,
     }
 }
 

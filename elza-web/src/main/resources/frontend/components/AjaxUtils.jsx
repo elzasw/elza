@@ -82,7 +82,11 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
                              status,
                              err) {
                 if (_logErrors) {
-                    console.error("<-", callStr, "[" + xhr.status + "-" + status + "]", xhr);
+                    if (ignoreError) {
+                        console.warn("<-", callStr, "[" + xhr.status + "-" + status + "]", xhr);
+                    } else {
+                        console.error("<-", callStr, "[" + xhr.status + "-" + status + "]", xhr);
+                    }
                 }
 
                 var message;

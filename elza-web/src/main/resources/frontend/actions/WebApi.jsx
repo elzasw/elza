@@ -730,7 +730,7 @@ class WebApi{
     }
 
     logout() {
-        return AjaxUtils.ajaxCallRaw('/logout', {}, "GET", "", "application/x-www-form-urlencoded", true);
+        return AjaxUtils.ajaxCallRaw('/logout', {}, "POST", "", "application/x-www-form-urlencoded", true);
     }
 
     findFunds(fulltext, max=200) {

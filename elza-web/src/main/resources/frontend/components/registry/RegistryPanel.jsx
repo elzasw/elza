@@ -38,6 +38,7 @@ var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 import {setFocus} from 'actions/global/focus'
+import * as perms from 'actions/user/Permission';
 
 var keyModifier = Utils.getKeyModifier();
 
@@ -336,7 +337,16 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
 
     canEdit() {
-        return this.props.registryRegionData.fetched && !this.props.registryRegionData.item.partyId
+        const {userDetail, registryRegionData: { item, fetched }} = this.props;
+
+        var canEdit = fetched && !item.partyId
+
+        // Pokud nemá oprávnění, zakážeme editaci
+        if (fetched && !userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: item ? item.scopeId : null})) {
+            canEdit = false
+        }
+
+        return canEdit
     }
 
     render() {
@@ -467,11 +477,12 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 };
 
 function mapStateToProps(state) {
-    const {registryRegion: {registryRegionData}, focus} = state;
+    const {registryRegion: {registryRegionData}, focus, userDetail} = state;
 
     return {
         registryRegionData,
-        focus
+        focus,
+        userDetail,
     }
 }
 
