@@ -208,6 +208,8 @@ var PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompone
      * Vykreslení bloku identifikátorů
      */ 
     render() {
+       const {canEdit} = this.props
+
         var party = this.props.partyRegion.selectedPartyData;
 
         return  <div className="party-creators">
@@ -236,12 +238,12 @@ var PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompone
 
                                 </td>
                                 <td className="buttons">
-                                    <Button classCreator="column" onClick={this.handleDeleteCreator.bind(this, i.partyId)}><Icon glyph="fa-trash"/></Button>
+                                    {canEdit && <Button classCreator="column" onClick={this.handleDeleteCreator.bind(this, i.partyId)}><Icon glyph="fa-trash"/></Button>}
                                 </td>
                             </tr>})}
                         </tbody>
                     </table>
-                    <Button className="column" onClick={this.handleAddCreator}><Icon glyph="fa-plus"/> { i18n('party.detail.creator.new')}</Button>
+                    {canEdit && <Button className="column" onClick={this.handleAddCreator}><Icon glyph="fa-plus"/> { i18n('party.detail.creator.new')}</Button>}
                 </div>
     }
 }

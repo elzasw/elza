@@ -37,7 +37,11 @@ var Login = class extends AbstractReactComponent {
         // volám nepřetížený api
         WebApi._login(this.state.username, this.state.password).then((data)=>{
             this.dispatch(loginSuccess());
-            login.callback();
+            try {
+                login.callback && login.callback();
+            } catch (ex) {
+                console.error("Error calling login callback.", ex)
+            }
             this.setState({username: defaultLogin.username, password: defaultLogin.password, "error": null});
         }).catch((err)=>{
             var state = this.state;

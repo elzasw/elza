@@ -24,6 +24,7 @@ var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components'
 import {setFocus} from 'actions/global/focus'
+import * as perms from 'actions/user/Permission';
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -219,34 +220,48 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
      * Sestavení Ribbon Menu - přidání položek pro osoby
      */ 
     buildRibbon() {
-        var isSelected = this.props.partyRegion.selectedPartyID ? true : false;
-        var altActions = [];
-        altActions.push(
-            <ControllableDropdownButton ref='addParty' title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
-                {this.props.refTables.partyTypes.items.map(i=> {return <MenuItem key={i.partyTypeId} eventKey="{i.partyTypeId}" onClick={this.handleAddParty.bind(this, i.partyTypeId)}>{i.name}</MenuItem>})}
-            </ControllableDropdownButton>
-        );
+        const {userDetail, partyRegion, refTables} = this.props
 
-        altActions.push(
-            <Button onClick={this.handleImport}><Icon glyph='fa-download'/>
-                <div><span className="btnText">{i18n('ribbon.action.party.import')}</span></div>
-            </Button>
-        );
-        var itemActions = [];
-        if (isSelected) {
-            itemActions.push(
-                <ControllableDropdownButton ref='addRelation' title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.relation.add')}</span></div></span>}>
-                    {["B","E","R"].map(i =>{
-                        var name = i18n('party.relation.classType.'+i).toUpperCase();
-                        return <MenuItem key={"classType"+i} onClick={this.handleAddRelation.bind(this,i)}>{name}</MenuItem>
+        var isSelected = partyRegion.selectedPartyID ? true : false;
+        var altActions = [];
+        if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
+            altActions.push(
+                <ControllableDropdownButton ref='addParty'
+                                            title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
+                    {refTables.partyTypes.items.map(i=> {
+                        return <MenuItem key={i.partyTypeId} eventKey="{i.partyTypeId}"
+                                         onClick={this.handleAddParty.bind(this, i.partyTypeId)}>{i.name}</MenuItem>
                     })}
                 </ControllableDropdownButton>
+            );
+            altActions.push(
+                <Button onClick={this.handleImport}><Icon glyph='fa-download'/>
+                    <div><span className="btnText">{i18n('ribbon.action.party.import')}</span></div>
+                </Button>
+            );
+        }
 
-                //<Button onClick={this.handleAddRelation}><Icon glyph="fa-link" /><div><span className="btnText">{i18n('party.relation.add')}</span></div></Button>
-            );
-            itemActions.push(
-                <Button onClick={this.handleDeleteParty}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('party.delete.button')}</span></div></Button>
-            );
+        var itemActions = [];
+        if (isSelected && partyRegion.fetchedDetail && !partyRegion.isFetchingDetail) {
+            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyRegion.selectedPartyData.record.scopeId})) {
+                itemActions.push(
+                    <ControllableDropdownButton ref='addRelation'
+                                                title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.relation.add')}</span></div></span>}>
+                        {["B", "E", "R"].map(i => {
+                            var name = i18n('party.relation.classType.' + i).toUpperCase();
+                            return <MenuItem key={"classType"+i}
+                                             onClick={this.handleAddRelation.bind(this,i)}>{name}</MenuItem>
+                        })}
+                    </ControllableDropdownButton>
+
+                    //<Button onClick={this.handleAddRelation}><Icon glyph="fa-link" /><div><span className="btnText">{i18n('party.relation.add')}</span></div></Button>
+                );
+                itemActions.push(
+                    <Button onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
+                        <div><span className="btnText">{i18n('party.delete.button')}</span></div>
+                    </Button>
+                );
+            }
         }
 
         var altSection;
@@ -269,7 +284,13 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
      * Vykreslení stránky pro osoby
      */ 
     render() {
-        const {splitter} = this.props;
+        const {splitter, userDetail, partyRegion} = this.props;
+        var canEdit = false
+        if (partyRegion.fetchedDetail && !partyRegion.isFetchingDetail) {
+            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyRegion.selectedPartyData.record.scopeId})) {
+                canEdit = true
+            }
+        }
 
         var leftPanel = (
             <PartySearch 
@@ -289,6 +310,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         var rightPanel = (
             <PartyEntities 
                 partyRegion={this.props.partyRegion}
+                canEdit={canEdit}
             />
         )
 
@@ -309,11 +331,12 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
 
 
 function mapStateToProps(state) {
-    const {splitter, partyRegion, refTables} = state
+    const {splitter, partyRegion, refTables, userDetail} = state
     return {
         splitter,
         partyRegion,
-        refTables
+        refTables,
+        userDetail,
     }
 }
 

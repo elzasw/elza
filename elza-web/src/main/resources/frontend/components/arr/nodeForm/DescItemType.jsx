@@ -8,7 +8,6 @@ import {Utils, Icon, i18n, AbstractReactComponent, NoFocusButton} from 'componen
 import {Tooltip, OverlayTrigger,Input} from 'react-bootstrap';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions'
 import {connect} from 'react-redux'
-var classNames = require('classnames');
 import {WebApi} from 'actions'
 import DescItemString from './DescItemString'
 import DescItemUnitid from './DescItemUnitid'
@@ -23,9 +22,12 @@ import DescItemRecordRef from './DescItemRecordRef'
 import {propsEquals} from 'components/Utils'
 import {descItemNeedStore} from 'actions/arr/subNodeForm'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils'
+import {indexById} from 'stores/app/utils.jsx'
+var classNames = require('classnames');
+import * as perms from 'actions/user/Permission';
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component')
-import {indexById} from 'stores/app/utils.jsx'
+
 require ('./AbstractDescItem.less')
 
 var keyModifier = Utils.getKeyModifier()
@@ -274,6 +276,13 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     handleDragStart(e) {
+        const {fundId, userDetail} = this.props
+
+        // Pokud nemá právo na pořádání, nelze provádět akci
+        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+            return this.cancelDragging(e)
+        }
+
         // Pokud je AS uzavřené, nelze dělat DND
         if (this.props.closed) {
             return this.cancelDragging(e)
@@ -554,7 +563,12 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     getShowDeleteDescItem(descItem) {
-        const {refType, infoType, descItemType, closed, locked} = this.props;
+        const {fundId, userDetail, refType, infoType, descItemType, closed, locked} = this.props;
+
+        // Pokud nemá právo na pořádání, nelze provádět akci
+        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+            return false
+        }
 
         if (closed || locked) {
             return false
@@ -602,7 +616,12 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     getShowDeleteDescItemType() {
-        const {refType, infoType, descItemType, closed} = this.props;
+        const {fundId, userDetail, refType, infoType, descItemType, closed} = this.props;
+
+        // Pokud nemá právo na pořádání, nelze provádět akci
+        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+            return false
+        }
 
         if (closed) {
             return false
@@ -634,15 +653,17 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
      * @return {Object} view
      */
     renderLabel() {
-        const {descItemCopyFromPrevEnabled, singleDescItemTypeEdit, copy, locked, descItemType, infoType, refType, conformityInfo, closed} = this.props;
+        const {fundId, userDetail, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, copy, locked, descItemType, infoType, refType, conformityInfo, closed} = this.props;
 
         var actions = [];
 
         // Sestavení akcí
-        if (!closed && !singleDescItemTypeEdit) {
-            actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.copy')} key="copy" onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
-            actions.push(<NoFocusButton disabled={!descItemCopyFromPrevEnabled} title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book" onClick={this.handleDescItemTypeCopyFromPrev}><Icon glyph="fa-book" /></NoFocusButton>);
-            actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.lock')} key="lock" onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>);
+        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+            if (!closed && !singleDescItemTypeEdit) {
+                actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.copy')} key="copy" onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
+                actions.push(<NoFocusButton disabled={!descItemCopyFromPrevEnabled} title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book" onClick={this.handleDescItemTypeCopyFromPrev}><Icon glyph="fa-book" /></NoFocusButton>);
+                actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.lock')} key="lock" onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>);
+            }
         }
 
         // Zprávy o chybějících položkách
@@ -701,22 +722,23 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     render() {
-        const {onDescItemRemove, onDescItemAdd, descItemType, refType, infoType, locked, conformityInfo, closed} = this.props;
+        const {fundId, userDetail, onDescItemRemove, onDescItemAdd, descItemType, refType, infoType, locked, conformityInfo, closed} = this.props;
 
         var label = this.renderLabel();
 
         var addAction;
-        if (infoType.rep === 1 && !(locked || closed)) {
-            if (this.props.rulDataType.code === "COORDINATES") {
-                addAction = <div className='desc-item-type-actions'>
-                    <NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton>
-                    <NoFocusButton onClick={this.handleCoordinatesUploadButtonClick} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-upload" /></NoFocusButton>
-                    <Input className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload} />
-                </div>
-            } else {
-                addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton></div>
+        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+            if (infoType.rep === 1 && !(locked || closed)) {
+                if (this.props.rulDataType.code === "COORDINATES") {
+                    addAction = <div className='desc-item-type-actions'>
+                        <NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton>
+                        <NoFocusButton onClick={this.handleCoordinatesUploadButtonClick} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-upload" /></NoFocusButton>
+                        <Input className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload} />
+                    </div>
+                } else {
+                    addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton></div>
+                }
             }
-
         }
 
         var showDeleteDescItemType = this.getShowDeleteDescItemType();
@@ -737,7 +759,14 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 </OverlayTrigger>);
             }
 
-            return this.renderDescItem(descItemType, descItem, descItemIndex, actions, locked || closed)
+            var canModifyDescItem = !(locked || closed)
+
+            // Pokud nemá právo na pořádání, nelze provádět akci
+            if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+                canModifyDescItem = false
+            }
+
+            return this.renderDescItem(descItemType, descItem, descItemIndex, actions, !canModifyDescItem)
         });
 
         var cls = classNames({
@@ -757,6 +786,14 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         )
     }
 };
+
+function mapStateToProps(state) {
+    const {userDetail} = state
+
+    return {
+        userDetail,
+    }
+}
 
 DescItemType.propTypes = {
     onChange: React.PropTypes.func.isRequired,
@@ -795,4 +832,4 @@ DescItemType.childContextTypes = {
     shortcuts: React.PropTypes.object.isRequired
 };
 
-module.exports = connect(null, null, null, { withRef: true })(DescItemType);
+module.exports = connect(mapStateToProps, null, null, { withRef: true })(DescItemType);

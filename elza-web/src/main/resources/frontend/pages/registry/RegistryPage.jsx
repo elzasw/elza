@@ -46,6 +46,7 @@ var Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 import {setFocus} from 'actions/global/focus'
+import * as perms from 'actions/user/Permission';
 
 var keyModifier = Utils.getKeyModifier();
 
@@ -251,39 +252,57 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     buildRibbon() {
+        const {registryRegion: {registryRegionData}, userDetail} = this.props
+
         var altActions = [];
 
-        altActions.push(
-            <Button key='addRegistry' onClick={this.handleAddRegistry}><Icon glyph="fa-download" /><div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div></Button>
-        );
-
-        altActions.push(
-            <Button key='registryImport' onClick={this.handleRegistryImport}><Icon glyph='fa-download'/>
-                <div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div>
-            </Button>
-        );
-
-        var itemActions = [];
-        if (this.canDeleteRegistry()) {
-            itemActions.push(
-                <Button key='registryRemove' onClick={this.handleDeleteRegistryDialog}><Icon
-                    glyph="fa-trash"/>
-                    <div><span className="btnText">{i18n('registry.deleteRegistry')}</span></div>
+        if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
+            altActions.push(
+                <Button key='addRegistry' onClick={this.handleAddRegistry}><Icon glyph="fa-download"/>
+                    <div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div>
+                </Button>
+            );
+            altActions.push(
+                <Button key='registryImport' onClick={this.handleRegistryImport}><Icon glyph='fa-download'/>
+                    <div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div>
                 </Button>
             );
         }
+
+        var itemActions = [];
+        if (this.canDeleteRegistry()) {
+            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: registryRegionData.item ? registryRegionData.item.scopeId : null})) {
+                itemActions.push(
+                    <Button key='registryRemove' onClick={this.handleDeleteRegistryDialog}><Icon
+                        glyph="fa-trash"/>
+                        <div><span className="btnText">{i18n('registry.deleteRegistry')}</span></div>
+                    </Button>
+                );
+            }
+        }
         if (this.canMoveRegistry()) {
-            itemActions.push(
-                <Button key='registryMove' onClick={this.handleStartMoveRegistry}><Icon glyph="fa-share" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
-            );
+            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: registryRegionData.item ? registryRegionData.item.scopeId : null})) {
+                itemActions.push(
+                    <Button key='registryMove' onClick={this.handleStartMoveRegistry}><Icon glyph="fa-share"/>
+                        <div><span className="btnText">{i18n('registry.moveRegistry')}</span></div>
+                    </Button>
+                );
+            }
         }
         if (this.canMoveApplyCancelRegistry()) {
-            itemActions.push(
-                <Button key='registryMoveApply' onClick={this.handleSaveMoveRegistry}><Icon glyph="fa-check-circle" /><div><span className="btnText">{i18n('registry.applyMove')}</span></div></Button>
-            );
-            itemActions.push(
-                <Button key='registryMoveCancel' onClick={this.handleCancelMoveRegistry}><Icon glyph="fa-times" /><div><span className="btnText">{i18n('registry.cancelMove')}</span></div></Button>
-            );
+            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: registryRegionData.item ? registryRegionData.item.scopeId : null})) {
+                itemActions.push(
+                    <Button key='registryMoveApply' onClick={this.handleSaveMoveRegistry}><Icon
+                        glyph="fa-check-circle"/>
+                        <div><span className="btnText">{i18n('registry.applyMove')}</span></div>
+                    </Button>
+                );
+                itemActions.push(
+                    <Button key='registryMoveCancel' onClick={this.handleCancelMoveRegistry}><Icon glyph="fa-times"/>
+                        <div><span className="btnText">{i18n('registry.cancelMove')}</span></div>
+                    </Button>
+                );
+            }
         }
 
         var altSection;
@@ -528,12 +547,13 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 };
 
 function mapStateToProps(state) {
-    const {splitter, registryRegion, refTables, focus} = state;
+    const {splitter, registryRegion, refTables, focus, userDetail} = state;
     return {
         splitter,
         registryRegion,
         refTables,
-        focus
+        focus,
+        userDetail,
     }
 }
 

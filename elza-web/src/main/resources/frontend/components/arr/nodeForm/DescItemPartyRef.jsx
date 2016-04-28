@@ -9,6 +9,7 @@ import {connect} from 'react-redux'
 import {decorateAutocompleteValue} from './DescItemUtils'
 import {MenuItem, DropdownButton, Button} from 'react-bootstrap';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
+import * as perms from 'actions/user/Permission';
 
 var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     constructor(props) {
@@ -82,17 +83,22 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked, singleDescItemTypeEdit} = this.props;
+        const {userDetail, descItem, locked, singleDescItemTypeEdit} = this.props;
         var value = descItem.party ? descItem.party : null;
 
         var footer
         if (!singleDescItemTypeEdit) {
-            footer = this.renderFooter()
+            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR)) {
+                footer = this.renderFooter()
+            }
         }
 
         var actions = new Array;
         if (descItem.party) {
-            actions.push(<div onClick={this.handleDetail.bind(this, descItem.party.partyId)} className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
+            if (userDetail.hasOne(perms.REG_SCOPE_RD_ALL, {type: perms.REG_SCOPE_RD, scopeId: descItem.party.record.scopeId})) {
+                actions.push(<div onClick={this.handleDetail.bind(this, descItem.party.partyId)}
+                                  className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
+            }
         }
 
         return (
@@ -117,9 +123,10 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {refTables} = state
+    const {refTables, userDetail} = state
     return {
-        refTables
+        refTables,
+        userDetail,
     }
 }
 module.exports = connect(mapStateToProps, null, null, { withRef: true })(DescItemPartyRef);
