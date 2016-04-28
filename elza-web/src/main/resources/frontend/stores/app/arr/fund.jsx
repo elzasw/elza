@@ -7,6 +7,7 @@ import bulkActions from './bulkActions'
 import versionValidation from './versionValidation'
 import fundNodesPolicy from './fundNodesPolicy'
 import fundPackets from './fundPackets'
+import fundOutput from './fundOutput.jsx'
 import {consolidateState} from 'components/Utils'
 import {isBulkAction} from 'actions/arr/bulkActions'
 import {isFundTreeAction} from 'actions/arr/fundTree'
@@ -22,6 +23,7 @@ import {isFundDataGridAction} from 'actions/arr/fundDataGrid'
 import {isFundChangeAction} from 'actions/global/change'
 import {isFundPacketsAction} from 'actions/arr/fundPackets'
 import {getNodeKeyType} from 'stores/app/utils.jsx'
+import {isFundOutput} from 'actions/arr/fundOutput.jsx'
 
 export function fundInitState(fundWithVersion) {
     var result = {
@@ -32,6 +34,7 @@ export function fundInitState(fundWithVersion) {
         name: fundWithVersion.name,
         isFetching: false,
         dirty: false,
+        fundOutput: fundOutput(),
         fundDataGrid: fundDataGrid(),
         fundPackets: fundPackets(),
         fundTree: fundTree(undefined, {type: ''}),
@@ -67,6 +70,11 @@ function updateFundTree(state, action) {
 export function fund(state, action) {
     if (isBulkAction(action)) {
         var result = {...state, bulkActions: bulkActions(state.bulkActions, action)}
+        return consolidateState(state, result);
+    }
+    
+    if (isFundOutput(action)) {
+        var result = {...state, fundOutput: fundOutput(state.fundOutput, action)}
         return consolidateState(state, result);
     }
 

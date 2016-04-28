@@ -85,8 +85,6 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
         altSection && parts.push(altSection)
         itemSection && parts.push(itemSection)
 
-        console.log(parts)
-
         const partsWithSplit = []
         {parts.forEach((part, index) => {
             partsWithSplit.push(part)
