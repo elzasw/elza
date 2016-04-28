@@ -91,10 +91,6 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     @Column(length = StringLength.LENGTH_1000, nullable = true)
     private String characteristics;
 
-    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParInstitution.class)
-    @JoinColumn(name = "institutionId")
-    private ParInstitution institution;
-
     @Override
     public Integer getPartyId() {
         return partyId;
@@ -201,14 +197,6 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
 
     public void setRelations(final List<ParRelation> relations) {
         this.relations = relations;
-    }
-
-    public ParInstitution getInstitution() {
-        return institution;
-    }
-
-    public void setInstitution(final ParInstitution institution) {
-        this.institution = institution;
     }
 
     @Override

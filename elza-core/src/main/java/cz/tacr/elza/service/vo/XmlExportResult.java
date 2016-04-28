@@ -1,5 +1,7 @@
 package cz.tacr.elza.service.vo;
 
+import java.io.File;
+
 import org.springframework.util.Assert;
 
 /**
@@ -10,13 +12,13 @@ import org.springframework.util.Assert;
  */
 public class XmlExportResult {
 
-    private byte[] xmlData;
+    private File xmlData;
 
-    private byte[] transformedData;
+    private File transformedData;
 
     private String fundName;
 
-    public XmlExportResult(final byte[] xmlData, final String fundName) {
+    public XmlExportResult(final File xmlData, final String fundName) {
         Assert.notNull(xmlData);
         Assert.notNull(fundName);
 
@@ -24,15 +26,15 @@ public class XmlExportResult {
         this.fundName = fundName;
     }
 
-    public byte[] getXmlData() {
+    public File getXmlData() {
         return xmlData;
     }
 
-    public byte[] getTransformedData() {
+    public File getTransformedData() {
         return transformedData;
     }
 
-    public void setTransformedData(final byte[] transformedData) {
+    public void setTransformedData(final File transformedData) {
         this.transformedData = transformedData;
     }
 

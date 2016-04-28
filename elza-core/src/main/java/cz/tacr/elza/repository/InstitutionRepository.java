@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.ParParty;
 
 
 /**
@@ -16,5 +17,7 @@ import cz.tacr.elza.domain.ParInstitution;
 public interface InstitutionRepository extends JpaRepository<ParInstitution, Integer> {
 
     ParInstitution findByCode(String institutionCode);
+
+    ParInstitution findByParty(ParParty parParty);
 
 }

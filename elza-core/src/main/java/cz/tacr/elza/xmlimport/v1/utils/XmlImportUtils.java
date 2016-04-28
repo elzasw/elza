@@ -151,4 +151,18 @@ public final class XmlImportUtils {
             throw new IllegalArgumentException("3patný formát datumu " + stringDate);
         }
     }
+
+    public static ComplexDate createComplexDate(final ParUnitdate parUnitdate) {
+        if (parUnitdate == null) {
+            return null;
+        }
+
+        ComplexDate complexDate = new ComplexDate();
+
+        complexDate.setSpecificDateFrom(XmlImportUtils.stringToDate(parUnitdate.getValueFrom()));
+        complexDate.setSpecificDateTo(XmlImportUtils.stringToDate(parUnitdate.getValueTo()));
+        complexDate.setTextDate(parUnitdate.getTextDate());
+
+        return complexDate;
+    }
 }

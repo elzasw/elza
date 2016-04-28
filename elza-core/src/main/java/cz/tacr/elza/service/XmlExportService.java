@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,18 +36,6 @@ import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDescItemCoordinates;
-import cz.tacr.elza.domain.ArrDescItemDecimal;
-import cz.tacr.elza.domain.ArrDescItemEnum;
-import cz.tacr.elza.domain.ArrDescItemFormattedText;
-import cz.tacr.elza.domain.ArrDescItemInt;
-import cz.tacr.elza.domain.ArrDescItemPacketRef;
-import cz.tacr.elza.domain.ArrDescItemPartyRef;
-import cz.tacr.elza.domain.ArrDescItemRecordRef;
-import cz.tacr.elza.domain.ArrDescItemString;
-import cz.tacr.elza.domain.ArrDescItemText;
-import cz.tacr.elza.domain.ArrDescItemUnitdate;
-import cz.tacr.elza.domain.ArrDescItemUnitid;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -64,7 +53,6 @@ import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.ParPerson;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegVariantRecord;
@@ -72,6 +60,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -81,6 +70,7 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.service.vo.XmlExportResult;
 import cz.tacr.elza.utils.ObjectListIterator;
+import cz.tacr.elza.utils.ProxyUtils;
 import cz.tacr.elza.utils.XmlUtils;
 import cz.tacr.elza.xmlexport.v1.XmlExportConfig;
 import cz.tacr.elza.xmlimport.v1.utils.XmlImportUtils;
@@ -101,7 +91,6 @@ import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitId;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Fund;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Level;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Packet;
-import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
 import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Dynasty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Event;
@@ -162,6 +151,16 @@ public class XmlExportService {
     @Autowired
     private NodeRegisterRepository nodeRegisterRepository;
 
+    @Autowired
+    private InstitutionRepository institutionRepository;
+
+    /**
+     * Export archivního souboru.
+     *
+     * @param config nastavení exportu
+     *
+     * @return výsledek exportu
+     */
     public XmlExportResult exportData(final XmlExportConfig config) {
         Assert.notNull(config);
         Assert.notNull(config.getVersionId());
@@ -171,20 +170,38 @@ public class XmlExportService {
         return createExportResult(config, xmlImport);
     }
 
+    /**
+     * Převede exportovaná data na výsledný objekt exportu.
+     *
+     * @param confignastavení exportu
+     * @param xmlImport exportovaná data
+     *
+     * @return výsledek exportu
+     */
     private XmlExportResult createExportResult(final XmlExportConfig config, final XmlImport xmlImport) {
         byte[] xmlData = XmlUtils.marshallData(xmlImport, XmlImport.class);
+        File xmlFile = XmlUtils.createTempFile(xmlData, "elza-export-", ".xml");
         String fundName = xmlImport.getFund().getName();
-        XmlExportResult xmlExportResult = new XmlExportResult(xmlData, fundName);
+        XmlExportResult xmlExportResult = new XmlExportResult(xmlFile, fundName);
         String transformationName = config.getTransformationName();
         if (StringUtils.isNotBlank(transformationName)) {
             byte[] transformedData = XmlUtils.transformData(xmlData, transformationName, transformationsDirectory);
-            xmlExportResult.setTransformedData(transformedData);
+            File transformedFile = XmlUtils.createTempFile(transformedData, "elza-export-", ".transformed");
+            xmlExportResult.setTransformedData(transformedFile);
         }
 
 
         return xmlExportResult;
     }
 
+    /**
+     * Export archivního souboru.
+     *
+     * @param versionId id verze jaká se má exportovat
+     * @param nodeIds množina nodůkteré se mají exportovat, pokud je prázdná exportuje se celý strom
+     *
+     * @return exprotovaná data
+     */
     private XmlImport exportFund(final Integer versionId, final Set<Integer> nodeIds) {
         ArrFundVersion version = fundVersionRepository.findOne(versionId);
         ArrFund arrFund = version.getFund();
@@ -203,35 +220,41 @@ public class XmlExportService {
             nodeIdsToExport.addAll(nodeIds);
         }
 
-        Map<Integer, List<Level>> recordLevels = new HashMap<>();
-        Map<Integer, List<DescItemRecordRef>> recordDescItems = new HashMap<>();
-        Map<Integer, List<DescItemPartyRef>> partyDescItems = new HashMap<>();
-        Map<Integer, List<DescItemPacketRef>> packetDescItems = new HashMap<>();
+        RelatedEntities relatedEntities = new RelatedEntities();
 
-        Level rootLevel = exportNodeTree(nodeIdsToExport, version, recordLevels, recordDescItems, partyDescItems,
-                packetDescItems, findParents);
+        Level rootLevel = exportNodeTree(nodeIdsToExport, version, relatedEntities, findParents);
         xmlImport.getFund().setRootLevel(rootLevel);
 
-        Map<Integer, Record> recordMap = exportRecords(xmlImport, recordLevels, recordDescItems);
-        exportParties(xmlImport, partyDescItems, recordMap);
-        exportPackets(xmlImport, packetDescItems);
+        Map<Integer, Record> recordMap = exportRecords(xmlImport, relatedEntities);
+        exportParties(xmlImport, relatedEntities.getPartyDescItems(), recordMap);
+        exportPackets(xmlImport, relatedEntities.getPacketDescItems());
 
         return xmlImport;
     }
 
+    /**
+     * Export obalů. Přidá do exportovaných dat obaly a nastaví je do hodnot které na ně odkazují.
+     *
+     * @param xmlImport exportovaná data
+     * @param packetDescItems použité obaly a hodnoty atributů kde byly použity
+     */
     private void exportPackets(final XmlImport xmlImport, final Map<Integer, List<DescItemPacketRef>> packetDescItems) {
         Assert.notNull(xmlImport);
         Assert.notNull(packetDescItems);
 
+        List<Packet> packets = new ArrayList<>(packetDescItems.size());
         ObjectListIterator<Integer> iterator = new ObjectListIterator<>(packetDescItems.keySet());
         while (iterator.hasNext()) {
             List<Integer> packetIds = iterator.next();
-            List<ArrPacket> packets = packetRepository.findAll(packetIds);
-            for (ArrPacket arrPacket : packets) {
+            List<ArrPacket> arrPackets = packetRepository.findAll(packetIds);
+            for (ArrPacket arrPacket : arrPackets) {
                 Packet packet = createPacket(arrPacket);
+                packets.add(packet);
                 updateDescItemPacketReferences(packet, packetDescItems);
             }
         }
+
+        xmlImport.setPackets(packets);
     }
 
     /**
@@ -250,6 +273,13 @@ public class XmlExportService {
         }
     }
 
+    /**
+     * Vytvoří obal.
+     *
+     * @param arrPacket obalz db
+     *
+     * @return obal pro xml
+     */
     private Packet createPacket(final ArrPacket arrPacket) {
         Packet packet = new Packet();
 
@@ -260,6 +290,13 @@ public class XmlExportService {
         return packet;
     }
 
+    /**
+     * Export osob. Přidá do exportovaných dat osoby a nastaví je do hodnot které na ně odkazují.
+     *
+     * @param xmlImport exportovaná data
+     * @param partyDescItems použité osoby a hodnoty atributů kde byly použity
+     * @param recordMap exportované rejstříky, pro vazbu na osoby
+     */
     private void exportParties(final XmlImport xmlImport, final Map<Integer, List<DescItemPartyRef>> partyDescItems,
             final Map<Integer, Record> recordMap) {
         Assert.notNull(xmlImport);
@@ -270,12 +307,15 @@ public class XmlExportService {
         Map<String, AbstractParty> partyMap = new HashMap<>(partyDescItems.size());
         // id osoby na seznam id autorů
         Map<AbstractParty, List<String>> partyCreatorsMap = new HashMap<>(partyDescItems.size());
+
+        List<AbstractParty> parties = new ArrayList<>(partyDescItems.size());
         ObjectListIterator<Integer> iterator = new ObjectListIterator<>(partyDescItems.keySet());
         while (iterator.hasNext()) {
             List<Integer> partyIds = iterator.next();
-            List<ParParty> parties = partyRepository.findAll(partyIds);
-            for (ParParty parParty : parties) {
+            List<ParParty> parParties = partyRepository.findAll(partyIds);
+            for (ParParty parParty : parParties) {
                 AbstractParty party = createParty(parParty, recordMap, partyCreatorsMap);
+                parties.add(party);
                 partyMap.put(party.getPartyId(), party);
                 updateDescItemPartyReferences(party, partyDescItems);
             }
@@ -285,6 +325,8 @@ public class XmlExportService {
             List<AbstractParty> creators = creatorIds.stream().map(id -> partyMap.get(id)).collect(Collectors.toList());
             party.setCreators(creators);
         });
+
+        xmlImport.setParties(parties);
     }
 
     /**
@@ -303,18 +345,30 @@ public class XmlExportService {
         }
     }
 
-    private AbstractParty createParty(final ParParty parParty, final Map<Integer, Record> recordMap, final Map<AbstractParty, List<String>> partyCreatorsMap) {
+    /**
+     * Vytvoření osoby.
+     *
+     * @param parParty osoba do
+     * @param recordMap exportované rejstříky
+     * @param partyCreatorsMap mapa do které se naplní vazby na autory vytvářené osoby
+     *
+     * @return exportovaná osoba
+     */
+    private AbstractParty createParty(final ParParty parParty, final Map<Integer, Record> recordMap,
+            final Map<AbstractParty, List<String>> partyCreatorsMap) {
         Assert.notNull(parParty);
 
+        ParParty deproxiedParty = ProxyUtils.deproxy(parParty);
+
         AbstractParty party;
-        if (parParty instanceof ParDynasty) {
-            party = createDynasty((ParDynasty) parParty, recordMap, partyCreatorsMap);
-        } else if (parParty instanceof ParEvent) {
-            party = createEvent((ParEvent) parParty, recordMap, partyCreatorsMap);
-        } else if (parParty instanceof ParPartyGroup) {
-            party = createPartyGroup((ParPartyGroup) parParty, recordMap, partyCreatorsMap);
-        } else if (parParty instanceof ParPerson) {
-            party = createPerson((ParPerson) parParty, recordMap, partyCreatorsMap);
+        if (deproxiedParty instanceof ParDynasty) {
+            party = createDynasty((ParDynasty) deproxiedParty, recordMap, partyCreatorsMap);
+        } else if (deproxiedParty instanceof ParEvent) {
+            party = createEvent((ParEvent) deproxiedParty, recordMap, partyCreatorsMap);
+        } else if (deproxiedParty instanceof ParPartyGroup) {
+            party = createPartyGroup((ParPartyGroup) deproxiedParty, recordMap, partyCreatorsMap);
+        } else if (deproxiedParty instanceof ParPerson) {
+            party = createPerson((ParPerson) deproxiedParty, recordMap, partyCreatorsMap);
         } else {
             throw new IllegalStateException("Nepodporovaný typ osoby " + parParty.getClass());
         }
@@ -322,7 +376,16 @@ public class XmlExportService {
         return party;
     }
 
-    private void fillCommonAttributes(final AbstractParty party, final ParParty parParty, final Map<Integer, Record> recordMap, final Map<AbstractParty, List<String>> partyCreatorsMap) {
+    /**
+     * Zkopírování společných vlastností osob.
+     *
+     * @param party exportovaná osoba
+     * @param parParty osoba do
+     * @param recordMap exportované rejstříky
+     * @param partyCreatorsMap mapa do které se naplní vazby na autory vytvářené osoby
+     */
+    private void fillCommonAttributes(final AbstractParty party, final ParParty parParty,
+            final Map<Integer, Record> recordMap, final Map<AbstractParty, List<String>> partyCreatorsMap) {
         Assert.notNull(party);
         Assert.notNull(parParty);
         Assert.notNull(recordMap);
@@ -336,9 +399,11 @@ public class XmlExportService {
         }
         party.setEvents(createEvents(parParty.getRelations(), recordMap));
 
-        party.setFromDate(createComplexDate(parParty.getFrom()));
+        party.setFromDate(XmlImportUtils.createComplexDate(parParty.getFrom()));
         party.setHistory(parParty.getHistory());
-        party.setInstitution(createInstituion(parParty.getInstitution()));
+
+        ParInstitution parInstitution = institutionRepository.findByParty(parParty);
+        party.setInstitution(createInstituion(parInstitution));
         party.setPartyId(parParty.getPartyId().toString());
         party.setPartyTypeCode(parParty.getPartyType().getCode());
         party.setPreferredName(createPartyName(parParty.getPreferredName()));
@@ -351,10 +416,18 @@ public class XmlExportService {
         party.setRecord(record);
 
         party.setSourceInformations(parParty.getSourceInformation());
-        party.setToDate(createComplexDate(parParty.getTo()));
+        party.setToDate(XmlImportUtils.createComplexDate(parParty.getTo()));
         party.setVariantNames(createVariantNames(parParty.getPartyNames()));
     }
 
+    /**
+     * Vytvoření vztahů a událostí.
+     *
+     * @param parRelations do vztahy a události
+     * @param recordMap exportované rejstříky
+     *
+     * @return exportované vztahy a události
+     */
     private List<Relation> createEvents(final List<ParRelation> parRelations, final Map<Integer, Record> recordMap) {
         if (CollectionUtils.isEmpty(parRelations)) {
             return null;
@@ -363,6 +436,14 @@ public class XmlExportService {
         return parRelations.stream().map(relation -> createRelation(relation, recordMap)).collect(Collectors.toList());
     }
 
+    /**
+     * Vytvoření vztahu nebo události.
+     *
+     * @param parRelation do vztah neob událost
+     * @param recordMap exportované rejstříky
+     *
+     * @return exportovaný vztahynebo událost
+     */
     private Relation createRelation(final ParRelation parRelation, final Map<Integer, Record> recordMap) {
         Assert.notNull(parRelation);
 
@@ -370,7 +451,7 @@ public class XmlExportService {
 
         relation.setClassTypeCode(parRelation.getComplementType().getClassType());
         relation.setDateNote(parRelation.getDateNote());
-        relation.setFromDate(createComplexDate(parRelation.getFrom()));
+        relation.setFromDate(XmlImportUtils.createComplexDate(parRelation.getFrom()));
         relation.setNote(parRelation.getNote());
         relation.setRelationTypeCode(parRelation.getComplementType().getCode());
 
@@ -378,11 +459,19 @@ public class XmlExportService {
         List<ParRelationEntity> parRelationEntities = relationEntityRepository.findByParty(parRelation.getParty());
         relation.setRoleTypes(createRoleTypes(parRelationEntities, recordMap));
         relation.setSource(parRelation.getSource());
-        relation.setToDate(createComplexDate(parRelation.getTo()));
+        relation.setToDate(XmlImportUtils.createComplexDate(parRelation.getTo()));
 
         return relation;
     }
 
+    /**
+     * Vytvoření entit souvisejících se vztahem/událostí.
+     *
+     * @param parRelationEntities entity související se vztahem/událostí
+     * @param recordMap exportované rejstříky
+     *
+     * @return exportované entity související se vztahem/událostí
+     */
     private List<RoleType> createRoleTypes(final List<ParRelationEntity> parRelationEntities, final Map<Integer, Record> recordMap) {
         if (CollectionUtils.isEmpty(parRelationEntities)) {
             return null;
@@ -391,6 +480,14 @@ public class XmlExportService {
         return parRelationEntities.stream().map(entity -> createRoleType(entity, recordMap)).collect(Collectors.toList());
     }
 
+    /**
+     * Vytvoření entity související se vztahem/událostí.
+     *
+     * @param parRelationEntity entita související se vztahem/událostí
+     * @param recordMap exportované rejstříky
+     *
+     * @return exportovaná entita související se vztahem/událostí
+     */
     private RoleType createRoleType(final ParRelationEntity parRelationEntity, final Map<Integer, Record> recordMap) {
         RoleType roleType = new RoleType();
 
@@ -402,6 +499,13 @@ public class XmlExportService {
         return roleType;
     }
 
+    /**
+     * Vytvoření jmen osoby.
+     *
+     * @param parPartyNames do jméno osoby
+     *
+     * @return exportovaná jména osoby
+     */
     private List<PartyName> createVariantNames(final List<ParPartyName> parPartyNames) {
         if (CollectionUtils.isEmpty(parPartyNames)) {
             return null;
@@ -410,27 +514,41 @@ public class XmlExportService {
         return parPartyNames.stream().map(name -> createPartyName(name)).collect(Collectors.toList());
     }
 
-    private PartyName createPartyName(final ParPartyName preferredName) {
-        if (preferredName == null) {
+    /**
+     * Vytvoření jména osoby.
+     *
+     * @param parPartyName do jméno osoby
+     *
+     * @return exportované jméno osoby
+     */
+    private PartyName createPartyName(final ParPartyName parPartyName) {
+        if (parPartyName == null) {
             return null;
         }
 
         PartyName partyName = new PartyName();
 
-        partyName.setDegreeAfter(preferredName.getDegreeAfter());
-        partyName.setDegreeBefore(preferredName.getDegreeBefore());
-        partyName.setMainPart(preferredName.getMainPart());
-        partyName.setNote(preferredName.getNote());
-        partyName.setOtherPart(preferredName.getOtherPart());
+        partyName.setDegreeAfter(parPartyName.getDegreeAfter());
+        partyName.setDegreeBefore(parPartyName.getDegreeBefore());
+        partyName.setMainPart(parPartyName.getMainPart());
+        partyName.setNote(parPartyName.getNote());
+        partyName.setOtherPart(parPartyName.getOtherPart());
 
-        partyName.setPartyNameComplements(createPartyNameComplements(preferredName.getPartyNameComplements()));
-        partyName.setPartyNameFormTypeCode(preferredName.getNameFormType().getCode());
-        partyName.setValidFrom(createComplexDate(preferredName.getValidFrom()));
-        partyName.setValidTo(createComplexDate(preferredName.getValidTo()));
+        partyName.setPartyNameComplements(createPartyNameComplements(parPartyName.getPartyNameComplements()));
+        partyName.setPartyNameFormTypeCode(parPartyName.getNameFormType().getCode());
+        partyName.setValidFrom(XmlImportUtils.createComplexDate(parPartyName.getValidFrom()));
+        partyName.setValidTo(XmlImportUtils.createComplexDate(parPartyName.getValidTo()));
 
         return partyName;
     }
 
+    /**
+     * Vytvoření doplňků jména osoby.
+     *
+     * @param parPartyNameComplements do doplňky jména osoby
+     *
+     * @return exportované doplňky jména osoby
+     */
     private List<PartyNameComplement> createPartyNameComplements(final List<ParPartyNameComplement> parPartyNameComplements) {
         if (CollectionUtils.isEmpty(parPartyNameComplements)) {
             return null;
@@ -440,6 +558,13 @@ public class XmlExportService {
                 collect(Collectors.toList());
     }
 
+    /**
+     * Vytvoření doplňku jména osoby.
+     *
+     * @param parPartyNameComplement do doplněk jména osoby
+     *
+     * @return exportovaný doplněk jména osoby
+     */
     private PartyNameComplement createPartyNameComplement(final ParPartyNameComplement parPartyNameComplement) {
         Assert.notNull(parPartyNameComplement);
 
@@ -451,6 +576,13 @@ public class XmlExportService {
         return partyNameComplement;
     }
 
+    /**
+     * Vytvoření instituce.
+     *
+     * @param parInstitutiondo instituce
+     *
+     * @return exportovaná instituce
+     */
     private Institution createInstituion(final ParInstitution parInstitution) {
         if (parInstitution == null) {
             return null;
@@ -463,20 +595,15 @@ public class XmlExportService {
         return institution;
     }
 
-    private ComplexDate createComplexDate(final ParUnitdate parUnitdate) {
-        if (parUnitdate == null) {
-            return null;
-        }
-
-        ComplexDate complexDate = new ComplexDate();
-
-        complexDate.setSpecificDateFrom(XmlImportUtils.stringToDate(parUnitdate.getValueFrom()));
-        complexDate.setSpecificDateTo(XmlImportUtils.stringToDate(parUnitdate.getValueTo()));
-        complexDate.setTextDate(parUnitdate.getTextDate());
-
-        return complexDate;
-    }
-
+    /**
+     * Vytvoření osoby.
+     *
+     * @param parPerson do osoby
+     * @param recordMap exportované rejstříky
+     * @param partyCreatorsMap mapa pro naplnění id autorů exportované osoby
+     *
+     * @return exportovaná osoba
+     */
     private AbstractParty createPerson(final ParPerson parPerson, final Map<Integer, Record> recordMap, final Map<AbstractParty, List<String>> partyCreatorsMap) {
         Assert.notNull(parPerson);
         Assert.notNull(recordMap);
@@ -487,6 +614,15 @@ public class XmlExportService {
         return person;
     }
 
+    /**
+     * Vytvoření organizace nebo skupiny osob.
+     *
+     * @param parPartyGroup do organizace nebo skupiny osob
+     * @param recordMap exportované rejstříky
+     * @param partyCreatorsMap mapa pro naplnění id autorů exportované osoby
+     *
+     * @return exportovaná organizace nebo skupina osob
+     */
     private AbstractParty createPartyGroup(final ParPartyGroup parPartyGroup, final Map<Integer, Record> recordMap, final Map<AbstractParty, List<String>> partyCreatorsMap) {
         Assert.notNull(parPartyGroup);
         Assert.notNull(recordMap);
@@ -503,6 +639,13 @@ public class XmlExportService {
         return partyGroup;
     }
 
+    /**
+     * Vytvoření kódů/identifikací osob.
+     *
+     * @param partyGroupIdentifiers do kódy/identifikace osob
+     *
+     * @return exportované kódy/identifikace osob
+     */
     private List<PartyGroupId> createPartyGroupIds(final List<ParPartyGroupIdentifier> partyGroupIdentifiers) {
         if (CollectionUtils.isEmpty(partyGroupIdentifiers)) {
             return null;
@@ -512,6 +655,13 @@ public class XmlExportService {
                 collect(Collectors.toList());
     }
 
+    /**
+     * Vytvoření kódu/identifikace osoby.
+     *
+     * @param parPartyGroupIdentifier do kód/identifikace osoby
+     *
+     * @return exportovaný kód/identifikace osoby
+     */
     private PartyGroupId createPartyGroupId(final ParPartyGroupIdentifier parPartyGroupIdentifier) {
         Assert.notNull(parPartyGroupIdentifier);
 
@@ -520,12 +670,21 @@ public class XmlExportService {
         partyGroupId.setId(parPartyGroupIdentifier.getIdentifier());
         partyGroupId.setNote(parPartyGroupIdentifier.getNote());
         partyGroupId.setSource(parPartyGroupIdentifier.getSource());
-        partyGroupId.setValidFrom(createComplexDate(parPartyGroupIdentifier.getFrom()));
-        partyGroupId.setValidTo(createComplexDate(parPartyGroupIdentifier.getTo()));
+        partyGroupId.setValidFrom(XmlImportUtils.createComplexDate(parPartyGroupIdentifier.getFrom()));
+        partyGroupId.setValidTo(XmlImportUtils.createComplexDate(parPartyGroupIdentifier.getTo()));
 
         return partyGroupId;
     }
 
+    /**
+     * Vytvoření akce.
+     *
+     * @param parEvent do akce
+     * @param recordMap exportované rejstříky
+     * @param partyCreatorsMap mapa pro naplnění id autorů exportované osoby
+     *
+     * @return exportovaná akce
+     */
     private AbstractParty createEvent(final ParEvent parEvent, final Map<Integer, Record> recordMap, final Map<AbstractParty, List<String>> partyCreatorsMap) {
         Assert.notNull(parEvent);
         Assert.notNull(recordMap);
@@ -536,6 +695,15 @@ public class XmlExportService {
         return event;
     }
 
+    /**
+     * Vytvoření rodu.
+     *
+     * @param parDynasty do rod
+     * @param recordMap exportované rejstříky
+     * @param partyCreatorsMap mapa pro naplnění id autorů exportované osoby
+     *
+     * @return exportovaný rod
+     */
     private AbstractParty createDynasty(final ParDynasty parDynasty, final Map<Integer, Record> recordMap, final Map<AbstractParty, List<String>> partyCreatorsMap) {
         Assert.notNull(parDynasty);
         Assert.notNull(recordMap);
@@ -548,13 +716,25 @@ public class XmlExportService {
         return dynasty;
     }
 
-    private Map<Integer, Record> exportRecords(final XmlImport xmlImport, final Map<Integer, List<Level>> recordLevels, final Map<Integer, List<DescItemRecordRef>> recordDescItems) {
+    /**
+     * Export rejstříků. Přidá do exportovaných dat rejstříky a nastaví je do hodnot a uzlů které na ně odkazují.
+     *
+     * @param xmlImport exportovaná data
+     * @param relatedEntities vazby na entity které se budou exportova později
+     *
+     * @return recordMap exportované rejstříky
+     */
+    private Map<Integer, Record> exportRecords(final XmlImport xmlImport, final RelatedEntities relatedEntities) {
         Assert.notNull(xmlImport);
-        Assert.notNull(recordLevels);
-        Assert.notNull(recordDescItems);
+        Assert.notNull(relatedEntities);
+
+        Map<Integer, List<DescItemRecordRef>> recordDescItems = relatedEntities.getRecordDescItems();
+        Map<Integer, List<Level>> recordLevels = relatedEntities.getRecordLevels();
 
         Set<Integer> allRecordIds = new HashSet<>(recordLevels.keySet());
         allRecordIds.addAll(recordDescItems.keySet());
+        allRecordIds.addAll(relatedEntities.getOtherUsedRecords());
+
         Map<Integer, Record> recordMap = new HashMap<>();
         Map<Integer, List<Record>> parentIdToChildrenRecords = new HashMap<>();
         ObjectListIterator<Integer> iterator = new ObjectListIterator<>(allRecordIds);
@@ -638,6 +818,13 @@ public class XmlExportService {
         }
     }
 
+    /**
+     * Vytvoření rejstříku.
+     *
+     * @param regRecord do rejstříku
+     *
+     * @return exportovaný rejstřík
+     */
     private Record createRecord(final RegRecord regRecord) {
         Record record = new Record();
 
@@ -677,34 +864,26 @@ public class XmlExportService {
      *
      * @param nodeIdsToExport id nodů které se mají exportovat
      * @param version verze archivního fondu
-     * @param recordLevels mapa do které se naplní id rejstříku a seznam levelů které na něj odkazují
-     * @param recordDescItems mapa do které se naplní id rejstříku a seznam hodnot atributů které na něj odkazují
-     * @param partyDescItems mapa do které se naplní id osoby a seznam hodnot atributů které na ni odkazují
-     * @param packetDescItems mapa do které se naplní id obalu a seznam hodnot atributů které na něj odkazují
+     * @param relatedEntities vazby na entity které se budou exportova později
      * @param findParents příznak zda se k nodům z parametru nodeIdsToExport mají dohledat rodiče
      */
     private Level exportNodeTree(final Set<Integer> nodeIdsToExport, final ArrFundVersion version,
-            final Map<Integer, List<Level>> recordLevels, final Map<Integer, List<DescItemRecordRef>> recordDescItems,
-            final Map<Integer, List<DescItemPartyRef>> partyDescItems, final Map<Integer, List<DescItemPacketRef>> packetDescItems,
-            final boolean findParents) {
+            final RelatedEntities relatedEntities, final boolean findParents) {
         Assert.notEmpty(nodeIdsToExport);
         Assert.notNull(version);
-        Assert.notNull(recordLevels);
-        Assert.notNull(recordDescItems);
-        Assert.notNull(partyDescItems);
-        Assert.notNull(packetDescItems);
+        Assert.notNull(relatedEntities);
 
         // mapa pro id nodu z parametru nodeIdsToExport na jeho Level který se vytvoří při hledání parentů
         Queue<LevelWithChildrenIds> childrenToExport = new LinkedList<>();
         Level rootLevel;
         if (findParents) {
-            rootLevel = exportParents(nodeIdsToExport, version, childrenToExport, recordLevels, recordDescItems, partyDescItems, packetDescItems);
+            rootLevel = exportParents(nodeIdsToExport, version, childrenToExport, relatedEntities);
         } else {
             Assert.isTrue(nodeIdsToExport.size() == 1, "V tomto případě by v množině mělo být jen id kořenového uzlu.");
 
             Integer nodeId = nodeIdsToExport.iterator().next();
             ArrNode arrNode = nodeRepository.findOne(nodeId);
-            LevelWithChildrenIds levelWithChildrenIds = exportLevel(arrNode, version, null, recordLevels, recordDescItems, partyDescItems, packetDescItems);
+            LevelWithChildrenIds levelWithChildrenIds = exportLevel(arrNode, version, null, relatedEntities);
             childrenToExport.add(levelWithChildrenIds);
 
             rootLevel = levelWithChildrenIds.getLevel();
@@ -715,7 +894,7 @@ public class XmlExportService {
             List<Integer> childrenIds = parent.getChildrenIds();
             if (!childrenIds.isEmpty()) {
                 nodeRepository.findAll(childrenIds).forEach(arrNode -> {
-                    childrenToExport.add(exportLevel(arrNode, version, parent.getLevel(), recordLevels, recordDescItems, partyDescItems, packetDescItems));
+                    childrenToExport.add(exportLevel(arrNode, version, parent.getLevel(), relatedEntities));
                 });
             }
         }
@@ -723,10 +902,18 @@ public class XmlExportService {
         return rootLevel;
     }
 
+    /**
+     * Export uzlu.
+     *
+     * @param arrNode do uzlu
+     * @param version do verze
+     * @param parent exportovaný rodič
+     * @param relatedEntities vazby na entity které se budou exportova později
+     *
+     * @return exportovaný uzel s id potomků
+     */
     private LevelWithChildrenIds exportLevel(final ArrNode arrNode, final ArrFundVersion version, final Level parent,
-            final Map<Integer, List<Level>> recordLevels, final Map<Integer, List<DescItemRecordRef>> recordDescItems,
-            final Map<Integer, List<DescItemPartyRef>> partyDescItems,
-            final Map<Integer, List<DescItemPacketRef>> packetDescItems) {
+            final RelatedEntities relatedEntities) {
         ArrChange lockChange = version.getLockChange();
         ArrFund arrFund = version.getFund();
         List<ArrLevel> levels = levelRepository.findByNode(arrNode, lockChange);
@@ -738,29 +925,38 @@ public class XmlExportService {
             }
         }
 
-        Assert.isTrue(levels.size() == 1, "Node nemůže mít pro jednu změnu více než jeden level.");
+        Assert.isTrue(levels.size() == 1, "Node nemůže mít pro jednu změnu/verzi více než jeden level.");
 
         ArrLevel arrLevel = levels.iterator().next();
         Set<Integer> nodeIds = new HashSet<>();
         nodeIds.add(arrNode.getNodeId());
         List<ArrData> dataList = dataRepository.findDescItemsByNodeIds(nodeIds, null, version);
 
-        Level level = createLevel(arrLevel, parent, dataList, recordLevels, recordDescItems, partyDescItems, packetDescItems);
+        Level level = createLevel(arrLevel, parent, dataList, relatedEntities);
 
         Map<Integer, TreeNode> treeCache = levelTreeCacheService.getVersionTreeCache(version);
         List<Integer> childrenIds = treeCache.get(arrNode.getNodeId()).getChilds().stream().map(ch -> ch.getId()).collect(Collectors.toList());
         return new LevelWithChildrenIds(level, childrenIds);
     }
 
-    private Level createLevel(final ArrLevel arrLevel, final Level parent, final List<ArrData> dataList, final Map<Integer, List<Level>> recordLevels,
-            final Map<Integer, List<DescItemRecordRef>> recordDescItems, final Map<Integer, List<DescItemPartyRef>> partyDescItems,
-            final Map<Integer, List<DescItemPacketRef>> packetDescItems) {
+    /**
+     * Vytvoření uzlu.
+     *
+     * @param arrLevel do level
+     * @param parent exprotovaný rodič
+     * @param dataList hodnoty uzlu
+     * @param relatedEntities vazby na entity které se budou exportova později
+     *
+     * @return exportovaný uzel
+     */
+    private Level createLevel(final ArrLevel arrLevel, final Level parent, final List<ArrData> dataList,
+            final RelatedEntities relatedEntities) {
         Level level = new Level();
 
         level.setPosition(arrLevel.getPosition());
         level.setUuid(arrLevel.getNode().getUuid());
 
-        level.setDescItems(createDescItems(dataList, recordDescItems, partyDescItems, packetDescItems));
+        level.setDescItems(createDescItems(dataList, relatedEntities));
 
         if (parent != null) {
             List<Level> subLevels = parent.getSubLevels();
@@ -774,19 +970,22 @@ public class XmlExportService {
         // zaznamenat rejstříky pro level
         List<RegRecord> records = nodeRegisterRepository.findRecordsByNode(arrLevel.getNode());
         records.forEach(r -> {
-            Integer recordId = r.getRecordId();
-            List<Level> levels = recordLevels.get(recordId);
-            if (levels == null) {
-                levels = new LinkedList<>();
-                recordLevels.put(recordId, levels);
-            }
-            levels.add(level);
+            relatedEntities.addRecordLevel(r.getRecordId(), level);
         });
 
         return level;
     }
 
-    private List<AbstractDescItem> createDescItems(final List<ArrData> dataList, final Map<Integer, List<DescItemRecordRef>> recordDescItems, final Map<Integer, List<DescItemPartyRef>> partyDescItems, final Map<Integer, List<DescItemPacketRef>> packetDescItems) {
+    /**
+     * Vytvoření hodnot atributů.
+     *
+     * @param dataList do seznam hodnot
+     * @param relatedEntities vazby na entity které se budou exportova později
+     *
+     * @return seznam exportovaných hodnot
+     */
+    private List<AbstractDescItem> createDescItems(final List<ArrData> dataList,
+            final RelatedEntities relatedEntities) {
         Assert.notNull(dataList);
 
         List<AbstractDescItem> descItems = new ArrayList<>(dataList.size());
@@ -809,13 +1008,18 @@ public class XmlExportService {
 
                 fillCommonAttributes(descItem, arrdescItem);
 
-                Integer partyId = arrDataPartyRef.getParty().getPartyId();
-                List<DescItemPartyRef> descItemsPartyRef = partyDescItems.get(partyId);
-                if (descItemsPartyRef == null) {
-                    descItemsPartyRef = new LinkedList<>();
-                    partyDescItems.put(partyId, descItemsPartyRef);
-                }
-                descItemsPartyRef.add(descItem);
+                ParParty parParty = arrDataPartyRef.getParty();
+                Integer partyId = parParty.getPartyId();
+                // přidat rejstřík z osoby a z roleType
+                Integer recordId = parParty.getRecord().getRecordId();
+                relatedEntities.addOtherUsedRecords(recordId);
+                List<ParRelationEntity> parRelationEntities = relationEntityRepository.findByParty(parParty);
+                parRelationEntities.forEach(entity -> {
+                    relatedEntities.addOtherUsedRecords(entity.getRecord().getRecordId());
+                });
+
+
+                relatedEntities.addPartyDescItem(partyId, descItem);
 
                 descItems.add(descItem);
             } else if (dataTypeCode.equals("RECORD_REF")) {
@@ -825,12 +1029,7 @@ public class XmlExportService {
                 fillCommonAttributes(descItem, arrdescItem);
 
                 Integer recordId = arrDataRecordRef.getRecord().getRecordId();
-                List<DescItemRecordRef> descItemsRecordRef = recordDescItems.get(recordId);
-                if (descItemsRecordRef == null) {
-                    descItemsRecordRef = new LinkedList<>();
-                    recordDescItems.put(recordId, descItemsRecordRef);
-                }
-                descItemsRecordRef.add(descItem);
+                relatedEntities.addRecordDescItem(recordId, descItem);
 
                 descItems.add(descItem);
             } else if (dataTypeCode.equals("PACKET_REF")) {
@@ -840,12 +1039,7 @@ public class XmlExportService {
                 fillCommonAttributes(descItem, arrdescItem);
 
                 Integer packetId = arrDataPacketRef.getPacket().getPacketId();
-                List<DescItemPacketRef> descItemsPacketRef = packetDescItems.get(packetId);
-                if (descItemsPacketRef == null) {
-                    descItemsPacketRef = new LinkedList<>();
-                    packetDescItems.put(packetId, descItemsPacketRef);
-                }
-                descItemsPacketRef.add(descItem);
+                relatedEntities.addPacketDescItem(packetId, descItem);
 
                 descItems.add(descItem);
             } else if (dataTypeCode.equals("UNITDATE")) {
@@ -921,32 +1115,6 @@ public class XmlExportService {
 
                 descItems.add(descItem);
             }
-
-            if (arrdescItem instanceof ArrDescItemCoordinates) {
-
-            } else if (arrdescItem instanceof ArrDescItemDecimal) {
-
-            } else if (arrdescItem instanceof ArrDescItemFormattedText) {
-
-            } else if (arrdescItem instanceof ArrDescItemInt) {
-
-            } else if (arrdescItem instanceof ArrDescItemPacketRef) {
-
-            } else if (arrdescItem instanceof ArrDescItemPartyRef) {
-
-            } else if (arrdescItem instanceof ArrDescItemRecordRef) {
-
-            } else if (arrdescItem instanceof ArrDescItemString) {
-
-            } else if (arrdescItem instanceof ArrDescItemText) {
-
-            } else if (arrdescItem instanceof ArrDescItemUnitdate) {
-
-            } else if (arrdescItem instanceof ArrDescItemUnitid) {
-
-            } else if (arrdescItem instanceof ArrDescItemEnum) {
-
-            }
         }
 
         return descItems;
@@ -968,10 +1136,18 @@ public class XmlExportService {
         }
     }
 
+    /**
+     * Export rodičů pro uzly navstupu exportu.
+     *
+     * @param nodeIdsToExport id nodů které se mají exportovat
+     * @param version verze archivního fondu
+     * @param childrenToExport naplní sem záznamy kterými se bude pokračovat v exportu po exportování rodičů
+     * @param relatedEntities vazby na entity které se budou exportova později
+     *
+     * @return root level
+     */
     private Level exportParents(final Set<Integer> nodeIdsToExport, final ArrFundVersion version,
-        final Queue<LevelWithChildrenIds> childrenToExport, final Map<Integer, List<Level>> recordLevels,
-        final Map<Integer, List<DescItemRecordRef>> recordDescItems, final Map<Integer, List<DescItemPartyRef>> partyDescItems,
-        final Map<Integer, List<DescItemPacketRef>> packetDescItems) {
+        final Queue<LevelWithChildrenIds> childrenToExport, final RelatedEntities relatedEntities) {
         Assert.notEmpty(nodeIdsToExport);
 
         Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(version);
@@ -992,7 +1168,7 @@ public class XmlExportService {
         }
 
         ArrNode rootNode = nodeRepository.findOne(rootNodeId);
-        LevelWithChildrenIds rootLevel = exportLevel(rootNode, version, null, recordLevels, recordDescItems, partyDescItems, packetDescItems);
+        LevelWithChildrenIds rootLevel = exportLevel(rootNode, version, null, relatedEntities);
         List<Integer> childrenNodeIds = parentNodeIdToChildrenIdMap.get(rootNodeId);
         if (CollectionUtils.isEmpty(childrenNodeIds)) {
             return rootLevel.getLevel();
@@ -1008,7 +1184,7 @@ public class XmlExportService {
 
             if (!childrenIds.isEmpty()) {
                 nodeRepository.findAll(childrenIds).forEach(arrNode -> {
-                    LevelWithChildrenIds levelWithChildrenIds = exportLevel(arrNode, version, parent, recordLevels, recordDescItems, partyDescItems, packetDescItems);
+                    LevelWithChildrenIds levelWithChildrenIds = exportLevel(arrNode, version, parent, relatedEntities);
                     if (nodeIdsToExport.contains(arrNode.getNodeId())) {
                         childrenToExport.add(levelWithChildrenIds);
                     }
@@ -1019,6 +1195,13 @@ public class XmlExportService {
         return rootLevel.getLevel();
     }
 
+    /**
+     * Naplní rodiče uzlů do mapy kde jsou id uzlů a seznam id jejich potomků.
+     *
+     * @param nodeId id uzlu
+     * @param parentIds seznam id rodičů
+     * @param parentNodeIdToChildrenIdMap mapa do které se naplní id uzlu a seznam id jeho potomků
+     */
     private void putParentIdsToMap(final Integer nodeId, final List<Integer> parentIds,
             final Map<Integer, List<Integer>> parentNodeIdToChildrenIdMap) {
         Assert.notNull(nodeId);
@@ -1041,6 +1224,14 @@ public class XmlExportService {
         }
     }
 
+    /**
+     * Najde v cache id rodičů předaného uzlu.
+     *
+     * @param nodeId id uzlu pro který hledáme rodiče
+     * @param versionTreeCache cache
+     *
+     * @return seznam id rodičů, první prvek je přímý rodič, poslední prvek je root
+     */
     private List<Integer> getParentIds(final Integer nodeId, final Map<Integer, TreeNode> versionTreeCache) {
         TreeNode treeNode = versionTreeCache.get(nodeId);
         if (treeNode == null) {
@@ -1058,6 +1249,14 @@ public class XmlExportService {
         return parentIds;
     }
 
+    /**
+     * Vytvoření archivního souboru.
+     *
+     * @param arrFund do archivního souboru
+     * @param version verze
+     *
+     * @return exportovaný archivní soubor
+     */
     private Fund createFund(final ArrFund arrFund, final ArrFundVersion version) {
         Fund fund = new Fund();
 
@@ -1079,7 +1278,10 @@ public class XmlExportService {
         return XmlUtils.getTransformationNames(transformationsDirectory);
     }
 
-    private static class LevelWithChildrenIds {
+    /**
+     * Exportovaný level a seznam id potomků.
+     */
+    private class LevelWithChildrenIds {
 
         private Level level;
 
@@ -1099,6 +1301,101 @@ public class XmlExportService {
 
         public List<Integer> getChildrenIds() {
             return childrenIds;
+        }
+    }
+
+    /**
+     * Vazby na entity které se budou exportova později.
+     */
+    private class RelatedEntities {
+
+        /** Mapa do které se naplní id rejstříku a seznam levelů které na něj odkazují. */
+        private Map<Integer, List<Level>> recordLevels = new HashMap<>();
+
+        /** Mapa do které se naplní id rejstříku a seznam hodnot atributů které na něj odkazují. */
+        private Map<Integer, List<DescItemRecordRef>> recordDescItems = new HashMap<>();
+
+        /** Mapa do které se naplní id osoby a seznam hodnot atributů které na ni odkazují. */
+        private Map<Integer, List<DescItemPartyRef>> partyDescItems = new HashMap<>();
+
+        /** Mapa do které se naplní id obalu a seznam hodnot atributů které na něj odkazují. */
+        private Map<Integer, List<DescItemPacketRef>> packetDescItems = new HashMap<>();
+
+        /** Použité rejstříky z dalších entit. */
+        private Set<Integer> otherUsedRecords = new HashSet<>();
+
+        public void addRecordLevel(final Integer recordId, final Level level) {
+            Assert.notNull(recordId);
+            Assert.notNull(level);
+
+            List<Level> levels = recordLevels.get(recordId);
+            if (levels == null) {
+                levels = new LinkedList<>();
+                recordLevels.put(recordId, levels);
+            }
+            levels.add(level);
+        }
+
+        public void addRecordDescItem(final Integer recordId, final DescItemRecordRef descItem) {
+            Assert.notNull(recordId);
+            Assert.notNull(descItem);
+
+            List<DescItemRecordRef> descItemsRecordRef = recordDescItems.get(recordId);
+            if (descItemsRecordRef == null) {
+                descItemsRecordRef = new LinkedList<>();
+                recordDescItems.put(recordId, descItemsRecordRef);
+            }
+            descItemsRecordRef.add(descItem);
+        }
+
+        public void addPartyDescItem(final Integer partyId, final DescItemPartyRef descItem) {
+            Assert.notNull(partyId);
+            Assert.notNull(descItem);
+
+            List<DescItemPartyRef> descItemsPartyRef = partyDescItems.get(partyId);
+            if (descItemsPartyRef == null) {
+                descItemsPartyRef = new LinkedList<>();
+                partyDescItems.put(partyId, descItemsPartyRef);
+            }
+            descItemsPartyRef.add(descItem);
+        }
+
+        public void addPacketDescItem(final Integer packetId, final DescItemPacketRef descItem) {
+            Assert.notNull(packetId);
+            Assert.notNull(descItem);
+
+            List<DescItemPacketRef> descItemsPacketRef = packetDescItems.get(packetId);
+            if (descItemsPacketRef == null) {
+                descItemsPacketRef = new LinkedList<>();
+                packetDescItems.put(packetId, descItemsPacketRef);
+            }
+            descItemsPacketRef.add(descItem);
+        }
+
+        public void addOtherUsedRecords(final Integer recordId) {
+            Assert.notNull(recordId);
+
+            otherUsedRecords.add(recordId);
+        }
+
+        public Map<Integer, List<Level>> getRecordLevels() {
+            return recordLevels;
+        }
+
+        public Map<Integer, List<DescItemRecordRef>> getRecordDescItems() {
+            return recordDescItems;
+        }
+
+        public Map<Integer, List<DescItemPartyRef>> getPartyDescItems() {
+            return partyDescItems;
+        }
+
+        public Map<Integer, List<DescItemPacketRef>> getPacketDescItems() {
+            return packetDescItems;
+        }
+
+        public Set<Integer> getOtherUsedRecords() {
+            return otherUsedRecords;
         }
     }
 }

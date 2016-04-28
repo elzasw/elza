@@ -675,7 +675,7 @@ class WebApi{
     }
 
     getExportTransformations() {
-        return AjaxUtils.ajaxGet('/api/export/transformations') // TODO ELZA-851 - čeká
+        return AjaxUtils.ajaxGet('/api/xmlExportManagerV2/transformations')
             .then(json=>{
                 return json
             });
@@ -793,7 +793,7 @@ class WebApi{
     }
 
     exportFund(versionId, transformationName) {
-        return AjaxUtils.ajaxPost('/api/export/fund', null, {versionId, transformationName});  // TODO ELZA-851 - čeká
+        return AjaxUtils.ajaxPost('/api/xmlExportManagerV2/export', null, {versionId, transformationName});
     }
 }
 

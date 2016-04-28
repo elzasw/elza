@@ -26,6 +26,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import cz.tacr.elza.service.ByteStreamResult;
@@ -282,5 +283,28 @@ public class XmlUtils {
         Collections.sort(transformationNames, collator);
 
         return transformationNames;
+    }
+
+    /**
+     * Uloží pole bytů do dočasného souboru.
+     *
+     * @param data pole bytů
+     * @param prefix prefix názvu souboru
+     * @param suffix suffix názvu souboru, může být null
+     *
+     * @return dočasný soubor
+     */
+    public static File createTempFile(final byte[] data,final String prefix, final String suffix) {
+        Assert.notNull(data);
+        Assert.notNull(prefix);
+
+        try {
+            File file = File.createTempFile(prefix, suffix);
+            FileCopyUtils.copy(data, file);
+
+            return file;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }
