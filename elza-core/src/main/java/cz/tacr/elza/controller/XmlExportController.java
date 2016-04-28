@@ -10,16 +10,14 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import javax.websocket.server.PathParam;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import cz.tacr.elza.service.XmlExportService;
 import cz.tacr.elza.service.vo.XmlExportResult;
@@ -37,23 +35,24 @@ public class XmlExportController {
     @Autowired
     private XmlExportService xmlExportService;
 
-    @RequestMapping(value = "/api/xmlExportManagerV2/export", method = RequestMethod.POST, produces = "application/*")
-    public void importData(final HttpServletResponse response,
-            @RequestBody(required = true) final ExportConfig exportConfig) throws IOException {
-        Assert.notNull(exportConfig);
-        Assert.notNull(exportConfig.getVersionId());
+    @RequestMapping(value = "/api/xmlExportManagerV2/fund/{versionId}", method = RequestMethod.GET, produces = "application/*")
+    public void exportFund(final HttpServletResponse response,
+                           @PathVariable(value = "versionId") final Integer versionId,
+                           @RequestParam(value = "transformationName") final String transformationName
+    ) throws IOException {
+        Assert.notNull(versionId);
 
-        XmlExportConfig config = new XmlExportConfig(exportConfig.getVersionId());
-        if (StringUtils.isNotBlank(exportConfig.getTransformationName())) {
-            config.setTransformationName(exportConfig.getTransformationName());
+        XmlExportConfig config = new XmlExportConfig(versionId);
+        if (StringUtils.isNotBlank(transformationName)) {
+            config.setTransformationName(transformationName);
         }
 
         XmlExportResult exportResult = xmlExportService.exportData(config);
 
-        String contentType;
-        String fileName;
         ServletOutputStream outputStream = response.getOutputStream();
         if (exportResult.getTransformedData() != null) {
+            response.setContentType("application/zip");
+            response.setHeader("Content-Disposition", "attachment; filename=" + exportResult.getFundName() + ".zip");
             ZipOutputStream zos = new ZipOutputStream(outputStream);
             ZipEntry zipEntry = new ZipEntry(exportResult.getFundName() + ".xml");
             zos.putNextEntry(zipEntry);
@@ -70,13 +69,13 @@ public class XmlExportController {
             inputStream = new FileInputStream(transformedData);
             IOUtils.copy(inputStream, zos);
 
-            contentType = "application/zip";
-            fileName = exportResult.getFundName() + ".zip";
-
             inputStream.close();
             outputStream.close();
             zos.close();
         } else {
+            response.setContentType("application/xml");
+            response.setHeader("Content-Disposition", "attachment; filename=" + exportResult.getFundName() + ".xml");
+
             File xmlData = exportResult.getXmlData();
             InputStream inputStream = new FileInputStream(xmlData);
             int contentLength = FileCopyUtils.copy(inputStream, outputStream);
@@ -86,17 +85,11 @@ public class XmlExportController {
 //                    FileOutputStream fos = new FileOutputStream(export)) {
 //                FileCopyUtils.copy(fileInputStream, fos);
 //            }
-
-            contentType = "application/xml";
-            fileName = exportResult.getFundName() + ".xml";
             response.setContentLength(contentLength);
 
             inputStream.close();
             outputStream.close();
         }
-
-        response.setContentType(contentType);
-        response.setHeader("Content-Disposition", "inline; filename=" + fileName);
         response.flushBuffer();
     }
 
@@ -105,26 +98,4 @@ public class XmlExportController {
         return xmlExportService.getTransformationNames();
     }
 
-    public static class ExportConfig {
-
-        private Integer versionId;
-
-        private String transformationName;
-
-        public Integer getVersionId() {
-            return versionId;
-        }
-
-        public void setVersionId(final Integer versionId) {
-            this.versionId = versionId;
-        }
-
-        public String getTransformationName() {
-            return transformationName;
-        }
-
-        public void setTransformationName(final String transformationName) {
-            this.transformationName = transformationName;
-        }
-    }
 }

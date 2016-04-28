@@ -2,7 +2,7 @@
  * Akce pro záložky otevřených stromů AS.
  */
 
-import {WebApi} from 'actions'
+import {WebApi, UrlFactory} from 'actions'
 import {Toastr, i18n} from 'components';
 import * as types from 'actions/constants/ActionTypes';
 import {modalDialogHide} from 'actions/global/modalDialog'
@@ -99,7 +99,7 @@ export function deleteFund(fundId) {
 export function exportFund(fundId, transformationName) {
     return dispatch => {
         dispatch(modalDialogHide());
-        WebApi.exportFund(fundId, transformationName)
+        window.location.href = UrlFactory.exportFund(fundId, transformationName)
     }
 }
 

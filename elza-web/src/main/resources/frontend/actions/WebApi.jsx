@@ -17,6 +17,10 @@ class UrlFactory {
     static exportPackage(code) {
         return '/api/ruleSetManagerV2/exportPackage/' + code;
     }
+
+    static exportFund(versionId, transformationName) {
+        return '/api/xmlExportManagerV2/fund/' + versionId + '?transformationName=' + encodeURIComponent(transformationName);
+    }
 }
 
 /**
@@ -790,10 +794,6 @@ class WebApi{
 
     deleteFund(fundId) {
         return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/deleteFund/' + fundId);
-    }
-
-    exportFund(versionId, transformationName) {
-        return AjaxUtils.ajaxPost('/api/xmlExportManagerV2/export', null, {versionId, transformationName});
     }
 }
 
