@@ -7,12 +7,12 @@ require('./FundPackets.less')
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, FilterableListBox, Loading, AddPacketForm} from 'components'
+import {AbstractReactComponent, Icon, i18n, FilterableListBox, Loading, AddPacketForm} from 'components/index.jsx';
 import {DropdownButton, MenuItem,Input} from 'react-bootstrap'
 import {fetchFundPacketsIfNeeded, fundPacketsFilterByText, fundPacketsChangeSelection, fundPacketsFilterByState,
     fundPacketsChangeSelctions, fundPacketsChangeState, fundPacketsCreate, fundPacketsChangeNumbers, fundPacketsDelete} from 'actions/arr/fundPackets'
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
-import {modalDialogShow} from 'actions/global/modalDialog'
+import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 
 var FundPackets = class FundPackets extends AbstractReactComponent {
     constructor(props) {

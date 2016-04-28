@@ -1,7 +1,7 @@
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 
 import {panel} from './../arr/panel.jsx'
-import {consolidateState} from 'components/Utils'
+import {consolidateState} from 'components/Utils.jsx'
 
 const initialState = {
     dirty: false,

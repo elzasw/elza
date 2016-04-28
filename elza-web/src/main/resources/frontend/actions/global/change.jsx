@@ -1,7 +1,7 @@
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 
-import {i18n} from 'components';
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions'
+import {i18n} from 'components/index.jsx';
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 
 export function isFundChangeAction(action) {
     switch (action.type) {

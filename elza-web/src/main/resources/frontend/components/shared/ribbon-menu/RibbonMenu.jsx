@@ -4,7 +4,7 @@
 
 import React from 'react';
 
-import {i18n} from 'components';
+import {i18n} from 'components/index.jsx';
 import {ButtonToolbar} from 'react-bootstrap';
 
 require ('./RibbonMenu.less');

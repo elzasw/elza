@@ -1,10 +1,10 @@
-import * as types from 'actions/constants/ActionTypes';
-import {i18n} from 'components'
+import * as types from 'actions/constants/ActionTypes.js';
+import {i18n} from 'components/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {fundSubNodeFormValueValidate} from 'actions/arr/subNodeForm'
+import {fundSubNodeFormValueValidate} from 'actions/arr/subNodeForm.jsx'
 import {createDescItemFromDb, getDescItemType, updateFormData, createDescItem, consolidateDescItems} from './subNodeFormUtils'
 var subNodeFormUtils = require('./subNodeFormUtils.jsx')
-import {validateInt, validateDouble} from 'components/validate'
+import {validateInt, validateDouble} from 'components/validate.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 
 function getLoc(state, valueLocation) {

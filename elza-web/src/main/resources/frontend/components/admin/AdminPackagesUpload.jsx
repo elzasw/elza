@@ -7,10 +7,10 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {Button, Input} from 'react-bootstrap';
-import {AppActions} from 'stores';
-import {AbstractReactComponent, i18n} from 'components';
+import {AppActions} from 'stores/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/index.jsx';
 
-import {importPackage} from 'actions/admin/packages';
+import {importPackage} from 'actions/admin/packages.jsx';
 
 var AdminPackagesUpload = class AdminPackagesUpload extends AbstractReactComponent {
     constructor(props) {

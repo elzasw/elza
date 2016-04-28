@@ -1,9 +1,9 @@
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {indexById} from 'stores/app/utils.jsx'
 
-import {consolidateState} from 'components/Utils'
-import {isFundTreeAction} from 'actions/arr/fundTree'
-import fundDetail from './fundDetail'
+import {consolidateState} from 'components/Utils.jsx'
+import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
+import fundDetail from './fundDetail.jsx'
 
 const initialState = {
     fetched: false,

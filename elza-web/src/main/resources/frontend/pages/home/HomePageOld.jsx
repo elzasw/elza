@@ -9,17 +9,17 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {Icon, i18n} from 'components';
-import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
-import {ModalDialog, NodeTabs, FundTreeTabs} from 'components';
+import {Icon, i18n} from 'components/index.jsx';
+import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components/index.jsx';
+import {ModalDialog, NodeTabs, FundTreeTabs} from 'components/index.jsx';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
-import {PageLayout} from 'pages';
-import {modalDialogShow} from 'actions/global/modalDialog'
-import {createFund} from 'actions/arr/fund'
-import {storeLoadData, storeSave, storeLoad} from 'actions/store/store'
+import {PageLayout} from 'pages/index.jsx';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx'
+import {createFund} from 'actions/arr/fund.jsx'
+import {storeLoadData, storeSave, storeLoad} from 'actions/store/store.jsx'
 import {Combobox} from 'react-input-enhancements'
-import {WebApi} from 'actions'
-import {dateToString} from 'components/Utils'
+import {WebApi} from 'actions/index.jsx';
+import {dateToString} from 'components/Utils.jsx'
 
 var placeholder = document.createElement("div");
 placeholder.className = "placeholder";

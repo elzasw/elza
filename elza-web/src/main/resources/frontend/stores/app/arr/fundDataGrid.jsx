@@ -1,7 +1,7 @@
-import * as types from 'actions/constants/ActionTypes';
-import {consolidateState} from 'components/Utils'
-import subNodeForm from './subNodeForm'
-import {isSubNodeFormAction} from 'actions/arr/subNodeForm'
+import * as types from 'actions/constants/ActionTypes.js';
+import {consolidateState} from 'components/Utils.jsx'
+import subNodeForm from './subNodeForm.jsx'
+import {isSubNodeFormAction} from 'actions/arr/subNodeForm.jsx'
 
 const initialState = {
     isFetchingFilter: false,

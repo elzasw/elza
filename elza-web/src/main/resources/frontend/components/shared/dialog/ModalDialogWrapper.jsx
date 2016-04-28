@@ -4,9 +4,9 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {i18n} from 'components';
+import {i18n} from 'components/index.jsx';
 import {Modal} from 'react-bootstrap';
-import {setInputFocus} from 'components/Utils'
+import {setInputFocus} from 'components/Utils.jsx'
 
 var ModalDialogWrapper = class ModalDialogWrapper extends React.Component {
     constructor(props) {

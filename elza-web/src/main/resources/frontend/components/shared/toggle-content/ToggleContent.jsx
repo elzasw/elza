@@ -18,7 +18,7 @@ import React from 'react';
 
 var classNames = require('classnames');
 
-import {Icon, i18n, NoFocusButton} from 'components';
+import {Icon, i18n, NoFocusButton} from 'components/index.jsx';
 import {ButtonToolbar, ButtonGroup} from 'react-bootstrap';
 
 var ToggleContent = class ToggleContent extends React.Component {

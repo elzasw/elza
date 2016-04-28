@@ -1,10 +1,10 @@
 /**
  * Akce pro registry region data / recordy
  */
-import {WebApi} from 'actions'
-import {i18n} from 'components'
-import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions'
-import * as types from 'actions/constants/ActionTypes';
+import {WebApi} from 'actions/index.jsx';
+import {i18n} from 'components/index.jsx';
+import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
+import * as types from 'actions/constants/ActionTypes.js';
 
 export function registryRegionDataSelectRecord(registry) {
     return {

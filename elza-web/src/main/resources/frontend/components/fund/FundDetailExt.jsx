@@ -2,12 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button, Panel} from 'react-bootstrap'
-import {Icon, AbstractReactComponent, i18n, Loading, FundDetailTree} from 'components';
+import {Icon, AbstractReactComponent, i18n, Loading, FundDetailTree} from 'components/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {dateToString} from 'components/Utils'
-import {getFundFromFundAndVersion} from 'components/arr/ArrUtils'
-import {selectFundTab} from 'actions/arr/fund'
-import {routerNavigate} from 'actions/router'
+import {dateToString} from 'components/Utils.jsx'
+import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
+import {selectFundTab} from 'actions/arr/fund.jsx'
+import {routerNavigate} from 'actions/router.jsx'
 
 require ('./FundDetailExt.less');
 

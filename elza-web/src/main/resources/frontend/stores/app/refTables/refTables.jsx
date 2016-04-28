@@ -1,6 +1,6 @@
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 
-import ruleSet from './ruleSet'
+import ruleSet from './ruleSet.jsx'
 import institutions from './institutions'
 import partyNameFormTypes from './partyNameFormTypes'
 import partyTypes from './partyTypes'
@@ -8,9 +8,9 @@ import recordTypes from './recordTypes'
 import rulDataTypes from './rulDataTypes';
 import calendarTypes from './calendarTypes';
 import packetTypes from './packetTypes';
-import registryRegionList from './registryRegionList';
-import partyList from './partyList';
-import scopesData from './scopesData';
+import registryRegionList from './registryRegionList.jsx';
+import partyList from './partyList.jsx';
+import scopesData from './scopesData.jsx';
 import descItemTypes from './descItemTypes';
 import visiblePolicyTypes from './visiblePolicyTypes';
 

@@ -4,14 +4,14 @@
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Tabs, FundTreeLazy} from 'components';
-import * as types from 'actions/constants/ActionTypes';
-import {AppActions} from 'stores';
+import {AbstractReactComponent, i18n, Tabs, FundTreeLazy} from 'components/index.jsx';
+import * as types from 'actions/constants/ActionTypes.js';
+import {AppActions} from 'stores/index.jsx';
 import {MenuItem} from 'react-bootstrap';
-import {selectFundTab, closeFundTab} from 'actions/arr/fund'
-import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeSelectNode, fundTreeCollapse, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeNodeCollapse} from 'actions/arr/fundTree'
+import {selectFundTab, closeFundTab} from 'actions/arr/fund.jsx'
+import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeSelectNode, fundTreeCollapse, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeNodeCollapse} from 'actions/arr/fundTree.jsx'
 import {createFundRoot, getParentNode} from './ArrUtils.jsx'
-import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
+import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
 
 var FundTreeMovementsRight = class FundTreeMovementsRight extends AbstractReactComponent {
     constructor(props) {

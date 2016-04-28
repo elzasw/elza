@@ -4,9 +4,9 @@
  * @author Martin Šlapa
  * @since 22.12.2015
  */
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import packages from './packages'
-import fulltext from './fulltext'
+import fulltext from './fulltext.jsx'
 
 /**
  * Výchozí stav store

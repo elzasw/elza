@@ -10,9 +10,9 @@ import ReactDOM from 'react-dom';
 require ('./AdminFulltextPage.less');
 
 import {connect} from 'react-redux'
-import {Ribbon, AdminFulltextReindex} from 'components';
-import {PageLayout} from 'pages';
-import {WebApi} from 'actions';
+import {Ribbon, AdminFulltextReindex} from 'components/index.jsx';
+import {PageLayout} from 'pages/index.jsx';
+import {WebApi} from 'actions/index.jsx';
 
 var AdminFulltextPage = class AdminFulltextPage extends React.Component {
     constructor(props) {

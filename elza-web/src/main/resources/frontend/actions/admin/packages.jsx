@@ -4,10 +4,10 @@
  * @author Martin Šlapa
  * @since 22.12.2015
  */
-import {WebApi} from 'actions'
-import {i18n, Toastr, LongText} from 'components';
-import * as types from 'actions/constants/ActionTypes';
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions'
+import {WebApi} from 'actions/index.jsx';
+import {i18n, Toastr, LongText} from 'components/index.jsx';
+import * as types from 'actions/constants/ActionTypes.js';
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 
 /**
  * Získání seznamu importovaných balíčků ze serveru.

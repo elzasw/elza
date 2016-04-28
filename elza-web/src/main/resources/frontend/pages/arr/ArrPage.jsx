@@ -10,34 +10,34 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {Tabs, Icon, Ribbon, i18n} from 'components';
+import {Tabs, Icon, Ribbon, i18n} from 'components/index.jsx';
 import {FundExtendedView, FundForm, BulkActionsDialog, RibbonMenu, RibbonGroup, RibbonSplit,
     ToggleContent, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs, ListBox2, LazyListBox,
-    VisiblePolicyForm, Loading, FundPackets} from 'components';
+    VisiblePolicyForm, Loading, FundPackets} from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
-import {PageLayout} from 'pages';
-import {AppStore} from 'stores'
-import {WebApi} from 'actions'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {showRegisterJp} from 'actions/arr/fund'
-import {scopesDirty} from 'actions/refTables/scopesData'
-import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation'
-import {packetsFetchIfNeeded} from 'actions/arr/packets'
-import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes'
-import {developerNodeScenariosRequest} from 'actions/global/developer'
-import {Utils} from 'components'
-import {barrier} from 'components/Utils';
-import {isFundRootId} from 'components/arr/ArrUtils';
-import {setFocus} from 'actions/global/focus'
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
-import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy'
-import {propsEquals} from 'components/Utils'
-import {fundSelectSubNode} from 'actions/arr/nodes'
+import {PageLayout} from 'pages/index.jsx';
+import {AppStore} from 'stores/index.jsx'
+import {WebApi} from 'actions/index.jsx';
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {showRegisterJp} from 'actions/arr/fund.jsx'
+import {scopesDirty} from 'actions/refTables/scopesData.jsx'
+import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
+import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
+import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
+import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
+import {Utils} from 'components/index.jsx';
+import {barrier} from 'components/Utils.jsx';
+import {isFundRootId} from 'components/arr/ArrUtils.jsx';
+import {setFocus} from 'actions/global/focus.jsx'
+import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
+import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
+import {propsEquals} from 'components/Utils.jsx'
+import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {createFundRoot} from 'components/arr/ArrUtils.jsx'
-import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy'
+import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 
 var _selectedTab = 0
 

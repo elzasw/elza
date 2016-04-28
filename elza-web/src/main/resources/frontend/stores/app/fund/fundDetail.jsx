@@ -1,9 +1,9 @@
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {indexById} from 'stores/app/utils.jsx'
 
-import {consolidateState} from 'components/Utils'
-import fundTree from './../arr/fundTree'
-import {isFundTreeAction} from 'actions/arr/fundTree'
+import {consolidateState} from 'components/Utils.jsx'
+import fundTree from './../arr/fundTree.jsx'
+import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
 
 const initialState = {
     id: null,

@@ -7,13 +7,13 @@ require ('./FundTreeLazy.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, Loading, Icon, SearchWithGoto} from 'components';
+import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, Loading, Icon, SearchWithGoto} from 'components/index.jsx';
 import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 var classNames = require('classnames');
-import {ResizeStore} from 'stores';
-import {propsEquals} from 'components/Utils'
+import {ResizeStore} from 'stores/index.jsx';
+import {propsEquals} from 'components/Utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, getNodeParent, getNodeFirstChild} from 'components/arr/ArrUtils'
+import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, getNodeParent, getNodeFirstChild} from 'components/arr/ArrUtils.jsx'
 
 // Na kolik znaků se má název položky stromu oříznout, jen pokud je nastaven vstupní atribut, že se má název ořezávat
 const TREE_NAME_MAX_CHARS = 60

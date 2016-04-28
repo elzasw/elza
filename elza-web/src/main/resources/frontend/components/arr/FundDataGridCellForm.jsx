@@ -7,18 +7,18 @@ require ('./FundDataGridCellForm.less')
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, SubNodeForm} from 'components';
+import {AbstractReactComponent, i18n, SubNodeForm} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
-import {packetsFetchIfNeeded} from 'actions/arr/packets'
+import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
-import {fundSubNodeFormFetchIfNeeded, fundSubNodeFormDescItemTypeAdd} from 'actions/arr/subNodeForm'
-import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
-import {setInputFocus} from 'components/Utils'
+import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
+import {fundSubNodeFormFetchIfNeeded, fundSubNodeFormDescItemTypeAdd} from 'actions/arr/subNodeForm.jsx'
+import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
+import {setInputFocus} from 'components/Utils.jsx'
 
 var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactComponent {
     constructor(props) {

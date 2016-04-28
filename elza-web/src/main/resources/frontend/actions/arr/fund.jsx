@@ -2,13 +2,13 @@
  * Akce pro záložky otevřených stromů AS.
  */
 
-import {WebApi, UrlFactory} from 'actions'
-import {Toastr, i18n} from 'components';
-import * as types from 'actions/constants/ActionTypes';
-import {modalDialogHide} from 'actions/global/modalDialog'
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions'
-import {nodesRequest, nodesReceive} from 'actions/arr/node'
-import {createFundRoot, getFundFromFundAndVersion} from 'components/arr/ArrUtils'
+import {WebApi, UrlFactory} from 'actions/index.jsx';
+import {Toastr, i18n} from 'components/index.jsx';
+import * as types from 'actions/constants/ActionTypes.js';
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {nodesRequest, nodesReceive} from 'actions/arr/node.jsx'
+import {createFundRoot, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 
 /**
  * Fetch dat pro otevřené záložky AS, pokud je potřeba - např. název atp.

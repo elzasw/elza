@@ -5,7 +5,7 @@ require("./Toastr.less")
  *  Pro data využívá ToastrStore.
  *  Pro přidání dat slouží ToastrActions.
  *
- *  Pro inicializaci staci naimportovat: import {Toastr} from 'components'
+ *  Pro inicializaci staci naimportovat: import {Toastr} from 'components/index.jsx';
  *
  *  Volání je pro typ hlášky:
  *  Danger:
@@ -20,7 +20,7 @@ require("./Toastr.less")
 
 var React = require('react');
 
-import {Icon, i18n, AbstractReactComponent} from 'components';
+import {Icon, i18n, AbstractReactComponent} from 'components/index.jsx';
 import {Alert} from 'react-bootstrap';
 import {connect} from 'react-redux'
 import {addToastr,removeToastr} from './ToastrActions'

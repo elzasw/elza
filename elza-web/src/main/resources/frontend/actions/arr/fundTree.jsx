@@ -4,8 +4,8 @@
  * uzel - JP
  */
 
-import {WebApi} from 'actions'
-import * as types from 'actions/constants/ActionTypes';
+import {WebApi} from 'actions/index.jsx';
+import * as types from 'actions/constants/ActionTypes.js';
 import {indexById} from 'stores/app/utils.jsx'
 import {fundSelectSubNode} from './nodes'
 import {createFundRoot} from 'components/arr/ArrUtils.jsx'

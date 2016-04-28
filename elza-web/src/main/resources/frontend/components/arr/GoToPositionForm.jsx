@@ -1,12 +1,12 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes';
-import {AbstractReactComponent, i18n} from 'components';
+import * as types from 'actions/constants/ActionTypes.js';
+import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
+import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 
 const validate = (values, props) => {
     const errors = {};

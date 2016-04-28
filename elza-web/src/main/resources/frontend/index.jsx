@@ -11,10 +11,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { createHistory, useBasename } from 'history'
 import { Route, Link, History, Lifecycle } from 'react-router'
-import { Utils } from 'components'
-import {WebApi, WebApiCls} from 'actions'
-import {loginFail} from 'actions/global/login';
-import {userDetailChange} from 'actions/user/userDetail'
+import { Utils } from 'components/index.jsx';
+import {WebApi, WebApiCls} from 'actions/index.jsx';
+import {loginFail} from 'actions/global/login.jsx';
+import {userDetailChange} from 'actions/user/userDetail.jsx'
 
 // Globální init
 Utils.init();
@@ -38,8 +38,8 @@ function fc() {
 //setTimeout(fc, 1500)
 
 // Načtení dat z local storage = vrácení aplikace do předchozího stavu
-import {AppStore} from 'stores';
-import {storeSave, storeRestoreFromStorage} from 'actions/store/store';
+import {AppStore} from 'stores/index.jsx';
+import {storeSave, storeRestoreFromStorage} from 'actions/store/store.jsx';
 AppStore.store.dispatch(storeRestoreFromStorage());
 
 // Globální vypnutí focus na split buttony
@@ -50,7 +50,7 @@ SplitToggle.defaultProps = {
 }
 
 // Pokud dostane focus body, chceme jej změnit na implcitiní focus pro ribbon
-import {setFocus} from 'actions/global/focus';
+import {setFocus} from 'actions/global/focus.jsx';
 {
     function testBodyfocus() {
         if (document.activeElement === document.body) { // focus je na body, nastavíme ho podle aktuálně přepnuté oblasti
@@ -62,7 +62,7 @@ import {setFocus} from 'actions/global/focus';
     //testBodyfocus()
 }
 /*
-import {setFocus} from 'actions/global/focus';
+import {setFocus} from 'actions/global/focus.jsx';
 document.body.addEventListener("focus", () => {
     //AppStore.store.dispatch(setFocus(null, null, 'ribbon'));
 })

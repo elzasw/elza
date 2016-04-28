@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components';
+import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById, objectById} from 'stores/app/utils.jsx'
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
-import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy'
+import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx'
 
 /**
  * Validace formuláře.

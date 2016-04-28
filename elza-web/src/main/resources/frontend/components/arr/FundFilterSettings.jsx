@@ -6,12 +6,12 @@ require ('./FundFilterSettings.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {FilterableListBox, AbstractReactComponent, i18n} from 'components';
+import {FilterableListBox, AbstractReactComponent, i18n} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
-import {WebApi} from 'actions'
-import {hasDescItemTypeValue} from 'components/arr/ArrUtils'
+import {WebApi} from 'actions/index.jsx';
+import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 const FundFilterCondition = require('./FundFilterCondition')
 const SimpleCheckListBox = require('./SimpleCheckListBox')
 

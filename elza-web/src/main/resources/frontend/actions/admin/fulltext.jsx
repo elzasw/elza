@@ -4,8 +4,8 @@
  * @author Jiří Vaněk
  * @since 22.1.2016
  */
-import {WebApi} from 'actions'
-import * as types from 'actions/constants/ActionTypes';
+import {WebApi} from 'actions/index.jsx';
+import * as types from 'actions/constants/ActionTypes.js';
  
  /**
  * Získání stavu indexování ze serveru.

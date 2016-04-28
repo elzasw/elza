@@ -2,7 +2,7 @@
  * Akce pro splitter.
  */
 
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 
 /**
  * Změna velikosti splitteru.

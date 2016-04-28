@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {DropdownButton} from 'react-bootstrap';
-import {AbstractReactComponent} from 'components';
+import {AbstractReactComponent} from 'components/index.jsx';
 
 var ControllableDropdownButton = class ControllableDropdownButton extends AbstractReactComponent {
     constructor(props) {

@@ -1,6 +1,6 @@
 /**
  *  Rozbalovací strom položek
- *  Pro inicializaci staci naimportovat: import {Droptree} from 'components'
+ *  Pro inicializaci staci naimportovat: import {Droptree} from 'components/index.jsx';
  *  Použití 
         <DropDownTree 
             items = {items} 
@@ -15,8 +15,8 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
-import {Icon, i18n, AbstractReactComponent} from 'components';
-import {getBootstrapInputComponentInfo} from 'components/form/FormUtils';
+import {Icon, i18n, AbstractReactComponent} from 'components/index.jsx';
+import {getBootstrapInputComponentInfo} from 'components/form/FormUtils.jsx';
 
 import ReactDOM from 'react-dom'
 

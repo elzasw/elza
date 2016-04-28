@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 
 export default function fundForm(state, action) {
     switch (action.type) {

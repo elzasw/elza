@@ -8,18 +8,18 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button, Input, SplitButton} from 'react-bootstrap';
-import {PartyDetailCreators, PartyDetailIdentifiers, PartyDetailNames, AbstractReactComponent, Search, i18n} from 'components';
-import {AppActions} from 'stores';
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
-import {updateParty} from 'actions/party/party'
-import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party'
-import {Utils} from 'components'
-import {setInputFocus} from 'components/Utils'
+import {PartyDetailCreators, PartyDetailIdentifiers, PartyDetailNames, AbstractReactComponent, Search, i18n} from 'components/index.jsx';
+import {AppActions} from 'stores/index.jsx';
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
+import {updateParty} from 'actions/party/party.jsx'
+import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
+import {Utils} from 'components/index.jsx';
+import {setInputFocus} from 'components/Utils.jsx'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
-import * as perms from 'actions/user/Permission';
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import * as perms from 'actions/user/Permission.jsx';
 
 var keyModifier = Utils.getKeyModifier()
 

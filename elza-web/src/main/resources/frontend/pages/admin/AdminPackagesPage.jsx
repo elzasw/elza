@@ -10,9 +10,9 @@ import ReactDOM from 'react-dom';
 require ('./AdminPackagesPage.less');
 
 import {connect} from 'react-redux'
-import {Ribbon, AdminPackagesList, AdminPackagesUpload} from 'components';
-import {PageLayout} from 'pages';
-import {UrlFactory} from 'actions';
+import {Ribbon, AdminPackagesList, AdminPackagesUpload} from 'components/index.jsx';
+import {PageLayout} from 'pages/index.jsx';
+import {UrlFactory} from 'actions/index.jsx';
 
 var AdminPackagesPage = class AdminPackagesPage extends React.Component {
     constructor(props) {

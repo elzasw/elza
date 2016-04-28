@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import {AbstractReactComponent, i18n, BulkActionsTable} from 'components';
+import {AbstractReactComponent, i18n, BulkActionsTable} from 'components/index.jsx';
 import {Modal, Button} from 'react-bootstrap';
 
 var BulkActionsDialog = class BulkActionsDialog extends AbstractReactComponent {

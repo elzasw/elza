@@ -1,7 +1,7 @@
 import React from 'react';
-import {AbstractReactComponent} from 'components';
+import {AbstractReactComponent} from 'components/index.jsx';
 import {Glyphicon} from 'react-bootstrap';
-import {propsEquals} from 'components/Utils'
+import {propsEquals} from 'components/Utils.jsx'
 
 var Icon = class Icon extends AbstractReactComponent {
     constructor(props) {

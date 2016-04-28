@@ -9,28 +9,28 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {Icon, i18n} from 'components';
+import {Icon, i18n} from 'components/index.jsx';
 import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent,
     ImportForm, ExportForm, Search, ListBox, FundDetail, FundDetailExt} from 'components';
-import {NodeTabs, FundTreeTabs} from 'components';
+import {NodeTabs, FundTreeTabs} from 'components/index.jsx';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
-import {PageLayout} from 'pages';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {createFund} from 'actions/arr/fund'
-import {storeLoadData, storeSave, storeLoad} from 'actions/store/store'
+import {PageLayout} from 'pages/index.jsx';
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {createFund} from 'actions/arr/fund.jsx'
+import {storeLoadData, storeSave, storeLoad} from 'actions/store/store.jsx'
 import {Combobox} from 'react-input-enhancements'
-import {WebApi} from 'actions'
-import {setInputFocus, dateToString} from 'components/Utils'
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
+import {WebApi} from 'actions/index.jsx';
+import {setInputFocus, dateToString} from 'components/Utils.jsx'
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {selectFundTab} from 'actions/arr/fund'
-import {routerNavigate} from 'actions/router'
-import {fundsFetchIfNeeded, fundsSelectFund, fundsFundDetailFetchIfNeeded, fundsSearch} from 'actions/fund/fund'
-import {getFundFromFundAndVersion} from 'components/arr/ArrUtils'
-import {approveFund, deleteFund, exportFund} from 'actions/arr/fund'
-import {barrier} from 'components/Utils';
-import {scopesDirty} from 'actions/refTables/scopesData'
-import * as perms from 'actions/user/Permission';
+import {selectFundTab} from 'actions/arr/fund.jsx'
+import {routerNavigate} from 'actions/router.jsx'
+import {fundsFetchIfNeeded, fundsSelectFund, fundsFundDetailFetchIfNeeded, fundsSearch} from 'actions/fund/fund.jsx'
+import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
+import {approveFund, deleteFund, exportFund} from 'actions/arr/fund.jsx'
+import {barrier} from 'components/Utils.jsx';
+import {scopesDirty} from 'actions/refTables/scopesData.jsx'
+import * as perms from 'actions/user/Permission.jsx';
 
 var FundPage = class FundPage extends AbstractReactComponent {
     constructor(props) {

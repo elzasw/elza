@@ -1,6 +1,6 @@
-import {WebApi} from 'actions'
-import {i18n} from 'components';
-import * as types from 'actions/constants/ActionTypes';
+import {WebApi} from 'actions/index.jsx';
+import {i18n} from 'components/index.jsx';
+import * as types from 'actions/constants/ActionTypes.js';
 
 export function fundNodesPolicyFetchIfNeeded(fundVersionId) {
     return (dispatch, getState) => {

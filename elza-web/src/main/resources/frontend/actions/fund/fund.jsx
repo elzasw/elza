@@ -2,8 +2,8 @@
  * Akce pro archivní soubory.
  */
 
-import * as types from 'actions/constants/ActionTypes';
-import {WebApi} from 'actions'
+import * as types from 'actions/constants/ActionTypes.js';
+import {WebApi} from 'actions/index.jsx';
 
 function _fundRegionDataKey(fundRegion) {
     return fundRegion.filterText + '_'

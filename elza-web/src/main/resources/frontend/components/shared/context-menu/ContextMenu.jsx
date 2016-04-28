@@ -3,8 +3,8 @@ require ('./ContextMenu.less')
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent} from 'components';
-import {contextMenuHide} from 'actions/global/contextMenu'
+import {AbstractReactComponent} from 'components/index.jsx';
+import {contextMenuHide} from 'actions/global/contextMenu.jsx'
 
 var ContextMenu = class extends AbstractReactComponent {
     constructor(props) {

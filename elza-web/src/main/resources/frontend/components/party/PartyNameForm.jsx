@@ -4,16 +4,16 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Icon} from 'components';
+import {AbstractReactComponent, i18n, Icon} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField} from 'components/form/FormUtils'
-import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
+import {decorateFormField} from 'components/form/FormUtils.jsx'
+import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 
 
 /**

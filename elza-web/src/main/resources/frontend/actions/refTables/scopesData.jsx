@@ -1,7 +1,7 @@
-import {WebApi} from 'actions'
+import {WebApi} from 'actions/index.jsx';
 
-import * as types from 'actions/constants/ActionTypes';
-import {indexById} from 'stores/app/utils';
+import * as types from 'actions/constants/ActionTypes.js';
+import {indexById} from 'stores/app/utils.jsx';
 
 export function scopesDataReceive(versionId, data) {
     return {

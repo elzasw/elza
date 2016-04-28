@@ -5,7 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Input, Button} from 'react-bootstrap';
-import {Icon, NoFocusButton, AbstractReactComponent, DropDownTree} from 'components';
+import {Icon, NoFocusButton, AbstractReactComponent, DropDownTree} from 'components/index.jsx';
 import {connect} from 'react-redux'
 
 var RegistryLabel = class RegistryLabel extends AbstractReactComponent {

@@ -6,15 +6,15 @@
 const CACHE_SIZE = 20
 const CACHE_SIZE2 = CACHE_SIZE/2
 
-import {WebApi} from 'actions'
+import {WebApi} from 'actions/index.jsx';
 import {getMapFromList, indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 import {getFocusDescItemLocation} from 'stores/app/arr/subNodeFormUtils.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
-import {setFocus} from 'actions/global/focus'
+import {setFocus} from 'actions/global/focus.jsx'
 import {getNodeKeyType} from 'stores/app/utils.jsx'
-import * as types from 'actions/constants/ActionTypes';
-import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions'
-import {i18n} from 'components'
+import * as types from 'actions/constants/ActionTypes.js';
+import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
+import {i18n} from 'components/index.jsx';
 
 export function isSubNodeFormCacheAction(action) {
     switch (action.type) {

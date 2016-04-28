@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {ModalDialogWrapper, AbstractReactComponent} from 'components';
-import {modalDialogHide} from 'actions/global/modalDialog'
-import {propsEquals} from 'components/Utils'
+import {ModalDialogWrapper, AbstractReactComponent} from 'components/index.jsx';
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {propsEquals} from 'components/Utils.jsx'
 
 require ('./ModalDialog.less')
 

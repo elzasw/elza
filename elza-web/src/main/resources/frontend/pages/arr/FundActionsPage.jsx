@@ -8,11 +8,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
-import {Loading, Icon, Ribbon, i18n, AbstractReactComponent, ListBox} from 'components';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
+import {Loading, Icon, Ribbon, i18n, AbstractReactComponent, ListBox} from 'components/index.jsx';
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
-import {PageLayout} from 'pages';
-import {WebApi} from 'actions'
+import {PageLayout} from 'pages/index.jsx';
+import {WebApi} from 'actions/index.jsx';
 
 
 var FundActionsPage = class FundActionsPage extends AbstractReactComponent {
@@ -27,6 +27,7 @@ var FundActionsPage = class FundActionsPage extends AbstractReactComponent {
     }
 
     componentDidMount() {
+        this.dispatch(fundActionsFetchListIfNeeded())
     }
 
     componentWillReceiveProps(nextProps) {

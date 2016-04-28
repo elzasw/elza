@@ -1,5 +1,5 @@
 
-import {normalizeDoubleWithDot} from 'components/validate'
+import {normalizeDoubleWithDot} from 'components/validate.jsx'
 
 /**
  * Utility metody.

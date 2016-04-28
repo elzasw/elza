@@ -10,11 +10,11 @@ import {connect} from 'react-redux'
 var classNames = require('classnames');
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {i18n} from 'components';
-import {Splitter, RibbonMenu, ToggleContent, FindindAidFileTree} from 'components';
-import {ModalDialog, NodeTabs, FundTreeTabs} from 'components';
+import {i18n} from 'components/index.jsx';
+import {Splitter, RibbonMenu, ToggleContent, FindindAidFileTree} from 'components/index.jsx';
+import {ModalDialog, NodeTabs, FundTreeTabs} from 'components/index.jsx';
 import {ButtonGroup, Button} from 'react-bootstrap';
-import {splitterResize} from 'actions/global/splitter';
+import {splitterResize} from 'actions/global/splitter.jsx';
 
 var PageLayout = class PageLayout extends React.Component {
     constructor(props) {

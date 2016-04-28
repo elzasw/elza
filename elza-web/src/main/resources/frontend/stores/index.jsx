@@ -1,2 +1,2 @@
-exports.ResizeStore = require('./shared/ResizeStore');
-exports.AppStore = require('./app/AppStore');
+exports.ResizeStore = require('stores/shared/ResizeStore.jsx');
+exports.AppStore = require('stores/app/AppStore.jsx');

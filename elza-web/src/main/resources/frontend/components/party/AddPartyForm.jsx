@@ -4,17 +4,17 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {DropDownTree, AbstractReactComponent, i18n, Scope, Icon} from 'components';
+import {DropDownTree, AbstractReactComponent, i18n, Scope, Icon} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList'
-import {requestScopesIfNeeded} from 'actions/refTables/scopesData'
+import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList.jsx'
+import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 
 /**
  * ADD PARTY FORM

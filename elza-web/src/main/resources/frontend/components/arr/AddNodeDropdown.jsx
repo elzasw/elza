@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, Icon, i18n} from 'components';
+import {AbstractReactComponent, Icon, i18n} from 'components/index.jsx';
 import Button from '../../node_modules/react-bootstrap/lib/Button';
 import SplitButton from '../../node_modules/react-bootstrap/lib/SplitButton';
 import MenuItem from '../../node_modules/react-bootstrap/lib/MenuItem';
 import Loading from '../shared/loading/Loading.jsx'
-import {WebApi} from 'actions';
+import {WebApi} from 'actions/index.jsx';
 
 var initState = {
     items: undefined,

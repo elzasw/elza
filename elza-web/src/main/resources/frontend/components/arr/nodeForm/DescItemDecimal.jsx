@@ -4,10 +4,10 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent} from 'components';
+import {AbstractReactComponent} from 'components/index.jsx';
 import {connect} from 'react-redux'
 var classNames = require('classnames');
-import {normalizeDouble} from 'components/validate'
+import {normalizeDouble} from 'components/validate.jsx'
 import {decorateValue} from './DescItemUtils'
 
 var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {

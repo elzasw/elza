@@ -1,4 +1,4 @@
-import {AjaxUtils} from 'components';
+import {AjaxUtils} from 'components/index.jsx';
 
 function getData(data, timeout = 1000) {
     return new Promise(function (resolve, reject) {

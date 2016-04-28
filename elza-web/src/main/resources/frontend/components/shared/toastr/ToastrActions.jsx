@@ -3,7 +3,7 @@
  */
 
 
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 
 
 export function addToastr(title, message = null, style = "info", size = "lg", time = null) {

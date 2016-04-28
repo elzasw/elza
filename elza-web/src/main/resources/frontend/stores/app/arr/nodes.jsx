@@ -1,14 +1,14 @@
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, findByNodeKeyInNodes, selectedAfterClose} from 'stores/app/utils.jsx'
 import {node, nodeInitState} from './node.jsx'
-import {consolidateState} from 'components/Utils'
-import {isSubNodeFormAction, isSubNodeFormCacheAction} from 'actions/arr/subNodeForm'
-import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo'
-import {isNodeInfoAction} from 'actions/arr/nodeInfo'
-import {isNodeAction} from 'actions/arr/node'
-import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister'
-import {isDeveloperScenariosAction} from 'actions/global/developer'
-import {isFundChangeAction} from 'actions/global/change'
+import {consolidateState} from 'components/Utils.jsx'
+import {isSubNodeFormAction, isSubNodeFormCacheAction} from 'actions/arr/subNodeForm.jsx'
+import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
+import {isNodeInfoAction} from 'actions/arr/nodeInfo.jsx'
+import {isNodeAction} from 'actions/arr/node.jsx'
+import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
+import {isDeveloperScenariosAction} from 'actions/global/developer.jsx'
+import {isFundChangeAction} from 'actions/global/change.jsx'
 
 const nodesInitialState = {
     activeIndex: null,

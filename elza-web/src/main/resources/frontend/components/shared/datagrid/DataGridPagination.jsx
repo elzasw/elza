@@ -7,9 +7,9 @@ require ('./DataGridPagination.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Resizer} from 'components';
+import {AbstractReactComponent, i18n, Resizer} from 'components/index.jsx';
 import {Button} from 'react-bootstrap';
-import {validateInt, normalizeInt} from 'components/validate';
+import {validateInt, normalizeInt} from 'components/validate.jsx';
 
 function getPagesCount(itemsCount, pageSize) {
     var pagesCount = Math.floor(itemsCount / pageSize)

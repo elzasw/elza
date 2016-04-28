@@ -2,9 +2,9 @@
  * Akce pro seznam forem jmena osob - partyNameFormTypes.
  */
 
-import {WebApi} from 'actions'
+import {WebApi} from 'actions/index.jsx';
 
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 
 /**
  * Vyžádání dat - aby byla ve store k dispozici.

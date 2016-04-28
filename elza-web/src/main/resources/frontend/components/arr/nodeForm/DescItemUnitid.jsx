@@ -4,9 +4,9 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent} from 'components';
+import {AbstractReactComponent} from 'components/index.jsx';
 import {connect} from 'react-redux'
-import {normalizeString} from 'components/validate'
+import {normalizeString} from 'components/validate.jsx'
 import {decorateValue} from './DescItemUtils'
 
 const DescItemString_MAX_LENGTH = 250;

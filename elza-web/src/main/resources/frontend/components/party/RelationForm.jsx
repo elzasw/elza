@@ -3,17 +3,17 @@
  */
 
 import React from 'react';
-import {WebApi} from 'actions'
+import {WebApi} from 'actions/index.jsx';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, Autocomplete, i18n, Icon} from 'components';
+import {AbstractReactComponent, Autocomplete, i18n, Icon} from 'components/index.jsx';
 import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
-import {refRegistryListFetchIfNeeded} from 'actions/refTables/registryRegionList'
-import {modalDialogHide} from 'actions/global/modalDialog'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
+import {refRegistryListFetchIfNeeded} from 'actions/refTables/registryRegionList.jsx'
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {Combobox} from 'react-input-enhancements'
 
 

@@ -5,12 +5,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Loading, Icon} from 'components';
+import {AbstractReactComponent, i18n, Loading, Icon} from 'components/index.jsx';
 import {Button, Input, Table} from 'react-bootstrap';
-import {dateTimeToString} from 'components/Utils'
+import {dateTimeToString} from 'components/Utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {WebApi} from 'actions'
-import {bulkActionsRun, bulkActionsLoadData, bulkActionsValidateVersion} from 'actions/arr/bulkActions'
+import {WebApi} from 'actions/index.jsx';
+import {bulkActionsRun, bulkActionsLoadData, bulkActionsValidateVersion} from 'actions/arr/bulkActions.jsx'
 
 var BulkActionsTable = class BulkActionsTable extends AbstractReactComponent {
     constructor(props) {

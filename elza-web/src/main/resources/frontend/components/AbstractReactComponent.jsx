@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import {propsEquals} from 'components/Utils'
+import {propsEquals} from 'components/Utils.jsx'
 
 var AbstractReactComponent = class AbstractReactComponent extends React.Component {
     constructor(props) {

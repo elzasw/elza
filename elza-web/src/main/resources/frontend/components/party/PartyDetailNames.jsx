@@ -5,11 +5,11 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
-import {PartyNameForm, AbstractReactComponent, i18n, Icon} from 'components';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {AppActions} from 'stores';
-import {deleteName, updateParty} from 'actions/party/party'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
+import {PartyNameForm, AbstractReactComponent, i18n, Icon} from 'components/index.jsx';
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {AppActions} from 'stores/index.jsx';
+import {deleteName, updateParty} from 'actions/party/party.jsx'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 
 /**
   * PARTY DETAIL NAMES

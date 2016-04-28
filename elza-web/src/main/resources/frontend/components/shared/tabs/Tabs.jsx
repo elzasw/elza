@@ -1,15 +1,15 @@
 /**
  *  Panel záložek
  *
- *  Pro inicializaci staci naimportovat: import {Tabs} from 'components'
+ *  Pro inicializaci staci naimportovat: import {Tabs} from 'components/index.jsx';
  *
 **/
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Nav, NavItem} from 'react-bootstrap';
-import {ResizeStore} from 'stores';
-import {AbstractReactComponent, Utils, Icon, i18n, NoFocusButton} from 'components';
+import {ResizeStore} from 'stores/index.jsx';
+import {AbstractReactComponent, Utils, Icon, i18n, NoFocusButton} from 'components/index.jsx';
 var ShortcutsManager = require('react-shortcuts')
 var Shortcuts = require('react-shortcuts/component')
 var keyModifier = Utils.getKeyModifier()

@@ -2,11 +2,11 @@
  * Akce pro záložky uzlů JP.
  */
 
-import {WebApi} from 'actions'
+import {WebApi} from 'actions/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {fundExtendedView} from './fund'
-import * as types from 'actions/constants/ActionTypes';
-import {developerNodeScenariosDirty} from 'actions/global/developer';
+import {fundExtendedView} from './fund.jsx'
+import * as types from 'actions/constants/ActionTypes.js';
+import {developerNodeScenariosDirty} from 'actions/global/developer.jsx';
 import {findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 
 export function isNodesAction(action) {

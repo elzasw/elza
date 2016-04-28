@@ -2,11 +2,11 @@
  * Akce pro obaly.
  */
 
-import {WebApi} from 'actions'
+import {WebApi} from 'actions/index.jsx';
 
-import * as types from 'actions/constants/ActionTypes';
-import {modalDialogHide} from 'actions/global/modalDialog'
-import {fundSubNodeFormValueChange, fundSubNodeFormValueBlur} from 'actions/arr/subNodeForm'
+import * as types from 'actions/constants/ActionTypes.js';
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {fundSubNodeFormValueChange, fundSubNodeFormValueBlur} from 'actions/arr/subNodeForm.jsx'
 
 /**
  * Vyžádání dat - aby byla ve store k dispozici.

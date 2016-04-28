@@ -18,7 +18,7 @@
 /**
  * Ajax je pro validaci datace, i18n překlad
  **/
-import {AjaxUtils, i18n} from 'components';
+import {AjaxUtils, i18n} from 'components/index.jsx';
 
 /**
  * Validace zda je číslo celým číslem kladným i záporným  v intervalu clého čísla JAVA

@@ -5,15 +5,15 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
 
-import {AbstractReactComponent, i18n, DropDownTree, Scope} from 'components';
+import {AbstractReactComponent, i18n, DropDownTree, Scope} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField, submitReduxForm, submitReduxFormWithProp} from 'components/form/FormUtils'
-import {getRegistryRecordTypesIfNeeded, getRegistry} from 'actions/registry/registryRegionList'
-import {WebApi} from 'actions'
+import {decorateFormField, submitReduxForm, submitReduxFormWithProp} from 'components/form/FormUtils.jsx'
+import {getRegistryRecordTypesIfNeeded, getRegistry} from 'actions/registry/registryRegionList.jsx'
+import {WebApi} from 'actions/index.jsx';
 
 const validate = (values, props) => {
     const errors = {};

@@ -4,7 +4,7 @@
 import React from 'react';
 
 import {Button, Input} from 'react-bootstrap';
-import {Search, i18n, Icon, NoFocusButton, AbstractReactComponent} from 'components';
+import {Search, i18n, Icon, NoFocusButton, AbstractReactComponent} from 'components/index.jsx';
 import ReactDOM from 'react-dom'
 
 require ('./SearchWithGoto.less');

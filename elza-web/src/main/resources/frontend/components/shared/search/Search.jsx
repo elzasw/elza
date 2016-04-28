@@ -1,14 +1,14 @@
 /**
  *  Komponenta pro vyhledávání
  *
- *  Pro inicializaci staci naimportovat: import {Search} from 'components'
+ *  Pro inicializaci staci naimportovat: import {Search} from 'components/index.jsx';
  *
 **/
 
 import React from 'react';
 
 import {Button, Input} from 'react-bootstrap';
-import {i18n, Icon, NoFocusButton} from 'components';
+import {i18n, Icon, NoFocusButton} from 'components/index.jsx';
 import ReactDOM from 'react-dom'
 
 require ('./Search.less');

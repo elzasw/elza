@@ -1,5 +1,5 @@
 import React from 'react';
-import {i18n} from 'components';
+import {i18n} from 'components/index.jsx';
 
 require ('./Loading.less');
 

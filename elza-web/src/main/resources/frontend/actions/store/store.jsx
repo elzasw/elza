@@ -1,7 +1,7 @@
-import * as types from 'actions/constants/ActionTypes';
-import {save} from 'stores/app/AppStore'
-import {routerNavigate} from 'actions/router'
-import {setFocus} from 'actions/global/focus'
+import * as types from 'actions/constants/ActionTypes.js';
+import {save} from 'stores/app/AppStore.jsx'
+import {routerNavigate} from 'actions/router.jsx'
+import {setFocus} from 'actions/global/focus.jsx'
 
 // Globální proměnná pro možnost vypnutí ukládání stavu do local storage
 var _storeSaveEnabled = true

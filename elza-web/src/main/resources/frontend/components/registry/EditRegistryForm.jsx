@@ -5,12 +5,12 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, DropDownTree} from 'components';
+import {AbstractReactComponent, i18n, DropDownTree} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList'
+import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList.jsx'
 
 const validate = (values, props) => {
     const errors = {};

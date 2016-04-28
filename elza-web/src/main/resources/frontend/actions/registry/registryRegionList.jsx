@@ -4,12 +4,12 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {WebApi} from 'actions'
+import {WebApi} from 'actions/index.jsx';
 
-import * as types from 'actions/constants/ActionTypes';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {i18n, AddRegistryForm} from 'components';
-import {registryChangeParent, registryRegionDataSelectRecord, registryUnsetParents} from 'actions/registry/registryRegionData'
+import * as types from 'actions/constants/ActionTypes.js';
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {i18n, AddRegistryForm} from 'components/index.jsx';
+import {registryChangeParent, registryRegionDataSelectRecord, registryUnsetParents} from 'actions/registry/registryRegionData.jsx'
 
 export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null, versionId = null) {
     return (dispatch, getState) => {

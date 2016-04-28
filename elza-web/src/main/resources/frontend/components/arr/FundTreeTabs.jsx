@@ -7,16 +7,16 @@ require ('./FundTreeTabs.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, NoFocusButton, i18n, Tabs, FundTreeLazy, FundTreeMain, Icon} from 'components';
-import * as types from 'actions/constants/ActionTypes';
-import {AppActions} from 'stores';
+import {AbstractReactComponent, NoFocusButton, i18n, Tabs, FundTreeLazy, FundTreeMain, Icon} from 'components/index.jsx';
+import * as types from 'actions/constants/ActionTypes.js';
+import {AppActions} from 'stores/index.jsx';
 import {MenuItem} from 'react-bootstrap';
-import {fundsFetchIfNeeded, selectFundTab, closeFundTab, fundExtendedView} from 'actions/arr/fund'
-import {fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeNodeCollapse} from 'actions/arr/fundTree'
-import {fundSelectSubNode} from 'actions/arr/nodes'
+import {fundsFetchIfNeeded, selectFundTab, closeFundTab, fundExtendedView} from 'actions/arr/fund.jsx'
+import {fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeNodeCollapse} from 'actions/arr/fundTree.jsx'
+import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {createFundRoot, getParentNode} from './ArrUtils.jsx'
-import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
-import {propsEquals, dateToString} from 'components/Utils'
+import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
+import {propsEquals, dateToString} from 'components/Utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 
 var FundTreeTabs = class FundTreeTabs extends AbstractReactComponent {

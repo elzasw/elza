@@ -11,32 +11,32 @@ import {connect} from 'react-redux'
 import {Icon, ListBox, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown,
         Search, GoToPositionForm, VisiblePolicyForm} from 'components';
 import {Button, Tooltip, OverlayTrigger, Input} from 'react-bootstrap';
-import {fundSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
-import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister'
-import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo'
-import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo'
-import {fundSelectSubNode} from 'actions/arr/nodes'
-import {fundNodeSubNodeFulltextSearch, fundSubNodesNext, fundSubNodesPrev, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node'
-import {addNode} from 'actions/arr/node'
-import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
+import {fundSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm.jsx'
+import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
+import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo.jsx'
+import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo.jsx'
+import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
+import {fundNodeSubNodeFulltextSearch, fundSubNodesNext, fundSubNodesPrev, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node.jsx'
+import {addNode} from 'actions/arr/node.jsx'
+import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {createFundRoot, isFundRootId} from './ArrUtils.jsx'
-import {propsEquals} from 'components/Utils'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
-import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils'
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {Utils} from 'components'
+import {propsEquals} from 'components/Utils.jsx'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
+import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
+import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {Utils} from 'components/index.jsx';
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 const scrollIntoView = require('dom-scroll-into-view')
 var classNames = require('classnames');
-import {setFocus, canSetFocus, focusWasSet, isFocusFor, isFocusExactFor} from 'actions/global/focus'
-import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
-import {fundSubNodeFormDescItemTypeAdd} from 'actions/arr/subNodeForm'
-import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy'
-import {visiblePolicyTypesFetchIfNeeded} from 'actions/refTables/visiblePolicyTypes'
-import * as perms from 'actions/user/Permission';
+import {setFocus, canSetFocus, focusWasSet, isFocusFor, isFocusExactFor} from 'actions/global/focus.jsx'
+import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm.jsx'
+import {fundSubNodeFormDescItemTypeAdd} from 'actions/arr/subNodeForm.jsx'
+import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
+import {visiblePolicyTypesFetchIfNeeded} from 'actions/refTables/visiblePolicyTypes.jsx'
+import * as perms from 'actions/user/Permission.jsx';
 require ('./NodePanel.less');
 
 var keyModifier = Utils.getKeyModifier()

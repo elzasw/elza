@@ -8,23 +8,23 @@ import {connect} from 'react-redux'
 import {FundBulkModificationsForm, Icon, ListBox, DataGridColumnsSettings, AbstractReactComponent, i18n, Loading,
     DataGrid, FundFilterSettings, DataGridPagination, FundDataGridCellForm, SearchWithGoto} from 'components';
 import {MenuItem} from 'react-bootstrap';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import * as types from 'actions/constants/ActionTypes';
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import * as types from 'actions/constants/ActionTypes.js';
 import {fundDataGridSetColumnsSettings, fundDataGridSetSelection, fundDataGridSetColumnSize, fundDataGridFetchFilterIfNeeded,
     fundDataGridFetchDataIfNeeded, fundDataGridSetPageIndex, fundDataGridSetPageSize,
     fundDataGridFilterChange, fundBulkModifications, fundDataGridFilterClearAll, fundDataGridPrepareEdit, fundDataGridFilterUpdateData,
     fundDataFulltextSearch, fundDataFulltextPrevItem, fundDataFulltextNextItem, fundDataChangeCellFocus, fundDataFulltextClear,
-    fundDataFulltextExtended} from 'actions/arr/fundDataGrid'
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
-import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes'
-import {fundSubNodeFormHandleClose} from 'actions/arr/subNodeForm'
-import {getSetFromIdsList, getMapFromList} from 'stores/app/utils'
-import {propsEquals} from 'components/Utils'
+    fundDataFulltextExtended} from 'actions/arr/fundDataGrid.jsx'
+import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
+import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
+import {fundSubNodeFormHandleClose} from 'actions/arr/subNodeForm.jsx'
+import {getSetFromIdsList, getMapFromList} from 'stores/app/utils.jsx'
+import {propsEquals} from 'components/Utils.jsx'
 import {Button} from 'react-bootstrap'
-import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
-import {getSpecsIds, hasDescItemTypeValue} from 'components/arr/ArrUtils'
-import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
-import {fundSelectSubNode} from 'actions/arr/nodes'
+import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
+import {getSpecsIds, hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
+import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
+import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {createFundRoot} from './ArrUtils.jsx'
 
 require('./FundDataGrid.less')

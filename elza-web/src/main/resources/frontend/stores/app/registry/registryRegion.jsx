@@ -3,10 +3,10 @@
  * Store pro seznamy rejstříků
  *
  **/
-import * as types from 'actions/constants/ActionTypes';
-import registryRegionData from './registryRegionData';
+import * as types from 'actions/constants/ActionTypes.js';
+import registryRegionData from './registryRegionData.jsx';
 import {panel} from './../arr/panel.jsx'
-import {consolidateState} from 'components/Utils'
+import {consolidateState} from 'components/Utils.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
 
 const initialState = {

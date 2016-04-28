@@ -9,12 +9,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Input, Button} from 'react-bootstrap';
-import {Icon, NoFocusButton, AbstractReactComponent, RegistryLabel, Loading, EditRegistryForm, RegistryCoordinates, i18n} from 'components';
-import {WebApi} from 'actions'
-import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions/registry/registryRegionList'
-import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
-import {routerNavigate} from 'actions/router'
-import {partySelect} from 'actions/party/party'
+import {Icon, NoFocusButton, AbstractReactComponent, RegistryLabel, Loading, EditRegistryForm, RegistryCoordinates, i18n} from 'components/index.jsx';
+import {WebApi} from 'actions/index.jsx';
+import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions/registry/registryRegionList.jsx'
+import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
+import {routerNavigate} from 'actions/router.jsx'
+import {partySelect} from 'actions/party/party.jsx'
 import {
     registryChangeDetail,
     registryRecordUpdate,
@@ -31,14 +31,14 @@ import {
     registryRecordCoordinatesInternalDelete,
     registryRecordCoordinatesUpdate,
     registryRecordCoordinatesUpload
-} from 'actions/registry/registryRegionData'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {Utils} from 'components'
+} from 'actions/registry/registryRegionData.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {Utils} from 'components/index.jsx';
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
-import {setFocus} from 'actions/global/focus'
-import * as perms from 'actions/user/Permission';
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import {setFocus} from 'actions/global/focus.jsx'
+import * as perms from 'actions/user/Permission.jsx';
 
 var keyModifier = Utils.getKeyModifier();
 

@@ -2,7 +2,7 @@
  * Akce pro zobrazení a skrytí modálního dialogu.
  */
 
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 
 export function modalDialogShow(component, title, content, dialogClassName='', onClose=null) {
     return {

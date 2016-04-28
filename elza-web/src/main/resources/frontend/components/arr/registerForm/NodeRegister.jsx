@@ -3,8 +3,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {WebApi} from 'actions'
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components';
+import {WebApi} from 'actions/index.jsx';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {decorateValue} from './../nodeForm/DescItemUtils'
 

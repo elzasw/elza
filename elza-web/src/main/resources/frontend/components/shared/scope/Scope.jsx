@@ -1,7 +1,7 @@
 /**
  *  Komponenta pro vyhledávání
  *
- *  Pro inicializaci staci naimportovat: import {Search} from 'components'
+ *  Pro inicializaci staci naimportovat: import {Search} from 'components/index.jsx';
  *
  **/
 
@@ -9,11 +9,11 @@ import React from 'react';
 
 import {Button, Input} from 'react-bootstrap';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n} from 'components';
+import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import ReactDOM from 'react-dom'
-import {requestScopesIfNeeded} from 'actions/refTables/scopesData'
+import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 require ('./Scope.less');
-import {indexById} from 'stores/app/utils';
+import {indexById} from 'stores/app/utils.jsx';
 
 
 /**

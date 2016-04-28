@@ -1,6 +1,6 @@
-import * as types from 'actions/constants/ActionTypes';
-import {WebApi} from 'actions'
-import {userDetailChange, userDetailClear} from 'actions/user/userDetail'
+import * as types from 'actions/constants/ActionTypes.js';
+import {WebApi} from 'actions/index.jsx';
+import {userDetailChange, userDetailClear} from 'actions/user/userDetail.jsx'
 
 export function loginFail(callback) {
     return {

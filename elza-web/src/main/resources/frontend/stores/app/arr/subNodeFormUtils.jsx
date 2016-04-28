@@ -1,5 +1,5 @@
 import {indexById} from 'stores/app/utils.jsx'
-import {hasDescItemTypeValue} from 'components/arr/ArrUtils'
+import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 
 function getDbItemTypesMap(data) {

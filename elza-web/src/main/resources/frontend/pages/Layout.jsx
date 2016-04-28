@@ -5,15 +5,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import { AppStore, ResizeStore } from 'stores';
-import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket, Login} from 'components';
+import { AppStore, ResizeStore } from 'stores/index.jsx';
+import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket, Login} from 'components/index.jsx';
 var AppRouter = require ('./AppRouter')
 var ShortcutsManager = require('react-shortcuts')
 var Shortcuts = require('react-shortcuts/component')
 var keyModifier = Utils.getKeyModifier()
-import {Utils} from 'components'
-import {routerNavigate} from 'actions/router'
-import {setFocus} from 'actions/global/focus'
+import {Utils} from 'components/index.jsx';
+import {routerNavigate} from 'actions/router.jsx'
+import {setFocus} from 'actions/global/focus.jsx'
 
 require('./Layout.less');
 

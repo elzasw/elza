@@ -7,12 +7,12 @@ require('./PartyEntities.less');
 import React from 'react';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
-import {RelationForm, AbstractReactComponent, i18n, Icon} from 'components'
-import {AppActions} from 'stores';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {updateRelation, deleteRelation} from 'actions/party/party'
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
-    import * as perms from 'actions/user/Permission';
+import {RelationForm, AbstractReactComponent, i18n, Icon} from 'components/index.jsx';
+import {AppActions} from 'stores/index.jsx';
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {updateRelation, deleteRelation} from 'actions/party/party.jsx'
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+    import * as perms from 'actions/user/Permission.jsx';
     
 /**
 * PARTY ENTITIES

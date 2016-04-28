@@ -1,11 +1,11 @@
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {combineReducers, createStore, applyMiddleware, compose} from 'redux'
 import thunkMiddleware from 'redux-thunk'
 import createLogger from 'redux-logger'
 import {reducer as formReducer} from 'redux-form';
-import {lenToBytesStr, roughSizeOfObject} from 'components/Utils';
-import {splitterResize} from 'actions/global/splitter';
-import {normalizeInt} from 'components/validate';
+import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
+import {splitterResize} from 'actions/global/splitter.jsx';
+import {normalizeInt} from 'components/validate.jsx';
 
 const normalizePacketSize = (value, previousValue, allValues, previousAllValues) => {
     var vv = normalizeInt(value, previousValue, allValues, previousAllValues)
@@ -26,36 +26,36 @@ const _logCollapsed = true;
 /**
  * Sestavení reducerů.
  */
-import arrRegion from './arr/arrRegion';
+import arrRegion from './arr/arrRegion.jsx';
 import refTables from './refTables/refTables';
-import registryRegion from './registry/registryRegion';
-import registryRegionData from './registry/registryRegionData';
+import registryRegion from './registry/registryRegion.jsx';
+import registryRegionData from './registry/registryRegionData.jsx';
 import registryRegionRecordTypes from './registry/registryRegionRecordTypes';
-import toastr from '../../components/shared/toastr/ToastrStore';
-import partyRegion from './party/partyRegion';
-import fundRegion from './fund/fundRegion';
-import contextMenu from './global/contextMenu';
-import modalDialog from './global/modalDialog';
-import webSocket from './global/webSocket';
-import login from './global/login';
-import splitter from './global/splitter';
-import developer from './global/developer';
+import toastr from '../../components/shared/toastr/ToastrStore.jsx';
+import partyRegion from './party/partyRegion.jsx';
+import fundRegion from './fund/fundRegion.jsx';
+import contextMenu from './global/contextMenu.jsx';
+import modalDialog from './global/modalDialog.jsx';
+import webSocket from './global/webSocket.jsx';
+import login from './global/login.jsx';
+import splitter from './global/splitter.jsx';
+import developer from './global/developer.jsx';
 import focus from './global/focus';
-import adminRegion from './admin/adminRegion';
-import fundForm from './arr/form/fundForm';
-import addPacketForm from './arr/form/addPacketForm';
-import stateRegion from './state/stateRegion';
-import userDetail from './user/userDetail';
-import router from './router';
+import adminRegion from './admin/adminRegion.jsx';
+import fundForm from './arr/form/fundForm.jsx';
+import addPacketForm from './arr/form/addPacketForm.jsx';
+import stateRegion from './state/stateRegion.jsx';
+import userDetail from './user/userDetail.jsx';
+import router from './router.jsx';
 
-import addPartyForm from './party/form/addPartyForm';
-import partyNameForm from './party/form/partyNameForm';
-import partyIdentifierForm from './party/form/partyIdentifierForm';
-import partyCreatorForm from './party/form/partyCreatorForm';
-import relationForm from './party/form/relationForm';
+import addPartyForm from './party/form/addPartyForm.jsx';
+import partyNameForm from './party/form/partyNameForm.jsx';
+import partyIdentifierForm from './party/form/partyIdentifierForm.jsx';
+import partyCreatorForm from './party/form/partyCreatorForm.jsx';
+import relationForm from './party/form/relationForm.jsx';
 
-import addRegistryForm from './registry/form/addRegistryForm';
-import editRegistryForm from './registry/form/editRegistryForm';
+import addRegistryForm from './registry/form/addRegistryForm.jsx';
+import editRegistryForm from './registry/form/editRegistryForm.jsx';
 
 
 let reducer = combineReducers({
@@ -131,7 +131,7 @@ var store = function configureStore(initialState) {
   const _store = finalCreateStore(reducer, initialState);
 */
 /*
-import {selectFundTab} from 'actions/arr/fund'
+import {selectFundTab} from 'actions/arr/fund.jsx'
 var fund = Object.assign({id: 1, versionId: 1});
 store.dispatch(selectFundTab(fund));
 */

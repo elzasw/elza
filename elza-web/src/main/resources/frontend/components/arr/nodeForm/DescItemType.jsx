@@ -4,27 +4,27 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Utils, Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components';
+import {Utils, Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components/index.jsx';
 import {Tooltip, OverlayTrigger,Input} from 'react-bootstrap';
-import {addToastrDanger} from 'components/shared/toastr/ToastrActions'
+import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {connect} from 'react-redux'
-import {WebApi} from 'actions'
-import DescItemString from './DescItemString'
-import DescItemUnitid from './DescItemUnitid'
-import DescItemText from './DescItemText'
-import DescItemInt from './DescItemInt'
-import DescItemDecimal from './DescItemDecimal'
+import {WebApi} from 'actions/index.jsx';
+import DescItemString from './DescItemString.jsx'
+import DescItemUnitid from './DescItemUnitid.jsx'
+import DescItemText from './DescItemText.jsx'
+import DescItemInt from './DescItemInt.jsx'
+import DescItemDecimal from './DescItemDecimal.jsx'
 import DescItemCoordinates from './DescItemCoordinates'
-import DescItemUnitdate from './DescItemUnitdate'
-import DescItemPacketRef from './DescItemPacketRef'
-import DescItemPartyRef from './DescItemPartyRef'
-import DescItemRecordRef from './DescItemRecordRef'
-import {propsEquals} from 'components/Utils'
-import {descItemNeedStore} from 'actions/arr/subNodeForm'
-import {hasDescItemTypeValue} from 'components/arr/ArrUtils'
+import DescItemUnitdate from './DescItemUnitdate.jsx'
+import DescItemPacketRef from './DescItemPacketRef.jsx'
+import DescItemPartyRef from './DescItemPartyRef.jsx'
+import DescItemRecordRef from './DescItemRecordRef.jsx'
+import {propsEquals} from 'components/Utils.jsx'
+import {descItemNeedStore} from 'actions/arr/subNodeForm.jsx'
+import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 var classNames = require('classnames');
-import * as perms from 'actions/user/Permission';
+import * as perms from 'actions/user/Permission.jsx';
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component')
 

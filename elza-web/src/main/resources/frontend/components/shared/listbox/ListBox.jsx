@@ -4,7 +4,7 @@
  **/
 
 import React from 'react';
-import {AbstractReactComponent} from 'components';
+import {AbstractReactComponent} from 'components/index.jsx';
 import ReactDOM from 'react-dom';
 const scrollIntoView = require('dom-scroll-into-view')
 

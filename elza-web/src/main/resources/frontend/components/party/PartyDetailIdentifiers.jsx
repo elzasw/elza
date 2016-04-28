@@ -5,10 +5,10 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
-import {PartyIdentifierForm, AbstractReactComponent, i18n, Icon} from 'components';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {AppActions} from 'stores';
-import {deleteIdentifier, updateParty} from 'actions/party/party'
+import {PartyIdentifierForm, AbstractReactComponent, i18n, Icon} from 'components/index.jsx';
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {AppActions} from 'stores/index.jsx';
+import {deleteIdentifier, updateParty} from 'actions/party/party.jsx'
 
 /*
 @@@@@@@@@@@@@@@@@@@

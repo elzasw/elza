@@ -2,8 +2,8 @@ require ('./Accordion.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent} from 'components';
-import {ResizeStore} from 'stores';
+import {AbstractReactComponent} from 'components/index.jsx';
+import {ResizeStore} from 'stores/index.jsx';
 
 var AccordionComponent = require('./AccordionComponent');
 

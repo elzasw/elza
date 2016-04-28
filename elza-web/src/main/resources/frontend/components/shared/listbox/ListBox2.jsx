@@ -4,7 +4,7 @@
  **/
 
 import React from 'react';
-import {AbstractReactComponent, LazyListBox} from 'components';
+import {AbstractReactComponent, LazyListBox} from 'components/index.jsx';
 import ReactDOM from 'react-dom';
 const scrollIntoView = require('dom-scroll-into-view')
 

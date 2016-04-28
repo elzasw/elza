@@ -11,14 +11,14 @@ var classNames = require('classnames');
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Loading} from 'components';
+import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
 import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
         Search, RegistryPanel, DropDownTree, AddRegistryForm, ImportForm,
         ListBox} from 'components';
-import {addToastrWarning} from 'components/shared/toastr/ToastrActions'
-import {WebApi} from 'actions'
+import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
+import {WebApi} from 'actions/index.jsx';
 import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
-import {PageLayout} from 'pages';
+import {PageLayout} from 'pages/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
 import {registryRegionDataSelectRecord,
@@ -31,22 +31,22 @@ import {registryRegionDataSelectRecord,
         registryUnsetParents,
         registryRecordUpdate,
         registryRecordMove
-} from 'actions/registry/registryRegionData'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
+} from 'actions/registry/registryRegionData.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {fetchRegistryIfNeeded,
         registrySetTypesId,
         fetchRegistry,
         registryAdd,
         registryClickNavigation,
         registryArrReset
-} from 'actions/registry/registryRegionList'
-import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
+} from 'actions/registry/registryRegionList.jsx'
+import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
-import {Utils} from 'components'
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
-import {setFocus} from 'actions/global/focus'
-import * as perms from 'actions/user/Permission';
+import {Utils} from 'components/index.jsx';
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import {setFocus} from 'actions/global/focus.jsx'
+import * as perms from 'actions/user/Permission.jsx';
 
 var keyModifier = Utils.getKeyModifier();
 

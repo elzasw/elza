@@ -7,9 +7,9 @@ require ('./DataGridColumnsSettings.less')
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {ListBox, AbstractReactComponent, i18n} from 'components';
+import {ListBox, AbstractReactComponent, i18n} from 'components/index.jsx';
 import {Modal, Button} from 'react-bootstrap';
-import {getMapFromList} from 'stores/app/utils'
+import {getMapFromList} from 'stores/app/utils.jsx'
 
 var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReactComponent {
     constructor(props) {

@@ -1,7 +1,7 @@
-import {WebApi} from 'actions'
-import * as types from 'actions/constants/ActionTypes';
+import {WebApi} from 'actions/index.jsx';
+import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, objectById} from 'stores/app/utils.jsx'
-import {modalDialogHide} from 'actions/global/modalDialog'
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 
 export function isFundPacketsAction(action) {
     switch (action.type) {

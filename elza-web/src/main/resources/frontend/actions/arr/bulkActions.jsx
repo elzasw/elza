@@ -1,6 +1,6 @@
-import {WebApi} from 'actions';
-import * as types from 'actions/constants/ActionTypes';
-import {barrier} from 'components/Utils';
+import {WebApi} from 'actions/index.jsx';
+import * as types from 'actions/constants/ActionTypes.js';
+import {barrier} from 'components/Utils.jsx';
 
 export function isBulkAction(action) {
     switch (action.type) {

@@ -9,22 +9,22 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap'; 
 import {Link, IndexLink} from 'react-router';
-import {ControllableDropdownButton, Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, PartyEntities, i18n, ImportForm} from 'components';
-import {RelationForm, AddPartyForm} from 'components';
+import {ControllableDropdownButton, Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, PartyEntities, i18n, ImportForm} from 'components/index.jsx';
+import {RelationForm, AddPartyForm} from 'components/index.jsx';
 import {ButtonGroup, MenuItem, DropdownButton, Button, Glyphicon} from 'react-bootstrap';
-import {PageLayout} from 'pages';
-import {AppStore} from 'stores'
-import {WebApi} from 'actions'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
-import {partyDetailFetch, findPartyFetch, findPartyFetchIfNeeded} from 'actions/party/party'
-import {partyAdd, insertParty, insertRelation, deleteParty} from 'actions/party/party'
+import {PageLayout} from 'pages/index.jsx';
+import {AppStore} from 'stores/index.jsx'
+import {WebApi} from 'actions/index.jsx';
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
+import {partyDetailFetch, findPartyFetch, findPartyFetchIfNeeded} from 'actions/party/party.jsx'
+import {partyAdd, insertParty, insertRelation, deleteParty} from 'actions/party/party.jsx'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
-import {Utils} from 'components'
-import {setFocus} from 'actions/global/focus'
-import * as perms from 'actions/user/Permission';
+import {Utils} from 'components/index.jsx';
+import {setFocus} from 'actions/global/focus.jsx'
+import * as perms from 'actions/user/Permission.jsx';
 
 var keyModifier = Utils.getKeyModifier()
 

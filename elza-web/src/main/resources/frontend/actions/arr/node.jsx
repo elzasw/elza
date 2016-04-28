@@ -2,11 +2,11 @@
  * Akce pro vybranou záložku NODE pod konkrétní vybranou záložkou AS.
  */
 
-import {WebApi} from 'actions';
-import * as types from 'actions/constants/ActionTypes';
-import {fundSelectSubNode} from 'actions/arr/nodes';
+import {WebApi} from 'actions/index.jsx';
+import * as types from 'actions/constants/ActionTypes.js';
+import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {isFundRootId} from 'components/arr/ArrUtils'
+import {isFundRootId} from 'components/arr/ArrUtils.jsx'
 
 export function isNodeAction(action) {
     switch (action.type) {

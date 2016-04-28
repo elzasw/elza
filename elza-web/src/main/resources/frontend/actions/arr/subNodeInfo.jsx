@@ -2,10 +2,10 @@
  * Akce pro doplňující informace pro aktuálně vybraný formulář node.
  */
 
-import {WebApi} from 'actions'
+import {WebApi} from 'actions/index.jsx';
 import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 
 export function isSubNodeInfoAction(action) {
     switch (action.type) {

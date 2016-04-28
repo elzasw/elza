@@ -3,14 +3,14 @@
  */
 
 import React from 'react';
-import {WebApi} from 'actions'
+import {WebApi} from 'actions/index.jsx';
 import {connect} from 'react-redux'
 import {Input, Button} from 'react-bootstrap';
-import {PartyCreatorForm, AbstractReactComponent, i18n, Icon, Autocomplete} from 'components';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {AppActions} from 'stores';
-import {deleteCreator, updateParty} from 'actions/party/party'
-import {refPartyListFetchIfNeeded} from 'actions/refTables/partyList'
+import {PartyCreatorForm, AbstractReactComponent, i18n, Icon, Autocomplete} from 'components/index.jsx';
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {AppActions} from 'stores/index.jsx';
+import {deleteCreator, updateParty} from 'actions/party/party.jsx'
+import {refPartyListFetchIfNeeded} from 'actions/refTables/partyList.jsx'
 
 /**
  * PARTY DETAIL CREATORS

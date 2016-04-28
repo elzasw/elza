@@ -5,16 +5,16 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Autocomplete, Icon} from 'components';
+import {AbstractReactComponent, i18n, Autocomplete, Icon} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx';
-import {decorateFormField} from 'components/form/FormUtils';
-import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet'
-import {WebApi} from 'actions'
-import {modalDialogHide} from 'actions/global/modalDialog';
-import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions'
+import {decorateFormField} from 'components/form/FormUtils.jsx';
+import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
+import {WebApi} from 'actions/index.jsx';
+import {modalDialogHide} from 'actions/global/modalDialog.jsx';
+import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 
 const validate = (values, props) => {
     const errors = {};

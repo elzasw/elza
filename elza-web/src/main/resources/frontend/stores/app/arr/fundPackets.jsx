@@ -1,6 +1,6 @@
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {indexById} from 'stores/app/utils.jsx'
-import {consolidateState} from 'components/Utils'
+import {consolidateState} from 'components/Utils.jsx'
 
 const initialState = {
     filterText: '',

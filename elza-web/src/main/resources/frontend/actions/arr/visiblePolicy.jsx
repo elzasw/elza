@@ -1,7 +1,7 @@
-import {WebApi} from 'actions'
-import {modalDialogHide} from 'actions/global/modalDialog'
+import {WebApi} from 'actions/index.jsx';
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 
 export function visiblePolicyFetchIfNeeded(nodeId, fundVersionId) {
     return (dispatch, getState) => {

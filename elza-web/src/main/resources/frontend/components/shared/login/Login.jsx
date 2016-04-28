@@ -2,11 +2,11 @@ var React = require('react');
 
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, ModalDialogWrapper} from 'components';
+import {AbstractReactComponent, i18n, ModalDialogWrapper} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
-import {decorateFormField} from 'components/form/FormUtils'
-import {WebApi} from 'actions'
-import {loginSuccess} from 'actions/global/login';
+import {decorateFormField} from 'components/form/FormUtils.jsx'
+import {WebApi} from 'actions/index.jsx';
+import {loginSuccess} from 'actions/global/login.jsx';
 
 require('./Login.less');
 

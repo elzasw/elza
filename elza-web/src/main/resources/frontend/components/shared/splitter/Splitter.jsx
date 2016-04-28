@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Resizer} from 'components';
+import {AbstractReactComponent, Resizer} from 'components/index.jsx';
 
 require ('./Splitter.less')
 var Pane = require ('./Pane')

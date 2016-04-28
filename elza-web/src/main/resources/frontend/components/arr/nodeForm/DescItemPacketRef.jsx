@@ -1,10 +1,10 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {decorateValue, decorateAutocompleteValue} from './DescItemUtils'
-import {WebApi} from 'actions'
+import {WebApi} from 'actions/index.jsx';
 
 var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     constructor(props) {

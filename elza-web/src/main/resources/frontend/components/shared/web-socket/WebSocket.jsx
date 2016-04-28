@@ -2,7 +2,7 @@ var React = require('react');
 
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n} from 'components';
+import {AbstractReactComponent, i18n} from 'components/index.jsx';
 
 require('./WebSocket.less');
 

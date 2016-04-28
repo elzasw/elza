@@ -7,9 +7,9 @@ require ('./DataGrid.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Resizer} from 'components';
+import {AbstractReactComponent, i18n, Resizer} from 'components/index.jsx';
 const scrollIntoView = require('dom-scroll-into-view')
-import {propsEquals} from 'components/Utils'
+import {propsEquals} from 'components/Utils.jsx'
 
 const __emptyColWidth = 8000
 const __minColWidth = 16

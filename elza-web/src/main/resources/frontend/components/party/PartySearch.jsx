@@ -7,11 +7,11 @@ require('./PartySearch.less');
 import React from 'react';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
-import {ListBox, AbstractReactComponent, Search, i18n, ArrPanel} from 'components';
-import {AppActions} from 'stores';
+import {ListBox, AbstractReactComponent, Search, i18n, ArrPanel} from 'components/index.jsx';
+import {AppActions} from 'stores/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded, partyArrReset} from 'actions/party/party.jsx'
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 
 var PartySearch = class PartySearch extends AbstractReactComponent {
     constructor(props) {

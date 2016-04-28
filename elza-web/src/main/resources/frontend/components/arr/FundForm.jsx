@@ -6,14 +6,14 @@ require ('./FundForm.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, BulkActionsTable, Icon, Autocomplete, VersionValidationState} from 'components';
+import {AbstractReactComponent, i18n, BulkActionsTable, Icon, Autocomplete, VersionValidationState} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
-import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet'
-import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions'
+import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
+import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
+import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 
 /**
  * Validace formuláře.

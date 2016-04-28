@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Icon, AbstractReactComponent, i18n} from 'components';
+import {Icon, AbstractReactComponent, i18n} from 'components/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 import {Button} from 'react-bootstrap';
 

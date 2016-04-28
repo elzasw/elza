@@ -8,7 +8,7 @@ import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute } from 'react-router';
 import { createHistory, useBasename, useQueries } from 'history';
 import { Provider } from 'react-redux'
-import { AppStore } from 'stores'
+import { AppStore } from 'stores/index.jsx'
 
 import useRouterHistory from 'react-router/lib/useRouterHistory'
 
@@ -16,7 +16,7 @@ const browserHistory = useRouterHistory(useBasename(createHistory))({
     basename: serverContextPath + ''
 });
 
-import {ArrPage, FundActionsPage, HomePage, RegistryPage, PartyPage, FundPage, AdminLayout, AdminPage, AdminPackagesPage, AdminFulltextPage, Layout} from 'pages';
+import {ArrPage, FundActionsPage, HomePage, RegistryPage, PartyPage, FundPage, AdminLayout, AdminPage, AdminPackagesPage, AdminFulltextPage, Layout} from 'pages/index.jsx';
 
 // Aplikace
 exports.start = function() {

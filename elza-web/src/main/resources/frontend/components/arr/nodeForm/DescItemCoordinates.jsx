@@ -4,8 +4,8 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, i18n} from 'components';
-import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils';
+import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils'
 import {Button} from 'react-bootstrap';

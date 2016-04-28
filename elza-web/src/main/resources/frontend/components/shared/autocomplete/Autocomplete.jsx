@@ -2,8 +2,8 @@ const React = require('react')
 import ReactDOM from 'react-dom';
 import {Button, Input} from 'react-bootstrap';
 const scrollIntoView = require('dom-scroll-into-view')
-import {Icon, AbstractReactComponent} from 'components';
-import {getBootstrapInputComponentInfo} from 'components/form/FormUtils';
+import {Icon, AbstractReactComponent} from 'components/index.jsx';
+import {getBootstrapInputComponentInfo} from 'components/form/FormUtils.jsx';
 
 require('./Autocomplete.less')
 let _debugStates = false

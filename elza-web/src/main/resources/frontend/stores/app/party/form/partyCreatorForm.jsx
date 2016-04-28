@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 
 export default function partyCreatorForm(state, action) {
     switch (action.type) {

@@ -12,11 +12,11 @@ require ('./AdminPage.less');
 
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {RibbonGroup, RibbonSplit, i18n, Icon, Ribbon, ModalDialog, NodeTabs, PartySearch, AbstractReactComponent} from 'components';
+import {RibbonGroup, RibbonSplit, i18n, Icon, Ribbon, ModalDialog, NodeTabs, PartySearch, AbstractReactComponent} from 'components/index.jsx';
 import {ButtonGroup, Button} from 'react-bootstrap';
-import {PageLayout} from 'pages';
-import {developerSet} from 'actions/global/developer'
-import {resetLocalStorage} from 'actions/store/store'
+import {PageLayout} from 'pages/index.jsx';
+import {developerSet} from 'actions/global/developer.jsx'
+import {resetLocalStorage} from 'actions/store/store.jsx'
 
 var AdminPage = class AdminPage extends AbstractReactComponent {
     constructor(props) {

@@ -5,8 +5,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent} from 'components';
-import {routerNavigateFinish} from 'actions/router'
+import {AbstractReactComponent} from 'components/index.jsx';
+import {routerNavigateFinish} from 'actions/router.jsx'
 
 var AppRouter = class AppRouter extends AbstractReactComponent {
     constructor(props) {

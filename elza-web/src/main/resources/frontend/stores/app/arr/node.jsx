@@ -1,13 +1,13 @@
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
-import subNodeForm from './subNodeForm'
-import subNodeFormCache from './subNodeFormCache'
-import subNodeRegister from './subNodeRegister'
-import subNodeInfo from './subNodeInfo'
-import {consolidateState} from 'components/Utils'
-import {isSubNodeFormAction, isSubNodeFormCacheAction} from 'actions/arr/subNodeForm'
-import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo'
-import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister'
+import subNodeForm from './subNodeForm.jsx'
+import subNodeFormCache from './subNodeFormCache.jsx'
+import subNodeRegister from './subNodeRegister.jsx'
+import subNodeInfo from './subNodeInfo.jsx'
+import {consolidateState} from 'components/Utils.jsx'
+import {isSubNodeFormAction, isSubNodeFormCacheAction} from 'actions/arr/subNodeForm.jsx'
+import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
+import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
 
 var _nextNodeKey = 1;
 var _nodeKeyAreaPrefix = 'NODE|';

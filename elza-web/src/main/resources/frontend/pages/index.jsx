@@ -1,14 +1,14 @@
-exports.AdminPage = require('./admin/AdminPage');
-exports.AdminPackagesPage = require('./admin/AdminPackagesPage');
-exports.AdminFulltextPage = require('./admin/AdminFulltextPage');
+exports.AdminPage = require('pages/admin/AdminPage.jsx');
+exports.AdminPackagesPage = require('pages/admin/AdminPackagesPage.jsx');
+exports.AdminFulltextPage = require('pages/admin/AdminFulltextPage.jsx');
 
-exports.ArrPage = require('./arr/ArrPage');
-exports.FundActionsPage = require('./arr/FundActionsPage');
+exports.ArrPage = require('pages/arr/ArrPage.jsx');
+exports.FundActionsPage = require('pages/arr/FundActionsPage.jsx');
 
-exports.RegistryPage = require('./registry/RegistryPage');
-exports.PartyPage = require('./party/PartyPage');
-exports.HomePage = require('./home/HomePage');
-exports.FundPage = require('./fund/FundPage');
+exports.RegistryPage = require('pages/registry/RegistryPage.jsx');
+exports.PartyPage = require('pages/party/PartyPage.jsx');
+exports.HomePage = require('pages/home/HomePage.jsx');
+exports.FundPage = require('pages/fund/FundPage.jsx');
 
-exports.PageLayout = require('./shared/layout/PageLayout');
-exports.Layout = require('./Layout');
+exports.PageLayout = require('pages/shared/layout/PageLayout.jsx');
+exports.Layout = require('pages/Layout.jsx');

@@ -13,21 +13,21 @@ import {indexById} from 'stores/app/utils.jsx'
 import {fundSubNodeFormDescItemTypeAdd, fundSubNodeFormValueChange, fundSubNodeFormDescItemTypeDelete,
         fundSubNodeFormValueChangeSpec,fundSubNodeFormValueBlur, fundSubNodeFormValueFocus, fundSubNodeFormValueAdd,
         fundSubNodeFormValueDelete, fundSubNodeFormValuesCopyFromPrev, fundSubNodeFormValueChangePosition,
-        fundSubNodeFormValueUploadCoordinates} from 'actions/arr/subNodeForm'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import DescItemString from './nodeForm/DescItemString'
-import DescItemType from './nodeForm/DescItemType'
-import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
+        fundSubNodeFormValueUploadCoordinates} from 'actions/arr/subNodeForm.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import DescItemString from './nodeForm/DescItemString.jsx'
+import DescItemType from './nodeForm/DescItemType.jsx'
+import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm.jsx'
 import {lockDescItemType, unlockDescItemType, unlockAllDescItemType,
-        copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting'
-import {addNode,deleteNode} from '../../actions/arr/node'
+        copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting.jsx'
+import {addNode,deleteNode} from '../../actions/arr/node.jsx'
 import {isFundRootId} from './ArrUtils.jsx'
-import {partySelect, partyAdd} from 'actions/party/party'
-import {registrySelect, registryAdd} from 'actions/registry/registryRegionList'
-import {routerNavigate} from 'actions/router'
-import {setInputFocus} from 'components/Utils'
-import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
-import * as perms from 'actions/user/Permission';
+import {partySelect, partyAdd} from 'actions/party/party.jsx'
+import {registrySelect, registryAdd} from 'actions/registry/registryRegionList.jsx'
+import {routerNavigate} from 'actions/router.jsx'
+import {setInputFocus} from 'components/Utils.jsx'
+import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import * as perms from 'actions/user/Permission.jsx';
 var classNames = require('classnames');
 var Shortcuts = require('react-shortcuts/component')
 

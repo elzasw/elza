@@ -6,8 +6,8 @@ require ('./FundFilterSettings.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes';
-import {AbstractReactComponent, i18n} from 'components';
+import * as types from 'actions/constants/ActionTypes.js';
+import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById, getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 

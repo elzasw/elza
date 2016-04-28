@@ -1,7 +1,7 @@
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, getSetFromIdsList} from 'stores/app/utils.jsx'
-import {consolidateState} from 'components/Utils'
-import * as perms from 'actions/user/Permission';
+import {consolidateState} from 'components/Utils.jsx'
+import * as perms from 'actions/user/Permission.jsx';
 
 function hasRight(right) {
     switch (typeof right) {

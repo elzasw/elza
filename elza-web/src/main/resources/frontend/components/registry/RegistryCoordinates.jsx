@@ -3,9 +3,9 @@ require ('./RegistryCoordinates.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Input, Button} from 'react-bootstrap';
-import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils';
+import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, NoFocusButton, Icon} from 'components';
+import {AbstractReactComponent, i18n, NoFocusButton, Icon} from 'components/index.jsx';
 
 var RegistryCoordinates = class RegistryCoordinates extends AbstractReactComponent {
     constructor(props) {

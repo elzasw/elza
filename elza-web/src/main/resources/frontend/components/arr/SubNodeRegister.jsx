@@ -2,14 +2,14 @@ require('./SubNodeRegister.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, Loading, NoFocusButton} from 'components';
+import {Icon, i18n, AbstractReactComponent, Loading, NoFocusButton} from 'components/index.jsx';
 import {connect} from 'react-redux'
 
 import {fundSubNodeRegisterValueDelete, fundSubNodeRegisterValueAdd,
-        fundSubNodeRegisterValueFocus, fundSubNodeRegisterValueBlur, fundSubNodeRegisterValueChange} from 'actions/arr/subNodeRegister'
-import {registrySelect, registryAdd} from 'actions/registry/registryRegionList'
-import NodeRegister from './registerForm/NodeRegister'
-import {routerNavigate} from 'actions/router'
+        fundSubNodeRegisterValueFocus, fundSubNodeRegisterValueBlur, fundSubNodeRegisterValueChange} from 'actions/arr/subNodeRegister.jsx'
+import {registrySelect, registryAdd} from 'actions/registry/registryRegionList.jsx'
+import NodeRegister from './registerForm/NodeRegister.jsx'
+import {routerNavigate} from 'actions/router.jsx'
 
 var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     constructor(props) {

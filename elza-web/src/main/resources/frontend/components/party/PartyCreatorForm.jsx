@@ -4,14 +4,14 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {WebApi} from 'actions'
-import {AbstractReactComponent, i18n, Autocomplete} from 'components';
+import {WebApi} from 'actions/index.jsx';
+import {AbstractReactComponent, i18n, Autocomplete} from 'components/index.jsx';
 import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {refPartyListFetchIfNeeded} from 'actions/refTables/partyList'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {refPartyListFetchIfNeeded} from 'actions/refTables/partyList.jsx'
 
 /**
  * PARTY CREATOR FORM

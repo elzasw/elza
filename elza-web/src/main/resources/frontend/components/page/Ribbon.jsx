@@ -7,14 +7,14 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {Icon, i18n} from 'components';
-import {RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FindindAidFileTree} from 'components';
-import {AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs} from 'components';
+import {Icon, i18n} from 'components/index.jsx';
+import {RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FindindAidFileTree} from 'components/index.jsx';
+import {AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs} from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
-import {PageLayout} from 'pages';
-import {AppStore} from 'stores'
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
-import {logout} from 'actions/global/login';
+import {PageLayout} from 'pages/index.jsx';
+import {AppStore} from 'stores/index.jsx'
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import {logout} from 'actions/global/login.jsx';
 
 var Ribbon = class Ribbon extends AbstractReactComponent {
     constructor(props) {

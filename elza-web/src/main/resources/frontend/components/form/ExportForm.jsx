@@ -6,10 +6,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Autocomplete, Icon} from 'components';
+import {AbstractReactComponent, i18n, Autocomplete, Icon} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils';
-import {WebApi} from 'actions'
+import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx';
+import {WebApi} from 'actions/index.jsx';
 
 var ExportForm = class ExportForm extends AbstractReactComponent {
     constructor(props) {

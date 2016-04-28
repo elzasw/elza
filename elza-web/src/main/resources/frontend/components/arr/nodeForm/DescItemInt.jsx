@@ -4,9 +4,9 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent} from 'components';
+import {AbstractReactComponent} from 'components/index.jsx';
 import {connect} from 'react-redux'
-import {normalizeInt} from 'components/validate'
+import {normalizeInt} from 'components/validate.jsx'
 import {decorateValue} from './DescItemUtils'
 
 var DescItemInt = class DescItemInt extends AbstractReactComponent {

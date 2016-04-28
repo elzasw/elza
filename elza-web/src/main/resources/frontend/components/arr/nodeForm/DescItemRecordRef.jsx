@@ -3,12 +3,12 @@ require ('./DescItemRecordRef.less')
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {WebApi} from 'actions'
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components';
+import {WebApi} from 'actions/index.jsx';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {decorateAutocompleteValue} from './DescItemUtils'
 import {MenuItem, Button} from 'react-bootstrap';
-import * as perms from 'actions/user/Permission';
+import * as perms from 'actions/user/Permission.jsx';
 
 var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     constructor(props) {

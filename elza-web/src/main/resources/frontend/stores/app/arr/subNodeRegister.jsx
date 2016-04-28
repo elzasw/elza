@@ -1,5 +1,5 @@
-import * as types from 'actions/constants/ActionTypes';
-import {i18n} from 'components'
+import * as types from 'actions/constants/ActionTypes.js';
+import {i18n} from 'components/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 
 function getLoc(state, index) {

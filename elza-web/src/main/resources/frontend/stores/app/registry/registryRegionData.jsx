@@ -4,9 +4,9 @@
  *
  **/
 
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {indexById} from 'stores/app/utils.jsx'
-import {i18n} from 'components'
+import {i18n} from 'components/index.jsx';
 
 const initialState = {
     currentDataKey: null,

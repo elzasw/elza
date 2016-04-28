@@ -2,11 +2,11 @@
  * Akce pro doplňující informace k záložce NODE.
  */
 
-import {WebApi} from 'actions'
+import {WebApi} from 'actions/index.jsx';
 import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
-import {barrier} from 'components/Utils'
-import {isFundRootId} from 'components/arr/ArrUtils'
-import * as types from 'actions/constants/ActionTypes';
+import {barrier} from 'components/Utils.jsx'
+import {isFundRootId} from 'components/arr/ArrUtils.jsx'
+import * as types from 'actions/constants/ActionTypes.js';
 
 export function isNodeInfoAction(action) {
     switch (action.type) {

@@ -1,14 +1,14 @@
 import React from 'react';
 
-import {EmailSettingsActions, ApplicationActions} from 'actions';
-import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket';
-import {buklActionStateChange} from 'actions/arr/bulkActions';
-import {store} from 'stores/app/AppStore';
+import {EmailSettingsActions, ApplicationActions} from 'actions/index.jsx';
+import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
+import {buklActionStateChange} from 'actions/arr/bulkActions.jsx';
+import {store} from 'stores/app/AppStore.jsx';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
         changeNodes, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
     changeMoveLevel, changeRegistryRecord, changeFund, deleteFund, changeFundRecord, changeInstitution,
-    changeVisiblePolicy} from 'actions/global/change';
+    changeVisiblePolicy} from 'actions/global/change.jsx';
 
 
 var SockJS = require('sockjs-client');
