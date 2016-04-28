@@ -467,11 +467,10 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 };
 
 function mapStateToProps(state) {
-    const {refTables, registryRegion: {registryRegionData}, focus} = state;
+    const {registryRegion: {registryRegionData}, focus} = state;
 
     return {
         registryRegionData,
-        refTables,
         focus
     }
 }

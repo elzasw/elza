@@ -76,7 +76,9 @@ export default function registryRegionData(state = initialState, action = {}) {
                 fetched: false,
                 selectedId: action.registry.selectedId,
                 currentDataKey: action.registry.selectedId,
-                item: action.registry
+                item: {
+                    selectedId: action.registry.selectedId
+                }
             }
         }
         case types.REGISTRY_RECORD_DETAIL_REQUEST: {
