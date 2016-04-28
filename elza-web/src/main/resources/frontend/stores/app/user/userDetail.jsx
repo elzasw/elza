@@ -98,12 +98,12 @@ function userDetailInt(state, action) {
         case types.USER_DETAIL_CHANGE: {
             let permissionsMap = {}
 
-            action.userDetail.userPermissions = [
-                {permission: 'FUND_ARR_ALL', fundIds: [], scopeIds: [1]},
-                {permission: 'REG_SCOPE_RD', fundIds: [], scopeIds: [1]},
-                {permission: 'REG_SCOPE_WR_ALL1', fundIds: [], scopeIds: []},
-                {permission: 'REG_SCOPE_WR', fundIds: [], scopeIds: [2]},
-            ]
+            // action.userDetail.userPermissions = [
+            //     {permission: 'FUND_ARR_ALL', fundIds: [], scopeIds: [1]},
+            //     {permission: 'REG_SCOPE_RD', fundIds: [], scopeIds: [1]},
+            //     {permission: 'REG_SCOPE_WR_ALL1', fundIds: [], scopeIds: []},
+            //     {permission: 'REG_SCOPE_WR', fundIds: [], scopeIds: [2]},
+            // ]
 
             action.userDetail.userPermissions.forEach(perm => {
                 permissionsMap[perm.permission] = perm
