@@ -40,7 +40,7 @@ public class ElzaWebController {
         return "web";
     }
 
-    @RequestMapping(value = "/arr", method = RequestMethod.GET)
+    @RequestMapping(value = "/arr/**", method = RequestMethod.GET)
     public String arrPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);
         return "web";

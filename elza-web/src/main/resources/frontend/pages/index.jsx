@@ -3,6 +3,8 @@ exports.AdminPackagesPage = require('./admin/AdminPackagesPage');
 exports.AdminFulltextPage = require('./admin/AdminFulltextPage');
 
 exports.ArrPage = require('./arr/ArrPage');
+exports.FundActionsPage = require('./arr/FundActionsPage');
+
 exports.RegistryPage = require('./registry/RegistryPage');
 exports.PartyPage = require('./party/PartyPage');
 exports.HomePage = require('./home/HomePage');

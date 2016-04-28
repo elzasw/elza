@@ -60,6 +60,15 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
                 </RibbonGroup>
             );
         }
+        if (this.props.arr) {
+            section = (
+                <RibbonGroup className="large">
+                    <IndexLinkContainer to="/arr"><Button ref='ribbonDefaultFocus'><Icon glyph="fa-sitemap" /><div><span className="btnText">{i18n('ribbon.action.arr.arr')}</span></div></Button></IndexLinkContainer>
+                    <LinkContainer to="/arr/output"><Button><Icon glyph="fa-printer" /><div><span className="btnText">{i18n('ribbon.action.arr.output')}</span></div></Button></LinkContainer>
+                    <LinkContainer to="/arr/actions"><Button><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span></div></Button></LinkContainer>
+                </RibbonGroup>
+            );
+        }
 
         return (
             <RibbonMenu opened onShowHide={this.handleRibbonShowHide}>

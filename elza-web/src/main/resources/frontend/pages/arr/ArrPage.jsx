@@ -237,9 +237,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         if (activeInfo.activeFund && !activeInfo.activeFund.closed) {
             altActions.push(
-                <Button key="bulk-actions" onClick={this.handleBulkActionsDialog}><Icon glyph="fa-cogs"/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span></div>
-                </Button>,
                 <Button key="fas" onClick={()=>{}}><Icon glyph="fa-cogs"/>
                     <div><span className="btnText">{i18n('ribbon.action.arr.fund.fas')}</span></div>
                 </Button>
