@@ -12,33 +12,30 @@ import org.springframework.util.Assert;
  */
 public class XmlExportResult {
 
-    private File xmlData;
+    private File exportedData;
 
-    private File transformedData;
+    private String fileName;
 
-    private String fundName;
+    private boolean isCompressed;
 
-    public XmlExportResult(final File xmlData, final String fundName) {
-        Assert.notNull(xmlData);
-        Assert.notNull(fundName);
+    public XmlExportResult(final File exportedData, final String fileName, final boolean isCompressed) {
+        Assert.notNull(exportedData);
+        Assert.notNull(fileName);
 
-        this.xmlData = xmlData;
-        this.fundName = fundName;
+        this.exportedData = exportedData;
+        this.fileName = fileName;
+        this.isCompressed = isCompressed;
     }
 
-    public File getXmlData() {
-        return xmlData;
+    public File getExportedData() {
+        return exportedData;
     }
 
-    public File getTransformedData() {
-        return transformedData;
+    public String getFileName() {
+        return fileName;
     }
 
-    public void setTransformedData(final File transformedData) {
-        this.transformedData = transformedData;
-    }
-
-    public String getFundName() {
-        return fundName;
+    public boolean isCompressed() {
+        return isCompressed;
     }
 }

@@ -2,11 +2,13 @@ package cz.tacr.elza.repository;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
@@ -177,8 +179,8 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
     }
 
     @Override
-    public List<RegRecord> findRootRecords(Collection<Integer> registerTypeIds, Integer firstResult,
-                                           Integer maxResults, final Set<Integer> scopeIdsForRecord) {
+    public List<RegRecord> findRootRecords(final Collection<Integer> registerTypeIds, final Integer firstResult,
+                                           final Integer maxResults, final Set<Integer> scopeIdsForRecord) {
         if(CollectionUtils.isEmpty(scopeIdsForRecord)){
             return Collections.EMPTY_LIST;
         }
@@ -202,5 +204,56 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
                 .setFirstResult(firstResult)
                 .setMaxResults(maxResults)
                 .getResultList();
+    }
+
+    @Override
+    public List<Integer> findRecordParents(final Integer recordId) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("select");
+        sb.append(" r2.record_id as r2record_id, r3.record_id as r3record_id, r4.record_id as r4record_id,");
+        sb.append(" r5.record_id as r5record_id, r6.record_id as r6record_id, r7.record_id as r7record_id,");
+        sb.append(" r8.record_id as r8record_id, r9.record_id as r9record_id, r10.record_id as r10record_id");
+        sb.append(" from reg_record r1");
+        sb.append(" left join reg_record r2 on r1.parent_record_id = r2.record_id");
+        sb.append(" left join reg_record r3 on r2.parent_record_id = r3.record_id");
+        sb.append(" left join reg_record r4 on r3.parent_record_id = r4.record_id");
+        sb.append(" left join reg_record r5 on r4.parent_record_id = r5.record_id");
+        sb.append(" left join reg_record r6 on r5.parent_record_id = r6.record_id");
+        sb.append(" left join reg_record r7 on r6.parent_record_id = r7.record_id");
+        sb.append(" left join reg_record r8 on r7.parent_record_id = r8.record_id");
+        sb.append(" left join reg_record r9 on r8.parent_record_id = r9.record_id");
+        sb.append(" left join reg_record r10 on r9.parent_record_id = r10.record_id");
+
+        sb.append(" where (r1.record_id = :recordId)");
+
+        List<Integer> result = new LinkedList<>();
+
+        // Čtení všech parentů
+        Query query = entityManager.createNativeQuery(sb.toString());
+
+        Integer findRecordParentsId = recordId;
+        while (findRecordParentsId != null) {
+            query.setParameter("recordId", findRecordParentsId);
+            List<Object> rows = query.getResultList();
+            if (!rows.isEmpty()) {
+                Object[] row = (Object[]) rows.get(0);
+                for (Object objectId : row) {
+                    if (objectId != null) {
+                        result.add(((Number) objectId).intValue());
+                    }
+                }
+
+                Object lastObjectId = row[row.length - 1];
+                if (lastObjectId != null) {
+                    findRecordParentsId = ((Number) lastObjectId).intValue();
+                } else {
+                    findRecordParentsId = null;
+                }
+            } else {
+                findRecordParentsId = null;
+            }
+        }
+
+        return result;
     }
 }

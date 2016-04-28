@@ -1,6 +1,9 @@
 package cz.tacr.elza.service;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,10 +13,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -179,19 +186,53 @@ public class XmlExportService {
      * @return výsledek exportu
      */
     private XmlExportResult createExportResult(final XmlExportConfig config, final XmlImport xmlImport) {
-        byte[] xmlData = XmlUtils.marshallData(xmlImport, XmlImport.class);
-        File xmlFile = XmlUtils.createTempFile(xmlData, "elza-export-", ".xml");
         String fundName = xmlImport.getFund().getName();
-        XmlExportResult xmlExportResult = new XmlExportResult(xmlFile, fundName);
+        File exportFile;
+        String downloadfileName;
+
         String transformationName = config.getTransformationName();
-        if (StringUtils.isNotBlank(transformationName)) {
-            byte[] transformedData = XmlUtils.transformData(xmlData, transformationName, transformationsDirectory);
-            File transformedFile = XmlUtils.createTempFile(transformedData, "elza-export-", ".transformed");
-            xmlExportResult.setTransformedData(transformedFile);
+        boolean isCompressed;
+        try {
+            if (StringUtils.isNotBlank(transformationName)) {
+                downloadfileName = fundName + ".zip";
+                isCompressed = true;
+                byte[] xmlData = XmlUtils.marshallData(xmlImport, XmlImport.class);
+                byte[] transformedData = XmlUtils.transformData(xmlData, transformationName, transformationsDirectory);
+
+                exportFile = File.createTempFile("elza-export", ".zip");
+                FileOutputStream fos = new FileOutputStream(exportFile);
+                ZipOutputStream zos = new ZipOutputStream(fos);
+                ZipEntry zipEntry = new ZipEntry(fundName + ".xml");
+                zos.putNextEntry(zipEntry);
+
+                ByteArrayInputStream in = new ByteArrayInputStream(xmlData);
+                IOUtils.copy(in, zos);
+                in.close();
+
+                zipEntry = new ZipEntry(fundName + ".transformed");
+                zos.putNextEntry(zipEntry);
+
+                in = new ByteArrayInputStream(transformedData);
+                IOUtils.copy(in, zos);
+                in.close();
+                zos.close();
+            } else {
+                downloadfileName = fundName + ".xml";
+                isCompressed = false;
+                byte[] xmlData = XmlUtils.marshallData(xmlImport, XmlImport.class);
+
+                exportFile = XmlUtils.createTempFile(xmlData, "elza-export-", ".xml");
+                ByteArrayInputStream in = new ByteArrayInputStream(xmlData);
+                FileOutputStream fos = new FileOutputStream(exportFile);
+                IOUtils.copy(in, fos);
+                in.close();
+                fos.close();
+            }
+
+            return new XmlExportResult(exportFile, downloadfileName, isCompressed);
+        } catch (IOException e) {
+            throw new IllegalStateException("Chyba při zápisu exportovaných dat.", e);
         }
-
-
-        return xmlExportResult;
     }
 
     /**
@@ -250,7 +291,7 @@ public class XmlExportService {
             for (ArrPacket arrPacket : arrPackets) {
                 Packet packet = createPacket(arrPacket);
                 packets.add(packet);
-                updateDescItemPacketReferences(packet, packetDescItems);
+                updateDescItemPacketReferences(arrPacket.getPacketId(), packet, packetDescItems);
             }
         }
 
@@ -260,14 +301,17 @@ public class XmlExportService {
     /**
      * Doplní obal do hodnot atributů které na ně odkazují.
      *
+     * @param packetId id obalu
      * @param packet obal
      * @param packetDescItems mapa id obalů na hodnoty atributů
      */
-    private void updateDescItemPacketReferences(final Packet packet, final Map<Integer, List<DescItemPacketRef>> packetDescItems) {
+    private void updateDescItemPacketReferences(final Integer packetId, final Packet packet,
+            final Map<Integer, List<DescItemPacketRef>> packetDescItems) {
+        Assert.notNull(packetId);
         Assert.notNull(packet);
         Assert.notNull(packetDescItems);
 
-        List<DescItemPacketRef> descItemPacketRefs = packetDescItems.get(packet.getStorageNumber());
+        List<DescItemPacketRef> descItemPacketRefs = packetDescItems.get(packetId);
         if (CollectionUtils.isNotEmpty(descItemPacketRefs)) {
             descItemPacketRefs.forEach(diPR -> diPR.setPacket(packet));
         }
@@ -317,7 +361,7 @@ public class XmlExportService {
                 AbstractParty party = createParty(parParty, recordMap, partyCreatorsMap);
                 parties.add(party);
                 partyMap.put(party.getPartyId(), party);
-                updateDescItemPartyReferences(party, partyDescItems);
+                updateDescItemPartyReferences(parParty.getPartyId(), party, partyDescItems);
             }
         }
 
@@ -332,14 +376,17 @@ public class XmlExportService {
     /**
      * Doplní osoby do hodnot atributů které na ně odkazují.
      *
+     * @param partyId id osoby
      * @param party osoba
      * @param partyDescItems mapa id osob na hodnoty atributů
      */
-    private void updateDescItemPartyReferences(final AbstractParty party, final Map<Integer, List<DescItemPartyRef>> partyDescItems) {
+    private void updateDescItemPartyReferences(final Integer partyId, final AbstractParty party,
+            final Map<Integer, List<DescItemPartyRef>> partyDescItems) {
+        Assert.notNull(partyId);
         Assert.notNull(party);
         Assert.notNull(partyDescItems);
 
-        List<DescItemPartyRef> descItemPartyRefs = partyDescItems.get(party.getPartyId());
+        List<DescItemPartyRef> descItemPartyRefs = partyDescItems.get(partyId);
         if (CollectionUtils.isNotEmpty(descItemPartyRefs)) {
             descItemPartyRefs.forEach(diPR -> diPR.setParty(party));
         }
@@ -417,7 +464,12 @@ public class XmlExportService {
 
         party.setSourceInformations(parParty.getSourceInformation());
         party.setToDate(XmlImportUtils.createComplexDate(parParty.getTo()));
-        party.setVariantNames(createVariantNames(parParty.getPartyNames()));
+        List<ParPartyName> partyNames = parParty.getPartyNames();
+        if (CollectionUtils.isNotEmpty(partyNames)) {
+            List<ParPartyName> namesToExport = new ArrayList<>(partyNames);
+            namesToExport.remove(parParty.getPreferredName());
+            party.setVariantNames(createVariantNames(namesToExport));
+        }
     }
 
     /**
@@ -731,51 +783,87 @@ public class XmlExportService {
         Map<Integer, List<DescItemRecordRef>> recordDescItems = relatedEntities.getRecordDescItems();
         Map<Integer, List<Level>> recordLevels = relatedEntities.getRecordLevels();
 
-        Set<Integer> allRecordIds = new HashSet<>(recordLevels.keySet());
-        allRecordIds.addAll(recordDescItems.keySet());
-        allRecordIds.addAll(relatedEntities.getOtherUsedRecords());
+        List<Integer> recordIdsToExport = getRecordIdsToExport(relatedEntities);
 
+        List<Record> rootRecords = new LinkedList<>();
         Map<Integer, Record> recordMap = new HashMap<>();
-        Map<Integer, List<Record>> parentIdToChildrenRecords = new HashMap<>();
-        ObjectListIterator<Integer> iterator = new ObjectListIterator<>(allRecordIds);
+        ObjectListIterator<Integer> iterator = new ObjectListIterator<>(recordIdsToExport);
         while (iterator.hasNext()) {
             List<Integer> recordIds = iterator.next();
-            List<RegRecord> records = recordRepository.findAll(recordIds);
+            List<RegRecord> records = findRecordsOrdered(recordIds);
             for (RegRecord regRecord : records) {
                 Record record = createRecord(regRecord);
+
+                RegRecord parentRecord = regRecord.getParentRecord();
+                if (parentRecord != null) {
+                    Record parent = recordMap.get(parentRecord.getRecordId());
+                    List<Record> children = parent.getRecords();
+                    if (children == null) {
+                        children = new LinkedList<>();
+                        parent.setRecords(children);
+                    }
+                    children.add(record);
+                } else {
+                    rootRecords.add(record);
+                }
                 updateLevelRecordReferences(record, recordLevels);
                 updateDescItemRecordReferences(record, recordDescItems);
                 recordMap.put(regRecord.getRecordId(), record);
-
-                RegRecord parentRegRecord = regRecord.getParentRecord();
-                if (parentRegRecord != null) {
-                    Integer parentId = parentRegRecord.getRecordId();
-                    List<Record> children = parentIdToChildrenRecords.get(parentId);
-                    if (children == null) {
-                        children = new LinkedList<>();
-                        parentIdToChildrenRecords.put(parentId, children);
-                    }
-                    children.add(record);
-                }
             }
         }
 
-        setChildrenRecords(parentIdToChildrenRecords, recordMap);
-
+        xmlImport.setRecords(rootRecords);
         return recordMap;
     }
 
     /**
-     * Nastaví podřízené rejstříky.
+     * Načte rejstříky z db ve stejném pořadí jako jsou jejich id na vstupu.
      *
-     * @param parentIdToChildrenRecords mapa id parenta na seznam podřízených rejstříků
-     * @param recordMap mapa id rejstříku na rejstřík
+     * @param recordIds id rejstříků
+     *
+     * @return rejstříky ve stejném pořadí jako id na vstupu
      */
-    private void setChildrenRecords(final Map<Integer, List<Record>> parentIdToChildrenRecords,
-            final Map<Integer, Record> recordMap) {
-        parentIdToChildrenRecords.forEach((id, children) -> {
-            recordMap.get(id).setRecords(children);
-        });
+    private List<RegRecord> findRecordsOrdered(final List<Integer> recordIds) {
+        List<RegRecord> records = recordRepository.findAll(recordIds);
+
+        Map<Integer, RegRecord> recordMap = records.stream().collect(
+                Collectors.toMap(RegRecord::getRecordId, Function.identity()));
+
+        return recordIds.stream().map(id -> recordMap.get(id)).collect(Collectors.toList());
+    }
+
+    /**
+     * Zjistí jaké rejstříky se budou exportovat a vrátí jejich id seřazená od kořenových uzlů po ty nejspodnější.
+     *
+     * @param relatedEntities vazby na entity které se budou exportova později
+     *
+     * @return seznam id rejstříků k exportu v pořadí v jakém se mají exportovat
+     */
+    private List<Integer> getRecordIdsToExport(final RelatedEntities relatedEntities) {
+        Set<Integer> allRecordIds = new HashSet<>(relatedEntities.getRecordLevels().keySet());
+        allRecordIds.addAll(relatedEntities.getRecordDescItems().keySet());
+        allRecordIds.addAll(relatedEntities.getOtherUsedRecords());
+
+        List<RecordEntry> recordsToExport = new LinkedList<>();
+
+        for (Integer recordId : allRecordIds) {
+            List<Integer> parents = recordRepository.findRecordParents(recordId);
+            int depth = parents.size();
+
+            RecordEntry entry = new RecordEntry(recordId, depth + 1);
+            if (!recordsToExport.contains(entry)) {
+                recordsToExport.add(entry);
+            }
+
+            for (Integer parentId : parents) {
+                entry = new RecordEntry(parentId, depth--);
+                if (!recordsToExport.contains(entry)) {
+                    recordsToExport.add(entry);
+                }
+            }
+        }
+        recordsToExport.sort((a, b)-> a.getDepth().compareTo(b.getDepth()));
+        return recordsToExport.stream().mapToInt(e -> e.getRecordId()).boxed().collect(Collectors.toList());
     }
 
     /**
@@ -1301,6 +1389,29 @@ public class XmlExportService {
 
         public List<Integer> getChildrenIds() {
             return childrenIds;
+        }
+    }
+
+    /**
+     * Záznam s id rejstříku a jeho hloubkouve stromu rejstříků kvůli seřazení.
+     */
+    private class RecordEntry {
+
+        private Integer recordId;
+
+        private Integer depth;
+
+        public RecordEntry(final Integer recordId, final Integer depth) {
+            this.recordId = recordId;
+            this.depth = depth;
+        }
+
+        public Integer getRecordId() {
+            return recordId;
+        }
+
+        public Integer getDepth() {
+            return depth;
         }
     }
 

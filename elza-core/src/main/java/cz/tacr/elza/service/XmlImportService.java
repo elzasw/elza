@@ -389,6 +389,15 @@ public class XmlImportService {
         Level rootLevel = fund.getRootLevel();
         int position = 1;
 
+        try {
+            importDescItems(rootNode, rootLevel, change, config, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap,
+                    config.isStopOnError());
+        } catch (InvalidDataException e1) {
+            if (config.isStopOnError()) {
+                throw e1;
+            }
+        }
+
         if (rootLevel.getSubLevels() != null) {
             for (Level level : rootLevel.getSubLevels()) {
                 importLevel(level, position++, rootNode, config, change, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap,

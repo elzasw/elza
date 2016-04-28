@@ -74,4 +74,13 @@ public interface RegRecordRepositoryCustom {
                                     Integer firstResult,
                                     Integer maxResults,
                                     final Set<Integer> scopeIdsForRecord);
+
+    /**
+     * Najde id rodičů od předaného rejstříku až kje kořeni.
+     *
+     * @param recordId id rejstříku
+     *
+     * @return id rejstříku až ke kořeni
+     */
+    List<Integer> findRecordParents(Integer recordId);
 }

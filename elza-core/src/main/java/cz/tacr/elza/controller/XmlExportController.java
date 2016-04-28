@@ -5,19 +5,18 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import javax.websocket.server.PathParam;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.service.XmlExportService;
 import cz.tacr.elza.service.vo.XmlExportResult;
@@ -49,47 +48,22 @@ public class XmlExportController {
 
         XmlExportResult exportResult = xmlExportService.exportData(config);
 
-        ServletOutputStream outputStream = response.getOutputStream();
-        if (exportResult.getTransformedData() != null) {
-            response.setContentType("application/zip");
-            response.setHeader("Content-Disposition", "attachment; filename=" + exportResult.getFundName() + ".zip");
-            ZipOutputStream zos = new ZipOutputStream(outputStream);
-            ZipEntry zipEntry = new ZipEntry(exportResult.getFundName() + ".xml");
-            zos.putNextEntry(zipEntry);
-
-            File xmlData = exportResult.getXmlData();
-            InputStream inputStream = new FileInputStream(xmlData);
-            IOUtils.copy(inputStream, zos);
-            inputStream.close();
-
-            zipEntry = new ZipEntry(exportResult.getFundName() + ".transformed");
-            zos.putNextEntry(zipEntry);
-
-            File transformedData = exportResult.getTransformedData();
-            inputStream = new FileInputStream(transformedData);
-            IOUtils.copy(inputStream, zos);
-
-            inputStream.close();
-            outputStream.close();
-            zos.close();
+        String contentType;
+        if (exportResult.isCompressed()) {
+            contentType = "application/zip";
         } else {
-            response.setContentType("application/xml");
-            response.setHeader("Content-Disposition", "attachment; filename=" + exportResult.getFundName() + ".xml");
-
-            File xmlData = exportResult.getXmlData();
-            InputStream inputStream = new FileInputStream(xmlData);
-            int contentLength = FileCopyUtils.copy(inputStream, outputStream);
-
-//            File export = new File("D:\\export.xml");
-//            try (InputStream fileInputStream = new FileInputStream(xmlData);
-//                    FileOutputStream fos = new FileOutputStream(export)) {
-//                FileCopyUtils.copy(fileInputStream, fos);
-//            }
-            response.setContentLength(contentLength);
-
-            inputStream.close();
-            outputStream.close();
+            contentType = "application/xml";
         }
+
+        File exportedData = exportResult.getExportedData();
+        try (InputStream inputStream = new FileInputStream(exportedData)) {
+            int contentLength = FileCopyUtils.copy(inputStream, response.getOutputStream());
+            response.setContentLength(contentLength);
+        }
+
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType(contentType);
+        response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + exportResult.getFileName());
         response.flushBuffer();
     }
 
@@ -97,5 +71,4 @@ public class XmlExportController {
     public List<String> getTransformations() {
         return xmlExportService.getTransformationNames();
     }
-
 }
