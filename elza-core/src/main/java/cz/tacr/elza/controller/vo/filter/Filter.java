@@ -20,7 +20,7 @@ public class Filter {
     private ValuesTypes specsType;
 
     /** Specifikace. */
-    private List<String> specs;
+    private List<Integer> specs;
 
     /** Typ podmínky. */
     private Condition conditionType ;
@@ -32,7 +32,7 @@ public class Filter {
         return valuesType;
     }
 
-    public void setValuesType(ValuesTypes valuesType) {
+    public void setValuesType(final ValuesTypes valuesType) {
         this.valuesType = valuesType;
     }
 
@@ -40,7 +40,7 @@ public class Filter {
         return values;
     }
 
-    public void setValues(List<String> values) {
+    public void setValues(final List<String> values) {
         this.values = values;
     }
 
@@ -48,15 +48,15 @@ public class Filter {
         return specsType;
     }
 
-    public void setSpecsType(ValuesTypes specsType) {
+    public void setSpecsType(final ValuesTypes specsType) {
         this.specsType = specsType;
     }
 
-    public List<String> getSpecs() {
+    public List<Integer> getSpecs() {
         return specs;
     }
 
-    public void setSpecs(List<String> specs) {
+    public void setSpecs(final List<Integer> specs) {
         this.specs = specs;
     }
 
@@ -64,7 +64,7 @@ public class Filter {
         return conditionType;
     }
 
-    public void setConditionType(Condition conditionType) {
+    public void setConditionType(final Condition conditionType) {
         this.conditionType = conditionType;
     }
 
@@ -72,7 +72,7 @@ public class Filter {
         return condition;
     }
 
-    public void setCondition(List<String> condition) {
+    public void setCondition(final List<String> condition) {
         this.condition = condition;
     }
 }

@@ -90,13 +90,13 @@ public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType
 
     @Field
     @Analyzer(definition = "customanalyzer")
-    public String getSpecification() {
+    public Integer getSpecification() {
         RulDescItemSpec descItemSpec = descItem.getDescItemSpec();
         if (descItemSpec == null) {
             return null;
         }
 
-        return descItemSpec.getName();
+        return descItemSpec.getDescItemSpecId();
     }
 
     @Override

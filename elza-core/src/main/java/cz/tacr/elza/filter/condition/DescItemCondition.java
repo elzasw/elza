@@ -11,7 +11,9 @@ import org.hibernate.search.query.dsl.QueryBuilder;
  */
 public interface DescItemCondition {
 
-    String NUMERIC_ATT = "valueNr";
+    String INTGER_ATT = "valueInt";
+
+    String DECIMAL_ATT = "valueDecimal";
 
     String FULLTEXT_ATT = "fulltextValue";
 

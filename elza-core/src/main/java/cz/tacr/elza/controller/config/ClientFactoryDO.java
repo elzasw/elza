@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller.config;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,13 +11,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +25,7 @@ import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RegCoordinatesVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
@@ -41,6 +34,9 @@ import cz.tacr.elza.controller.vo.filter.Condition;
 import cz.tacr.elza.controller.vo.filter.Filter;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.ValuesTypes;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
@@ -51,6 +47,7 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.RegCoordinates;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
@@ -75,8 +72,10 @@ import cz.tacr.elza.filter.condition.NeDescItemCondition;
 import cz.tacr.elza.filter.condition.NotContainDescItemCondition;
 import cz.tacr.elza.filter.condition.NotEmptyDescItemCondition;
 import cz.tacr.elza.filter.condition.NotIntervalDescItemCondition;
+import cz.tacr.elza.filter.condition.SelectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SelectedValuesDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SubsetDescItemCondition;
+import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
@@ -85,6 +84,9 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
+import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MapperFactory;
 
 
 /**
@@ -358,7 +360,7 @@ public class ClientFactoryDO {
      * @param fundVO VO archivní pomůcka
      * @return DO
      */
-    public ArrFund createFund(ArrFundVO fundVO) {
+    public ArrFund createFund(final ArrFundVO fundVO) {
         Assert.notNull(fundVO);
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFund fund = mapper.map(fundVO, ArrFund.class);
@@ -418,13 +420,13 @@ public class ClientFactoryDO {
      *
      * @return filtr pto BL
      */
-    private DescItemTypeFilter createDescItemFilter(RulDescItemType descItemType, final Filter filter) {
+    private DescItemTypeFilter createDescItemFilter(final RulDescItemType descItemType, final Filter filter) {
         Assert.notNull(descItemType);
         Assert.notNull(filter);
 
         List<DescItemCondition> conditions = new LinkedList<DescItemCondition>();
         createValuesEnumCondition(filter.getValuesType(), filter.getValues(), DescItemCondition.FULLTEXT_ATT, conditions);
-        createValuesEnumCondition(filter.getSpecsType(), filter.getSpecs(), DescItemCondition.SPECIFICATION_ATT, conditions);
+        createSpecificationsEnumCondition(filter.getSpecsType(), filter.getSpecs(), DescItemCondition.SPECIFICATION_ATT, conditions);
 
         Condition conditionType = filter.getConditionType();
         if (conditionType != null && conditionType != Condition.NONE) {
@@ -457,19 +459,31 @@ public class ClientFactoryDO {
                     break;
                 }
                 case GE: {
-                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getCondition());
-                    condition = new GeDescItemCondition<BigDecimal>(conditionValue, DescItemCondition.NUMERIC_ATT);
+                     if (descItemType.getDataType().getCode().equals("INT")) {
+                        Double conditionValue = getConditionValueDouble(filter.getCondition());
+                        String attributeName = DescItemCondition.INTGER_ATT;
+                        condition = new GeDescItemCondition<Double>(conditionValue, attributeName);
+                    } else {
+                        Integer conditionValue = getConditionValueInteger(filter.getCondition());
+                        String attributeName = DescItemCondition.DECIMAL_ATT;
+                        condition = new GeDescItemCondition<Integer>(conditionValue, attributeName);
+                    }
                     break;
                 }
                 case GT: {
-                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getCondition());
-                    String attributeName;
-                    if (descItemType.getCode().equals("UNIDATE")) {
-                        attributeName = DescItemCondition.NORMALIZED_TO_ATT;
+                    if (descItemType.getDataType().getCode().equals("UNIDATE")) {
+                        Long conditionValue = getConditionValueLong(filter.getCondition());
+                        String attributeName = DescItemCondition.NORMALIZED_TO_ATT;
+                        condition = new GtDescItemCondition<Long>(conditionValue, attributeName);
+                    } else if (descItemType.getDataType().getCode().equals("INT")) {
+                        Integer conditionValue = getConditionValueInteger(filter.getCondition());
+                        String attributeName = DescItemCondition.INTGER_ATT;
+                        condition = new GtDescItemCondition<Integer>(conditionValue, attributeName);
                     } else {
-                        attributeName = DescItemCondition.NUMERIC_ATT;
+                        Double conditionValue = getConditionValueDouble(filter.getCondition());
+                        String attributeName = DescItemCondition.DECIMAL_ATT;
+                        condition = new GtDescItemCondition<Double>(conditionValue, attributeName);
                     }
-                    condition = new GtDescItemCondition<BigDecimal>(conditionValue, attributeName);
                     break;
                 }
                 case INTERSECT: {
@@ -480,30 +494,44 @@ public class ClientFactoryDO {
                     break;
                 }
                 case INTERVAL: {
-                    Interval<BigDecimal> conditionValue = getConditionValueIntervalBigDecimal(filter.getCondition());
-                    condition = new IntervalDescItemCondition<Interval<BigDecimal>, BigDecimal>(conditionValue,
-                            DescItemCondition.NUMERIC_ATT);
+                    if (descItemType.getDataType().getCode().equals("INT")) {
+                        Interval<Integer> conditionValue = getConditionValueIntervalInteger(filter.getCondition());
+                        String attributeName = DescItemCondition.INTGER_ATT;
+                        condition = new IntervalDescItemCondition<Interval<Integer>, Integer>(conditionValue, attributeName);
+                    } else {
+                        Interval<Double> conditionValue = getConditionValueIntervalDouble(filter.getCondition());
+                        String attributeName = DescItemCondition.DECIMAL_ATT;
+                        condition = new IntervalDescItemCondition<Interval<Double>, Double>(conditionValue, attributeName);
+                    }
                     break;
                 }
                 case LE: {
-                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getCondition());
-                    condition = new LeDescItemCondition<BigDecimal>(conditionValue, DescItemCondition.NUMERIC_ATT);
+                    if (descItemType.getDataType().getCode().equals("INT")) {
+                        Integer conditionValue = getConditionValueInteger(filter.getCondition());
+                        String attributeName = DescItemCondition.INTGER_ATT;
+                        condition = new LeDescItemCondition<Integer>(conditionValue, attributeName);
+                    } else {
+                        Double conditionValue = getConditionValueDouble(filter.getCondition());
+                        String attributeName = DescItemCondition.DECIMAL_ATT;
+                        condition = new LeDescItemCondition<Double>(conditionValue, attributeName);
+                    }
                     break;
                 }
                 case LT: {
-                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getCondition());
-                    String attributeName;
-                    if (descItemType.getCode().equals("UNIDATE")) {
-                        attributeName = DescItemCondition.NORMALIZED_FROM_ATT;
+                    if (descItemType.getDataType().getCode().equals("INT")) {
+                        Integer conditionValue = getConditionValueInteger(filter.getCondition());
+                        String attributeName = DescItemCondition.INTGER_ATT;
+                        condition = new LtDescItemCondition<Integer>(conditionValue, attributeName);
                     } else {
-                        attributeName = DescItemCondition.NUMERIC_ATT;
+                        Double conditionValue = getConditionValueDouble(filter.getCondition());
+                        String attributeName = DescItemCondition.DECIMAL_ATT;
+                        condition = new LtDescItemCondition<Double>(conditionValue, attributeName);
                     }
-                    condition = new LtDescItemCondition<BigDecimal>(conditionValue, attributeName);
                     break;
                 }
                 case NE: {
-                    BigDecimal conditionValue = getConditionValueBigDecimal(filter.getCondition());
-                    condition = new NeDescItemCondition<BigDecimal>(conditionValue, DescItemCondition.FULLTEXT_ATT);
+                    Double conditionValue = getConditionValueDouble(filter.getCondition());
+                    condition = new NeDescItemCondition<Double>(conditionValue, DescItemCondition.FULLTEXT_ATT);
                     break;
                 }
                 case NOT_CONTAIN: {
@@ -515,9 +543,15 @@ public class ClientFactoryDO {
                     condition = new NotEmptyDescItemCondition(); // fulltextValue
                     break;
                 case NOT_INTERVAL: {
-                    Interval<BigDecimal> conditionValue = getConditionValueIntervalBigDecimal(filter.getCondition());
-                    condition = new NotIntervalDescItemCondition<Interval<BigDecimal>, BigDecimal>(conditionValue,
-                            DescItemCondition.NUMERIC_ATT);
+                    if (descItemType.getDataType().getCode().equals("INT")) {
+                        Interval<Integer> conditionValue = getConditionValueIntervalInteger(filter.getCondition());
+                        String attributeName = DescItemCondition.INTGER_ATT;
+                        condition = new NotIntervalDescItemCondition<Interval<Integer>, Integer>(conditionValue, attributeName);
+                    } else {
+                        Interval<Double> conditionValue = getConditionValueIntervalDouble(filter.getCondition());
+                        String attributeName = DescItemCondition.DECIMAL_ATT;
+                        condition = new NotIntervalDescItemCondition<Interval<Double>, Double>(conditionValue, attributeName);
+                    }
                     break;
                 }
                 case SUBSET: {
@@ -542,7 +576,7 @@ public class ClientFactoryDO {
         return null;
     }
 
-    private String getConditionValue(List<String> conditions) {
+    private String getConditionValue(final List<String> conditions) {
         if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())) {
             throw new IllegalArgumentException("Není předána hodnota podmínky.");
         }
@@ -550,34 +584,69 @@ public class ClientFactoryDO {
         return conditions.iterator().next().toLowerCase();
     }
 
-    private BigDecimal getConditionValueBigDecimal(List<String> conditions) {
+    private Double getConditionValueDouble(final List<String> conditions) {
         if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())) {
             throw new IllegalArgumentException("Není předána hodnota podmínky.");
         }
 
-        return BigDecimal.valueOf(Double.valueOf(conditions.iterator().next()));
+        return Double.valueOf(conditions.iterator().next());
     }
 
-    private Interval<BigDecimal> getConditionValueIntervalBigDecimal(List<String> conditions) {
+    private Interval<Double> getConditionValueIntervalDouble(final List<String> conditions) {
         if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())) {
             throw new IllegalArgumentException("Není předána hodnota podmínky.");
         }
 
         Iterator<String> iterator = conditions.iterator();
 
-        BigDecimal from = BigDecimal.valueOf(Double.valueOf(iterator.next()));
+        Double from = Double.valueOf(iterator.next());
 
         String toString = iterator.next();
         if (StringUtils.isBlank(toString)) {
             throw new IllegalArgumentException("Není předána druhá hodnota intervalu.");
         }
 
-        BigDecimal to = BigDecimal.valueOf(Double.valueOf(toString));
+        Double to = Double.valueOf(toString);
 
-        return new Interval<BigDecimal>(from, to);
+        return new Interval<Double>(from, to);
     }
 
-    private Interval<Long> getConditionValueIntervalLong(List<String> conditions) {
+    private Integer getConditionValueInteger(final List<String> conditions) {
+        if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())) {
+            throw new IllegalArgumentException("Není předána hodnota podmínky.");
+        }
+
+        return Integer.valueOf(conditions.iterator().next());
+    }
+
+    private Interval<Integer> getConditionValueIntervalInteger(final List<String> conditions) {
+        if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())) {
+            throw new IllegalArgumentException("Není předána hodnota podmínky.");
+        }
+
+        Iterator<String> iterator = conditions.iterator();
+
+        Integer from = Integer.valueOf(iterator.next());
+
+        String toString = iterator.next();
+        if (StringUtils.isBlank(toString)) {
+            throw new IllegalArgumentException("Není předána druhá hodnota intervalu.");
+        }
+
+        Integer to = Integer.valueOf(toString);
+
+        return new Interval<Integer>(from, to);
+    }
+
+    private Long getConditionValueLong(final List<String> conditions) {
+        if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())) {
+            throw new IllegalArgumentException("Není předána hodnota podmínky.");
+        }
+
+        return Long.valueOf(conditions.iterator().next());
+    }
+
+    private Interval<Long> getConditionValueIntervalLong(final List<String> conditions) {
         if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())) {
             throw new IllegalArgumentException("Není předána hodnota podmínky.");
         }
@@ -596,12 +665,24 @@ public class ClientFactoryDO {
         return new Interval<Long>(from, to);
     }
 
-    private void createValuesEnumCondition(ValuesTypes valuesTypes, List<String> values, String attName, List<DescItemCondition> conditions) {
+    private void createValuesEnumCondition(final ValuesTypes valuesTypes, final List<String> values,
+            final String attName, final List<DescItemCondition> conditions) {
         if (valuesTypes != null && CollectionUtils.isNotEmpty(values)) {
             if (valuesTypes == ValuesTypes.SELECTED) {
                 conditions.add(new SelectedValuesDescItemEnumCondition(values, attName));
             } else {
                 conditions.add(new UnselectedValuesDescItemEnumCondition(values, attName));
+            }
+        }
+    }
+
+    private void createSpecificationsEnumCondition(final ValuesTypes valuesTypes, final List<Integer> values,
+            final String attName, final List<DescItemCondition> conditions) {
+        if (valuesTypes != null && CollectionUtils.isNotEmpty(values)) {
+            if (valuesTypes == ValuesTypes.SELECTED) {
+                conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
+            } else {
+                conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
             }
         }
     }

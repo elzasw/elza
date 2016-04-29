@@ -8,6 +8,8 @@ import javax.persistence.Table;
 
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.NumericField;
+import org.hibernate.search.annotations.Store;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -27,7 +29,8 @@ public class ArrDataDecimal extends ArrData implements cz.tacr.elza.api.ArrDataD
     @Column(nullable = false)
     private BigDecimal value;
 
-    @Field(name = "valueNr")
+    @Field(name = "valueDecimal", store = Store.YES)
+    @NumericField
     @Override
     public BigDecimal getValue() {
         return value;

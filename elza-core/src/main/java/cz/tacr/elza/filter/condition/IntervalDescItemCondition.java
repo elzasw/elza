@@ -12,12 +12,12 @@ import org.springframework.util.Assert;
  */
 public class IntervalDescItemCondition<T extends Interval<IV>, IV> extends AbstractDescItemConditionWithValue<T> {
 
-    public IntervalDescItemCondition(T conditionValue, String attributeName) {
+    public IntervalDescItemCondition(final T conditionValue, final String attributeName) {
         super(conditionValue, attributeName);
     }
 
     @Override
-    public Query createLuceneQuery(QueryBuilder queryBuilder) {
+    public Query createLuceneQuery(final QueryBuilder queryBuilder) {
         Assert.notNull(queryBuilder);
 
         Interval<IV> interval = getValue();

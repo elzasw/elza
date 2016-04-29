@@ -12,12 +12,12 @@ import org.springframework.util.Assert;
  */
 public class GtDescItemCondition<T> extends AbstractDescItemConditionWithValue<T> {
 
-    public GtDescItemCondition(T conditionValue, String attributeName) {
+    public GtDescItemCondition(final T conditionValue, final String attributeName) {
         super(conditionValue, attributeName);
     }
 
     @Override
-    public Query createLuceneQuery(QueryBuilder queryBuilder) {
+    public Query createLuceneQuery(final QueryBuilder queryBuilder) {
         Assert.notNull(queryBuilder);
 
         return queryBuilder.range().onField(getAttributeName()).above(getValue()).excludeLimit().createQuery();

@@ -6,6 +6,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.springframework.data.rest.core.annotation.RestResource;
 
@@ -33,17 +34,23 @@ public class ArrDataPacketRef extends ArrData implements cz.tacr.elza.api.ArrDat
     private ArrPacket packet;
 
     @Override
+    @Field
+    public Integer getSpecification() {
+        return packet.getPacketType().getPacketTypeId();
+    }
+
+    @Override
     public ArrPacket getPacket() {
         return packet;
     }
 
     @Override
-    public void setPacket(ArrPacket packet) {
+    public void setPacket(final ArrPacket packet) {
         this.packet = packet;
     }
 
     @Override
     public String getFulltextValue() {
-        return (packet != null ) ? packet.getStorageNumber() : null;
+        return packet.getPacketType().getName() + ": " + packet.getStorageNumber();
     }
 }
