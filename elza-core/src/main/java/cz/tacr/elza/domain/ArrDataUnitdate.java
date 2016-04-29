@@ -101,7 +101,7 @@ public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrData
     }
 
     @Override
-    public void setCalendarType(ArrCalendarType calendarType) {
+    public void setCalendarType(final ArrCalendarType calendarType) {
         this.calendarType = calendarType;
     }
 
@@ -112,7 +112,7 @@ public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrData
     }
 
     @Override
-    public void setFormat(String format) {
+    public void setFormat(final String format) {
         this.format = format;
     }
 
@@ -138,7 +138,12 @@ public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrData
 
     @Override
     public String getFulltextValue() {
-        String ret = calendarType == null ? "?" : calendarType.getName() + " ";
+        String ret = "";
+        RulDescItemSpec descItemSpec = getDescItem().getDescItemSpec();
+        if (descItemSpec != null) {
+            ret = descItemSpec.getName();
+        }
+        ret += calendarType == null ? "?" : calendarType.getName() + " ";
 
         String from = valueFromEstimated == true ? valueFrom + "*" : valueFrom;
         String to = valueToEstimated == true ? valueTo + "*" : valueTo;

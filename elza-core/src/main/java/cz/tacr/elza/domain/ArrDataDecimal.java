@@ -29,11 +29,15 @@ public class ArrDataDecimal extends ArrData implements cz.tacr.elza.api.ArrDataD
     @Column(nullable = false)
     private BigDecimal value;
 
-    @Field(name = "valueDecimal", store = Store.YES)
-    @NumericField
     @Override
     public BigDecimal getValue() {
         return value;
+    }
+
+    @Field(name = "valueDecimal", store = Store.YES)
+    @NumericField
+    public Double getValueDouble() {
+        return value.doubleValue();
     }
 
     @Override
@@ -43,6 +47,11 @@ public class ArrDataDecimal extends ArrData implements cz.tacr.elza.api.ArrDataD
 
     @Override
     public String getFulltextValue() {
-        return value == null ? null : value.toPlainString();
+        RulDescItemSpec descItemSpec = getDescItem().getDescItemSpec();
+        if (descItemSpec == null) {
+            return value.toPlainString();
+        }
+
+        return descItemSpec.getName() + ": " + value.toPlainString();
     }
 }

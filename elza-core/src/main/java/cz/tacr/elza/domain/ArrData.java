@@ -61,9 +61,7 @@ public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType
     /** @return vrací hodnotu pro fulltextové hledání  */
     @Field
     @Analyzer(definition = "customanalyzer")
-    public String getFulltextValue() {
-        return null;
-    }
+    public abstract String getFulltextValue();
 
     @Field(store = Store.YES)
     public String getDescItemId() {

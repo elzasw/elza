@@ -37,12 +37,17 @@ public class ArrDataRecordRef extends ArrData implements cz.tacr.elza.api.ArrDat
     }
 
     @Override
-    public void setRecord(RegRecord record) {
+    public void setRecord(final RegRecord record) {
         this.record = record;
     }
 
     @Override
     public String getFulltextValue() {
-        return (record != null ) ? record.getRecord() : null;
+        RulDescItemSpec descItemSpec = getDescItem().getDescItemSpec();
+        if (descItemSpec == null) {
+            return record.getRecord();
+        }
+
+        return descItemSpec.getName() + ": " + record.getRecord();
     }
 }

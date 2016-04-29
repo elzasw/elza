@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.config;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,6 +39,7 @@ import cz.tacr.elza.controller.vo.filter.ValuesTypes;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
@@ -54,6 +57,9 @@ import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.convertor.CalendarConverter;
+import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.filter.condition.BeginDescItemCondition;
 import cz.tacr.elza.filter.condition.ContainDescItemCondition;
@@ -61,6 +67,7 @@ import cz.tacr.elza.filter.condition.DescItemCondition;
 import cz.tacr.elza.filter.condition.EmptyDescItemCondition;
 import cz.tacr.elza.filter.condition.EndDescItemCondition;
 import cz.tacr.elza.filter.condition.EqDescItemCondition;
+import cz.tacr.elza.filter.condition.EqIntervalDesCitemCondition;
 import cz.tacr.elza.filter.condition.GeDescItemCondition;
 import cz.tacr.elza.filter.condition.GtDescItemCondition;
 import cz.tacr.elza.filter.condition.IntersectDescItemCondition;
@@ -453,28 +460,36 @@ public class ClientFactoryDO {
                     condition = new EndDescItemCondition<String>(conditionValue, DescItemCondition.FULLTEXT_ATT);
                     break;
                 }
-                case EQ: {
-                    String conditionValue = getConditionValue(filter.getCondition());
-                    condition = new EqDescItemCondition<String>(conditionValue, DescItemCondition.FULLTEXT_ATT);
+                case EQ: {//TODO dořešit unitDate
+                    if (descItemType.getDataType().getCode().equals("UNITDATE")) {
+                        Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
+                        condition = new EqIntervalDesCitemCondition<Interval<Long>, Long>(conditionValue,
+                                DescItemCondition.NORMALIZED_FROM_ATT,
+                                DescItemCondition.NORMALIZED_TO_ATT);
+                    } else {
+                        String conditionValue = getConditionValue(filter.getCondition());
+                        condition = new EqDescItemCondition<String>(conditionValue, DescItemCondition.FULLTEXT_ATT);
+                    }
+
                     break;
                 }
                 case GE: {
                      if (descItemType.getDataType().getCode().equals("INT")) {
-                        Double conditionValue = getConditionValueDouble(filter.getCondition());
-                        String attributeName = DescItemCondition.INTGER_ATT;
-                        condition = new GeDescItemCondition<Double>(conditionValue, attributeName);
-                    } else {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = DescItemCondition.DECIMAL_ATT;
+                        String attributeName = DescItemCondition.INTGER_ATT;
                         condition = new GeDescItemCondition<Integer>(conditionValue, attributeName);
+                    } else {
+                        Double conditionValue = getConditionValueDouble(filter.getCondition());
+                        String attributeName = DescItemCondition.DECIMAL_ATT;
+                        condition = new GeDescItemCondition<Double>(conditionValue, attributeName);
                     }
                     break;
                 }
                 case GT: {
-                    if (descItemType.getDataType().getCode().equals("UNIDATE")) {
-                        Long conditionValue = getConditionValueLong(filter.getCondition());
-                        String attributeName = DescItemCondition.NORMALIZED_TO_ATT;
-                        condition = new GtDescItemCondition<Long>(conditionValue, attributeName);
+                    if (descItemType.getDataType().getCode().equals("UNITDATE")) {
+                        ArrDataUnitdate unitDate = getConditionValueLong(filter.getCondition());
+                        String attributeName = DescItemCondition.NORMALIZED_FROM_ATT;
+                        condition = new GtDescItemCondition<Long>(unitDate.getNormalizedTo(), attributeName);
                     } else if (descItemType.getDataType().getCode().equals("INT")) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
                         String attributeName = DescItemCondition.INTGER_ATT;
@@ -518,7 +533,11 @@ public class ClientFactoryDO {
                     break;
                 }
                 case LT: {
-                    if (descItemType.getDataType().getCode().equals("INT")) {
+                    if (descItemType.getDataType().getCode().equals("UNITDATE")) {
+                        ArrDataUnitdate unitDate = getConditionValueLong(filter.getCondition());
+                        String attributeName = DescItemCondition.NORMALIZED_TO_ATT;
+                        condition = new LtDescItemCondition<Long>(unitDate.getNormalizedFrom(), attributeName);
+                    } else if (descItemType.getDataType().getCode().equals("INT")) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
                         String attributeName = DescItemCondition.INTGER_ATT;
                         condition = new LtDescItemCondition<Integer>(conditionValue, attributeName);
@@ -589,7 +608,8 @@ public class ClientFactoryDO {
             throw new IllegalArgumentException("Není předána hodnota podmínky.");
         }
 
-        return Double.valueOf(conditions.iterator().next());
+        String value = conditions.iterator().next().replace(',', '.');
+        return Double.valueOf(value);
     }
 
     private Interval<Double> getConditionValueIntervalDouble(final List<String> conditions) {
@@ -599,9 +619,10 @@ public class ClientFactoryDO {
 
         Iterator<String> iterator = conditions.iterator();
 
-        Double from = Double.valueOf(iterator.next());
+        String fromString = iterator.next().replace(',', '.');
+        Double from = Double.valueOf(fromString);
 
-        String toString = iterator.next();
+        String toString = iterator.next().replace(',', '.');
         if (StringUtils.isBlank(toString)) {
             throw new IllegalArgumentException("Není předána druhá hodnota intervalu.");
         }
@@ -638,12 +659,32 @@ public class ClientFactoryDO {
         return new Interval<Integer>(from, to);
     }
 
-    private Long getConditionValueLong(final List<String> conditions) {
+    private ArrDataUnitdate getConditionValueLong(final List<String> conditions) {
         if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())) {
             throw new IllegalArgumentException("Není předána hodnota podmínky.");
         }
 
-        return Long.valueOf(conditions.iterator().next());
+        String dateValue = conditions.iterator().next();
+        ArrDataUnitdate unitdate = new ArrDataUnitdate();
+        UnitDateConvertor.convertToUnitDate(dateValue, unitdate);
+
+        String valueFrom = unitdate.getValueFrom();
+        if (valueFrom == null) {
+            unitdate.setNormalizedFrom(Long.MIN_VALUE);
+        } else {
+            LocalDateTime fromDate = LocalDateTime.parse(valueFrom, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            unitdate.setNormalizedFrom(CalendarConverter.toSeconds(CalendarType.GREGORIAN, fromDate));
+        }
+
+        String valueTo = unitdate.getValueTo();
+        if (valueTo == null) {
+            unitdate.setNormalizedTo(Long.MAX_VALUE);
+        } else {
+            LocalDateTime toDate = LocalDateTime.parse(valueTo, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            unitdate.setNormalizedTo(CalendarConverter.toSeconds(CalendarType.GREGORIAN, toDate));
+        }
+
+        return unitdate;
     }
 
     private Interval<Long> getConditionValueIntervalLong(final List<String> conditions) {
@@ -651,18 +692,27 @@ public class ClientFactoryDO {
             throw new IllegalArgumentException("Není předána hodnota podmínky.");
         }
 
-        Iterator<String> iterator = conditions.iterator();
+        String valueString = conditions.iterator().next();
+        ArrDataUnitdate unitdate = new ArrDataUnitdate();
+        UnitDateConvertor.convertToUnitDate(valueString, unitdate);
 
-        Long from = Long.valueOf(iterator.next());
-
-        String toString = iterator.next();
-        if (StringUtils.isBlank(toString)) {
-            throw new IllegalArgumentException("Není předána druhá hodnota intervalu.");
+        String valueFrom = unitdate.getValueFrom();
+        if (valueFrom == null) {
+            unitdate.setNormalizedFrom(Long.MIN_VALUE);
+        } else {
+            LocalDateTime fromDate = LocalDateTime.parse(valueFrom, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            unitdate.setNormalizedFrom(CalendarConverter.toSeconds(CalendarType.GREGORIAN, fromDate));
         }
 
-        Long to = Long.valueOf(toString);
+        String valueTo = unitdate.getValueTo();
+        if (valueTo == null) {
+            unitdate.setNormalizedTo(Long.MAX_VALUE);
+        } else {
+            LocalDateTime toDate = LocalDateTime.parse(valueTo, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            unitdate.setNormalizedTo(CalendarConverter.toSeconds(CalendarType.GREGORIAN, toDate));
+        }
 
-        return new Interval<Long>(from, to);
+        return new Interval<Long>(unitdate.getNormalizedFrom(), unitdate.getNormalizedTo());
     }
 
     private void createValuesEnumCondition(final ValuesTypes valuesTypes, final List<String> values,

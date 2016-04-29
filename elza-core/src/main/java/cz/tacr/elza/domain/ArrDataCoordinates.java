@@ -4,11 +4,13 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import com.vividsolutions.jts.geom.Geometry;
 import org.hibernate.annotations.Type;
 import org.hibernate.search.annotations.Indexed;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTWriter;
+
 import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 /**
@@ -34,5 +36,16 @@ public class ArrDataCoordinates extends ArrData implements cz.tacr.elza.api.ArrD
     @Override
     public void setValue(final Geometry value) {
         this.value = value;
+    }
+
+    @Override
+    public String getFulltextValue() {
+        RulDescItemSpec descItemSpec = getDescItem().getDescItemSpec();
+        String wkt = new WKTWriter().writeFormatted(value);
+        if (descItemSpec == null) {
+            return wkt;
+        }
+
+        return descItemSpec.getName() + ": " + wkt;
     }
 }

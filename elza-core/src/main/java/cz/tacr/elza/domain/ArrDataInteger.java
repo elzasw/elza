@@ -41,6 +41,11 @@ public class ArrDataInteger extends ArrData implements cz.tacr.elza.api.ArrDataI
 
     @Override
     public String getFulltextValue() {
-        return value == null ? null : value.toString();
+        RulDescItemSpec descItemSpec = getDescItem().getDescItemSpec();
+        if (descItemSpec == null) {
+            return value.toString();
+        }
+
+        return descItemSpec.getName() + ": " + value.toString();
     }
 }

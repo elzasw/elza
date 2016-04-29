@@ -40,6 +40,11 @@ public class ArrDataText extends ArrData implements cz.tacr.elza.api.ArrDataText
 
     @Override
     public String getFulltextValue() {
-        return value;
+        RulDescItemSpec descItemSpec = getDescItem().getDescItemSpec();
+        if (descItemSpec == null) {
+            return value;
+        }
+
+        return descItemSpec.getName() + ": " + value;
     }
 }

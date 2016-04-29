@@ -41,7 +41,7 @@ public class ArrDataPartyRef extends ArrData implements cz.tacr.elza.api.ArrData
     }
 
     @Override
-    public void setPosition(Integer position) {
+    public void setPosition(final Integer position) {
         this.position = position;
     }
 
@@ -51,12 +51,17 @@ public class ArrDataPartyRef extends ArrData implements cz.tacr.elza.api.ArrData
     }
 
     @Override
-    public void setParty(ParParty party) {
+    public void setParty(final ParParty party) {
         this.party = party;
     }
 
     @Override
     public String getFulltextValue() {
-        return (party != null && party.getRecord() != null) ? party.getRecord().getRecord() : null;
+        RulDescItemSpec descItemSpec = getDescItem().getDescItemSpec();
+        if (descItemSpec == null) {
+            return party.getRecord().getRecord();
+        }
+
+        return descItemSpec.getName() + ": " + party.getRecord().getRecord();
     }
 }
