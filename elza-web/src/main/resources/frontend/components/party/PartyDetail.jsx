@@ -313,18 +313,22 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {partyRegion, focus, userDetail} = state
+    const {partyRegion, focus, userDetail} = state;
     return {
         partyRegion,
         focus,
-        userDetail,
+        userDetail
     }
 }
 
-PartyDetail.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired,
+PartyDetail.propTypes = {
     focus: React.PropTypes.object.isRequired,
     userDetail: React.PropTypes.object.isRequired,
-}
+    partyRegion: React.PropTypes.object.isRequired
+};
+
+PartyDetail.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
+};
 
 module.exports = connect(mapStateToProps)(PartyDetail);
