@@ -388,7 +388,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
                     onDoubleClick={this.props.onDoubleClick}
                     {...draggableProps}
                 >
-                    {renderItemContent(item)}
+                    {renderItemContent(item, active, index)}
                 </div>
             )
         })
@@ -408,7 +408,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
 }
 
 ListBox.defaultProps = {
-    renderItemContent: (item, isActive) => {
+    renderItemContent: (item, isActive, index) => {
         return (
             <div>{item.name}</div>
         )

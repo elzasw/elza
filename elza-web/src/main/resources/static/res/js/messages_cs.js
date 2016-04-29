@@ -44,6 +44,7 @@ var messages = {
     "ribbon.action.arr": "Pořádání",
     "ribbon.action.arr.output": "Výstupy",
     "ribbon.action.arr.arr": "Archivní popis",
+    "ribbon.action.arr.output.add": "Nový výstup",
     "ribbon.action.arr.fund.add": "Nový AS",
     "ribbon.action.arr.fund.update": "Editace AS",
     "ribbon.action.arr.fund.approve": "Nová verze AS",
@@ -95,7 +96,12 @@ var messages = {
     "developer.scenarios.before": "Před",
     "developer.scenarios.child": "Pod",
 
-    
+    "arr.output.title.add": "Vytvoření nového výstupu",
+    "arr.output.title.added": "Výstup byl vytvořen",
+    "arr.output.name": "Název výstupu",
+    "arr.output.code": "Interní kód výstupu",
+    "arr.output.temporary": "Dočasný výstup",
+
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",
     "arr.panel.reset": "Zrušit omezení",
     "arr.panel.title.errors": "Chyby",

@@ -1,21 +1,22 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {indexById} from 'stores/app/utils.jsx'
-import fundDetail from './fundOutputDetail.jsx'
+import fundOutputDetail from './fundOutputDetail.jsx'
 import {isFundOutputDetail} from 'actions/arr/fundOutput.jsx'
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 
 const initialState = {
     fetched: false,
     fetching: false,
     currentDataKey: '',
     outputs: [],
-    fundDetail: fundDetail(),
+    fundOutputDetail: fundOutputDetail(),
 }
 
 export default function fundPackets(state = initialState, action = {}) {
     if (isFundOutputDetail(action)) {
         return {
             ...state,
-            fundDetail: fundDetail(state.fundDetail, action),
+            fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
         }
     }
     
@@ -27,13 +28,13 @@ export default function fundPackets(state = initialState, action = {}) {
                 isFetching: false,
                 fetched: false,
                 currentDataKey: '',
-                fundDetail: fundDetail(state.fundDetail, action),
+                fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
             }
             break
         case types.STORE_SAVE:
             // const {filterText, filterState} = state;
             return {
-                fundDetail: fundDetail(state.fundDetail, action),
+                fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
             }
             break
         case types.FUND_OUTPUT_REQUEST:

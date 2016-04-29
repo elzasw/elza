@@ -2,9 +2,12 @@
  * Akce pro výstupy - named output.
  */
 
-import * as types from 'actions/constants/ActionTypes';
+import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions'
-import {indexById} from 'stores/app/utils.jsx'
+import {i18n} from 'components/index.jsx';
+import {indexById} from 'stores/app/utils.jsx';
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 
 export function isFundOutput(action) {
     if (isFundOutputDetail(action)) {
@@ -22,7 +25,7 @@ export function isFundOutput(action) {
 
 export function isFundOutputDetail(action) {
     switch (action.type) {
-        case types.FUND_OUTPUT_DETAIL_RECQUEST:
+        case types.FUND_OUTPUT_DETAIL_REQUEST:
         case types.FUND_OUTPUT_DETAIL_RECEIVE:
         case types.FUND_OUTPUT_SELECT_OUTPUT:
             return true
@@ -40,6 +43,16 @@ function _fundOutputDetailDataKey(fundOutputDetail) {
         return fundOutputDetail.id + '_'
     } else {
         return ''
+    }
+}
+
+export function fundOutputCreate(versionId, data) {
+    return (dispatch, getState) => {
+        return WebApi.createOutput(versionId, data)
+            .then((json) => {
+                dispatch(addToastrSuccess(i18n("arr.output.title.added")));
+                dispatch(modalDialogHide());
+            });        
     }
 }
 
@@ -65,7 +78,7 @@ function _getFundOutput(versionId, getState) {
 /**
  * Fetch dat pro detail výstupu.
  */
-export function fundOutputDetailFetchIfNeeded(versionId) {
+export function fundOutputDetailFetchIfNeeded(versionId, outputId) {
     return (dispatch, getState) => {
         const fundOutput = _getFundOutput(versionId, getState)
         if (fundOutput == null) {
@@ -77,7 +90,7 @@ export function fundOutputDetailFetchIfNeeded(versionId) {
 
         if (fundOutputDetail.currentDataKey !== dataKey) {
             dispatch(fundOutputDetailRequest(versionId, dataKey))
-            WebApi.getFundOutputDetail(fundOutputDetail.id)
+            WebApi.getFundOutputDetail(versionId, outputId)
                 .then(json => {
                     const newFundOutput = _getFundOutput(versionId, getState)
                     if (newFundOutput == null) {
@@ -107,17 +120,17 @@ export function fundOutputFetchIfNeeded(versionId) {
 
         if (fundOutput.currentDataKey !== dataKey) {
             dispatch(fundOutputRequest(versionId, dataKey))
-            // WebApi.getOutputs(versionId)
-            //     .then(json => {
-            //         const newFundOutput = _getFundOutput(versionId, getState)
-            //         if (newFundOutput == null) {
-            //             return
-            //         }
-            //         const newDataKey = _fundOutputDataKey(newFundOutput)
-            //         if (newDataKey === dataKey) {
-            //             dispatch(fundOutputReceive(versionId, json))
-            //         }
-            //     })
+            WebApi.getOutputs(versionId)
+                .then(json => {
+                    const newFundOutput = _getFundOutput(versionId, getState)
+                    if (newFundOutput == null) {
+                        return
+                    }
+                    const newDataKey = _fundOutputDataKey(newFundOutput)
+                    if (newDataKey === dataKey) {
+                        dispatch(fundOutputReceive(versionId, json))
+                    }
+                })
         }
     }
 }
@@ -130,17 +143,17 @@ function fundOutputRequest(versionId, dataKey) {
     }
 }
 
-function fundOutputReceive(versionId, data) {
+function fundOutputReceive(versionId, outputs) {
     return {
         type: types.FUND_OUTPUT_RECEIVE,
         versionId,
-        data,
+        outputs,
     }
 }
 
 function fundOutputDetailRequest(versionId, dataKey) {
     return {
-        type: types.FUND_OUTPUT_DETAIL_RECQUEST,
+        type: types.FUND_OUTPUT_DETAIL_REQUEST,
         versionId,
         dataKey,
     }

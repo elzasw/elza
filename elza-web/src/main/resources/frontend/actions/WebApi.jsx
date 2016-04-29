@@ -795,6 +795,29 @@ class WebApi{
     deleteFund(fundId) {
         return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/deleteFund/' + fundId);
     }
+
+    getOutputs(versionId) {
+        var data = [
+            {id: 1, createChange: 1465469100591, lockChange: 1435469100591, namedOutput: {id: 1, name: 'nazev 1', code: 'code 1', temporary: false}},
+            {id: 2, createChange: 1464469200591, namedOutput: {id: 2, name: 'nazev 2', code: 'code 2', temporary: false}},
+            {id: 3, createChange: 1463469300591, namedOutput: {id: 1, name: 'nazev 1', code: 'code 1', temporary: false}},
+            {id: 4, createChange: 1462469400591, lockChange: 1445469100591, namedOutput: {id: 4, name: 'nazev 3', code: 'code 3', temporary: true}},
+            {id: 5, createChange: 1461469500591, namedOutput: {id: 2, name: 'nazev 2', code: 'code 2', temporary: true}},
+        ]
+        
+        return getData(data, 100)
+    }
+
+    getFundOutputDetail(versionId, outputId) {
+        var data = {
+            id: outputId, name: 'nejaky nazev', code: 'nejaky kod',
+        }
+        return getData(data, 100)
+    }
+
+    createOutput(versionId, data) {
+        return getData(data, 100)
+    }
 }
 
 module.exports = {
