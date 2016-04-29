@@ -133,6 +133,7 @@ var messages = {
     "arr.fund.extendedSearch": "Rozšířené hledání",
     "arr.fund.extendedSearch.text": "Vyhledat podle rozšířeného hledání...",
     "arr.fund.simpleSearch": "Základní hledání",
+    "arr.fund.filterSettings.value.empty": "(Prázdné)",
     "arr.fund.filterSettings.clearAll.action": "Odebrat všechny filtry",
     "arr.fund.filterSettings.updateData.action": "Aktualizovat data podle filtru",
     "arr.fund.columnSettings.title": "Nastavení sloupců",

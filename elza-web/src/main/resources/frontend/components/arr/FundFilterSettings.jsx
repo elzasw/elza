@@ -12,6 +12,7 @@ import {FilterableListBox, AbstractReactComponent, i18n} from 'components/index.
 import {Modal, Button, Input} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
+import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
 const FundFilterCondition = require('./FundFilterCondition')
 const SimpleCheckListBox = require('./SimpleCheckListBox')
 
@@ -115,10 +116,22 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
         }
 
         if (dataType.code !== 'UNITDATE' && dataType.code !== 'TEXT' && dataType.code !== 'COORDINATES') {
-            WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, specIds, 200)
+            // Ladění objektu pro server
+            var useSpecIds = specIds.map(id => {
+                return id === FILTER_NULL_VALUE ? null : id
+            })
+
+            WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, useSpecIds, 200)
                 .then(json => {
+                    var valueItems = json.map(i => ({id: i, name: i}))
+
+                    // TODO [stanekpa] Toto zde nebude, když se na server přidělá podpora na vracení a hledání NULL hodnot - problé je ale v locales (řetězec arr.fund.filterSettings.value.empty), měly by se doplnit i na server
+                    if (valueSearchText == '' || i18n('arr.fund.filterSettings.value.empty').toLowerCase().indexOf(valueSearchText) !== -1) {   // u prázdného hledání a případně u hledání prázdné hodnoty doplňujeme null položku
+                        valueItems = [{id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')}, ...valueItems]
+                    }
+
                     this.setState({
-                        valueItems: json.map(i => ({id: i, name: i})),
+                        valueItems: valueItems,
                     })
                 })
         }
@@ -334,20 +347,28 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
 
         var specContent = null
         if (refType.useSpecification) {
+            var items = [{id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')}, ...refType.descItemSpecs]
+// TODO [stanekpa] odendat - až se na server doplní podpora
+items = refType.descItemSpecs
+
             specContent = (
                 <SimpleCheckListBox
                     ref='specsListBox'
-                    items={refType.descItemSpecs}
+                    items={items}
                     label={i18n('arr.fund.filterSettings.filterBySpecification.title')}
                     value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
                     onChange={this.handleSpecItemsChange}
                     />
             )
         } else if (dataType.code === 'PACKET_REF') { // u obalů budeme místo specifikací zobrazovat výběr typů obsalů
+            var items = [{id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')}, ...packetTypes.items]
+// TODO [stanekpa] odendat - až se na server doplní podpora
+            items = packetTypes.items
+
             specContent = (
                 <SimpleCheckListBox
                     ref='specsListBox'
-                    items={packetTypes.items}
+                    items={items}
                     label={i18n('arr.fund.filterSettings.filterByPacketType.title')}
                     value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
                     onChange={this.handleSpecItemsChange}

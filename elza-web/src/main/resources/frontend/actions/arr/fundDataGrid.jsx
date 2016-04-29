@@ -7,6 +7,9 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 
+// Null hodnota, která je používaná v klientovi pro reprezentaci null hodnoty
+export const FILTER_NULL_VALUE = "____$<NULL>$___"
+
 export function isFundDataGridAction(action) {
     switch (action.type) {
         case types.FUND_FUND_DATA_GRID_FILTER:
@@ -308,14 +311,22 @@ export function fundDataGridFilter(versionId, filter) {
 
         var callFilter = {...filter}
 
+        // Ladění objektu filtru pro server
         Object.keys(callFilter).forEach(key => {
             callFilter[key] = {...callFilter[key]}
+
+            // Typy selected a unselected na velká písmena
             if (typeof callFilter[key].specsType !== 'undefined' && callFilter[key].specsType !== null) {
                 callFilter[key].specsType = callFilter[key].specsType.toUpperCase()
             }
             if (typeof callFilter[key].valuesType !== 'undefined' && callFilter[key].valuesType !== null) {
                 callFilter[key].valuesType = callFilter[key].valuesType.toUpperCase()
             }
+
+            // Hodnoty null na reálné null
+            callFilter[key].values = callFilter[key].values.map(v => {
+                return v === FILTER_NULL_VALUE ? null : v
+            })
         })
 
 // console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$ FILTER", versionId, callFilter)
