@@ -182,7 +182,16 @@ var messages = {
     "arr.fund.filterSettings.condition.unitdate.gt": "Je po",
     "arr.fund.filterSettings.condition.unitdate.subset": "Spadá do celého období",
     "arr.fund.filterSettings.condition.unitdate.intersect": "Spadá částečně do období",
-    
+    "arr.fund.filterSettings.condition.coordinates.subset": "Je součástí",
+    "arr.fund.filterSettings.condition.coordinates.near": "Je poblíž",
+    "arr.fund.filterSettings.condition.coordinates.near.100": "100 m",
+    "arr.fund.filterSettings.condition.coordinates.near.500": "0,5 km",
+    "arr.fund.filterSettings.condition.coordinates.near.1000": "1 km",
+    "arr.fund.filterSettings.condition.coordinates.near.10000": "10 km",
+    "arr.fund.filterSettings.condition.coordinates.near.20000": "20 km",
+    "arr.fund.filterSettings.condition.coordinates.near.50000": "50 km",
+    "arr.fund.filterSettings.condition.coordinates.near.100000": "100 km",
+
     "arr.fund.title.add": "Vytvoření nového AS",
     "arr.fund.title.update": "Úprava AS",
     "arr.fund.title.approve": "Uzavření verze AS",

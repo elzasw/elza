@@ -15,6 +15,40 @@ import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 const FundFilterCondition = require('./FundFilterCondition')
 const SimpleCheckListBox = require('./SimpleCheckListBox')
 
+const renderTextFields = (fields) => {
+    return fields.map((field, index) => {
+        return (
+            <div key={index} className='value-container'>
+                <Input type="text" {...field} />
+            </div>
+        )
+    })
+}
+
+const renderCoordinatesFields = (fields) => {
+    switch (fields.length) {
+        case 0:
+            return null
+        case 1:
+            return (
+                <div key={0} className='value-container'>
+                    <Input type="text" {...fields[0]} />
+                </div>
+            )
+        case 2:
+            return (
+                <div key={0} className='value-container'>
+                    <Input type="text" {...fields[0]} />
+                    <Input type="select" defaultValue={1000} {...fields[1]}>
+                        {[100, 500, 1000, 10000, 20000, 50000, 100000].map(l => {
+                            return <option key={l} value={l}>{i18n('arr.fund.filterSettings.condition.coordinates.near.' + l)}</option>
+                        })}
+                    </Input>
+                </div>
+            )
+    }
+}
+
 var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -106,9 +140,33 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
     }
 
     handleConditionChange(selectedCode, values) {
+        const {dataType} = this.props
+        var useValues = [...values]
+
+        // Inicializace implicitních hodnot, musí být i u input prvků v render metodě
+        switch (dataType.code) {
+            case 'TEXT':
+            case 'STRING':
+            case 'FORMATTED_TEXT':
+            case 'UNITID':
+            case 'INT':
+            case 'DECIMAL':
+            case 'PARTY_REF':
+            case 'UNITDATE':
+            case 'PACKET_REF':
+            case 'ENUM':
+            case 'RECORD_REF':
+                break
+            case 'COORDINATES':
+                if (selectedCode === 'NEAR' && !useValues[1]) {
+                    useValues[1] = 1000
+                }
+                break
+        }
+
         this.setState({
             conditionSelectedCode: selectedCode,
-            conditionValues: values,
+            conditionValues: useValues,
         })
     }
 
@@ -120,7 +178,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             return null
         }
 
-        if (dataType.code === 'UNITDATE' || dataType.code === 'TEXT') { // zde je výjimka a nechceme dle hodnoty
+        if (dataType.code === 'UNITDATE' || dataType.code === 'TEXT' || dataType.code === 'COORDINATES') { // zde je výjimka a nechceme dle hodnoty
             return null
         }
 
@@ -146,12 +204,14 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             return null
         }
 
+        let renderFields
         var items = []
         switch (dataType.code) {
             case 'TEXT':
             case 'STRING':
             case 'FORMATTED_TEXT':
             case 'UNITID':
+                renderFields = renderTextFields
                 items = [
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
@@ -165,6 +225,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 break
             case 'INT':
             case 'DECIMAL':
+                renderFields = renderTextFields
                 items = [
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
@@ -181,6 +242,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 break
             case 'PARTY_REF':
             case 'RECORD_REF':
+                renderFields = renderTextFields
                 items = [
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
@@ -189,6 +251,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 ]
                 break
             case 'UNITDATE':
+                renderFields = renderTextFields
                 items = [
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
@@ -201,6 +264,14 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 ]
                 break
             case 'COORDINATES':
+                renderFields = renderCoordinatesFields
+                items = [
+                    {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
+                    {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
+                    {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 1, code: 'SUBSET', name: i18n('arr.fund.filterSettings.condition.coordinates.subset')},
+                    {values: 2, code: 'NEAR', name: i18n('arr.fund.filterSettings.condition.coordinates.near')},
+                ]
                 break
             case 'PACKET_REF':
                 break
@@ -220,9 +291,8 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 values={conditionValues}
                 onChange={this.handleConditionChange}
                 items={items}
-            >
-                <Input type='text' />
-            </FundFilterCondition>
+                renderFields={renderFields}
+            />
         )
     }
 

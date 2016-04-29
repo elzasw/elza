@@ -49,25 +49,15 @@ var FundFilterCondition = class FundFilterCondition extends AbstractReactCompone
         const selectedItem = itemsCodeMap[selectedCode]
 
         var valuesChildren = []
-        var index = 0
+        var fields = []
         for (var a=0; a<selectedItem.values; a++) {
-            const els = React.Children.map(children, el => {
-                var result = React.cloneElement(el, {
-                    value: values[index],
-                    onChange: this.handleChangeValue.bind(this, index)
-                })
-
-                index++
-
-                return result
+            fields.push({
+                value: values[a],
+                onChange: this.handleChangeValue.bind(this, a)
             })
-            valuesChildren.push(
-                <div key={index} className='value-container'>
-                    {els}
-                </div>
-            )
         }
-        return valuesChildren
+
+        return this.props.renderFields(fields)
     }
 
     render() {
