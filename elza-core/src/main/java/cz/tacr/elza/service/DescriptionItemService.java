@@ -1002,7 +1002,7 @@ public class DescriptionItemService {
             if (packetType == null) {
                 value = new TitleValue(packet.getStorageNumber());
             } else {
-                value = new TitleValue(packetType.getName() + " " + packet.getStorageNumber());
+                value = new TitleValue(packetType.getName() + ": " + packet.getStorageNumber());
             }
             String iconValue = getIconValue(data);
             String code = data.getDescItem().getDescItemType().getCode();
