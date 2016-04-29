@@ -55,15 +55,16 @@ public class XmlExportController {
             contentType = "application/xml";
         }
 
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType(contentType);
+        response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + exportResult.getFileName());
+
         File exportedData = exportResult.getExportedData();
         try (InputStream inputStream = new FileInputStream(exportedData)) {
             int contentLength = FileCopyUtils.copy(inputStream, response.getOutputStream());
             response.setContentLength(contentLength);
         }
 
-        response.setCharacterEncoding("UTF-8");
-        response.setContentType(contentType);
-        response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + exportResult.getFileName());
         response.flushBuffer();
     }
 
