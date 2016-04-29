@@ -1018,13 +1018,7 @@ public class XmlExportService {
                 usedNodeIds.addAll(children);
             }
 
-            allNodeIdsToExport = allNodes.stream().map(id -> {
-                if (usedNodeIds.contains(id)) {
-                    return id;
-                }
-
-                return null;
-            }).filter(id ->  id != null).collect(Collectors.toList());
+            allNodeIdsToExport = allNodes.stream().filter(id -> usedNodeIds.contains(id)).collect(Collectors.toList());
         }
 
         return allNodeIdsToExport;
@@ -1282,10 +1276,11 @@ public class XmlExportService {
 
         List<Integer> parentIds = new LinkedList<>();
         while (treeNode != null) {
-            Integer parentId = treeNode.getParent().getId();
-            parentIds.add(parentId);
-
-            treeNode = versionTreeCache.get(parentId);
+            treeNode = treeNode.getParent();
+            if (treeNode != null) {
+                Integer parentId = treeNode.getId();
+                parentIds.add(parentId);
+            }
         }
 
         return parentIds;

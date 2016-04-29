@@ -58,6 +58,9 @@ public class XmlExportController {
         response.setCharacterEncoding("UTF-8");
         response.setContentType(contentType);
         response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + exportResult.getFileName());
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
+        response.setHeader("Pragma", "no-cache"); // HTTP 1.0.
+        response.setDateHeader("Expires", 0); // Proxies.
 
         File exportedData = exportResult.getExportedData();
         try (InputStream inputStream = new FileInputStream(exportedData)) {
