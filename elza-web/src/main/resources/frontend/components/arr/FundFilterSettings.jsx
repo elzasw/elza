@@ -39,7 +39,7 @@ const renderCoordinatesFields = (fields) => {
             return (
                 <div key={0} className='value-container'>
                     <Input type="text" {...fields[0]} />
-                    <Input type="select" defaultValue={1000} {...fields[1]}>
+                    <Input type="select" defaultValue={10000} {...fields[1]}>
                         {[100, 500, 1000, 10000, 20000, 50000, 100000].map(l => {
                             return <option key={l} value={l}>{i18n('arr.fund.filterSettings.condition.coordinates.near.' + l)}</option>
                         })}
@@ -159,7 +159,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 break
             case 'COORDINATES':
                 if (selectedCode === 'NEAR' && !useValues[1]) {
-                    useValues[1] = 1000
+                    useValues[1] = 10000
                 }
                 break
         }
