@@ -46,6 +46,24 @@ function _fundOutputDetailDataKey(fundOutputDetail) {
     }
 }
 
+export function fundOutputUsageEnd(versionId, outputId) {
+    return (dispatch, getState) => {
+        return WebApi.outputUsageEnd(versionId, outputId)
+            .then((json) => {
+                dispatch(addToastrSuccess(i18n("arr.output.title.usageEnded")));
+            });        
+    }
+}
+
+export function fundOutputDelete(versionId, outputId) {
+    return (dispatch, getState) => {
+        return WebApi.outputDelete(versionId, outputId)
+            .then((json) => {
+                dispatch(addToastrSuccess(i18n("arr.output.title.deleted")));
+            });        
+    }
+}
+
 export function fundOutputCreate(versionId, data) {
     return (dispatch, getState) => {
         return WebApi.createOutput(versionId, data)

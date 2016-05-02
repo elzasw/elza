@@ -11,12 +11,12 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {ListBox, Ribbon, RibbonGroup, FundNodesAddForm, Icon, FundNodesList, i18n, ArrOutputDetail, AddOutputForm, AbstractReactComponent} from 'components/index.jsx';
+import {ListBox, Ribbon, Loading, RibbonGroup, FundNodesAddForm, Icon, FundNodesList, i18n, ArrOutputDetail, AddOutputForm, AbstractReactComponent} from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {fundOutputFetchIfNeeded, fundOutputSelectOutput, fundOutputCreate} from 'actions/arr/fundOutput.jsx'
+import {fundOutputFetchIfNeeded, fundOutputSelectOutput, fundOutputCreate, fundOutputUsageEnd, fundOutputDelete } from 'actions/arr/fundOutput.jsx'
 var classNames = require('classnames');
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
@@ -37,7 +37,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('getActiveFund', 'renderListItem', 'handleSelect', 'trySetFocus', 'handleShortcuts',
-            'handleAddOutput', 'handleAddNodes');
+            'handleAddOutput', 'handleAddNodes', 'handleUsageEnd', 'handleDelete');
     }
 
     componentDidMount() {
@@ -111,7 +111,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     handleAddNodes() {
         this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesAddForm
-                onSubmitForm={(ids) => {console.log(5555, ids)}}
+                onSubmitForm={(ids, nodes) => {console.log(5555, ids, nodes)}}
                 />))
     }
     
@@ -132,6 +132,21 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             itemActions.push(
                 <Button key="add-fund-nodes" onClick={this.handleAddNodes}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.nodes.add')}</span></div></Button>
             )
+
+            const fundOutputDetail = fund.fundOutput.fundOutputDetail
+            if (fundOutputDetail.id !== null && fundOutputDetail.fetched && !fundOutputDetail.isFetching) {
+                if (!fundOutputDetail.lockChange) {
+                    itemActions.push(
+                        <Button key="fund-output-usage-end" onClick={this.handleUsageEnd}><Icon glyph="fa-clock-o" /><div><span className="btnText">{i18n('ribbon.action.arr.output.usageEnd')}</span></div></Button>
+                    )
+                }
+                itemActions.push(
+                    <Button key="fund-output-delete" onClick={this.handleDelete}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('ribbon.action.arr.output.delete')}</span></div></Button>
+                )
+                itemActions.push(
+                    <Button key="fund-output-bulk-actions" onClick={null}><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span></div></Button>
+                )
+            }
         }
 
         var altSection;
@@ -147,6 +162,18 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         return (
             <Ribbon arr altSection={altSection} itemSection={itemSection}/>
         )
+    }
+
+    handleUsageEnd() {
+        const fund = this.getActiveFund(this.props)
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail
+        this.dispatch(fundOutputUsageEnd(fund.versionId, fundOutputDetail.id))
+    }
+
+    handleDelete() {
+        const fund = this.getActiveFund(this.props)
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail
+        this.dispatch(fundOutputDelete(fund.versionId, fundOutputDetail.id))
     }
 
     renderListItem(item, isActive, index) {
@@ -208,16 +235,19 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 versionId={fund.versionId}
                 fundOutputDetail={fundOutput.fundOutputDetail}
                 />
-            
-            fund.fundTreeNodes.nodes
-            
-            rightPanel = (
-                <div className="fund-nodes-container">
-                    <FundNodesList
-                        nodes={fund.fundTreeNodes.nodes}
-                        />
-                </div>
-            )
+
+            const fundOutputDetail = fund.fundOutput.fundOutputDetail
+            if (fundOutputDetail.id !== null && !fundOutputDetail.fetching && fundOutputDetail.fetched) {
+                rightPanel = (
+                    <div className="fund-nodes-container">
+                        <FundNodesList
+                            nodes={fundOutputDetail.nodes}
+                            />
+                    </div>
+                )
+            } else {
+                // rightPanel = <Loading/>
+            }
         } else {
             centerPanel = <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>
         }

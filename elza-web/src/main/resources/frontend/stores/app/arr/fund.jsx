@@ -63,7 +63,7 @@ function initFundTreeNodes(fundTreeNodes) {
     return {
         ...fundTreeNodes,
         multipleSelection: true,
-        multipleSelectionOneLevel: true,
+        multipleSelectionOneLevel: false,
     };
 }
 

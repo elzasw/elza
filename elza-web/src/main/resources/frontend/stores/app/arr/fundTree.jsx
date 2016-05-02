@@ -34,16 +34,18 @@ function getOneSelectedIdIfExists(state) {
     }
 }
 
-function removeChildren(nodes, node, selectedId) {
-    var index = indexById(nodes, node.id);
+function removeChildren(nodes, collapsedNode, selectedIdsMap) {
+    var index = indexById(nodes, collapsedNode.id);
     var start = index;
     var max = nodes.length;
-    var containsSelectedId = false;
+    var containsSelectedIds = [];
+
     while (++index < max) {
-        if (nodes[index].depth > node.depth) { // potomek, odebereme
+        let node = nodes[index]
+        if (node.depth > collapsedNode.depth) { // potomek, odebereme
             // ale až na konci
-            if (selectedId != null && selectedId == nodes[index].id) {
-                containsSelectedId = true;
+            if (selectedIdsMap[node.id]) {
+                containsSelectedIds.push(node.id)
             }
         } else {    // už není potomek, končíme procházení
             break;
@@ -51,7 +53,7 @@ function removeChildren(nodes, node, selectedId) {
     }
 
     return {
-        containsSelectedId: containsSelectedId,
+        containsSelectedIds: containsSelectedIds,
         nodes: [
             ...nodes.slice(0, start + 1),
             ...nodes.slice(index)
@@ -288,12 +290,34 @@ export default function fundTree(state = initialState, action = {}) {
             var expandedIds = {...state.expandedIds};
             delete expandedIds[action.node.id];
 
-            var removeInfo = removeChildren(state.nodes, action.node, state.selectedId);
+            var selectedIdsMap
+            if (state.multipleSelection) {
+                selectedIdsMap = state.selectedIds
+            } else {
+                selectedIdsMap = {}
+                if (state.selectedId !== null) {
+                    selectedIdsMap[state.selectedId] = true
+                }
+            }
+            var removeInfo = removeChildren(state.nodes, action.node, selectedIdsMap);
 
-            var newSelectedId = state.selectedId;
-            if (state.selectedId != null && removeInfo.containsSelectedId) {    // zabaloval se podtrom, který měl označnou položku
-                // Položku odznačíme
-                newSelectedId = null;
+            let newSelectedId
+            let newSelectedIds
+            if (state.multipleSelection) {
+                if (removeInfo.containsSelectedIds.length > 0) { // některá id jsou v seznamu zabalených
+                    newSelectedIds = {...state.selectedIds}
+                    removeInfo.containsSelectedIds.forEach(id => {
+                        delete newSelectedIds[id]
+                    })
+                } else {
+                    newSelectedIds = state.selectedIds
+                }
+            } else {
+                if (removeInfo.containsSelectedIds.length > 0) { // dané id je v seznamu zabalených
+                    newSelectedId = null
+                } else {
+                    newSelectedId = state.selectedId
+                }
             }
 
             var ret = Object.assign({}, state, {
@@ -301,6 +325,7 @@ export default function fundTree(state = initialState, action = {}) {
                 expandedIds: expandedIds,
                 nodes: removeInfo.nodes,
                 selectedId: newSelectedId,
+                selectedIds: newSelectedIds,
             });
             return ret;
         case types.FUND_FUND_TREE_REQUEST:
@@ -321,7 +346,7 @@ export default function fundTree(state = initialState, action = {}) {
                     var index = indexById(state.nodes, action.nodeId);
                     if (index != null) {
                         var node = state.nodes[index];
-                        var removeInfo = removeChildren(state.nodes, node, null);
+                        var removeInfo = removeChildren(state.nodes, node, {});
                         var nodes = removeInfo.nodes;
 
                         var ensureItemVisible = false;

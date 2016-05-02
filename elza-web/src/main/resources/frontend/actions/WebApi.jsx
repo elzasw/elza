@@ -809,14 +809,28 @@ class WebApi{
     }
 
     getFundOutputDetail(versionId, outputId) {
+        var nodes = [
+            {id: 1, name: 'nejaky nazev 1', referenceMark: ['1', '|', '3']},
+            {id: 2, name: 'nejaky nazev 2', referenceMark: ['2', '|', '4']},
+            {id: 3, name: 'nejaky nazev 3', referenceMark: ['3', '|', '5']},
+        ]        
         var data = {
             id: outputId, name: 'nejaky nazev', code: 'nejaky kod',
+            nodes: nodes,
         }
         return getData(data, 100)
     }
 
     createOutput(versionId, data) {
         return getData(data, 100)
+    }
+
+    outputUsageEnd(versionId, outputId) {
+        return getData({}, 100)
+    }
+
+    outputDelete(versionId, outputId) {
+        return getData({}, 100)
     }
 }
 

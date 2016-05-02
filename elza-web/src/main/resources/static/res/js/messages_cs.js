@@ -46,6 +46,9 @@ var messages = {
     "ribbon.action.arr.arr": "Archivní popis",
     "ribbon.action.arr.output.add": "Nový výstup",
     "ribbon.action.arr.output.nodes.add": "Přidat JP",
+    "ribbon.action.arr.output.usageEnd": "Ukončit používání",
+    "ribbon.action.arr.output.delete": "Smazat",
+    "ribbon.action.arr.output.bulkActions": "Hrom. akce pro výstup",
     "ribbon.action.arr.fund.add": "Nový AS",
     "ribbon.action.arr.fund.update": "Editace AS",
     "ribbon.action.arr.fund.approve": "Nová verze AS",
@@ -99,6 +102,8 @@ var messages = {
 
     "arr.output.title.add": "Vytvoření nového výstupu",
     "arr.output.title.added": "Výstup byl vytvořen",
+    "arr.output.title.usageEnded": "Bylo ukončeno používání výstupu",
+    "arr.output.title.deleted": "Výstup byl smazán",
     "arr.output.name": "Název výstupu",
     "arr.output.code": "Interní kód výstupu",
     "arr.output.temporary": "Dočasný výstup",

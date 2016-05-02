@@ -22,6 +22,7 @@ import {
     fundTreeNodeExpand,
     fundTreeNodeCollapse
 } from 'actions/arr/fundTree.jsx'
+import {getMapFromList} from 'stores/app/utils.jsx'
 
 var FundNodesAddForm = class FundNodesAddForm extends AbstractReactComponent {
     constructor(props) {
@@ -97,7 +98,11 @@ var FundNodesAddForm = class FundNodesAddForm extends AbstractReactComponent {
         const {onSubmitForm} = this.props
         const fund = this.getActiveFund(this.props)
         const fundTreeNodes = fund.fundTreeNodes
-        onSubmitForm(Object.keys(fundTreeNodes.selectedIds))
+        
+        const nodesMap = getMapFromList(fundTreeNodes.nodes)
+        const nodes = Object.keys(fundTreeNodes.selectedIds).map(id => nodesMap[id])
+        
+        onSubmitForm(Object.keys(fundTreeNodes.selectedIds), nodes)
     }
 
     getActiveFund(props) {
