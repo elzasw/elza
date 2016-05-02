@@ -12,6 +12,8 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.domain.*;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
@@ -47,13 +49,9 @@ public class ArrMoveLevelService {
     @Autowired
     private LevelRepository levelRepository;
     @Autowired
-    private NodeRepository nodeRepository;
-    @Autowired
     private ArrangementService arrangementService;
     @Autowired
     private RuleService ruleService;
-    @Autowired
-    private FundVersionRepository fundVersionRepository;
     @Autowired
     private DescItemRepository descItemRepository;
     @Autowired
@@ -71,7 +69,8 @@ public class ArrMoveLevelService {
      * @param transportNodes      seznam uzlů, které přesouváme
      * @param transportParentNode rodič přesouvaných uzlů
      */
-    public void moveLevelsBefore(final ArrFundVersion version,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void moveLevelsBefore(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                  final ArrNode staticNode,
                                  final ArrNode staticParentNode,
                                  final Collection<ArrNode> transportNodes,
@@ -189,7 +188,8 @@ public class ArrMoveLevelService {
      * @param transportNodes      seznam uzlů, které přesouváme
      * @param transportParentNode rodič přesouvaných uzlů
      */
-    public void moveLevelsAfter(final ArrFundVersion version,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void moveLevelsAfter(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                 final ArrNode staticNode,
                                 final ArrNode staticParentNode,
                                 final List<ArrNode> transportNodes,
@@ -303,7 +303,8 @@ public class ArrMoveLevelService {
      * @param transportNodes      seznam uzlů, které přesouváme
      * @param transportParentNode rodič přesouvaných uzlů
      */
-    public void moveLevelsUnder(final ArrFundVersion version,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void moveLevelsUnder(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                 final ArrNode staticNode,
                                 final Collection<ArrNode> transportNodes,
                                 final ArrNode transportParentNode) {
@@ -390,9 +391,10 @@ public class ArrMoveLevelService {
      * @param deleteNode       node ke smazání
      * @param deleteNodeParent rodič nodu ke smazání
      */
-    public ArrLevel deleteLevel(final ArrFundVersion version,
-                            final ArrNode deleteNode,
-                            final ArrNode deleteNodeParent) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrLevel deleteLevel(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
+                                final ArrNode deleteNode,
+                                final ArrNode deleteNodeParent) {
         Assert.notNull(version);
         Assert.notNull(deleteNode);
 
@@ -436,7 +438,7 @@ public class ArrMoveLevelService {
      * @param beforeLevel        pokud přesouváme před uzel, je nastaven uzel, před který chceme přesunout
      * @param afterLevel         pokud přesouváme za uzel, je nastaven uzel, za který chceme přesunout
      */
-    public void shiftNodesWithCollection(final List<ArrLevel> shiftNodes,
+    private void shiftNodesWithCollection(final List<ArrLevel> shiftNodes,
                                          final List<ArrLevel> transferCollection,
                                          final int firstPosition,
                                          final ArrNode parentNode,
@@ -476,7 +478,7 @@ public class ArrMoveLevelService {
      * @param change          změna uzamčení
      * @param firstPosition   pozice prvního posouvaného uzlu
      */
-    public int placeLevels(final List<ArrLevel> transportLevels, final ArrNode parentNode,
+    private int placeLevels(final List<ArrLevel> transportLevels, final ArrNode parentNode,
                            final ArrChange change, final int firstPosition) {
         int position = firstPosition;
 
@@ -502,7 +504,8 @@ public class ArrMoveLevelService {
      * @param descItemCopyTypes id typů atributl, které budou zkopírovány z uzlu přímo nadřazeným nad přidaným uzlem
      *                          (jeho mladší sourozenec).
      */
-    public ArrLevel addNewLevel(final ArrFundVersion version,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrLevel addNewLevel(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                 final ArrNode staticNode,
                                 final ArrNode staticNodeParent,
                                 final AddLevelDirection direction,
