@@ -11,7 +11,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {ListBox, Ribbon, RibbonGroup, Icon, i18n, ArrOutputDetail, AddOutputForm, AbstractReactComponent} from 'components/index.jsx';
+import {ListBox, Ribbon, RibbonGroup, FundNodesAddForm, Icon, FundNodesList, i18n, ArrOutputDetail, AddOutputForm, AbstractReactComponent} from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
@@ -37,7 +37,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('getActiveFund', 'renderListItem', 'handleSelect', 'trySetFocus', 'handleShortcuts',
-            'handleAddOutput');
+            'handleAddOutput', 'handleAddNodes');
     }
 
     componentDidMount() {
@@ -103,9 +103,16 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
     handleAddOutput() {
         const fund = this.getActiveFund(this.props)
-        
+
         this.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
             <AddOutputForm onSubmitForm={(data) => {this.dispatch(fundOutputCreate(fund.versionId, data))}}/>));
+    }
+
+    handleAddNodes() {
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
+            <FundNodesAddForm
+                onSubmitForm={(ids) => {console.log(5555, ids)}}
+                />))
     }
     
     /**
@@ -117,10 +124,15 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
         var altActions = [];
         altActions.push(
-            <Button key="add-fa" onClick={this.handleAddOutput}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.add')}</span></div></Button>
+            <Button key="add-output" onClick={this.handleAddOutput}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.add')}</span></div></Button>
         )
-        
+
         var itemActions = [];
+        if (fund) {
+            itemActions.push(
+                <Button key="add-fund-nodes" onClick={this.handleAddNodes}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.nodes.add')}</span></div></Button>
+            )
+        }
 
         var altSection;
         if (altActions.length > 0) {
@@ -168,7 +180,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         const {focus, splitter, arrRegion} = this.props;
 
         const fund = this.getActiveFund(this.props)
-        var leftPanel
+        var leftPanel, rightPanel
         let centerPanel
 
         if (fund) {
@@ -196,6 +208,16 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 versionId={fund.versionId}
                 fundOutputDetail={fundOutput.fundOutputDetail}
                 />
+            
+            fund.fundTreeNodes.nodes
+            
+            rightPanel = (
+                <div className="fund-nodes-container">
+                    <FundNodesList
+                        nodes={fund.fundTreeNodes.nodes}
+                        />
+                </div>
+            )
         } else {
             centerPanel = <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>
         }
@@ -208,7 +230,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                     ribbon={this.buildRibbon()}
                     leftPanel={leftPanel}
                     centerPanel={centerPanel}
-                    rightPanel={null}
+                    rightPanel={rightPanel}
                 />
             </Shortcuts>
         )

@@ -53,6 +53,8 @@ exports.FundDetail = require('components/fund/FundDetail.jsx');
 exports.FundDetailExt = require('components/fund/FundDetailExt.jsx');
 exports.FundDetailTree = require('components/fund/FundDetailTree.jsx');
 
+exports.FundNodesList = require('components/arr/FundNodesList.jsx');
+exports.FundNodesAddForm = require('components/arr/FundNodesAddForm.jsx');
 exports.AddOutputForm = require('components/arr/AddOutputForm.jsx');
 exports.ArrOutputDetail = require('components/arr/ArrOutputDetail.jsx');
 exports.FundDataGridCellForm = require('components/arr/FundDataGridCellForm.jsx');

@@ -190,7 +190,7 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
                 title={title}
                 className='node-label'
                 {...clickProps}
-                onContextMenu={onContextMenu.bind(this, node)}
+                onContextMenu={onContextMenu ? onContextMenu.bind(this, node) : null}
                 >
                 {name}
             </span>

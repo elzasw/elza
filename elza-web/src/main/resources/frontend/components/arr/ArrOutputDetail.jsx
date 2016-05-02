@@ -11,16 +11,11 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {Loading, AbstractReactComponent} from 'components/index.jsx';
+import {Loading, FundNodesAddForm, AbstractReactComponent} from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
-import {PageLayout} from 'pages/index.jsx';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {fundOutputDetailFetchIfNeeded} from 'actions/arr/fundOutput.jsx'
-var classNames = require('classnames');
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
-
 var keyModifier = Utils.getKeyModifier()
 
 var keymap = {

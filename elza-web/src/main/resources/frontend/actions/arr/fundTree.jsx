@@ -145,12 +145,19 @@ function changeCurrentIndex(dispatch, area, fund, versionId, fundTree, newIndex)
         switch (area) {
             case types.FUND_TREE_AREA_MAIN:
                 dispatch(fundSelectSubNode(versionId, nodeId, nodeParent, false, newIndex, true));
+                break
             case types.FUND_TREE_AREA_MOVEMENTS_LEFT:
                 dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
+                break
             case types.FUND_TREE_AREA_MOVEMENTS_RIGHT:
                 dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
+                break
             case types.FUND_TREE_AREA_FUNDS_FUND_DETAIL:
                 dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
+                break
+            case types.FUND_TREE_AREA_NODES:
+                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
+                break
         }
     }
 }
@@ -329,6 +336,8 @@ function getFundTree(fund, area) {
             return fund.fundTreeMovementsLeft;
         case types.FUND_TREE_AREA_MOVEMENTS_RIGHT:
             return fund.fundTreeMovementsRight;
+        case types.FUND_TREE_AREA_NODES:
+            return fund.fundTreeNodes;
     }
 }
 

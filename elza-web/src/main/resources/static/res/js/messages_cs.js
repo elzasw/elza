@@ -45,6 +45,7 @@ var messages = {
     "ribbon.action.arr.output": "Výstupy",
     "ribbon.action.arr.arr": "Archivní popis",
     "ribbon.action.arr.output.add": "Nový výstup",
+    "ribbon.action.arr.output.nodes.add": "Přidat JP",
     "ribbon.action.arr.fund.add": "Nový AS",
     "ribbon.action.arr.fund.update": "Editace AS",
     "ribbon.action.arr.fund.approve": "Nová verze AS",
@@ -193,6 +194,7 @@ var messages = {
     "arr.fund.filterSettings.condition.coordinates.near.50000": "50 km",
     "arr.fund.filterSettings.condition.coordinates.near.100000": "100 km",
 
+    "arr.fund.nodes.title.select": "Výběr jednotek popisu",
     "arr.fund.title.add": "Vytvoření nového AS",
     "arr.fund.title.update": "Úprava AS",
     "arr.fund.title.approve": "Uzavření verze AS",

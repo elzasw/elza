@@ -80,7 +80,16 @@ var FundTreeMovementsLeft = class FundTreeMovementsLeft extends AbstractReactCom
      * @param e {Object} event
      */
     handleNodeClick(node, ensureItemVisible, e) {
+        e.shiftKey && this.unFocus()
         this.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, node.id, e.ctrlKey, e.shiftKey, null, ensureItemVisible));
+    }
+
+    unFocus() {
+        if (document.selection) {
+            document.selection.empty();
+        } else {
+            window.getSelection().removeAllRanges()
+        }
     }
 
     /**

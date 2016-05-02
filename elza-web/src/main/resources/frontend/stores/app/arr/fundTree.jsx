@@ -58,7 +58,7 @@ function removeChildren(nodes, node, selectedId) {
         ]
     }
 }
-export default function fundTree(state = initialState, action) {
+export default function fundTree(state = initialState, action = {}) {
     switch (action.type) {
         case types.STORE_LOAD:
             return {
