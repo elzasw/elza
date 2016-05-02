@@ -1,5 +1,27 @@
 @import "~variables.less";
 
+// TODO [stanekpa] nahradit vsechny stejne stylovani jednim stylem, ktery bude uveden ve variables
+.node-register-form-standard-actions {
+    .btn {
+        padding: 2px;
+        border: none;
+        margin: 0;
+        background: transparent;
+        height: 2em;
+        font-size: 0.9em;
+        .icon  {
+            color: @node-form-actions-color;
+            height: 1.35em;
+            line-height: 1.35em;
+            width: 1.35em;
+            vertical-align: middle;
+        }
+    }
+    .btn:hover {
+        background-color: @node-form-actions-hover;
+    }
+}
+
 .fund-nodes-list-listbox {
     background: @fa-file-tree-bg-list;
     border: 1px solid @fa-file-tree-border;
@@ -7,4 +29,37 @@
     margin: 0;
     overflow: hidden;
     overflow-y: auto;
+
+    .listbox-item {
+        display: flex;
+        flex-direction: column;
+
+        .item {
+            padding: 5px;
+
+            .node-register-form-standard-actions;
+
+            display: flex;
+
+            .item-container {
+                flex-grow: 1;
+                //width: 100%;
+
+                .reference-mark {
+                    height: 1em;
+                    color: @tree-node-reference-mark;
+                    font-size: 0.7em;
+                }
+                //.name {
+                //    overflow: hidden;
+                //    text-overflow: ellipsis;
+                //    white-space: nowrap;
+                //}
+            }
+
+            .actions-container {
+                flex-shrink: 0;
+            }
+        }
+    }
 }

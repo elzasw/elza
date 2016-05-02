@@ -37,6 +37,17 @@ var keyDownHandlers = {
             this.props.onCheck && this.props.onCheck(items[activeIndex], activeIndex)
         }
     },
+    Delete: function(e) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        const {items, onDelete} = this.props
+        const {activeIndex} = this.state
+
+        if (activeIndex !== null) {
+            onDelete && onDelete(items[activeIndex], activeIndex)
+        }
+    },
     Home: function(e) {
         e.preventDefault()
         e.stopPropagation()
