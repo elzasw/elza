@@ -14,6 +14,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.domain.UsrPermission;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -158,9 +161,10 @@ public class DescriptionItemService {
      * @param fundVersionId identifikátor verze archivní pomůcky
      * @return smazaná hodnota atributu
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrDescItem deleteDescriptionItem(final Integer descItemObjectId,
                                              final Integer nodeVersion,
-                                             final Integer fundVersionId) {
+                                             @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         Assert.notNull(descItemObjectId);
         Assert.notNull(nodeVersion);
         Assert.notNull(fundVersionId);
@@ -202,7 +206,8 @@ public class DescriptionItemService {
      * @param descItemTypeId        identifikátor typu hodnoty atributu
      * @return  upravený uzel
      */
-    public ArrNode deleteDescriptionItemsByType(final Integer fundVersionId,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrNode deleteDescriptionItemsByType(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                                 final Integer nodeId,
                                                 final Integer nodeVersion,
                                                 final Integer descItemTypeId) {
@@ -249,10 +254,11 @@ public class DescriptionItemService {
      * @param fundVersionId   identifikátor verze archivní pomůcky
      * @return vytvořená hodnota atributu
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrDescItem createDescriptionItem(final ArrDescItem descItem,
                                              final Integer nodeId,
                                              final Integer nodeVersion,
-                                             final Integer fundVersionId) {
+                                             @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         Assert.notNull(descItem);
         Assert.notNull(nodeId);
         Assert.notNull(nodeVersion);
@@ -281,10 +287,11 @@ public class DescriptionItemService {
      * @param fundVersionId   identifikátor verze archivní pomůcky
      * @return vytvořená hodnota atributu
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrDescItem> createDescriptionItems(final List<ArrDescItem> descItems,
-                                             final Integer nodeId,
-                                             final Integer nodeVersion,
-                                             final Integer fundVersionId) {
+                                                    final Integer nodeId,
+                                                    final Integer nodeVersion,
+                                                    @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         Assert.notNull(descItems);
         Assert.notEmpty(descItems);
         Assert.notNull(nodeId);
@@ -626,9 +633,10 @@ public class DescriptionItemService {
      * @param createNewVersion      vytvořit novou verzi?
      * @return  upravená výsledná hodnota atributu
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrDescItem updateDescriptionItem(final ArrDescItem descItem,
                                              final Integer nodeVersion,
-                                             final Integer fundVersionId,
+                                             final @AuthParam(type = AuthParam.Type.FUND_VERSION) Integer fundVersionId,
                                              final Boolean createNewVersion) {
         Assert.notNull(descItem);
         Assert.notNull(descItem.getPosition());
@@ -1063,7 +1071,8 @@ public class DescriptionItemService {
      * @param findText hledaný text v atributu
      * @param replaceText text, který nahradí hledaný text v celém textu
      */
-    public void replaceDescItemValues(final ArrFundVersion version,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void replaceDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                       final RulDescItemType descItemType,
                                       final Set<ArrNode> nodes,
                                       final Set<RulDescItemSpec> specifications, final String findText,
@@ -1146,7 +1155,8 @@ public class DescriptionItemService {
      * @param text                 text, který nahradí text v celém textu
      * @param specifications       seznam specifikací, ve kterých se má hledat hodnota
      */
-    public void placeDescItemValues(final ArrFundVersion version,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void placeDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                     final RulDescItemType descItemType,
                                     final Set<ArrNode> nodes,
                                     final RulDescItemSpec newItemSpecification,
@@ -1269,7 +1279,8 @@ public class DescriptionItemService {
      * @param nodes          seznam uzlů, jejichž hodnoty mažeme
      * @param specifications seznam specifikací pro typ se specifikací, kterým budou smazány hodnoty
      */
-    public void deleteDescItemValues(final ArrFundVersion version,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void deleteDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                      final RulDescItemType descItemType,
                                      final Set<ArrNode> nodes,
                                      final Set<RulDescItemSpec> specifications) {

@@ -7,9 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrNode;
 
-import java.util.List;
 import java.util.Set;
-
 
 /**
  * Respozitory pro nody.

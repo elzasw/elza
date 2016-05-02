@@ -1,6 +1,7 @@
 package cz.tacr.elza.api;
 
 import com.vividsolutions.jts.geom.Geometry;
+import cz.tacr.elza.api.interfaces.IRegScope;
 
 /**
  * Souřadnice
@@ -8,7 +9,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Petr Compel
  * @since 20.4.2016
  */
-public interface RegCoordinates<RR extends RegRecord> {
+public interface RegCoordinates<RR extends RegRecord> extends IRegScope {
 
     /**
      *  @return souřadnice

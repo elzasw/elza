@@ -15,6 +15,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import cz.tacr.elza.api.RegScope;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -221,5 +222,10 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     @Override
     public String toString() {
         return "ParParty pk=" + partyId;
+    }
+
+    @Override
+    public RegScope getRegScope() {
+        return record.getScope();
     }
 }

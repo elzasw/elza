@@ -731,7 +731,8 @@ public class ArrangementService {
      * @param level        uzel, na který nastavíme hodnoty ze staršího bratra
      * @return vytvořené hodnoty
      */
-    public List<ArrDescItem> copyOlderSiblingAttribute(final ArrFundVersion version,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
+    public List<ArrDescItem> copyOlderSiblingAttribute(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                                        final RulDescItemType descItemType,
                                                        final ArrLevel level) {
         Assert.notNull(version);

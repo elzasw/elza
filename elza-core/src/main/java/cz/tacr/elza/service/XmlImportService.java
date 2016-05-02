@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.xml.bind.JAXBException;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.domain.UsrPermission;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -263,6 +265,7 @@ public class XmlImportService {
      * @throws XmlImportException chyba při importu
      */
     @Transactional
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
     public void importData(final XmlImportConfig config) throws XmlImportException {
         // transformace dat
         XmlImport xmlImport = readData(config);

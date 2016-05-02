@@ -7,9 +7,22 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegCoordinates;
+import cz.tacr.elza.domain.RegExternalSource;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.repository.*;
-import cz.tacr.elza.xmlimport.v1.vo.record.VariantRecord;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -186,7 +199,9 @@ public class RegistryService {
      * @param partySave true - jedná se o ukládání přes ukládání osoby, false -> editace z klienta
      * @return výslendný objekt
      */
-    public RegRecord saveRecord(final RegRecord record, final boolean partySave) {
+    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
+    public RegRecord saveRecord(@AuthParam(type = AuthParam.Type.SCOPE) final RegRecord record,
+                                final boolean partySave) {
         Assert.notNull(record);
 
         checkRecordSave(record, partySave);
@@ -264,7 +279,9 @@ public class RegistryService {
      * Smaže rej. heslo a jeho variantní hesla. Předpokládá, že již proběhlo ověření, že je možné ho smazat (vazby atd...).
      * @param record heslo
      */
-    public void deleteRecord(final RegRecord record, final boolean checkUsage) {
+    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
+    public void deleteRecord(@AuthParam(type = AuthParam.Type.SCOPE) final RegRecord record,
+                             final boolean checkUsage) {
         if(checkUsage){
             checkRecordUsage(record);
         }
@@ -388,7 +405,8 @@ public class RegistryService {
      * @param variantRecord variantní záznam, bez vazeb
      * @return výslendný objekt uložený do db
      */
-    public RegVariantRecord saveVariantRecord(final RegVariantRecord variantRecord) {
+    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
+    public RegVariantRecord saveVariantRecord(@AuthParam(type = AuthParam.Type.SCOPE) final RegVariantRecord variantRecord) {
         Assert.notNull(variantRecord);
 
         RegRecord regRecord = variantRecord.getRegRecord();
@@ -433,6 +451,7 @@ public class RegistryService {
      * @param scope třída k uložení
      * @return uložená třída
      */
+    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL})
     public RegScope saveScope(final RegScope scope) {
         Assert.notNull(scope);
         checkScopeSave(scope);
@@ -451,6 +470,7 @@ public class RegistryService {
      *
      * @param scope třída rejstříku
      */
+    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL})
     public void deleteScope(final RegScope scope) {
         Assert.notNull(scope);
         Assert.notNull(scope.getScopeId());
@@ -558,7 +578,8 @@ public class RegistryService {
      * @param nodeRegister  vazba
      * @return  vazba
      */
-    public ArrNodeRegister createRegisterLink(final Integer versionId,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrNodeRegister createRegisterLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
                                               final Integer nodeId,
                                               final ArrNodeRegister nodeRegister) {
         Assert.notNull(nodeRegister);
@@ -587,7 +608,8 @@ public class RegistryService {
      * @param nodeRegister  vazba
      * @return  vazba
      */
-    public ArrNodeRegister updateRegisterLink(final Integer versionId,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrNodeRegister updateRegisterLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
                                               final Integer nodeId,
                                               final ArrNodeRegister nodeRegister) {
         Assert.notNull(nodeRegister);
@@ -625,7 +647,8 @@ public class RegistryService {
      * @param nodeRegister  vazba
      * @return  vazba
      */
-    public ArrNodeRegister deleteRegisterLink(final Integer versionId,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrNodeRegister deleteRegisterLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
                                               final Integer nodeId,
                                               final ArrNodeRegister nodeRegister) {
         Assert.notNull(nodeRegister);
@@ -701,7 +724,8 @@ public class RegistryService {
      * @param coordinates souřadnice
      * @return výslendný objekt uložený do db
      */
-    public RegCoordinates saveRegCoordinates(final RegCoordinates coordinates) {
+    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
+    public RegCoordinates saveRegCoordinates(@AuthParam(type = AuthParam.Type.SCOPE) final RegCoordinates coordinates) {
         Assert.notNull(coordinates);
 
         RegRecord regRecord = coordinates.getRegRecord();
@@ -725,6 +749,7 @@ public class RegistryService {
      * @param coordinatesList souřadnice
      * @return výslendný objekt uložený do db
      */
+    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL})
     public List<RegCoordinates> saveRegCoordinates(final List<RegCoordinates> coordinatesList) {
         Assert.notEmpty(coordinatesList);
         List<Integer> notifiedIds = new ArrayList<>();

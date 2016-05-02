@@ -1,5 +1,7 @@
 package cz.tacr.elza.api;
 
+import cz.tacr.elza.api.interfaces.IRegScope;
+
 import java.io.Serializable;
 
 /**
@@ -7,7 +9,7 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParParty<RR extends RegRecord, PPT extends ParPartyType, PPN extends ParPartyName> extends Versionable, Serializable {
+public interface ParParty<RR extends RegRecord, PPT extends ParPartyType, PPN extends ParPartyName> extends Versionable, Serializable, IRegScope {
 
     /**
      * Primární ID.

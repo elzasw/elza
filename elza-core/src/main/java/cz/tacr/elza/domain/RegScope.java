@@ -103,7 +103,7 @@ public class RegScope implements cz.tacr.elza.api.RegScope {
     }
 
     @Override
-    public RegScope getScope() {
+    public RegScope getRegScope() {
         return this;
     }
 }

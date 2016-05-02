@@ -81,6 +81,10 @@ public class Authorization {
             }
         }
 
+        if (hasPermission) {
+            return pjp.proceed();
+        }
+
         throw new AccessDeniedException();
     }
 
@@ -107,7 +111,7 @@ public class Authorization {
                 if (value instanceof Integer) {
                     return (Integer) value;
                 } else if (value instanceof IRegScope) {
-                    return ((IRegScope) value).getScope().getScopeId();
+                    return ((IRegScope) value).getRegScope().getScopeId();
                 }
                 break;
             }

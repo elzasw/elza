@@ -18,6 +18,9 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.domain.UsrPermission;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -246,7 +249,9 @@ public class XmlExportService {
      *
      * @return exprotovaná data
      */
-    private XmlImport exportFund(final Integer versionId, final Set<Integer> nodeIds) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_EXPORT_ALL, UsrPermission.Permission.FUND_EXPORT})
+    private XmlImport exportFund(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
+                                 final Set<Integer> nodeIds) {
         ArrFundVersion version = fundVersionRepository.findOne(versionId);
         ArrFund arrFund = version.getFund();
         // zatím se má exportovat jen otevřená verze

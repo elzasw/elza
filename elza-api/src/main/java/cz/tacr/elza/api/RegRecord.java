@@ -1,5 +1,7 @@
 package cz.tacr.elza.api;
 
+import cz.tacr.elza.api.interfaces.IRegScope;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -10,7 +12,7 @@ import java.util.List;
  */
 public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSource, VR extends RegVariantRecord,
         RR extends RegRecord, RS extends RegScope>
-    extends Versionable, Serializable {
+    extends Versionable, Serializable, IRegScope {
 
     /**
      * ID hesla.

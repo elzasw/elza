@@ -11,6 +11,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import cz.tacr.elza.api.RegScope;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -114,5 +115,10 @@ public class RegVariantRecord extends AbstractVersionableEntity implements  cz.t
     @Override
     public String toString() {
         return "RegVariantRecord pk=" + variantRecordId;
+    }
+
+    @Override
+    public RegScope getRegScope() {
+        return regRecord.getScope();
     }
 }

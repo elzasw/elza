@@ -216,4 +216,9 @@ public class RegRecord extends AbstractVersionableEntity
     public String toString() {
         return "RegRecord pk=" + recordId;
     }
+
+    @Override
+    public RegScope getRegScope() {
+        return scope;
+    }
 }

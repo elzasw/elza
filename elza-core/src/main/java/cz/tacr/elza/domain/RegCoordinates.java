@@ -2,6 +2,7 @@ package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vividsolutions.jts.geom.Geometry;
+import cz.tacr.elza.api.RegScope;
 import org.hibernate.annotations.Type;
 import org.springframework.data.rest.core.annotation.RestResource;
 
@@ -72,5 +73,10 @@ public class RegCoordinates implements cz.tacr.elza.api.RegCoordinates<RegRecord
     @Override
     public void setRegRecord(final RegRecord regRecord) {
         this.regRecord = regRecord;
+    }
+
+    @Override
+    public RegScope getRegScope() {
+        return regRecord.getScope();
     }
 }
