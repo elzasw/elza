@@ -1,6 +1,7 @@
 package cz.tacr.elza;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.springframework.util.Assert;
 
@@ -42,4 +43,16 @@ public class FilterTools {
         return new ArrayList<>(items.subList(fromIndex, toIndex));
     }
 
+    /**
+     * Odebere ze vstupní seznamu null hodnoty.
+     *
+     * @param values zdrojový seznam
+     *
+     * @return příznak zda byl ve vstupních datech null
+     */
+    public static <T> boolean removeNullValues(final Collection<T> values) {
+        Assert.notNull(values);
+
+        return values.removeIf(i -> i == null);
+    }
 }

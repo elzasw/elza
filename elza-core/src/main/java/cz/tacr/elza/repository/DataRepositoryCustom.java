@@ -48,6 +48,7 @@ public interface DataRepositoryCustom {
      * @param descItemType  typ atributu
      * @param dataTypeClass třída hodnot atributu
      * @param packetTypes   filtr typů obalů
+     * @param withoutType   příznak zda se mají hledat hodnoty bez typu
      * @param fulltext      fulltext
      * @param max           maximální počet hodnot
      * @return seznam unikátních hodnot
@@ -56,7 +57,7 @@ public interface DataRepositoryCustom {
                                                  RulDescItemType descItemType,
                                                  Class<? extends ArrData> dataTypeClass,
                                                  Set<RulPacketType> packetTypes,
-                                                 @Nullable String fulltext,
+                                                 boolean withoutType, @Nullable String fulltext,
                                                  int max);
 
 
@@ -67,6 +68,7 @@ public interface DataRepositoryCustom {
      * @param descItemType  typ atributu
      * @param dataTypeClass třída hodnot atributu
      * @param specs         pokud je typ se specifikací, obsahuje filtr specifikací
+     * @param withoutSpec   příznak zda se mají hledat hodnoty bez specifikace
      * @param fulltext      fulltext
      * @param max           maximální počet hodnot
      * @return seznam unikátních hodnot
@@ -75,6 +77,6 @@ public interface DataRepositoryCustom {
                                                RulDescItemType descItemType,
                                                Class<? extends ArrData> dataTypeClass,
                                                @Nullable Set<RulDescItemSpec> specs,
-                                               @Nullable String fulltext,
+                                               boolean withoutSpec, @Nullable String fulltext,
                                                int max);
 }

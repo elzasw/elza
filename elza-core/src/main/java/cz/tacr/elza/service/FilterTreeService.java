@@ -215,18 +215,21 @@ public class FilterTreeService {
         Class<? extends ArrData> dataTypeClass = descriptionItemService.getDescItemDataTypeClass(descItemType);
         if (dataTypeClass.equals(ArrDataPacketRef.class)) {
             Assert.notEmpty(specIds);
+            boolean withoutType = FilterTools.removeNullValues(specIds);
             Set<RulPacketType> packetTypes = new HashSet<>(packetTypeRepository.findAll(specIds));
-            return dataRepository
-                    .findUniquePacketValuesInVersion(version, descItemType, dataTypeClass, packetTypes, fulltext, max);
+            return dataRepository.findUniquePacketValuesInVersion(version, descItemType, dataTypeClass, packetTypes,
+                    withoutType, fulltext, max);
         } else {
             Set<RulDescItemSpec> specs = null;
+            boolean withoutSpec = false;
             if (descItemType.getUseSpecification()) {
                 Assert.notEmpty(specIds);
+                withoutSpec = FilterTools.removeNullValues(specIds);
                 specs = new HashSet<>(descItemSpecRepository.findAll(specIds));
             }
 
-            return dataRepository
-                    .findUniqueSpecValuesInVersion(version, descItemType, dataTypeClass, specs, fulltext, max);
+            return dataRepository.findUniqueSpecValuesInVersion(version, descItemType, dataTypeClass, specs, withoutSpec,
+                    fulltext, max);
         }
     }
 

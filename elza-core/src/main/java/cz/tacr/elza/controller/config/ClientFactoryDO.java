@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
@@ -718,7 +719,7 @@ public class ClientFactoryDO {
     private void createValuesEnumCondition(final ValuesTypes valuesTypes, final List<String> values,
             final String attName, final List<DescItemCondition> conditions) {
         if (valuesTypes != null && CollectionUtils.isNotEmpty(values)) {
-            boolean containsNull = removeNullValues(values);
+            boolean containsNull = FilterTools.removeNullValues(values);
 
             if (valuesTypes == ValuesTypes.SELECTED) {
                 if (containsNull && !values.isEmpty()) { // vybrané hodnoty i "Prázdné"
@@ -753,7 +754,7 @@ public class ClientFactoryDO {
     private void createSpecificationsEnumCondition(final ValuesTypes valuesTypes, final List<Integer> values,
             final String attName, final List<DescItemCondition> conditions) {
         if (valuesTypes != null && CollectionUtils.isNotEmpty(values)) {
-            boolean containsNull = removeNullValues(values);
+            boolean containsNull = FilterTools.removeNullValues(values);
 
             if (valuesTypes == ValuesTypes.SELECTED) {
                 if (containsNull && !values.isEmpty()) { // vybrané hodnoty i "Prázdné"
@@ -775,18 +776,5 @@ public class ClientFactoryDO {
                 }
             }
         }
-    }
-
-    /**
-     * Odebere ze vstupní seznamu null hodnoty.
-     *
-     * @param values zdrojový seznam
-     *
-     * @return příznak zda byl ve vstupních datech null
-     */
-    private <T> boolean removeNullValues(final List<T> values) {
-        Assert.notNull(values);
-
-        return values.removeIf(i -> i == null);
     }
 }

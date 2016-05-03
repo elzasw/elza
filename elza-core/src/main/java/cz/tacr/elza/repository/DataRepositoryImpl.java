@@ -191,6 +191,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                                                          final RulDescItemType descItemType,
                                                          final Class<? extends ArrData> dataTypeClass,
                                                          @Nullable final Set<RulPacketType> packetTypes,
+                                                         final boolean withoutType,
                                                          @Nullable final String fulltext,
                                                          final int max){
 
@@ -201,7 +202,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             @Override
             public void init(final Root root, final Join descItemJoin) {
                 packetTypeJoin = root.join(ArrDataPacketRef.PACKET, JoinType.INNER)
-                        .join(ArrPacket.PACKET_TYPE, JoinType.INNER);
+                        .join(ArrPacket.PACKET_TYPE, JoinType.LEFT);
             }
 
             @Override
@@ -213,12 +214,16 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             }
 
             @Override
-            public Predicate getPredicate() {
+            public Predicate getPredicate(final CriteriaBuilder builder) {
                 if (CollectionUtils.isEmpty(packetTypes)) {
                     throw new IllegalStateException("Musí být zadána alespoň jeden typ obalu.");
-                } else {
+                }
+
+                if (!withoutType) {
                     return packetTypeJoin.in(packetTypes);
                 }
+
+                return builder.or(packetTypeJoin.in(packetTypes), packetTypeJoin.isNull());
             }
 
             @Override
@@ -227,7 +232,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             }
         };
 
-        return findUniqueValuesInVersion(version, descItemType, dataTypeClass, specHelper, fulltext, max);
+        return findUniqueValuesInVersion(version, descItemType, dataTypeClass, specHelper, fulltext, max, withoutType);
 
     }
 
@@ -236,6 +241,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                                                        final RulDescItemType descItemType,
                                                        final Class<? extends ArrData> dataTypeClass,
                                                        @Nullable final Set<RulDescItemSpec> specs,
+                                                       final boolean withoutSpec,
                                                        @Nullable final String fulltext,
                                                        final int max){
 
@@ -245,7 +251,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
             @Override
             public void init(final Root root, final Join descItemJoin) {
-                specJoin = descItemJoin.join(ArrDescItem.DESC_ITEM_SPEC, JoinType.INNER);
+                specJoin = descItemJoin.join(ArrDescItem.DESC_ITEM_SPEC, JoinType.LEFT);
             }
 
             @Override
@@ -254,12 +260,16 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             }
 
             @Override
-            public Predicate getPredicate() {
+            public Predicate getPredicate(final CriteriaBuilder builder) {
                 if (CollectionUtils.isEmpty(specs)) {
                     throw new IllegalStateException("Musí být zadána alespoň jedna specifikace.");
-                } else {
+                }
+
+                if (!withoutSpec) {
                     return specJoin.in(specs);
                 }
+
+                return builder.or(specJoin.in(specs), specJoin.isNull());
             }
 
             @Override
@@ -268,7 +278,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             }
         };
 
-        return findUniqueValuesInVersion(version, descItemType, dataTypeClass, specHelper, fulltext, max);
+        return findUniqueValuesInVersion(version, descItemType, dataTypeClass, specHelper, fulltext, max, withoutSpec);
     }
 
     /**
@@ -280,6 +290,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
      * @param specificationDataTypeHelper obsluha načtení specifikací / obalů
      * @param fulltext                    fulltext
      * @param max                         maximální počet hodnot
+     * @param withoutSpec
      * @return seznam unikátních hodnot
      */
     private List<String> findUniqueValuesInVersion(final ArrFundVersion version,
@@ -287,7 +298,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                                                    final Class<? extends ArrData> dataTypeClass,
                                                    final SpecificationDataTypeHelper specificationDataTypeHelper,
                                                    @Nullable final String fulltext,
-                                                   final int max) {
+                                                   final int max, final boolean withoutSpec) {
 
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
@@ -323,7 +334,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         if (specificationDataTypeHelper.useSpec()) {
             specificationDataTypeHelper.init(data, descItem);
 
-            andPredicates.add(specificationDataTypeHelper.getPredicate());
+            andPredicates.add(specificationDataTypeHelper.getPredicate(builder));
         }
 
 
@@ -356,8 +367,18 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         //převedení na text
         List<String> result = new ArrayList<>(resultList.size());
         for (Tuple tuple : resultList) {
-            Object value = tuple.get(0);
-            result.add(value == null ? "" : value.toString());
+            Object fullValue = tuple.get(0);
+            Object onlyValue = tuple.get(1);
+            if (withoutSpec) {
+                if (fullValue == null) {
+                    result.add(onlyValue == null ? "" : onlyValue.toString());
+                } else {
+                    result.add(fullValue.toString());
+                }
+            } else {
+                result.add(fullValue == null ? "" : fullValue.toString());
+            }
+
         }
 
         return result;
@@ -399,22 +420,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         if (dataClassType.equals(ArrDataString.class) ||
                 dataClassType.equals(ArrDataText.class) ||
                 dataClassType.equals(ArrDataCoordinates.class) ||
-                dataClassType.equals(ArrDataUnitid.class)) {
-            return new AbstractDescItemDataTypeHelper() {
-
-                @Override
-                protected void init() {
-                    targetJoin = dataRoot;
-                }
-
-                @Override
-                public Path getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
-                    return targetJoin.get("value");
-                }
-            };
-        } else if (dataClassType.equals(ArrDataDecimal.class) ||
+                dataClassType.equals(ArrDataUnitid.class) ||
+                dataClassType.equals(ArrDataDecimal.class) ||
                 dataClassType.equals(ArrDataInteger.class)) {
             return new AbstractDescItemDataTypeHelper() {
+
                 @Override
                 protected void init() {
                     targetJoin = dataRoot;
@@ -492,7 +502,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
     private interface SpecificationDataTypeHelper{
         boolean useSpec();
          void init(Root root, Join descItemJoin);
-        Predicate getPredicate();
+        Predicate getPredicate(CriteriaBuilder builder);
 
         Path getSpecSelection();
 
