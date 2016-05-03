@@ -12,11 +12,11 @@ import org.springframework.util.Assert;
  * @since 18. 4. 2016
  */
 public enum Condition {
-    NONE("UNITDATE", "INT", "DECIMAL", "TEXT", "STRING", "FORMATTED_TEXT", "UNITID", "PARTY_REF", "RECORD_REF"),
+    NONE("UNITDATE", "INT", "DECIMAL", "TEXT", "STRING", "FORMATTED_TEXT", "UNITID", "PARTY_REF", "RECORD_REF", "COORDINATES"),
 
-    EMPTY("UNITDATE", "INT", "DECIMAL", "TEXT", "STRING", "FORMATTED_TEXT", "UNITID", "PARTY_REF", "RECORD_REF"),
+    EMPTY("UNITDATE", "INT", "DECIMAL", "TEXT", "STRING", "FORMATTED_TEXT", "UNITID", "PARTY_REF", "RECORD_REF", "COORDINATES"),
 
-    NOT_EMPTY("UNITDATE", "INT", "DECIMAL", "TEXT", "STRING", "FORMATTED_TEXT", "UNITID", "PARTY_REF", "RECORD_REF"),
+    NOT_EMPTY("UNITDATE", "INT", "DECIMAL", "TEXT", "STRING", "FORMATTED_TEXT", "UNITID", "PARTY_REF", "RECORD_REF", "COORDINATES"),
 
     GT("UNITDATE", "INT", "DECIMAL"),
 
@@ -48,7 +48,7 @@ public enum Condition {
 
     private List<String> supportedDescItemTypes;
 
-    private Condition(String... supportedTypes) {
+    private Condition(final String... supportedTypes) {
         Assert.notEmpty(supportedTypes);
 
         supportedDescItemTypes = Arrays.asList(supportedTypes);
@@ -61,7 +61,7 @@ public enum Condition {
      *
      * @throws IllegalStateException atribut není podporován
      */
-    public void checkSupport(String typeCode) {
+    public void checkSupport(final String typeCode) {
         Assert.notNull(typeCode);
 
         if (!supportedDescItemTypes.contains(typeCode)) {

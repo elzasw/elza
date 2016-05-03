@@ -69,6 +69,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.FilterExpiredException;
+import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
@@ -610,8 +611,8 @@ public class ArrangementController {
      * @return formulář
      */
     @RequestMapping(value = "/nodes/{nodeId}/{versionId}/form", method = RequestMethod.GET)
-    public NodeFormDataNewVO getNodeFormData(@PathVariable(value = "nodeId") Integer nodeId,
-                                             @PathVariable(value = "versionId") Integer versionId) {
+    public NodeFormDataNewVO getNodeFormData(@PathVariable(value = "nodeId") final Integer nodeId,
+                                             @PathVariable(value = "versionId") final Integer versionId) {
         Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
         Assert.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
 
@@ -646,8 +647,8 @@ public class ArrangementController {
      * @return formuláře
      */
     @RequestMapping(value = "/nodes/{versionId}/forms", method = RequestMethod.GET)
-    public NodeFormsDataVO getNodeFormsData(@RequestParam(value = "nodeIds") Integer[] nodeIds,
-                                            @PathVariable(value = "versionId") Integer versionId) {
+    public NodeFormsDataVO getNodeFormsData(@RequestParam(value = "nodeIds") final Integer[] nodeIds,
+                                            @PathVariable(value = "versionId") final Integer versionId) {
         Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
         Assert.notNull(nodeIds, "Identifikátory uzlů musí být vyplněny");
 
@@ -748,7 +749,7 @@ public class ArrangementController {
     @Transactional
     @RequestMapping(value = "/updateFund", method = RequestMethod.POST)
     public ArrFundVO updateFund(@RequestParam("ruleSetId") final Integer ruleSetId,
-            @RequestBody ArrFundVO arrFundVO) {
+            @RequestBody final ArrFundVO arrFundVO) {
         Assert.notNull(arrFundVO);
 
         return factoryVo.createFundVO(
@@ -770,7 +771,7 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/moveLevelBefore", method = RequestMethod.PUT)
-    public void moveLevelBefore(@RequestBody LevelMoveParam moveParam) {
+    public void moveLevelBefore(@RequestBody final LevelMoveParam moveParam) {
         Assert.notNull(moveParam);
 
 
@@ -792,7 +793,7 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/moveLevelAfter", method = RequestMethod.PUT)
-    public void moveLevelAfter(@RequestBody LevelMoveParam moveParam) {
+    public void moveLevelAfter(@RequestBody final LevelMoveParam moveParam) {
         Assert.notNull(moveParam);
 
 
@@ -815,7 +816,7 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/moveLevelUnder", method = RequestMethod.PUT)
-    public void moveLevelUnder(@RequestBody LevelMoveParam moveParam) {
+    public void moveLevelUnder(@RequestBody final LevelMoveParam moveParam) {
         Assert.notNull(moveParam);
 
         ArrFundVersion version = fundVersionRepository.findOne(moveParam.getVersionId());
@@ -1371,7 +1372,7 @@ public class ArrangementController {
             return nodeId;
         }
 
-        public void setNodeId(int nodeId) {
+        public void setNodeId(final int nodeId) {
             this.nodeId = nodeId;
         }
 
@@ -1379,7 +1380,7 @@ public class ArrangementController {
             return description;
         }
 
-        public void setDescription(String description) {
+        public void setDescription(final String description) {
             this.description = description;
         }
 
@@ -1387,7 +1388,7 @@ public class ArrangementController {
             return parent;
         }
 
-        public void setParent(TreeNodeClient parent) {
+        public void setParent(final TreeNodeClient parent) {
             this.parent = parent;
         }
     }
@@ -1963,25 +1964,25 @@ public class ArrangementController {
         public Integer getVersionId() {
             return versionId;
         }
-        public void setVersionId(Integer versionId) {
+        public void setVersionId(final Integer versionId) {
             this.versionId = versionId;
         }
         public Integer getNodeId() {
             return nodeId;
         }
-        public void setNodeId(Integer nodeId) {
+        public void setNodeId(final Integer nodeId) {
             this.nodeId = nodeId;
         }
         public String getSearchValue() {
             return searchValue;
         }
-        public void setSearchValue(String searchValue) {
+        public void setSearchValue(final String searchValue) {
             this.searchValue = searchValue;
         }
         public Depth getDepth() {
             return depth;
         }
-        public void setDepth(Depth depth) {
+        public void setDepth(final Depth depth) {
             this.depth = depth;
         }
 
@@ -2011,7 +2012,7 @@ public class ArrangementController {
             return nodeId;
         }
 
-        public void setNodeId(Integer nodeId) {
+        public void setNodeId(final Integer nodeId) {
             this.nodeId = nodeId;
         }
 
@@ -2019,7 +2020,7 @@ public class ArrangementController {
             return parent;
         }
 
-        public void setParent(TreeNodeClient parent) {
+        public void setParent(final TreeNodeClient parent) {
             this.parent = parent;
         }
     }
@@ -2094,7 +2095,7 @@ public class ArrangementController {
             return versionId;
         }
 
-        public void setVersionId(Integer versionId) {
+        public void setVersionId(final Integer versionId) {
             this.versionId = versionId;
         }
 
@@ -2102,7 +2103,7 @@ public class ArrangementController {
             return node;
         }
 
-        public void setNode(ArrNodeVO node) {
+        public void setNode(final ArrNodeVO node) {
             this.node = node;
         }
 
@@ -2110,7 +2111,7 @@ public class ArrangementController {
             return direction;
         }
 
-        public void setDirection(DirectionLevel direction) {
+        public void setDirection(final DirectionLevel direction) {
             this.direction = direction;
         }
     }

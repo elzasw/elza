@@ -3,7 +3,6 @@ package cz.tacr.elza.repository;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,14 +32,13 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.filter.condition.DescItemCondition;
+import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
 import cz.tacr.elza.utils.NodeUtils;
 
 
@@ -82,7 +80,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     @SuppressWarnings("unchecked")
     @Override
-    public Set<Integer> findByFulltextAndVersionLockChangeId(String text, Integer fundId, Integer lockChangeId) {
+    public Set<Integer> findByFulltextAndVersionLockChangeId(final String text, final Integer fundId, final Integer lockChangeId) {
         Assert.notNull(fundId);
 
         List<String> descItemIds = findDescItemIdsByData(text, fundId);
@@ -99,7 +97,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Set<Integer> findByLuceneQueryAndVersionLockChangeId(String queryText, Integer fundId, Integer lockChangeId)
+    public Set<Integer> findByLuceneQueryAndVersionLockChangeId(final String queryText, final Integer fundId, final Integer lockChangeId)
             throws InvalidQueryException {
         Assert.notNull(fundId);
 
@@ -137,14 +135,13 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @return id atributů které mají danou hodnotu
      */
     @SuppressWarnings("unchecked")
-    private List<String> findDescItemIdsByData(String text, Integer fundId) {
+    private List<String> findDescItemIdsByData(final String text, final Integer fundId) {
         if (StringUtils.isBlank(text)) {
             return Collections.EMPTY_LIST;
         }
 
         Class<ArrData> entityClass = ArrData.class;
         QueryBuilder queryBuilder = createQueryBuilder(entityClass);
-        QueryBuilder recordQueryBuilder = createQueryBuilder(ArrDataRecordRef.class);
 
         Query textQuery = createTextQuery(text, queryBuilder);
         Query fundIdQuery = queryBuilder.keyword().onField("fundId").matching(fundId).createQuery();
@@ -205,14 +202,14 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      *
      * @param dotaz
      */
-    private Query createTextQuery(String text, QueryBuilder queryBuilder) {
+    private Query createTextQuery(final String text, final QueryBuilder queryBuilder) {
         // rozdělení zadaného výrazu podle mezer a hledání výsledků pomocí OR tak že každý obsahuje alespoň jednu část zadaného výrazu
         String[] tokens = StringUtils.split(text.toLowerCase(), ' ');
 
         BooleanJunction<BooleanJunction> textConditions = queryBuilder.bool();
         for (String token : tokens) {
             String searchValue = "*" + token + "*";
-            Query createQuery = queryBuilder.keyword().wildcard().onField(DescItemCondition.FULLTEXT_ATT).matching(searchValue).createQuery();
+            Query createQuery = queryBuilder.keyword().wildcard().onField(LuceneDescItemCondition.FULLTEXT_ATT).matching(searchValue).createQuery();
             textConditions.should(createQuery);
         }
 
@@ -227,9 +224,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      *
      * @return hibernate jpa query
      */
-    private FullTextQuery createFullTextQuery(Query query, Class<?> entityClass) {
-        FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, entityClass);
-        return jpaQuery;
+    private FullTextQuery createFullTextQuery(final Query query, final Class<?> entityClass) {
+        return fullTextEntityManager.createFullTextQuery(query, entityClass);
     }
 
     /**
@@ -239,7 +235,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      *
      * @return query builder
      */
-    private QueryBuilder createQueryBuilder(Class<?> entityClass) {
+    private QueryBuilder createQueryBuilder(final Class<?> entityClass) {
         return fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(entityClass).get();
     }
 
@@ -252,7 +248,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @return id nodů které mají před danou změnou nějaký atribut
      */
     @SuppressWarnings("unchecked")
-    private List<Integer> findNodeIdsByValidDescItems(Integer lockChangeId, String descItemIdsString) {
+    private List<Integer> findNodeIdsByValidDescItems(final Integer lockChangeId, final String descItemIdsString) {
         Class<ArrDescItem> entityClass = ArrDescItem.class;
 
         Filter changeFilter = createChangeFilter(lockChangeId);
@@ -276,7 +272,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      *
      * @return filtr
      */
-    private Filter createChangeFilter(Integer lockChangeId) {
+    private Filter createChangeFilter(final Integer lockChangeId) {
         if (lockChangeId == null) { // deleteChange is null
             return NumericRangeFilter.newIntRange("deleteChangeId", Integer.MAX_VALUE, Integer.MAX_VALUE, true, true);
         }
@@ -304,43 +300,44 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     }
 
     @Override
-    public Set<Integer> findNodeIdsByFilters(ArrFundVersion version, List<DescItemTypeFilter> filters) {
+    public Set<Integer> findNodeIdsByFilters(final ArrFundVersion version, final List<DescItemTypeFilter> filters) {
         Assert.notNull(version);
+        Assert.notEmpty(filters);
 
-        List<String> descItemIds = findDescItemIdsByFilters(filters);
-        if (descItemIds.isEmpty()) {
+        Integer fundId = version.getFund().getFundId();
+        Integer lockChangeId = version.getLockChange() == null ? null : version.getLockChange().getChangeId();
+
+        Map<Integer, List<String>> nodeIdToDescItemIds = findDescItemIdsByFilters(filters, fundId, lockChangeId);
+        if (nodeIdToDescItemIds == null || nodeIdToDescItemIds.isEmpty()) {
             return Collections.EMPTY_SET;
         }
 
-        Integer lockChangeId = version.getLockChange() == null ? null : version.getLockChange().getChangeId();
-        String descItemIdsString = StringUtils.join(descItemIds, " ");
-        List<Integer> nodeIds = findNodeIdsByValidDescItems(lockChangeId, descItemIdsString);
+        Set<Integer> nodeIds = new HashSet<>();
+        Set<String> descItemIds = new HashSet<>();
+        nodeIdToDescItemIds.forEach((nodeId, diIds) -> {
+            if (CollectionUtils.isEmpty(diIds)) {
+                nodeIds.add(nodeId);
+            } else {
+                descItemIds.addAll(diIds);
+            }
+        });
 
-        return new HashSet<>(nodeIds);
+        if (!descItemIds.isEmpty()) {
+            String descItemIdsString = StringUtils.join(descItemIds, " ");
+            nodeIds.addAll(findNodeIdsByValidDescItems(lockChangeId, descItemIdsString));
+        }
+        return nodeIds;
     }
 
-    private List<String> findDescItemIdsByFilters(List<DescItemTypeFilter> filters) {
+    private Map<Integer, List<String>> findDescItemIdsByFilters(final List<DescItemTypeFilter> filters, final Integer fundId, final Integer lockChangeId) {
         if (CollectionUtils.isEmpty(filters)) {
-            return Collections.EMPTY_LIST;
+            return null;
         }
 
         Map<Integer, List<String>> allDescItemIds = null;
         for (DescItemTypeFilter filter : filters) {
             QueryBuilder queryBuilder = createQueryBuilder(filter.getCls());
-            Query query = filter.createLuceneQuery(queryBuilder);
-            List<Object> rows = createFullTextQuery(query, ArrData.class).setProjection("nodeId", "descItemId").getResultList();
-            Map<Integer, List<String>> nodeIdToDescItemIds = new HashMap<>(rows.size());
-            for (Object row: rows) {
-                Object[] rowArray = (Object[]) row;
-                Integer nodeId = (Integer) rowArray[0];
-                String descItemId = (String) rowArray[1];
-                List<String> descItemIds = nodeIdToDescItemIds.get(nodeId);
-                if (descItemIds == null) {
-                    descItemIds = new LinkedList<>();
-                    nodeIdToDescItemIds.put(nodeId, descItemIds);
-                }
-                descItemIds.add(descItemId);
-            }
+            Map<Integer, List<String>> nodeIdToDescItemIds = filter.resolveConditions(fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
 
             if (allDescItemIds == null) {
                 allDescItemIds = new HashMap<>(nodeIdToDescItemIds);
@@ -366,11 +363,6 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
             }
         }
 
-        List<String> result = new LinkedList<>();
-        for (List<String> descItemIds : allDescItemIds.values()) {
-            result.addAll(descItemIds);
-        }
-        return result;
+        return allDescItemIds;
     }
-
 }

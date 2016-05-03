@@ -8,7 +8,6 @@ import javax.persistence.Table;
 
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.Store;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -35,7 +34,6 @@ public class ArrDataDecimal extends ArrData implements cz.tacr.elza.api.ArrDataD
     }
 
     @Field(name = "valueDecimal", store = Store.YES)
-    @NumericField
     public Double getValueDouble() {
         return value.doubleValue();
     }

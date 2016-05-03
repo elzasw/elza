@@ -10,12 +10,12 @@ import org.springframework.util.Assert;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 14. 4. 2016
  */
-public class NotEmptyDescItemCondition implements DescItemCondition {
+public class NotEmptyDescItemCondition implements LuceneDescItemCondition {
 
     @Override
-    public Query createLuceneQuery(QueryBuilder queryBuilder) {
+    public Query createLuceneQuery(final QueryBuilder queryBuilder) {
         Assert.notNull(queryBuilder);
 
-        return queryBuilder.keyword().wildcard().onField(DescItemCondition.FULLTEXT_ATT).matching("?*").createQuery();
+        return queryBuilder.keyword().wildcard().onField(LuceneDescItemCondition.FULLTEXT_ATT).matching("?*").createQuery();
     }
 }

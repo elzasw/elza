@@ -51,7 +51,6 @@ public interface NodeRepositoryCustom {
      * @return množina id uzlů odopovídající hledané hodnotě
      * @throws InvalidQueryException neplatný lucene dotaz
      */
-    @SuppressWarnings("unchecked")
     Set<Integer> findByLuceneQueryAndVersionLockChangeId(String queryText, Integer fundId, Integer lockChangeId)
         throws InvalidQueryException;
 
@@ -62,9 +61,9 @@ public interface NodeRepositoryCustom {
      * Najde id nodů v dané verzi odpovídající filtrům. Pokud nejsou filtry předány vrátí se id všech nodů ve verzi.
      *
      * @param version verze
-     * @param filters filtry, můžou být null
+     * @param filters filtry
      *
      * @return id nodů odpovídající parametrům
      */
-    Set<Integer> findNodeIdsByFilters(ArrFundVersion version, List<DescItemTypeFilter> filters);
+    Set<Integer> findNodeIdsByFilters(ArrFundVersion version, List<DescItemTypeFilter> descItemFilters);
 }

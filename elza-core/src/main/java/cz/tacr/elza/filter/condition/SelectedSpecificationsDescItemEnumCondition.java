@@ -13,7 +13,7 @@ import org.springframework.util.Assert;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 29. 4. 2016
  */
-public class SelectedSpecificationsDescItemEnumCondition implements DescItemCondition {
+public class SelectedSpecificationsDescItemEnumCondition implements LuceneDescItemCondition {
 
     /** Hodnoty. */
     private List<Integer> values;

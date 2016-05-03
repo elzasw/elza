@@ -8,7 +8,7 @@ import org.springframework.util.Assert;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 14. 4. 2016
  */
-public abstract class AbstractDescItemConditionWithValue<T> implements DescItemCondition {
+public abstract class AbstractDescItemConditionWithValue<T> implements LuceneDescItemCondition {
 
     private T value;
     private String attributeName;
@@ -19,7 +19,7 @@ public abstract class AbstractDescItemConditionWithValue<T> implements DescItemC
      * @param conditionValue hodnota podmínky
      * @param attributeName název atributu pro který je podmínka určena
      */
-    public AbstractDescItemConditionWithValue(T conditionValue, String attributeName) {
+    public AbstractDescItemConditionWithValue(final T conditionValue, final String attributeName) {
         Assert.notNull(conditionValue);
         Assert.notNull(attributeName);
 

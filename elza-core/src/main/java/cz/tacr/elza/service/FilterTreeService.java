@@ -86,9 +86,11 @@ public class FilterTreeService {
      * stromu.
      *
      * @param version verze stromu
+     * @param descItemFilters filtry
+     *
      * @return počet všech záznamů splňujících filtry
      */
-    public int filterData(ArrFundVersion version, final List<DescItemTypeFilter> descItemFilters) {
+    public int filterData(final ArrFundVersion version, final  List<DescItemTypeFilter> descItemFilters) {
         Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(version);
         TreeNode rootNode = versionTreeCache.get(version.getRootNode().getNodeId());
 
