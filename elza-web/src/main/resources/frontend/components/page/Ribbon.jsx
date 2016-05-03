@@ -15,6 +15,7 @@ import {PageLayout} from 'pages/index.jsx';
 import {AppStore} from 'stores/index.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {logout} from 'actions/global/login.jsx';
+import * as perms from 'actions/user/Permission.jsx';
 
 var Ribbon = class Ribbon extends AbstractReactComponent {
     constructor(props) {
@@ -53,12 +54,18 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
 
         // Aktomatické sekce podle vybrané oblasti
         if (this.props.admin) {
-            section = (
-                <RibbonGroup className="large">
-                    <LinkContainer to="/admin/packages"><Button><Icon glyph="fa-archive" /><div><span className="btnText">{i18n('ribbon.action.admin.packages')}</span></div></Button></LinkContainer>
-                    <LinkContainer to="/admin/fulltext"><Button><Icon glyph="fa-search" /><div><span className="btnText">{i18n('ribbon.action.admin.fulltext')}</span></div></Button></LinkContainer>
-                </RibbonGroup>
-            );
+            if (userDetail.hasOne(perms.FUND_ADMIN)) {
+                section = (
+                    <RibbonGroup className="large">
+                        <LinkContainer to="/admin/packages"><Button><Icon glyph="fa-archive"/>
+                            <div><span className="btnText">{i18n('ribbon.action.admin.packages')}</span></div>
+                        </Button></LinkContainer>
+                        <LinkContainer to="/admin/fulltext"><Button><Icon glyph="fa-search"/>
+                            <div><span className="btnText">{i18n('ribbon.action.admin.fulltext')}</span></div>
+                        </Button></LinkContainer>
+                    </RibbonGroup>
+                );
+            }
         }
         if (this.props.arr) {
             section = (
