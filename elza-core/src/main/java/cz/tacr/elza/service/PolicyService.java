@@ -1,5 +1,7 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.domain.ArrFund;
@@ -8,6 +10,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
@@ -277,8 +280,9 @@ public class PolicyService {
      * @param policyTypeIdsMap
      * @param includeSubtree   nastavit oprávnění včetně celého postromu
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void setVisiblePolicy(final ArrNode node,
-                                 final ArrFundVersion fundVersion,
+                                 @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                  final Map<Integer, Boolean> policyTypeIdsMap,
                                  final Boolean includeSubtree) {
         Assert.notNull(node);
@@ -367,7 +371,8 @@ public class PolicyService {
      *
      * @param fund archivní fond
      */
-    public void deleteFundVisiblePolicies(final ArrFund fund) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void deleteFundVisiblePolicies(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) {
         Assert.notNull(fund);
 
         List<UIVisiblePolicy> policies = visiblePolicyRepository.findByFund(fund);

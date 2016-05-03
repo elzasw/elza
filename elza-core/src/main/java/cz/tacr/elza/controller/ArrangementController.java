@@ -14,6 +14,9 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.service.UserService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,6 +163,9 @@ public class ArrangementController {
 
     @Autowired
     private PacketTypeRepository packetTypeRepository;
+
+    @Autowired
+    private UserService userService;
 
     /**
      * Seznam typů obalů.
@@ -458,13 +464,15 @@ public class ArrangementController {
     public FundListCountResult getFunds(@RequestParam(value = "fulltext", required = false) final String fulltext,
                                         @RequestParam(value = "max") final Integer max) {
         List<ArrFundVO> fundList = new LinkedList<>();
-        fundRepository.findByFulltext(fulltext, max).forEach(f -> {
+        boolean readAllFunds = userService.hasPermission(UsrPermission.Permission.FUND_RD_ALL);
+        UsrUser user = userService.getLoggedUser();
+        fundRepository.findByFulltext(fulltext, max, readAllFunds, user).forEach(f -> {
             ArrFundVO fundVO = factoryVo.createFundVO(f.getFund(), false);
             fundVO.setVersions(Arrays.asList(factoryVo.createFundVersion(f.getOpenVersion())));
             fundList.add(fundVO);
         });
 
-        return new FundListCountResult(fundList, fundRepository.findCountByFulltext(fulltext));
+        return new FundListCountResult(fundList, fundRepository.findCountByFulltext(fulltext, readAllFunds, user));
     }
 
     /**

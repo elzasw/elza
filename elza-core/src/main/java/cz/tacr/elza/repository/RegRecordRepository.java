@@ -18,7 +18,7 @@ import cz.tacr.elza.domain.RegScope;
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 @Repository
-public interface RegRecordRepository extends JpaRepository<RegRecord, Integer>, RegRecordRepositoryCustom {
+public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Integer>, RegRecordRepositoryCustom {
 
     /**
      * Najde potomky rejstříkového hesla.
@@ -71,4 +71,9 @@ public interface RegRecordRepository extends JpaRepository<RegRecord, Integer>, 
      * @return nalezená hesla
      */
     List<RegRecord> findByScope(RegScope scope);
+
+    @Override
+    default String getClassName() {
+        return RegRecord.class.getSimpleName();
+    }
 }

@@ -15,6 +15,10 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -160,6 +164,9 @@ public class PartyService {
     @Autowired
     private InstitutionRepository institutionRepository;
 
+    @Autowired
+    private UserService userService;
+
     /**
      * Najde osobu podle rejstříkového hesla.
      *
@@ -208,10 +215,11 @@ public class PartyService {
     public List<ParParty> findPartyByTextAndType(final String searchRecord, final Integer partyTypeId,
                                                  final Integer firstResult, final Integer maxResults,
                                                  @Nullable final ArrFund fund) {
-
+        UsrUser user = userService.getLoggedUser();
+        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
         Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFund(fund);
         return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, firstResult, maxResults,
-                scopeIdsForRecord);
+                scopeIdsForRecord, readAllScopes, user);
     }
 
     /**
@@ -223,9 +231,10 @@ public class PartyService {
      */
     public long findPartyByTextAndTypeCount(final String searchRecord, final Integer registerTypeId,
                                             @Nullable final ArrFund fund){
-
+        UsrUser user = userService.getLoggedUser();
+        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
         Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFund(fund);
-        return partyRepository.findPartyByTextAndTypeCount(searchRecord, registerTypeId, scopeIdsForRecord);
+        return partyRepository.findPartyByTextAndTypeCount(searchRecord, registerTypeId, scopeIdsForRecord, readAllScopes, user);
     }
 
     /**
@@ -906,5 +915,11 @@ public class PartyService {
         Assert.notNull(institution);
         eventNotificationService.publishEvent(new ActionEvent(EventType.INSTITUTION_CHANGE));
         return institutionRepository.save(institution);
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_RD_ALL, UsrPermission.Permission.REG_SCOPE_RD})
+    public ParParty getParty(@AuthParam(type = AuthParam.Type.PARTY) final Integer partyId) {
+        Assert.notNull(partyId);
+        return partyRepository.findOne(partyId);
     }
 }

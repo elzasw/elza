@@ -174,7 +174,7 @@ public class UserService {
      */
     public boolean hasPermission(UsrPermission.Permission permission) {
         for (UserPermission userPermission : getUserPermission()) {
-            if (userPermission.getPermission().equals(permission)) {
+            if (userPermission.getPermission().equals(permission) || userPermission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
                 return true;
             }
         }

@@ -22,6 +22,7 @@ import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
@@ -89,6 +90,9 @@ public class RegistryService {
     @Autowired
     private ArrangementService arrangementService;
 
+    @Autowired
+    private UserService userService;
+
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
      */
@@ -129,8 +133,10 @@ public class RegistryService {
             }
         }
 
+        UsrUser user = userService.getLoggedUser();
+        boolean readAllScopes = userService.hasPermission(cz.tacr.elza.api.UsrPermission.Permission.REG_SCOPE_RD_ALL);
         return regRecordRepository.findRegRecordByTextAndType(searchRecord, registerTypeIds, firstResult,
-                maxResults, parentRecord, scopeIdsForRecord);
+                maxResults, parentRecord, scopeIdsForRecord, readAllScopes, user);
     }
 
 
@@ -156,9 +162,12 @@ public class RegistryService {
             }
         }
 
+        UsrUser user = userService.getLoggedUser();
+        boolean readAllScopes = userService.hasPermission(cz.tacr.elza.api.UsrPermission.Permission.REG_SCOPE_RD_ALL);
 
         return regRecordRepository
-                .findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, parentRecord, scopeIdsForRecord);
+                .findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, parentRecord, scopeIdsForRecord,
+                        readAllScopes, user);
     }
 
     /**
@@ -766,6 +775,12 @@ public class RegistryService {
         }
 
         return regCoordinatesRepository.save(coordinatesList);
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_RD_ALL, UsrPermission.Permission.REG_SCOPE_RD})
+    public RegRecord getRecord(@AuthParam(type = AuthParam.Type.REGISTRY) final Integer recordId) {
+        Assert.notNull(recordId);
+        return regRecordRepository.findOne(recordId);
     }
 
 }

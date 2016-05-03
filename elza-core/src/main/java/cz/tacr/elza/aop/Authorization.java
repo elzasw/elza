@@ -7,6 +7,8 @@ import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.api.interfaces.IRegScope;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.UserService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -33,6 +35,12 @@ public class Authorization {
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
+
+    @Autowired
+    private RegRecordRepository recordRepository;
+
+    @Autowired
+    private PartyRepository partyRepository;
 
     @Around("execution(* cz.tacr.elza..*.*(..)) && @annotation(cz.tacr.elza.annotation.AuthMethod)")
     public Object auth(ProceedingJoinPoint pjp) throws Throwable {
@@ -88,7 +96,13 @@ public class Authorization {
         throw new AccessDeniedException();
     }
 
-
+    /**
+     * Načtení entity podle vstupního objektu.
+     *
+     * @param value vstupní objekt
+     * @param type  typ vstupního parametru
+     * @return  identfikátor entity
+     */
     private Integer loadEntityId(final Object value, final AuthParam.Type type) {
         switch (type) {
             case FUND: {
@@ -114,6 +128,20 @@ public class Authorization {
                     return ((IRegScope) value).getRegScope().getScopeId();
                 }
                 break;
+            }
+            case PARTY: {
+                if (value instanceof Integer) {
+                    return partyRepository.getOneCheckExist((Integer) value).getRegScope().getScopeId();
+                } else if (value instanceof IRegScope) {
+                    return ((IRegScope) value).getRegScope().getScopeId();
+                }
+            }
+            case REGISTRY: {
+                if (value instanceof Integer) {
+                    return recordRepository.getOneCheckExist((Integer) value).getRegScope().getScopeId();
+                } else if (value instanceof IRegScope) {
+                    return ((IRegScope) value).getRegScope().getScopeId();
+                }
             }
         }
 

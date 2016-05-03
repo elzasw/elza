@@ -15,6 +15,7 @@ import javax.transaction.Transactional;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -80,6 +81,9 @@ public class RegistryController {
 
     @Autowired
     private RelationRoleTypeRepository relationRoleTypeRepository;
+
+    @Autowired
+    private UserService userService;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -205,12 +209,14 @@ public class RegistryController {
         Set<Integer> scopeIds = new HashSet<>();
         scopeIds.add(party.getRecord().getScope().getScopeId());
 
+        UsrUser user = userService.getLoggedUser();
+        boolean readAllScopes = userService.hasPermission(cz.tacr.elza.api.UsrPermission.Permission.REG_SCOPE_RD_ALL);
 
         final long foundRecordsCount = regRecordRepository
-                .findRegRecordByTextAndTypeCount(search, registerTypeIds, null, scopeIds);
+                .findRegRecordByTextAndTypeCount(search, registerTypeIds, null, scopeIds, readAllScopes, user);
 
         final List<RegRecord> foundRecords = regRecordRepository
-                .findRegRecordByTextAndType(search, registerTypeIds, from, count, null, scopeIds);
+                .findRegRecordByTextAndType(search, registerTypeIds, from, count, null, scopeIds, readAllScopes, user);
 
         List<RegRecordSimple> foundRecordsVO = factoryVo.createRegRecordsSimple(foundRecords);
         return new RegRecordWithCount(foundRecordsVO, foundRecordsCount);
@@ -227,7 +233,7 @@ public class RegistryController {
     public RegRecordVO getRecord(@RequestParam(value = "recordId") final Integer recordId) {
         Assert.notNull(recordId);
 
-        RegRecord record = regRecordRepository.getOne(recordId);
+        RegRecord record = registryService.getRecord(recordId);
 
         //seznam nalezeného záznamu spolu s dětmi
         List<RegRecord> records = new LinkedList<>();

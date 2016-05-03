@@ -3,9 +3,25 @@ package cz.tacr.elza.controller;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPartyTypeComplementType;
+import cz.tacr.elza.domain.ParPartyTypeRelation;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.ParRelationTypeRoleType;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.PartyService;
+import cz.tacr.elza.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -77,6 +93,9 @@ public class PartyController {
     @Autowired
     private InstitutionRepository institutionRepository;
 
+    @Autowired
+    private UserService userService;
+
     /**
      * Načte osobu podle id.
      * @param partyId id osoby
@@ -85,8 +104,7 @@ public class PartyController {
     @RequestMapping(value = "/getParty", method = RequestMethod.GET)
     public ParPartyVO getParty(@RequestParam("partyId") final Integer partyId) {
         Assert.notNull(partyId);
-
-        ParParty party = partyRepository.findOne(partyId);
+        ParParty party = partyService.getParty(partyId);
         return factoryVo.createParPartyDetail(party);
     }
 
@@ -253,12 +271,13 @@ public class PartyController {
         Set<Integer> scopeIds = new HashSet<>();
         scopeIds.add(party.getRecord().getScope().getScopeId());
 
-
-        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, from, count, scopeIds);
+        UsrUser user = userService.getLoggedUser();
+        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
+        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, from, count, scopeIds, readAllScopes, user);
 
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, scopeIds);
+        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, scopeIds, readAllScopes, user);
         return new ParPartyWithCount(resultVo, countAll);
     }
 
