@@ -385,7 +385,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 <ListBox2 className="visiblePolicies-listbox"
                     ref="fundVisiblePolicies"
                     items={nodesPolicy.items}
-                    selectedItem={activeNode.selectedSubNodeId}
+                    selectedItem={activeNode !== null ? activeNode.selectedSubNodeId : null}
                     renderItemContent={(node, isActive) => <div>{node.name}</div>}
                     onSelect={this.handleSelectVisiblePoliciesNode.bind(this, activeFund)}
                     /*onDoubleClick={this.handleShowVisiblePolicies.bind(this, activeFund)}*/

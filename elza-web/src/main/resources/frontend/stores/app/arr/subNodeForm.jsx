@@ -129,6 +129,10 @@ function validate(descItem, refType, valueServerError) {
 }
 
 export default function subNodeForm(state = initialState, action = {}) {
+    if (state.formData) {
+        console.log("STATE", state.formData.descItemGroups[1].descItemTypes[0])
+    }
+
     // Načtení umístění, pokud bylo v akci předáno
     var loc
     if (action.valueLocation) {
@@ -148,22 +152,27 @@ export default function subNodeForm(state = initialState, action = {}) {
             state.formData = {...state.formData};
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
-            var descItems = loc.descItemType.descItems;
+            console.log("BEFORE", loc.descItemType.descItems)
+            var descItems = [...loc.descItemType.descItems];
 
-            // Odebrání přesouvané
-            descItems = [
-                ...descItems.slice(0, action.valueLocation.descItemIndex),
-                ...descItems.slice(action.valueLocation.descItemIndex + 1)
-            ]
+            // // Odebrání přesouvané
+            // descItems = [
+            //     ...descItems.slice(0, action.valueLocation.descItemIndex),
+            //     ...descItems.slice(action.valueLocation.descItemIndex + 1)
+            // ]
+            //
+            // // Přidání přesouvané na správné místo
+            // descItems = [
+            //     ...descItems.slice(0, action.index),
+            //     loc.descItem,
+            //     ...descItems.slice(action.index)
+            // ]
 
-            // Přidání přesouvané na správné místo
-            descItems = [
-                ...descItems.slice(0, action.index),
-                loc.descItem,
-                ...descItems.slice(action.index)
-            ]
+            descItems.splice(action.index, 0, descItems.splice(action.valueLocation.descItemIndex, 1)[0]);
+
 
             loc.descItemType.descItems = descItems
+            console.log("AFTER", loc.descItemType.descItems)
 
             state.formData = {...state.formData};
             return {...state};

@@ -55,7 +55,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
                 'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver',
                 'handleDragLeave', 'getShowDeleteDescItemType', 'getShowDeleteDescItem', 'focus', 'handleDescItemTypeShortcuts',
-                'handleDescItemShortcuts', 'handleCoordinatesUploadButtonClick', 'handleCoordinatesUpload');
+                'handleDescItemShortcuts', 'handleCoordinatesUploadButtonClick', 'handleCoordinatesUpload', 'removePlaceholder');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -318,7 +318,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     handleDragEnd(e) {
         //this.dragged.style.display = "block";
         this.dragged.style.display = this.prevDraggedStyleDisplay
-        placeholder.parentNode === this.dragged.parentNode && this.dragged.parentNode.removeChild(placeholder)
+
+        this.removePlaceholder()
 
         if (!this.over || !this.dragged) {
             return
@@ -349,10 +350,14 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         return false
     }
 
+    removePlaceholder() {
+        placeholder.parentNode === this.dragged.parentNode.parentNode && this.dragged.parentNode.parentNode.removeChild(placeholder)
+    }
+
     handleDragLeave(e) {
         e.preventDefault();
         this.over = null;
-        this.dragged && placeholder.parentNode === this.dragged.parentNode && this.dragged.parentNode.removeChild(placeholder)
+        this.dragged && this.removePlaceholder()
         return
     }
 
@@ -370,7 +375,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         if (!this.isUnderContainer(e.target, dragOverContainer)) {
             e.dataTransfer.dropEffect = "none";
             this.over = null;
-            placeholder.parentNode === this.dragged.parentNode && this.dragged.parentNode.removeChild(placeholder)
+            this.removePlaceholder()
             return
         }
 
@@ -390,19 +395,21 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             return
         }
 
+        // Over chceme na div s datasetem
         this.over = realTarget;
 
-        // Inside the dragOver method
-        var parent = realTarget.parentNode;
+        // Inside the dragOver method - chceme az na shortcuts
+        var useTarget = realTarget.parentNode
+        var parent = useTarget.parentNode;
         var overRect = this.over.getBoundingClientRect();
         var height2 = (overRect.bottom - overRect.top) / 2;
 
         if (e.clientY < overRect.top + height2) {
             this.nodePlacement = "before"
-            parent.insertBefore(placeholder, realTarget);
+            parent.insertBefore(placeholder, useTarget);
         } else if (e.clientY >= overRect.top + height2) {
             this.nodePlacement = "after";
-            parent.insertBefore(placeholder, realTarget.nextElementSibling);
+            parent.insertBefore(placeholder, useTarget.nextElementSibling);
         } else {
 
         }
@@ -550,8 +557,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         }
 
         return (
-            <Shortcuts name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}>
-                <div key={key} className={cls} {...dragProps}>
+            <Shortcuts key={key} name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}>
+                <div className={cls} {...dragProps}>
                     {infoType.rep == 1 && <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down" glyph="fa-angle-down"/>&nbsp;</div>}
                     <div key="container" className={partsCls}>
                         {parts}
@@ -668,7 +675,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
         // Zprávy o chybějících položkách
         var missings = conformityInfo.missings[descItemType.id];
-        if (missings) {
+        if (missings && missings.length > 0) {
             var messages = missings.map(missing => missing.description);
             var tooltip = <Tooltip id="messages">{messages}</Tooltip>
             actions.push(<OverlayTrigger key="state" placement="right" overlay={tooltip}>
@@ -742,7 +749,6 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         }
 
         var showDeleteDescItemType = this.getShowDeleteDescItemType();
-
         var descItems = descItemType.descItems.map((descItem, descItemIndex) => {
             var actions = [];
 
@@ -751,7 +757,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             }
 
             var errors = conformityInfo.errors[descItem.descItemObjectId];
-            if (errors) {
+            if (errors && errors.length > 0) {
                 var messages = errors.map(error => error.description);
                 var tooltip = <Tooltip id="info">{messages}</Tooltip>
                 actions.push(<OverlayTrigger key="info" placement="left" overlay={tooltip}>

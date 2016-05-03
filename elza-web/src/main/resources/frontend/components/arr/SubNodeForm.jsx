@@ -516,6 +516,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param newDescItemIndex {Integer} nová pozice - nový index atributu
      */
     handleChangePosition(descItemGroupIndex, descItemTypeIndex, descItemIndex, newDescItemIndex) {
+        console.log(222222, descItemGroupIndex, descItemTypeIndex, descItemIndex, newDescItemIndex)
         var valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,

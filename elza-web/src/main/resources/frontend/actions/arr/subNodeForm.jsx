@@ -178,7 +178,8 @@ export function fundSubNodeFormValueChangePosition(versionId, nodeKey, valueLoca
 
             WebApi.updateDescItem(versionId, subNodeForm.data.node.version, descItem)
                 .then(json => {
-                    dispatch(fundSubNodeFormDescItemResponse(versionId, nodeKey, valueLocation, json, 'UPDATE'));
+                    let newValueLocation = {...valueLocation, descItemIndex: index}
+                    dispatch(fundSubNodeFormDescItemResponse(versionId, nodeKey, newValueLocation, json, 'UPDATE'));
                 })
         }
     }

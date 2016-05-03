@@ -14,8 +14,6 @@ var ContextMenu = class extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.contextMenuDomNode = ReactDOM.findDOMNode(this.refs.contextMenu);
-
         document.addEventListener("mousedown", this.handleClick);
         document.addEventListener("touchstart", this.handleClick);
         window.addEventListener("resize", this.hideMenu);
@@ -36,11 +34,13 @@ var ContextMenu = class extends AbstractReactComponent {
     handleClick(e) {
         var source = e.target;
         var found = false;
+        var contextMenuDomNode = this.refs.contextMenu
 
-        while (source.parentNode) {
-            found = (source === this.contextMenuDomNode);
+        while (source) {
+            // console.log(source, contextMenuDomNode, source === contextMenuDomNode, source == contextMenuDomNode)
+            found = (source === contextMenuDomNode);
             if (found) {
-                //console.log("FOUND...");
+                // console.log("FOUND...");
                 return
             }
 
@@ -50,7 +50,7 @@ var ContextMenu = class extends AbstractReactComponent {
         if (this.props.visible) {
             this.hideMenu();
         }
-        //console.log("NOT FOUND...");
+        // console.log("NOT FOUND...");
     }
 
     render() {
