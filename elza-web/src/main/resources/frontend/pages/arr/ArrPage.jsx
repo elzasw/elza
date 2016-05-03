@@ -11,34 +11,31 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Tabs, Icon, Ribbon, i18n} from 'components/index.jsx';
-import {FundExtendedView, FundForm, BulkActionsDialog, RibbonMenu, RibbonGroup, RibbonSplit,
-    ToggleContent, AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs, ListBox2, LazyListBox,
+import {FundExtendedView, BulkActionsDialog, RibbonGroup,
+    AbstractReactComponent, NodeTabs, FundTreeTabs, ListBox2, LazyListBox,
     VisiblePolicyForm, Loading, FundPackets} from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
-import {AppStore} from 'stores/index.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {showRegisterJp} from 'actions/arr/fund.jsx'
-import {scopesDirty} from 'actions/refTables/scopesData.jsx'
 import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
 import {Utils} from 'components/index.jsx';
-import {barrier} from 'components/Utils.jsx';
 import {isFundRootId} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
-import {propsEquals} from 'components/Utils.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import * as perms from 'actions/user/Permission.jsx';
 
 var _selectedTab = 0
 
@@ -538,7 +535,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     renderPanel() {
-        const {developer, arrRegion} = this.props;
+        const {developer, arrRegion, userDetail} = this.props;
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
 
         var node
@@ -546,16 +543,37 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             node = activeFund.nodes.nodes[activeFund.nodes.activeIndex]
         }
 
+        // -----------
+        // Záložky a obsah aktuálně vybrané založky
         var items = [];
-        items.push({id: 0, title: i18n('arr.panel.title.errors')});
-        items.push({id: 1, title: i18n('arr.panel.title.visiblePolicies')});
-        items.push({id: 2, title: i18n('arr.panel.title.packets')});
+        var tabContent
+        var tabIndex = 0
+
+        items.push({id: tabIndex, title: i18n('arr.panel.title.errors')});
+        if (_selectedTab === tabIndex) tabContent = this.renderFundErrors(activeFund)
+        tabIndex++;
+
+        items.push({id: tabIndex, title: i18n('arr.panel.title.visiblePolicies')});
+        if (_selectedTab === tabIndex) tabContent = this.renderFundVisiblePolicies(activeFund)
+        tabIndex++;
+
+        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
+            items.push({id: tabIndex, title: i18n('arr.panel.title.packets')});
+            if (_selectedTab === tabIndex) tabContent = this.renderFundPackets(activeFund)
+            tabIndex++;
+        }
 
         // pouze v developer modu
         if (developer.enabled && node) {
-            items.push({id: 3, title: i18n('developer.title.descItems')});
-            items.push({id: 4, title: i18n('developer.title.scenarios')});
+            items.push({id: tabIndex, title: i18n('developer.title.descItems')});
+            if (_selectedTab === tabIndex) tabContent = this.renderDeveloperDescItems(activeFund, node)
+            tabIndex++;
+
+            items.push({id: tabIndex, title: i18n('developer.title.scenarios')});
+            if (_selectedTab === tabIndex) tabContent = this.renderDeveloperScenarios(activeFund, node)
+            tabIndex++;
         }
+        // -----------
 
         return (
             <Tabs.Container>
@@ -565,11 +583,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                            onSelect={this.handleTabSelect}
                 />
                 <Tabs.Content>
-                    {_selectedTab === 0 && this.renderFundErrors(activeFund)}
-                    {_selectedTab === 1 && this.renderFundVisiblePolicies(activeFund)}
-                    {_selectedTab === 2 && this.renderFundPackets(activeFund)}
-                    {developer.enabled && node && _selectedTab === 3 && this.renderDeveloperDescItems(activeFund, node)}
-                    {developer.enabled && node && _selectedTab === 4 && this.renderDeveloperScenarios(activeFund, node)}
+                    {tabContent}
                 </Tabs.Content>
             </Tabs.Container>
         )
@@ -697,6 +711,7 @@ ArrPage.propTypes = {
     descItemTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
     focus: React.PropTypes.object.isRequired,
+    userDetail: React.PropTypes.object.isRequired,
 }
 
 ArrPage.childContextTypes = {
