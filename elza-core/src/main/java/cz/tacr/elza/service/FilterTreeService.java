@@ -280,7 +280,8 @@ public class FilterTreeService {
                     while (valueIterator.hasNext()) {
                         TitleValue titleValue = valueIterator.next();
 
-                        values.addValue(DescItemValue.create(titleValue));
+                        //values.addValue(DescItemValue.create(titleValue));
+                        values.addValue(titleValue);
                         nodeValuesMap.put(descItymTypeId, values);
                     }
                 }
