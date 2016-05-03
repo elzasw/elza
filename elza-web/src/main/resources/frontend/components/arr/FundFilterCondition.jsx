@@ -34,11 +34,11 @@ var FundFilterCondition = class FundFilterCondition extends AbstractReactCompone
         onChange(e.target.value, values)
     }
 
-    handleChangeValue(index, e) {
+    handleChangeValue(index, value) {
         const {values, selectedCode, onChange} = this.props
 
         var newValues = [...values]
-        newValues[index] = e.target.value
+        newValues[index] = value
 
         onChange(selectedCode, newValues)
     }

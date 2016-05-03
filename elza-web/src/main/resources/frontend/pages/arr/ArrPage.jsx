@@ -23,6 +23,7 @@ import {showRegisterJp} from 'actions/arr/fund.jsx'
 import {scopesDirty} from 'actions/refTables/scopesData.jsx'
 import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
 import {Utils} from 'components/index.jsx';
@@ -70,6 +71,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     componentDidMount() {
         this.dispatch(descItemTypesFetchIfNeeded());
         this.dispatch(packetTypesFetchIfNeeded());
+        this.dispatch(calendarTypesFetchIfNeeded());
         var fundId = this.getActiveFundId();
         if (fundId !== null) {
             this.dispatch(packetsFetchIfNeeded(fundId));
@@ -80,6 +82,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
         this.dispatch(descItemTypesFetchIfNeeded());
         this.dispatch(packetTypesFetchIfNeeded());
+        this.dispatch(calendarTypesFetchIfNeeded());
         var fundId = this.getActiveFundId();
         if (fundId !== null) {
             this.dispatch(packetsFetchIfNeeded(fundId));
@@ -622,6 +625,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                         versionId={activeFund.versionId}
                         descItemTypes={descItemTypes}
                         packetTypes={packetTypes}
+                        calendarTypes={calendarTypes}
                         rulDataTypes={rulDataTypes}
                     />
                 )

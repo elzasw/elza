@@ -18,8 +18,7 @@ import {fundDataGridSetColumnsSettings, fundDataGridSetSelection, fundDataGridSe
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {fundSubNodeFormHandleClose} from 'actions/arr/subNodeForm.jsx'
-import {getSetFromIdsList, getMapFromList} from 'stores/app/utils.jsx'
-import {propsEquals} from 'components/Utils.jsx'
+import {getMapFromList} from 'stores/app/utils.jsx'
 import {Button} from 'react-bootstrap'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {getSpecsIds, hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
@@ -46,6 +45,8 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             colState = {cols: []}
         }
 
+        colState.calendarTypesMap = getMapFromList(props.calendarTypes.items)
+
         this.state = colState
     }
 
@@ -70,12 +71,14 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(fundDataGridFetchFilterIfNeeded(versionId))
         this.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize))
 
-        const colState = this.getColsStateFromProps(nextProps, this.props)
-        if (colState) {
-            this.setState(colState, this.resizeGrid)
-        } else {
-            this.setState({}, this.resizeGrid)
+        var colState = this.getColsStateFromProps(nextProps, this.props)
+        if (!colState) {
+            colState = {}
         }
+
+        colState.calendarTypesMap = getMapFromList(nextProps.calendarTypes.items)
+
+        this.setState(colState, this.resizeGrid)
     }
 
     resizeGrid() {
@@ -94,6 +97,33 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         var displayValue
         if (colValue && colValue.values) {
             displayValue = colValue.values.map(value => {
+                if (col.dataType.code === 'COORDINATES') {
+                    console.log(value)
+                }
+
+                let itemValue
+                if (hasDescItemTypeValue(col.dataType)) {
+                    switch (col.dataType.code) {
+                        case 'COORDINATES':
+                            switch (value.geomType) {
+                                case "B":
+                                    itemValue = value.geomType + ": " + value.value
+                                    itemValue = <span><Button disabled>{value.geomType}</Button> {value.value}</span>
+                                break
+                                default:
+                                    itemValue = <span><Button disabled>{value.geomType}</Button> {i18n('subNodeForm.countOfCoordinates', value.value)}</span>
+                                break
+                            }
+                            break
+                        case 'UNITDATE':
+                            itemValue = this.state.calendarTypesMap[value.calendarTypeId].name.charAt(0) + ": " + value.calendarTypeId + "-" + value.value
+                            break
+                        default:
+                            itemValue = value.value
+                            break
+                    }
+                }
+
                 if (col.refType.useSpecification) {
                     var spec = null
                     for (var a=0; a<col.refType.descItemSpecs.length; a++) {
@@ -103,9 +133,9 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                         }
                     }
 
-                    return <div className='cell-value-wrapper'>{hasDescItemTypeValue(col.dataType) ? spec.name + ': ' + value.value : spec.name}</div>
+                    return <div className='cell-value-wrapper'>{hasDescItemTypeValue(col.dataType) ? spec.name + ': ' + itemValue : spec.name}</div>
                 } else {
-                    return <div className='cell-value-wrapper'>{value.value}</div>
+                    return <div className='cell-value-wrapper'>{itemValue}</div>
                 }
             })
         }
@@ -281,7 +311,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     handleFilterSettings(refType, dataType) {
-        const {versionId, fundDataGrid, packetTypes} = this.props
+        const {versionId, calendarTypes, fundDataGrid, packetTypes} = this.props
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.filterSettings.title', refType.shortcut),
             <FundFilterSettings
@@ -289,6 +319,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 refType={refType}
                 dataType={dataType}
                 packetTypes={packetTypes}
+                calendarTypes={calendarTypes}
                 filter={fundDataGrid.filter[refType.id]}
                 onSubmitForm={this.handleChangeFilter.bind(this, versionId, refType)}
             />, 'fund-filter-settings-dialog'

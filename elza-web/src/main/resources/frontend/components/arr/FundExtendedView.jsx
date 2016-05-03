@@ -117,7 +117,7 @@ var FundExtendedView = class FundExtendedView extends AbstractReactComponent {
     }
 
     render() {
-        const {fund, descItemTypes, packetTypes, rulDataTypes} = this.props;
+        const {fund, descItemTypes, calendarTypes, packetTypes, rulDataTypes} = this.props;
 
         var tabContent = [];
         var tabContentClassName;
@@ -141,6 +141,7 @@ var FundExtendedView = class FundExtendedView extends AbstractReactComponent {
                     fundDataGrid={fund.fundDataGrid}
                     descItemTypes={descItemTypes}
                     packetTypes={packetTypes}
+                    calendarTypes={calendarTypes}
                     rulDataTypes={rulDataTypes}
                 />
             )
@@ -198,6 +199,7 @@ FundExtendedView.propTypes = {
     versionId: React.PropTypes.number.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
+    calendarTypes: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
 }
 

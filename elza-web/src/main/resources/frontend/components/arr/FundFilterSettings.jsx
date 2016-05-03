@@ -9,10 +9,13 @@ import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
 import {FilterableListBox, AbstractReactComponent, i18n} from 'components/index.jsx';
+import DescItemUnitdate from './nodeForm/DescItemUnitdate.jsx'
+import DescItemCoordinates from './nodeForm/DescItemCoordinates.jsx'
 import {Modal, Button, Input} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
+
 const FundFilterCondition = require('./FundFilterCondition')
 const SimpleCheckListBox = require('./SimpleCheckListBox')
 
@@ -20,7 +23,7 @@ const renderTextFields = (fields) => {
     return fields.map((field, index) => {
         return (
             <div key={index} className='value-container'>
-                <Input type="text" {...field} />
+                <Input type="text" value={field.value} onChange={(e) => field.onChange(e.target.value)} />
             </div>
         )
     })
@@ -31,20 +34,72 @@ const renderCoordinatesFields = (fields) => {
         case 0:
             return null
         case 1:
+            var descItem = {
+                hasFocus: false,
+                value: typeof fields[0].value !== 'undefined' ? fields[0].value : '',
+                error: {},
+            }
             return (
                 <div key={0} className='value-container'>
-                    <Input type="text" {...fields[0]} />
+                    <DescItemCoordinates
+                        onChange={fields[0].onChange}
+                        descItem={descItem}
+                        onFocus={()=>{}}
+                        onBlur={()=>{}}
+                        />
+                    {false && <Input type="text" value={fields[0].value} onChange={(e) => fields[0].onChange(e.target.value)} />}
                 </div>
             )
         case 2:
-            return (
+            var vals = []
+            var descItem = {
+                hasFocus: false,
+                value: typeof fields[0].value !== 'undefined' ? fields[0].value : '',
+                error: {},
+            }
+            vals.push(
                 <div key={0} className='value-container'>
-                    <Input type="text" {...fields[0]} />
-                    <Input type="select" defaultValue={10000} {...fields[1]}>
+                    <DescItemCoordinates
+                        onChange={fields[0].onChange}
+                        descItem={descItem}
+                        onFocus={()=>{}}
+                        onBlur={()=>{}}
+                    />
+                </div>
+            )
+            vals.push(
+                <div key={1} className='value-container'>
+                    <Input type="select" defaultValue={10000} value={fields[1].value} onChange={(e) => fields[1].onChange(e.target.value)}>
                         {[100, 500, 1000, 10000, 20000, 50000, 100000].map(l => {
                             return <option key={l} value={l}>{i18n('arr.fund.filterSettings.condition.coordinates.near.' + l)}</option>
                         })}
                     </Input>
+                </div>
+            )
+            return vals
+    }
+}
+
+const renderUnitdateFields = (calendarTypes, fields) => {
+    switch (fields.length) {
+        case 0:
+            return null
+        case 2:
+            var descItem = {
+                hasFocus: false,
+                calendarTypeId: typeof fields[0].value !== 'undefined' ? fields[0].value : 1,
+                value: typeof fields[1].value !== 'undefined' ? fields[1].value : '',
+                error: {},
+            }
+            return (
+                <div key={0} className='value-container'>
+                    <DescItemUnitdate key={0}
+                        calendarTypes={calendarTypes}
+                        onChange={(value) => {fields[0].onChange(value.calendarTypeId);fields[1].onChange(value.value);}}
+                        descItem={descItem}
+                        onFocus={()=>{}}
+                        onBlur={()=>{}}
+                    />
                 </div>
             )
     }
@@ -165,10 +220,19 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             case 'INT':
             case 'DECIMAL':
             case 'PARTY_REF':
-            case 'UNITDATE':
             case 'PACKET_REF':
             case 'ENUM':
             case 'RECORD_REF':
+                break
+            case 'UNITDATE':
+                if (useValues.length > 0) {
+                    if (!useValues[0]) {
+                        useValues[0] = 1
+                    }
+                    if (!useValues[1]) {
+                        useValues[1] = ''
+                    }
+                }
                 break
             case 'COORDINATES':
                 if (selectedCode === 'NEAR' && !useValues[1]) {
@@ -210,7 +274,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
     }
 
     renderConditionFilter() {
-        const {refType, dataType} = this.props
+        const {refType, dataType, calendarTypes} = this.props
         const {conditionSelectedCode, conditionValues} = this.state
 
         if (!hasDescItemTypeValue(dataType)) {
@@ -264,16 +328,16 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 ]
                 break
             case 'UNITDATE':
-                renderFields = renderTextFields
+                renderFields = renderUnitdateFields.bind(this, calendarTypes)
                 items = [
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
                     {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                    {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
-                    {values: 1, code: 'LT', name: i18n('arr.fund.filterSettings.condition.unitdate.lt')},
-                    {values: 1, code: 'GT', name: i18n('arr.fund.filterSettings.condition.unitdate.gt')},
-                    {values: 1, code: 'SUBSET', name: i18n('arr.fund.filterSettings.condition.unitdate.subset')},
-                    {values: 1, code: 'INTERSECT', name: i18n('arr.fund.filterSettings.condition.unitdate.intersect')},
+                    {values: 2, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
+                    {values: 2, code: 'LT', name: i18n('arr.fund.filterSettings.condition.unitdate.lt')},
+                    {values: 2, code: 'GT', name: i18n('arr.fund.filterSettings.condition.unitdate.gt')},
+                    {values: 2, code: 'SUBSET', name: i18n('arr.fund.filterSettings.condition.unitdate.subset')},
+                    {values: 2, code: 'INTERSECT', name: i18n('arr.fund.filterSettings.condition.unitdate.intersect')},
                 ]
                 break
             case 'COORDINATES':
