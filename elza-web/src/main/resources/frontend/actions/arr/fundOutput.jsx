@@ -48,7 +48,7 @@ function _fundOutputDetailDataKey(fundOutputDetail) {
 
 export function fundOutputUsageEnd(versionId, outputId) {
     return (dispatch, getState) => {
-        return WebApi.outputUsageEnd(versionId, outputId)
+        WebApi.outputUsageEnd(versionId, outputId)
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.output.title.usageEnded")));
             });        
@@ -57,7 +57,7 @@ export function fundOutputUsageEnd(versionId, outputId) {
 
 export function fundOutputAddNodes(versionId, outputId, nodeIds) {
     return (dispatch, getState) => {
-        return WebApi.outputUsageEnd(versionId, outputId, nodeIds)
+        WebApi.fundOutputAddNodes(versionId, outputId, nodeIds)
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.output.title.nodesAdded")));
                 dispatch(modalDialogHide());
@@ -65,9 +65,15 @@ export function fundOutputAddNodes(versionId, outputId, nodeIds) {
     }
 }
 
+export function fundOutputRemoveNodes(versionId, outputId, nodeIds) {
+    return (dispatch, getState) => {
+        WebApi.fundOutputRemoveNodes(versionId, outputId, nodeIds)
+    }
+}
+
 export function fundOutputDelete(versionId, outputId) {
     return (dispatch, getState) => {
-        return WebApi.outputDelete(versionId, outputId)
+        WebApi.outputDelete(versionId, outputId)
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.output.title.deleted")));
             });        
@@ -76,7 +82,7 @@ export function fundOutputDelete(versionId, outputId) {
 
 export function fundOutputCreate(versionId, data) {
     return (dispatch, getState) => {
-        return WebApi.createOutput(versionId, data)
+        WebApi.createOutput(versionId, data)
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.output.title.added")));
                 dispatch(modalDialogHide());

@@ -97,10 +97,6 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         var displayValue
         if (colValue && colValue.values) {
             displayValue = colValue.values.map(value => {
-                if (col.dataType.code === 'COORDINATES') {
-                    console.log(value)
-                }
-
                 let itemValue
                 if (hasDescItemTypeValue(col.dataType)) {
                     switch (col.dataType.code) {

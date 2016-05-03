@@ -820,6 +820,10 @@ class WebApi{
     fundOutputAddNodes(versionId, outputId, nodeIds) {
         return getData({}, 100)
     }
+    
+    fundOutputRemoveNodes(versionId, outputId, nodeIds) {
+        return getData({}, 100)
+    }
 
     outputDelete(versionId, outputId) {
         return getData({}, 100)

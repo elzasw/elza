@@ -100,6 +100,8 @@ var messages = {
     "developer.scenarios.before": "Před",
     "developer.scenarios.child": "Pod",
 
+    "arr.output.delete.confirm": "Opravdu chcete smazat výstup?",
+    "arr.output.usageEnd.confirm": "Opravdu chcete ukončit používání výstupu?",
     "arr.output.title.add": "Vytvoření nového výstupu",
     "arr.output.title.added": "Výstup byl vytvořen",
     "arr.output.title.usageEnded": "Bylo ukončeno používání výstupu",

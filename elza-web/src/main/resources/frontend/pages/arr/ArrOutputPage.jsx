@@ -16,7 +16,7 @@ import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-boo
 import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {fundOutputFetchIfNeeded, fundOutputSelectOutput, fundOutputCreate, fundOutputUsageEnd, fundOutputDelete, fundOutputAddNodes } from 'actions/arr/fundOutput.jsx'
+import {fundOutputFetchIfNeeded, fundOutputRemoveNodes, fundOutputSelectOutput, fundOutputCreate, fundOutputUsageEnd, fundOutputDelete, fundOutputAddNodes } from 'actions/arr/fundOutput.jsx'
 var classNames = require('classnames');
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
@@ -37,7 +37,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('getActiveFund', 'renderListItem', 'handleSelect', 'trySetFocus', 'handleShortcuts',
-            'handleAddOutput', 'handleAddNodes', 'handleUsageEnd', 'handleDelete');
+            'handleAddOutput', 'handleAddNodes', 'handleUsageEnd', 'handleDelete', 'handleRemoveNode');
     }
 
     componentDidMount() {
@@ -119,6 +119,12 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 }}
                 />))
     }
+
+    handleRemoveNode(node) {
+        const fund = this.getActiveFund(this.props)
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail
+        this.dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]))
+    }
     
     /**
      * Sestavení Ribbonu.
@@ -172,13 +178,17 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     handleUsageEnd() {
         const fund = this.getActiveFund(this.props)
         const fundOutputDetail = fund.fundOutput.fundOutputDetail
-        this.dispatch(fundOutputUsageEnd(fund.versionId, fundOutputDetail.id))
+        if (confirm(i18n('arr.output.usageEnd.confirm'))) {
+            this.dispatch(fundOutputUsageEnd(fund.versionId, fundOutputDetail.id))
+        }
     }
 
     handleDelete() {
         const fund = this.getActiveFund(this.props)
         const fundOutputDetail = fund.fundOutput.fundOutputDetail
-        this.dispatch(fundOutputDelete(fund.versionId, fundOutputDetail.id))
+        if (confirm(i18n('arr.output.delete.confirm'))) {
+            this.dispatch(fundOutputDelete(fund.versionId, fundOutputDetail.id))
+        }
     }
 
     renderListItem(item, isActive, index) {
@@ -247,6 +257,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                     <div className="fund-nodes-container">
                         <FundNodesList
                             nodes={fundOutputDetail.nodes}
+                            onDeleteNode={this.handleRemoveNode}
                             />
                     </div>
                 )
