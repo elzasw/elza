@@ -16,7 +16,7 @@ import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-boo
 import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {fundOutputFetchIfNeeded, fundOutputSelectOutput, fundOutputCreate, fundOutputUsageEnd, fundOutputDelete } from 'actions/arr/fundOutput.jsx'
+import {fundOutputFetchIfNeeded, fundOutputSelectOutput, fundOutputCreate, fundOutputUsageEnd, fundOutputDelete, fundOutputAddNodes } from 'actions/arr/fundOutput.jsx'
 var classNames = require('classnames');
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
@@ -109,9 +109,14 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleAddNodes() {
+        const fund = this.getActiveFund(this.props)
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail
+
         this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesAddForm
-                onSubmitForm={(ids, nodes) => {console.log(5555, ids, nodes)}}
+                onSubmitForm={(ids, nodes) => {
+                    this.dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids))
+                }}
                 />))
     }
     

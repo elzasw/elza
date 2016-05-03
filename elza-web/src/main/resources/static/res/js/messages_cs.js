@@ -103,6 +103,7 @@ var messages = {
     "arr.output.title.add": "Vytvoření nového výstupu",
     "arr.output.title.added": "Výstup byl vytvořen",
     "arr.output.title.usageEnded": "Bylo ukončeno používání výstupu",
+    "arr.output.title.nodesAdded": "JP byly přidány",
     "arr.output.title.deleted": "Výstup byl smazán",
     "arr.output.name": "Název výstupu",
     "arr.output.code": "Interní kód výstupu",

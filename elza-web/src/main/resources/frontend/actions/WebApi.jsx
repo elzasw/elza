@@ -770,18 +770,6 @@ class WebApi{
                     activeVersion: json.versions[0],
                 }
             })
-
-        return new Promise(function (resolve, reject) {
-            resolve({
-                id: fundId,
-                versionId: fundId,
-                name: 'Nazev ' + fundId,
-                versions: [
-                    {id: 1, versionId: 2, createDate: 1460469000591},
-                    {id: 11, versionId: 1, createDate: 1460462260849, lockDate: 1460469000591},
-                ]
-            })
-        })
     }
 
     getValidationItems(fundVersionId, fromIndex, toIndex) {
@@ -826,6 +814,10 @@ class WebApi{
     }
 
     outputUsageEnd(versionId, outputId) {
+        return getData({}, 100)
+    }
+    
+    fundOutputAddNodes(versionId, outputId, nodeIds) {
         return getData({}, 100)
     }
 

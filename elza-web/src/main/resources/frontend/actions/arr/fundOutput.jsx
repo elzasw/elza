@@ -55,6 +55,16 @@ export function fundOutputUsageEnd(versionId, outputId) {
     }
 }
 
+export function fundOutputAddNodes(versionId, outputId, nodeIds) {
+    return (dispatch, getState) => {
+        return WebApi.outputUsageEnd(versionId, outputId, nodeIds)
+            .then((json) => {
+                dispatch(addToastrSuccess(i18n("arr.output.title.nodesAdded")));
+                dispatch(modalDialogHide());
+            });        
+    }
+}
+
 export function fundOutputDelete(versionId, outputId) {
     return (dispatch, getState) => {
         return WebApi.outputDelete(versionId, outputId)
