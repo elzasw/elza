@@ -11,6 +11,7 @@ import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.repository.NamedOutputRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -50,7 +51,25 @@ public class OutputService {
     private EntityManager entityManager;
 
     @Autowired
+    private NodeRepository nodeRepository;
+
+    @Autowired
     private EventNotificationService eventNotificationService;
+
+    /**
+     * Vyhledá platné nody k výstupu.
+     *
+     * @param output výstup
+     * @return seznam nodů k výstupu
+     */
+    public List<ArrNode> getNodesForOutput(final ArrOutput output) {
+        Assert.notNull(output);
+        if (output.getLockChange() == null) {
+            return nodeRepository.findNodesForOutput(output, output.getCreateChange());
+        } else {
+            return nodeRepository.findNodesForOutput(output, output.getCreateChange(), output.getLockChange());
+        }
+    }
 
     /**
      * Smazat pojmenovaný výstup.
@@ -250,11 +269,12 @@ public class OutputService {
         checkFund(fundVersion, namedOutput);
 
         Set<ArrNodeOutput> nodeOutputs = namedOutput.getOutputNodes().stream()
-                .filter(nodeOutput -> nodeIds.contains(nodeOutput.getNode().getNodeId()))
+                .filter(nodeOutput -> nodeOutput.getDeleteChange() == null && nodeIds.contains(nodeOutput.getNode().getNodeId()))
                 .collect(Collectors.toSet());
 
         if (nodeOutputs.size() > 0) {
-            nodeOutputRepository.delete(nodeOutputs);
+            nodeOutputs.stream().forEach(arrNodeOutput -> arrNodeOutput.setDeleteChange(change));
+            nodeOutputRepository.save(nodeOutputs);
 
             Integer[] outputIds = namedOutput.getOutputs().stream().map(ArrOutput::getOutputId).toArray(size -> new Integer[size]);
             EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
@@ -320,6 +340,7 @@ public class OutputService {
         checkFund(fundVersion, namedOutput);
 
         Set<Integer> nodesIdsDb = namedOutput.getOutputNodes().stream()
+                .filter(arrNodeOutput -> arrNodeOutput.getDeleteChange() == null) // pouze nesmazané nody
                 .map(ArrNodeOutput::getNode)
                 .map(ArrNode::getNodeId)
                 .collect(Collectors.toSet());

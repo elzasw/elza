@@ -1370,7 +1370,7 @@ public class ArrangementController {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrNamedOutput namedOutput = outputService.createNamedOutput(fundVersion, param.getName(), param.getCode(), param.getTemporary());
-        return factoryVo.createNamedOutput(namedOutput, false, false, null);
+        return factoryVo.createNamedOutput(namedOutput);
     }
 
     /**

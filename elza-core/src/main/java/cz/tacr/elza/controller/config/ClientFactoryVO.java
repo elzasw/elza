@@ -20,6 +20,7 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.OutputService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
@@ -95,6 +96,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
+
+    @Autowired
+    private OutputService outputService;
 
     @Autowired
     private BulkActionNodeRepository bulkActionNodeRepository;
@@ -693,25 +697,12 @@ public class ClientFactoryVO {
      * Vytvoří třídy výstupů archivního souboru.
      *
      * @param namedOutput DO
-     * @param loadOutputs  mají se do objektu načíst verze? (arr_output)
-     * @param loadNodes maj9 se do objektu načíst nody?
-     * @param fundVersion verze archivní pomůcky (může být null, pokud loadNodes je false)
      * @return VO
      */
-    public ArrNamedOutputVO createNamedOutput(final ArrNamedOutput namedOutput,
-                                              final boolean loadOutputs,
-                                              final boolean loadNodes,
-                                              final ArrFundVersion fundVersion) {
+    public ArrNamedOutputVO createNamedOutput(final ArrNamedOutput namedOutput) {
         Assert.notNull(namedOutput);
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrNamedOutputVO namedOutputVO = mapper.map(namedOutput, ArrNamedOutputVO.class);
-        if (loadOutputs) {
-            namedOutputVO.setOutputs(createOutputsVO(namedOutput.getOutputs()));
-        }
-        if (loadNodes) {
-            List<Integer> nodeIds = namedOutput.getOutputNodes().stream().map(ArrNodeOutput::getNode).map(ArrNode::getNodeId).collect(Collectors.toList());
-            namedOutputVO.setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
-        }
         return namedOutputVO;
     }
 
@@ -1265,7 +1256,8 @@ public class ClientFactoryVO {
         outputExt.setCreateDate(mapper.map(output.getCreateChange().getChangeDate(), Date.class));
         outputExt.setLockDate(output.getLockChange() != null ? mapper.map(output.getLockChange().getChangeDate(), Date.class) : null);
 
-        List<Integer> nodeIds = output.getNamedOutput().getOutputNodes().stream().map(ArrNodeOutput::getNode).map(ArrNode::getNodeId).collect(Collectors.toList());
+        List<ArrNode> nodes = outputService.getNodesForOutput(output);
+        List<Integer> nodeIds = nodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList());
         outputExt.getNamedOutput().setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
         return outputExt;
     }
