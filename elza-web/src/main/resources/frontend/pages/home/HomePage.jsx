@@ -132,7 +132,7 @@ var HomePage = class HomePage extends AbstractReactComponent {
 
         var altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup className="small">{altActions}</RibbonGroup>
         }
 
         return (

@@ -20,6 +20,9 @@ import {fundOutputFetchIfNeeded, fundOutputRemoveNodes, fundOutputSelectOutput, 
 var classNames = require('classnames');
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
+import * as perms from 'actions/user/Permission.jsx';
+import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
+import {routerNavigate} from 'actions/router.jsx'
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -37,7 +40,8 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('getActiveFund', 'renderListItem', 'handleSelect', 'trySetFocus', 'handleShortcuts',
-            'handleAddOutput', 'handleAddNodes', 'handleUsageEnd', 'handleDelete', 'handleRemoveNode');
+            'handleAddOutput', 'handleAddNodes', 'handleUsageEnd', 'handleDelete', 'handleRemoveNode',
+            'handleBulkActions');
     }
 
     componentDidMount() {
@@ -125,54 +129,77 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         const fundOutputDetail = fund.fundOutput.fundOutputDetail
         this.dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]))
     }
-    
+
+    handleBulkActions() {
+        const fund = this.getActiveFund(this.props)
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail
+
+        this.dispatch(fundActionFormShow())
+        this.dispatch(fundActionFormChange({nodeList: fundOutputDetail.namedOutput.nodes}))
+        this.dispatch(routerNavigate('/arr/actions'));
+    }
+
     /**
      * Sestavení Ribbonu.
      * @return {Object} view
      */
     buildRibbon() {
+        const {userDetail} = this.props
+
         const fund = this.getActiveFund(this.props)
 
         var altActions = [];
-        altActions.push(
-            <Button key="add-output" onClick={this.handleAddOutput}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.add')}</span></div></Button>
-        )
+        if (fund) {
+            if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId: fund.id})) {
+                altActions.push(
+                    <Button key="add-output" onClick={this.handleAddOutput}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.add')}</span></div></Button>
+                )
+            }
+        }
 
         var itemActions = [];
         if (fund) {
             const fundOutputDetail = fund.fundOutput.fundOutputDetail
+
             if (fundOutputDetail.id !== null && fundOutputDetail.fetched && !fundOutputDetail.isFetching) {
-                if (!fundOutputDetail.lockDate) {
+                if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId: fund.id})) {
+                    if (!fundOutputDetail.lockDate) {
+                        itemActions.push(
+                            <Button key="add-fund-nodes" onClick={this.handleAddNodes}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.nodes.add')}</span></div></Button>
+                        )
+                        itemActions.push(
+                            <Button key="fund-output-usage-end" onClick={this.handleUsageEnd}><Icon glyph="fa-clock-o" /><div><span className="btnText">{i18n('ribbon.action.arr.output.usageEnd')}</span></div></Button>
+                        )
+                    }
                     itemActions.push(
-                        <Button key="add-fund-nodes" onClick={this.handleAddNodes}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.nodes.add')}</span></div></Button>
-                    )
-                    itemActions.push(
-                        <Button key="fund-output-usage-end" onClick={this.handleUsageEnd}><Icon glyph="fa-clock-o" /><div><span className="btnText">{i18n('ribbon.action.arr.output.usageEnd')}</span></div></Button>
+                        <Button key="fund-output-delete" onClick={this.handleDelete}><Icon glyph="fa-trash"/>
+                            <div><span className="btnText">{i18n('ribbon.action.arr.output.delete')}</span></div>
+                        </Button>
                     )
                 }
-                itemActions.push(
-                    <Button key="fund-output-delete" onClick={this.handleDelete}><Icon glyph="fa-trash"/>
-                        <div><span className="btnText">{i18n('ribbon.action.arr.output.delete')}</span></div>
-                    </Button>
-                )
-                itemActions.push(
-                    <Button key="fund-output-bulk-actions" onClick={null}><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span></div></Button>
-                )
+
+                if (fundOutputDetail.namedOutput.nodes.length > 0) {
+                    if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) { // právo na hromadné akce
+                        itemActions.push(
+                            <Button key="fund-output-bulk-actions" onClick={this.handleBulkActions}><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span></div></Button>
+                        )
+                    }
+                }
             }
         }
 
         var altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt" className="large">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
         }
 
         var itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item" className="large">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>
         }
 
         return (
-            <Ribbon arr altSection={altSection} itemSection={itemSection}/>
+            <Ribbon arr fundId={fund ? fund.id : null} altSection={altSection} itemSection={itemSection}/>
         )
     }
 
@@ -226,46 +253,50 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         var leftPanel, rightPanel
         let centerPanel
 
-        if (fund) {
-            const fundOutput = fund.fundOutput
-
-            var activeIndex
-            if (fundOutput.fundOutputDetail.id !== null) {
-                activeIndex = indexById(fundOutput.outputs, fundOutput.fundOutputDetail.id)
-            }
-            leftPanel = (
-                <div className="fund-output-list-container">
-                    <ListBox
-                        className='fund-output-listbox'
-                        ref='fundOutputList'
-                        items={fundOutput.outputs}
-                        activeIndex={activeIndex}
-                        renderItemContent={this.renderListItem}
-                        onFocus={this.handleSelect}
-                        onSelect={this.handleSelect}
-                    />
-                </div>
-            )
-
-            centerPanel = <ArrOutputDetail
-                versionId={fund.versionId}
-                fundOutputDetail={fundOutput.fundOutputDetail}
-                />
-
-            const fundOutputDetail = fund.fundOutput.fundOutputDetail
-            if (fundOutputDetail.id !== null && fundOutputDetail.fetched) {
-                rightPanel = (
-                    <div className="fund-nodes-container">
-                        <FundNodesList
-                            nodes={fundOutputDetail.namedOutput.nodes}
-                            onDeleteNode={this.handleRemoveNode}
-                            readOnly={fundOutputDetail.lockDate ? true : false}
-                            />
+        if (userDetail.hasArrOutputPage(fund ? fund.id : null)) { // má právo na tuto stránku
+            if (fund) {
+                const fundOutput = fund.fundOutput
+    
+                var activeIndex
+                if (fundOutput.fundOutputDetail.id !== null) {
+                    activeIndex = indexById(fundOutput.outputs, fundOutput.fundOutputDetail.id)
+                }
+                leftPanel = (
+                    <div className="fund-output-list-container">
+                        <ListBox
+                            className='fund-output-listbox'
+                            ref='fundOutputList'
+                            items={fundOutput.outputs}
+                            activeIndex={activeIndex}
+                            renderItemContent={this.renderListItem}
+                            onFocus={this.handleSelect}
+                            onSelect={this.handleSelect}
+                        />
                     </div>
                 )
+    
+                centerPanel = <ArrOutputDetail
+                    versionId={fund.versionId}
+                    fundOutputDetail={fundOutput.fundOutputDetail}
+                    />
+    
+                const fundOutputDetail = fund.fundOutput.fundOutputDetail
+                if (fundOutputDetail.id !== null && fundOutputDetail.fetched) {
+                    rightPanel = (
+                        <div className="fund-nodes-container">
+                            <FundNodesList
+                                nodes={fundOutputDetail.namedOutput.nodes}
+                                onDeleteNode={this.handleRemoveNode}
+                                readOnly={fundOutputDetail.lockDate ? true : false}
+                                />
+                        </div>
+                    )
+                }
+            } else {
+                centerPanel = <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>
             }
         } else {
-            centerPanel = <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>
+            centerPanel = <div>{i18n('global.insufficient.right')}</div>
         }
 
         return (

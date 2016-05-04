@@ -57,7 +57,7 @@ var AdminPage = class AdminPage extends AbstractReactComponent {
 
         var altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt" className="large">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
         }
 
         return (

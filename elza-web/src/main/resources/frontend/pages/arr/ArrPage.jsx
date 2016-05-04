@@ -277,16 +277,16 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         var altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt" className="large">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
         }
 
         var itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item" className="large">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>
         }
 
         return (
-            <Ribbon arr altSection={altSection} itemSection={itemSection}/>
+            <Ribbon arr fundId={activeInfo.activeFund ? activeInfo.activeFund.id : null} altSection={altSection} itemSection={itemSection}/>
         )
     }
 
@@ -605,71 +605,76 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     render() {
-        const {focus, splitter, arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+        const {focus, splitter, arrRegion, userDetail, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
 
         var showRegisterJp = arrRegion.showRegisterJp;
 
         var funds = arrRegion.funds;
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
-        var leftPanel;
-        if (!arrRegion.extendedView && activeFund) {
-            leftPanel = (
-                <FundTreeTabs
-                    funds={funds}
-                    activeFund={activeFund}
-                    focus={focus}
-                />
-            )
 
-
-        }
-
-        var packets = [];
-        var fundId = this.getActiveFundId();
-        if (fundId && arrRegion.packets[fundId]) {
-            packets = arrRegion.packets[fundId].items;
-        }
-
-        var centerPanel;
-        if (activeFund) {
-            if (arrRegion.extendedView) {   // rozšířené zobrazení stromu AS
-                centerPanel = (
-                    <FundExtendedView
-                        fund={activeFund}
-                        versionId={activeFund.versionId}
-                        descItemTypes={descItemTypes}
-                        packetTypes={packetTypes}
-                        calendarTypes={calendarTypes}
-                        rulDataTypes={rulDataTypes}
+        if (userDetail.hasArrPage(activeFund ? activeFund.id : null)) { // má právo na tuto stránku
+            var leftPanel;
+            if (!arrRegion.extendedView && activeFund) {
+                leftPanel = (
+                    <FundTreeTabs
+                        funds={funds}
+                        activeFund={activeFund}
+                        focus={focus}
                     />
                 )
-            } else if (activeFund.nodes) {
+
+
+            }
+
+            var centerPanel;
+            if (activeFund) {
+                if (arrRegion.extendedView) {   // rozšířené zobrazení stromu AS
+                    centerPanel = (
+                        <FundExtendedView
+                            fund={activeFund}
+                            versionId={activeFund.versionId}
+                            descItemTypes={descItemTypes}
+                            packetTypes={packetTypes}
+                            calendarTypes={calendarTypes}
+                            rulDataTypes={rulDataTypes}
+                        />
+                    )
+                } else if (activeFund.nodes) {
+                    var packets = [];
+                    var fundId = this.getActiveFundId();
+                    if (fundId && arrRegion.packets[fundId]) {
+                        packets = arrRegion.packets[fundId].items;
+                    }
+
+                    centerPanel = (
+                        <NodeTabs
+                            versionId={activeFund.versionId}
+                            fund={activeFund}
+                            closed={activeFund.closed}
+                            nodes={activeFund.nodes.nodes}
+                            activeIndex={activeFund.nodes.activeIndex}
+                            rulDataTypes={rulDataTypes}
+                            calendarTypes={calendarTypes}
+                            descItemTypes={descItemTypes}
+                            packetTypes={packetTypes}
+                            packets={packets}
+                            fundId={fundId}
+                            showRegisterJp={showRegisterJp}
+                        />
+                    )
+                }
+            } else {
                 centerPanel = (
-                    <NodeTabs
-                        versionId={activeFund.versionId}
-                        fund={activeFund}
-                        closed={activeFund.closed}
-                        nodes={activeFund.nodes.nodes}
-                        activeIndex={activeFund.nodes.activeIndex}
-                        rulDataTypes={rulDataTypes}
-                        calendarTypes={calendarTypes}
-                        descItemTypes={descItemTypes}
-                        packetTypes={packetTypes}
-                        packets={packets}
-                        fundId={fundId}
-                        showRegisterJp={showRegisterJp}
-                    />
+                    <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>
                 )
             }
-        } else {
-            centerPanel = (
-                <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>
-            )
-        }
 
-        var rightPanel;
-        if (activeFund) {
-            rightPanel = this.renderPanel()
+            var rightPanel;
+            if (activeFund) {
+                rightPanel = this.renderPanel()
+            }
+        } else {
+            centerPanel = <div>{i18n('global.insufficient.right')}</div>
         }
 
         return (

@@ -297,7 +297,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
             }
         }
 
-        const itemSection = <RibbonGroup key="alt" className="large">{itemActions}</RibbonGroup>;
+        const itemSection = <RibbonGroup key="alt" className="small">{itemActions}</RibbonGroup>;
 
         return (
             <Ribbon arr itemSection={itemSection}/>
@@ -375,11 +375,14 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
     }
 
     render() {
-        const {arrRegion, splitter} = this.props;
+        const {arrRegion, splitter, userDetail} = this.props;
         const fund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : false;
 
-        const leftPanel = fund ? <div className='actions-list-container'>{
-            fund.fundAction.list.fetched ?
+        var leftPanel
+        var centerPanel
+        if (userDetail.hasFundActionPage(fund ? fund.id : null)) { // má právo na tuto stránku
+            leftPanel = <div className='actions-list-container'>{
+                fund.fundAction.list.fetched ?
                 <ListBox
                     className='actions-listbox'
                     key='actions-list'
@@ -388,8 +391,11 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                     onSelect={this.handleListBoxActionSelect}
                     onFocus={this.handleListBoxActionSelect}
                 /> : <Loading />}
-        </div> : null;
-        const centerPanel = <div className='center-container'>{this.renderCenter(fund)}</div>;
+            </div>;
+            centerPanel = <div className='center-container'>{this.renderCenter(fund)}</div>;
+        } else {
+            centerPanel = <div>{i18n('global.insufficient.right')}</div>
+        }
 
         return (
             <PageLayout
@@ -406,10 +412,11 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
 FundActionPage.propTypes = {};
 
 function mapStateToProps(state) {
-    const {arrRegion, splitter} = state;
+    const {arrRegion, splitter, userDetail} = state;
     return {
         arrRegion,
-        splitter
+        splitter,
+        userDetail,
     }
 }
 

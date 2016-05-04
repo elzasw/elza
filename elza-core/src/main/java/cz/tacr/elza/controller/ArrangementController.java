@@ -1370,7 +1370,7 @@ public class ArrangementController {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrNamedOutput namedOutput = outputService.createNamedOutput(fundVersion, param.getName(), param.getCode(), param.getTemporary());
-        return factoryVo.createNamedOutput(namedOutput, false, false, null);
+        return factoryVo.createNamedOutput(namedOutput);
     }
 
     /**
@@ -1435,6 +1435,24 @@ public class ArrangementController {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
         outputService.deleteNamedOutput(fundVersion, output.getNamedOutput());
+    }
+
+    /**
+     * Upravení výstupu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identfikátor výstupu
+     * @param param         vstupní parametry pro úpravu outputu
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{fundVersionId}/{outputId}/update", method = RequestMethod.POST)
+    public void updateNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                  @PathVariable(value = "outputId") final Integer outputId,
+                                  @RequestBody OutputNameParam param) {
+        Assert.notNull(param);
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getCode());
     }
 
     /**

@@ -307,11 +307,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         var altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup className="small">{altActions}</RibbonGroup>
         }
         var itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup className="large">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup className="small">{itemActions}</RibbonGroup>
         }
 
         return (

@@ -42,6 +42,31 @@ function hasRight(right) {
     return false
 }
 
+function hasArrPage(fundId = null) {
+    return hasOne.bind(this)(
+        perms.FUND_ADMIN,
+        perms.FUND_RD_ALL, {type: perms.FUND_RD, fundId},
+        perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId},
+    )
+}
+
+function hasArrOutputPage(fundId = null) {
+    return hasOne.bind(this)(
+        perms.FUND_ADMIN,
+        perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId},
+        perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId},
+    )
+}
+
+function hasFundActionPage(fundId = null) {
+    return hasOne.bind(this)(
+        perms.FUND_ADMIN,
+        perms.FUND_RD_ALL, {type: perms.FUND_RD, fundId},
+        perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId},
+        perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId},
+    )
+}
+
 function hasOne(...rights) {
     if (this.permissionsMap[perms.ADMIN]) {
         return true
@@ -87,6 +112,9 @@ export default function userDetail(state = initialState, action = {}) {
 
     result.hasOne = hasOne.bind(result)
     result.hasAll = hasAll.bind(result)
+    result.hasArrPage = hasArrPage.bind(result)
+    result.hasArrOutputPage = hasArrOutputPage.bind(result)
+    result.hasFundActionPage = hasFundActionPage.bind(result)
 
     return result
 }

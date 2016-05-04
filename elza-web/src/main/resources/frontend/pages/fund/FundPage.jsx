@@ -155,13 +155,6 @@ var FundPage = class FundPage extends AbstractReactComponent {
                 </Button>
             )
         }
-        if (userDetail.hasOne(perms.FUND_EXPORT_ALL, {type: perms.FUND_EXPORT, fundId: fundRegion.fundDetail.id})) {
-            altActions.push(
-                <Button key="fa-export" onClick={this.handleExportDialog}><Icon glyph='fa-download'/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.export')}</span></div>
-                </Button>
-            )
-        }
 
         var itemActions = [];
         if (fundRegion.fundDetail.id !== null && !fundRegion.fundDetail.fetching && fundRegion.fundDetail.fetched) {
@@ -181,16 +174,23 @@ var FundPage = class FundPage extends AbstractReactComponent {
                     </Button>,
                 )
             }
+            if (userDetail.hasOne(perms.FUND_EXPORT_ALL, {type: perms.FUND_EXPORT, fundId: fundRegion.fundDetail.id})) {
+                itemActions.push(
+                    <Button key="fa-export" onClick={this.handleExportDialog}><Icon glyph='fa-download'/>
+                        <div><span className="btnText">{i18n('ribbon.action.arr.fund.export')}</span></div>
+                    </Button>
+                )
+            }
         }
 
         var altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup className="small">{altActions}</RibbonGroup>
         }
 
         var itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item" className="large">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>
         }
 
         return (

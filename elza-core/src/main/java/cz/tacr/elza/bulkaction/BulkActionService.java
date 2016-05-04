@@ -7,7 +7,10 @@ import java.util.*;
 
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrBulkActionRun.State;
+import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.bulkaction.factory.BulkActionWorkerFactory;
 import cz.tacr.elza.bulkaction.generator.BulkAction;
 import cz.tacr.elza.domain.ArrBulkActionNode;
@@ -157,7 +160,11 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @param inputNodeIds   seznam vstupních uzlů (podstromů AS)
      * @return objekt hromadné akce
      */
-    public ArrBulkActionRun queue(final Integer userId, final String bulkActionCode, final Integer fundVersionId, final List<Integer> inputNodeIds) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
+    public ArrBulkActionRun queue(final Integer userId,
+                                  final String bulkActionCode,
+                                  @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                  final List<Integer> inputNodeIds) {
         Assert.notNull(bulkActionCode);
         Assert.isTrue(StringUtils.isNotBlank(bulkActionCode));
         Assert.notNull(fundVersionId);
@@ -381,13 +388,32 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @param fundVersionId identifikátor verze archivní pomůcky
      * @return seznam stavů hromadných akcí
      */
-    public List<ArrBulkActionRun> getAllArrBulkActionRun(final Integer fundVersionId) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
+    public List<ArrBulkActionRun> getAllArrBulkActionRun(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         return bulkActionRepository.findByFundVersionId(fundVersionId, new PageRequest(0, MAX_BULK_ACTIONS_LIST));
     }
 
+    /**
+     * Získání informace o hromadný akce.
+     *
+     * @param bulkActionRunId   identifikátor hromadné akce
+     * @return hromadná akce
+     */
     public ArrBulkActionRun getArrBulkActionRun(final Integer bulkActionRunId) {
         Assert.notNull(bulkActionRunId);
-        return bulkActionRepository.findOne(bulkActionRunId);
+        ArrBulkActionRun bulkActionRun = bulkActionRepository.findOne(bulkActionRunId);
+        checkAuthBA(bulkActionRun.getFundVersion());
+        return bulkActionRun;
+    }
+
+    /**
+     * Pomocná metoda pro zjištění oprávnění na AS.
+     *
+     * @param fundVersion verze AS
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
+    private void checkAuthBA(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
+        // pomocná metoda na ověření
     }
 
     /**
@@ -429,7 +455,9 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @param mandatory     true - vrací se pouze seznam povinných, false - vrací se seznam všech
      * @return seznam nastavení hromadných akcí
      */
-    public List<BulkActionConfig> getBulkActions(final Integer fundVersionId, final boolean mandatory) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
+    public List<BulkActionConfig> getBulkActions(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                                 final boolean mandatory) {
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         if (version == null) {
@@ -456,7 +484,8 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @param fundVersionId identifikátor verze archivní pomůcky
      * @return seznam konfigurací hromadných akcí, které je nutné ještě spustit před uzavřením verze
      */
-    public List<BulkActionConfig> runValidation(final Integer fundVersionId) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
+    public List<BulkActionConfig> runValidation(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         if (version == null) {

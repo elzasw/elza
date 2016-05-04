@@ -815,6 +815,10 @@ class WebApi{
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/output/' + versionId, null, data);
     }
 
+    updateOutput(versionId, outputId, data) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/output/' + versionId + '/' + outputId + '/update', null, data);
+    }
+
     outputUsageEnd(versionId, outputId) {
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/output/' + versionId + '/' + outputId + '/lock');
     }
