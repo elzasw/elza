@@ -1,5 +1,8 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNamedOutput;
@@ -56,7 +59,9 @@ public class OutputService {
      * @param namedOutput pojmenovaný výstup
      * @return smazaný pojmenovaný výstup
      */
-    public ArrNamedOutput deleteNamedOutput(final ArrFundVersion fundVersion,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
+    public ArrNamedOutput deleteNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                             final ArrNamedOutput namedOutput) {
         Assert.notNull(fundVersion);
         Assert.notNull(namedOutput);
@@ -97,7 +102,9 @@ public class OutputService {
      * @param output      výstup
      * @return zamknutý výstup
      */
-    public ArrOutput outputLock(final ArrFundVersion fundVersion,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
+    public ArrOutput outputLock(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                 final ArrOutput output) {
         ArrChange change = arrangementService.createChange();
         return outputLock(fundVersion, output, change);
@@ -145,7 +152,9 @@ public class OutputService {
      * @param temporary   dočasný výstup?
      * @return vytvořený výstup
      */
-    public ArrNamedOutput createNamedOutput(final ArrFundVersion fundVersion,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
+    public ArrNamedOutput createNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                             final String name,
                                             final String code,
                                             final Boolean temporary) {
@@ -202,7 +211,9 @@ public class OutputService {
      * @param namedOutput pojmenovaný výstup
      * @param nodeIds     seznam identifikátorů uzlů
      */
-    public void removeNodesNamedOutput(final ArrFundVersion fundVersion,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
+    public void removeNodesNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                        final ArrNamedOutput namedOutput,
                                        final List<Integer> nodeIds) {
         ArrChange change = arrangementService.createChange();
@@ -264,7 +275,9 @@ public class OutputService {
      * @param namedOutput pojmenovaný výstup
      * @param nodeIds     seznam identifikátorů uzlů
      */
-    public void addNodesNamedOutput(final ArrFundVersion fundVersion,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
+    public void addNodesNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                     final ArrNamedOutput namedOutput,
                                     final List<Integer> nodeIds) {
         ArrChange change = arrangementService.createChange();
@@ -327,7 +340,9 @@ public class OutputService {
      * @param fundVersion verze AS
      * @return seznam výstupů
      */
-    public List<ArrOutput> getOutputs(final ArrFundVersion fundVersion) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public List<ArrOutput> getOutputs(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
         Assert.notNull(fundVersion);
         List<ArrOutput> outputs = outputRepository.findByFundVersion(fundVersion);
         return outputs;
@@ -340,7 +355,9 @@ public class OutputService {
      * @param output      výstup
      * @return pojmenovaný výstup
      */
-    public ArrNamedOutput getNamedOutput(final ArrFundVersion fundVersion,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrNamedOutput getNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                          final ArrOutput output) {
         Assert.notNull(fundVersion);
         Assert.notNull(output);

@@ -1252,20 +1252,35 @@ public class ClientFactoryVO {
      * Vytvoření VO rozšířeného výstupu.
      *
      * @param outputs seznam DO výstupů
+     * @param fundVersion
      * @return seznam VO výstupů
      */
-    public List<ArrOutputExtVO> createOutputExtList(final List<ArrOutput> outputs) {
+    public List<ArrOutputExtVO> createOutputExtList(final List<ArrOutput> outputs, final ArrFundVersion fundVersion) {
         Assert.notNull(outputs);
-        MapperFacade mapper = mapperFactory.getMapperFacade();
         List<ArrOutputExtVO> outputExtList = new ArrayList<>();
         for (ArrOutput output : outputs) {
-            ArrOutputExtVO outputExt = mapper.map(output, ArrOutputExtVO.class);
-
-            outputExt.setNamedOutput(mapper.map(output.getNamedOutput(), ArrNamedOutputVO.class));
-            outputExt.setCreateDate(mapper.map(output.getCreateChange().getChangeDate(), Date.class));
-            outputExt.setLockDate(output.getLockChange() != null ? mapper.map(output.getLockChange().getChangeDate(), Date.class) : null);
+            ArrOutputExtVO outputExt = createOutputExt(output, fundVersion);
             outputExtList.add(outputExt);
         }
         return outputExtList;
+    }
+
+    /**
+     * Vytvoření VO rozšířeného výstupu.
+     *
+     * @param output DO výstup
+     * @param fundVersion
+     * @return VO výstup
+     */
+    public ArrOutputExtVO createOutputExt(final ArrOutput output, final ArrFundVersion fundVersion) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrOutputExtVO outputExt = mapper.map(output, ArrOutputExtVO.class);
+        outputExt.setNamedOutput(mapper.map(output.getNamedOutput(), ArrNamedOutputVO.class));
+        outputExt.setCreateDate(mapper.map(output.getCreateChange().getChangeDate(), Date.class));
+        outputExt.setLockDate(output.getLockChange() != null ? mapper.map(output.getLockChange().getChangeDate(), Date.class) : null);
+
+        List<Integer> nodeIds = output.getNamedOutput().getOutputNodes().stream().map(ArrNodeOutput::getNode).map(ArrNode::getNodeId).collect(Collectors.toList());
+        outputExt.getNamedOutput().setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
+        return outputExt;
     }
 }

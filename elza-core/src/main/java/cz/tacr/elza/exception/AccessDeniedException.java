@@ -8,4 +8,7 @@ package cz.tacr.elza.exception;
  */
 public class AccessDeniedException extends RuntimeException {
 
+    public AccessDeniedException(final String text) {
+        super(text);
+    }
 }

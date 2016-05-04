@@ -93,7 +93,7 @@ public class Authorization {
             return pjp.proceed();
         }
 
-        throw new AccessDeniedException();
+        throw new AccessDeniedException("Nedostatečné oprávnění");
     }
 
     /**

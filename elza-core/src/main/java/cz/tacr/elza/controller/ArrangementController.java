@@ -1337,7 +1337,7 @@ public class ArrangementController {
     public List<ArrOutputExtVO> getOutputs(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         List<ArrOutput> outputs = outputService.getOutputs(fundVersion);
-        return factoryVo.createOutputExtList(outputs);
+        return factoryVo.createOutputExtList(outputs, fundVersion);
     }
 
     /**
@@ -1345,15 +1345,15 @@ public class ArrangementController {
      *
      * @param fundVersionId identfikátor verze AS
      * @param outputId      identifikátor výstupu
-     * @return
+     * @return output
      */
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}", method = RequestMethod.GET)
-    public ArrNamedOutputVO getOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+    public ArrOutputExtVO getOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                       @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        ArrNamedOutput namedOutput = outputService.getNamedOutput(fundVersion, output);
-        return factoryVo.createNamedOutput(namedOutput, false, true, fundVersion);
+        outputService.getNamedOutput(fundVersion, output);
+        return factoryVo.createOutputExt(output, fundVersion);
     }
 
     /**
