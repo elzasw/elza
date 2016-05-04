@@ -48,6 +48,7 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
 
     List<ArrNodeRegister> findByNode(ArrNode node);
 
+    @Query("SELECT record FROM arr_node_register nr WHERE nr.node = ?1")
     List<RegRecord> findRecordsByNode(ArrNode node);
 
 }

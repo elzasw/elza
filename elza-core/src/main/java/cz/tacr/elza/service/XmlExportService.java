@@ -18,9 +18,6 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.domain.UsrPermission;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -32,6 +29,8 @@ import org.springframework.util.Assert;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTWriter;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -68,6 +67,7 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
@@ -805,8 +805,8 @@ public class XmlExportService {
                 } else {
                     rootRecords.add(record);
                 }
-                updateLevelRecordReferences(record, recordLevels);
-                updateDescItemRecordReferences(record, recordDescItems);
+                updateLevelRecordReferences(regRecord.getRecordId(), record, recordLevels);
+                updateDescItemRecordReferences(regRecord.getRecordId(), record, recordDescItems);
                 recordMap.put(regRecord.getRecordId(), record);
             }
         }
@@ -868,14 +868,16 @@ public class XmlExportService {
     /**
      * Doplní rejstříky do hodnot atributů které na ně odkazují.
      *
+     * @param recordId id rejstříku
      * @param record rejstřík
      * @param recordDescItems mapa id rejstříků na hodnoty atributů
      */
-    private void updateDescItemRecordReferences(final Record record, final Map<Integer, List<DescItemRecordRef>> recordDescItems) {
+    private void updateDescItemRecordReferences(final Integer recordId, final Record record, final Map<Integer, List<DescItemRecordRef>> recordDescItems) {
+        Assert.notNull(recordId);
         Assert.notNull(record);
         Assert.notNull(recordDescItems);
 
-        List<DescItemRecordRef> descItemRecordRefs = recordDescItems.get(record.getRecordId());
+        List<DescItemRecordRef> descItemRecordRefs = recordDescItems.get(recordId);
         if (CollectionUtils.isNotEmpty(descItemRecordRefs)) {
             descItemRecordRefs.forEach(diRR -> diRR.setRecord(record));
         }
@@ -884,14 +886,16 @@ public class XmlExportService {
     /**
      * Doplní rejstříky do levelů které na ně odkazují.
      *
+     * @param recordId id rejstříku
      * @param record rejstřík
      * @param recordLevels mapa id rejstříků na levely
      */
-    private void updateLevelRecordReferences(final Record record, final Map<Integer, List<Level>> recordLevels) {
+    private void updateLevelRecordReferences(final Integer recordId, final Record record, final Map<Integer, List<Level>> recordLevels) {
+        Assert.notNull(recordId);
         Assert.notNull(record);
         Assert.notNull(recordLevels);
 
-        List<Level> levels = recordLevels.get(record.getRecordId());
+        List<Level> levels = recordLevels.get(recordId);
         if (CollectionUtils.isNotEmpty(levels)) {
             levels.forEach(l -> {
                 List<Record> records = l.getRecords();
