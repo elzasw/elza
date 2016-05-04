@@ -123,6 +123,22 @@ export function deleteFund(fundId) {
     }
 }
 
+export function fundOutputChanges(versionId, outputIds) {
+    return {
+        type: types.OUTPUT_CHANGES,
+        versionId,
+        outputIds,
+    }
+}
+
+export function fundOutputChangesDetail(versionId, outputIds) {
+    return {
+        type: types.OUTPUT_CHANGES_DETAIL,
+        versionId,
+        outputIds,
+    }
+}
+
 export function changeFundRecord(versionId, nodeId, version) {
     return {
         type: types.CHANGE_FUND_RECORD,

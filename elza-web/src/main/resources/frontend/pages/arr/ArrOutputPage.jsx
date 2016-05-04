@@ -140,19 +140,21 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
         var itemActions = [];
         if (fund) {
-            itemActions.push(
-                <Button key="add-fund-nodes" onClick={this.handleAddNodes}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.nodes.add')}</span></div></Button>
-            )
-
             const fundOutputDetail = fund.fundOutput.fundOutputDetail
             if (fundOutputDetail.id !== null && fundOutputDetail.fetched && !fundOutputDetail.isFetching) {
-                if (!fundOutputDetail.lockDate) {
+                itemActions.push(
+                    <Button key="add-fund-nodes" onClick={this.handleAddNodes}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.nodes.add')}</span></div></Button>
+                )
+                console.log(fundOutputDetail)
+                if (!fundOutputDetail.lockChange) {
                     itemActions.push(
                         <Button key="fund-output-usage-end" onClick={this.handleUsageEnd}><Icon glyph="fa-clock-o" /><div><span className="btnText">{i18n('ribbon.action.arr.output.usageEnd')}</span></div></Button>
                     )
                 }
                 itemActions.push(
-                    <Button key="fund-output-delete" onClick={this.handleDelete}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('ribbon.action.arr.output.delete')}</span></div></Button>
+                    <Button key="fund-output-delete" onClick={this.handleDelete}><Icon glyph="fa-trash"/>
+                        <div><span className="btnText">{i18n('ribbon.action.arr.output.delete')}</span></div>
+                    </Button>
                 )
                 itemActions.push(
                     <Button key="fund-output-bulk-actions" onClick={null}><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span></div></Button>
@@ -252,7 +254,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 />
 
             const fundOutputDetail = fund.fundOutput.fundOutputDetail
-            if (fundOutputDetail.id !== null && !fundOutputDetail.fetching && fundOutputDetail.fetched) {
+            if (fundOutputDetail.id !== null && fundOutputDetail.fetched) {
                 rightPanel = (
                     <div className="fund-nodes-container">
                         <FundNodesList
@@ -261,8 +263,6 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                             />
                     </div>
                 )
-            } else {
-                // rightPanel = <Loading/>
             }
         } else {
             centerPanel = <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>

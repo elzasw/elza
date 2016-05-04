@@ -86,6 +86,7 @@ export function fundOutputCreate(versionId, data) {
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.output.title.added")));
                 dispatch(modalDialogHide());
+                dispatch(fundOutputSelectOutput(versionId, json.id))
             });        
     }
 }

@@ -72,7 +72,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
             return <div className='arr-output-detail-container'></div>
         }
 
-        if (fundOutputDetail.fetching || !fundOutputDetail.fetched) {
+        if (!fundOutputDetail.fetched) {
             return <div className='arr-output-detail-container'><Loading/></div>
         }        
         

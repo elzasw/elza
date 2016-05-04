@@ -8,7 +8,7 @@ import {store} from 'stores/app/AppStore.jsx';
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
         changeNodes, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
     changeMoveLevel, changeRegistryRecord, changeFund, deleteFund, changeFundRecord, changeInstitution,
-    changeVisiblePolicy} from 'actions/global/change.jsx';
+    changeVisiblePolicy, fundOutputChanges, fundOutputChangesDetail} from 'actions/global/change.jsx';
 
 
 var SockJS = require('sockjs-client');
@@ -167,6 +167,14 @@ function processEvents(values) {
             case 'FUND_DELETE':
                 fundDelete(value);
                 break;
+            
+            case 'OUTPUT_CHANGES':
+                outputChanges(value);
+                break;
+            
+            case 'OUTPUT_CHANGES_DETAIL':
+                outputChangesDetail(value);
+                break;
 
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
@@ -214,6 +222,14 @@ function fundChange(value) {
 
 function fundDelete(value) {
     store.dispatch(deleteFund(value.ids[0]));
+}
+
+function outputChanges(value) {
+    store.dispatch(fundOutputChanges(value.versionId, value.entityIds));
+}
+
+function outputChangesDetail(value) {
+    store.dispatch(fundOutputChangesDetail(value.versionId, value.entityIds));
 }
 
 function fundRecordChange(value) {

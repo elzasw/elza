@@ -22,6 +22,16 @@ export default function fundOutputDetail(state = initialState, action = {}) {
                 fetching: false,
                 currentDataKey: '',
             }
+        case types.OUTPUT_CHANGES:
+        case types.OUTPUT_CHANGES_DETAIL:
+            if (action.outputIds.indexOf(state.id) !== -1) {
+                return {
+                    ...state,
+                    currentDataKey: '',
+                }
+            } else {
+                return state
+            }
         case types.FUND_OUTPUT_SELECT_OUTPUT:
             if (state.id !== action.id) {
                 return {

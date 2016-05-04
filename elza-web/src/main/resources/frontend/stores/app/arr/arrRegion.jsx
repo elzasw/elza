@@ -173,6 +173,8 @@ export default function arrRegion(state = initialState, action) {
         case types.FUND_FUND_APPROVE_VERSION:
         case types.CHANGE_FUND_RECORD:
         case types.FUND_FUND_SELECT_SUBNODE:
+        case types.OUTPUT_CHANGES:
+        case types.OUTPUT_CHANGES_DETAIL:
             var index = indexById(state.funds, action.versionId, "versionId");
             return processFund(state, action, index);
         case types.FUND_FUNDS_RECEIVE:

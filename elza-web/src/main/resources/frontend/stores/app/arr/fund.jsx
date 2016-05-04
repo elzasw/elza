@@ -195,6 +195,13 @@ export function fund(state, action) {
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
                 fundPackets: fundPackets(state.fundPackets, action),
             }
+        case types.OUTPUT_CHANGES:
+        case types.OUTPUT_CHANGES_DETAIL:
+            var result = {
+                ...state,
+                fundOutput: fundOutput(state.fundOutput, action),
+            }
+            return consolidateState(state, result);
         case types.CHANGE_PACKETS:
             return {
                 ...state,
