@@ -4,11 +4,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.CoordinateSequence;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
@@ -32,7 +27,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemTypeDescItemsLiteVO;
@@ -295,14 +289,15 @@ public class ConfigMapperConfiguration {
                                         final BulkActionVO bulkActionVO,
                                         final MappingContext context) {
                         bulkActionVO.setName((String) bulkActionConfig.getProperty("name"));
+                        bulkActionVO.setDescription((String) bulkActionConfig.getProperty("description"));
                     }
                 }
         ).byDefault().register();
-        mapperFactory.classMap(BulkActionState.class, BulkActionStateVO.class).field("bulkActionCode", "code").byDefault().register();
+        mapperFactory.classMap(ArrBulkActionRun.class, BulkActionRunVO.class).field("bulkActionRunId", "id").field("bulkActionCode", "code").byDefault().register();
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
         mapperFactory.classMap(ParParty.class, ParPartyVO.class)
-                .exclude("prefferedName")
+                .exclude("preferredName")
                 .exclude("partyNames")
                 .exclude("partyCreators")
                 .exclude("relations")

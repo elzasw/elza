@@ -178,6 +178,7 @@ export function fund(state, action) {
                 fundPackets: fundPackets(state.fundPackets, action),
                 fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
                 bulkActions: bulkActions(undefined, {type: ''}),
+                fundAction: fundAction(undefined, {type: ''}),
                 versionValidation: versionValidation(undefined, {type: ''})
             }
         case types.STORE_SAVE:

@@ -241,7 +241,7 @@ class WebApi{
         });
     }
 
-    findRecordForRelation(search = null, roleTypeId = null, partyId = null){
+    findRecordForRelation(search = null, roleTypeId = null, partyId = null) {
         return AjaxUtils.ajaxGet('/api/registryManagerV2/findRecordForRelation',{
             search: search,
             from: 0,
@@ -262,13 +262,28 @@ class WebApi{
         return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/states/' + versionId, null);
     }
 
-    bulkActionRun(versionId, code) {
-        return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/run/' + versionId + '/' + code, null);
+    getBulkActionsList(versionId) {
+        return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/list/' + versionId, null);
     }
 
     bulkActionValidate(versionId) {
         return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/validate/' + versionId, null);
     }
+
+
+
+    getBulkAction(bulkActionRunId) {
+        return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/action/' + bulkActionRunId, null);
+    }
+
+    queueBulkAction(versionId, code) {
+        return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/queue/' + versionId + '/' + code, null);
+    }
+
+    queueBulkActionWithIds(versionId, code, nodeIds) {
+        return AjaxUtils.ajaxPost('/api/bulkActionManagerV2/queue/' + versionId + '/' + code, null, nodeIds);
+    }
+
 
     getRegistry(registryId){
         return AjaxUtils.ajaxGet('/api/registryManagerV2/getRecord', {recordId: registryId})

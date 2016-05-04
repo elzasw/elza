@@ -1,15 +1,50 @@
 package cz.tacr.elza.api;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 
 /**
  * Záznam o posledním úspěšném doběhnutím hromadné akce.
  *
+ * @param <FC>   the type parameter
+ * @param <FAV>  the type parameter
+ * @param <ABAN> the type parameter
  * @author Martin Šlapa
  * @since 10.11.2015
  */
-public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFundVersion> extends Serializable {
+public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFundVersion, ABAN extends ArrBulkActionNode> extends Serializable {
+
+    /**
+     * Stav hromadné akce
+     */
+    enum State {
+        /**
+         * Čekající
+         */
+        WAITING,
+        /**
+         * Naplánovaný
+         */
+        PLANNED,
+        /**
+         * Běžící
+         */
+        RUNNING,
+        /**
+         * Dokončená
+         */
+        FINISHED,
+        /**
+         * Chyba při běhu
+         */
+        ERROR,
+        /**
+         * Zrušená
+         */
+        INTERRUPTED;
+    }
 
     /**
      * Vrací identifikátor záznamu.
@@ -58,11 +93,24 @@ public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFundVersi
      */
     void setFundVersion(FAV fundVersion);
 
+    /**
+     * Vrátí user id.
+     *
+     * @return user id
+     */
+    Integer getUserId();
+
+    /**
+     * Nastaví user id.
+     *
+     * @param userId user id
+     */
+    void setUserId(Integer userId);
 
     /**
      * Vrací změnu se kterou běžela hromadná akce.
      *
-     * @return změna
+     * @return změna change
      */
     FC getChange();
 
@@ -74,4 +122,93 @@ public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFundVersi
      */
     void setChange(FC change);
 
+    /**
+     * Vrátí stav hromadné akce
+     *
+     * @return stav state
+     */
+    State getState();
+
+    /**
+     * Nastaví stav hromadné akce
+     *
+     * @param state stav
+     */
+    void setState(State state);
+
+
+    /**
+     * Vrátí datum naplánování hromadné akce
+     *
+     * @return datum date planed
+     */
+    Date getDatePlanned();
+
+
+    /**
+     * Nastavuje datum kdy byla naplánována hromadná akce
+     *
+     * @param datePlaned datum
+     */
+    void setDatePlanned(Date datePlaned);
+
+
+    /**
+     * Vrátí datum startu hromadné akce
+     *
+     * @return datum date started
+     */
+    Date getDateStarted();
+
+
+    /**
+     * Nastavuje datum kdy byla spuštěna hromadná akce
+     *
+     * @param dateStarted datum
+     */
+    void setDateStarted(Date dateStarted);
+
+
+    /**
+     * Vrátí datum dokončení hromadné akce
+     *
+     * @return datum date finished
+     */
+    Date getDateFinished();
+
+
+    /**
+     * Nastavuje datum kdy byla dokončena hromadná akce
+     *
+     * @param dateFinished datum
+     */
+    void setDateFinished(Date dateFinished);
+
+    /**
+     * Vrátí chybu které nastala při běhu hromadné
+     *
+     * @return String log chyby
+     */
+    String getError();
+
+    /**
+     * Nastaví chybu které nastala při běhu hromadné akce
+     *
+     * @param error string log chyba
+     */
+    void setError(String error);
+
+    /**
+     * Vazba na bulk action nodes
+     *
+     * @param arrBulkActionNodes množina záznamů.
+     */
+    void setArrBulkActionNodes(List<ABAN> arrBulkActionNodes);
+
+    /**
+     * Vazba na bulk action nodes
+     *
+     * @return množina, může být prázdná.
+     */
+    List<ABAN> getArrBulkActionNodes();
 }

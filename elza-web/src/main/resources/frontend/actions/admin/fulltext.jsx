@@ -58,7 +58,7 @@ export function getIndexStateRequest() {
  */
 export function getIndexStateRecieve(json) {
     return {
-        type: types.ADMIN_FULLTEXT_REINDEXING_STATE_RECIEVE,
+        type: types.ADMIN_FULLTEXT_REINDEXING_STATE_RECEIVE,
         indexingState: json
     }
 }

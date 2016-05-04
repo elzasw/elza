@@ -1,8 +1,10 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.api.ArrBulkActionRun;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import org.slf4j.Logger;
@@ -45,8 +47,12 @@ public class StartupService {
     @Autowired
     private UpdateConformityInfoService updateConformityInfoService;
 
+    @Autowired
+    private BulkActionRunRepository bulkActionRunRepository;
+
     @PostConstruct
     private void init() {
+        clearBulkActions();
         revalidateNodes();
     }
 
@@ -113,4 +119,14 @@ public class StartupService {
         }
     }
 
+    private void clearBulkActions() {
+        TransactionTemplate tmpl = new TransactionTemplate(txManager);
+        tmpl.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                bulkActionRunRepository.updateFromStateToState(ArrBulkActionRun.State.RUNNING, ArrBulkActionRun.State.ERROR);
+            }
+        });
+
+    }
 }

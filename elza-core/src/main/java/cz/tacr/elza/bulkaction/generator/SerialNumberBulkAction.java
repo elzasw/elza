@@ -1,10 +1,17 @@
 package cz.tacr.elza.bulkaction.generator;
 
-import cz.tacr.elza.api.vo.BulkActionState.State;
+import cz.tacr.elza.api.ArrBulkActionRun.State;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
-import cz.tacr.elza.bulkaction.BulkActionState;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemInt;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
@@ -59,7 +66,7 @@ public class SerialNumberBulkAction extends BulkAction {
     /**
      * Stav hromadné akce
      */
-    private BulkActionState bulkActionState;
+    private ArrBulkActionRun bulkActionRun;
 
     /**
      * Typ atributu pro zastaveni
@@ -121,8 +128,8 @@ public class SerialNumberBulkAction extends BulkAction {
      * @param rootNode
      */
     private void generate(final ArrLevel level, final ArrNode rootNode) {
-        if (bulkActionState.isInterrupt()) {
-            bulkActionState.setState(State.ERROR);
+        if (bulkActionRun.isInterrupted()) {
+            bulkActionRun.setState(State.INTERRUPTED);
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
         }
 
@@ -209,22 +216,18 @@ public class SerialNumberBulkAction extends BulkAction {
 
     @Override
     @Transactional
-    public void run(final Integer userId,
-                    final Integer fundVersionId,
-                    final List<Integer> inputNodeIds,
+    public void run(final List<Integer> inputNodeIds,
                     final BulkActionConfig bulkAction,
-                    final BulkActionState bulkActionState) {
-        this.bulkActionState = bulkActionState;
+                    final ArrBulkActionRun bulkActionRun) {
+        this.bulkActionRun = bulkActionRun;
         init(bulkAction);
 
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion version = bulkActionRun.getFundVersion();
 
         Assert.notNull(version);
         checkVersion(version);
         this.version = version;
 
-        this.change = createChange(userId);
-        this.bulkActionState.setRunChange(this.change);
         this.serialNumber = new SerialNumber();
 
         ArrNode rootNode = version.getRootNode();
@@ -237,8 +240,6 @@ public class SerialNumberBulkAction extends BulkAction {
 
             generate(level, rootNode);
         }
-
-        eventNotificationService.publishEvent(EventFactory.createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, fundVersionId, bulkAction.getCode()), true);
     }
 
     /**

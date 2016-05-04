@@ -4,6 +4,17 @@ import {indexById} from 'stores/app/utils.jsx'
 import {consolidateState} from 'components/Utils.jsx'
 
 const initialState = {
+    isFormVisible: false,
+    config: {
+        isFetching: false,
+        fetched: false,
+        currentDataKey: null,
+        data: null
+    },
+    form: {
+        nodeList: [],
+        code: null
+    },
     list: {
         isFetching: false,
         fetched: false,
@@ -19,26 +30,28 @@ const initialState = {
 };
 
 export default function fundAction(state = initialState, action = {}) {
-    switch (action) {
-        case types.FUND_ACTIONS_ACTION_SELECT: {
+    switch (action.type) {
+        case types.FUND_ACTION_ACTION_SELECT: {
             return {
                 ...state,
+                isFormVisible: false,
                 detail: {
                     ...state.detail,
                     currentDataKey: action.dataKey
                 }
             }
         }
-        case types.FUND_ACTIONS_ACTION_DETAIL_REQUEST: {
+        case types.FUND_ACTION_ACTION_DETAIL_REQUEST: {
             return {
                 ...state,
                 detail: {
                     ...state.detail,
+                    currentDataKey: action.dataKey,
                     isFetching: true
                 }
             }
         }
-        case types.FUND_ACTIONS_ACTION_DETAIL_RECEIVE: {
+        case types.FUND_ACTION_ACTION_DETAIL_RECEIVE: {
             if (state.detail.currentDataKey !== action.dataKey) {
                 return state;
             }
@@ -47,12 +60,12 @@ export default function fundAction(state = initialState, action = {}) {
                 detail: {
                     ...state.detail,
                     isFetching: false,
-                    fetch: true,
+                    fetched: true,
                     data: action.data
                 }
             }
         }
-        case types.FUND_ACTIONS_FUND_SELECT: {
+        case types.FUND_ACTION_FUND_SELECT: {
             return {
                 ...state,
                 detail: {
@@ -61,16 +74,17 @@ export default function fundAction(state = initialState, action = {}) {
                 }
             }
         }
-        case types.FUND_ACTIONS_LIST_REQUEST: {
+        case types.FUND_ACTION_LIST_REQUEST: {
             return {
                 ...state,
                 list: {
                     ...state.list,
+                    currentDataKey: action.dataKey,
                     isFetching: true
                 }
             }
         }
-        case types.FUND_ACTIONS_LIST_RECEIVE: {
+        case types.FUND_ACTION_LIST_RECEIVE: {
             if (state.list.currentDataKey !== action.dataKey) {
                 return state;
             }
@@ -79,9 +93,61 @@ export default function fundAction(state = initialState, action = {}) {
                 list: {
                     ...state.list,
                     isFetching: false,
-                    fetch: true,
+                    fetched: true,
                     data: action.data
                 }
+            }
+        }
+        case types.FUND_ACTION_CONFIG_REQUEST: {
+            return {
+                ...state,
+                config: {
+                    ...state.config,
+                    currentDataKey: action.dataKey,
+                    isFetching: true
+                }
+            }
+        }
+        case types.FUND_ACTION_CONFIG_RECEIVE: {
+            if (state.list.currentDataKey !== action.dataKey) {
+                return state;
+            }
+            return {
+                ...state,
+                config: {
+                    ...state.config,
+                    isFetching: false,
+                    fetched: true,
+                    data: action.data
+                }
+            }
+        }
+        case types.FUND_ACTION_FORM_SHOW: {
+            return {
+                ...state,
+                isFormVisible: true
+            }
+        }
+        case types.FUND_ACTION_FORM_RESET: {
+            return {
+                ...state,
+                form: initialState.form
+            }
+        }
+        case types.FUND_ACTION_FORM_CHANGE: {
+            return {
+                ...state,
+                form: {
+                    ...state.form,
+                    ...action.data
+                }
+            }
+        }
+        case types.FUND_ACTION_FORM_SUBMIT: {
+            return {
+                ...state,
+                isFormVisible: false,
+                form: initialState.form
             }
         }
         default:

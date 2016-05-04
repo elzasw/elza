@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,7 +30,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemTypeDescItemsLiteVO;
@@ -40,17 +40,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.NamedOutputRepository;
-import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
-import cz.tacr.elza.repository.PartyNameComplementRepository;
-import cz.tacr.elza.repository.PartyNameRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.RelationEntityRepository;
-import cz.tacr.elza.repository.RelationRepository;
-import cz.tacr.elza.repository.UnitdateRepository;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
@@ -106,6 +95,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
+
+    @Autowired
+    private BulkActionNodeRepository bulkActionNodeRepository;
 
     /**
      * Vytvoří objekt informací o přihlášeném uživateli.
@@ -1093,16 +1085,6 @@ public class ClientFactoryVO {
         return result;
     }
 
-    /**
-     * Vytvoření seznamu stavu hromadných akcí
-     *
-     * @param bulkActionStates seznam DO stavu hromadných akcí
-     * @return seznam VO stavu hromadných akcí
-     */
-    public List<BulkActionStateVO> createBulkActionStateList(final List<BulkActionState> bulkActionStates) {
-        return createList(bulkActionStates, BulkActionStateVO.class, null);
-    }
-
 
     /**
      * Vytvoření seznamu hromadných akcí
@@ -1123,21 +1105,21 @@ public class ClientFactoryVO {
     public BulkActionVO createBulkAction(final BulkActionConfig bulkAction) {
         Assert.notNull(bulkAction);
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        BulkActionVO bulkActionVO = mapper.map(bulkAction, BulkActionVO.class);
-        bulkActionVO.setDescription((String) bulkAction.getProperty("description"));
-        return bulkActionVO;
+        return mapper.map(bulkAction, BulkActionVO.class);
     }
 
-    /**
-     * Vytvoří stav hromadné akce
-     *
-     * @param bulkActionState stav hromadné akce DO
-     * @return stav hromadné akce VO
-     */
-    public BulkActionStateVO createBulkActionState(final BulkActionState bulkActionState) {
-        Assert.notNull(bulkActionState);
+    public BulkActionRunVO createBulkActionRun(final ArrBulkActionRun bulkActionRun) {
+        Assert.notNull(bulkActionRun);
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(bulkActionState, BulkActionStateVO.class);
+        return mapper.map(bulkActionRun, BulkActionRunVO.class);
+    }
+
+    public BulkActionRunVO createBulkActionRunWithNodes(final ArrBulkActionRun bulkActionRun) {
+        Assert.notNull(bulkActionRun);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        BulkActionRunVO bulkActionRunVO = mapper.map(bulkActionRun, BulkActionRunVO.class);
+        bulkActionRunVO.setNodes(createArrNodes(bulkActionNodeRepository.findNodesByBulkAction(bulkActionRun)));
+        return bulkActionRunVO;
     }
 
     public List<ArrNodeRegisterVO> createRegisterLinkList(final List<ArrNodeRegister> registerLinks) {
@@ -1246,6 +1228,10 @@ public class ClientFactoryVO {
         RulPolicyTypeVO policyTypeVO = mapper.map(policyType, RulPolicyTypeVO.class);
         policyTypeVO.setRuleSetId(policyType.getRuleSet().getRuleSetId());
         return policyTypeVO;
+    }
+
+    public List<BulkActionRunVO> createBulkActionsList(List<ArrBulkActionRun> allBulkActions) {
+        return createList(allBulkActions, BulkActionRunVO.class, this::createBulkActionRun);
     }
 
     /**

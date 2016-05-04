@@ -6,7 +6,7 @@ require ('./FundNodesList.less')
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {ListBox, Icon, AbstractReactComponent} from 'components/index.jsx';
+import {ListBox, Icon, AbstractReactComponent, i18n} from 'components/index.jsx';
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Button} from 'react-bootstrap';
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
@@ -72,7 +72,7 @@ var FundNodesList = class FundNodesList extends AbstractReactComponent {
 
 FundNodesList.propTypes = {
     nodes: React.PropTypes.array.isRequired,
-    onDeleteNode: React.PropTypes.func.isRequired,
+    onDeleteNode: React.PropTypes.func,
 }
 
 module.exports = connect()(FundNodesList);

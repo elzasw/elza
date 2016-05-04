@@ -1,14 +1,14 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity(name = "arr_bulk_action_run")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrChange, ArrFundVersion> {
+public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrChange, ArrFundVersion, ArrBulkActionNode> {
 
     @Id
     @GeneratedValue
@@ -28,14 +28,53 @@ public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrCh
     @Column(nullable = false)
     private String bulkActionCode;
 
+    @Override
+    public List<ArrBulkActionNode> getArrBulkActionNodes() {
+        return arrBulkActionNodes;
+    }
+
+    @Override
+    public void setArrBulkActionNodes(List<ArrBulkActionNode> arrBulkActionNodes) {
+        this.arrBulkActionNodes = arrBulkActionNodes;
+    }
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFundVersion.class)
     @JoinColumn(name = "fundVersionId", nullable = false)
     private ArrFundVersion fundVersion;
+
+    @Column(insertable = false, updatable = false)
+    @ReadOnlyProperty
+    private Integer fundVersionId;
+
+    @Column
+    private Integer userId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "changeId", nullable = false)
     private ArrChange change;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 16, nullable = false)
+    private State state = State.WAITING;
+
+    @Column
+    private Date datePlanned;
+
+    @Column
+    private Date dateStarted;
+
+    @Column
+    private Date dateFinished;
+
+    @Column(length = 10000)
+    private String error;
+
+    @Transient
+    private boolean interrupted = false;
+
+    @RestResource(exported = false)
+    @OneToMany(mappedBy = "bulkActionRun", fetch = FetchType.LAZY, targetEntity = ArrBulkActionNode.class)
+    private List<ArrBulkActionNode> arrBulkActionNodes = new ArrayList<>(0);
 
     @Override
     public Integer getBulkActionRunId() {
@@ -65,6 +104,17 @@ public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrCh
     @Override
     public void setFundVersion(final ArrFundVersion fundVersion) {
         this.fundVersion = fundVersion;
+        this.fundVersionId = fundVersion.getFundVersionId();
+    }
+
+    @Override
+    public Integer getUserId() {
+        return userId;
+    }
+
+    @Override
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 
     @Override
@@ -75,5 +125,65 @@ public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrCh
     @Override
     public void setChange(final ArrChange change) {
         this.change = change;
+    }
+
+    @Override
+    public State getState() {
+        return state;
+    }
+
+    @Override
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    @Override
+    public Date getDateFinished() {
+        return dateFinished;
+    }
+
+    @Override
+    public void setDateFinished(Date dateFinished) {
+        this.dateFinished = dateFinished;
+    }
+
+    @Override
+    public Date getDateStarted() {
+        return dateStarted;
+    }
+
+    @Override
+    public void setDateStarted(Date dateStarted) {
+        this.dateStarted = dateStarted;
+    }
+
+    public Date getDatePlanned() {
+        return datePlanned;
+    }
+
+    public void setDatePlanned(Date datePlaned) {
+        this.datePlanned = datePlaned;
+    }
+
+    @Override
+    public String getError() {
+        return error;
+    }
+
+    @Override
+    public void setError(String error) {
+        this.error = error;
+    }
+
+    public Integer getFundVersionId() {
+        return fundVersionId;
+    }
+
+    public boolean isInterrupted() {
+        return interrupted;
+    }
+
+    public void setInterrupted(boolean interrupted) {
+        this.interrupted = interrupted;
     }
 }

@@ -3,16 +3,12 @@ package cz.tacr.elza.bulkaction.generator;
 import java.util.List;
 
 import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.NodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.bulkaction.BulkActionState;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.DescriptionItemService;
@@ -44,17 +40,13 @@ public abstract class BulkAction {
     /**
      * Abstrakní metoda pro spuštění hromadné akce.
      *
-     * @param userId            identfikátor uživatele, který spustil hromadnou akci
-     * @param fundVersionId     identifikátor verze archivní pomůcky
      * @param inputNodeIds      seznam vstupních uzlů (podstromů AS)
      * @param bulkActionConfig  nastavení hromadné akce
-     * @param bulkActionState   stav hromadné akce
+     * @param bulkActionRun     stav hromadné akce
      */
-    abstract public void run(final Integer userId,
-                             final Integer fundVersionId,
-                             final List<Integer> inputNodeIds,
+    abstract public void run(final List<Integer> inputNodeIds,
                              final BulkActionConfig bulkActionConfig,
-                             final BulkActionState bulkActionState);
+                             final ArrBulkActionRun bulkActionRun);
 
 
     @Override
@@ -76,15 +68,6 @@ public abstract class BulkAction {
         } else {
             return descriptionItemService.updateDescriptionItem(descItem, version, change, true);
         }
-    }
-
-    /**
-     * Vytvoření nové změny.
-     *
-     * @return vytvořená změna
-     */
-    protected ArrChange createChange(final Integer userId) {
-        return bulkActionService.createChange(userId);
     }
 
     /**

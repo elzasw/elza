@@ -1,7 +1,13 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrBulkActionNode;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrNode;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 /**
  * Repository k {@link ArrBulkActionNode}
@@ -11,4 +17,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface BulkActionNodeRepository extends JpaRepository<ArrBulkActionNode, Integer> {
 
+    @Query("SELECT node.nodeId FROM arr_bulk_action_node an JOIN an.node node WHERE an.bulkActionRun = :bulkActionRun")
+    List<Integer> findNodeIdsByBulkActionRun(@Param(value = "bulkActionRun") final ArrBulkActionRun bulkActionRun);
+
+    @Query("SELECT node FROM arr_bulk_action_node an JOIN an.node node WHERE an.bulkActionRun = :bulkActionRun")
+    List<ArrNode> findNodesByBulkAction(@Param(value = "bulkActionRun") final ArrBulkActionRun bulkActionRun);
 }

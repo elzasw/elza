@@ -45,6 +45,4 @@ public class BulkActionFactory {
                 throw new IllegalStateException("Hromadna akce " + code + " neexistuje");
         }
     }
-
-
 }

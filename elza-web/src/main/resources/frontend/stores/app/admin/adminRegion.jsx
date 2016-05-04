@@ -30,7 +30,7 @@ export default function adminRegion(state = initialState, action = {}) {
             });
         case types.ADMIN_FULLTEXT_REINDEXING_REQUEST:
         case types.ADMIN_FULLTEXT_REINDEXING_STATE_REQUEST:
-        case types.ADMIN_FULLTEXT_REINDEXING_STATE_RECIEVE:
+        case types.ADMIN_FULLTEXT_REINDEXING_STATE_RECEIVE:
             return Object.assign({}, state, {
                 fulltext: fulltext(state.fulltext, action)
             });

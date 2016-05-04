@@ -1,20 +1,23 @@
 package cz.tacr.elza.bulkaction.generator;
 
-import cz.tacr.elza.api.vo.BulkActionState.State;
+import cz.tacr.elza.api.ArrBulkActionRun.State;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
-import cz.tacr.elza.bulkaction.BulkActionState;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemString;
+import cz.tacr.elza.domain.ArrDescItemUnitid;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
@@ -28,8 +31,6 @@ import java.util.List;
  * @author Martin Šlapa
  * @since 21.10.2015
  */
-@Component
-@Scope("prototype")
 public class UnitIdBulkAction extends BulkAction {
 
     /**
@@ -85,7 +86,7 @@ public class UnitIdBulkAction extends BulkAction {
     /**
      * Stav hromadné akce
      */
-    private BulkActionState bulkActionState;
+    private ArrBulkActionRun bulkActionRun;
 
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
@@ -98,9 +99,6 @@ public class UnitIdBulkAction extends BulkAction {
 
     @Autowired
     private DescItemFactory descItemFactory;
-
-    @Autowired
-    private EventNotificationService eventNotificationService;
 
     /**
      * Inicializace hromadné akce.
@@ -156,8 +154,8 @@ public class UnitIdBulkAction extends BulkAction {
      * @param parentSpecCode specifický kód rodiče
      */
     private void generate(final ArrLevel level, final ArrNode rootNode, UnitId unitId, final String parentSpecCode) {
-        if (bulkActionState.isInterrupt()) {
-            bulkActionState.setState(State.ERROR);
+        if (bulkActionRun.isInterrupted()) {
+            bulkActionRun.setState(State.INTERRUPTED);
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
         }
 
@@ -290,22 +288,17 @@ public class UnitIdBulkAction extends BulkAction {
 
     @Override
     @Transactional
-    public void run(final Integer userId,
-                    final Integer fundVersionId,
-                    final List<Integer> inputNodeIds,
+    public void run(final List<Integer> inputNodeIds,
                     final BulkActionConfig bulkAction,
-                    final BulkActionState bulkActionState) {
-        this.bulkActionState = bulkActionState;
+                    final ArrBulkActionRun bulkActionRun) {
+        this.bulkActionRun = bulkActionRun;
         init(bulkAction);
 
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion version = bulkActionRun.getFundVersion();
 
         Assert.notNull(version);
         checkVersion(version);
         this.version = version;
-
-        this.change = createChange(userId);
-        this.bulkActionState.setRunChange(this.change);
 
         ArrNode rootNode = version.getRootNode();
 
@@ -341,8 +334,6 @@ public class UnitIdBulkAction extends BulkAction {
             }
 
         }
-
-        eventNotificationService.publishEvent(EventFactory.createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, fundVersionId, bulkAction.getCode()), true);
     }
 
     /**

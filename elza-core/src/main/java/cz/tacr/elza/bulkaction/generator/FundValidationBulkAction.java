@@ -1,18 +1,15 @@
 package cz.tacr.elza.bulkaction.generator;
 
-import cz.tacr.elza.api.vo.BulkActionState.State;
+import cz.tacr.elza.api.ArrBulkActionRun.State;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
 import cz.tacr.elza.bulkaction.BulkActionService;
-import cz.tacr.elza.bulkaction.BulkActionState;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.util.List;
-
 
 /**
  * Hromadná akce pro kontrolu validace (stavů popisu) celé archivní pomůcky.
@@ -52,13 +48,10 @@ public class FundValidationBulkAction extends BulkAction {
     /**
      * Stav hromadné akce
      */
-    private BulkActionState bulkActionState;
+    private ArrBulkActionRun bulkActionRun;
 
     @Autowired
     private UpdateConformityInfoService updateConformityInfoService;
-
-    @Autowired
-    private EventNotificationService eventNotificationService;
 
     @Autowired
     private BulkActionService bulkActionService;
@@ -80,8 +73,8 @@ public class FundValidationBulkAction extends BulkAction {
      * @param level uzel
      */
     private void generate(final ArrLevel level) {
-        if (bulkActionState.isInterrupt()) {
-            bulkActionState.setState(State.ERROR);
+        if (bulkActionRun.isInterrupted()) {
+            bulkActionRun.setState(State.INTERRUPTED);
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
         }
 
@@ -100,26 +93,17 @@ public class FundValidationBulkAction extends BulkAction {
 
     @Override
     @Transactional
-    public void run(final Integer userId,
-                    final Integer fundVersionId,
-                    final List<Integer> inputNodeIds,
+    public void run(final List<Integer> inputNodeIds,
                     final BulkActionConfig bulkAction,
-                    final BulkActionState bulkActionState) {
-        this.bulkActionState = bulkActionState;
+                    final ArrBulkActionRun bulkActionRun) {
+        this.bulkActionRun = bulkActionRun;
         init(bulkAction);
 
-        eventNotificationService.publishEvent(EventFactory
-                .createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, fundVersionId, bulkAction.getCode()),
-                true);
-
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion version = bulkActionRun.getFundVersion();
 
         Assert.notNull(version);
         checkVersion(version);
         this.version = version;
-
-        this.change = createChange(userId);
-        this.bulkActionState.setRunChange(this.change);
 
         // v případě, že existuje nějaké přepočítávání uzlů, je nutné to ukončit
         updateConformityInfoService.terminateWorkerInVersion(version);
@@ -133,10 +117,6 @@ public class FundValidationBulkAction extends BulkAction {
 
             generate(level);
         }
-
-        eventNotificationService.publishEvent(EventFactory
-                        .createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, fundVersionId, bulkAction.getCode()),
-                true);
     }
 
     @Override

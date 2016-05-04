@@ -1,14 +1,11 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.api.vo.BulkActionState;
 import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.BulkActionStateVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +81,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         Assert.assertTrue("Hromadna akce " + BULK_ACTION_FUND_VALIDATION + " neni v seznamu", fa);
     }
 
-    private List<BulkActionStateVO> getBulkActionStates(int versionId) {
+    /*private List<BulkActionStateVO> getBulkActionStates(int versionId) {
         return Arrays.asList(get(spec -> spec.pathParam("versionId", versionId), BULK_ACTION_STATES).getBody().as(BulkActionStateVO[].class));
     }
 
@@ -102,7 +99,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         }
         actionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId), BULK_ACTION_VALIDATE).getBody().as(BulkActionVO[].class));
         Assert.assertEquals(0, actionVOs.size());
-    }
+    }*/
 
     // povinný nyní nejsou žádný - test nemá význam
     /*@Test
@@ -129,7 +126,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         Assert.assertTrue("Hromadna akce " + BULK_ACTION_FUND_VALIDATION + " neni v seznamu", fa);
     }*/
 
-    private BulkActionStateVO getBulkActionState(int fundVersionId, String code) {
+    /*private BulkActionStateVO getBulkActionState(int fundVersionId, String code) {
         for (BulkActionStateVO state : getBulkActionStates(fundVersionId)) {
             if (state.getCode().equals(code)) {
                 return state;
@@ -138,13 +135,13 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         return null;
     }
 
-    /**
+    *//**
      * Spustí a čeká na dokončení hromadné akce.
      *
      * @param fundVersionId verze archivní kod hromadné akce hromadné akce
      * @param code verze archivní kod hromadné akce hromadné akce
      * @return stav
-     */
+     *//*
     private BulkActionStateVO runBulkAction(int fundVersionId, String code) throws InterruptedException {
         BulkActionStateVO state;
 
@@ -178,5 +175,5 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         Assert.assertTrue("Čas překročen", counter >= 0);
 
         return state;
-    }
+    }*/
 }

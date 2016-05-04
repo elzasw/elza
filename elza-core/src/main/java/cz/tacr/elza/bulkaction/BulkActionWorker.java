@@ -1,15 +1,21 @@
 package cz.tacr.elza.bulkaction;
 
-
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import cz.tacr.elza.api.ArrBulkActionRun.State;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.repository.BulkActionRunRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.tacr.elza.api.vo.BulkActionState.State;
 import cz.tacr.elza.bulkaction.generator.BulkAction;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Úloha hromadné akce.
@@ -17,6 +23,8 @@ import cz.tacr.elza.bulkaction.generator.BulkAction;
  * @author Martin Šlapa
  * @since 11.11.2015
  */
+@Component
+@Scope("prototype")
 public class BulkActionWorker implements Callable<BulkActionWorker> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -42,36 +50,59 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
     private BulkActionConfig bulkActionConfig;
 
     /**
-     * Stav hromadné akce
+     * Hromadná akce reprezentovaná v DB
      */
-    private BulkActionState bulkActionState;
+    private ArrBulkActionRun bulkActionRun;
+
+    @Autowired
+    private BulkActionService bulkActionService;
+
+    @Autowired
+    private BulkActionRunRepository bulkActionRunRepository;
 
     /**
      * Identfikátor uživatele, který spustil hromadnou akci (null, pokud to bylo systémové - od admina)
      */
     private Integer userId;
 
+    private Integer processId;
+
+    @Transactional(readOnly = true)
+    public void init(final int bulkActionRunId) {
+        bulkActionRun = bulkActionRunRepository.findOne(bulkActionRunId);
+        if (bulkActionRun == null) {
+            throw new IllegalArgumentException("Proces hromadné akce" + bulkActionRunId + " nebyl nalezen");
+        }
+        versionId = bulkActionRun.getFundVersionId();
+        inputNodeIds = bulkActionService.getBulkActionNodeIds(bulkActionRun);
+        bulkActionConfig = bulkActionService.getBulkActionConfig(bulkActionRun.getBulkActionCode());
+        bulkAction = bulkActionService.getBulkAction((String) bulkActionConfig.getProperty("code_type_bulk_action"));
+    }
+
+
     /**
-     * Konstruktor úlohy.
+     * Vrací stav hromadné akce.
      *
-     * @param userId           identfikátor uživatele, který spustil hromadnou akci
-     * @param bulkAction       hromadná akce
-     * @param bulkActionConfig nastavení hromadné akce
-     * @param versionId        identifikátor verze archivní pomůcky
-     * @param inputNodeIds     seznam vstupních uzlů (podstromů AS)
+     * @return stav
      */
-    public BulkActionWorker(final Integer userId,
-                            final BulkAction bulkAction,
-                            final BulkActionConfig bulkActionConfig,
-                            final Integer versionId,
-                            final List<Integer> inputNodeIds) {
-        bulkActionState = new BulkActionState();
-        bulkActionState.setBulkActionCode(bulkActionConfig.getCode());
-        this.userId = userId;
-        this.bulkAction = bulkAction;
-        this.bulkActionConfig = bulkActionConfig;
-        this.versionId = versionId;
-        this.inputNodeIds = inputNodeIds;
+    public ArrBulkActionRun getBulkActionRun() {
+        return bulkActionRun;
+    }
+
+    public void setStateAndPublish(State state) {
+        bulkActionRun.setState(state);
+        bulkActionService.storeBulkActionRun(bulkActionRun);
+        bulkActionService.eventPublishBulkAction(bulkActionRun);
+    }
+
+
+    /**
+     * Vytvoření nové změny.
+     *
+     * @return vytvořená změna
+     */
+    protected ArrChange createChange(final Integer userId) {
+        return bulkActionService.createChange(userId);
     }
 
     /**
@@ -79,24 +110,30 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
      *
      * @return stav
      */
-    public BulkActionState getBulkActionState() {
-        return bulkActionState;
+    public State getState() {
+        return bulkActionRun.getState();
     }
 
     @Override
     public BulkActionWorker call() throws Exception {
         logger.info("Spuštěna hromadná akce: " + this);
-        bulkActionState.setProcessId((int) Thread.currentThread().getId());
-        bulkActionState.setState(State.RUNNING);
+        bulkActionRun.setDateStarted(new Date());
+        setStateAndPublish(State.RUNNING);
+        processId = ((int) Thread.currentThread().getId());
         try {
-            bulkAction.run(userId, versionId, inputNodeIds, bulkActionConfig, bulkActionState);
+            bulkActionRun.setChange(createChange(userId));
+            bulkActionService.storeBulkActionRun(bulkActionRun);
+            bulkAction.run(inputNodeIds, bulkActionConfig, bulkActionRun);
 
             //Thread.sleep(10000); // PRO TESTOVÁNÍ A DALŠÍ VÝVOJ
 
-            bulkActionState.setState(State.FINISH);
+            bulkActionRun.setDateFinished(new Date());
+            setStateAndPublish(State.FINISHED);
             logger.info("Hromadná akce úspěšně dokončena: " + this);
         } catch (Exception e) {
-            bulkActionState.setState(State.ERROR);
+            bulkActionRun.setError(e.getLocalizedMessage());
+            setStateAndPublish(State.ERROR);
+
             logger.error("Hromadná akce skončila chybou: " + this, e);
         }
         return this;
@@ -135,7 +172,7 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
                 "bulkAction=" + bulkAction +
                 ", versionId=" + versionId +
                 ", bulkActionConfig=" + bulkActionConfig +
-                ", bulkActionState=" + bulkActionState +
+                ", bulkActionRun=" + bulkActionRun +
                 '}';
     }
 
@@ -143,23 +180,22 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
      * Ukončí běžící hromadnou akci.
      */
     public void terminate() {
-        if (bulkActionState.getState() != State.RUNNING) {
+        if (getState() != State.RUNNING) {
             return;
         }
 
-        bulkActionState.setInterrupt(true);
+        bulkActionRun.setInterrupted(true);
 
-        while (bulkActionState.getState() == State.RUNNING) {
+        while (getState() == State.RUNNING) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 throw new IllegalStateException("Chyba při ukončování vlákna hromadné akce.", e);
             }
         }
-        bulkActionState.setInterrupt(false);
-    }
 
-    public List<Integer> getInputNodeIds() {
-        return inputNodeIds;
+        setStateAndPublish(State.INTERRUPTED);
+
+        bulkActionRun.setInterrupted(false);
     }
 }
