@@ -245,7 +245,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
             }
         }
 
-        const itemSection = <RibbonGroup key="alt" className="large">{itemActions}</RibbonGroup>;
+        const itemSection = <RibbonGroup key="alt" className="small">{itemActions}</RibbonGroup>;
 
         return (
             <Ribbon arr itemSection={itemSection}/>

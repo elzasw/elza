@@ -18,12 +18,25 @@ require('./RibbonMenu.less');
 var RibbonGroup = class RibbonGroup extends React.Component {
 
     render() {
-        var classes = "ribbonGroup " + this.props.className;
-        return (
+        const {className} = this.props
+
+        var classes = "ribbonGroup " + className;
+
+        if (className.indexOf("small") !== -1) {
+            var parts = []
+            for (var a=0; a<this.props.children.length; a += 3) {
+                var sub = this.props.children.slice(a, a + 3)
+                parts.push(<div className={classes}>{sub}</div>)
+            }
+            return <div className="ribbonSmallGroupsContainer">{parts}</div>
+        } else {
+            return (
                 <div className={classes}>
                     {this.props.children}
                 </div>
-        );
+            )
+        }
+
     }
 }
 

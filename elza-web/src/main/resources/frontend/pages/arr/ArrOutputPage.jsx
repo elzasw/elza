@@ -190,12 +190,12 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
         var altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt" className="large">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
         }
 
         var itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item" className="large">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>
         }
 
         return (
