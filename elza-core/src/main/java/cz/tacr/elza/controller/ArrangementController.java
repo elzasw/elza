@@ -1438,6 +1438,24 @@ public class ArrangementController {
     }
 
     /**
+     * Upravení výstupu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identfikátor výstupu
+     * @param param         vstupní parametry pro úpravu outputu
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{fundVersionId}/{outputId}/update", method = RequestMethod.POST)
+    public void updateNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                  @PathVariable(value = "outputId") final Integer outputId,
+                                  @RequestBody OutputNameParam param) {
+        Assert.notNull(param);
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getCode());
+    }
+
+    /**
      * Výstupní objekt pro chybové jednotky popisu.
      */
     public static class ValidationItems {

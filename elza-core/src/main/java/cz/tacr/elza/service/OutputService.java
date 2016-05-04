@@ -282,6 +282,39 @@ public class OutputService {
         }
     }
 
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
+    public ArrNamedOutput updateNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                  final ArrOutput output,
+                                  final String name,
+                                  final String code) {
+        Assert.notNull(fundVersion);
+        Assert.notNull(output);
+        Assert.notNull(name);
+        Assert.notNull(code);
+
+        if (fundVersion.getLockChange() != null) {
+            throw new IllegalArgumentException("Nelze upravovat výstup v uzavřené verzi AS");
+        }
+
+        if (output.getLockChange() != null) {
+            throw new IllegalArgumentException("Nelze upravit uzavřený výstup");
+        }
+
+        ArrNamedOutput namedOutput = output.getNamedOutput();
+
+        namedOutput.setName(name);
+        namedOutput.setCode(code);
+
+        namedOutputRepository.save(namedOutput);
+
+        Integer[] outputIds = namedOutput.getOutputs().stream().map(ArrOutput::getOutputId).toArray(size -> new Integer[size]);
+        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
+        eventNotificationService.publishEvent(event);
+
+        return namedOutput;
+    }
+
     /**
      * Kontrola AS u verze a výstupu.
      *
