@@ -1402,7 +1402,7 @@ public class ArrangementController {
                                     @RequestBody final List<Integer> nodeIds) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        outputService.addNodesNamedOutput(fundVersion, output.getNamedOutput(), nodeIds);
+        outputService.addNodesNamedOutput(fundVersion, output, nodeIds);
     }
 
     /**
@@ -1419,7 +1419,7 @@ public class ArrangementController {
                                        @RequestBody final List<Integer> nodeIds) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        outputService.removeNodesNamedOutput(fundVersion, output.getNamedOutput(), nodeIds);
+        outputService.removeNodesNamedOutput(fundVersion, output, nodeIds);
     }
 
     /**

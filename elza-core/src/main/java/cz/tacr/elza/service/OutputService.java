@@ -208,38 +208,44 @@ public class OutputService {
      * Odstranění uzlů z výstupu.
      *
      * @param fundVersion verze AS
-     * @param namedOutput pojmenovaný výstup
+     * @param output      výstup
      * @param nodeIds     seznam identifikátorů uzlů
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public void removeNodesNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                       final ArrNamedOutput namedOutput,
+                                       final ArrOutput output,
                                        final List<Integer> nodeIds) {
         ArrChange change = arrangementService.createChange();
-        removeNodesNamedOutput(fundVersion, namedOutput, nodeIds, change);
+        removeNodesNamedOutput(fundVersion, output, nodeIds, change);
     }
 
     /**
      * Odstranění uzlů z výstupu.
      *
      * @param fundVersion verze AS
-     * @param namedOutput pojmenovaný výstup
+     * @param output pojmenovaný výstup
      * @param nodeIds     seznam identifikátorů uzlů
      * @param change      změna
      */
     private void removeNodesNamedOutput(final ArrFundVersion fundVersion,
-                                        final ArrNamedOutput namedOutput,
+                                        final ArrOutput output,
                                         final List<Integer> nodeIds,
                                         final ArrChange change) {
         Assert.notNull(fundVersion);
-        Assert.notNull(namedOutput);
+        Assert.notNull(output);
         Assert.notEmpty(nodeIds);
         Assert.notNull(change);
 
         if (fundVersion.getLockChange() != null) {
             throw new IllegalArgumentException("Nelze odebrat uzly u výstupu v uzavřené verzi AS");
         }
+
+        if (output.getLockChange() != null) {
+            throw new IllegalArgumentException("Nelze odebrat uzly u zamčeného výstupu");
+        }
+
+        ArrNamedOutput namedOutput = output.getNamedOutput();
 
         checkFund(fundVersion, namedOutput);
 
@@ -272,38 +278,44 @@ public class OutputService {
      * Přidání uzlů do výstupu.
      *
      * @param fundVersion verze AS
-     * @param namedOutput pojmenovaný výstup
+     * @param output      výstup
      * @param nodeIds     seznam identifikátorů uzlů
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public void addNodesNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                    final ArrNamedOutput namedOutput,
+                                    final ArrOutput output,
                                     final List<Integer> nodeIds) {
         ArrChange change = arrangementService.createChange();
-        addNodesNamedOutput(fundVersion, namedOutput, nodeIds, change);
+        addNodesNamedOutput(fundVersion, output, nodeIds, change);
     }
 
     /**
      * Přidání uzlů do výstupu.
      *
      * @param fundVersion verze AS
-     * @param namedOutput pojmenovaný výstup
+     * @param output      pojmenovaný výstup
      * @param nodeIds     seznam identifikátorů uzlů
      * @param change      změna
      */
     private void addNodesNamedOutput(final ArrFundVersion fundVersion,
-                                     final ArrNamedOutput namedOutput,
+                                     final ArrOutput output,
                                      final List<Integer> nodeIds,
                                      final ArrChange change) {
         Assert.notNull(fundVersion);
-        Assert.notNull(namedOutput);
+        Assert.notNull(output);
         Assert.notEmpty(nodeIds);
         Assert.notNull(change);
 
         if (fundVersion.getLockChange() != null) {
             throw new IllegalArgumentException("Nelze přidat uzly k výstupu v uzavřené verzi AS");
         }
+
+        if (output.getLockChange() != null) {
+            throw new IllegalArgumentException("Nelze odebrat uzly u zamčeného výstupu");
+        }
+
+        ArrNamedOutput namedOutput = output.getNamedOutput();
 
         checkFund(fundVersion, namedOutput);
 
