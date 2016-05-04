@@ -48,7 +48,7 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
     }
 
     render() {
-        const {userDetail, altSection, itemSection} = this.props
+        const {userDetail, altSection, itemSection, fundId} = this.props
 
         var section = null;
 
@@ -68,11 +68,22 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
             }
         }
         if (this.props.arr) {
+            var arrParts = []
+            if (userDetail.hasArrPage(fundId)) {    // právo na pořádání
+                arrParts.push(<IndexLinkContainer to="/arr"><Button ref='ribbonDefaultFocus'><Icon glyph="fa-sitemap" /><div><span className="btnText">{i18n('ribbon.action.arr.arr')}</span></div></Button></IndexLinkContainer>)
+            }
+                
+            if (userDetail.hasArrOutputPage(fundId)) {    // právo na outputy
+                arrParts.push(<LinkContainer to="/arr/output"><Button><Icon glyph="fa-print" /><div><span className="btnText">{i18n('ribbon.action.arr.output')}</span></div></Button></LinkContainer>)
+            }
+
+            if (userDetail.hasFundActionPage(fundId)) {    // právo na hromadné akce
+                arrParts.push(<LinkContainer to="/arr/actions"><Button><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span></div></Button></LinkContainer>)
+            }
+            
             section = (
                 <RibbonGroup className="large">
-                    <IndexLinkContainer to="/arr"><Button ref='ribbonDefaultFocus'><Icon glyph="fa-sitemap" /><div><span className="btnText">{i18n('ribbon.action.arr.arr')}</span></div></Button></IndexLinkContainer>
-                    <LinkContainer to="/arr/output"><Button><Icon glyph="fa-print" /><div><span className="btnText">{i18n('ribbon.action.arr.output')}</span></div></Button></LinkContainer>
-                    <LinkContainer to="/arr/actions"><Button><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span></div></Button></LinkContainer>
+                    {arrParts}
                 </RibbonGroup>
             );
         }

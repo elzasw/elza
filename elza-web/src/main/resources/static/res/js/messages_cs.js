@@ -2,6 +2,8 @@ var messages = {
     "global.data.loading": "Načítání dat...",
     "global.data.noitem": "Žádné položky",
 
+    "global.insufficient.right": "Nemáte dostatečná oprávnění pro přístup.",
+
     "global.data.loading.register": "Načítání rejstříků",
     "global.data.loading.form": "Načítání formuláře JP",
     "global.data.loading.node": "Načítání seznamu JP",

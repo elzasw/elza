@@ -42,6 +42,31 @@ function hasRight(right) {
     return false
 }
 
+function hasArrPage(fundId = null) {
+    return hasOne.bind(this)(
+        perms.FUND_ADMIN,
+        perms.FUND_RD_ALL, {type: perms.FUND_RD, fundId},
+        perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId},
+    )
+}
+
+function hasArrOutputPage(fundId = null) {
+    return hasOne.bind(this)(
+        perms.FUND_ADMIN,
+        perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId},
+        perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId},
+    )
+}
+
+function hasFundActionPage(fundId = null) {
+    return hasOne.bind(this)(
+        perms.FUND_ADMIN,
+        perms.FUND_RD_ALL, {type: perms.FUND_RD, fundId},
+        perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId},
+        perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId},
+    )
+}
+
 function hasOne(...rights) {
     if (this.permissionsMap[perms.ADMIN]) {
         return true
@@ -87,6 +112,9 @@ export default function userDetail(state = initialState, action = {}) {
 
     result.hasOne = hasOne.bind(result)
     result.hasAll = hasAll.bind(result)
+    result.hasArrPage = hasArrPage.bind(result)
+    result.hasArrOutputPage = hasArrOutputPage.bind(result)
+    result.hasFundActionPage = hasFundActionPage.bind(result)
 
     return result
 }
@@ -98,12 +126,12 @@ function userDetailInt(state, action) {
         case types.USER_DETAIL_CHANGE: {
             let permissionsMap = {}
 
-            // action.userDetail.userPermissions = [
-            //     {permission: 'FUND_ARR_ALL', fundIds: [], scopeIds: [1]},
-            //     {permission: 'REG_SCOPE_RD', fundIds: [], scopeIds: [1]},
-            //     {permission: 'REG_SCOPE_WR_ALL1', fundIds: [], scopeIds: []},
-            //     {permission: 'REG_SCOPE_WR', fundIds: [], scopeIds: [2]},
-            // ]
+            action.userDetail.userPermissions = [
+                {permission: 'FUND_ARR_ALL', fundIds: [], scopeIds: [1]},
+                {permission: 'REG_SCOPE_RD', fundIds: [], scopeIds: [1]},
+                {permission: 'REG_SCOPE_WR_ALL1', fundIds: [], scopeIds: []},
+                {permission: 'REG_SCOPE_WR', fundIds: [], scopeIds: [2]},
+            ]
 
             action.userDetail.userPermissions.forEach(perm => {
                 permissionsMap[perm.permission] = perm

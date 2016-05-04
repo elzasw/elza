@@ -323,21 +323,25 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
     }
 
     render() {
-        const {arrRegion, splitter} = this.props;
+        const {arrRegion, splitter, userDetail} = this.props;
         const fund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : false;
 
-        const leftPanel = <div className='actions-list-container'>{
-            fund.fundAction.list.fetched ?
-            <ListBox
-                className='actions-listbox'
-                key='actions-list'
-                items={fund.fundAction.list.data}
-                renderItemContent={this.renderRowItem.bind(this)}
-                onSelect={this.handleListBoxActionSelect}
-                onFocus={this.handleListBoxActionSelect}
-            /> : <Loading />}
-        </div>;
-        const centerPanel = <div className='center-container'>{this.renderCenter(fund)}</div>;
+        if (userDetail.hasFundActionPage(fund ? fund.id : null)) { // má právo na tuto stránku
+            const leftPanel = <div className='actions-list-container'>{
+                fund.fundAction.list.fetched ?
+                <ListBox
+                    className='actions-listbox'
+                    key='actions-list'
+                    items={fund.fundAction.list.data}
+                    renderItemContent={this.renderRowItem.bind(this)}
+                    onSelect={this.handleListBoxActionSelect}
+                    onFocus={this.handleListBoxActionSelect}
+                /> : <Loading />}
+            </div>;
+            const centerPanel = <div className='center-container'>{this.renderCenter(fund)}</div>;
+        } else {
+            centerPanel = <div>{i18n('global.insufficient.right')}</div>
+        }
 
         return (
             <PageLayout
@@ -355,10 +359,11 @@ FundActionPage.propTypes = {
 };
 
 function mapStateToProps(state) {
-    const {arrRegion, splitter} = state;
+    const {arrRegion, splitter, userDetail} = state;
     return {
         arrRegion,
-        splitter
+        splitter,
+        userDetail,
     }
 }
 
