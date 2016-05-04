@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * VO rozšířené verze výstupu archivního souboru.
@@ -36,4 +37,18 @@ public class ArrOutputExtVO extends ArrOutputVO {
         this.createDate = createDate;
     }
 
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ArrOutputExtVO that = (ArrOutputExtVO) o;
+        return Objects.equals(namedOutput, that.namedOutput) &&
+                Objects.equals(createDate, that.createDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), namedOutput, createDate);
+    }
 }

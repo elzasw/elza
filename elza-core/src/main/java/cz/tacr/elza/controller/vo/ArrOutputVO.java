@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * VO verze výstupu archivního souboru.
@@ -33,5 +34,19 @@ public class ArrOutputVO {
 
     public void setLockDate(final Date lockDate) {
         this.lockDate = lockDate;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ArrOutputVO that = (ArrOutputVO) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(lockDate, that.lockDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, lockDate);
     }
 }

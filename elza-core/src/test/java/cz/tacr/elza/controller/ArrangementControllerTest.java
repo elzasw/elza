@@ -8,8 +8,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import cz.tacr.elza.api.ArrPacket;
+import cz.tacr.elza.controller.vo.ArrNamedOutputVO;
+import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,8 +89,63 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // všechny formuláře / stromy / ...
         forms(fundVersion);
 
+        // akce nad výstupy
+        outputs(fundVersion);
+
         //smazání fondu
         deleteFund(fund);
+    }
+
+    /**
+     * Testování práci s výstupy.
+     *
+     * @param fundVersion verze archivní pomůcky
+     */
+    private void outputs(final ArrFundVersionVO fundVersion) {
+        List<ArrOutputExtVO> outputs = getOutputs(fundVersion.getId());
+        Assert.isTrue(outputs.size() == 0);
+
+        ArrNamedOutputVO namedOutput = createNamedOutput(fundVersion, "Test", "TST", false);
+        Assert.notNull(namedOutput);
+
+        outputs = getOutputs(fundVersion.getId());
+        Assert.isTrue(outputs.size() == 1);
+        ArrOutputExtVO output = outputs.get(0);
+
+        ArrOutputExtVO outputDetail = getOutput(fundVersion.getId(), output.getId());
+
+        Assert.notNull(outputDetail);
+        Assert.isTrue(outputDetail.getId().equals(output.getId()));
+
+        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
+        input.setVersionId(fundVersion.getId());
+        TreeData treeData = getFundTree(input);
+        List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
+        List<Integer> nodeIds = nodes.stream().map(ArrNodeVO::getId).collect(Collectors.toList());
+
+        addNodesNamedOutput(fundVersion.getId(), outputDetail.getId(), nodeIds);
+
+        outputDetail = getOutput(fundVersion.getId(), output.getId());
+        Assert.isTrue(outputDetail.getNamedOutput().getNodes().size() == nodeIds.size());
+
+        removeNodesNamedOutput(fundVersion.getId(), outputDetail.getId(), nodeIds);
+
+        outputDetail = getOutput(fundVersion.getId(), output.getId());
+        Assert.isTrue(outputDetail.getNamedOutput().getNodes().size() == 0);
+
+        updateNamedOutput(fundVersion, outputDetail, "Test 2", "TST2");
+        outputDetail = getOutput(fundVersion.getId(), output.getId());
+        Assert.isTrue(outputDetail.getNamedOutput().getName().equals("Test 2"));
+        Assert.isTrue(outputDetail.getNamedOutput().getCode().equals("TST2"));
+
+        outputLock(fundVersion.getId(), outputDetail.getId());
+        outputDetail = getOutput(fundVersion.getId(), output.getId());
+        Assert.isTrue(outputDetail.getLockDate() != null);
+
+        deleteNamedOutput(fundVersion.getId(), output.getId());
+
+        outputs = getOutputs(fundVersion.getId());
+        Assert.isTrue(outputs.size() == 0);
     }
 
     /**

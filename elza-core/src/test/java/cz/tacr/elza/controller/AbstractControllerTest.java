@@ -16,6 +16,9 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import cz.tacr.elza.api.ArrPacket;
+import cz.tacr.elza.controller.vo.ArrNamedOutputVO;
+import cz.tacr.elza.controller.vo.ArrOutputExtVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -160,8 +163,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String PLACE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/placeDataValues/{versionId}";
     protected static final String DELETE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/deleteDataValues/{versionId}";
     protected static final String FILTER_UNIQUE_VALUES = ARRANGEMENT_CONTROLLER_URL + "/filterUniqueValues/{versionId}";
-
-
+    protected static final String OUTPUTS = ARRANGEMENT_CONTROLLER_URL + "/output";
+    protected static final String GET_OUTPUTS = OUTPUTS + "/{fundVersionId}";
+    protected static final String GET_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}";
+    protected static final String CREATE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}";
+    protected static final String OUTPUT_LOCK = OUTPUTS + "/{fundVersionId}/{outputId}/lock";
+    protected static final String ADD_NODES_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/add";
+    protected static final String REMOVE_NODES_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/remove";
+    protected static final String DELETE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}";
+    protected static final String UPDATE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/update";
 
     // Party
     protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations";
@@ -2052,4 +2062,158 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         return result.as(List.class);
     }
+
+    /**
+     * Načtení seznamu outputů - objekt outputu s vazbou na objekt named output.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @return  seznam outputů
+     */
+    protected List<ArrOutputExtVO> getOutputs(final Integer fundVersionId) {
+        return Arrays.asList(get(spec -> spec
+                .pathParam("fundVersionId", fundVersionId), GET_OUTPUTS)
+                .getBody().as(ArrOutputExtVO[].class));
+    }
+
+    /**
+     * Načtení detailu outputu objekt output s vazbou na named output a seznamem připojených node.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identifikátor výstupu
+     * @return output
+     */
+    protected ArrOutputExtVO getOutput(final Integer fundVersionId, final Integer outputId) {
+        return get(spec -> spec
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("outputId", outputId), GET_OUTPUT)
+                .getBody().as(ArrOutputExtVO.class);
+    }
+
+    /**
+     * Vytvoření nového pojmenovaného výstupu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param param         vstupní parametry pro vytvoření outputu
+     * @return vytvořený výstup
+     */
+    protected ArrNamedOutputVO createNamedOutput(final Integer fundVersionId,
+                                                 final ArrangementController.OutputNameParam param) {
+        return put(spec -> spec
+                .pathParam("fundVersionId", fundVersionId)
+                .body(param), CREATE_NAMED_OUTPUT)
+                .getBody().as(ArrNamedOutputVO.class);
+    }
+
+    /**
+     * Vytvoření nového pojmenovaného výstupu.
+     *
+     * @param fundVersion verze AS
+     * @param name        název výstupu
+     * @param code        kód výstupu
+     * @param temporary   dočasný výstup?
+     * @return vytvořený výstup
+     */
+    protected ArrNamedOutputVO createNamedOutput(final ArrFundVersionVO fundVersion,
+                                                 final String name,
+                                                 final String code,
+                                                 final Boolean temporary) {
+        ArrangementController.OutputNameParam param = new ArrangementController.OutputNameParam();
+        param.setCode(code);
+        param.setName(name);
+        param.setTemporary(temporary);
+        return createNamedOutput(fundVersion.getId(), param);
+    }
+
+    /**
+     * Zamknutí verze výstupu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identifikátor výstupu
+     */
+    protected void outputLock(final Integer fundVersionId,
+                              final Integer outputId) {
+        post(spec -> spec
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("outputId", outputId), OUTPUT_LOCK);
+    }
+
+    /**
+     * Přidání uzlů k výstupu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identifikátor výstupu
+     * @param nodeIds       seznam přidáváných identifikátorů uzlů
+     */
+    protected void addNodesNamedOutput(final Integer fundVersionId,
+                                       final Integer outputId,
+                                       final List<Integer> nodeIds) {
+        post(spec -> spec
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("outputId", outputId)
+                .body(nodeIds), ADD_NODES_NAMED_OUTPUT);
+    }
+
+    /**
+     * Odebrání uzlů u výstupu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identifikátor výstupu
+     * @param nodeIds       seznam odebíraných identifikátorů uzlů
+     */
+    protected void removeNodesNamedOutput(final Integer fundVersionId,
+                                          final Integer outputId,
+                                          final List<Integer> nodeIds) {
+        post(spec -> spec
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("outputId", outputId)
+                .body(nodeIds), REMOVE_NODES_NAMED_OUTPUT);
+    }
+
+    /**
+     * Smazání pojmenovaného výstupu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identifikátor výstupu
+     */
+    protected void deleteNamedOutput(final Integer fundVersionId,
+                                     final Integer outputId) {
+        delete(spec -> spec
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("outputId", outputId), DELETE_NAMED_OUTPUT);
+    }
+
+    /**
+     * Upravení výstupu.
+     *
+     * @param fundVersion verze AS
+     * @param output      výstup
+     * @param name        název výstupu
+     * @param code        kód výstupu
+     */
+    protected void updateNamedOutput(final ArrFundVersionVO fundVersion,
+                                     final ArrOutputVO output,
+                                     final String name,
+                                     final String code) {
+        ArrangementController.OutputNameParam param = new ArrangementController.OutputNameParam();
+        param.setCode(code);
+        param.setName(name);
+        updateNamedOutput(fundVersion.getId(), output.getId(), param);
+    }
+
+    /**
+     * Upravení výstupu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identfikátor výstupu
+     * @param param         vstupní parametry pro úpravu outputu
+     */
+    protected void updateNamedOutput(final Integer fundVersionId,
+                                     final Integer outputId,
+                                     final ArrangementController.OutputNameParam param) {
+        post(spec -> spec
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("outputId", outputId)
+                .body(param), UPDATE_NAMED_OUTPUT);
+    }
+
 }

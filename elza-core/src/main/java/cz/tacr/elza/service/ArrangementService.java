@@ -22,6 +22,8 @@ import javax.annotation.Nullable;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.repository.NodeOutputRepository;
+import cz.tacr.elza.repository.OutputRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -190,6 +192,12 @@ public class ArrangementService {
 
     @Autowired
     private NamedOutputRepository namedOutputRepository;
+
+    @Autowired
+    private OutputRepository outputRepository;
+
+    @Autowired
+    private NodeOutputRepository nodeOutputRepository;
 
     @Autowired
     private VisiblePolicyRepository visiblePolicyRepository;
@@ -465,7 +473,11 @@ public class ArrangementService {
 
         List<ArrNamedOutput> namedOutputs = namedOutputRepository.findByFund(fund);
         if(!namedOutputs.isEmpty()){
-            throw new DeleteFailedException("Nelze smazat archivní soubor, pro který existuje alespoň jeden výstup.");
+            for (ArrNamedOutput namedOutput : namedOutputs) {
+                outputRepository.delete(namedOutput.getOutputs());
+                nodeOutputRepository.delete(namedOutput.getOutputNodes());
+                namedOutputRepository.delete(namedOutput);
+            }
         }
 
 
