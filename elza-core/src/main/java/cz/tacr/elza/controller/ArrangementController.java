@@ -1349,7 +1349,7 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}", method = RequestMethod.GET)
     public ArrOutputExtVO getOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                      @PathVariable(value = "outputId") final Integer outputId) {
+                                    @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
         outputService.getNamedOutput(fundVersion, output);
