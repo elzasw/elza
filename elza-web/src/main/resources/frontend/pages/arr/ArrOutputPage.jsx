@@ -20,6 +20,7 @@ import {fundOutputFetchIfNeeded, fundOutputRemoveNodes, fundOutputSelectOutput, 
 var classNames = require('classnames');
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
+import * as perms from 'actions/user/Permission.jsx';
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -131,33 +132,45 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
      * @return {Object} view
      */
     buildRibbon() {
+        const {userDetail} = this.props
+
         const fund = this.getActiveFund(this.props)
 
         var altActions = [];
-        altActions.push(
-            <Button key="add-output" onClick={this.handleAddOutput}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.add')}</span></div></Button>
-        )
+        if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId: fund.id})) {
+            altActions.push(
+                <Button key="add-output" onClick={this.handleAddOutput}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.add')}</span></div></Button>
+            )
+        }
 
         var itemActions = [];
         if (fund) {
             const fundOutputDetail = fund.fundOutput.fundOutputDetail
+
             if (fundOutputDetail.id !== null && fundOutputDetail.fetched && !fundOutputDetail.isFetching) {
-                if (!fundOutputDetail.lockDate) {
+                if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId: fund.id})) {
+                    if (!fundOutputDetail.lockDate) {
+                        itemActions.push(
+                            <Button key="add-fund-nodes" onClick={this.handleAddNodes}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.nodes.add')}</span></div></Button>
+                        )
+                        itemActions.push(
+                            <Button key="fund-output-usage-end" onClick={this.handleUsageEnd}><Icon glyph="fa-clock-o" /><div><span className="btnText">{i18n('ribbon.action.arr.output.usageEnd')}</span></div></Button>
+                        )
+                    }
                     itemActions.push(
-                        <Button key="add-fund-nodes" onClick={this.handleAddNodes}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.nodes.add')}</span></div></Button>
-                    )
-                    itemActions.push(
-                        <Button key="fund-output-usage-end" onClick={this.handleUsageEnd}><Icon glyph="fa-clock-o" /><div><span className="btnText">{i18n('ribbon.action.arr.output.usageEnd')}</span></div></Button>
+                        <Button key="fund-output-delete" onClick={this.handleDelete}><Icon glyph="fa-trash"/>
+                            <div><span className="btnText">{i18n('ribbon.action.arr.output.delete')}</span></div>
+                        </Button>
                     )
                 }
-                itemActions.push(
-                    <Button key="fund-output-delete" onClick={this.handleDelete}><Icon glyph="fa-trash"/>
-                        <div><span className="btnText">{i18n('ribbon.action.arr.output.delete')}</span></div>
-                    </Button>
-                )
-                itemActions.push(
-                    <Button key="fund-output-bulk-actions" onClick={null}><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span></div></Button>
-                )
+
+                if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId: fund.id}, perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: fund.id})) {
+                    if (fundOutputDetail.namedOutput.nodes.length > 0) {
+                        itemActions.push(
+                            <Button key="fund-output-bulk-actions" onClick={null}><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span></div></Button>
+                        )
+                    }
+                }
             }
         }
 

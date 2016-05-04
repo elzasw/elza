@@ -5,6 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="32" author="compel">
+        <delete tableName="arr_bulk_action_node" />
         <delete tableName="arr_bulk_action_run" />
         <dropColumn tableName="arr_bulk_action_run">
             <column name="change_id" />
