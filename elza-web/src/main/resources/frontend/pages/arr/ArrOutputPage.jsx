@@ -146,7 +146,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
             const fundOutputDetail = fund.fundOutput.fundOutputDetail
             if (fundOutputDetail.id !== null && fundOutputDetail.fetched && !fundOutputDetail.isFetching) {
-                if (!fundOutputDetail.lockChange) {
+                if (!fundOutputDetail.lockDate) {
                     itemActions.push(
                         <Button key="fund-output-usage-end" onClick={this.handleUsageEnd}><Icon glyph="fa-clock-o" /><div><span className="btnText">{i18n('ribbon.action.arr.output.usageEnd')}</span></div></Button>
                     )
@@ -208,7 +208,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         return (
             <div className={classNames(cls)}>
                 <div className='name'>{item.namedOutput.name}</div>
-                {item.lockChange ? <div>{Utils.dateTimeToString(new Date(item.lockChange))}</div> : <div>&nbsp;</div>}
+                {item.lockDate ? <div>{Utils.dateTimeToString(new Date(item.lockDate))}</div> : <div>&nbsp;</div>}
             </div>
         )
     }

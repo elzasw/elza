@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.Date;
+
 /**
  * VO verze výstupu archivního souboru.
  *
@@ -15,7 +17,7 @@ public class ArrOutputVO {
     /**
      * Změna uzavření verze.
      */
-    private ArrChangeVO lockChange;
+    private Date lockDate;
 
     public Integer getId() {
         return id;
@@ -25,11 +27,11 @@ public class ArrOutputVO {
         this.id = id;
     }
 
-    public ArrChangeVO getLockChange() {
-        return lockChange;
+    public Date getLockDate() {
+        return lockDate;
     }
 
-    public void setLockChange(final ArrChangeVO lockChange) {
-        this.lockChange = lockChange;
+    public void setLockDate(final Date lockDate) {
+        this.lockDate = lockDate;
     }
 }

@@ -39,6 +39,9 @@ public class ArrNamedOutput implements cz.tacr.elza.api.ArrNamedOutput<ArrFund> 
     @OneToMany(mappedBy = "namedOutput", fetch = FetchType.LAZY)
     private List<ArrOutput> outputs;
 
+    @OneToMany(mappedBy = "namedOutput", fetch = FetchType.LAZY)
+    private List<ArrNodeOutput> outputNodes;
+
     @Override
     public Integer getNamedOutputId() {
         return namedOutputId;
@@ -105,5 +108,13 @@ public class ArrNamedOutput implements cz.tacr.elza.api.ArrNamedOutput<ArrFund> 
 
     public void setOutputs(final List<ArrOutput> outputs) {
         this.outputs = outputs;
+    }
+
+    public List<ArrNodeOutput> getOutputNodes() {
+        return outputNodes;
+    }
+
+    public void setOutputNodes(final List<ArrNodeOutput> outputNodes) {
+        this.outputNodes = outputNodes;
     }
 }

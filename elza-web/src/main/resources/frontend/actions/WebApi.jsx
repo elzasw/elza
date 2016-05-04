@@ -785,48 +785,31 @@ class WebApi{
     }
 
     getOutputs(versionId) {
-        var data = [
-            {id: 1, createChange: 1465469100591, lockChange: 1435469100591, namedOutput: {id: 1, name: 'nazev 1', code: 'code 1', temporary: false}},
-            {id: 2, createChange: 1464469200591, namedOutput: {id: 2, name: 'nazev 2', code: 'code 2', temporary: false}},
-            {id: 3, createChange: 1463469300591, namedOutput: {id: 1, name: 'nazev 1', code: 'code 1', temporary: false}},
-            {id: 4, createChange: 1462469400591, lockChange: 1445469100591, namedOutput: {id: 4, name: 'nazev 3', code: 'code 3', temporary: true}},
-            {id: 5, createChange: 1461469500591, namedOutput: {id: 2, name: 'nazev 2', code: 'code 2', temporary: true}},
-        ]
-        
-        return getData(data, 100)
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/output/' + versionId);
     }
 
     getFundOutputDetail(versionId, outputId) {
-        var nodes = [
-            {id: 1, name: 'nejaky nazev 1', referenceMark: ['1', '|', '3']},
-            {id: 2, name: 'nejaky nazev 2', referenceMark: ['2', '|', '4']},
-            {id: 3, name: 'nejaky nazev 3', referenceMark: ['3', '|', '5']},
-        ]        
-        var data = {
-            id: outputId, name: 'nejaky nazev', code: 'nejaky kod',
-            nodes: nodes,
-        }
-        return getData(data, 100)
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/output/' + versionId + '/' + outputId);
     }
 
     createOutput(versionId, data) {
-        return getData(data, 100)
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/output/' + versionId, null, data);
     }
 
     outputUsageEnd(versionId, outputId) {
-        return getData({}, 100)
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/output/' + versionId + '/' + outputId + '/lock');
     }
     
     fundOutputAddNodes(versionId, outputId, nodeIds) {
-        return getData({}, 100)
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/output/' + versionId + '/' + outputId + '/add', null, nodeIds);
     }
     
     fundOutputRemoveNodes(versionId, outputId, nodeIds) {
-        return getData({}, 100)
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/output/' + versionId + '/' + outputId + '/remove', null, nodeIds);
     }
 
     outputDelete(versionId, outputId) {
-        return getData({}, 100)
+        return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/output/' + versionId + '/' + outputId);
     }
 }
 

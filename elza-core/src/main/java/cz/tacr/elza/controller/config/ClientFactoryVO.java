@@ -11,12 +11,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.LevelTreeCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
@@ -101,6 +103,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private NamedOutputRepository namedOutputRepository;
+
+    @Autowired
+    private LevelTreeCacheService levelTreeCacheService;
 
     /**
      * Vytvoří objekt informací o přihlášeném uživateli.
@@ -693,6 +698,32 @@ public class ClientFactoryVO {
     }
 
     /**
+     * Vytvoří třídy výstupů archivního souboru.
+     *
+     * @param namedOutput DO
+     * @param loadOutputs  mají se do objektu načíst verze? (arr_output)
+     * @param loadNodes maj9 se do objektu načíst nody?
+     * @param fundVersion verze archivní pomůcky (může být null, pokud loadNodes je false)
+     * @return VO
+     */
+    public ArrNamedOutputVO createNamedOutput(final ArrNamedOutput namedOutput,
+                                              final boolean loadOutputs,
+                                              final boolean loadNodes,
+                                              final ArrFundVersion fundVersion) {
+        Assert.notNull(namedOutput);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrNamedOutputVO namedOutputVO = mapper.map(namedOutput, ArrNamedOutputVO.class);
+        if (loadOutputs) {
+            namedOutputVO.setOutputs(createOutputsVO(namedOutput.getOutputs()));
+        }
+        if (loadNodes) {
+            List<Integer> nodeIds = namedOutput.getOutputNodes().stream().map(ArrNodeOutput::getNode).map(ArrNode::getNodeId).collect(Collectors.toList());
+            namedOutputVO.setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
+        }
+        return namedOutputVO;
+    }
+
+    /**
      * Vytvoření objektů verzí výstupu archivního souboru.
      *
      * @param outputs verze výstupu archivního souboru
@@ -708,12 +739,9 @@ public class ClientFactoryVO {
             result.add(mapper.map(output, ArrOutputVO.class));
         }
 
-        Collections.sort(result, (o1, o2) -> {
-            ArrChangeVO lock1 = o1.getLockChange();
-            ArrChangeVO lock2 = o2.getLockChange();
-
+        Collections.sort(result, (lock1, lock2) -> {
             if (lock1 != null && lock2 != null) {
-                return lock1.getChangeDate().compareTo(lock2.getChangeDate());
+                return lock1.getLockDate().compareTo(lock2.getLockDate());
             } else if (lock1 == null) {
                 return 1;
             } else {
@@ -1218,5 +1246,26 @@ public class ClientFactoryVO {
         RulPolicyTypeVO policyTypeVO = mapper.map(policyType, RulPolicyTypeVO.class);
         policyTypeVO.setRuleSetId(policyType.getRuleSet().getRuleSetId());
         return policyTypeVO;
+    }
+
+    /**
+     * Vytvoření VO rozšířeného výstupu.
+     *
+     * @param outputs seznam DO výstupů
+     * @return seznam VO výstupů
+     */
+    public List<ArrOutputExtVO> createOutputExtList(final List<ArrOutput> outputs) {
+        Assert.notNull(outputs);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        List<ArrOutputExtVO> outputExtList = new ArrayList<>();
+        for (ArrOutput output : outputs) {
+            ArrOutputExtVO outputExt = mapper.map(output, ArrOutputExtVO.class);
+
+            outputExt.setNamedOutput(mapper.map(output.getNamedOutput(), ArrNamedOutputVO.class));
+            outputExt.setCreateDate(mapper.map(output.getCreateChange().getChangeDate(), Date.class));
+            outputExt.setLockDate(output.getLockChange() != null ? mapper.map(output.getLockChange().getChangeDate(), Date.class) : null);
+            outputExtList.add(outputExt);
+        }
+        return outputExtList;
     }
 }

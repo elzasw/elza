@@ -53,13 +53,13 @@ var FundDetailExt = class FundDetailExt extends AbstractReactComponent {
         // fundDetail.validNamedOutputs = [
         //     {id: 1, code: 'ccc', name: 'nazev 1',
         //         outputs: [
-        //             {id: 1, lockChange: {id: 111, changeDate: 1460469000591}},
-        //             {id: 2, lockChange: {id: 222, changeDate: 1460462260849}},
+        //             {id: 1, lockDate: 1460469000591},
+        //             {id: 2, lockDate: 1460462260849},
         //         ]},
         //     {id: 2, code: 'ddd', name: 'nazev 2',
         //         outputs: [
-        //             {id: 133, lockChange: {id: 1411, changeDate: 1464469000591}},
-        //             {id: 244, lockChange: {id: 2242, changeDate: 1465462260849}},
+        //             {id: 133, lockDate: 1464469000591},
+        //             {id: 244, lockDate: 1465462260849},
         //         ]},
         // ]
 
@@ -79,7 +79,7 @@ var FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                     <div className="versions-container">
                         {namedOutput.outputs.map(output => (
                             <div className="version">
-                                <div className="version-label">{i18n('arr.fund.namedOutput.version', dateToString(new Date(output.lockChange.changeDate)))}</div>
+                                <div className="version-label">{i18n('arr.fund.namedOutput.version', dateToString(new Date(output.lockDate)))}</div>
                                 <Button bsStyle="link">{i18n('arr.fund.namedOutput.action.showPDF')}</Button>
                             </div>
                         ))}

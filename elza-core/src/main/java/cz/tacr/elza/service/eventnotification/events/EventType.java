@@ -51,6 +51,9 @@ public enum EventType {
 
     CONFORMITY_INFO(EventIdsInVersion.class),
 
+    OUTPUT_CHANGES(EventIdsInVersion.class),
+    OUTPUT_CHANGES_DETAIL(EventIdsInVersion.class),
+
     BULK_ACTION_STATE_CHANGE(EventStringInVersion.class);
 
     private Class<? extends AbstractEventSimple> eventClass;

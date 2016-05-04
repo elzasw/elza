@@ -15,7 +15,12 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.controller.vo.ArrNamedOutputVO;
+import cz.tacr.elza.controller.vo.ArrOutputExtVO;
+import cz.tacr.elza.domain.ArrNamedOutput;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.UserService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -69,7 +74,6 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.FilterExpiredException;
-import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
@@ -167,6 +171,9 @@ public class ArrangementController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private OutputService outputService;
 
     /**
      * Seznam typů obalů.
@@ -1321,6 +1328,116 @@ public class ArrangementController {
     }
 
     /**
+     * Načtení seznamu outputů - objekt outputu s vazbou na objekt named output.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @return  seznam outputů
+     */
+    @RequestMapping(value = "/output/{fundVersionId}", method = RequestMethod.GET)
+    public List<ArrOutputExtVO> getOutputs(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        List<ArrOutput> outputs = outputService.getOutputs(fundVersion);
+        return factoryVo.createOutputExtList(outputs);
+    }
+
+    /**
+     * Načtení detailu outputu objekt output s vazbou na named output a seznamem připojených node.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identifikátor výstupu
+     * @return
+     */
+    @RequestMapping(value = "/output/{fundVersionId}/{outputId}", method = RequestMethod.GET)
+    public ArrNamedOutputVO getOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                      @PathVariable(value = "outputId") final Integer outputId) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        ArrNamedOutput namedOutput = outputService.getNamedOutput(fundVersion, output);
+        return factoryVo.createNamedOutput(namedOutput, false, true, fundVersion);
+    }
+
+    /**
+     * Vytvoření nového pojmenovaného výstupu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param param         vstupní parametry pro vytvoření outputu
+     * @return vytvořený výstup
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{fundVersionId}", method = RequestMethod.PUT)
+    public ArrNamedOutputVO createNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                              @RequestBody OutputNameParam param) {
+        Assert.notNull(param);
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrNamedOutput namedOutput = outputService.createNamedOutput(fundVersion, param.getName(), param.getCode(), param.getTemporary());
+        return factoryVo.createNamedOutput(namedOutput, false, false, null);
+    }
+
+    /**
+     * Zamknutí verze výstupu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identifikátor výstupu
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{fundVersionId}/{outputId}/lock", method = RequestMethod.POST)
+    public void outputLock(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                           @PathVariable(value = "outputId") final Integer outputId) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        outputService.outputLock(fundVersion, output);
+    }
+
+    /**
+     * Přidání uzlů k výstupu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identifikátor výstupu
+     * @param nodeIds       seznam přidáváných identifikátorů uzlů
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{fundVersionId}/{outputId}/add", method = RequestMethod.POST)
+    public void addNodesNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                    @PathVariable(value = "outputId") final Integer outputId,
+                                    @RequestBody final List<Integer> nodeIds) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        outputService.addNodesNamedOutput(fundVersion, output.getNamedOutput(), nodeIds);
+    }
+
+    /**
+     * Odebrání uzlů u výstupu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identifikátor výstupu
+     * @param nodeIds       seznam odebíraných identifikátorů uzlů
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{fundVersionId}/{outputId}/remove", method = RequestMethod.POST)
+    public void removeNodesNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                       @PathVariable(value = "outputId") final Integer outputId,
+                                       @RequestBody final List<Integer> nodeIds) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        outputService.removeNodesNamedOutput(fundVersion, output.getNamedOutput(), nodeIds);
+    }
+
+    /**
+     * Smazání pojmenovaného výstupu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identifikátor výstupu
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{fundVersionId}/{outputId}", method = RequestMethod.DELETE)
+    public void deleteNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                  @PathVariable(value = "outputId") final Integer outputId) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        outputService.deleteNamedOutput(fundVersion, output.getNamedOutput());
+    }
+
+    /**
      * Výstupní objekt pro chybové jednotky popisu.
      */
     public static class ValidationItems {
@@ -2175,6 +2292,51 @@ public class ArrangementController {
 
         public void setSpecIds(final Set<Integer> specIds) {
             this.specIds = specIds;
+        }
+    }
+
+    /**
+     * Pomocná třídat pro parametry vytvoření pojmenovaného výstupu.
+     */
+    public static class OutputNameParam {
+
+        /**
+         * Název výstupu.
+         */
+        private String name;
+
+        /**
+         * Kód výstupu.
+         */
+        private String code;
+
+        /**
+         * Je výstup dočasný?
+         */
+        private Boolean temporary;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(final String name) {
+            this.name = name;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(final String code) {
+            this.code = code;
+        }
+
+        public Boolean getTemporary() {
+            return temporary;
+        }
+
+        public void setTemporary(final Boolean temporary) {
+            this.temporary = temporary;
         }
     }
 }
