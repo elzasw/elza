@@ -257,7 +257,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                     <Button key="run-action" onClick={this.handleRibbonCreateAction}><Icon glyph="fa-play"/>
                         <div><span className="btnText">{i18n('ribbon.action.fundAction.form.run')}</span></div>
                     </Button>,
-                    <Button key="clear-action" onClick={this.handleRibbonFormClear}><Icon glyph="fa-eraser"/>
+                    <Button key="clear-action" onClick={this.handleRibbonFormClear}><Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('ribbon.action.fundAction.form.clear')}</span></div>
                     </Button>
                 );
