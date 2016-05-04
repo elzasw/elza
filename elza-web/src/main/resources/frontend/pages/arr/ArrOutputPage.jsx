@@ -142,11 +142,10 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         if (fund) {
             const fundOutputDetail = fund.fundOutput.fundOutputDetail
             if (fundOutputDetail.id !== null && fundOutputDetail.fetched && !fundOutputDetail.isFetching) {
-                itemActions.push(
-                    <Button key="add-fund-nodes" onClick={this.handleAddNodes}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.nodes.add')}</span></div></Button>
-                )
-                console.log(fundOutputDetail)
-                if (!fundOutputDetail.lockChange) {
+                if (!fundOutputDetail.lockDate) {
+                    itemActions.push(
+                        <Button key="add-fund-nodes" onClick={this.handleAddNodes}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.nodes.add')}</span></div></Button>
+                    )
                     itemActions.push(
                         <Button key="fund-output-usage-end" onClick={this.handleUsageEnd}><Icon glyph="fa-clock-o" /><div><span className="btnText">{i18n('ribbon.action.arr.output.usageEnd')}</span></div></Button>
                     )
@@ -221,7 +220,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     render() {
-        const {focus, splitter, arrRegion} = this.props;
+        const {focus, splitter, userDetail} = this.props;
 
         const fund = this.getActiveFund(this.props)
         var leftPanel, rightPanel
@@ -258,8 +257,9 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 rightPanel = (
                     <div className="fund-nodes-container">
                         <FundNodesList
-                            nodes={fundOutputDetail.nodes}
+                            nodes={fundOutputDetail.namedOutput.nodes}
                             onDeleteNode={this.handleRemoveNode}
+                            readOnly={fundOutputDetail.lockDate ? true : false}
                             />
                     </div>
                 )

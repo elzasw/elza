@@ -25,11 +25,15 @@ var FundNodesList = class FundNodesList extends AbstractReactComponent {
     }
 
     handleDeleteItem(node) {
-        const {onDeleteNode} = this.props
-        onDeleteNode(node)
+        const {onDeleteNode, readOnly} = this.props
+        if (!readOnly) {
+            onDeleteNode(node)
+        }
     }
 
     handleRenderItem(node, index) {
+        const {readOnly} = this.props
+
         const refMark = <div className="reference-mark">{createReferenceMarkString(node)}</div>
 
         var name = node.name ? node.name : <i>{i18n('fundTree.node.name.undefined', node.id)}</i>;
@@ -45,7 +49,7 @@ var FundNodesList = class FundNodesList extends AbstractReactComponent {
                     {name}
                 </div>
                 <div className="actions-container">
-                    <Button onClick={this.handleDeleteItem.bind(this, node)}><Icon glyph="fa-trash"/></Button>
+                    {!readOnly && <Button onClick={this.handleDeleteItem.bind(this, node)}><Icon glyph="fa-trash"/></Button>}
                 </div>
             </div>
         )
