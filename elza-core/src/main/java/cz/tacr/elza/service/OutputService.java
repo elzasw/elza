@@ -282,6 +282,15 @@ public class OutputService {
         }
     }
 
+    /**
+     * Upravení výstupu.
+     *
+     * @param fundVersion verze AS
+     * @param output      pojmenovaný výstup
+     * @param name        název výstupu
+     * @param code        kód výstupu
+     * @return upravený výstup
+     */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public ArrNamedOutput updateNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
