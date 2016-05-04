@@ -65,15 +65,6 @@ export default function fundAction(state = initialState, action = {}) {
                 }
             }
         }
-        case types.FUND_ACTION_FUND_SELECT: {
-            return {
-                ...state,
-                detail: {
-                    ...state.detail,
-                    currentDataKey: action.dataKey
-                }
-            }
-        }
         case types.FUND_ACTION_LIST_REQUEST: {
             return {
                 ...state,

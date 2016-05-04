@@ -84,7 +84,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
         if (!fund) {
             return <div className='text-center center-container'>{i18n('arr.fundAction.noFa')}</div>;
         }
-        const {fundAction: {detail, isFormVisible, config, form}} = fund;
+        const {fundAction: {detail, isFormVisible, config, form}, versionId} = fund;
 
         if (isFormVisible) {
             if (config.isFetching && !config.fetched) {
@@ -121,7 +121,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                        ref='code-action'
                        className='form-control'
                        value={form.code}
-                       onChange={(e) => {this.dispatch(fundActionFormChange({code: e.target.value}))}}
+                       onChange={(e) => {this.dispatch(fundActionFormChange(versionId, {code: e.target.value}))}}
                        >
                     <option key="novalue" />
                     {config.data.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}
@@ -381,20 +381,23 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
         var leftPanel
         var centerPanel
         if (userDetail.hasFundActionPage(fund ? fund.id : null)) { // má právo na tuto stránku
-            leftPanel = <div className='actions-list-container'>{
-                fund.fundAction.list.fetched ?
-                <ListBox
-                    className='actions-listbox'
-                    key='actions-list'
-                    items={fund.fundAction.list.data}
-                    renderItemContent={this.renderRowItem.bind(this)}
-                    onSelect={this.handleListBoxActionSelect}
-                    onFocus={this.handleListBoxActionSelect}
-                /> : <Loading />}
-            </div>;
+            if (fund) {
+                leftPanel = <div className='actions-list-container'>{
+                    fund.fundAction.list.fetched ?
+                    <ListBox
+                        className='actions-listbox'
+                        key='actions-list'
+                        activeIndex={indexById(fund.fundAction.list.data, fund.fundAction.detail.currentDataKey)}
+                        items={fund.fundAction.list.data}
+                        renderItemContent={this.renderRowItem.bind(this)}
+                        onSelect={this.handleListBoxActionSelect}
+                        onFocus={this.handleListBoxActionSelect}
+                    /> : <Loading />}
+                </div>;
+            }
             centerPanel = <div className='center-container'>{this.renderCenter(fund)}</div>;
         } else {
-            centerPanel = <div>{i18n('global.insufficient.right')}</div>
+            centerPanel = <div className='text-center'>{i18n('global.insufficient.right')}</div>
         }
 
         return (
