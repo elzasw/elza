@@ -29,7 +29,7 @@ export function isFundActionAction(action) {
 export function fundActionFetchListIfNeeded(versionId) {
     return (dispatch, getState) => {
         const {arrRegion: {funds}} = getState();
-        const index = indexById(funds, versionId);
+        const index = indexById(funds, versionId, 'versionId');
         if (index !== null && funds[index].fundAction) {
             const {fundAction: {list: {currentDataKey}}} = funds[index];
             if (currentDataKey !== versionId) {
@@ -44,7 +44,7 @@ export function fundActionFetchListIfNeeded(versionId) {
 export function fundActionFetchConfigIfNeeded(versionId) {
     return (dispatch, getState) => {
         const {arrRegion: {funds}} = getState();
-        const index = indexById(funds, versionId);
+        const index = indexById(funds, versionId, 'versionId');
         if (index !== null && funds[index].fundAction) {
             const {fundAction: {config: {currentDataKey}}} = funds[index];
             if (currentDataKey !== versionId) {
@@ -60,7 +60,7 @@ export function fundActionFetchConfigIfNeeded(versionId) {
 export function fundActionFetchDetailIfNeeded(versionId) {
     return (dispatch, getState) => {
         const {arrRegion: {funds}} = getState();
-        const index = indexById(funds, versionId);
+        const index = indexById(funds, versionId, 'versionId');
         if (index !== null) {
             const {fundAction : {detail: {currentDataKey, data, isFetching, fetched} }, versionId} = funds[index];
             const isNotSameDataKey = data && currentDataKey !== data.id;
@@ -170,7 +170,7 @@ export function fundActionFormChange(versionId, data) {
 export function fundActionFormSubmit(versionId) {
     return (dispatch, getState) => {
         const {arrRegion: {funds}} = getState();
-        const index = indexById(funds, versionId);
+        const index = indexById(funds, versionId, 'versionId');
         if (index !== null) {
             const {fundAction : {form, isFormVisible}, versionId} = funds[index];
             if (isFormVisible) {

@@ -102,16 +102,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                     </div>
                 }
             }
-/*<select
- key='code-action'
- ref='code-action'
- className='form-control'
- value={form.code}
- onChange={(e) => {this.dispatch(fundActionFormChange({code: e.target.value}))}}
- >
- <option key="novalue" />
- {config.data.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}
- </select>*/
+            
             return <div>
                 <h2>{i18n('arr.fundAction.form.newAction')}</h2>
                 <div>
