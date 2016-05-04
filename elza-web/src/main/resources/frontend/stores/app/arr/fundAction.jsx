@@ -12,8 +12,8 @@ const initialState = {
         data: null
     },
     form: {
-        nodeList: [],
-        code: null
+        nodes: [],
+        code: ''
     },
     list: {
         isFetching: false,

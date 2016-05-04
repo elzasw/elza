@@ -276,6 +276,10 @@ class WebApi{
         return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/action/' + bulkActionRunId, null);
     }
 
+    interruptBulkAction(bulkActionRunId) {
+        return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/action/' + bulkActionRunId + "/interrupt", null);
+    }
+
     queueBulkAction(versionId, code) {
         return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/queue/' + versionId + '/' + code, null);
     }

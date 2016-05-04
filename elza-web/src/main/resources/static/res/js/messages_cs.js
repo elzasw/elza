@@ -117,6 +117,10 @@ var messages = {
     "arr.output.code": "Interní kód výstupu",
     "arr.output.temporary": "Dočasný výstup",
 
+    "arr.fundAction.noFa" : "Není vybrán žádný archivní soubor",
+    "arr.fundAction.form.newAction" : "Nová akce",
+    "arr.fundAction.form.type" : "Typ akce",
+    "arr.fundAction.form.addNodes" : "Přidat uzly",
     "arr.fundAction.state.running" : "Běžící",
     "arr.fundAction.state.waiting" : "Čekající",
     "arr.fundAction.state.finished" : "Dokončeno",

@@ -68,6 +68,15 @@ public class BulkActionController {
         return factoryVo.createBulkActionRunWithNodes(bulkActionService.getArrBulkActionRun(bulkActionRunId));
     }
 
+    @RequestMapping(value = "/action/{bulkActionRunId}/interrupt",
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    void interruptBulkAction(final @PathVariable("bulkActionRunId") Integer bulkActionRunId) {
+        Assert.notNull(bulkActionRunId);
+        bulkActionService.interruptBulkAction(bulkActionRunId);
+    }
+
 
     @RequestMapping(value = "/queue/{versionId}/{code}",
             method = RequestMethod.GET,

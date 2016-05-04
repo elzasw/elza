@@ -20,7 +20,7 @@ public class BulkActionRunVO {
 
     private State state;
 
-    private List<ArrNodeVO> nodes;
+    private List<TreeNodeClient> nodes;
 
     private Date datePlanned;
 
@@ -54,11 +54,11 @@ public class BulkActionRunVO {
         this.state = state;
     }
 
-    public List<ArrNodeVO> getNodes() {
+    public List<TreeNodeClient> getNodes() {
         return nodes;
     }
 
-    public void setNodes(List<ArrNodeVO> nodes) {
+    public void setNodes(List<TreeNodeClient> nodes) {
         this.nodes = nodes;
     }
 

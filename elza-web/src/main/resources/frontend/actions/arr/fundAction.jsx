@@ -4,6 +4,7 @@
 
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
+import {indexById} from 'stores/app/utils.jsx';
 
 export function isFundActionAction(action) {
     switch (action.type) {
@@ -25,28 +26,30 @@ export function isFundActionAction(action) {
     }
 }
 
-export function fundActionFetchListIfNeeded(dataKey) {
+export function fundActionFetchListIfNeeded(versionId) {
     return (dispatch, getState) => {
-        const {arrRegion: {funds, activeIndex}} = getState();
-        if (activeIndex !== null && funds[activeIndex].fundAction) {
-            const {fundAction: {list: {currentDataKey}}, versionId} = funds[activeIndex];
-            if (currentDataKey !== dataKey) {
-                dispatch(fundActionListRequest(dataKey));
-                WebApi.getBulkActionsList(dataKey).then(data => dispatch(fundActionListReceive(dataKey, data, versionId)));
+        const {arrRegion: {funds}} = getState();
+        const index = indexById(funds, versionId);
+        if (index !== null && funds[index].fundAction) {
+            const {fundAction: {list: {currentDataKey}}} = funds[index];
+            if (currentDataKey !== versionId) {
+                dispatch(fundActionListRequest(versionId, versionId));
+                WebApi.getBulkActionsList(versionId).then(data => dispatch(fundActionListReceive(versionId, versionId, data)));
             }
         } else {
             window.console.error('Active fund not found');
         }
     }
 }
-export function fundActionFetchConfigIfNeeded(dataKey) {
+export function fundActionFetchConfigIfNeeded(versionId) {
     return (dispatch, getState) => {
-        const {arrRegion: {funds, activeIndex}} = getState();
-        if (activeIndex !== null && funds[activeIndex].fundAction) {
-            const {fundAction: {config: {currentDataKey}}, versionId} = funds[activeIndex];
-            if (currentDataKey !== dataKey) {
-                dispatch(fundActionConfigRequest(dataKey));
-                WebApi.getBulkActions(dataKey).then(data => dispatch(fundActionConfigReceive(dataKey, data, versionId)));
+        const {arrRegion: {funds}} = getState();
+        const index = indexById(funds, versionId);
+        if (index !== null && funds[index].fundAction) {
+            const {fundAction: {config: {currentDataKey}}} = funds[index];
+            if (currentDataKey !== versionId) {
+                dispatch(fundActionConfigRequest(versionId, versionId));
+                WebApi.getBulkActions(versionId).then(data => dispatch(fundActionConfigReceive(versionId, versionId, data)));
             }
         } else {
             window.console.error('Active fund not found');
@@ -54,27 +57,16 @@ export function fundActionFetchConfigIfNeeded(dataKey) {
     }
 }
 
-function _dispatchInActualFund(action) {
+export function fundActionFetchDetailIfNeeded(versionId) {
     return (dispatch, getState) => {
-        const {arrRegion: {funds, activeIndex}} = getState();
-        const fund = funds[activeIndex];
-        if (fund) {
-            dispatch({...action, versionId: fund.versionId});
-        } else {
-            window.console.error('Active fund not found');
-        }
-    }
-}
-
-export function fundActionFetchDetailIfNeeded() {
-    return (dispatch, getState) => {
-        const {arrRegion: {funds, activeIndex}} = getState();
-        if (activeIndex !== null) {
-            const {fundAction : {detail: {currentDataKey, data, isFetching, fetched} }, versionId} = funds[activeIndex];
+        const {arrRegion: {funds}} = getState();
+        const index = indexById(funds, versionId);
+        if (index !== null) {
+            const {fundAction : {detail: {currentDataKey, data, isFetching, fetched} }, versionId} = funds[index];
             const isNotSameDataKey = data && currentDataKey !== data.id;
             if ((isNotSameDataKey && !isFetching) || (!isFetching && !fetched && currentDataKey !== null)) {
-                dispatch(fundActionActionRequest(currentDataKey, versionId));
-                WebApi.getBulkAction(currentDataKey).then(data => dispatch(fundActionActionReceive(currentDataKey, data, versionId)));
+                dispatch(fundActionActionRequest(versionId, currentDataKey));
+                WebApi.getBulkAction(currentDataKey).then(data => dispatch(fundActionActionReceive(versionId, currentDataKey, data)));
             }
         } else {
             window.console.error('Active fund not found');
@@ -82,21 +74,28 @@ export function fundActionFetchDetailIfNeeded() {
     }
 }
 
-export function fundActionActionSelect(dataKey) {
-    return _dispatchInActualFund({
+export function fundActionActionSelect(versionId, dataKey) {
+    return {
         type: types.FUND_ACTION_ACTION_SELECT,
-        dataKey
-    });
+        dataKey,
+        versionId
+    };
+}
+export function funcActionActionInterrupt(bulkActionRunId) {
+    return dispatch => {
+        dispatch(WebApi.interruptBulkAction(bulkActionRunId))
+    }
 }
 
-export function fundActionListRequest(dataKey) {
-    return _dispatchInActualFund({
+export function fundActionListRequest(versionId, dataKey) {
+    return {
         type: types.FUND_ACTION_LIST_REQUEST,
-        dataKey
-    });
+        dataKey,
+        versionId
+    };
 }
 
-export function fundActionListReceive(dataKey, data, versionId) {
+export function fundActionListReceive(versionId, dataKey, data) {
     return {
         type: types.FUND_ACTION_LIST_RECEIVE,
         versionId,
@@ -105,14 +104,15 @@ export function fundActionListReceive(dataKey, data, versionId) {
     }
 }
 
-export function fundActionConfigRequest(dataKey) {
-    return _dispatchInActualFund({
+export function fundActionConfigRequest(versionId, dataKey) {
+    return {
         type: types.FUND_ACTION_CONFIG_REQUEST,
-        dataKey
-    });
+        dataKey,
+        versionId
+    };
 }
 
-export function fundActionConfigReceive(dataKey, data, versionId) {
+export function fundActionConfigReceive(versionId, dataKey, data) {
     return {
         type: types.FUND_ACTION_CONFIG_RECEIVE,
         versionId,
@@ -121,14 +121,15 @@ export function fundActionConfigReceive(dataKey, data, versionId) {
     }
 }
 
-export function fundActionActionRequest(dataKey) {
-    return _dispatchInActualFund({
+export function fundActionActionRequest(versionId, dataKey) {
+    return {
         type: types.FUND_ACTION_ACTION_DETAIL_REQUEST,
-        dataKey
-    });
+        dataKey,
+        versionId
+    };
 }
 
-export function fundActionActionReceive(dataKey, data, versionId) {
+export function fundActionActionReceive(versionId, dataKey, data) {
     return {
         type: types.FUND_ACTION_ACTION_DETAIL_RECEIVE,
         versionId,
@@ -137,41 +138,47 @@ export function fundActionActionReceive(dataKey, data, versionId) {
     }
 }
 
-export function fundActionFormShow() {
-    return _dispatchInActualFund({
-        type: types.FUND_ACTION_FORM_SHOW
-    });
+export function fundActionFormShow(versionId) {
+    return {
+        type: types.FUND_ACTION_FORM_SHOW,
+        versionId
+    };
 }
 
-export function fundActionFormHide() {
-    return _dispatchInActualFund({
-        type: types.FUND_ACTION_FORM_HIDE
-    });
+export function fundActionFormHide(versionId) {
+    return {
+        type: types.FUND_ACTION_FORM_HIDE,
+        versionId
+    };
 }
 
-export function fundActionFormReset() {
-    return _dispatchInActualFund({
-        type: types.FUND_ACTION_FORM_RESET
-    });
+export function fundActionFormReset(versionId) {
+    return {
+        type: types.FUND_ACTION_FORM_RESET,
+        versionId
+    };
 }
 
-export function fundActionFormChange(data) {
-    return _dispatchInActualFund({
+export function fundActionFormChange(versionId, data) {
+    return {
         type: types.FUND_ACTION_FORM_CHANGE,
-        data
-    });
+        data,
+        versionId
+    };
 }
 
-export function fundActionFormSubmit() {
+export function fundActionFormSubmit(versionId) {
     return (dispatch, getState) => {
-        const {arrRegion: {funds, activeIndex}} = getState();
-        if (activeIndex !== null) {
-            const {fundAction : {form, isFormVisible}, versionId} = funds[activeIndex];
+        const {arrRegion: {funds}} = getState();
+        const index = indexById(funds, versionId);
+        if (index !== null) {
+            const {fundAction : {form, isFormVisible}, versionId} = funds[index];
             if (isFormVisible) {
                 const nodeIds = form.nodeList.map(node => node.id);
                 WebApi.queueBulkActionWithIds(versionId, form.code, nodeIds);
                 dispatch({
-                    type: types.FUND_ACTION_FORM_SUBMIT
+                    type: types.FUND_ACTION_FORM_SUBMIT,
+                    versionId
                 })
             }
         } else {

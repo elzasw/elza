@@ -288,6 +288,43 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     }
 
     /**
+     * Přeruší hromadnou akci pokud je ve stavu - čeká | plánování | běh
+     *
+     * @param bulkActionId Id hromadné akce
+     */
+    public void interruptBulkAction(final int bulkActionId) {
+        ArrBulkActionRun bulkActionRun = bulkActionRepository.findOne(bulkActionId);
+
+        if (bulkActionRun == null) {
+            throw new IllegalArgumentException("Hromadná akce s ID " + bulkActionId + " nebyla nalezena!");
+        }
+        State originalState = bulkActionRun.getState();
+
+        if (!originalState.equals(State.WAITING) && !originalState.equals(State.PLANNED) && !originalState.equals(State.RUNNING)) {
+            throw new IllegalArgumentException("Nelze přerušit hromadnou akci ve stavu " + originalState + "!");
+        }
+
+        boolean needSave = true;
+
+        if (originalState.equals(State.RUNNING)) {
+            if (runningWorkers.containsKey(bulkActionRun.getFundVersionId())) {
+                BulkActionWorker bulkActionWorker = runningWorkers.get(bulkActionRun.getFundVersionId());
+                if (bulkActionWorker.getBulkActionRun().getBulkActionRunId().equals(bulkActionRun.getBulkActionRunId())) {
+                    bulkActionWorker.terminate();
+                    needSave = false;
+                }
+            }
+        }
+
+        if (needSave) {
+            bulkActionRun.setState(State.INTERRUPTED);
+            bulkActionRepository.save(bulkActionRun);
+            eventPublishBulkAction(bulkActionRun);
+            bulkActionRepository.flush();
+        }
+    }
+
+    /**
      * Upravení nastavení hromadné akce.
      *
      * @param bulkActionConfig nastavení hromadné akce

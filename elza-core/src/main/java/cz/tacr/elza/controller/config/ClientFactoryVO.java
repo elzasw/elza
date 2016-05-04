@@ -1118,7 +1118,7 @@ public class ClientFactoryVO {
         Assert.notNull(bulkActionRun);
         MapperFacade mapper = mapperFactory.getMapperFacade();
         BulkActionRunVO bulkActionRunVO = mapper.map(bulkActionRun, BulkActionRunVO.class);
-        bulkActionRunVO.setNodes(createArrNodes(bulkActionNodeRepository.findNodesByBulkAction(bulkActionRun)));
+        bulkActionRunVO.setNodes(levelTreeCacheService.getNodesByIds(bulkActionNodeRepository.findNodeIdsByBulkActionRun(bulkActionRun), bulkActionRun.getFundVersionId()));
         return bulkActionRunVO;
     }
 

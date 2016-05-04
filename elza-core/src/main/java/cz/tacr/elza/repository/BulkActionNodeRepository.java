@@ -19,7 +19,4 @@ public interface BulkActionNodeRepository extends JpaRepository<ArrBulkActionNod
 
     @Query("SELECT node.nodeId FROM arr_bulk_action_node an JOIN an.node node WHERE an.bulkActionRun = :bulkActionRun")
     List<Integer> findNodeIdsByBulkActionRun(@Param(value = "bulkActionRun") final ArrBulkActionRun bulkActionRun);
-
-    @Query("SELECT node FROM arr_bulk_action_node an JOIN an.node node WHERE an.bulkActionRun = :bulkActionRun")
-    List<ArrNode> findNodesByBulkAction(@Param(value = "bulkActionRun") final ArrBulkActionRun bulkActionRun);
 }

@@ -8,12 +8,32 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
-import {Loading, Icon, Ribbon, i18n, AbstractReactComponent, ListBox, RibbonGroup, FundNodesAddForm, FundNodesList} from 'components/index.jsx';
-import {Button} from 'react-bootstrap';
+import {
+    Loading,
+    Icon,
+    Ribbon,
+    i18n,
+    AbstractReactComponent,
+    ListBox,
+    RibbonGroup,
+    FundNodesAddForm,
+    FundNodesList
+} from 'components/index.jsx';
+import {Button, Input} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {PageLayout} from 'pages/index.jsx';
 import {dateTimeToString} from 'components/Utils.jsx'
-import {fundActionFetchDetailIfNeeded, fundActionFetchListIfNeeded, fundActionFetchConfigIfNeeded, fundActionFormChange, fundActionFormShow, fundActionFormSubmit, fundActionActionSelect, fundActionFormReset} from 'actions/arr/fundAction.jsx'
+import {
+    fundActionFetchDetailIfNeeded,
+    fundActionFetchListIfNeeded,
+    fundActionFetchConfigIfNeeded,
+    fundActionFormChange,
+    fundActionFormShow,
+    fundActionFormSubmit,
+    fundActionActionSelect,
+    funcActionActionInterrupt,
+    fundActionFormReset
+} from 'actions/arr/fundAction.jsx'
 
 const ActionState = {
     RUNNING: 'RUNNING',
@@ -36,7 +56,6 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
             'handleRibbonNewAction',
             'handleRibbonCopyAction',
             'handleRibbonInterruptAction',
-            'handleRibbonCancelAction',
             'handleFormNodesAdd',
             'handleFormNodeDelete'
         );
@@ -58,12 +77,12 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         const fund = this.getFund(nextProps);
-        fund && this.dispatch(fundActionFetchDetailIfNeeded())
+        fund && this.dispatch(fundActionFetchDetailIfNeeded(fund.versionId))
     }
 
     renderCenter(fund) {
         if (!fund) {
-            return <div className='center-container'>Není vybrán FA</div>;
+            return <div className='text-center center-container'>{i18n('arr.fundAction.noFa')}</div>;
         }
         const {fundAction: {detail, isFormVisible, config, form}} = fund;
 
@@ -83,21 +102,35 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                     </div>
                 }
             }
-
+/*<select
+ key='code-action'
+ ref='code-action'
+ className='form-control'
+ value={form.code}
+ onChange={(e) => {this.dispatch(fundActionFormChange({code: e.target.value}))}}
+ >
+ <option key="novalue" />
+ {config.data.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}
+ </select>*/
             return <div>
-                <select
-                    key='code-action'
-                    ref='code-action'
-                    className='form-control'
-                    onChange={(e) => {this.dispatch(fundActionFormChange({code: e.target.value}))}}
-                >
+                <h2>{i18n('arr.fundAction.form.newAction')}</h2>
+                <div>
+                <Input type="select"
+                       label={i18n('arr.fundAction.form.type')}
+                       key='code-action'
+                       ref='code-action'
+                       className='form-control'
+                       value={form.code}
+                       onChange={(e) => {this.dispatch(fundActionFormChange({code: e.target.value}))}}
+                       >
                     <option key="novalue" />
                     {config.data.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}
-                </select>
+                </Input>
+                </div>
                 {description}
-                <Icon glyph="fa-plus" onClick={this.handleFormNodesAdd} />
+                <Button onClick={this.handleFormNodesAdd}><Icon glyph="fa-plus"/> {i18n('arr.fundAction.form.addNodes')}</Button>
                 <FundNodesList
-                    nodes={form.nodeList}
+                    nodes={form.nodes}
                     onDeleteNode={this.handleFormNodeDelete}
                 />
             </div>
@@ -118,14 +151,18 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                 } else if (data.dateFinished) {
                     date = dateTimeToString(new Date(data.dateFinished));
                 }
-                
+
                 return <div className='detail'>
                     <div>
                         <h1>{config.name}</h1>
-                        <h3>{this.getStateIcon(data.state)} {this.getStateTranslation(data.state)} <small>{date}</small></h3>
+                        <h3>{this.getStateIcon(data.state)} {this.getStateTranslation(data.state)}
+                            <small>{date}</small>
+                        </h3>
                     </div>
-                    <div><textarea className='config' readOnly={true} value="KONFIGURACE AKCE" /></div>
-                    {data.error ? <div><h3>{i18n('arr.fundAction.error')}</h3><div>{data.error}</div></div> : ''}
+                    <div><textarea className='config' readOnly={true} value="KONFIGURACE AKCE"/></div>
+                    {data.error ? <div><h3>{i18n('arr.fundAction.error')}</h3>
+                        <div>{data.error}</div>
+                    </div> : ''}
                     <FundNodesList
                         nodes={data.nodes}
                         readOnly
@@ -136,33 +173,48 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
     }
 
     handleRibbonFormClear() {
-        this.dispatch(fundActionFormReset())
+        const {versionId} = this.getFund();
+        this.dispatch(fundActionFormReset(versionId));
     } // Form reset
-    
-    handleRibbonCancelAction() {}
 
-    handleRibbonCopyAction() {}
-
-    handleRibbonCreateAction() {
-        this.dispatch(fundActionFormSubmit())
+    handleRibbonCopyAction() {
+        const {fundAction: {detail: {data}}, versionId} = this.getFund();
+        this.dispatch(fundActionFormChange(versionId, {
+            nodes: data.nodes,
+            code: data.code
+        }));
+        this.dispatch(fundActionFormShow(versionId));
     }
 
-    handleRibbonInterruptAction() {}
+    handleRibbonCreateAction() {
+        const {fundAction: {form}, versionId} = this.getFund();
+        if (form.code !== '' && form.nodes && form.nodes.length > 0) {
+            this.dispatch(fundActionFormSubmit(versionId))
+        }
+    }
+
+    handleRibbonInterruptAction() {
+        const {fundAction: {detail: {currentDataKey}}} = this.getFund();
+        this.dispatch(funcActionActionInterrupt(currentDataKey));
+    }
 
     handleRibbonNewAction() {
-        this.dispatch(fundActionFormShow())
+        const {versionId} = this.getFund();
+        this.dispatch(fundActionFormShow(versionId))
     }
 
     handleListBoxActionSelect(item) {
-        this.dispatch(fundActionActionSelect(item.id))
+        const {versionId} = this.getFund();
+        this.dispatch(fundActionActionSelect(versionId, item.id))
     }
 
     handleFormNodesAdd() {
+        const {versionId} = this.getFund();
         this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesAddForm
-                onSubmitForm={(nodeIds, nodeList) => {
+                onSubmitForm={(nodeIds, nodes) => {
                     const {fundAction:{form}} = this.getFund();
-                    this.dispatch(fundActionFormChange({nodeList: [...form.nodeList, ...nodeList]}));
+                    this.dispatch(fundActionFormChange(versionId, {nodes: [...form.nodes, ...nodes]}));
                     this.dispatch(modalDialogHide());
                 }}
             />
@@ -170,16 +222,13 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
     }
 
     handleFormNodeDelete(item) {
-        const {fundAction:{form}} = this.getFund();
-        var index = form.nodeList.indexOf("" + item.id);
-        if (index === -1) {
-            index = form.nodeList.indexOf(item.id);
-        }
+        const {fundAction:{form}, versionId} = this.getFund();
+        const index = indexById(form.nodes, item.id);
         if (index !== null) {
-            this.dispatch(fundActionFormChange({
-                nodeList: [
-                    ...form.nodeList.slice(0, index),
-                    ...form.nodeList.slice(index + 1)
+            this.dispatch(fundActionFormChange(versionId, {
+                nodes: [
+                    ...form.nodes.slice(0, index),
+                    ...form.nodes.slice(index + 1)
                 ]
             }))
         }
@@ -221,7 +270,8 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                 );
                 switch (data.state) {
                     case ActionState.PLANNED:
-                    case ActionState.RUNNING: {
+                    case ActionState.RUNNING:
+                    {
                         itemActions.push(
                             <Button key="stop-action" onClick={this.handleRibbonInterruptAction}><Icon glyph="fa-sync"/>
                                 <div><span
@@ -230,10 +280,12 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                         );
                         break;
                     }
-                    case ActionState.WAITING:{
+                    case ActionState.WAITING:
+                    {
                         itemActions.push(
-                            <Button key="-action" onClick={this.handleRibbonCancelAction}><Icon glyph="fa-times"/>
-                                <div><span className="btnText">{i18n('ribbon.action.fundAction.action.cancel')}</span></div>
+                            <Button key="-action" onClick={this.handleRibbonInterruptAction}><Icon glyph="fa-times"/>
+                                <div><span className="btnText">{i18n('ribbon.action.fundAction.action.cancel')}</span>
+                                </div>
                             </Button>
                         );
                         break;
@@ -265,19 +317,19 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
     getStateIcon(state) {
         switch (state) {
             case ActionState.RUNNING:
-                return <Icon glyph='fa-cog' />;
+                return <Icon glyph='fa-cog'/>;
             case ActionState.WAITING:
-                return <Icon glyph='fa-clock-o' />;
+                return <Icon glyph='fa-clock-o'/>;
             case ActionState.FINISHED:
-                return <Icon glyph='fa-check' />;
+                return <Icon glyph='fa-check'/>;
             case ActionState.ERROR:
-                return <Icon glyph='fa-exclamation' />;
+                return <Icon glyph='fa-exclamation'/>;
             case ActionState.PLANNED:
-                return <Icon glyph='fa-calendar' />;
+                return <Icon glyph='fa-calendar'/>;
             case ActionState.INTERRUPTED:
-                return <Icon glyph='fa-times' />;
+                return <Icon glyph='fa-times'/>;
             default:
-                return <Icon glyph='fa-question' />;
+                return <Icon glyph='fa-question'/>;
         }
     }
 
@@ -326,17 +378,17 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
         const {arrRegion, splitter} = this.props;
         const fund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : false;
 
-        const leftPanel = <div className='actions-list-container'>{
+        const leftPanel = fund ? <div className='actions-list-container'>{
             fund.fundAction.list.fetched ?
-            <ListBox
-                className='actions-listbox'
-                key='actions-list'
-                items={fund.fundAction.list.data}
-                renderItemContent={this.renderRowItem.bind(this)}
-                onSelect={this.handleListBoxActionSelect}
-                onFocus={this.handleListBoxActionSelect}
-            /> : <Loading />}
-        </div>;
+                <ListBox
+                    className='actions-listbox'
+                    key='actions-list'
+                    items={fund.fundAction.list.data}
+                    renderItemContent={this.renderRowItem.bind(this)}
+                    onSelect={this.handleListBoxActionSelect}
+                    onFocus={this.handleListBoxActionSelect}
+                /> : <Loading />}
+        </div> : null;
         const centerPanel = <div className='center-container'>{this.renderCenter(fund)}</div>;
 
         return (
@@ -351,8 +403,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
     }
 };
 
-FundActionPage.propTypes = {
-};
+FundActionPage.propTypes = {};
 
 function mapStateToProps(state) {
     const {arrRegion, splitter} = state;
