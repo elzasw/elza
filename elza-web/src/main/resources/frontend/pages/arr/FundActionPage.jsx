@@ -326,8 +326,10 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
         const {arrRegion, splitter, userDetail} = this.props;
         const fund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : false;
 
+        var leftPanel
+        var centerPanel
         if (userDetail.hasFundActionPage(fund ? fund.id : null)) { // má právo na tuto stránku
-            const leftPanel = <div className='actions-list-container'>{
+            leftPanel = <div className='actions-list-container'>{
                 fund.fundAction.list.fetched ?
                 <ListBox
                     className='actions-listbox'
@@ -338,7 +340,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                     onFocus={this.handleListBoxActionSelect}
                 /> : <Loading />}
             </div>;
-            const centerPanel = <div className='center-container'>{this.renderCenter(fund)}</div>;
+            centerPanel = <div className='center-container'>{this.renderCenter(fund)}</div>;
         } else {
             centerPanel = <div>{i18n('global.insufficient.right')}</div>
         }
