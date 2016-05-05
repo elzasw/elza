@@ -91,6 +91,15 @@ export function fundOutputCreate(versionId, data) {
     }
 }
 
+export function fundOutputEdit(versionId, outputId, data) {
+    return (dispatch, getState) => {
+        WebApi.updateOutput(versionId, outputId, data)
+            .then((json) => {
+                dispatch(modalDialogHide());
+            });        
+    }
+}
+
 export function fundOutputSelectOutput(versionId, id) {
     return {
         type: types.FUND_OUTPUT_SELECT_OUTPUT,

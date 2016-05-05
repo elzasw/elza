@@ -85,21 +85,20 @@ const renderUnitdateFields = (calendarTypes, fields) => {
         case 0:
             return null
         case 2:
-            var descItem = {
-                hasFocus: false,
-                calendarTypeId: typeof fields[0].value !== 'undefined' ? fields[0].value : 1,
-                value: typeof fields[1].value !== 'undefined' ? fields[1].value : '',
-                error: {},
-            }
             return (
                 <div key={0} className='value-container'>
-                    <DescItemUnitdate key={0}
-                        calendarTypes={calendarTypes}
-                        onChange={(value) => {fields[0].onChange(value.calendarTypeId);fields[1].onChange(value.value);}}
-                        descItem={descItem}
-                        onFocus={()=>{}}
-                        onBlur={()=>{}}
-                    />
+                    <Input type="select"
+                        value={typeof fields[0].value !== 'undefined' ? fields[0].value : 1}
+                        onChange={(e) => {fields[0].onChange(e.target.value);}}
+                    >
+                        {calendarTypes.items.map(calendarType => (
+                            <option key={calendarType.id} value={calendarType.id}>{calendarType.name.charAt(0)}</option>
+                        ))}
+                    </Input>
+                    <Input type="text"
+                        value={fields[1].value} onCh
+                        onChange={(e) => {fields[1].onChange(e.target.value);}}
+                   />
                 </div>
             )
     }
@@ -412,8 +411,6 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
         var specContent = null
         if (refType.useSpecification) {
             var items = [{id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')}, ...refType.descItemSpecs]
-// TODO [stanekpa] odendat - až se na server doplní podpora
-items = refType.descItemSpecs
 
             specContent = (
                 <SimpleCheckListBox
@@ -426,8 +423,6 @@ items = refType.descItemSpecs
             )
         } else if (dataType.code === 'PACKET_REF') { // u obalů budeme místo specifikací zobrazovat výběr typů obsalů
             var items = [{id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')}, ...packetTypes.items]
-// TODO [stanekpa] odendat - až se na server doplní podpora
-            items = packetTypes.items
 
             specContent = (
                 <SimpleCheckListBox

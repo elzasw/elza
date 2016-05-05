@@ -16,7 +16,7 @@ import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-boo
 import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {fundOutputFetchIfNeeded, fundOutputRemoveNodes, fundOutputSelectOutput, fundOutputCreate, fundOutputUsageEnd, fundOutputDelete, fundOutputAddNodes } from 'actions/arr/fundOutput.jsx'
+import {fundOutputFetchIfNeeded, fundOutputRemoveNodes, fundOutputSelectOutput, fundOutputCreate, fundOutputEdit, fundOutputUsageEnd, fundOutputDelete, fundOutputAddNodes } from 'actions/arr/fundOutput.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
 import {routerNavigate} from 'actions/router.jsx'
@@ -41,7 +41,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
         this.bindMethods('getActiveFund', 'renderListItem', 'handleSelect', 'trySetFocus', 'handleShortcuts',
             'handleAddOutput', 'handleAddNodes', 'handleUsageEnd', 'handleDelete', 'handleRemoveNode',
-            'handleBulkActions');
+            'handleBulkActions', 'handleEditOutput');
     }
 
     componentDidMount() {
@@ -109,7 +109,20 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         const fund = this.getActiveFund(this.props)
 
         this.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
-            <AddOutputForm onSubmitForm={(data) => {this.dispatch(fundOutputCreate(fund.versionId, data))}}/>));
+            <AddOutputForm
+                create
+                onSubmitForm={(data) => {this.dispatch(fundOutputCreate(fund.versionId, data))}}/>));
+    }
+
+    handleEditOutput() {
+        const fund = this.getActiveFund(this.props)
+        const fundOutput = fund.fundOutput
+        const fundOutputDetail = fundOutput.fundOutputDetail
+
+        this.dispatch(modalDialogShow(this, i18n('arr.output.title.edit'),
+            <AddOutputForm
+                initData={{name: fundOutputDetail.namedOutput.name, code: fundOutputDetail.namedOutput.code}}
+                onSubmitForm={(data) => {this.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data))}}/>));
     }
 
     handleAddNodes() {
@@ -164,6 +177,9 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             if (fundOutputDetail.id !== null && fundOutputDetail.fetched && !fundOutputDetail.isFetching) {
                 if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId: fund.id})) {
                     if (!fundOutputDetail.lockDate) {
+                        itemActions.push(
+                            <Button key="edit-output" onClick={this.handleEditOutput}><Icon glyph="fa-edit" /><div><span className="btnText">{i18n('ribbon.action.arr.output.edit')}</span></div></Button>
+                        )
                         itemActions.push(
                             <Button key="add-fund-nodes" onClick={this.handleAddNodes}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.nodes.add')}</span></div></Button>
                         )

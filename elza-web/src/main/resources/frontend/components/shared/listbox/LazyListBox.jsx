@@ -110,7 +110,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
 
         this.bindMethods('handleKeyDown', 'ensureItemVisible',
             'handleClick', 'unFocus', 'handleViewChange', 'handleRenderItem', 'isFetching', 'callFetch', 'callCallbackAction',
-            'handleDoubleClick', 'tryCallCallback', 'tryCallSingleCallback', 'tryUpdateSelectedIndex')
+            'handleDoubleClick', 'tryCallCallback', 'tryCallSingleCallback', 'tryUpdateSelectedIndex', 'fetchNow')
 
         this.currentFetch = []  // pole aktuálně načítaných dat ze serveru, obsahuje objekty s atributy: {id, from, to}
         this.fetchId = 0;
@@ -376,6 +376,10 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
 
     handleDoubleClick(index) {
         this.callCallbackAction(index, 'onDoubleClick')
+    }
+
+    fetchNow() {
+        this.callFetch(this.state.itemsFromIndex, this.state.itemsToIndex)
     }
 
     handleRenderItem(index) {

@@ -11,8 +11,8 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {Loading, FundNodesAddForm, AbstractReactComponent} from 'components/index.jsx';
-import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
+import {Loading, i18n, AbstractReactComponent} from 'components/index.jsx';
+import {Input, ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {fundOutputDetailFetchIfNeeded} from 'actions/arr/fundOutput.jsx'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
@@ -67,7 +67,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
 
     render() {
         const {fundOutputDetail} = this.props;
-
+        
         if (fundOutputDetail.id === null) {
             return <div className='arr-output-detail-container'></div>
         }
@@ -79,7 +79,8 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
         return (
             <Shortcuts name='ArrOutputDetail' handler={this.handleShortcuts}>
                 <div ref='arr-output-detail-container' className={"partyDetail"}>
-                    ........
+                    <Input type="text" label={i18n('arr.output.name')} disabled value={fundOutputDetail.namedOutput.name}/>
+                    <Input type="text" label={i18n('arr.output.code')} disabled value={fundOutputDetail.namedOutput.code}/>
                 </div>
             </Shortcuts>
         )
