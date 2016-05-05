@@ -22,8 +22,7 @@ import javax.annotation.Nullable;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.repository.NodeOutputRepository;
-import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -73,28 +72,10 @@ import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.InvalidQueryException;
-import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundRegisterScopeRepository;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NamedOutputRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVersion;
-import cz.tacr.elza.service.exception.DeleteFailedException;
 
 
 /**
@@ -167,6 +148,9 @@ public class ArrangementService {
 
     @Autowired
     private BulkActionRunRepository faBulkActionRepository;
+
+    @Autowired
+    private BulkActionNodeRepository faBulkActionNodeRepository;
 
     @Autowired
     private PacketRepository packetRepository;
@@ -563,9 +547,10 @@ public class ArrangementService {
 
         bulkActionService.terminateBulkActions(version.getFundVersionId());
 
-        faBulkActionRepository.findByFundVersionId(version.getFundVersionId()).forEach(action ->
-                        faBulkActionRepository.delete(action)
-        );
+        faBulkActionRepository.findByFundVersionId(version.getFundVersionId()).forEach(action -> {
+                        faBulkActionNodeRepository.deleteByBulkAction(action);
+                        faBulkActionRepository.delete(action);
+        });
 
         nodeConformityInfoRepository.findByFundVersion(version).forEach(conformityInfo -> {
             deleteConformityInfo(conformityInfo);

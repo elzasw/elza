@@ -36,8 +36,21 @@ var FundPage = class FundPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleAddFund', 'handleImport', 'handleExportDialog', 'handleExport', 'renderListItem', 'handleSelect', 'handleSearch',
-            'handleSearchClear', 'handleApproveFundVersion', 'handleEditFundVersion', 'handleCallEditFundVersion', 'handleDeleteFund')
+        this.bindMethods(
+            'handleAddFund',
+            'handleImport',
+            'handleExportDialog',
+            'handleExport',
+            'renderListItem',
+            'handleSelect',
+            'handleSearch',
+            'handleSearchClear',
+            'handleApproveFundVersion',
+            'handleEditFundVersion',
+            'handleCallEditFundVersion',
+            'handleDeleteFund',
+            'handleRuleSetUpdateFundVersion'
+        );
 
         this.buildRibbon = this.buildRibbon.bind(this);
     }
@@ -101,6 +114,26 @@ var FundPage = class FundPage extends AbstractReactComponent {
         );
     }
 
+    /**
+     * Zobrazení dualogu uzavření verze AS.
+     */
+    handleRuleSetUpdateFundVersion() {
+        const {fundRegion} = this.props;
+        const fundDetail = fundRegion.fundDetail;
+
+        const initData = {
+            ruleSetId: fundDetail.activeVersion.ruleSetId
+        };
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.title.ruleSet'),
+            <FundForm ruleSet initData={initData}
+                      onSubmitForm={(data) => this.handleCallEditFundVersion({
+                    ...data,
+                    name: fundDetail.name,
+                    institutionId: fundDetail.institutionId,
+                    internalCode: fundDetail.internalCode
+              })}/>));
+    }
+
     handleEditFundVersion() {
         const {fundRegion} = this.props
         const fundDetail = fundRegion.fundDetail
@@ -162,6 +195,9 @@ var FundPage = class FundPage extends AbstractReactComponent {
                 itemActions.push(
                     <Button key="edit-version" onClick={this.handleEditFundVersion}><Icon glyph="fa-pencil"/>
                         <div><span className="btnText">{i18n('ribbon.action.arr.fund.update')}</span></div>
+                    </Button>,
+                    <Button key="rule-set-version" onClick={this.handleRuleSetUpdateFundVersion}><Icon glyph="fa-pencil"/>
+                        <div><span className="btnText">{i18n('ribbon.action.arr.fund.ruleSet')}</span></div>
                     </Button>,
                     <Button key="approve-version" onClick={this.handleApproveFundVersion}><Icon glyph="fa-calendar-check-o"/>
                         <div><span className="btnText">{i18n('ribbon.action.arr.fund.approve')}</span></div>

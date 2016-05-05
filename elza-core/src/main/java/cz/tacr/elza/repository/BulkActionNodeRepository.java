@@ -4,6 +4,7 @@ import cz.tacr.elza.domain.ArrBulkActionNode;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrNode;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,4 +20,8 @@ public interface BulkActionNodeRepository extends JpaRepository<ArrBulkActionNod
 
     @Query("SELECT node.nodeId FROM arr_bulk_action_node an JOIN an.node node WHERE an.bulkActionRun = :bulkActionRun")
     List<Integer> findNodeIdsByBulkActionRun(@Param(value = "bulkActionRun") final ArrBulkActionRun bulkActionRun);
+
+    @Modifying
+    @Query("DELETE FROM arr_bulk_action_node an WHERE an.bulkActionRun = :bulkActionRun")
+    void deleteByBulkAction(@Param(value = "bulkActionRun") final ArrBulkActionRun action);
 }

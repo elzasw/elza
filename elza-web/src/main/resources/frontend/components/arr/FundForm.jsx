@@ -24,7 +24,7 @@ const validate = (values, props) => {
     if ((props.create || props.update) && !values.name) {
         errors.name = i18n('global.validation.required');
     }
-    if ((props.create || props.update) && !values.ruleSetId) {
+    if ((props.create || props.ruleSet) && !values.ruleSetId) {
         errors.ruleSetId = i18n('global.validation.required');
     }
     if ((props.create || props.update) && !values.institutionId) {
@@ -119,13 +119,10 @@ var FundForm = class FundForm extends AbstractReactComponent {
                     <form onSubmit={handleSubmit(submitForm)}>
                         {(this.props.create || this.props.update) &&
                         <Input type="text" label={i18n('arr.fund.name')} {...name} {...decorateFormField(name)} />}
+
                         {(this.props.create || this.props.update) &&
-                        <Input type="select" label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
-                            <option key='-ruleSetId'/>
-                            {ruleSets.map(i=> {
-                                return <option value={i.id}>{i.name}</option>
-                            })}
-                        </Input>}
+                        <Input type="text" label={i18n('arr.fund.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />}
+
                         {(this.props.create || this.props.update) &&
                         <Input type="select" label={i18n('arr.fund.institution')} {...institutionId} {...decorateFormField(institutionId)}>
                             <option key='-institutionId'/>
@@ -133,10 +130,18 @@ var FundForm = class FundForm extends AbstractReactComponent {
                                 return <option value={i.id}>{i.name}</option>
                             })}
                         </Input>}
-                        {(this.props.create || this.props.update) &&
-                        <Input type="text" label={i18n('arr.fund.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />}
-                        {(this.props.create || this.props.approve) &&
+
+                        {(this.props.create || this.props.ruleSet) &&
+                        <Input type="select" label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
+                            <option key='-ruleSetId'/>
+                            {ruleSets.map(i=> {
+                                return <option value={i.id}>{i.name}</option>
+                            })}
+                        </Input>}
+
+                        {this.props.approve &&
                         <Input type="textarea" label={i18n('arr.fund.dateRange')} {...dateRange} {...decorateFormField(dateRange)} />}
+
                         {this.props.update && <Autocomplete
                             tags
                             label={i18n('arr.fund.regScope')}
@@ -171,7 +176,7 @@ var FundForm = class FundForm extends AbstractReactComponent {
                 <Modal.Footer>
                     {this.props.create && <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.create')}</Button>}
                     {this.props.approve && approveButton}
-                    {this.props.update && <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.update')}</Button>}
+                    {(this.props.update || this.props.ruleSet) && <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.update')}</Button>}
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
@@ -183,6 +188,7 @@ FundForm.propTypes = {
     approve: React.PropTypes.bool,
     create: React.PropTypes.bool,
     update: React.PropTypes.bool,
+    ruleSet: React.PropTypes.bool,
     scopeList: React.PropTypes.array
 };
 

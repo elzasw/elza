@@ -91,7 +91,7 @@ export function approveFund(versionId, dateRange) {
 
 export function deleteFund(fundId) {
     return dispatch => {
-        WebApi.deleteFund(fundId)
+        dispatch(WebApi.deleteFund(fundId));
     }
 }
 
