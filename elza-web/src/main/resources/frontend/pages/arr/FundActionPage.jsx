@@ -211,7 +211,13 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
             <FundNodesAddForm
                 onSubmitForm={(nodeIds, nodes) => {
                     const {fundAction:{form}} = this.getFund();
-                    this.dispatch(fundActionFormChange(versionId, {nodes: [...form.nodes, ...nodes]}));
+                    const newNodes = [
+                        ...form.nodes
+                    ];
+                    nodes.map(item => {
+                        indexById(newNodes, item.id) === null && newNodes.push(item);
+                    });
+                    this.dispatch(fundActionFormChange(versionId, {nodes: newNodes}));
                     this.dispatch(modalDialogHide());
                 }}
             />

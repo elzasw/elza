@@ -129,7 +129,11 @@ export default function fundAction(state = initialState, action = {}) {
         case types.FUND_ACTION_FORM_SHOW: {
             return {
                 ...state,
-                isFormVisible: true
+                isFormVisible: true,
+                detail: {
+                    ...state.detail,
+                    currentDataKey: null
+                }
             }
         }
         case types.FUND_ACTION_FORM_RESET: {

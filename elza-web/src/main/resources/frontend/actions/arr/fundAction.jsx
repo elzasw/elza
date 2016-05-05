@@ -65,7 +65,7 @@ export function fundActionFetchDetailIfNeeded(versionId) {
         if (index !== null) {
             const {fundAction : {detail: {currentDataKey, data, isFetching, fetched} }, versionId} = funds[index];
             const isNotSameDataKey = data && currentDataKey !== data.id;
-            if ((isNotSameDataKey && !isFetching) || (!isFetching && !fetched && currentDataKey !== null)) {
+            if (((isNotSameDataKey && !isFetching) || (!isFetching && !fetched)) && currentDataKey !== null) {
                 dispatch(fundActionActionRequest(versionId, currentDataKey));
                 WebApi.getBulkAction(currentDataKey).then(data => dispatch(fundActionActionReceive(versionId, currentDataKey, data)));
             }
