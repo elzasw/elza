@@ -7,6 +7,8 @@ import {indexById} from 'stores/app/utils.jsx'
 import {dateToString} from 'components/Utils.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {selectFundTab} from 'actions/arr/fund.jsx'
+import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
+import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 
 require ('./FundDetail.less');
@@ -19,6 +21,8 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
     }
 
     componentDidMount() {
+        this.dispatch(refInstitutionsFetchIfNeeded());
+        this.dispatch(refRuleSetFetchIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
@@ -36,7 +40,7 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
 
 
     render() {
-        const {fundDetail, focus} = this.props
+        const {fundDetail, focus, refTables: {institutions, ruleSet}} = this.props;
 
         if (fundDetail.id === null) {
             return <div className='fund-detail-container'></div>
@@ -45,6 +49,13 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
         if (fundDetail.fetching || !fundDetail.fetched) {
             return <div className='fund-detail-container'><Loading/></div>
         }
+
+        const instIndex = indexById(institutions.items, fundDetail.institutionId);
+        const institution = instIndex !== null ? institutions.items[instIndex].name : '';
+
+        const activeVersionIndex = indexById(fundDetail.versions, null, 'lockChange');
+        const ruleIndex = indexById(ruleSet.items, fundDetail.versions[activeVersionIndex].ruleSetId);
+        const rule = instIndex !== null ? ruleSet.items[ruleIndex].name : '';
 
         return (
             <div className='fund-detail-container'>
@@ -59,8 +70,22 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
                 />
 
                 <div className='fund-detail-info'>
-                    <h1>{i18n('arr.fund.detail')}</h1>
+                    <small>{i18n('arr.fund.detail')}</small>
+                    <h1>{fundDetail.name}</h1>
+                    <div>
+                        <label>{i18n('arr.fund.detail.internalCode')}:</label>
+                        <span>{fundDetail.internalCode}</span>
+                    </div>
+                    <div>
+                        <label>{i18n('arr.fund.detail.institution')}:</label>
+                        <span>{institution}</span>
+                    </div>
 
+                    <div>
+                        <label>{i18n('arr.fund.detail.ruleSet')}:</label>
+                        <span>{rule}</span>
+                    </div>
+                    <hr className="fund-detail-split" />
                     <div className="versions-container">
                         {fundDetail.versions.map(ver => {
                             if (ver.lockDate) {
@@ -84,11 +109,17 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
             </div>
         );
     }
-}
+};
 
 FundDetail.propTypes = {
-    fundDetail: React.PropTypes.object.isRequired,
+    fundDetail: React.PropTypes.object.isRequired
+};
+
+function mapStateToProps(state) {
+    return {
+        refTables: state.refTables
+    }
 }
 
-module.exports = connect()(FundDetail);
+module.exports = connect(mapStateToProps)(FundDetail);
 
