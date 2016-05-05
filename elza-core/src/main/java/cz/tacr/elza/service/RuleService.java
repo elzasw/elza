@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,10 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -81,6 +85,11 @@ public class RuleService {
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
 
+    @Autowired
+    private ArrDescItemsPostValidator descItemsPostValidator;
+
+    private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
+
     /**
      * Provede validaci atributů vybraného uzlu a nastaví jejich validační hodnoty.
      *
@@ -105,6 +114,19 @@ public class RuleService {
         }
 
         List<DataValidationResult> validationResults = rulesExecutor.executeDescItemValidationRules(level, version);
+        List<DataValidationResult> validationResultsBasic = descItemsPostValidator.postValidateNodeDescItems(level, version);
+
+        Iterator<DataValidationResult> iterator = validationResultsBasic.iterator();
+        while(iterator.hasNext()) {
+            DataValidationResult validationResult = iterator.next();
+            if (validationResult.getPolicyTypeCode() == null) {
+                logger.error("Validační výsledek nemá vyplněný kód typu kontroly, proto nebude použit. " + validationResult);
+                iterator.remove();
+            }
+        }
+
+        validationResults.addAll(validationResultsBasic);
+
         ArrNodeConformityExt result = updateNodeConformityInfo(level, version, validationResults);
 
         entityManager.detach(nodeBeforeValidation);
@@ -455,12 +477,14 @@ public class RuleService {
 
             rulDescItemTypeExt.setType(RulDescItemType.Type.IMPOSSIBLE);
             rulDescItemTypeExt.setRepeatable(true);
+            rulDescItemTypeExt.setPolicyTypeCode("PT1");
 
             // projde všechny specifikace typů atributů
             for (RulDescItemSpecExt rulDescItemSpecExt : rulDescItemTypeExt.getRulDescItemSpecList()) {
 
                 rulDescItemSpecExt.setType(RulDescItemSpec.Type.IMPOSSIBLE);
                 rulDescItemSpecExt.setRepeatable(true);
+                rulDescItemSpecExt.setPolicyTypeCode("PT1");
 
             }
         }

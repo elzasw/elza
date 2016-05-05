@@ -179,4 +179,14 @@ public interface RulDescItemType<RT extends RulDataType, P extends RulPackage> e
      */
     void setPackage(P rulPackage);
 
+    /**
+     * @return typ kód typu kontroly
+     */
+    String getPolicyTypeCode();
+
+    /**
+     * @param policyTypeCode kód typu kontroly
+     */
+    void setPolicyTypeCode(String policyTypeCode);
+
 }

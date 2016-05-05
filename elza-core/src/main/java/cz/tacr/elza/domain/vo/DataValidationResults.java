@@ -40,10 +40,12 @@ public class DataValidationResults {
      * @param errorMsg error message
      * @return error description or null, if it is duplicate error
      */
-    public DataValidationResult createErrorImpossible(final ArrDescItem item, final String errorMsg) {
+    public DataValidationResult createErrorImpossible(final ArrDescItem item,
+                                                      final String errorMsg,
+                                                      final String policyTypeCode) {
         if (!impossibleItems.contains(item)) {
             impossibleItems.add(item);
-            return createError(item, errorMsg);
+            return createError(item, errorMsg, policyTypeCode);
         } else {
             return null;
         }
@@ -56,10 +58,12 @@ public class DataValidationResults {
 	 * @param errorMsg	Error description
 	 * @return Object with error description
 	 */
-    public DataValidationResult createError(final ArrDescItem item, final String errorMsg) {
+    public DataValidationResult createError(final ArrDescItem item, final String errorMsg, final String policyTypeCode) {
         DataValidationResult result = new DataValidationResult(ValidationResultType.ERROR);
         result.setDescItem(item);
         result.setMessage(errorMsg);
+        result.setDescItemId(item.getDescItemId());
+        result.setPolicyTypeCode(policyTypeCode);
         
         results.add(result);
         return result;
@@ -92,24 +96,28 @@ public class DataValidationResults {
      * @return error description or null, if it is duplicate error
      */
     public DataValidationResult createMissingRequired(final RulDescItemType type,
-                                                      @Nullable final RulDescItemSpec spec) {
+                                                      @Nullable final RulDescItemSpec spec,
+                                                      final String policyTypeCode) {
 
         RulDescItemType inType = spec == null ? type : spec.getDescItemType();
 
         if (!requiredTypes.contains(inType)) {
             requiredTypes.add(inType);
-            return createMissing(type, spec);
+            return createMissing(type, spec, policyTypeCode);
         }
 
         return null;
     }
 
     public DataValidationResult createMissing(final RulDescItemType type,
-                                              final RulDescItemSpec spec)
+                                              final RulDescItemSpec spec,
+                                              final String policyTypeCode)
     {
         DataValidationResult result = new DataValidationResult(ValidationResultType.MISSING);
         result.setType(type);
         result.setSpec(spec);
+        result.setTypeCode(type.getCode());
+        result.setPolicyTypeCode(policyTypeCode);
 
         if (spec == null) {
             result.setMessage("Prvek " + type.getName() + " musí být vyplněn.");

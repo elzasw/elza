@@ -99,7 +99,7 @@ public class ValidationRules extends Rules {
 	 * @param validationResults
 	 *            seznam validačních chyb
 	 */
-	private void finalizeValidationResults(final List<DataValidationResult> validationResults) {
+	public void finalizeValidationResults(final List<DataValidationResult> validationResults) {
 
 		Map<String, RulPolicyType> policyTypesMap = getPolicyTypesMap();
 

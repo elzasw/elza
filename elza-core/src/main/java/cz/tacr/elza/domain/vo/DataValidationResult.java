@@ -135,5 +135,18 @@ public class DataValidationResult {
         ERROR;
     }
 
-
+    @Override
+    public String toString() {
+        return "DataValidationResult{" +
+                "resultType=" + resultType +
+                ", message='" + message + '\'' +
+                ", descItem=" + descItem +
+                ", descItemId=" + descItemId +
+                ", type=" + type +
+                ", typeCode='" + typeCode + '\'' +
+                ", spec=" + spec +
+                ", policyTypeCode='" + policyTypeCode + '\'' +
+                ", policyType=" + policyType +
+                '}';
+    }
 }

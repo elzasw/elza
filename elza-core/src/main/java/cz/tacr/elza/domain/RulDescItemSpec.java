@@ -69,6 +69,9 @@ public class RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpec<RulDesc
     @Transient
     private Boolean repeatable;
 
+    @Transient
+    private String policyTypeCode;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
@@ -161,6 +164,16 @@ public class RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpec<RulDesc
     @Override
     public void setRepeatable(final Boolean repeatable) {
         this.repeatable = repeatable;
+    }
+
+    @Override
+    public String getPolicyTypeCode() {
+        return policyTypeCode;
+    }
+
+    @Override
+    public void setPolicyTypeCode(final String policyTypeCode) {
+        this.policyTypeCode = policyTypeCode;
     }
 
     @Override

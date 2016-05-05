@@ -112,6 +112,15 @@ public interface RulDescItemSpec<RIT extends RulDescItemType, P extends RulPacka
      */
     void setRepeatable(Boolean repeatable);
 
+    /**
+     * @return typ kód typu kontroly
+     */
+    String getPolicyTypeCode();
+
+    /**
+     * @param policyTypeCode kód typu kontroly
+     */
+    void setPolicyTypeCode(String policyTypeCode);
 
     /**
      * @return balíček
