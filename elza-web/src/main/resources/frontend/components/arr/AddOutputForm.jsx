@@ -38,7 +38,7 @@ var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {name, code, temporary}, handleSubmit, onClose} = this.props;
+        const {fields: {name, code, temporary}, create, handleSubmit, onClose} = this.props;
 
         var submitForm = submitReduxForm.bind(this, validate)
 
@@ -48,7 +48,7 @@ var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
                     <form onSubmit={handleSubmit(submitForm)}>
                         <Input type="text" label={i18n('arr.output.name')} {...name} {...decorateFormField(name)} />
                         <Input type="text" label={i18n('arr.output.code')} {...code} {...decorateFormField(code)} />
-                        <Input type="checkbox" label={i18n('arr.output.temporary')} {...temporary} {...decorateFormField(temporary)} />
+                        {create && <Input type="checkbox" label={i18n('arr.output.temporary')} {...temporary} {...decorateFormField(temporary)} />}
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
@@ -63,8 +63,12 @@ var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
 module.exports = reduxForm({
         form: 'addOutputForm',
         fields: ['name', 'code', 'temporary'],
-    },state => ({
-        initialValues: {temporary: false},
-    }),
+    },(state, props) => {
+        if (props.create) {
+            return {initialValues: {temporary: false}}
+        } else {
+            return {initialValues: props.initData}
+        }
+    },
     {/*load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addPacketForm', data})*/}
 )(AddOutputForm)
