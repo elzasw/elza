@@ -34,6 +34,7 @@ import {
     funcActionActionInterrupt,
     fundActionFormReset
 } from 'actions/arr/fundAction.jsx'
+import * as perms from 'actions/user/Permission.jsx';
 
 const ActionState = {
     RUNNING: 'RUNNING',
@@ -236,67 +237,83 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
      */
     buildRibbon() {
         const fund = this.getFund();
+        const {fundAction: {detail, isFormVisible}} = fund;
+        const {userDetail} = this.props
 
-        const itemActions = [];
-
+        var altActions = [];
         if (fund) {
-            const {fundAction: {detail, isFormVisible}} = fund;
             if (!isFormVisible) {
-                itemActions.push(
-                    <Button key="new-action" onClick={this.handleRibbonNewAction}><Icon glyph="fa-plus"/>
-                        <div><span className="btnText">{i18n('ribbon.action.fundAction.action.new')}</span></div>
-                    </Button>
-                );
-            }
-            if (isFormVisible) {
-                itemActions.push(
-                    <Button key="run-action" onClick={this.handleRibbonCreateAction}><Icon glyph="fa-play"/>
-                        <div><span className="btnText">{i18n('ribbon.action.fundAction.form.run')}</span></div>
-                    </Button>,
-                    <Button key="clear-action" onClick={this.handleRibbonFormClear}><Icon glyph="fa-trash"/>
-                        <div><span className="btnText">{i18n('ribbon.action.fundAction.form.clear')}</span></div>
-                    </Button>
-                );
-            } else if (detail.fetched && !detail.isFetching && detail.data && detail.currentDataKey === detail.data.id) {
-                const {data} = detail;
-                itemActions.push(
-                    <Button key="copy-action" onClick={this.handleRibbonCopyAction}><Icon glyph="fa-refresh"/>
-                        <div><span className="btnText">{i18n('ribbon.action.fundAction.action.copy')}</span></div>
-                    </Button>
-                );
-                switch (data.state) {
-                    case ActionState.PLANNED:
-                    case ActionState.RUNNING:
-                    {
-                        itemActions.push(
-                            <Button key="stop-action" onClick={this.handleRibbonInterruptAction}><Icon glyph="fa-sync"/>
-                                <div><span
-                                    className="btnText">{i18n('ribbon.action.fundAction.action.interrupt')}</span></div>
-                            </Button>
-                        );
-                        break;
-                    }
-                    case ActionState.WAITING:
-                    {
-                        itemActions.push(
-                            <Button key="-action" onClick={this.handleRibbonInterruptAction}><Icon glyph="fa-times"/>
-                                <div><span className="btnText">{i18n('ribbon.action.fundAction.action.cancel')}</span>
-                                </div>
-                            </Button>
-                        );
-                        break;
-                    }
-                    // case ActionState.FINISHED:
-                    // case ActionState.ERROR:
-                    // case ActionState.INTERRUPTED:
+                if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) {
+                    altActions.push(
+                        <Button key="new-action" onClick={this.handleRibbonNewAction}><Icon glyph="fa-plus"/>
+                            <div><span className="btnText">{i18n('ribbon.action.fundAction.action.new')}</span></div>
+                        </Button>
+                    );
                 }
             }
         }
 
-        const itemSection = <RibbonGroup key="alt" className="small">{itemActions}</RibbonGroup>;
+        const itemActions = [];
+        if (fund) {
+            if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) {
+                if (isFormVisible) {
+                    itemActions.push(
+                        <Button key="run-action" onClick={this.handleRibbonCreateAction}><Icon glyph="fa-play"/>
+                            <div><span className="btnText">{i18n('ribbon.action.fundAction.form.run')}</span></div>
+                        </Button>,
+                        <Button key="clear-action" onClick={this.handleRibbonFormClear}><Icon glyph="fa-trash"/>
+                            <div><span className="btnText">{i18n('ribbon.action.fundAction.form.clear')}</span></div>
+                        </Button>
+                    );
+                } else if (detail.fetched && !detail.isFetching && detail.data && detail.currentDataKey === detail.data.id) {
+                    const {data} = detail;
+                    itemActions.push(
+                        <Button key="copy-action" onClick={this.handleRibbonCopyAction}><Icon glyph="fa-refresh"/>
+                            <div><span className="btnText">{i18n('ribbon.action.fundAction.action.copy')}</span></div>
+                        </Button>
+                    );
+                    switch (data.state) {
+                        case ActionState.PLANNED:
+                        case ActionState.RUNNING:
+                        {
+                            itemActions.push(
+                                <Button key="stop-action" onClick={this.handleRibbonInterruptAction}><Icon glyph="fa-sync"/>
+                                    <div><span
+                                        className="btnText">{i18n('ribbon.action.fundAction.action.interrupt')}</span></div>
+                                </Button>
+                            );
+                            break;
+                        }
+                        case ActionState.WAITING:
+                        {
+                            itemActions.push(
+                                <Button key="-action" onClick={this.handleRibbonInterruptAction}><Icon glyph="fa-times"/>
+                                    <div><span className="btnText">{i18n('ribbon.action.fundAction.action.cancel')}</span>
+                                    </div>
+                                </Button>
+                            );
+                            break;
+                        }
+                        // case ActionState.FINISHED:
+                        // case ActionState.ERROR:
+                        // case ActionState.INTERRUPTED:
+                    }
+                }
+            }
+        }
+
+        var altSection;
+        if (altActions.length > 0) {
+            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
+        }
+
+        var itemSection;
+        if (itemActions.length > 0) {
+            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>
+        }
 
         return (
-            <Ribbon arr itemSection={itemSection}/>
+            <Ribbon arr altSection={altSection} itemSection={itemSection}/>
         )
     }
 
