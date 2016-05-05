@@ -7,7 +7,6 @@ import cz.tacr.elza.drools.model.ActiveLevel
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
-import cz.tacr.elza.domain.RulArrangementType;
 
 global DataValidationResults results;
 

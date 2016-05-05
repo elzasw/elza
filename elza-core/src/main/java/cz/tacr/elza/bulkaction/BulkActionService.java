@@ -459,6 +459,9 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         }
 
         List<BulkActionConfig> bulkActionConfigs = new ArrayList<>();
+        List<BulkActionConfig> bBulkActionConfigs = bulkActionConfigManager.getBulkActions();
+
+
 
         for (BulkActionConfig bulkActionConfig : bulkActionConfigManager.getBulkActions()) {
             String ruleCode = (String) bulkActionConfig.getProperty("rule_code");

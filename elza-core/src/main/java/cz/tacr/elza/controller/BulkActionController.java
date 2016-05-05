@@ -80,25 +80,27 @@ public class BulkActionController {
 
     @RequestMapping(value = "/queue/{versionId}/{code}",
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
-    void queueByFa(final @PathVariable("versionId") Integer fundVersionId, final @PathVariable("code") String code) {
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    BulkActionRunVO queueByFa(final @PathVariable("versionId") Integer fundVersionId, final @PathVariable("code") String code) {
         Assert.notNull(fundVersionId);
         Assert.notNull(code);
         UserDetail userDetail = userService.getLoggedUserDetail();
         Integer userId = userDetail != null ? userDetail.getId() : null;
-        bulkActionService.queue(userId, code, fundVersionId);
+        return factoryVo.createBulkActionRun(bulkActionService.queue(userId, code, fundVersionId));
     }
 
     @RequestMapping(value = "/queue/{versionId}/{code}",
             method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
-    void queueByIds(final @PathVariable("versionId") Integer fundVersionId, final @PathVariable("code") String code,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    BulkActionRunVO queueByIds(final @PathVariable("versionId") Integer fundVersionId, final @PathVariable("code") String code,
                     final @RequestBody List<Integer> nodeIds) {
         Assert.notNull(fundVersionId);
         Assert.notNull(code);
         Assert.notEmpty(nodeIds);
         UserDetail userDetail = userService.getLoggedUserDetail();
         Integer userId = userDetail != null ? userDetail.getId() : null;
-        bulkActionService.queue(userId, code, fundVersionId, nodeIds);
+        return factoryVo.createBulkActionRun(bulkActionService.queue(userId, code, fundVersionId, nodeIds));
     }
 }
