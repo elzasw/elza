@@ -196,7 +196,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
                     <Button key="edit-version" onClick={this.handleEditFundVersion}><Icon glyph="fa-pencil"/>
                         <div><span className="btnText">{i18n('ribbon.action.arr.fund.update')}</span></div>
                     </Button>,
-                    <Button key="rule-set-version" onClick={this.handleRuleSetUpdateFundVersion}><Icon glyph="fa-pencil"/>
+                    <Button key="rule-set-version" onClick={this.handleRuleSetUpdateFundVersion}><Icon glyph="fa-code-fork"/>
                         <div><span className="btnText">{i18n('ribbon.action.arr.fund.ruleSet')}</span></div>
                     </Button>,
                     <Button key="approve-version" onClick={this.handleApproveFundVersion}><Icon glyph="fa-calendar-check-o"/>
@@ -205,7 +205,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
             }
             if (userDetail.hasOne(perms.FUND_ADMIN)) {
                 itemActions.push(
-                    <Button key="fa-delete" onClick={this.handleDeleteFund}><Icon glyph='fa-times-circle'/>
+                    <Button key="fa-delete" onClick={this.handleDeleteFund}><Icon glyph='fa-trash'/>
                         <div><span className="btnText">{i18n('arr.fund.action.delete')}</span></div>
                     </Button>,
                 )

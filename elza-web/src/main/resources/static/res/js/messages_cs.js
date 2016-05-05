@@ -52,7 +52,7 @@ var messages = {
     "ribbon.action.arr.output.delete": "Smazat",
     "ribbon.action.arr.output.bulkActions": "Hrom. akce pro výstup",
     "ribbon.action.arr.fund.add": "Nový AS",
-    "ribbon.action.arr.fund.update": "Editace AS",
+    "ribbon.action.arr.fund.update": "Upravit vlastnosti",
     "ribbon.action.arr.fund.approve": "Nová verze AS",
     "ribbon.action.arr.fund.ruleSet": "Změnit pravidla",
     "ribbon.action.arr.fund.bulkActions": "Hromadné akce",
