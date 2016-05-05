@@ -270,8 +270,6 @@ class WebApi{
         return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/validate/' + versionId, null);
     }
 
-
-
     getBulkAction(bulkActionRunId) {
         return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/action/' + bulkActionRunId, null);
     }

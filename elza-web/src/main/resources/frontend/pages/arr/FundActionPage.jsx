@@ -72,12 +72,17 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
         if (fund) {
             this.dispatch(fundActionFetchListIfNeeded(fund.versionId));
             this.dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
+            this.dispatch(fundActionFetchDetailIfNeeded(fund.versionId));
         }
     }
 
     componentWillReceiveProps(nextProps) {
         const fund = this.getFund(nextProps);
-        fund && this.dispatch(fundActionFetchDetailIfNeeded(fund.versionId))
+        if(fund) {
+            this.dispatch(fundActionFetchListIfNeeded(fund.versionId));
+            this.dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
+            this.dispatch(fundActionFetchDetailIfNeeded(fund.versionId));
+        }
     }
 
     renderCenter(fund) {

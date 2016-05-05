@@ -31,6 +31,19 @@ const initialState = {
 
 export default function fundAction(state = initialState, action = {}) {
     switch (action.type) {
+        case types.CHANGE_FUND_ACTION: {
+            const newState = {...state,
+                list: {
+                    ...state.list,
+                    currentDataKey:null
+                }
+            };
+
+            if (state.detail.data && state.detail.data.id === action.id) {
+                state.detail.data.currentDataKey = null;
+            }
+            return newState;
+        }
         case types.FUND_ACTION_ACTION_SELECT: {
             return {
                 ...state,

@@ -8,6 +8,7 @@ import {indexById} from 'stores/app/utils.jsx';
 
 export function isFundActionAction(action) {
     switch (action.type) {
+        case types.CHANGE_FUND_ACTION:
         case types.FUND_ACTION_ACTION_SELECT:
         case types.FUND_ACTION_CONFIG_REQUEST:
         case types.FUND_ACTION_CONFIG_RECEIVE:
@@ -31,8 +32,8 @@ export function fundActionFetchListIfNeeded(versionId) {
         const {arrRegion: {funds}} = getState();
         const index = indexById(funds, versionId, 'versionId');
         if (index !== null && funds[index].fundAction) {
-            const {fundAction: {list: {currentDataKey}}} = funds[index];
-            if (currentDataKey !== versionId) {
+            const {fundAction: {list: {currentDataKey, isFetching, fetched}}} = funds[index];
+            if (currentDataKey !== versionId || (!isFetching && !fetched)) {
                 dispatch(fundActionListRequest(versionId, versionId));
                 WebApi.getBulkActionsList(versionId).then(data => dispatch(fundActionListReceive(versionId, versionId, data)));
             }
@@ -46,8 +47,8 @@ export function fundActionFetchConfigIfNeeded(versionId) {
         const {arrRegion: {funds}} = getState();
         const index = indexById(funds, versionId, 'versionId');
         if (index !== null && funds[index].fundAction) {
-            const {fundAction: {config: {currentDataKey}}} = funds[index];
-            if (currentDataKey !== versionId) {
+            const {fundAction: {config: {currentDataKey, isFetching, fetched}}} = funds[index];
+            if (currentDataKey !== versionId || (!isFetching && !fetched)) {
                 dispatch(fundActionConfigRequest(versionId, versionId));
                 WebApi.getBulkActions(versionId).then(data => dispatch(fundActionConfigReceive(versionId, versionId, data)));
             }
@@ -174,7 +175,7 @@ export function fundActionFormSubmit(versionId) {
         if (index !== null) {
             const {fundAction : {form, isFormVisible}, versionId} = funds[index];
             if (isFormVisible) {
-                const nodeIds = form.nodeList.map(node => node.id);
+                const nodeIds = form.nodes.map(node => node.id);
                 WebApi.queueBulkActionWithIds(versionId, form.code, nodeIds);
                 dispatch({
                     type: types.FUND_ACTION_FORM_SUBMIT,

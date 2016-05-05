@@ -8,7 +8,7 @@ import {store} from 'stores/app/AppStore.jsx';
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
         changeNodes, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
     changeMoveLevel, changeRegistryRecord, changeFund, deleteFund, changeFundRecord, changeInstitution,
-    changeVisiblePolicy, fundOutputChanges, fundOutputChangesDetail} from 'actions/global/change.jsx';
+    changeVisiblePolicy, fundOutputChanges, fundOutputChangesDetail, changeFundAction} from 'actions/global/change.jsx';
 
 
 var SockJS = require('sockjs-client');
@@ -113,7 +113,7 @@ function processEvents(values) {
                 break;
 
             case 'BULK_ACTION_STATE_CHANGE':
-                bulkActionStateChange(value);
+                fundActionActionChange(value);
                 break;
 
             case 'DELETE_LEVEL':
@@ -288,8 +288,8 @@ function deleteLevelChange(value) {
 /**
  * Změna hromadných akcí.
  */
-function bulkActionStateChange(value) {
-    store.dispatch(buklActionStateChange(value));
+function fundActionActionChange(value) {
+    store.dispatch(changeFundAction(value.versionId, value.entityId));
 }
 
 function partyUpdate(value){

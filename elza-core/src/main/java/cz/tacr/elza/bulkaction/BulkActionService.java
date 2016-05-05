@@ -256,13 +256,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         logger.info("Hromadná akce naplánována ke spuštění: " + bulkActionWorker);
         ListenableFuture future = taskExecutor.submitListenable(bulkActionWorker);
         future.addCallback(this);
-        this.eventNotificationService.forcePublish(
-                EventFactory.createStringInVersionEvent(
-                        EventType.BULK_ACTION_STATE_CHANGE,
-                        bulkActionWorker.getVersionId(),
-                        bulkActionWorker.getBulkActionConfig().getCode()
-                )
-        );
+        eventPublishBulkAction(bulkActionWorker.getBulkActionRun());
     }
 
     /**
@@ -372,10 +366,10 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      */
     public void eventPublishBulkAction(ArrBulkActionRun bulkActionRun) {
         eventNotificationService.forcePublish(
-                EventFactory.createStringInVersionEvent(
+                EventFactory.createIdInVersionEvent(
                         EventType.BULK_ACTION_STATE_CHANGE,
-                        bulkActionRun.getFundVersion().getFundVersionId(),
-                        bulkActionRun.getBulkActionCode()
+                        bulkActionRun.getFundVersion(),
+                        bulkActionRun.getBulkActionRunId()
                 )
         );
     }

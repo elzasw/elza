@@ -80,6 +80,14 @@ export function changeAddLevel(versionId, nodeId, parentNodeId) {
     }
 }
 
+export function changeFundAction(versionId, id) {
+    return {
+        type: types.CHANGE_FUND_ACTION,
+        versionId,
+        id
+    }
+}
+
 export function changeParty(partyId){
     return {
         type: types.PARTY_UPDATED,
