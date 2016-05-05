@@ -412,8 +412,6 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
         var specContent = null
         if (refType.useSpecification) {
             var items = [{id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')}, ...refType.descItemSpecs]
-// TODO [stanekpa] odendat - až se na server doplní podpora
-items = refType.descItemSpecs
 
             specContent = (
                 <SimpleCheckListBox
@@ -426,8 +424,6 @@ items = refType.descItemSpecs
             )
         } else if (dataType.code === 'PACKET_REF') { // u obalů budeme místo specifikací zobrazovat výběr typů obsalů
             var items = [{id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')}, ...packetTypes.items]
-// TODO [stanekpa] odendat - až se na server doplní podpora
-            items = packetTypes.items
 
             specContent = (
                 <SimpleCheckListBox

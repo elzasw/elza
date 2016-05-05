@@ -129,10 +129,6 @@ function validate(descItem, refType, valueServerError) {
 }
 
 export default function subNodeForm(state = initialState, action = {}) {
-    if (state.formData) {
-        console.log("STATE", state.formData.descItemGroups[1].descItemTypes[0])
-    }
-
     // Načtení umístění, pokud bylo v akci předáno
     var loc
     if (action.valueLocation) {
