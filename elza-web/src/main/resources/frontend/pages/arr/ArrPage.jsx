@@ -62,7 +62,10 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
             'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext', 'trySetFocus');
 
-        this.state = {developerExpandedSpecsIds: {}};
+        this.state = {
+            developerExpandedSpecsIds: {},
+            fundNodesError: null,
+        };
     }
 
     componentDidMount() {
@@ -108,7 +111,17 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     }, activeFund.versionId));
                 }
             }
+            
+            if (this.state.fundNodesError !== activeFund.fundNodesError) {
+                this.setState({fundNodesError: activeFund.fundNodesError})
+                if (this.refs.fundErrors) {
+                    this.refs.fundErrors.fetchNow();
+                }
+            }
+        } else {
+            this.setState({fundNodesError: null});
         }
+        
         this.trySetFocus(nextProps)
     }
 

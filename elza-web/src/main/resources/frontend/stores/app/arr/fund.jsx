@@ -47,7 +47,8 @@ export function fundInitState(fundWithVersion) {
         nodes: nodes(undefined, {type: ''}),
         fundNodesPolicy: fundNodesPolicy(),
         bulkActions: bulkActions(undefined, {type: ''}),
-        versionValidation: versionValidation(undefined, {type: ''})
+        versionValidation: versionValidation(undefined, {type: ''}),
+        fundNodesError: {}, // zatím jen pomocný, je řešeno ve state
     }
 
     result.fundTreeMovementsLeft = {...result.fundTreeMovementsLeft};
@@ -179,7 +180,8 @@ export function fund(state, action) {
                 fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
                 bulkActions: bulkActions(undefined, {type: ''}),
                 fundAction: fundAction(undefined, {type: ''}),
-                versionValidation: versionValidation(undefined, {type: ''})
+                versionValidation: versionValidation(undefined, {type: ''}),
+                fundNodesError: {},
             }
         case types.STORE_SAVE:
             const {id, versionId, name, lockDate} = state;
@@ -271,7 +273,8 @@ export function fund(state, action) {
                 nodes: nodes(state.nodes, action),
                 versionValidation: versionValidation(state.versionValidation, action),
                 bulkActions: bulkActions(state.bulkActions, action),
-                fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action)
+                fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
+                fundNodesError: {}, // nová instance
             }
             return consolidateState(state, result);
         case types.FUND_FUND_APPROVE_VERSION:
