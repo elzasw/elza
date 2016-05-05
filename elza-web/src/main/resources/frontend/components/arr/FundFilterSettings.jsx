@@ -85,21 +85,20 @@ const renderUnitdateFields = (calendarTypes, fields) => {
         case 0:
             return null
         case 2:
-            var descItem = {
-                hasFocus: false,
-                calendarTypeId: typeof fields[0].value !== 'undefined' ? fields[0].value : 1,
-                value: typeof fields[1].value !== 'undefined' ? fields[1].value : '',
-                error: {},
-            }
             return (
                 <div key={0} className='value-container'>
-                    <DescItemUnitdate key={0}
-                        calendarTypes={calendarTypes}
-                        onChange={(value) => {fields[0].onChange(value.calendarTypeId);fields[1].onChange(value.value);}}
-                        descItem={descItem}
-                        onFocus={()=>{}}
-                        onBlur={()=>{}}
-                    />
+                    <Input type="select"
+                        value={typeof fields[0].value !== 'undefined' ? fields[0].value : 1}
+                        onChange={(e) => {fields[0].onChange(e.target.value);}}
+                    >
+                        {calendarTypes.items.map(calendarType => (
+                            <option key={calendarType.id} value={calendarType.id}>{calendarType.name.charAt(0)}</option>
+                        ))}
+                    </Input>
+                    <Input type="text"
+                        value={fields[1].value} onCh
+                        onChange={(e) => {fields[1].onChange(e.target.value);}}
+                   />
                 </div>
             )
     }
