@@ -446,74 +446,17 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * Vrací seznam nastavení hromadných akcí podle verze archivní pomůcky.
      *
      * @param fundVersionId identifikátor verze archivní pomůcky
-     * @param mandatory     true - vrací se pouze seznam povinných, false - vrací se seznam všech
      * @return seznam nastavení hromadných akcí
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
-    public List<BulkActionConfig> getBulkActions(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
-                                                 final boolean mandatory) {
+    public List<BulkActionConfig> getBulkActions(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         if (version == null) {
             throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
         }
 
-        List<BulkActionConfig> bulkActionConfigs = new ArrayList<>();
-        List<BulkActionConfig> bBulkActionConfigs = bulkActionConfigManager.getBulkActions();
-
-
-
-        for (BulkActionConfig bulkActionConfig : bulkActionConfigManager.getBulkActions()) {
-            String ruleCode = (String) bulkActionConfig.getProperty("rule_code");
-            if (version.getRuleSet().getCode().equals(ruleCode)) {
-                if (!mandatory) {
-                    bulkActionConfigs.add(bulkActionConfig);
-                }
-            }
-        }
-
-        return bulkActionConfigs;
-    }
-
-    /**
-     * Spustí validaci verze AP.
-     *
-     * @param fundVersionId identifikátor verze archivní pomůcky
-     * @return seznam konfigurací hromadných akcí, které je nutné ještě spustit před uzavřením verze
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
-    public List<BulkActionConfig> runValidation(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-
-        if (version == null) {
-            throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
-        }
-
-        if (version.getLockChange() != null) {
-            throw new IllegalArgumentException("Verze archivní je již uzavřená!");
-        }
-
-        List<BulkActionConfig> bulkActionConfigReturnList = new ArrayList<>();
-
-        List<BulkActionConfig> bulkActionConfigMandatoryList = getBulkActions(fundVersionId, true);
-        List<ArrBulkActionRun> bulkActions = bulkActionRepository.findByFundVersionId(fundVersionId);
-
-        for (BulkActionConfig bulkActionConfig : bulkActionConfigMandatoryList) {
-
-            boolean isValidate = false;
-            for (ArrBulkActionRun bulkAction : bulkActions) {
-                if (bulkAction.getBulkActionCode().equals(bulkActionConfig.getCode())) {
-                    isValidate = true;
-                    break;
-                }
-            }
-
-            if (!isValidate) {
-                bulkActionConfigReturnList.add(bulkActionConfig);
-            }
-        }
-
-        return bulkActionConfigMandatoryList;
+        return bulkActionConfigManager.getBulkActions();
     }
 
     /**

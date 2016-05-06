@@ -29,11 +29,9 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
     private static final String BULK_ACTION_GET = BULK_ACTION_CONTROLLER_URL + "/action/{id}";
     private static final String BULK_ACTION_INTERRUPT = BULK_ACTION_CONTROLLER_URL + "/action/{id}/interrupt";
-    private static final String BULK_ACTIONS = BULK_ACTION_CONTROLLER_URL + "/{versionId}/{mandatory}";
+    private static final String BULK_ACTIONS = BULK_ACTION_CONTROLLER_URL + "/{versionId}";
     private static final String BULK_ACTIONS_LIST = BULK_ACTION_CONTROLLER_URL + "/list/{versionId}";
-    private static final String BULK_ACTION_STATES = BULK_ACTION_CONTROLLER_URL + "/states/{versionId}";
     private static final String BULK_ACTION_QUEUE = BULK_ACTION_CONTROLLER_URL + "/queue/{versionId}/{code}";
-    private static final String BULK_ACTION_VALIDATE = BULK_ACTION_CONTROLLER_URL + "/validate/{versionId}";
 
     private static final String BULK_ACTION_FUND_VALIDATION = "FUND_VALIDATION_ZP2015";
     private static final String BULK_ACTION_GENERATOR_UNIT = "GENERATOR_UNIT_ID_ZP2015";
@@ -61,7 +59,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     @Test
     public void getBulkActionsTest() {
         int fundVersionId = importAndGetVersionId();
-        List<BulkActionVO> bulkActionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId).pathParam("mandatory", false), BULK_ACTIONS).getBody().as(BulkActionVO[].class));
+        List<BulkActionVO> bulkActionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId), BULK_ACTIONS).getBody().as(BulkActionVO[].class));
 
         Assert.assertEquals(3, bulkActionVOs.size());
 
@@ -88,48 +86,6 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
     private List<BulkActionRunVO> getBulkActionList(int versionId) {
         return Arrays.asList(get(spec -> spec.pathParam("versionId", versionId), BULK_ACTIONS_LIST).getBody().as(BulkActionRunVO[].class));
-    }
-
-    @Test
-    public void getBulkActionStateTest() throws InterruptedException {
-        int fundVersionId = importAndGetVersionId();
-        List<BulkActionVO> actionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId), BULK_ACTION_VALIDATE).getBody().as(BulkActionVO[].class));
-        Assert.assertEquals(0, actionVOs.size());
-
-        runBulkAction(fundVersionId, BULK_ACTION_SERIAL_NUMBER_GENERATOR);
-        runBulkAction(fundVersionId, BULK_ACTION_GENERATOR_UNIT);
-        runBulkAction(fundVersionId, BULK_ACTION_FUND_VALIDATION);
-        for (BulkActionRunVO action : getBulkActionList(fundVersionId)) {
-            Assert.assertEquals(action.getState(), State.FINISHED);
-        }
-        actionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId), BULK_ACTION_VALIDATE).getBody().as(BulkActionVO[].class));
-        Assert.assertEquals(0, actionVOs.size());
-    }
-
-    // povinný nyní nejsou žádný - test nemá význam
-    @Test
-    @Ignore
-    public void getBulkActionsMandatoryTest() {
-        int fundVersionId = importAndGetVersionId();
-        List<BulkActionVO> bulkActionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId).pathParam("mandatory", true), BULK_ACTIONS).getBody().as(BulkActionVO[].class));
-
-        Assert.assertEquals(2, bulkActionVOs.size());
-
-        Boolean serial = false, fa = false;
-
-        for (BulkActionVO bulkAction : bulkActionVOs) {
-            switch (bulkAction.getCode()) {
-                case BULK_ACTION_SERIAL_NUMBER_GENERATOR:
-                    serial = true;
-                    break;
-                case BULK_ACTION_FUND_VALIDATION:
-                    fa = true;
-                    break;
-            }
-        }
-
-        Assert.assertTrue("Hromadna akce " + BULK_ACTION_SERIAL_NUMBER_GENERATOR + " neni v seznamu", serial);
-        Assert.assertTrue("Hromadna akce " + BULK_ACTION_FUND_VALIDATION + " neni v seznamu", fa);
     }
 
     private BulkActionRunVO getBulkActionState(int fundVersionId, String code) {
