@@ -505,10 +505,11 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         const {fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, packetTypes} = this.props;
         const {cols} = this.state;
 
-        if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
+        if (!descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
+        // if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
             return <Loading/>
         }
-
+console.log("##", fundDataGrid)
         // Hledání
         var search = (
             <SearchWithGoto

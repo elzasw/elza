@@ -83,6 +83,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 subNodeForm: subNodeForm(),
                 searchedItems: [],
                 searchedCurrentIndex: 0,
+                cellFocus: {row: 0, col: 0},
             }
         case types.STORE_SAVE:
             const {pageSize, pageIndex, filter, visibleColumns, columnsOrder, columnInfos} = state;
