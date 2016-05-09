@@ -21,10 +21,19 @@ then
 	approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ROOT");
 end
 
+rule "Dílčí list"
+when
+	$level: NewLevel( parent!=null && $items: parent.descItems )
+    DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_ROOT" ) from $items
+then
+	NewLevelApproach approach = results.create("Dílčí list");
+	approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SECTION");
+end
+
 rule "Série"
 when
 	$level: NewLevel( parent!=null && $items: parent.descItems )
-    DescItem( type == "ZP2015_LEVEL_TYPE" && ( specCode == "ZP2015_LEVEL_ROOT" || specCode == "ZP2015_LEVEL_SERIES" ) ) from $items
+    DescItem( type == "ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES") ) from $items
 	// Serii nelze pridat pokud pred existuje neco jineho nez serie
 	//not ( NewLevel ( siblingBefore!=null && $itemsBefore: siblingBefore.descItems ) and
 	//	DescItem( type == "ZP2015_LEVEL_TYPE" && specCode != "ZP2015_LEVEL_SERIES" ) from $itemsBefore )

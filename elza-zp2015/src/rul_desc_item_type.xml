@@ -1,4 +1,13 @@
 <desc-item-types>
+    <desc-item-type code="ZP2015_ARRANGEMENT_TYPE" data-type="ENUM">
+        <name>Způsob pořádání</name>
+        <shortcut>Způsob pořádání</shortcut>
+        <description>Způsob pořádání podle Základních pravidel 2015</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
+        <view-order>0</view-order>
+    </desc-item-type>
     <desc-item-type code="ZP2015_LEVEL_TYPE" data-type="ENUM">
         <name>Úroveň popisu</name>
         <shortcut>Úroveň</shortcut>
@@ -476,5 +485,14 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>53</view-order>
+    </desc-item-type>
+    <desc-item-type code="ZP2015_NAD" data-type="STRING">
+        <name>Číslo NAD</name>
+        <shortcut>Číslo NAD</shortcut>
+        <description>Číslo v evidenci NAD</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+        <view-order>54</view-order>
     </desc-item-type>
 </desc-item-types>

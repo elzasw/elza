@@ -5,7 +5,8 @@ elza:
       pass: app
 
   treenode:
-      defaultTitle: <Není nastaven popisek>
+      title: ZP2015_TITLE
+      defaultTitle: <Není nastaveno>
 
   #třídy rejstříků a osob, které jsou defaultně zobrazovanány
   record:
@@ -13,61 +14,136 @@ elza:
         - GLOBAL
 
 #zobrazování popisků
-#
-#  fund-view:
-#      ZP2015:
-#        default:
-#          tree-item:
-#            - ZP2015_TITLE
-#            - ZP2015_UNIT_DATE
-#          accordion-left:
-#            - ZP2015_TITLE
-#            - ZP2015_UNIT_DATE
-#          accordion-right:
-#            - ZP2015_FOLDER_TYPE
-#            - ZP2015_STORAGE_ID
-#          hierarchy:
-#            ZP2015_LEVEL_TYPE:
-#              ZP2015_LEVEL_ROOT:
-#                icon: fa-sitemap
-#                separator-first: '||'
-#                separator-other: '|'
-#              ZP2015_LEVEL_SERIES:
-#                icon: fa-server
-#                separator-first: '||'
-#                separator-other: '|'
-#              ZP2015_LEVEL_FOLDER:
-#                icon: fa-folder-o
-#                separator-first: '||'
-#                separator-other: '|'
-#              ZP2015_LEVEL_ITEM:
-#                icon: fa-building
-#                separator-first: '||'
-#                separator-other: '|'
-#              ZP2015_LEVEL_PART:
-#                icon: fa-building-o
-#                separator-first: '||'
-#                separator-other: '|'
+  fund-view:
+    ZP2015:
+      default:
+        tree-item:
+          - ZP2015_NAD
+          - ZP2015_TITLE
+          - ZP2015_UNIT_DATE
+        accordion-left:
+          - ZP2015_NAD
+          - ZP2015_TITLE
+          - ZP2015_UNIT_DATE
+        accordion-right:
+          - ZP2015_FOLDER_TYPE
+          - ZP2015_STORAGE_ID
+        hierarchy:
+          ZP2015_LEVEL_TYPE:
+            ZP2015_LEVEL_ROOT:
+              icon: fa-sitemap
+              separator-first: '||'
+              separator-other: '|'
+            ZP2015_LEVEL_SECTION:
+              icon: fa-sitemap
+              separator-first: '||'
+              separator-other: '|'
+            ZP2015_LEVEL_SERIES:
+              icon: fa-server
+              separator-first: '||'
+              separator-other: '|'
+            ZP2015_LEVEL_FOLDER:
+              icon: fa-folder-o
+              separator-first: '||'
+              separator-other: '|'
+            ZP2015_LEVEL_ITEM:
+              icon: fa-building
+              separator-first: '||'
+              separator-other: '|'
+            ZP2015_LEVEL_PART:
+              icon: fa-building-o
+              separator-first: '||'
+              separator-other: '|'
 
-#  type-groups:
-#      ZP2015:
-#        default:
-#          GROUP1:
-#            types:
-#              - code: ZP2015_NOTE
-#                width: 0
-#              - code: ZP2015_LEVEL_TYPE
-#                width: 1
-#              - code: ZP2015_UNIT_ID
-#                width: 2
-#              - code: ZP2015_ORIGINATOR
-#                width: 0
-#          GROUP2:
-#            types:
-#              - code: ZP2015_SIZE
-#                width: 1
-#              - code: ZP2015_OTHER_ID
-#                width: 3
+
+  type-groups:
+    ZP2015:
+      default:
+        GROUP0:
+          name: Pořádání
+          types:
+            - code: ZP2015_ARRANGEMENT_TYPE
+              width: 2
+        GROUP1:
+          name: Typ jednotky
+          types:
+            - code: ZP2015_LEVEL_TYPE
+              width: 1
+            - code: ZP2015_NAD
+              width: 1
+            - code: ZP2015_FOLDER_TYPE
+              width: 1
+            - code: ZP2015_UNIT_TYPE
+              width: 1
+            - code: ZP2015_UNIT_COUNT
+              width: 1
+            - code: ZP2015_STORAGE_ID
+              width: 1
+            - code: ZP2015_EXTRA_UNITS
+              width: 1
+            - code: ZP2015_UNIT_EXT_TYPE
+              width: 1
+        GROUP2:
+          name: Identifikátory jednotky popisu
+          types:
+            - code: ZP2015_UNIT_ID
+              width: 1
+            - code: ZP2015_SERIAL_NUMBER
+              width: 1
+            - code: ZP2015_OTHER_ID
+              width: 2
+        GROUP3:
+          name: Hlavní popis jednotky
+          types:
+            - code: ZP2015_TITLE
+              width: 0
+            - code: ZP2015_FORMAL_TITLE
+              width: 0
+            - code: ZP2015_UNIT_DATE_PRE
+              width: 1
+            - code: ZP2015_UNIT_DATE
+              width: 1
+            - code: ZP2015_UNIT_DATE_POST
+              width: 1
+            - code: ZP2015_UNIT_DATE_TEXT
+              width: 2
+        GROUP4:
+          name: Společné prvky popisu
+          types:
+            - code: ZP2015_ORIGINATOR
+              width: 1
+            - code: ZP2015_UNIT_HIST
+              width: 0
+            - code: ZP2015_UNIT_ARR
+              width: 2
+            - code: ZP2015_UNIT_CONTENT
+              width: 0
+            - code: ZP2015_UNIT_SOURCE
+              width: 1
+            - code: ZP2015_FUTURE_UNITS
+              width: 1
+            - code: ZP2015_UNIT_ACCESS
+              width: 1
+            - code: ZP2015_UNIT_INFO_RIGHTS
+              width: 1
+            - code: ZP2015_UNIT_COPY_RIGHTS
+              width: 1
+            - code: ZP2015_UNIT_CURRENT_STATUS
+              width: 2
+            - code: ZP2015_COPY_SOURCE
+              width: 1
+            - code: ZP2015_RELATED_UNITS
+              width: 1
+            - code: ZP2015_EXISTING_COPY
+              width: 1
+            - code: ZP2015_INTERNAL_NOTE
+              width: 2
+            - code: ZP2015_NOTE
+              width: 2
+            - code: ZP2015_ARRANGE_RULES
+              width: 1
+            - code: ZP2015_4_OTHER
+              width: 1
 
 spring:
   app:
@@ -85,3 +161,5 @@ spring:
               #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
               # MSSQL
               #dialect: org.hibernate.dialect.SQLServer2008Dialect
+
+multipart.maxFileSize: 10000000

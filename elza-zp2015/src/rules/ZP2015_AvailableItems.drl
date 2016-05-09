@@ -20,6 +20,27 @@ import cz.tacr.elza.api.RulDescItemType;
 // - addWithAllSpec
 // - addWithoutSpec - ?kde je vzit pozdeji?
 
+// Nastaveni vychozi neopakovatelnosti atributu
+rule "U atributu je zapotrebi nove explicitne nastavit neopakovatelnost"
+salience 100 
+no-loop
+when
+	$descItemType : RulDescItemTypeExt(code in ("ZP2015_ARRANGEMENT_TYPE", "ZP2015_LEVEL_TYPE", "ZP2015_FOLDER_TYPE",
+		"ZP2015_UNIT_TYPE", "ZP2015_UNIT_COUNT", "ZP2015_UNIT_ID", "ZP2015_SERIAL_NUMBER", "ZP2015_TITLE",
+		"ZP2015_FORMAL_TITLE", "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST",
+		"ZP2015_UNIT_DATE_TEXT", "ZP2015_UNIT_HIST", "ZP2015_UNIT_ARR", "ZP2015_UNIT_CONTENT",
+		"ZP2015_UNIT_SOURCE", "ZP2015_FUTURE_UNITS", "ZP2015_UNIT_ACCESS", "ZP2015_UNIT_INFO_RIGHTS",
+		"ZP2015_UNIT_COPY_RIGHTS", "ZP2015_UNIT_CURRENT_STATUS", "ZP2015_COPY_SOURCE",
+		"ZP2015_RELATED_UNITS", "ZP2015_EXISTING_COPY", "ZP2015_INTERNAL_NOTE", "ZP2015_NOTE",
+		"ZP2015_ARRANGE_RULES", "ZP2015_ITEM_TITLE", "ZP2015_STORAGE_COND", "ZP2015_SIZE", "ZP2015_SCALE",
+		"ZP2015_ORIENTATION", "ZP2015_ITEM_MAT", "ZP2015_PART", "ZP2015_EDITION",
+		"ZP2015_EXERQUE", "ZP2015_PAINTING_CHAR", "ZP2015_CORROBORATION", "ZP2015_IMPRINT_COUNT",
+		"ZP2015_IMPRINT_ORDER", "ZP2015_LEGEND", "ZP2015_MOVIE_LENGTH", "ZP2015_RECORD_LENGTH",
+		"ZP2015_COLL_EXTENT_LENGTH", "ZP2015_NAD"))
+then
+    $descItemType.setRepeatable(false);
+end
+
 rule "Atribut ZP2015_LEVEL_TYPE je povinný vždy"
 salience 100 
 no-loop
@@ -27,7 +48,6 @@ when
 	$descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
 then
     $descItemType.setType(RulDescItemType.Type.REQUIRED);
-    $descItemType.setPolicyTypeCode("PT1");
 end
 
 rule "Atribut ZP2015_LEVEL_TYPE, ZP2015_LEVEL_ROOT"
@@ -38,20 +58,30 @@ when
 	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_LEVEL_ROOT") from $descItemType.rulDescItemSpecList
 then
 	$descItemSpec.setType(RulDescItemSpec.Type.REQUIRED);
-	$descItemSpec.setPolicyTypeCode("PT1");
 end
 
-// Serie - povinná pokud je rodič root
-rule "Atribut ZP2015_LEVEL_TYPE, ZP2015_LEVEL_SERIES pod souborem"
+// Dílčí list je možný pokud je rodič kořen
+rule "Dílčí list pod kořenem"
 no-loop
 when
 	$descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
 	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
 	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_ROOT" ) from $parentDescItems
-	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_LEVEL_SERIES") from $descItemType.rulDescItemSpecList
+	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_LEVEL_SECTION") from $descItemType.rulDescItemSpecList 
 then
-	$descItemSpec.setType(RulDescItemSpec.Type.REQUIRED);
-	$descItemSpec.setPolicyTypeCode("PT1");
+	$descItemSpec.setType(RulDescItemSpec.Type.POSSIBLE);
+end
+
+// Serie - možná pokud je rodič root nebo dílčí list
+rule "Serie - možná pokud je rodič root nebo dílčí list"
+no-loop 
+when
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION") ) from $parentDescItems
+	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_LEVEL_SERIES") from $descItemType.rulDescItemSpecList 
+then
+	$descItemSpec.setType(RulDescItemSpec.Type.POSSIBLE);
 end
 
 // Pokud je rodic série, tak může být série, složka nebo jednotlivost
@@ -64,7 +94,6 @@ when
 	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_LEVEL_SERIES" || code == "ZP2015_LEVEL_FOLDER" || code == "ZP2015_LEVEL_ITEM") from $descItemType.rulDescItemSpecList
 then
 	$descItemSpec.setType(RulDescItemSpec.Type.POSSIBLE);
-	$descItemSpec.setPolicyTypeCode("PT1");
 end
 
 // Pokud je rodič složka, tak může být složka nebo jednotlivost pokud sourozenec neexistuje
@@ -77,7 +106,6 @@ when
 	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_LEVEL_FOLDER" || code == "ZP2015_LEVEL_ITEM") from $descItemType.rulDescItemSpecList
 then
 	$descItemSpec.setType(RulDescItemSpec.Type.POSSIBLE);
-	$descItemSpec.setPolicyTypeCode("PT1");
 end
 
 // Pokud je rodič složka a má sourozence pred, tak je stejného typu jako oni
@@ -91,7 +119,6 @@ when
 	$descItemSpec : RulDescItemSpecExt(code == $specCode) from $descItemType.rulDescItemSpecList
 then
 	$descItemSpec.setType(RulDescItemSpec.Type.REQUIRED);
-	$descItemSpec.setPolicyTypeCode("PT1");
 end
 
 // Pokud je rodič složka a má sourozence za, tak je stejného typu jako oni
@@ -105,7 +132,6 @@ when
 	$descItemSpec : RulDescItemSpecExt(code == $specCode) from $descItemType.rulDescItemSpecList
 then
 	$descItemSpec.setType(RulDescItemSpec.Type.REQUIRED);
-	$descItemSpec.setPolicyTypeCode("PT1");
 end
 
 // Pokud je rodič jednotlivost, tak je část
@@ -118,7 +144,17 @@ when
 	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_LEVEL_PART" ) from $descItemType.rulDescItemSpecList
 then
 	$descItemSpec.setType(RulDescItemSpec.Type.REQUIRED);
-	$descItemSpec.setPolicyTypeCode("PT1");
+end
+
+// Číslo NAD na kořeni a dílčím listu
+rule "NAD na kořeni a dílčím listu"
+no-loop
+when
+	$activeLevel : ActiveLevel( )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION") ) from $activeLevel.descItems
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_NAD")
+then
+	$descItemType.setType(RulDescItemType.Type.RECOMMENDED);
 end
 
 // Složka musí mít uveden typ
@@ -132,9 +168,7 @@ when
 	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_FOLDER_LOGICAL" ) from $descItemType.rulDescItemSpecList
 then
     $descItemType.setType(RulDescItemType.Type.REQUIRED);
-    $descItemType.setPolicyTypeCode("PT1");
 	$descItemSpec.setType(RulDescItemSpec.Type.POSSIBLE);
-	$descItemSpec.setPolicyTypeCode("PT1");
 end
 
 // Pokud je nadřazená složka s uvedenim EJ nebo hromadina, potom musí být logická
@@ -149,7 +183,6 @@ when
 	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_FOLDER_LOGICAL" ) from $descItemType.rulDescItemSpecList
 then
 	$descItemSpec.setType(RulDescItemSpec.Type.REQUIRED);
-	$descItemSpec.setPolicyTypeCode("PT1");
 end
 
 // Pokud je nadřazená složka bez uvedeni EJ nebo hromadina, potom muze byt hromadina nebo s uvedenim EJ
@@ -166,7 +199,19 @@ when
 	$descItemSpec : RulDescItemSpecExt(code != "ZP2015_FOLDER_LOGICAL" ) from $descItemType.rulDescItemSpecList
 then
 	$descItemSpec.setType(RulDescItemSpec.Type.POSSIBLE);
-	$descItemSpec.setPolicyTypeCode("PT1");
+end
+
+// Typ pořádání - lze nastavit do úrovně složka
+rule "Typ pořádání"
+no-loop
+when
+  $activeLevel : ActiveLevel( )
+  DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
+  $descItemType : RulDescItemTypeExt(code == "ZP2015_ARRANGEMENT_TYPE")
+  $descItemSpec : RulDescItemSpecExt() from $descItemType.rulDescItemSpecList
+then
+  $descItemType.setType(RulDescItemType.Type.POSSIBLE);
+  $descItemSpec.setType(RulDescItemSpec.Type.POSSIBLE);
 end
 
 // Složka manipulačního seznamu
@@ -175,31 +220,23 @@ no-loop
 when
 	// nesmi jiz mit deti
 	$activeLevel : ActiveLevel( !hasChildren )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode=="ZP2015_ARRANGEMENT_MAN") from $activeLevel.descItems 
 	DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_UNITS" ) from $activeLevel.descItems
 	$descItemType : RulDescItemTypeExt(code == "ZP2015_EXTRA_UNITS")
 then
 	$descItemType.setType(RulDescItemType.Type.POSSIBLE);
-	$descItemType.setPolicyTypeCode("PT1");
 end
 
-// Pořadové číslo v manipulačním seznamu - povinné
+// Pořadové číslo povinné pokud je určen způsob pořádání
 rule "Pořadové číslo - povinné"
 no-loop
 when
-	$descItemType : RulDescItemTypeExt(code == "ZP2015_SERIAL_NUMBER")
-then
-	$descItemType.setType(RulDescItemType.Type.REQUIRED);
-	$descItemType.setPolicyTypeCode("PT1");
-end
-
-// Pořadové číslo v manipulačním seznamu - volitelné
-rule "Pořadové číslo - volitelné"
-no-loop
-when
+	$activeLevel : ActiveLevel( )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems 
 	$descItemType : RulDescItemTypeExt(code == "ZP2015_SERIAL_NUMBER")
 then
 	$descItemType.setType(RulDescItemType.Type.POSSIBLE);
-	$descItemType.setPolicyTypeCode("PT1");
+	$descItemType.setPolicyTypeCode("SERIAL_NO");
 end
 
 // referenční označení v INV|KAT - povinné pro uzly mimo kořen
@@ -207,21 +244,11 @@ rule "Referenční označení - povinné"
 no-loop
 when
 	$activeLevel: ActiveLevel( parent!=null )
-	$descItemType : RulDescItemTypeExt(code == "ZP2015_UNIT_ID")
-then
-	$descItemType.setType(RulDescItemType.Type.REQUIRED);
-	$descItemType.setPolicyTypeCode("PT1");
-end
-
-// referenční označení v INV|KAT - možné pro uzly mimo kořen
-rule "Referenční označení - možné"
-no-loop
-when
-	$activeLevel: ActiveLevel( parent!=null )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
 	$descItemType : RulDescItemTypeExt(code == "ZP2015_UNIT_ID")
 then
 	$descItemType.setType(RulDescItemType.Type.POSSIBLE);
-	$descItemType.setPolicyTypeCode("PT1");
+	$descItemType.setPolicyTypeCode("REF_NO");
 end
 
 // Složka/Jednotlivost - lze zadat vždy ukládací jednotku
@@ -233,7 +260,6 @@ when
 	$descItemType : RulDescItemTypeExt(code == "ZP2015_STORAGE_ID")
 then
     $descItemType.setType(RulDescItemType.Type.POSSIBLE);
-    $descItemType.setPolicyTypeCode("PT1");
 end
 
 // Pravidlo se vyhodnocuje později - po nastavení volitelnosti
@@ -246,7 +272,7 @@ when
 	$descItemType : RulDescItemTypeExt(code == "ZP2015_STORAGE_ID")
 then
 	$descItemType.setType(RulDescItemType.Type.REQUIRED);
-	$descItemType.setPolicyTypeCode("PT1");
+	$descItemType.setPolicyTypeCode("STORAGE_ID");
 end
 
 // Druh archiválie povinně - u složky s jednotlivostmi
@@ -258,7 +284,6 @@ when
 	$descItemType : RulDescItemTypeExt(code == "ZP2015_UNIT_TYPE" || code == "ZP2015_UNIT_COUNT")
 then
 	$descItemType.setType(RulDescItemType.Type.REQUIRED);
-	$descItemType.setPolicyTypeCode("PT1");
 end
 
 // Druh archiválie povinně - u jednotlivosti
@@ -270,42 +295,81 @@ when
 	$descItemType : RulDescItemTypeExt(code == "ZP2015_UNIT_TYPE")
 then
 	$descItemType.setType(RulDescItemType.Type.REQUIRED);
-	$descItemType.setPolicyTypeCode("PT1");
 end
 
+// Obsah/Regest
+rule "Obsah/regest - doporučený pro složku a níže"
+when
+    $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
+	$descItemType : RulDescItemTypeExt(code in ( "ZP2015_TITLE" ) )
+then
+	$descItemType.setType(RulDescItemType.Type.RECOMMENDED);
+end
+
+rule "Obsah/regest - povinný pro sérii"
+when
+    $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SERIES") ) from $activeLevel.descItems
+	$descItemType : RulDescItemTypeExt(code in ( "ZP2015_TITLE" ) )
+then
+	$descItemType.setType(RulDescItemType.Type.REQUIRED);
+end
 
 // Vždy možné prvky popisu
 rule "Univerzální prvky popisu - možné"
 no-loop
 when
 	$descItemType : RulDescItemTypeExt(code in
-	( "ZP2015_TITLE", "ZP2015_FORMAL_TITLE", "ZP2015_ORIGINATOR", "ZP2015_OTHER_ID" ) )
+	( "ZP2015_FORMAL_TITLE", "ZP2015_ORIGINATOR", "ZP2015_OTHER_ID" ) )
 then
 	$descItemType.setType(RulDescItemType.Type.POSSIBLE);
-	$descItemType.setPolicyTypeCode("PT1");
 end
 
 // Datace - strojová
-rule "Datace - strojová"
+rule "Datace - strojová - možná na složce a níže"
 no-loop
 when
 	$activeLevel: ActiveLevel( )
-	not DescItem(type=="ZP2015_UNIT_DATE_TEXT" ) from $activeLevel.descItems
 	$descItemType : RulDescItemTypeExt(code in
 	( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST" ) )
+	$descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 then
 	$descItemType.setType(RulDescItemType.Type.POSSIBLE);
-	$descItemType.setPolicyTypeCode("PT1");
 end
 
 // Datace - textová
+// Dotaz: v jakých úrovních?
 rule "Datace - textová"
 no-loop
 when
 	$activeLevel: ActiveLevel( )
-	not DescItem(type in ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST" ) ) from $activeLevel.descItems
+	//not DescItem(type=="ZP2015_UNIT_DATE_TEXT" ) from $activeLevel.descItems
+	//not DescItem(type in ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST" ) ) from $activeLevel.descItems
 	$descItemType : RulDescItemTypeExt(code=="ZP2015_UNIT_DATE_TEXT")
+	$descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 then
    	$descItemType.setType(RulDescItemType.Type.POSSIBLE);
-   	$descItemType.setPolicyTypeCode("PT1");
+end
+
+// Standarní datace je doporučená pro poslední složku a část jednotlivosti (bez potomků)
+rule "Datace - strojová - doporučení"
+salience -100
+no-loop
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	$descItemType : RulDescItemTypeExt(code in ( "ZP2015_UNIT_DATE" ) )
+	$descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
+then
+	$descItemType.setType(RulDescItemType.Type.RECOMMENDED);
+end
+
+rule "Druh arhivalie"
+no-loop
+when
+	$activeLevel: ActiveLevel( )
+	$descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode=="ZP2015_UNIT_TYPE_LIO" ) from $activeLevel.descItems
+	$descItemType : RulDescItemTypeExt(code=="ZP2015_UNIT_DATE_TEXT")
+then
+   	$descItemType.setType(RulDescItemType.Type.REQUIRED);
 end

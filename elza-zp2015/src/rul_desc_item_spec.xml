@@ -1,50 +1,80 @@
 <desc-item-specs>
+    <desc-item-spec code="ZP2015_ARRANGEMENT_MAN" desc-item-type="ZP2015_ARRANGEMENT_TYPE">
+        <name>Manipulační seznam</name>
+        <description>Manipulační seznam</description>
+        <shortcut>Manipulační seznam</shortcut>
+        <view-order>1</view-order>
+    </desc-item-spec>
+    <desc-item-spec code="ZP2015_ARRANGEMENT_INV" desc-item-type="ZP2015_ARRANGEMENT_TYPE">
+        <name>Inventář</name>
+        <description>Inventář</description>
+        <shortcut>Inventář</shortcut>
+        <view-order>2</view-order>
+    </desc-item-spec>
+    <desc-item-spec code="ZP2015_ARRANGEMENT_KAT" desc-item-type="ZP2015_ARRANGEMENT_TYPE">
+        <name>Katalog</name>
+        <description>Katalog</description>
+        <shortcut>Katalog</shortcut>
+        <view-order>3</view-order>
+    </desc-item-spec>
+    <desc-item-spec code="ZP2015_ARRANGEMENT_OTHER" desc-item-type="ZP2015_ARRANGEMENT_TYPE">
+        <name>Starší pomůcka</name>
+        <description>Starší pomůcka</description>
+        <shortcut>Starší pomůcka</shortcut>
+        <view-order>4</view-order>
+    </desc-item-spec>
     <desc-item-spec code="ZP2015_LEVEL_ROOT" desc-item-type="ZP2015_LEVEL_TYPE">
         <name>Soubor</name>
         <description>Soubor</description>
         <shortcut>Soubor</shortcut>
         <view-order>1</view-order>
     </desc-item-spec>
+    <desc-item-spec code="ZP2015_LEVEL_SECTION" desc-item-type="ZP2015_LEVEL_TYPE">
+        <name>Dílčí list</name>
+        <description>Dílčí list</description>
+        <shortcut>Dílčí list</shortcut>
+        <view-order>2</view-order>
+    </desc-item-spec>
     <desc-item-spec code="ZP2015_LEVEL_SERIES" desc-item-type="ZP2015_LEVEL_TYPE">
         <name>Série</name>
         <description>Série</description>
         <shortcut>Série</shortcut>
-        <view-order>2</view-order>
+        <view-order>3</view-order>
     </desc-item-spec>
     <desc-item-spec code="ZP2015_LEVEL_FOLDER" desc-item-type="ZP2015_LEVEL_TYPE">
         <name>Složka</name>
         <description>Složka</description>
         <shortcut>Složka</shortcut>
-        <view-order>3</view-order>
+        <view-order>4</view-order>
     </desc-item-spec>
     <desc-item-spec code="ZP2015_LEVEL_ITEM" desc-item-type="ZP2015_LEVEL_TYPE">
         <name>Jednotlivost</name>
         <description>Jednotlivost</description>
         <shortcut>Jednotlivost</shortcut>
-        <view-order>4</view-order>
+        <view-order>5</view-order>
     </desc-item-spec>
     <desc-item-spec code="ZP2015_LEVEL_PART" desc-item-type="ZP2015_LEVEL_TYPE">
         <name>Část jednotlivosti</name>
         <description>Část jednotlivosti</description>
         <shortcut>Část</shortcut>
-        <view-order>5</view-order>
+        <view-order>6</view-order>
     </desc-item-spec>
     <desc-item-spec code="ZP2015_FOLDER_LOGICAL" desc-item-type="ZP2015_FOLDER_TYPE">
-        <name>Bez uvedení EJ</name>
-        <description>Bez uvedení EJ</description>
-        <shortcut>Bez uvedení EJ</shortcut>
+        <name>Logická</name>
+        <description>Logická složka</description>
+        <shortcut>Logická</shortcut>
         <view-order>1</view-order>
     </desc-item-spec>
     <desc-item-spec code="ZP2015_FOLDER_UNITS" desc-item-type="ZP2015_FOLDER_TYPE">
-        <name>Množstevní evidenční jednotka</name>
+        <name>Množstevní EJ</name>
         <description>Množstevní evidenční jednotka</description>
         <shortcut>Množstevní EJ</shortcut>
         <view-order>2</view-order>
     </desc-item-spec>
     <desc-item-spec code="ZP2015_FOLDER_SINGLE_TYPE" desc-item-type="ZP2015_FOLDER_TYPE">
-        <name>Více podobných evidenčních jednotek</name>
-        <description>Více podobných evidenčních jednotek</description>
-        <shortcut>S typem EJ</shortcut>
+        <name>S typem EJ</name>
+        <description>Více evidenčních jednotek stejného typu</description>
+        <shortcut>Typ EJ</shortcut>
         <view-order>3</view-order>
     </desc-item-spec>
     <desc-item-spec code="ZP2015_UNIT_TYPE_LIO" desc-item-type="ZP2015_UNIT_TYPE">
