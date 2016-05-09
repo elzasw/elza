@@ -83,6 +83,7 @@ import cz.tacr.elza.filter.condition.NotEmptyDescItemCondition;
 import cz.tacr.elza.filter.condition.NotIntervalDescItemCondition;
 import cz.tacr.elza.filter.condition.SelectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SelectedValuesDescItemEnumCondition;
+import cz.tacr.elza.filter.condition.SelectsNothingCondition;
 import cz.tacr.elza.filter.condition.SubsetDescItemCondition;
 import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
@@ -718,27 +719,31 @@ public class ClientFactoryDO {
      */
     private void createValuesEnumCondition(final ValuesTypes valuesTypes, final List<String> values,
             final String attName, final List<DescItemCondition> conditions) {
-        if (valuesTypes != null && CollectionUtils.isNotEmpty(values)) {
-            boolean containsNull = FilterTools.removeNullValues(values);
+        Assert.notNull(valuesTypes);
+        Assert.notNull(values);
 
-            if (valuesTypes == ValuesTypes.SELECTED) {
-                if (containsNull && !values.isEmpty()) { // vybrané hodnoty i "Prázdné"
-                    conditions.add(new SelectedValuesDescItemEnumCondition(values, attName));
-                    conditions.add(new NoValuesCondition());
-                } else if (!values.isEmpty()) { // vybrané jen hodnoty
-                    conditions.add(new SelectedValuesDescItemEnumCondition(values, attName));
-                } else { // vybrané jen "Prázdné"
-                    conditions.add(new NoValuesCondition());
-                }
-            } else {
-                if (containsNull && !values.isEmpty()) { // odškrtlé hodnoty i "Prázdné" = hodnoty které neobsahují proškrtlé položky
-                    conditions.add(new UnselectedValuesDescItemEnumCondition(values, attName));
-                } else if (!values.isEmpty()) { // odškrtlé jen hodnoty = hodnoty které neobsahují proškrtlé položky + nody bez hodnot
-                    conditions.add(new UnselectedValuesDescItemEnumCondition(values, attName));
-                    conditions.add(new NoValuesCondition());
-                } else { // odškrtlé jen "Prázdné" = vše s hodnotou
-                    conditions.add(new NotEmptyDescItemCondition());
-                }
+        boolean noValues = CollectionUtils.isEmpty(values);
+        boolean containsNull = FilterTools.removeNullValues(values);
+
+        if (valuesTypes == ValuesTypes.SELECTED) {
+            if (noValues) { // nehledat nic
+                conditions.add(new SelectsNothingCondition());
+            } else if (containsNull && !values.isEmpty()) { // vybrané hodnoty i "Prázdné"
+                conditions.add(new SelectedValuesDescItemEnumCondition(values, attName));
+                conditions.add(new NoValuesCondition());
+            } else if (!values.isEmpty()) { // vybrané jen hodnoty
+                conditions.add(new SelectedValuesDescItemEnumCondition(values, attName));
+            } else { // vybrané jen "Prázdné"
+                conditions.add(new NoValuesCondition());
+            }
+        } else {
+            if (containsNull && !values.isEmpty()) { // odškrtlé hodnoty i "Prázdné" = hodnoty které neobsahují proškrtlé položky
+                conditions.add(new UnselectedValuesDescItemEnumCondition(values, attName));
+            } else if (!values.isEmpty()) { // odškrtlé jen hodnoty = hodnoty které neobsahují proškrtlé položky + nody bez hodnot
+                conditions.add(new UnselectedValuesDescItemEnumCondition(values, attName));
+                conditions.add(new NoValuesCondition());
+            } else { // odškrtlé jen "Prázdné" = vše s hodnotou
+                conditions.add(new NotEmptyDescItemCondition());
             }
         }
     }
@@ -753,27 +758,31 @@ public class ClientFactoryDO {
      */
     private void createSpecificationsEnumCondition(final ValuesTypes valuesTypes, final List<Integer> values,
             final String attName, final List<DescItemCondition> conditions) {
-        if (valuesTypes != null && CollectionUtils.isNotEmpty(values)) {
-            boolean containsNull = FilterTools.removeNullValues(values);
+        Assert.notNull(valuesTypes);
+        Assert.notNull(values);
 
-            if (valuesTypes == ValuesTypes.SELECTED) {
-                if (containsNull && !values.isEmpty()) { // vybrané hodnoty i "Prázdné"
-                    conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
-                    conditions.add(new NoSpecsCondition());
-                } else if (!values.isEmpty()) { // vybrané jen hodnoty
-                    conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
-                } else { // vybrané jen "Prázdné"
-                    conditions.add(new NoSpecsCondition());
-                }
-            } else {
-                if (containsNull && !values.isEmpty()) { // odškrtlé hodnoty i "Prázdné" = hodnoty které neobsahují proškrtlé položky
-                    conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
-                } else if (!values.isEmpty()) { // odškrtlé jen hodnoty = hodnoty které neobsahují proškrtlé položky + nody bez hodnot
-                    conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
-                    conditions.add(new NoSpecsCondition());
-                } else { // odškrtlé jen "Prázdné" = vše s hodnotou
-                    conditions.add(new NotEmptyDescItemCondition());
-                }
+        boolean noValues = CollectionUtils.isEmpty(values);
+        boolean containsNull = FilterTools.removeNullValues(values);
+
+        if (valuesTypes == ValuesTypes.SELECTED) {
+            if (noValues) { // nehledat nic
+                conditions.add(new SelectsNothingCondition());
+            } else if (containsNull && !values.isEmpty()) { // vybrané hodnoty i "Prázdné"
+                conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
+                conditions.add(new NoSpecsCondition());
+            } else if (!values.isEmpty()) { // vybrané jen hodnoty
+                conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
+            } else { // vybrané jen "Prázdné"
+                conditions.add(new NoSpecsCondition());
+            }
+        } else {
+            if (containsNull && !values.isEmpty()) { // odškrtlé hodnoty i "Prázdné" = hodnoty které neobsahují proškrtlé položky
+                conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
+            } else if (!values.isEmpty()) { // odškrtlé jen hodnoty = hodnoty které neobsahují proškrtlé položky + nody bez hodnot
+                conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
+                conditions.add(new NoSpecsCondition());
+            } else { // odškrtlé jen "Prázdné" = vše s hodnotou
+                conditions.add(new NotEmptyDescItemCondition());
             }
         }
     }
