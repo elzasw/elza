@@ -95,11 +95,12 @@ export function changeParty(partyId){
     }
 }
 
-export function changeApproveVersion(versionId) {
+export function changeApproveVersion(fundId, versionId) {
 
     return {
         type: types.CHANGE_APPROVE_VERSION,
-        versionId
+        versionId,
+        fundId
     }
 }
 

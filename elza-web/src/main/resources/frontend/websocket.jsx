@@ -185,7 +185,7 @@ function processEvents(values) {
 }
 
 function approveVersionChange(value) {
-    store.dispatch(changeApproveVersion(value.versionId));
+    store.dispatch(changeApproveVersion(value.fundId, value.versionId));
 }
 
 function addLevelAfterChange(value) {
