@@ -112,7 +112,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                             }
                             break
                         case 'UNITDATE':
-                            itemValue = this.state.calendarTypesMap[value.calendarTypeId].name.charAt(0) + ": " + value.calendarTypeId + "-" + value.value
+                            itemValue = this.state.calendarTypesMap[value.calendarTypeId].name.charAt(0) + ": " + value.value
                             break
                         default:
                             itemValue = value.value
@@ -510,7 +510,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         // if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
             return <Loading/>
         }
-        
+
         // Hledání
         var search = (
             <SearchWithGoto
