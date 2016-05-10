@@ -158,6 +158,7 @@ export function fund(state, action) {
             nodes: nodes(state.nodes, action),
             fundTree: fundTree(state.fundTree, action),
             fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
+            fundNodesError: {}
         }
         return consolidateState(state, result);
     }

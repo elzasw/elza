@@ -1262,7 +1262,8 @@ public class ArrangementService {
 
         if (nodeProblems != null) {
             for (Map.Entry<Integer, Boolean> entry : nodePolicyTypes.entrySet()) {
-                if (entry.getValue().equals(true) && nodeProblems.contains(entry.getKey())) {
+                Boolean value = entry.getValue();
+                if (value != null && value.equals(true) && nodeProblems.contains(entry.getKey())) {
                     status = true;
                     break;
                 }
