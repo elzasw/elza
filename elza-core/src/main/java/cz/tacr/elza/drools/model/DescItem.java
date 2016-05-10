@@ -141,7 +141,7 @@ public class DescItem {
      *
      * @return je efektivní?
      */
-    public boolean isEffectiveAttribute() {
+    public boolean isInherited() {
         return nodeId != null;
     }
 }

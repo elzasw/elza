@@ -23,7 +23,7 @@ end
 rule "Každý JP musí mít vyplněný Ref. označení"
 when
 	not ( ActiveLevel( $items: descItems ) and
-		DescItem(type=="ZP2015_UNIT_ID" && !effectiveAttribute) from $items )
+		DescItem(type=="ZP2015_UNIT_ID" && !inherited) from $items )
 then
 	results.createMissing("ZP2015_UNIT_ID", "Není uveden prvek ZP2015_UNIT_ID (Ref. označení)", "PT1");
 end
