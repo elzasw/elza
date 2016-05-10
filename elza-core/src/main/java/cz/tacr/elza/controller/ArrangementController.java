@@ -731,7 +731,6 @@ public class ArrangementController {
                                 @RequestParam(value = "dateRange", required = false) final String dateRange) {
 
         Assert.hasText(name);
-        Assert.hasText(internalCode);
         Assert.notNull(institutionId);
         Assert.notNull(ruleSetId);
 

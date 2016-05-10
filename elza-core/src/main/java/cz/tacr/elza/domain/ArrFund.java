@@ -31,7 +31,7 @@ public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.a
     @Column(nullable = false)
     private LocalDateTime createDate;
 
-    @Column(length = 250, nullable = false)
+    @Column(length = 250)
     private String internalCode;
 
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ParInstitution.class)

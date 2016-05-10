@@ -30,9 +30,6 @@ const validate = (values, props) => {
     if ((props.create || props.update) && !values.institutionId) {
         errors.institutionId = i18n('global.validation.required');
     }
-    if ((props.create || props.update) && !values.internalCode) {
-        errors.internalCode = i18n('global.validation.required');
-    }
 
     return errors;
 };
