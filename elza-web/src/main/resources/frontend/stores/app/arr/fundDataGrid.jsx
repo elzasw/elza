@@ -54,7 +54,7 @@ function changeSearchedIndex(state, newIndex) {
             selectedIds: selectedIds,
             pageIndex: pageIndex,
             searchedCurrentIndex: newIndex,
-            cellFocus: {row: info.index - pageIndex * state.pageSize, col: 0}
+            cellFocus: {row: info.index - pageIndex * state.pageSize, col: state.cellFocus.col}
         }
     }
 }
