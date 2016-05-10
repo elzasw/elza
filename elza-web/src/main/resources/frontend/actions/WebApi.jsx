@@ -254,8 +254,8 @@ class WebApi{
 
     }
 
-    getBulkActions(versionId, mandatory = false) {
-        return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/' + versionId + '/' + mandatory, null);
+    getBulkActions(versionId) {
+        return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/' + versionId, null);
     }
 
     getBulkActionsState(versionId) {
