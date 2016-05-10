@@ -55,10 +55,6 @@ public class Authorization {
         boolean hasPermission = false;
         for (UsrPermission.Permission permission : declaredAnnotation.permission()) {
 
-            if (hasPermission) {
-                return pjp.proceed();
-            }
-
             Parameter[] parameters = method.getParameters();
             Object[] pjpArgs = pjp.getArgs();
 
@@ -87,10 +83,10 @@ public class Authorization {
                 default:
                     throw new IllegalStateException("Permission type not defined: " + permission.getType());
             }
-        }
 
-        if (hasPermission) {
-            return pjp.proceed();
+            if (hasPermission) {
+                return pjp.proceed();
+            }
         }
 
         throw new AccessDeniedException("Nedostatečné oprávnění");
