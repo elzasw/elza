@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,8 +17,6 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.xml.bind.JAXBException;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.domain.UsrPermission;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -31,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
+import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
@@ -80,6 +80,9 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.convertor.CalendarConverter;
+import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
@@ -579,6 +582,23 @@ public class XmlImportService {
                     arrData.setValueFromEstimated(descItemUnitDate.getValueFromEstimated());
                     arrData.setValueToEstimated(descItemUnitDate.getValueToEstimated());
 
+                    CalendarType converterCalendarType = CalendarType.valueOf(calendarType.getCode());
+
+                    if (arrData.getValueFrom() == null) {
+                        arrData.setNormalizedFrom(Long.MIN_VALUE);
+                    } else {
+                        LocalDateTime fromDateTime = LocalDateTime.parse(arrData.getValueFrom());
+                        long fromSeconds = CalendarConverter.toSeconds(converterCalendarType, fromDateTime);
+                        arrData.setNormalizedFrom(fromSeconds);
+                    }
+
+                    if (arrData.getValueTo() == null) {
+                        arrData.setNormalizedTo(Long.MAX_VALUE);
+                    } else {
+                        LocalDateTime toDateTime = LocalDateTime.parse(arrData.getValueTo());
+                        long toSeconds = CalendarConverter.toSeconds(converterCalendarType, toDateTime);
+                        arrData.setNormalizedTo(toSeconds);
+                    }
                     dataRepository.save(arrData);
                 } else if (descItem instanceof DescItemUnitId) {
                     DescItemUnitId descItemUnitId = (DescItemUnitId) descItem;
