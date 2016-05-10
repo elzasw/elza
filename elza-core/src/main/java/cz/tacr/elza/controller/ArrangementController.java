@@ -311,7 +311,6 @@ public class ArrangementController {
 
         Assert.notNull(input.getFromNumber());
         Assert.notNull(input.getLenNumber());
-        Assert.notNull(input.getPrefix());
         Assert.notNull(input.getCount());
 
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
