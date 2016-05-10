@@ -46,6 +46,7 @@ export default function fundDetail(state = initialState, action = {}) {
             } else {
                 return state
             }
+        case types.CHANGE_APPROVE_VERSION:
         case types.CHANGE_FUND:
             if (state.id === action.fundId) {
                 return {

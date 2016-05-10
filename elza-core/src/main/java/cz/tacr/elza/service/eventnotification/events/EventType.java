@@ -12,7 +12,7 @@ public enum EventType {
     FUND_UPDATE(EventId.class),
     FUND_DELETE(EventId.class),
 
-    APPROVE_VERSION(EventVersion.class),
+    APPROVE_VERSION(EventFund.class),
 
     NODE_DELETE(EventIdInVersion.class),
 

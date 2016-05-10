@@ -46,7 +46,7 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
             return <div className='fund-detail-container'></div>
         }
 
-        if (fundDetail.fetching || !fundDetail.fetched) {
+        if (!fundDetail.fetched) {
             return <div className='fund-detail-container'><Loading/></div>
         }
 

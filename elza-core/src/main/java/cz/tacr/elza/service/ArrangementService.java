@@ -23,6 +23,7 @@ import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.eventnotification.events.EventFund;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -535,7 +536,7 @@ public class ArrangementService {
         ruleService.conformityInfoAll(newVersion);
 
         eventNotificationService.publishEvent(
-                new EventVersion(EventType.APPROVE_VERSION, version.getFundVersionId()));
+                new EventFund(EventType.APPROVE_VERSION, version.getFund().getFundId(), version.getFundVersionId()));
 
         return newVersion;
     }

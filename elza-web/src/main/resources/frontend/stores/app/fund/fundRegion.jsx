@@ -50,6 +50,7 @@ export default function fundRegion(state = initialState, action = {}) {
                 currentDataKey: '',
                 fundDetail: fundDetail(state.fundDetail, action)
             }
+        case types.CHANGE_APPROVE_VERSION:
         case types.CHANGE_FUND:
             return {
                 ...state,
