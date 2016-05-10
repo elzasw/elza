@@ -9,6 +9,7 @@ import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {nodesRequest, nodesReceive} from 'actions/arr/node.jsx'
 import {createFundRoot, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
+import {fundsSelectFund} from 'actions/fund/fund.jsx'
 
 /**
  * Fetch dat pro otevřené záložky AS, pokud je potřeba - např. název atp.
@@ -66,9 +67,10 @@ export function fundsReceive(funds) {
 export function createFund(data) {
     return dispatch => {
         return WebApi.createFund(data.name, data.ruleSetId, data.institutionId, data.internalCode, data.dateRange)
-            .then((json) => {
+            .then((fund) => {
                 dispatch(addToastrSuccess(i18n("arr.fund.title.added")));
                 dispatch(modalDialogHide());
+                dispatch(fundsSelectFund(fund.id))
             });
     }
 }
