@@ -287,6 +287,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
                     onSearch={this.handleSearch}
                     onClear={this.handleSearchClear}
                     placeholder={i18n('search.input.search')}
+                    value={fundRegion.filterText}
                     />
                 <ListBox 
                     className='fund-listbox'
