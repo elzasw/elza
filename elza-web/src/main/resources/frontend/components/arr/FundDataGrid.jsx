@@ -286,7 +286,9 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         const {fundDataGrid, descItemTypes} = this.props
         const refTypesMap = getMapFromList(descItemTypes.items)
         const columnsOrder = this.getColumnsOrder(fundDataGrid, refTypesMap)
+        console.log('columnsOrder', columnsOrder)
         const visibleColumns = fundDataGrid.visibleColumns
+        console.log('visibleColumns', visibleColumns)
         const columns = columnsOrder.map(id => {
             const refType = refTypesMap[id]
             return {
@@ -295,7 +297,6 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 desc: refType.description,
             }
         })
-        columns.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()))
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.columnSettings.title'),
             <DataGridColumnsSettings
