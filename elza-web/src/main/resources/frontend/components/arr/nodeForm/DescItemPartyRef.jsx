@@ -20,7 +20,7 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     }
 
     focus() {
-        this.refs.focusEl.focus()
+        this.refs.autocomplete.focus()
     }
 
     componentDidMount() {
@@ -46,6 +46,7 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     }
 
     handleCreateParty(partyTypeId) {
+        this.refs.autocomplete.closeMenu();
         this.props.onCreateParty(partyTypeId);
     }
 
@@ -70,11 +71,11 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     renderFooter() {
         const {refTables} = this.props;
         return (
-                <div className="create-party">
-                    <DropdownButton noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>}>
-                        {refTables.partyTypes.items.map(i=> {return <MenuItem key={'party' + i.partyTypeId} onClick={this.handleCreateParty.bind(this, i.partyTypeId)} eventKey={i.partyTypeId}>{i.name}</MenuItem>})}
-                    </DropdownButton>
-                </div>
+            <div className="create-party">
+                <DropdownButton noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>}>
+                    {refTables.partyTypes.items.map(i=> {return <MenuItem key={'party' + i.partyTypeId} onClick={this.handleCreateParty.bind(this, i.partyTypeId)} eventKey={i.partyTypeId}>{i.name}</MenuItem>})}
+                </DropdownButton>
+            </div>
         )
     }
 
@@ -105,7 +106,7 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
             <div className='desc-item-value desc-item-value-parts'>
                 <Autocomplete
                         {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-party'])}
-                        ref='focusEl'
+                        ref='autocomplete'
                         customFilter
                         footer={footer}
                         value={value}
