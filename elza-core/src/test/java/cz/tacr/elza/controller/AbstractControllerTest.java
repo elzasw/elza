@@ -19,6 +19,7 @@ import cz.tacr.elza.api.ArrPacket;
 import cz.tacr.elza.controller.vo.ArrNamedOutputVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.UserDetailVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -107,6 +108,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String VALIDATION_CONTROLLER_URL = "/api/validate";
     protected static final String RULE_CONTROLLER_URL = "/api/ruleSetManagerV2";
     protected static final String XML_IMPORT_CONTROLLER_URL = "/api/xmlImportManagerV2";
+    protected static final String USER_CONTROLLER_URL = "/api/user";
 
     // ADMIN
     protected static final String REINDEX = ADMIN_CONTROLLER_URL + "/reindex";
@@ -221,6 +223,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     // XmlImport
     protected final static String XML_IMPORT = XML_IMPORT_CONTROLLER_URL + "/import";
+
+    protected final static String USER_DETAIL = USER_CONTROLLER_URL + "/detail";
 
     @Value("${local.server.port}")
     private int port;
@@ -2029,6 +2033,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParameter("versionId", versionId)
                 .queryParameter("descItemTypeId", descItemTypeId)
                 .body(replaceDataBody), DELETE_DATA_VALUES);
+    }
+
+    /**
+     * Získání informací o přihlášeném uživateli.
+     *
+     * @return detail přihlášeného uživatele
+     */
+    protected UserDetailVO getUserDetail() {
+        return get(spec -> spec, USER_DETAIL).body().as(UserDetailVO.class);
     }
 
     /**
