@@ -13,6 +13,10 @@ import java.util.stream.Collectors;
 import cz.tacr.elza.api.ArrPacket;
 import cz.tacr.elza.controller.vo.ArrNamedOutputVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.filter.Filters;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +88,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         attributeValues(fundVersion);
 
         // validace
-        validateVersion(fundVersion);
+        validations(fundVersion, nodes);
 
         // všechny formuláře / stromy / ...
         forms(fundVersion);
@@ -92,8 +96,48 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // akce nad výstupy
         outputs(fundVersion);
 
+        // filtry
+        filters(fundVersion);
+
         //smazání fondu
         deleteFund(fund);
+
+    }
+
+    /**
+     * Testování validací.
+     *
+     * @param fundVersion verze archivní pomůcky
+     * @param nodes
+     */
+    private void validations(final ArrFundVersionVO fundVersion, final List<ArrNodeVO> nodes) {
+        validateVersion(fundVersion);
+
+        ArrangementController.ValidationItems validation = getValidation(fundVersion.getId(), 0, 100);
+        Assert.notNull(validation);
+        Assert.notNull(validation.getCount());
+        Assert.notEmpty(validation.getItems());
+
+        ArrangementController.ValidationItems validationError = findValidationError(fundVersion.getId(), nodes.get(0).getId(), 1);
+        Assert.notNull(validationError);
+        Assert.notEmpty(validationError.getItems());
+
+        List<NodeItemWithParent> visiblePolicy = getAllNodesVisiblePolicy(fundVersion.getId());
+        Assert.notNull(visiblePolicy); // TODO: přepsat na notEmpty
+    }
+
+    /**
+     * Testování filtrů.
+     *
+     * @param fundVersion verze archivní pomůcky
+     */
+    private void filters(final ArrFundVersionVO fundVersion) {
+        filterNodes(fundVersion.getId(), new Filters());
+        Set<Integer> descItemTypeIds = getDescItemTypes().stream().map(item -> item.getId()).collect(Collectors.toSet());
+        List<FilterNode> filteredNodes = getFilteredNodes(fundVersion.getId(), 0, 10, descItemTypeIds);
+        Assert.notEmpty(filteredNodes);
+        List<FilterNodePosition> filteredFulltextNodes = getFilteredFulltextNodes(fundVersion.getId(), "1", false);
+        Assert.notEmpty(filteredFulltextNodes);
     }
 
     /**

@@ -16,6 +16,8 @@ public class CoordinatesTitleValue extends TitleValue {
      */
     private String geomType;
 
+    public CoordinatesTitleValue() {
+    }
 
     public CoordinatesTitleValue(final Geometry geometry) {
         init(geometry);

@@ -19,7 +19,12 @@ import cz.tacr.elza.api.ArrPacket;
 import cz.tacr.elza.controller.vo.ArrNamedOutputVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.UserDetailVO;
+import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.exception.FilterExpiredException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -174,6 +179,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String REMOVE_NODES_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/remove";
     protected static final String DELETE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}";
     protected static final String UPDATE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/update";
+    protected static final String FILTER_NODES = ARRANGEMENT_CONTROLLER_URL + "/filterNodes/{versionId}";
+    protected static final String FILTERED_NODES = ARRANGEMENT_CONTROLLER_URL + "/getFilterNodes/{versionId}";
+    protected static final String FILTERED_FULLTEXT_NODES = ARRANGEMENT_CONTROLLER_URL + "/getFilteredFulltext/{versionId}";
+    protected static final String FUND_POLICY = ARRANGEMENT_CONTROLLER_URL + "/fund/policy/{fundVersionId}";
+    protected static final String VALIDATION = ARRANGEMENT_CONTROLLER_URL + "/validation/{fundVersionId}/{fromIndex}/{toIndex}";
+    protected static final String VALIDATION_ERROR = ARRANGEMENT_CONTROLLER_URL + "/validation/{fundVersionId}/find/{nodeId}/{direction}";
+
+
 
     // Party
     protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations";
@@ -302,15 +315,23 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                       String url,
                                       HttpMethod method,
                                       HttpStatus status) {
+        return httpMethod(params, url, method, status, JSON_CT_HEADER);
+    }
+
+    public static Response httpMethod(Function<RequestSpecification, RequestSpecification> params,
+                                      String url,
+                                      HttpMethod method,
+                                      HttpStatus status,
+                                      Header header) {
         Assert.assertNotNull(params);
         Assert.assertNotNull(url);
         Assert.assertNotNull(method);
 
         RequestSpecification requestSpecification = params.apply(given());
 
-        requestSpecification.header(JSON_CT_HEADER).log().all().config(UTF8_ENCODER_CONFIG).cookies(cookies);
+        requestSpecification.header(header).log().all().config(UTF8_ENCODER_CONFIG).cookies(cookies);
 
-        Response response = null;
+        Response response;
         switch (method) {
             case GET:
                 response = requestSpecification.get(url);
@@ -2036,12 +2057,91 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
+     * Provede filtraci uzlů podle filtru a uloží filtrované id do session.
+     *
+     * @param versionId id verze
+     * @param filters filtry
+     *
+     * @return počet všech záznamů splňujících filtry
+     */
+    protected void filterNodes(final Integer versionId,
+                                  final Filters filters) {
+        put(spec -> spec
+                .pathParameter("versionId", versionId)
+                .body(filters), FILTER_NODES);
+    }
+
+    /**
+     * Do filtrovaného seznamu načte hodnoty atributů a vrátí podstránku záznamů.
+     *
+     * @param versionId       id verze
+     * @param page            číslo stránky, od 0
+     * @param pageSize        velikost stránky
+     * @param descItemTypeIds id typů atributů, které chceme načíst
+     * @return mapa hodnot atributů nodeId -> descItemId -> value
+     */
+    protected List<FilterNode> getFilteredNodes(final Integer versionId,
+                                                final Integer page,
+                                                final Integer pageSize,
+                                                final Set<Integer> descItemTypeIds)
+            throws FilterExpiredException {
+        return Arrays.asList(put(spec -> spec
+                .pathParameter("versionId", versionId)
+                .queryParameter("page", page)
+                .queryParameter("pageSize", pageSize)
+                .body(descItemTypeIds), FILTERED_NODES).as(FilterNode[].class));
+    }
+
+    /**
+     * Ve filtrovaném seznamu najde uzly podle fulltextu. Vrací seřazený seznam uzlů podle jejich indexu v seznamu
+     * všech filtrovaných uzlů.
+     *
+     * @param versionId id verze stromu
+     * @param fulltext  fulltext
+     * @param luceneQuery v hodnotě fulltext je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext
+     * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
+     */
+    protected List<FilterNodePosition> getFilteredFulltextNodes(final Integer versionId,
+                                                                final String fulltext,
+                                                                final Boolean luceneQuery) {
+        return Arrays.asList(get(spec -> spec
+                .pathParameter("versionId", versionId)
+                .queryParameter("fulltext", fulltext)
+                .queryParameter("luceneQuery", luceneQuery), FILTERED_FULLTEXT_NODES).as(FilterNodePosition[].class));
+    }
+
+    protected ArrangementController.ValidationItems getValidation(final Integer fundVersionId,
+                                                                  final Integer fromIndex,
+                                                                  final Integer toIndex) {
+        return get(spec -> spec
+                        .pathParameter("fundVersionId", fundVersionId)
+                        .pathParameter("fromIndex", fromIndex)
+                        .pathParameter("toIndex", toIndex)
+                , VALIDATION).as(ArrangementController.ValidationItems.class);
+    }
+
+    protected ArrangementController.ValidationItems findValidationError(final Integer fundVersionId,
+                                                                        final Integer nodeId,
+                                                                        final Integer direction) {
+        return get(spec -> spec
+                .pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("nodeId", nodeId)
+                .pathParameter("direction", direction)
+                , VALIDATION_ERROR).as(ArrangementController.ValidationItems.class);
+    }
+
+    protected List<NodeItemWithParent> getAllNodesVisiblePolicy(final Integer fundVersionId) {
+        return Arrays.asList(get(spec -> spec
+                .pathParameter("fundVersionId", fundVersionId), FUND_POLICY).as(NodeItemWithParent[].class));
+    }
+
+    /**
      * Získání informací o přihlášeném uživateli.
      *
      * @return detail přihlášeného uživatele
      */
     protected UserDetailVO getUserDetail() {
-        return get(spec -> spec, USER_DETAIL).body().as(UserDetailVO.class);
+        return get(spec -> spec, USER_DETAIL).as(UserDetailVO.class);
     }
 
     /**

@@ -8,6 +8,9 @@ public class UnitdateTitleValue extends TitleValue {
 
     private Integer calendarTypeId;
 
+    public UnitdateTitleValue() {
+
+    }
 
     public UnitdateTitleValue(final String value, final Integer calendarTypeId) {
         super(value);
