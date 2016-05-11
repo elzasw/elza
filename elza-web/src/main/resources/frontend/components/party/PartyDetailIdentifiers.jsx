@@ -27,7 +27,7 @@ var PartyDetailIdentifiers = class PartyDetailIdentifiers extends AbstractReactC
             'handleDeleteIdentifier', 
             'addIdentifier',
             'updateIdentifier',
-            'deleteIdentifier',
+            'deleteIdentifier'
         );
 
         var party = this.props.partyRegion.selectedPartyData
@@ -174,7 +174,7 @@ var PartyDetailIdentifiers = class PartyDetailIdentifiers extends AbstractReactC
         return  <div className="party-identifiers">
                     <table>
                         <tbody>
-                            {party.partyGroupIdentifiers.map(i=> {return <tr className="identifier">
+                            {party.partyGroupIdentifiers && party.partyGroupIdentifiers.map(i=> {return <tr className="identifier">
                                 <th className="identifier column">{i.identifier}</th> 
                                 <td className="buttons">
                                     {canEdit && <Button classIdentifier="column" onClick={this.handleUpdateIdentifier.bind(this, i.partyGroupIdentifierId)}><Icon glyph="fa-pencil" /></Button>}

@@ -20,6 +20,7 @@ import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
+import cz.tacr.elza.service.eventnotification.events.EventId;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -611,6 +612,7 @@ public class PartyService {
 
         partyRepository.flush();
 
+        eventNotificationService.publishEvent(new EventId(EventType.PARTY_DELETE, party.getPartyId()));
         partyRepository.delete(party);
         registryService.deleteRecord(party.getRecord(), false);
         deleteUnitDates(party.getFrom(), party.getTo());

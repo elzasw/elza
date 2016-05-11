@@ -95,6 +95,14 @@ export function changeParty(partyId){
     }
 }
 
+export function changePartyDelete(partyId){
+    return {
+        type: types.CHANGE_PARTY_DELETED,
+        partyId: partyId
+    }
+}
+
+
 export function changeApproveVersion(fundId, versionId) {
 
     return {
