@@ -134,7 +134,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
 
     componentDidMount() {
         this.setState({mainContainer: ReactDOM.findDOMNode(this.refs.mainContainer)});
-        this.callFetch(0, 1)
+        this.callFetch(0, 1, true)
     }
 
     componentWillReceiveProps(nextProps) {
@@ -158,7 +158,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
                 newState.activeIndex = null
                 newState.selectedIndex = null
             }
-            this.callFetch(this.state.itemsFromIndex, this.state.itemsToIndex)
+            this.callFetch(this.state.itemsFromIndex, this.state.itemsToIndex, true)
         }
 
         this.setState(newState)
@@ -315,7 +315,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
         }
     }
 
-    callFetch(fromIndex, toIndex) {
+    callFetch(fromIndex, toIndex, tryUpdateSelectedIndex) {
         if (!this.isFetching(fromIndex, toIndex)) {
             const fetchFrom = Math.max(fromIndex - _LLB_FETCH_BOUNDARY, 0)
             const fetchTo = Math.max(toIndex + _LLB_FETCH_BOUNDARY, 0)
@@ -325,6 +325,19 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
             this.currentFetch.push({id, from: fetchFrom, to: fetchTo})
             this.props.getItems(fetchFrom, fetchTo)
                 .then(data => {
+                    if (tryUpdateSelectedIndex) {   // pokud původní selectedIndex položka byla v seznamu items a nyní není, zrušíme selectedIndex
+                        var {selectedItem, itemIdAttrName} = this.props
+                        var {selectedIndex, items} = this.state
+                        if (selectedItem) {
+                            const iPrev = indexById(items, selectedItem, itemIdAttrName)
+                            const iNew = indexById(data.items, selectedItem, itemIdAttrName)
+                            console.log(iPrev, iNew)
+                            if (iPrev !== null && iNew === null) {
+                                this.setState({selectedIndex: null})
+                            }
+                        }
+                    }
+
                     this.tryUpdateSelectedIndex(fetchFrom, fetchTo, data.items)
                     this.tryCallCallback(fetchFrom, fetchTo, data.items)
                     if (!this.needFetch(fetchFrom, fetchTo, this.state.view.from, this.state.view.to)) {    // jen pokud daná data jsou vhodná pro aktuální view
@@ -359,7 +372,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
             if (this.fetchTimer) {
                 clearTimeout(this.fetchTimer)
             }
-            this.fetchTimer = setTimeout(this.callFetch.bind(this, fromIndex, toIndex), _LLB_FETCH_DELAY);
+            this.fetchTimer = setTimeout(this.callFetch.bind(this, fromIndex, toIndex, false), _LLB_FETCH_DELAY);
         }
     }
 
@@ -379,7 +392,14 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
     }
 
     fetchNow() {
-        this.callFetch(this.state.itemsFromIndex, this.state.itemsToIndex)
+            // activeIndex: this.getActiveIndexForUse(this.props, this.state),
+        // this.setState({
+        //     activeIndex: 3,
+        //     selectedIndex: 3,
+        //     items: [],
+        // })
+
+        this.callFetch(this.state.itemsFromIndex, this.state.itemsToIndex, true)
     }
 
     handleRenderItem(index) {
@@ -420,6 +440,8 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
     render() {
         const {className, items, renderItemContent} = this.props;
         const {activeIndex, activeIndexes} = this.state;
+
+        console.log("RRRRRRR", this.props, this.state)
 
         var cls = "lazy-listbox-container listbox-container";
         if (className) {
