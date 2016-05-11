@@ -24,8 +24,8 @@ public class ArrNamedOutput implements cz.tacr.elza.api.ArrNamedOutput<ArrFund> 
     @JoinColumn(name = "fundId", nullable = false)
     private ArrFund fund;
 
-    @Column(length = 50, nullable = false, unique = true)
-    private String code;
+    @Column(length = 250)
+    private String internalCode;
 
     @Column(length = 250, nullable = false)
     private String name;
@@ -63,13 +63,13 @@ public class ArrNamedOutput implements cz.tacr.elza.api.ArrNamedOutput<ArrFund> 
     }
 
     @Override
-    public String getCode() {
-        return code;
+    public String getInternalCode() {
+        return internalCode;
     }
 
     @Override
-    public void setCode(final String code) {
-        this.code = code;
+    public void setInternalCode(final String internalCode) {
+        this.internalCode = internalCode;
     }
 
     @Override

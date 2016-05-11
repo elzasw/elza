@@ -121,7 +121,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
         this.dispatch(modalDialogShow(this, i18n('arr.output.title.edit'),
             <AddOutputForm
-                initData={{name: fundOutputDetail.namedOutput.name, code: fundOutputDetail.namedOutput.code}}
+                initData={{name: fundOutputDetail.namedOutput.name, internalCode: fundOutputDetail.namedOutput.internalCode}}
                 onSubmitForm={(data) => {this.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data))}}/>));
     }
 

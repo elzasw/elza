@@ -2118,7 +2118,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                  final String code,
                                                  final Boolean temporary) {
         ArrangementController.OutputNameParam param = new ArrangementController.OutputNameParam();
-        param.setCode(code);
+        param.setInternalCode(code);
         param.setName(name);
         param.setTemporary(temporary);
         return createNamedOutput(fundVersion.getId(), param);
@@ -2195,7 +2195,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                      final String name,
                                      final String code) {
         ArrangementController.OutputNameParam param = new ArrangementController.OutputNameParam();
-        param.setCode(code);
+        param.setInternalCode(code);
         param.setName(name);
         updateNamedOutput(fundVersion.getId(), output.getId(), param);
     }

@@ -136,7 +136,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         updateNamedOutput(fundVersion, outputDetail, "Test 2", "TST2");
         outputDetail = getOutput(fundVersion.getId(), output.getId());
         Assert.isTrue(outputDetail.getNamedOutput().getName().equals("Test 2"));
-        Assert.isTrue(outputDetail.getNamedOutput().getCode().equals("TST2"));
+        Assert.isTrue(outputDetail.getNamedOutput().getInternalCode().equals("TST2"));
 
         outputLock(fundVersion.getId(), outputDetail.getId());
         outputDetail = getOutput(fundVersion.getId(), output.getId());

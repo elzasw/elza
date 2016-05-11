@@ -119,7 +119,7 @@ var messages = {
     "arr.output.title.nodesAdded": "JP byly přidány",
     "arr.output.title.deleted": "Výstup byl smazán",
     "arr.output.name": "Název výstupu",
-    "arr.output.code": "Interní kód výstupu",
+    "arr.output.internalCode": "Interní kód výstupu",
     "arr.output.temporary": "Dočasný výstup",
 
     "arr.fundAction.noFa" : "Není vybrán žádný archivní soubor",

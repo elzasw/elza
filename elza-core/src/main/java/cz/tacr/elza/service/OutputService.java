@@ -167,7 +167,7 @@ public class OutputService {
      *
      * @param fundVersion verze AS
      * @param name        název výstupu
-     * @param code        kód výstupu
+     * @param internalCode        kód výstupu
      * @param temporary   dočasný výstup?
      * @return vytvořený výstup
      */
@@ -175,11 +175,10 @@ public class OutputService {
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public ArrNamedOutput createNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                             final String name,
-                                            final String code,
+                                            final String internalCode,
                                             final Boolean temporary) {
         Assert.notNull(fundVersion);
         Assert.notNull(name);
-        Assert.notNull(code);
         Assert.notNull(temporary);
 
         if (fundVersion.getLockChange() != null) {
@@ -189,7 +188,7 @@ public class OutputService {
         ArrNamedOutput namedOutput = new ArrNamedOutput();
         namedOutput.setFund(fundVersion.getFund());
         namedOutput.setName(name);
-        namedOutput.setCode(code);
+        namedOutput.setInternalCode(internalCode);
         namedOutput.setDeleted(false);
         namedOutput.setTemporary(temporary);
 
@@ -288,7 +287,7 @@ public class OutputService {
      * @param fundVersion verze AS
      * @param output      pojmenovaný výstup
      * @param name        název výstupu
-     * @param code        kód výstupu
+     * @param internalCode        kód výstupu
      * @return upravený výstup
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
@@ -296,11 +295,10 @@ public class OutputService {
     public ArrNamedOutput updateNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                   final ArrOutput output,
                                   final String name,
-                                  final String code) {
+                                  final String internalCode) {
         Assert.notNull(fundVersion);
         Assert.notNull(output);
         Assert.notNull(name);
-        Assert.notNull(code);
 
         if (fundVersion.getLockChange() != null) {
             throw new IllegalArgumentException("Nelze upravovat výstup v uzavřené verzi AS");
@@ -313,7 +311,7 @@ public class OutputService {
         ArrNamedOutput namedOutput = output.getNamedOutput();
 
         namedOutput.setName(name);
-        namedOutput.setCode(code);
+        namedOutput.setInternalCode(internalCode);
 
         namedOutputRepository.save(namedOutput);
 

@@ -17,9 +17,6 @@ const validate = (values, props) => {
     if (!values.name) {
         errors.name = i18n('global.validation.required');
     }
-    if (!values.code) {
-        errors.code = i18n('global.validation.required');
-    }
 
     return errors;
 };
@@ -38,7 +35,7 @@ var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {name, code, temporary}, create, handleSubmit, onClose} = this.props;
+        const {fields: {name, internalCode, temporary}, create, handleSubmit, onClose} = this.props;
 
         var submitForm = submitReduxForm.bind(this, validate)
 
@@ -47,12 +44,12 @@ var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
                 <Modal.Body>
                     <form onSubmit={handleSubmit(submitForm)}>
                         <Input type="text" label={i18n('arr.output.name')} {...name} {...decorateFormField(name)} />
-                        <Input type="text" label={i18n('arr.output.code')} {...code} {...decorateFormField(code)} />
+                        <Input type="text" label={i18n('arr.output.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />
                         {create && <Input type="checkbox" label={i18n('arr.output.temporary')} {...temporary} {...decorateFormField(temporary)} />}
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.create')}</Button>
+                    <Button onClick={handleSubmit(submitForm)}>{create ? i18n('global.action.create') : i18n('global.action.update')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
@@ -62,7 +59,7 @@ var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
 
 module.exports = reduxForm({
         form: 'addOutputForm',
-        fields: ['name', 'code', 'temporary'],
+        fields: ['name', 'internalCode', 'temporary'],
     },(state, props) => {
         if (props.create) {
             return {initialValues: {temporary: false}}
