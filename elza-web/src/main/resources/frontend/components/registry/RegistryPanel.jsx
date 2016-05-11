@@ -10,7 +10,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Input, Button} from 'react-bootstrap';
 import {Icon, NoFocusButton, AbstractReactComponent, RegistryLabel, Loading, EditRegistryForm, RegistryCoordinates, i18n} from 'components/index.jsx';
-import {WebApi} from 'actions/index.jsx';
+import {WebApi, UrlFactory} from 'actions/index.jsx';
 import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions/registry/registryRegionList.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {routerNavigate} from 'actions/router.jsx'
@@ -195,7 +195,6 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             if (item.variantRecordId) {
                 this.dispatch(registryVariantDelete(item.variantRecordId))
             } else {
-                console.log(item);
                 this.dispatch(registryVariantInternalDelete(item.variantRecordInternalId))
             }
 
@@ -205,7 +204,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
     
     handleCoordinatesDownload(objectId) {
-        window.open(window.location.origin + '/api/kmlManagerV1/export/regCoordinates/' + objectId);
+        window.open(UrlFactory.exportRegCoordinate(objectId));
     }
 
     handleCoordinatesDelete(item, index) {
@@ -264,6 +263,9 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
 
     handleCoordinatesCreate(item) {
+        if (item.value == null) {
+            return this.handleCoordinatesChange(item);
+        }
         !item.hasError && this.dispatch(registryRecordCoordinatesCreate(item, item.coordinatesInternalId));
     }
 
@@ -301,7 +303,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         if (item.hasError === undefined) {
             this.handleCoordinatesChange(item);
         }
-        if(!item.hasError && (item.oldValue.description !== item.description || item.oldValue.value !== item.value)) {
+        if (!item.hasError && item.oldValue && (item.oldValue.description !== item.description || item.oldValue.value !== item.value)) {
             this.dispatch(registryRecordCoordinatesUpdate(item));
         }
     }

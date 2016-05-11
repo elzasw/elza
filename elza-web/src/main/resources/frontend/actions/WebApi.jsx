@@ -21,6 +21,10 @@ class UrlFactory {
     static exportFund(versionId, transformationName) {
         return '/api/xmlExportManagerV2/fund/' + versionId + '?transformationName=' + encodeURIComponent(transformationName);
     }
+
+    static exportRegCoordinate(objectId) {
+        return '/api/kmlManagerV1/export/regCoordinates/' + objectId;
+    }
 }
 
 /**

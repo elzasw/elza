@@ -2,7 +2,7 @@
 require ('./RegistryCoordinates.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Input, Button} from 'react-bootstrap';
+import {Input, Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, NoFocusButton, Icon} from 'components/index.jsx';
@@ -58,43 +58,49 @@ var RegistryCoordinates = class RegistryCoordinates extends AbstractReactCompone
     }
 
     render() {
-        const {item, disabled, onDelete} = this.props;
+        const {item, disabled, onDelete, onBlur} = this.props;
         const title = item.error && item.error.value ? item.error.value : '';
         const isPoint = this.state.type == 'POINT';
+        const tooltip = <Tooltip id='ttf'>{i18n('registry.coordinates.format')}</Tooltip>;
         return (
             <div className='reg-coordinates'>
                 {
                     isPoint ?
                         <div className='value'>
                             <Button bsStyle='default' disabled>{wktType(this.state.type)}</Button>
-                            <Input
-                                type='text'
-                                ref='focusEl'
-                                className={title !== '' ? 'error' : ''}
-                                title={title}
-                                onFocus={this.props.onFocus}
-                                onBlur={this.props.onBlur}
-                                disabled={disabled}
-                                onKeyUp={this.handleKeyUp}
-                                onChange={this.handleChangeValue}
-                                value={this.state.data}
-                            />
+                            <OverlayTrigger overlay={tooltip} placement="bottom">
+                                <Input
+                                    type='text'
+                                    ref='focusEl'
+                                    className={title !== '' ? 'error' : ''}
+                                    title={title}
+                                    onFocus={this.props.onFocus}
+                                    onBlur={onBlur}
+                                    disabled={disabled}
+                                    onKeyUp={this.handleKeyUp}
+                                    onChange={this.handleChangeValue}
+                                    value={this.state.data}
+                                />
+                            </OverlayTrigger>
+                            {item.coordinatesId ? <i className='fa fa-download download btn' onClick={this.props.onDownload} title={i18n('registry.coordinates.download')} /> : null}
                         </div>
                          : <div className='value-text'>
-                        <Button bsStyle='default' disabled>{wktType(this.state.type)}</Button>
-                        {i18n('subNodeForm.countOfCoordinates', this.state.data)}
-                    </div>
+                            <Button bsStyle='default' disabled>{wktType(this.state.type)}</Button>
+                            {i18n('subNodeForm.countOfCoordinates', this.state.data)}
+                            {item.coordinatesId ? <i className='fa fa-download download btn' onClick={this.props.onDownload} title={i18n('registry.coordinates.download')} /> : null}
+                        </div>
                 }
                 <div className='description'>
                     <Input
                         type='string'
+                        ref='focusEldesc'
                         className='form-control'
                         disabled={disabled}
+                        onBlur={onBlur}
                         value={item.description}
                         onKeyUp={this.handleKeyUp}
                         onChange={this.handleChangeDescription}
                     />
-                    {!isPoint ? <i className='fa fa-download download btn' onClick={this.props.onDownload} title={i18n('registry.coordinates.download')} /> : null}
                 </div>
                 <div>
                     <NoFocusButton disabled={disabled} onClick={onDelete}><Icon glyph='fa-times' /></NoFocusButton>

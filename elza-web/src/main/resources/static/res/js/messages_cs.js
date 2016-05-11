@@ -318,6 +318,7 @@ var messages = {
     
     "subNodeForm.countOfCoordinates": "Počet bodů: {0}",
     "subNodeForm.errorPointCoordinates": "Chybně zadaný bod. Zadávejte ve tvaru \"15.5154,49.535\"",
+    "subNodeForm.formatPointCoordinates": "Zadávejte ve tvaru \"15.5154,49.535\"",
 
     "subNodeForm.descItemTypeAdd": "Přidat prvek",
     "subNodeForm.descItemTypeUnlockAll": "Odemknout vše",
@@ -345,6 +346,7 @@ var messages = {
     "registry.coordinates.description": "Popis",
     "registry.coordinates.upload": "Importovat",
     "registry.coordinates.download": "Exportovat",
+    "registry.coordinates.format": "Zadávejte ve tvaru \"15.5154,49.535\"",
     "registry.detail.characteristics": "Charakteristika",
     "registry.detail.note": "Poznámka",
     "registry.detail.type": "Typ rejstříku - hierarchie",

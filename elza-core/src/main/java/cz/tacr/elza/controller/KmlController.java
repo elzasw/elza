@@ -4,13 +4,12 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.RuleService;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -60,6 +59,9 @@ public class KmlController {
     private DescriptionItemService descriptionItemService;
 
     @Autowired
+    private RuleService ruleService;
+
+    @Autowired
     private FundVersionRepository fundVersionRepository;
 
     @Autowired
@@ -70,6 +72,22 @@ public class KmlController {
 
     @Autowired
     private RegistryService registryService;
+
+    private Collection<SimpleFeature> getPlacemars(SimpleFeature document) throws IllegalArgumentException {
+        Collection<SimpleFeature> placemarks;
+        Collection<SimpleFeature> features;
+        try {
+            features = (Collection<SimpleFeature>) document.getAttribute("Feature");
+            if (features.size() == 1 && features.iterator().next().getAttribute("Geometry") == null) {
+                placemarks = (Collection<SimpleFeature>) features.iterator().next().getAttribute("Feature");
+            } else {
+                placemarks = features;
+            }
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException("Chybná data pro import. Nepodařilo se zpracovat.");
+        }
+        return placemarks;
+    }
 
     @Transactional
     @RequestMapping(value = "/api/kmlManagerV1/import/arrCoordinates", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -93,11 +111,9 @@ public class KmlController {
         }
 
         Parser parser = new Parser(new KMLConfiguration());
-        /*Configuration configuration = data.contains("http://www.opengis.net/kml/2.2")
-                ? new org.geotools.kml.v22.KMLConfiguration()
-                : new org.geotools.kml.KMLConfiguration();*/
-        SimpleFeature f = (SimpleFeature) parser.parse(importFile.getInputStream());
-        Collection<SimpleFeature> placemarks = (Collection<SimpleFeature>) f.getAttribute("Feature");
+        SimpleFeature document = (SimpleFeature) parser.parse(importFile.getInputStream());
+        Collection<SimpleFeature> placemarks = getPlacemars(document);
+
         List<ArrDescItem> toCreate = new ArrayList<>();
         for (SimpleFeature placemark : placemarks) {
             Geometry geometry = (Geometry) placemark.getAttribute("Geometry");
@@ -113,6 +129,33 @@ public class KmlController {
             descItem.setValue(geometry);
             descItem.setDescItemType(descItemType);
             toCreate.add(descItem);
+        }
+
+        if (toCreate.isEmpty()) {
+            throw new IllegalStateException("Nebyli nalezeny souřadnice.");
+        }
+
+        List<RulDescItemTypeExt> descriptionItemTypes = ruleService.getDescriptionItemTypes(fundVersionId, nodeId);
+
+        RulDescItemTypeExt rule = null;
+
+        for (RulDescItemTypeExt desc : descriptionItemTypes) {
+            if (descItemType.getDescItemTypeId().equals(desc.getDescItemTypeId())) {
+                rule = desc;
+                break;
+            }
+        }
+
+        if (rule == null) {
+            throw new IllegalStateException("Pravidlo s ID=" + descItemTypeId + " neexistuje");
+        }
+
+        if (!rule.getRepeatable()) {
+            if (toCreate.size() > 1) {
+                throw new IllegalStateException("Do neopakovatelného prvku lze importovat pouze jeden geoobjekt.");
+            }
+
+            descriptionItemService.deleteDescriptionItemsByTypeWithoutVersion(fundVersionId, nodeId, nodeVersion, descItemTypeId);
         }
 
         return descriptionItemService.createDescriptionItems(toCreate, nodeId, nodeVersion, fundVersionId).size();
@@ -131,11 +174,8 @@ public class KmlController {
         }
 
         Parser parser = new Parser(new KMLConfiguration());
-        /*Configuration configuration = data.contains("http://www.opengis.net/kml/2.2")
-                ? new org.geotools.kml.v22.KMLConfiguration()
-                : new org.geotools.kml.KMLConfiguration();*/
-        SimpleFeature f = (SimpleFeature) parser.parse(importFile.getInputStream());
-        Collection<SimpleFeature> placemarks = (Collection<SimpleFeature>) f.getAttribute("Feature");
+        SimpleFeature document = (SimpleFeature) parser.parse(importFile.getInputStream());
+        Collection<SimpleFeature> placemarks = getPlacemars(document);
         List<RegCoordinates> toCreate = new ArrayList<>();
         for (SimpleFeature placemark : placemarks) {
             Geometry geometry = (Geometry) placemark.getAttribute("Geometry");
@@ -163,8 +203,8 @@ public class KmlController {
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_XML_VALUE)
     public void exportArrCoordinates(HttpServletResponse response,
-                                  @PathVariable(value = "descItemObjectId") final Integer descItemObjectId,
-                                  @PathVariable(value = "fundVersionId") final Integer fundVersionId) throws IOException {
+                                     @PathVariable(value = "descItemObjectId") final Integer descItemObjectId,
+                                     @PathVariable(value = "fundVersionId") final Integer fundVersionId) throws IOException {
         Assert.notNull(descItemObjectId);
         Assert.notNull(fundVersionId);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
@@ -181,7 +221,7 @@ public class KmlController {
             throw new IllegalArgumentException("Neexistují data pro verzi:" + fundVersionId);
         }
 
-        ArrDescItem one = items.get(items.size()-1);
+        ArrDescItem one = items.get(items.size() - 1);
 
         Assert.notNull(one);
 
@@ -207,7 +247,7 @@ public class KmlController {
         toKml(response, cords.getValue());
     }
 
-    private void toKml(HttpServletResponse response, Geometry geometry) throws IOException  {
+    private void toKml(HttpServletResponse response, Geometry geometry) throws IOException {
         response.setHeader("Content-Disposition", "attachment;filename=export.kml");
 
         ServletOutputStream out = response.getOutputStream();
@@ -238,7 +278,7 @@ public class KmlController {
         DefaultFeatureCollection features = new DefaultFeatureCollection();
 
         featureBuilder.add(geometry);
-        features.add( featureBuilder.buildFeature("1") );
+        features.add(featureBuilder.buildFeature("1"));
 
         encoder.encode(features, KML.kml, out);
     }

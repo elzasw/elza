@@ -419,8 +419,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         this.refs.uploadInput.getInputDOMNode().click();
     }
 
-    handleCoordinatesUpload() {
-        const fileList = this.refs.uploadInput.getInputDOMNode().files;
+    handleCoordinatesUpload(e) {
+        const fileList = e.target.files;
 
         if (fileList.length != 1) {
             return;
@@ -428,7 +428,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         const file = fileList[0];
 
         this.props.onCoordinatesUpload(file);
-        this.refs.uploadInput.getInputDOMNode().value = null;
+        e.target.value = null;
     }
 
 
@@ -546,6 +546,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 break;
             case 'COORDINATES':
                 parts.push(<DescItemCoordinates key={itemComponentKey}
+                        repeatable={infoType.rep == 1}
+                        onUpload={this.handleCoordinatesUpload}
                     {...descItemProps}
                     onDownload={this.props.onCoordinatesDownload.bind(this, descItem.descItemObjectId)}
                     />)

@@ -241,6 +241,48 @@ public class DescriptionItemService {
                 NodeTypeOperation.SAVE_DESC_ITEM, null, null, descItemsDeleted);
 
         return node;
+    }/**
+     * Smaže hodnoty atributu podle typu.
+     * - s kontrolou verze uzlu
+     * - se spuštěním validace uzlu
+     *
+     * @param fundVersionId   identifikátor verze archivní pomůcky
+     * @param nodeId                identifikátor uzlu
+     * @param nodeVersion           verze uzlu (optimistické zámky)
+     * @param descItemTypeId        identifikátor typu hodnoty atributu
+     * @return  upravený uzel
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrNode deleteDescriptionItemsByTypeWithoutVersion(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                                              final Integer nodeId,
+                                                              final Integer nodeVersion,
+                                                              final Integer descItemTypeId) {
+
+        ArrChange change = arrangementService.createChange();
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+
+        Assert.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
+        Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemType, node);
+
+        if (descItems.size() == 0) {
+            throw new IllegalStateException("Nebyla nalezena žádná hodnota atributu ke smazání");
+        }
+
+        List<ArrDescItem> descItemsDeleted = new ArrayList<>(descItems.size());
+        for (ArrDescItem descItem : descItems) {
+            descItemsDeleted.add(deleteDescriptionItem(descItem, fundVersion, change, false));
+        }
+
+        // validace uzlu
+        ruleService.conformityInfo(fundVersionId, Arrays.asList(node.getNodeId()),
+                NodeTypeOperation.SAVE_DESC_ITEM, null, null, descItemsDeleted);
+
+        return node;
     }
 
     /**
