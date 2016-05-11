@@ -204,10 +204,10 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
 
     handleClick(index, e) {
         const {items} = this.props
-        var {activeIndex, lastFocus} = this.state
+        var {activeIndex, selectedIndex, lastFocus} = this.state
 
-        if (activeIndex !== index || lastFocus !== index) {
-            const wasChanged = this.state.activeIndex !== index
+        if (activeIndex !== index || selectedIndex !== index || lastFocus !== index) {
+            const wasChanged = activeIndex !== index || selectedIndex !== index
             this.setState({
                 activeIndex: index,
                 lastFocus: index,
@@ -440,8 +440,6 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
     render() {
         const {className, items, renderItemContent} = this.props;
         const {activeIndex, activeIndexes} = this.state;
-
-        console.log("RRRRRRR", this.props, this.state)
 
         var cls = "lazy-listbox-container listbox-container";
         if (className) {
