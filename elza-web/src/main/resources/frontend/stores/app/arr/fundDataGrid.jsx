@@ -131,6 +131,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 ...state,
                 filter: {},
                 fetchedFilter: false,
+                isFetchingFilter: false,
             }
         case types.FUND_FUND_DATA_GRID_PREPARE_EDIT:
             var result = {

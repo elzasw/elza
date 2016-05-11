@@ -15,15 +15,30 @@ import {Modal, Button, Input} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
+import {normalizeInt, normalizeDouble, validateInt, validateDouble, validateCoordinatePoint} from 'components/validate.jsx';
+import {getMapFromList} from 'stores/app/utils.jsx'
+import {objectFromWKT, wktFromTypeAndData} from 'components/Utils.jsx';
 
 const FundFilterCondition = require('./FundFilterCondition')
 const SimpleCheckListBox = require('./SimpleCheckListBox')
 
+var _ffs_validateTimer
+var _ffs_prevReject = null
+
 const renderTextFields = (fields) => {
     return fields.map((field, index) => {
+        var decorate
+        if (field.error) {
+            decorate = {
+                bsStyle: 'error',
+                hasFeedback: true,
+                help: field.error
+            }
+        }
+
         return (
             <div key={index} className='value-container'>
-                <Input type="text" value={field.value} onChange={(e) => field.onChange(e.target.value)} />
+                <Input {...decorate} type="text" value={field.value} onChange={(e) => field.onChange(e.target.value)} />
             </div>
         )
     })
@@ -37,7 +52,7 @@ const renderCoordinatesFields = (fields) => {
             var descItem = {
                 hasFocus: false,
                 value: typeof fields[0].value !== 'undefined' ? fields[0].value : '',
-                error: {},
+                error: {value: fields[0].error},
             }
             return (
                 <div key={0} className='value-container'>
@@ -85,22 +100,28 @@ const renderUnitdateFields = (calendarTypes, fields) => {
         case 0:
             return null
         case 2:
-            return (
+            var vals = []
+            vals.push(
                 <div key={0} className='value-container'>
                     <Input type="select"
                         value={typeof fields[0].value !== 'undefined' ? fields[0].value : 1}
                         onChange={(e) => {fields[0].onChange(e.target.value);}}
                     >
                         {calendarTypes.items.map(calendarType => (
-                            <option key={calendarType.id} value={calendarType.id}>{calendarType.name.charAt(0)}</option>
+                            <option key={calendarType.id} value={calendarType.id}>{calendarType.name}</option>
                         ))}
                     </Input>
+                </div>
+            )
+            vals.push(
+                <div key={1} className='value-container'>
                     <Input type="text"
-                        value={fields[1].value} onCh
+                        value={fields[1].value}
                         onChange={(e) => {fields[1].onChange(e.target.value);}}
                    />
                 </div>
             )
+        return vals
     }
 }
 
@@ -110,7 +131,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
 
         this.bindMethods('callValueSearch', 'handleValueSearch',
             'handleValueItemsChange', 'renderConditionFilter', 'handleSpecItemsChange', 'handleConditionChange',
-            'handleSubmit', 'renderValueFilter')
+            'handleSubmit', 'renderValueFilter', 'getConditionInfo')
 
         var state = {
             valueItems: [],
@@ -120,7 +141,8 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             selectedSpecItems: [],
             selectedSpecItemsType: 'unselected',
             conditionSelectedCode: 'NONE',
-            conditionValues: []
+            conditionValues: [],
+            conditionHasErrors: false,
         }
 
         const {filter} = props
@@ -206,7 +228,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
         })
     }
 
-    handleConditionChange(selectedCode, values) {
+    handleConditionChange(selectedCode, values, hasErrors) {
         const {dataType} = this.props
         var useValues = [...values]
 
@@ -243,6 +265,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
         this.setState({
             conditionSelectedCode: selectedCode,
             conditionValues: useValues,
+            conditionHasErrors: hasErrors,
         })
     }
 
@@ -272,15 +295,12 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
         )
     }
 
-    renderConditionFilter() {
-        const {refType, dataType, calendarTypes} = this.props
-        const {conditionSelectedCode, conditionValues} = this.state
-
-        if (!hasDescItemTypeValue(dataType)) {
-            return null
-        }
+    getConditionInfo() {
+        const {dataType, calendarTypes} = this.props
 
         let renderFields
+        let validateField
+        let normalizeField
         var items = []
         switch (dataType.code) {
             case 'TEXT':
@@ -288,6 +308,9 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             case 'FORMATTED_TEXT':
             case 'UNITID':
                 renderFields = renderTextFields
+                validateField = (code, valuesCount, value, index) => {
+                    return value ? null : i18n('global.validation.required')
+                }
                 items = [
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
@@ -302,6 +325,13 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             case 'INT':
             case 'DECIMAL':
                 renderFields = renderTextFields
+                normalizeField = (code, valuesCount, value, index) => {
+                    return dataType.code === 'INT' ? normalizeInt(value) : normalizeDouble(value)
+                }
+                validateField = (code, valuesCount, value, index) => {
+                    if (!value) return i18n('global.validation.required')
+                    return dataType.code === 'INT' ? validateInt(value) : validateDouble(value)
+                }
                 items = [
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
@@ -319,6 +349,9 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             case 'PARTY_REF':
             case 'RECORD_REF':
                 renderFields = renderTextFields
+                validateField = (code, valuesCount, value, index) => {
+                    return value ? null : i18n('global.validation.required')
+                }
                 items = [
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
@@ -328,6 +361,25 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 break
             case 'UNITDATE':
                 renderFields = renderUnitdateFields.bind(this, calendarTypes)
+                validateField = (code, valuesCount, value, index) => {
+                    return new Promise(function (resolve, reject) {
+                        if (_ffs_validateTimer) {
+                            clearTimeout(_ffs_validateTimer)
+                            if (_ffs_prevReject) {
+                                _ffs_prevReject()
+                                _ffs_prevReject = null
+                            }
+                        }
+                        _ffs_prevReject = reject
+                        var fc = () => {
+                            WebApi.validateUnitdate(value)
+                                .then(json => {
+                                    resolve(json.message)
+                                })
+                        }
+                        _ffs_validateTimer = setTimeout(fc, 250);
+                    })
+                }                
                 items = [
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
@@ -341,6 +393,9 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 break
             case 'COORDINATES':
                 renderFields = renderCoordinatesFields
+                validateField = (code, valuesCount, value, index) => {
+                    return validateCoordinatePoint(value)
+                }
                 items = [
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
@@ -352,10 +407,28 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             case 'PACKET_REF':
                 break
             case 'ENUM':
-                break 
+                break
         }
 
-        if (items.length === 0) {
+        return {
+            renderFields,
+            validateField,
+            normalizeField,
+            items,
+        }
+    }
+
+    renderConditionFilter() {
+        const {refType, dataType, calendarTypes} = this.props
+        const {conditionSelectedCode, conditionValues} = this.state
+
+        if (!hasDescItemTypeValue(dataType)) {
+            return null
+        }
+
+        const info = this.getConditionInfo()
+
+        if (info.items.length === 0) {
             return null
         }
 
@@ -366,8 +439,10 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 selectedCode={conditionSelectedCode}
                 values={conditionValues}
                 onChange={this.handleConditionChange}
-                items={items}
-                renderFields={renderFields}
+                items={info.items}
+                renderFields={info.renderFields}
+                validateField={info.validateField}
+                normalizeField={info.normalizeField}
             />
         )
     }
@@ -406,7 +481,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
 
     render() {
         const {refType, onClose, dataType, packetTypes} = this.props
-        const {conditionSelectedCode, conditionValues, valueItems, selectedValueItems, selectedValueItemsType, selectedSpecItems, selectedSpecItemsType} = this.state
+        const {conditionHasErrors, conditionSelectedCode, conditionValues, selectedSpecItems, selectedSpecItemsType} = this.state
 
         var specContent = null
         if (refType.useSpecification) {
@@ -439,6 +514,21 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
 
         var conditionContent = this.renderConditionFilter()
 
+        var hasAllValues = true
+        if (hasDescItemTypeValue(dataType)) {
+            const info = this.getConditionInfo()
+            if (info.items.length > 0) {
+                const itemsCodeMap = getMapFromList(info.items, 'code')
+                const selectedItem = itemsCodeMap[conditionSelectedCode]
+
+                for (var a=0; a<selectedItem.values; a++) {
+                    if (!conditionValues[a]) {
+                        hasAllValues = false
+                    }
+                }
+            }
+        }
+
         return (
             <div className='fund-filter-settings-container'>
                 <Modal.Body>
@@ -449,7 +539,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
+                    <Button disabled={conditionHasErrors || !hasAllValues} onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>

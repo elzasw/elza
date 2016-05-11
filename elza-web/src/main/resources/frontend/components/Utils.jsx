@@ -451,7 +451,7 @@ function valuesEquals(v1, v2) {
  * @returns object
  */
 function objectFromWKT(value) {
-    if (value === null || value == '' || typeof value === "object") {
+    if (typeof value === 'undefined' || value === null || value == '' || typeof value === "object") {
         return {type: "POINT", data: null};
     }
     const state = {type: null, data: null};
