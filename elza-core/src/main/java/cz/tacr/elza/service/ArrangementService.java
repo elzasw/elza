@@ -1210,7 +1210,7 @@ public class ArrangementService {
     }
 
     /**
-     * Přidání chyby k nodu
+     * Přidání typu chyby k nodu
      *
      * @param nodeProblemsMap typy problémů
      * @param nodeId          identifikátor uzlu
@@ -1233,6 +1233,7 @@ public class ArrangementService {
      * @param parentPolicyTypes viditelnost rodiče
      * @param policiesMap       mapa všech nastavení nad JP
      * @param nodeProblemsMap   mapa všech chybných JP podle typu
+     * @param foundNode         pomocný objekt pro vyhledání další chyby
      */
     private void recursiveAddNodes(final List<Integer> nodeIds,
                                    final TreeNode treeNode,
@@ -1241,18 +1242,28 @@ public class ArrangementService {
                                    final Map<Integer, Set<Integer>> nodeProblemsMap,
                                    final FoundNode foundNode) {
         Integer nodeId = treeNode.getId();
+
+        // výchozí status pro přidání uzlu mezi chybové
         Boolean status = false;
 
+        // pokud se vyhledává další, předchozí chyba
+        // porovnává se procházenými uzly a připadně označí
         if (foundNode != null && foundNode.getNodeId().equals(nodeId)) {
+            // index, na kterém je další/předchozí chyba
             foundNode.setIndex(nodeIds.size());
             foundNode.setNode(treeNode);
         }
 
+        // set typů problémů
         Set<Integer> nodeProblems = nodeProblemsMap.get(nodeId);
+
+        // výchozí nastavení pro daný uzel
         Map<Integer, Boolean> policyTypes = policiesMap.get(nodeId);
 
+        // aktuální nastavení pro daný uzel (výchozí se bere z rodiče)
         Map<Integer, Boolean> nodePolicyTypes = parentPolicyTypes;
 
+        // pokud existují nějaké změny pro tento uzel, provede se přepsání podle nastavní nad uzlem
         if (policyTypes != null) {
             nodePolicyTypes = new HashMap<>(parentPolicyTypes);
             for (Integer policyTypeId : nodePolicyTypes.keySet()) {
@@ -1260,6 +1271,7 @@ public class ArrangementService {
             }
         }
 
+        // prohledávají se všechny chyby a pokud nalezneme alespoň jednu neskrytou, označíme uzel jako chybový
         if (nodeProblems != null) {
             for (Map.Entry<Integer, Boolean> entry : nodePolicyTypes.entrySet()) {
                 Boolean value = entry.getValue();
@@ -1270,10 +1282,12 @@ public class ArrangementService {
             }
         }
 
+        // přidat uzel mezi chybové?
         if (status) {
             nodeIds.add(nodeId);
         }
 
+        // rekurzivní procházení potomků
         if (treeNode.getChilds() != null) {
             for (TreeNode node : treeNode.getChilds()) {
                 recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap, foundNode);
