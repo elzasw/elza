@@ -331,7 +331,6 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
                         if (selectedItem) {
                             const iPrev = indexById(items, selectedItem, itemIdAttrName)
                             const iNew = indexById(data.items, selectedItem, itemIdAttrName)
-                            console.log(iPrev, iNew)
                             if (iPrev !== null && iNew === null) {
                                 this.setState({selectedIndex: null})
                             }
