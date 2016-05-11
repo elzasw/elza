@@ -15,14 +15,9 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import com.jayway.restassured.mapper.ObjectMapper;
 import cz.tacr.elza.api.ArrPacket;
-import cz.tacr.elza.controller.vo.ArrNamedOutputVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.UserDetailVO;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.exception.FilterExpiredException;
 import org.apache.commons.collections4.CollectionUtils;
@@ -46,32 +41,6 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.FundListCountResult;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPartyWithCount;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRecordWithCount;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
@@ -110,6 +79,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String BULK_ACTION_CONTROLLER_URL = "/api/bulkActionManagerV2";
     protected static final String PARTY_CONTROLLER_URL = "/api/partyManagerV2";
     protected static final String REGISTRY_CONTROLLER_URL = "/api/registryManagerV2";
+    protected static final String KML_CONTROLLER_URL = "/api/kmlManagerV1";
     protected static final String VALIDATION_CONTROLLER_URL = "/api/validate";
     protected static final String RULE_CONTROLLER_URL = "/api/ruleSetManagerV2";
     protected static final String XML_IMPORT_CONTROLLER_URL = "/api/xmlImportManagerV2";
@@ -216,6 +186,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_RECORD = REGISTRY_CONTROLLER_URL + "/createRecord";
     protected static final String UPDATE_RECORD = REGISTRY_CONTROLLER_URL + "/updateRecord";
     protected static final String DELETE_RECORD = REGISTRY_CONTROLLER_URL + "/deleteRecord";
+
+
+    protected static final String CREATE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/createRegCoordinates";
+    protected static final String UPDATE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/updateRegCoordinates";
+    protected static final String DELETE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/deleteRegCoordinates";
 
     protected static final String CREATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/createVariantRecord";
     protected static final String UPDATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/updateVariantRecord";
@@ -1774,6 +1749,37 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected Response deleteVariantRecord(final int id) {
         return delete(spec -> spec.queryParam("variantRecordId", id), DELETE_VARIANT_RECORD);
+    }
+
+
+    /**
+     * Vytvoření reg souřadnic
+     *
+     * @param coordinates VO objektu k vytvoření
+     * @return VO
+     */
+    protected RegCoordinatesVO createRegCoordinates(final RegCoordinatesVO coordinates) {
+        return put(spec -> spec.body(coordinates), CREATE_REG_COORDINATES).getBody().as(RegCoordinatesVO.class);
+    }
+
+    /**
+     * Úprava reg souřadnic
+     *
+     * @param coordinates VO objektu k vytvoření
+     * @return VO
+     */
+    protected RegCoordinatesVO updateRegCoordinates(final RegCoordinatesVO coordinates) {
+        return put(spec -> spec.body(coordinates), UPDATE_REG_COORDINATES).getBody().as(RegCoordinatesVO.class);
+    }
+
+    /**
+     * Smazání reg souřadnic
+     *
+     * @param id variantního hesla
+     * @return response
+     */
+    protected Response deleteRegCoordinates(final int id) {
+        return delete(spec -> spec.queryParam("coordinatesId", id), DELETE_REG_COORDINATES);
     }
 
     /**

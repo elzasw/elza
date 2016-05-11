@@ -526,7 +526,7 @@ public class RegistryController {
         Assert.notNull(coordinates, "Nebyl nalezen záznam pro update s id " + coordinatesVO.getCoordinatesId());
         Assert.isTrue(StringUtils.isNotEmpty(coordinatesVO.getValue()), "Nutno vyplnit hodnotu!");
         RegCoordinates coordinatesDO = factoryDO.createRegCoordinates(coordinatesVO);
-        if (!"POINT".equals(coordinates.getValue().getGeometryType())) {
+        if (!"Point".equals(coordinates.getValue().getGeometryType())) {
             coordinatesDO.setValue(coordinates.getValue());
         }
 

@@ -6,7 +6,7 @@ package cz.tacr.elza.controller.vo;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 02.02.2016
  */
-public class RegRecordSimple {
+public class RegRecordSimple extends AbstractRegRecord {
 
     private Integer id;
     private String record;

@@ -91,7 +91,7 @@ public class KmlController {
 
     @Transactional
     @RequestMapping(value = "/api/kmlManagerV1/import/arrCoordinates", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public int importArrCoordinates(
+    public List<Integer> importArrCoordinates(
             @RequestParam(required = false, value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(required = false, value = "descItemTypeId") final Integer descItemTypeId,
             @RequestParam(required = false, value = "nodeId") final Integer nodeId,
@@ -158,14 +158,18 @@ public class KmlController {
             descriptionItemService.deleteDescriptionItemsByTypeWithoutVersion(fundVersionId, nodeId, nodeVersion, descItemTypeId);
         }
 
-        return descriptionItemService.createDescriptionItems(toCreate, nodeId, nodeVersion, fundVersionId).size();
+        List<Integer> ids = new ArrayList<>();
+        descriptionItemService.createDescriptionItems(toCreate, nodeId, nodeVersion, fundVersionId).forEach(arrDescItem -> {
+            ids.add(arrDescItem.getDescItemObjectId());
+        });
+        return ids;
     }
 
     @Transactional
     @RequestMapping(value = "/api/kmlManagerV1/import/regCoordinates", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public int importRegCoordinates(
-            @RequestParam(required = false, value = "regRecordId") final Integer regRecordId,
-            @RequestParam(required = true, value = "file") final MultipartFile importFile) throws IOException, ParserConfigurationException, SAXException {
+    public List<Integer> importRegCoordinates(
+            @RequestParam(value = "regRecordId") final Integer regRecordId,
+            @RequestParam(value = "file") final MultipartFile importFile) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(regRecordId);
 
         RegRecord record = regRecordRepository.findOne(regRecordId);
@@ -195,7 +199,11 @@ public class KmlController {
             toCreate.add(coordinates);
         }
 
-        return registryService.saveRegCoordinates(toCreate).size();
+        List<Integer> ids = new ArrayList<>();
+        registryService.saveRegCoordinates(toCreate).forEach(regCoordinates -> {
+            ids.add(regCoordinates.getCoordinatesId());
+        });
+        return ids;
     }
 
 

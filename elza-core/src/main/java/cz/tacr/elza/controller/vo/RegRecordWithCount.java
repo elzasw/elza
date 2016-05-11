@@ -10,7 +10,7 @@ import java.util.List;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
  */
-public class RegRecordWithCount<T> {
+public class RegRecordWithCount<T extends AbstractRegRecord> {
 
     /**
      * Seznam osob.
