@@ -132,13 +132,12 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd',
-            'handleChangeFilterText', 'renderRowItem', 'handleFindPosition', 'handleFindPositionSubmit',
+            'renderRowItem', 'handleFindPosition', 'handleFindPositionSubmit',
             'handleShortcuts', 'trySetFocus', 'handleAddDescItemType', 'handleAccordionKeyDown', 'handleVisiblePolicy',
             'ensureItemVisibleNoForm'
             );
 
         this.state = {
-            filterText: props.node.filterText,
             focusItemIndex: this.getFocusItemIndex(props, 0)
         }
     }
@@ -171,7 +170,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp);
 
         var newState = {
-            filterText: nextProps.node.filterText,
             focusItemIndex: this.getFocusItemIndex(nextProps, this.state.focusItemIndex)
         }
 
@@ -325,12 +323,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
     getChildContext() {
         return { shortcuts: shortcutManager };
-    }
-
-    handleChangeFilterText(value) {
-        this.setState({
-            filterText: value
-        })
     }
 
     ensureItemVisible() {
@@ -788,11 +780,9 @@ return true
                         ref='search'
                         className='search-input'
                         placeholder={i18n('search.input.search')}
-                        filterText={this.props.filterText}
-                        value={this.state.filterText}
-                        onChange={(e) => this.handleChangeFilterText(e.target.value)}
-                        onClear={() => {this.handleChangeFilterText(''); this.dispatch(fundNodeSubNodeFulltextSearch(this.state.filterText))}}
-                        onSearch={() => {this.dispatch(fundNodeSubNodeFulltextSearch(this.state.filterText))}}
+                        value={node.filterText}
+                        onClear={() => {this.dispatch(fundNodeSubNodeFulltextSearch(''))}}
+                        onSearch={(value) => {this.dispatch(fundNodeSubNodeFulltextSearch(value))}}
                     />
                 </div>
             </div>

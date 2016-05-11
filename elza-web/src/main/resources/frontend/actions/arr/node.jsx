@@ -6,7 +6,7 @@ import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {isFundRootId} from 'components/arr/ArrUtils.jsx'
+import {createFundRoot, isFundRootId} from 'components/arr/ArrUtils.jsx'
 
 export function isNodeAction(action) {
     switch (action.type) {
@@ -121,14 +121,23 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
 
         dispatch({
             type: types.FUND_FUND_SUBNODES_FULLTEXT_SEARCH,
+            versionId: activeFund.versionId,
+            nodeId: activeNode.id,
+            nodeKey: activeNode.nodeKey,
             filterText
         })
         if (filterText !== '') {
             WebApi.findInFundTree(activeFund.versionId, activeNode.id, filterText, 'ONE_LEVEL')
                 .then(json => {
                     dispatch(fundNodeSubNodeFulltextResult(activeFund.versionId, activeNode.id, activeNode.nodeKey, json));
+                    console.log(999, json)
                     if (json.length > 0) {
-                        dispatch(activeFund.versionId, fundSelectSubNode(json[0].nodeId, json[0].parent, false, null, true));
+                        var subNodeParentNode = json[0].parent
+                        if (subNodeParentNode == null) {
+                            subNodeParentNode = createFundRoot(activeFund);
+                        }
+
+                        dispatch(fundSelectSubNode(activeFund.versionId, json[0].nodeId, subNodeParentNode, false, null, true));
                     }
                 })
         } else {
