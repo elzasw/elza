@@ -61,6 +61,8 @@ public abstract class AbstractTest {
     @Autowired
     private VariantRecordRepository variantRecordRepository;
     @Autowired
+    protected RegCoordinatesRepository regCoordinatesRepository;
+    @Autowired
     protected RegRecordRepository recordRepository;
     @Autowired
     protected NodeRepository nodeRepository;
@@ -211,6 +213,7 @@ public abstract class AbstractTest {
         partyRepository.deleteAll();
         variantRecordRepository.deleteAll();
         nodeRegisterRepository.deleteAll();
+        regCoordinatesRepository.deleteAll();
         recordRepository.deleteAll();
         nodeConformityErrorsRepository.deleteAll();
         nodeConformityMissingRepository.deleteAll();

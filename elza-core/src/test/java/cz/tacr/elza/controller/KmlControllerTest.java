@@ -34,6 +34,18 @@ public class KmlControllerTest extends AbstractControllerTest {
     protected final static String IMPORT_SCOPE_RECORD = "IMPORT_SCOPE_RECORD";
     protected final static String ALL_IN_ONE_XML = "all-in-one-import.xml";
 
+    @After
+    public void cleanUp() {
+        deleteTables();
+        List<String> toDelete = Arrays.asList(IMPORT_SCOPE_FA, IMPORT_SCOPE_RECORD);
+        for (RegScopeVO scope : getAllScopes()) {
+            if (toDelete.contains(scope.getName())) {
+                deleteScope(scope.getId());
+                break;
+            }
+        }
+    }
+
     @Test
     public void arrImportExportTest() {
         importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_FA, XmlImportType.FUND, null);

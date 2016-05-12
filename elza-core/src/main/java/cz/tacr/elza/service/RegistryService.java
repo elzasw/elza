@@ -298,6 +298,7 @@ public class RegistryService {
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_CREATE, record.getRecordId()));
 
         variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(record.getRecordId()));
+        regCoordinatesRepository.delete(regCoordinatesRepository.findByRegRecordId(record.getRecordId()));
         regRecordRepository.delete(record);
     }
 
