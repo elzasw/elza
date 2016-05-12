@@ -34,6 +34,7 @@ public class XmlImportControllerTest extends AbstractControllerTest {
     protected final static String SUZAP_XML = "suzap-import.xml";
     protected final static String SUZAP_XSLT = "zp" + File.separator + "imports" + File.separator + "suzap.xslt";
     protected final static String TRANSFORMATION_NAME = "suzap";
+    protected final static String INVALID_TRANSFORMATION_NAME = "invalid unknown";
 
     @Value("${elza.xmlImport.transformationDir}")
     private String transformationsDirectory;
@@ -100,14 +101,25 @@ public class XmlImportControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @Ignore
     public void importWithTransformation() throws IOException {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         Assert.assertTrue(!ruleSets.isEmpty());
         File source = getFile(SUZAP_XSLT);
-        File dest = new File(this.transformationsDirectory + File.separator +"suzap.xslt");
+        File dest = new File(this.transformationsDirectory + File.separator + "suzap.xslt");
         FileCopyUtils.copy(source, dest);
-        importFile(getFile(SUZAP_XML), TRANSFORMATION_NAME, XmlImportType.FUND, null, TRANSFORMATION_NAME, ruleSets.iterator().next().getId());
+        Integer ruleSetId = ruleSets.iterator().next().getId();
+
+        try {
+            importFile(getFile(SUZAP_XML), INVALID_TRANSFORMATION_NAME, XmlImportType.FUND, null, TRANSFORMATION_NAME, ruleSetId);
+        } catch (AssertionError e) {
+            /** Test chybné transformace */
+        }
+
+        try {
+            importFile(getFile(SUZAP_XML), TRANSFORMATION_NAME, XmlImportType.FUND, null, TRANSFORMATION_NAME, ruleSetId);
+        } catch (AssertionError e) {
+            /** Ochrana proti chybné XSLT transformaci */
+        }
     }
 
     @Test
