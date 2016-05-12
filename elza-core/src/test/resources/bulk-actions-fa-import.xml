@@ -15,6 +15,10 @@
                             <position>7</position>
                             <value>text 7</value>
                         </desc-item-text>
+                        <desc-item-text desc-item-type-code="ZP2015_UNIT_ID">
+                            <position>9</position>
+                            <value>1//11/1</value>
+                        </desc-item-text>
                     </desc-item-list>
                 </level>
                 <level>
