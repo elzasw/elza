@@ -158,6 +158,7 @@ public class UnitIdBulkAction extends BulkAction {
             bulkActionRun.setState(State.INTERRUPTED);
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
         }
+        change = bulkActionRun.getChange();
 
         ArrDescItem descItemLevel = loadDescItemLevel(level);
         if (!level.getNode().equals(rootNode)) {
@@ -294,7 +295,7 @@ public class UnitIdBulkAction extends BulkAction {
         this.bulkActionRun = bulkActionRun;
         init(bulkAction);
 
-        ArrFundVersion version = bulkActionRun.getFundVersion();
+        ArrFundVersion version = fundVersionRepository.findOne(bulkActionRun.getFundVersionId());
 
         Assert.notNull(version);
         checkVersion(version);

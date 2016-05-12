@@ -144,6 +144,18 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     }
 
     /**
+     * Bulk Actions test
+     */
+    @Test
+    public void bulkActionsTest() throws InterruptedException {
+        int fundVersionId = importAndGetVersionId();
+
+        runBulkAction(fundVersionId, BULK_ACTION_GENERATOR_UNIT);
+        runBulkAction(fundVersionId, BULK_ACTION_FUND_VALIDATION);
+        runBulkAction(fundVersionId, BULK_ACTION_SERIAL_NUMBER_GENERATOR);
+    }
+
+    /**
      * Spustí a čeká na dokončení hromadné akce.
      *
      * @param fundVersionId verze archivní kod hromadné akce hromadné akce
