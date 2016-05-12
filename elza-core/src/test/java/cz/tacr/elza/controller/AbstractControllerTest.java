@@ -156,8 +156,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String VALIDATION = ARRANGEMENT_CONTROLLER_URL + "/validation/{fundVersionId}/{fromIndex}/{toIndex}";
     protected static final String VALIDATION_ERROR = ARRANGEMENT_CONTROLLER_URL + "/validation/{fundVersionId}/find/{nodeId}/{direction}";
 
-
-
     // Party
     protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations";
     protected static final String UPDATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations/{relationId}";
@@ -205,6 +203,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DATA_TYPES = RULE_CONTROLLER_URL + "/dataTypes";
     protected static final String DESC_ITEM_TYPES = RULE_CONTROLLER_URL + "/descItemTypes";
     protected static final String PACKAGES = RULE_CONTROLLER_URL + "/getPackages";
+    protected static final String POLICY = RULE_CONTROLLER_URL + "/policy";
+    protected static final String POLICY_TYPES = POLICY + "/types/{fundVersionId}";
+    protected static final String POLICY_ALL_TYPES = POLICY + "/types";
+    protected static final String POLICY_SET = POLICY + "/{nodeId}/{fundVersionId}";
+    protected static final String POLICY_GET = POLICY + "/{nodeId}/{fundVersionId}/{includeParents}";
 
     // Validation
     protected static final String VALIDATE_UNIT_DATE = VALIDATION_CONTROLLER_URL + "/unitDate";
@@ -2333,6 +2336,56 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParam("fundVersionId", fundVersionId)
                 .pathParam("outputId", outputId)
                 .body(param), UPDATE_NAMED_OUTPUT);
+    }
+
+    /**
+     * Vrací typy oprávnění podle verze fondu.
+     *
+     * @param fundVersionId identifikátor verze AS
+     * @return seznam typů oprávnění
+     */
+    protected List<RulPolicyTypeVO> getPolicyTypes(final Integer fundVersionId) {
+        return Arrays.asList(get(spec -> spec.pathParameter("fundVersionId", fundVersionId), POLICY_TYPES).as(RulPolicyTypeVO[].class));
+    }
+
+    /**
+     * Vrací typy oprávnění.
+     *
+     * @return seznam typů oprávnění
+     */
+    protected List<RulPolicyTypeVO> getAllPolicyTypes() {
+        return Arrays.asList(get(spec -> spec, POLICY_ALL_TYPES).as(RulPolicyTypeVO[].class));
+    }
+
+    /**
+     * Nastaví/smazaní viditelnost typu oprávnění.
+     *
+     * @param nodeId              identifikátor node ke kterému se hodnota vztahuje.
+     * @param fundVersionId       identifikátor verze AS
+     * @param visiblePolicyParams parametry nastavení
+     */
+    protected void setVisiblePolicy(final Integer nodeId,
+                                    final Integer fundVersionId,
+                                    final RuleController.VisiblePolicyParams visiblePolicyParams) {
+        put(spec -> spec.pathParameter("nodeId", nodeId)
+                .pathParameter("fundVersionId", fundVersionId)
+                .body(visiblePolicyParams), POLICY_SET);
+    }
+
+    /**
+     * Získání nastavení oprávnění pro uzly.
+     *
+     * @param nodeId         identifikátor node ke kterému hledám oprávnění
+     * @param fundVersionId  identifikátor verze AS
+     * @param includeParents zohlednit zděděné oprávnění od rodičů?
+     * @return mapa uzlů map typů a jejich zobrazení
+     */
+    protected RuleController.VisiblePolicyTypes getVisiblePolicy(final Integer nodeId,
+                                                                 final Integer fundVersionId,
+                                                                 final Boolean includeParents) {
+        return get(spec -> spec.pathParameter("nodeId", nodeId)
+                .pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("includeParents", includeParents), POLICY_GET).as(RuleController.VisiblePolicyTypes.class);
     }
 
 }
