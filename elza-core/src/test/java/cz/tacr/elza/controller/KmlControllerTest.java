@@ -91,7 +91,9 @@ public class KmlControllerTest extends AbstractControllerTest {
         for (Integer id : ids) {
             get(spec -> spec.pathParam("descItemObjectId", id).pathParam("fundVersionId", versionId), EXPORT_ARR_COORDINATES);
         }
+        cleanUp();
     }
+
     @Test
     public void regImportExportTest() {
         importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_RECORD, XmlImportType.RECORD, null);
