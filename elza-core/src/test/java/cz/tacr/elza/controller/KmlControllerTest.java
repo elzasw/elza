@@ -114,7 +114,7 @@ public class KmlControllerTest extends AbstractControllerTest {
     }
 
     private void importFile(File xmlFile, String scopeName, XmlImportType type, @Nullable Integer scopeId) {
-        importXmlFile(null, null, type, scopeName, scopeId, xmlFile);
+        importXmlFile(null, null, type, scopeName, scopeId, xmlFile, null);
     }
 
     public static File getFile(String resourcePath) {

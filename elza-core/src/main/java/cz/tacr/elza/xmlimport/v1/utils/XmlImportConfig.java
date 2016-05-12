@@ -23,8 +23,6 @@ public class XmlImportConfig {
 
     private Integer ruleSetId;
 
-    private Integer arrangementTypeId;
-
     private RegScope regScope;
 
     public boolean isStopOnError() {
@@ -57,14 +55,6 @@ public class XmlImportConfig {
 
     public void setRuleSetId(Integer ruleSetId) {
         this.ruleSetId = ruleSetId;
-    }
-
-    public Integer getArrangementTypeId() {
-        return arrangementTypeId;
-    }
-
-    public void setArrangementTypeId(Integer arrangementTypeId) {
-        this.arrangementTypeId = arrangementTypeId;
     }
 
     public RegScope getRegScope() {

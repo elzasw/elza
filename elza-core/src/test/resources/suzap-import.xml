@@ -1,0 +1,979 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<dokumentArchPomucky xmlns="http://www.mvcr.cz/archivy/evidence-nad/ap"
+                     xmlns:nad="http://www.mvcr.cz/archivy/evidence-nad/nad" xmlns:xlink="http://www.w3.org/1999/xlink"
+                     aDruhVerzeDTD="03-1.0" aPopis="Inventář v dokumentu XML podle standardu AS MV ČR">
+    <metaData aID="mD">
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+            <rdf:Description rdf:about="">
+                <dc:Title>Zett, továrna na čokoládu a cukrovinky, Ostrava</dc:Title>
+                <dc:Creator>Jahnová A.</dc:Creator>
+                <dc:Description>Archivní pomůcka</dc:Description>
+                <dc:Publisher>Zemský archiv v Opavě</dc:Publisher>
+                <dc:Date>2007-12-18</dc:Date>
+                <dc:Type>Text</dc:Type>
+                <dc:Format>text/XML</dc:Format>
+                <dc:Identifier></dc:Identifier>
+                <dc:Source></dc:Source>
+                <dc:Language>cs-CZ</dc:Language>
+            </rdf:Description>
+        </rdf:RDF>
+        <oPomucce aID="mD.oP">
+            <instituce nad:verCisNAD="499/2004" aInstituce="czarch://CZ-217000010">in1</instituce>
+            <nazevPomucky aTyp="nazev">Zett, továrna na čokoládu a cukrovinky, Ostrava</nazevPomucky>
+            <datace>
+                <datum aNormDat="1919/1949" aOdhadDat="ne">1919 - 1949</datum>
+            </datace>
+            <druhPomucky nad:verCisNAD="499/2004" nad:c_druh="03">Inventář</druhPomucky>
+            <evidencePomucky>
+                <cisloPomuckyNAD aPomucka="czarch://CZ-217000010/eNAD/ap?evidencniCislo=1595">1595</cisloPomuckyNAD>
+            </evidencePomucky>
+            <zpracovatel>Jahnová A.</zpracovatel>
+            <mistoVzniku>Opava</mistoVzniku>
+            <rokVzniku>2007</rokVzniku>
+            <stranCelkem>12</stranCelkem>
+            <stranUvodu>4</stranUvodu>
+            <schvaleni>
+                <jmenoSchvalovatele>Müller K.</jmenoSchvalovatele>
+                <datum>2007-12-18</datum>
+            </schvaleni>
+        </oPomucce>
+        <oArchivaliich aID="mD.oA">
+            <archivniSoubor>
+                <cisloListuNAD nad:verCisNAD="499/2004" aArchSoubor="czarch://CZ-217000010/eNAD/list?cisloListu=1019">
+                    1019
+                </cisloListuNAD>
+                <evidencniJednotky>
+                    <celkemEVJ>4</celkemEVJ>
+                    <druhEVJ>karton</druhEVJ>
+                    <pocetEVJ>2</pocetEVJ>
+                    <druhEVJ>plán</druhEVJ>
+                    <pocetEVJ>1</pocetEVJ>
+                    <druhEVJ>úřední kniha</druhEVJ>
+                    <pocetEVJ>1</pocetEVJ>
+                </evidencniJednotky>
+            </archivniSoubor>
+            <celkemInvJed>33</celkemInvJed>
+            <celkemMetraz>0,42</celkemMetraz>
+            <stavKeDni>2007-12-18</stavKeDni>
+        </oArchivaliich>
+    </metaData>
+    <pomucka>
+        <uvodZjed>I nventáře a katalogy Zemského archivu v O pavě
+            Číslo listu NAD: 1019
+            Evid. číslo pomůcky: 1595
+            Zett, továrna na čokoládu a cukrovinky, Ostrava
+            1919 – 1949
+            INVENTÁŘ
+            Zpracovala: Bc. Andrea Jahnová
+            Opava 2007
+            Obsah
+            Úvod………………………………………………………………………………..str. 3 - 6
+            I. Spisový materiál
+            1. Spisy
+            a) Vedení a správa…………………………………………………………….str. 7
+            b) Investice a výstavba………………………………………………………..str. 8
+            II. Účetní materiál
+            1. Účetní knihy…………………………………………………………………str. 8
+            2. Účetní spisy………………………………………………………………….str. 8
+            III. Stavebně-technická dokumentace
+            1. Stavební dokumentace……………………………………………………...str. 9 - 11
+            2. Technická dokumentace……………………………………………………str. 11
+            2
+            Úvod
+            I. Vývoj předchůdce archivního fondu
+            V roce 1900 si zřídil cukrář Isidor Zuckermann v Ostravě na Těšínské ulici malou
+            výrobnu kanditů a orientálního zboží, které rozprodával hlavně na trzích. Za získané peníze
+            zakoupil v roce 1914 tiskárnu Hebling v Ostravě na Kostelní ulici a zde postupně budoval
+            pozdější továrnu. V roce 1919 začal v malém množství vyrábět čokoládu. V továrně
+            zaměstnával asi 15 dělníků. Počátkem dvacátých let 20. století zakoupil nové strojové
+            vybavení a výrobu postupně rozšiřoval o další druhy čokoládového zboží. Téměř 60 %
+            veškeré produkce tvořily vánoční kolekce a čokoládové figurky. Hlavní odbytiště zboží bylo
+            na Slovensku. K zápisu firmy v němčině došlo dne 26. 9. 1922 u Krajského soudu
+            v Moravské Ostravě ve znění: „Zett, Chokoladen und Zuckerwarenfabrik I. Zuckermann“.
+            Český název firmy byl v rejstříku zapsán 28. 4. 1928: „Zett, továrna na čokoládu a
+            cukrovinky I. Zuckermann“. V této době firma zažívala největší rozkvět. Zaměstnávala mimo
+            sezónu asi 200 dělníků, v sezóně jich bývalo až 300. Pracovaly zde především ženy, jejich
+            hodinový plat činil 0,75 korun, týdenní mzda byla kolem 120 - 160 korun. Krize se ve výrobě
+            celkem neprojevila. Budova továrny na Kostelní ulici 101 prošla stavebními úpravami a
+            provozy byly opatřeny dobrými a výkonnými stroji. Jediným problémem byl nedostatek
+            místa, který se stupňoval s narůstající výrobou. Z tohoto důvodu zamýšlel Isidor Zuckermann
+            vybudovat nové objekty a za tímto účelem zakoupil pozemek na Sokolské třídě v Ostravě.
+            Část výroby tam byla postupně přenesena. Další práce zde však byly přerušeny okupací a
+            válkou.
+            Zuckermannovi byli Židé, při sčítání obyvatelstva v roce 1930 se dobrovolně přihlásili
+            k německé národnosti. Celá firma Zett byla ve vlastnictví této rodiny a tak to mělo zůstat i
+            nadále. Podle závěti z 23. 1. 1928, sepsané Isidorem Zuckermannem, se novými vlastníky
+            podniku měly stát jeho dcery Pavla Steinerová, Hermína Fürstová a syn Josef Zuckermann.
+            Isidor Zuckermann zemřel 4. 4. 1939. Právoplatní dědicové převzali firmu a vytvořili
+            veřejnou obchodní společnost. Tato společnost byla v obchodním rejstříku zanesena 29. 4.
+            1943, se zpětnou platností ke dni 31. 10. 1940. Ve skutečnosti však firmu vedl Josef
+            Zuckermann jako opatrovník pozůstalosti. Přestože se majitelé hlásili k německé národnosti,
+            byla na jejich firmu uvalena dne 29. 12. 1939 nucená německá správa a nuceným správcem
+            (Treuhänderem) nad firmou byl jmenován bývalý zaměstnanec firmy Zett, a také člen
+            NSDAP, Němec Ludwig Lorenz. Ten byl vystřídán 24. 8. 1943 dalším nuceným správcem
+            Waltrem Pindurem. Walter Pindur vlastnil v této době firmu „Kirchhof a Pindur, továrna na
+            cukrovinky a čokoládu“ v Opavě na Ratibořské ulici. Tato firma byla dosud vedena v
+            obchodním rejstříku Krajského soudu v Opavě pod původním názvem z 18. 5. 1928 jako
+            „Ivus“ továrna cukrového zboží a čokolády Ignác Wiltschek a synové. Od počátku roku 1939
+            byli však zapsáni noví vlastníci firmy, a to právě Kirchhof a Pindur. Walter Pindur jako nový
+            nucený správce nad firmou Zett koupil i tuto, a to kupní smlouvou ze dne 6. 10. 1944. K
+            zápisu prodeje firmy u Krajského soudu v Moravské Ostravě došlo 22. 2. 1945. Walter
+            Pindur se tak stal jediným majitelem firmy. V době války byly nadále předmětem výroby
+            poživatiny. Ke konci války se vyráběly v jedné místnosti sklíčka do plynových
+            3
+            masek. Válečné běsnění se podepsalo také na tovární budově, která byla poničena přímým
+            zásahem 500 kg těžké bomby a rozbita dělostřelbou. Stroje se ocitly v sutinách. Podnik
+            Waltera Pindura v Opavě na Ratibořské ulici byl zničen naprosto. Zůstalo jen několik strojů,
+            které byly po válce převezeny do různých podniků v kraji.
+            Po válce byla firma Zett Walterovi Pindurovi konfiskována ve prospěch Československého
+            státu. Výměrem ÚNV v Ostravě byla zavedena do podniku Zett v roce 1945 národní správa a
+            národním správcem se stal Vilém Vašek. Prvořadým úkolem bylo opět obnovit výrobu ve
+            zdevastovaném podniku. To se také zaměstnancům podařilo a již během roku 1945 se
+            v továrně opět pracovalo. Vyráběly se především rozličné dezerty s jemnou náplní,
+            fondantové cukrovinky, fourée, dragée, kandity, karamely a jiné. Pracovalo zde kolem 150
+            lidí. Zaměstnanci firmy Zett založili zaměstnanecké výrobní družstvo s názvem: Družstevní
+            továrna na kakao, čokoládu, cukrovinky a trvanlivé pečivo, zapsané společenstvo s ručením
+            omezeným v Ostravě. K zápisu družstva došlo 18. 2. 1946. Celým rokem 1947 se však táhlo
+            restituční řízení Julia Zuckermanna a MUDr. Ericha Steinera. Tito jediní žijící přímí dědici
+            firmy napadli kupní smlouvu Waltera Pindura na podnik Zett a označili ji za neplatnou. Po
+            národním správci Vilému Vaškovi žádali vydání podniku. Julius Zuckermann byl
+            nemanželským synem Isidora Zuckermanna, v koncentračním táboře přišel o zrak. MUDr.
+            Erich Steiner žil v Americe, jeho žena Pavla Steinerová (rozená Zuckermannová) zemřela
+            v koncentračním táboře na jaře roku 1945. Přes veškeré dokazování židovského původu
+            rodiny jim majetek nebyl vrácen. Novým národním správcem firmy se staly výměrem
+            ministerstva výživy ze dne 28. 2. 1948 Československé čokoládovny, národní podnik, Praha.
+            V poslední fázi vyhláškou ministryně výživy ze dne 23. 12. 1948 byl znárodněný podnik
+            začleněn do majetkové podstaty Slezského průmyslu jemného pečiva, národní podnik, Opava.
+            Z důvodu specializace a koncentrace výroby a za účelem zvýšení rentability byl závod Zett ke
+            konci měsíce března 1949 likvidován. Zaměstnanci a nemovitosti v Kostelní ulici byly
+            převzaty národním podnikem Oděvní průmysl v Prostějově a budovy byly adaptovány pro
+            výrobu konfekce.
+            II. Vývoj a dějiny archivního fondu
+            Z činnosti firmy Zett, továrna na čokoládu a cukrovinky, Ostrava se dochovalo velmi malé
+            množství písemností, a to jak z období před druhou světovou válkou, tak také po ní. Zda tento
+            stav ovlivnily válečné události nebo jiné nepříznivé okolnosti, dnes již nelze přesně zjistit.
+            Část těchto dochovaných dokumentů byla převzata při likvidaci firmy v roce 1949 Slezským
+            průmyslem jemného pečiva, národním podnikem Opava. Podnikový archivář František Vaněk
+            tuto dokumentaci v roce 1977 roztřídil a zpracoval formou prozatímního inventárního
+            seznamu. Druhou část dochovaných dokumentů převzal také v roce 1949 Oděvní průmysl
+            v Prostějově, národní podnik. Zde sepsal prozatímní inventární seznam v roce 1999
+            podnikový archivář Petr Růžička.
+            První část dokumentů byla předána na základě rozhodnutí Archivní správy MV ČR ze dne
+            31. 8. 1977 Státnímu oblastnímu archivu v Opavě dne 26. 10. 1977 Čokoládovnami,
+            oborovým podnikem Praha, odštěpným závodem Opavia Opava. Zaevidovány byly pod
+            přírůstkovým číslem 65/77. Druhou část předal Zemskému archivu v Opavě 27. 9. 1999
+            Oděvní podnik Prostějov, a. s. Tento přírůstek byl zaevidován pod číslem 64/99.
+            4
+            III. Archivní charakteristika archivního fondu
+            Fond Zett, továrna na čokoládu a cukrovinky, Ostrava byl převzat z podnikového archivu
+            Čokoládoven, oborového podniku Praha, odštěpný závod Opavia Opava, a také z Oděvního
+            podniku Prostějov, a.s. jako nezpracovaný. Písemnosti fondu vznikaly z úřední, obchodní,
+            provozní a jiné činnosti firmy. Z provozu firmy Zett, továrna na čokoládu a cukrovinky se
+            dochoval především materiál aktové povahy, několik účetních dokumentů, stavebních a
+            technických plánů. Materiál není nijak souvislý, původní registraturní pomůcky se
+            nedochovaly. Z těchto důvodů byly dokumenty při pořádání seřazeny podle uměle
+            vytvořeného pořádacího schématu. Do úvodní kapitoly „Vedení a správa“ byly zařazeny
+            dokumenty podávající svědectví o vývoji firmy. Jedná se o ochranné známky výrobků
+            zapsané Obchodní a živnostenskou komorou v Olomouci. Dále zde jsou především právní
+            doklady vztahující se k restitučním nárokům bývalých majitelů. V neposlední řadě tuto
+            kapitolu doplňují seznamy strojů, zařízení a kancelářského vybavení likvidované firmy Zett a
+            materiály vztahující se k začlenění její majetkové podstaty do Slezského průmyslu jemného
+            pečiva, národní podnik Opava a do Oděvního průmyslu, národní podnik Prostějov. Do oddílu
+            „Investice a výstavba“ byly zařazeny předběžné cenové náklady stavebních prací, které byly
+            koncem dvacátých let prováděny v rámci adaptace tovární budovy na Kostelní ulici v Ostravě.
+            Dále jsou zde zařazeny také cenové nabídky a popisy nového strojového vybavení závodu.
+            Do následujících oddílů „Účetní knihy“ a „Účetní spisy“ byl soustředěn materiál účetního
+            charakteru, kterým je souvislá řada pokladních knih z let 1947 – 1949, a také souvislá řada
+            účetních bilancí a inventur majetku za roky 1945 – 1948. Poslední částí fondu je kapitola
+            s názvem „Stavebně-technická dokumentace“. Tato je rozdělena na oddíl „Stavební
+            dokumentace“, v níž jsou především plány adaptačních prací na tovární budově v Kostelní
+            ulici. V oddílu „Technická dokumentace“ najdeme plány technického zařízení a vybavení
+            firmy.
+            Z činnosti firmy se dochoval materiál v rozsahu let 1919 – 1949. Počátkem vzniku fondu
+            je rok 1919, ve kterém se Isidor Zuckermann začal zabývat výrobou čokolády. Ukončení
+            činnosti firmy nastalo na počátku roku 1949, kdy byla její majetková podstata včleněna do
+            dvou podniků a výroba cukrovinek i čokolády byla zrušena.
+            Dokumenty jsou fyzicky dobře zachovalé a jsou psány česky a německy.
+            Pořádací schéma:
+            I. Spisový materiál
+            1. Spisy
+            a) Vedení a správa
+            b) Investice a výstavba
+            II. Účetní materiál
+            1. Účetní knihy
+            2. Účetní spisy
+            III. Stavebně-technická dokumentace
+            1. Stavební dokumentace
+            2. Technická dokumentace
+            5
+            Při pořádání byla provedena vnitřní akartace. Vyřazeny byly pouze karty kont dodavatelů a
+            odběratelů firmy z let 1945 – 1948 a nepatrné množství bezvýznamné korespondence.
+            Množství vyskartovaného materiálu činilo 0,42 bm.
+            Ke dni uspořádání čítá fond 33 inventární jednotky, z toho 3 úřední knihy, 2 kartony spisů
+            a 14 plánů. Plány jsou uloženy v kartonu. Celkový rozsah fondu je 0,42 bm.
+            IV. Stručný rozbor obsahu archivního fondu
+            Z hlediska odborného jsou studijní možnosti badatelů ve fondu omezené. Mnoho materiálu
+            z období samostatného fungování firmy se nedochovalo. Snad jen soubor ochranných známek
+            výrobků firmy je velmi zajímavý. Za zmínku stojí také dokumenty zabývající se právním
+            sporem bývalých majitelů firmy, kteří chtěli získat zpět svůj zkonfiskovaný majetek. Tato
+            snaha byla však v době zavádění národních správ do soukromých firem více než marná. Vše
+            směřovalo k jejich postupnému začlenění do velkých průmyslových závodů.
+            V. Záznam o uspořádání archivního fondu a sestavení pomůcky
+            Fond uspořádala a inventář sestavila v listopadu a prosinci 2007 Bc. Andrea Jahnová
+            v Zemském archivu v Opavě.
+            Použitá literatura a prameny:
+            Ostrava: Město uhlí a železa. Národohospodářská propagace Československa. Řada A, sv.
+            XXVI, 1947
+            Zemský archiv v Opavě, fond Krajský soud v Ostravě, značka A III 46
+            Zemský archiv v Opavě, fond Krajský soud v Opavě, značka A IV 219
+            Příloha k úvodu inventáře:
+            Firemní veduta závodu Zett v roce 1947
+            6
+            Název fondu: Zett, továrna na čokoládu a cukrovinky, Ostrava
+            Značka fondu: Zett Ostrava
+            Časové rozmezí: 1919 – 1949
+            Počet evidenčních jednotek: 19 (3 úřední knihy, 2 kartony, 14 plánů)
+            Počet inventárních jednotek: 33
+            Rozsah fondu v bm: 0,42 bm
+            Stav ke dni: 18. 12. 2007
+            Fond zpracoval: Bc. Andrea Jahnová
+            Pomůcku sestavil: Bc. Andrea Jahnová
+            Počet stran: 12
+            Inventář schválil: PhDr. Karel Müller
+            Č.j.: ZA/2138/2007
+            12
+        </uvodZjed>
+        <inventSeznam aPopis="Inventární seznam" aID="is">
+            <castIS aUrovenVn="1" aIDRef="is" aID="is1">
+                <nadpisIS>
+                    <obsah>Zett, továrna na čokoládu a cukrovinky, Ostrava</obsah>
+                </nadpisIS>
+                <castIS aUrovenVn="2" aIDRef="is1" aID="is1.1">
+                    <nadpisIS>
+                        <obsah>I. Spisový materiál</obsah>
+                    </nadpisIS>
+                    <castIS aUrovenVn="3" aIDRef="is1.1" aID="is1.1.1">
+                        <nadpisIS>
+                            <obsah>1. Spisy</obsah>
+                        </nadpisIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.1.1" aID="is1.1.1.1">
+                            <nadpisIS>
+                                <obsah>a) Vedení a správa</obsah>
+                            </nadpisIS>
+                            <castIS aUrovenVn="5" aIDRef="is1.1.1.1" aID="is1.1.1.1.1">
+                                <radekIS>
+                                    <invCislo>1</invCislo>
+                                    <puvZnaceni></puvZnaceni>
+                                    <obsah>Ochranné známky výrobků firmy Zett, továrna na čokoládu a cukroviny, Ostrava,
+                                        zapsané Obchodní a živnostenskou komorou v Olomouci
+                                    </obsah>
+                                    <datace>
+                                        <datum aNormDat="1927/1937" aOdhadDat="ne">1927-1937</datum>
+                                    </datace>
+                                    <eviJednotka>
+                                        <druhEVJ>karton</druhEVJ>
+                                        <cisloEVJ>1</cisloEVJ>
+                                    </eviJednotka>
+                                </radekIS>
+                            </castIS>
+                            <castIS aUrovenVn="5" aIDRef="is1.1.1.1" aID="is1.1.1.1.2">
+                                <radekIS>
+                                    <invCislo>2</invCislo>
+                                    <puvZnaceni></puvZnaceni>
+                                    <obsah>Výpis z listu vlastnictví Isidora Zuckermanna, vlastníka firmy Zett, továrna
+                                        na čokoládu a cukrovinky, Ostrava (kopie)
+                                    </obsah>
+                                    <datace>
+                                        <datum aNormDat="1931" aOdhadDat="ne">1931</datum>
+                                    </datace>
+                                    <eviJednotka>
+                                        <druhEVJ>karton</druhEVJ>
+                                        <cisloEVJ>1</cisloEVJ>
+                                    </eviJednotka>
+                                </radekIS>
+                            </castIS>
+                            <castIS aUrovenVn="5" aIDRef="is1.1.1.1" aID="is1.1.1.1.3">
+                                <radekIS>
+                                    <invCislo>3</invCislo>
+                                    <puvZnaceni></puvZnaceni>
+                                    <obsah>Právní záležitosti ve věci žádosti dědiců Isidora Zuckermanna o navrácení
+                                        konfiskovaného majetku
+                                    </obsah>
+                                    <datace>
+                                        <datum aNormDat="1940/1948" aOdhadDat="ne">1940-1948</datum>
+                                    </datace>
+                                    <eviJednotka>
+                                        <druhEVJ>karton</druhEVJ>
+                                        <cisloEVJ>1</cisloEVJ>
+                                    </eviJednotka>
+                                </radekIS>
+                            </castIS>
+                            <castIS aUrovenVn="5" aIDRef="is1.1.1.1" aID="is1.1.1.1.4">
+                                <radekIS>
+                                    <invCislo>4</invCislo>
+                                    <puvZnaceni></puvZnaceni>
+                                    <obsah>Začlenění majetku firmy Kirchhof a Pindur, továrna na výrobu čokolády a
+                                        cukrovinek, Opava do majetkové podstaty Slezského průmyslu jemného pečiva,
+                                        národní podnik Opava, mimo jiné dotazníky Waltera Pindura pro úřad poradny pro
+                                        volbu povolání, inventurní soupis majetku firmy
+                                    </obsah>
+                                    <datace>
+                                        <datum aNormDat="1942/1950" aOdhadDat="ne">1942-1950</datum>
+                                    </datace>
+                                    <eviJednotka>
+                                        <druhEVJ>karton</druhEVJ>
+                                        <cisloEVJ>1</cisloEVJ>
+                                    </eviJednotka>
+                                </radekIS>
+                            </castIS>
+                            <castIS aUrovenVn="5" aIDRef="is1.1.1.1" aID="is1.1.1.1.5">
+                                <radekIS>
+                                    <invCislo>5</invCislo>
+                                    <puvZnaceni></puvZnaceni>
+                                    <obsah>Odhadní nález a posudek na objekt továrny firmy Zett na Kostelní ulici 101 v
+                                        Moravské Ostravě
+                                    </obsah>
+                                    <datace>
+                                        <datum aNormDat="1948" aOdhadDat="ne">1948</datum>
+                                    </datace>
+                                    <eviJednotka>
+                                        <druhEVJ>karton</druhEVJ>
+                                        <cisloEVJ>1</cisloEVJ>
+                                    </eviJednotka>
+                                </radekIS>
+                            </castIS>
+                            <castIS aUrovenVn="5" aIDRef="is1.1.1.1" aID="is1.1.1.1.6">
+                                <radekIS>
+                                    <invCislo>6</invCislo>
+                                    <puvZnaceni></puvZnaceni>
+                                    <obsah>Seznam strojů, zařízení a kancelářského vybavení v závodě Zett, Ostrava
+                                    </obsah>
+                                    <datace>
+                                        <datum aNormDat="1949" aOdhadDat="ne">1949</datum>
+                                    </datace>
+                                    <eviJednotka>
+                                        <druhEVJ>karton</druhEVJ>
+                                        <cisloEVJ>1</cisloEVJ>
+                                    </eviJednotka>
+                                </radekIS>
+                            </castIS>
+                            <castIS aUrovenVn="5" aIDRef="is1.1.1.1" aID="is1.1.1.1.7">
+                                <radekIS>
+                                    <invCislo>7</invCislo>
+                                    <puvZnaceni></puvZnaceni>
+                                    <obsah>Protokol a seznam části inventáře převzaté z majetkové podstaty likvidovaného
+                                        závodu Zett v Ostravě Oděvním průmyslem, národní podnik Prostějov
+                                    </obsah>
+                                    <datace>
+                                        <datum aNormDat="1949" aOdhadDat="ne">1949</datum>
+                                    </datace>
+                                    <eviJednotka>
+                                        <druhEVJ>karton</druhEVJ>
+                                        <cisloEVJ>1</cisloEVJ>
+                                    </eviJednotka>
+                                </radekIS>
+                            </castIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.1.1" aID="is1.1.1.2">
+                            <nadpisIS>
+                                <obsah>b) Investice a výstavba</obsah>
+                            </nadpisIS>
+                            <castIS aUrovenVn="5" aIDRef="is1.1.1.2" aID="is1.1.1.2.1">
+                                <radekIS>
+                                    <invCislo>8</invCislo>
+                                    <puvZnaceni></puvZnaceni>
+                                    <obsah>Předběžné rozpočty nákladů stavebních prací při adaptaci tovární budovy firmy
+                                        Zett na Kostelní ulici č. p. 101 v Moravské Ostravě, cenové nabídky různých
+                                        stavebních firem
+                                    </obsah>
+                                    <datace>
+                                        <datum aNormDat="1927" aOdhadDat="ne">1927</datum>
+                                    </datace>
+                                    <eviJednotka>
+                                        <druhEVJ>karton</druhEVJ>
+                                        <cisloEVJ>2</cisloEVJ>
+                                    </eviJednotka>
+                                </radekIS>
+                            </castIS>
+                            <castIS aUrovenVn="5" aIDRef="is1.1.1.2" aID="is1.1.1.2.2">
+                                <radekIS>
+                                    <invCislo>9</invCislo>
+                                    <puvZnaceni></puvZnaceni>
+                                    <obsah>Popisy strojů a technického zařízení, cenové nabídky dodavatelů tohoto zboží
+                                        firmě Zett, továrna na čokoládu a cukrovinky, Ostrava
+                                    </obsah>
+                                    <datace>
+                                        <datum aNormDat="1932/1942" aOdhadDat="ne">1932-1942</datum>
+                                    </datace>
+                                    <eviJednotka>
+                                        <druhEVJ>karton</druhEVJ>
+                                        <cisloEVJ>2</cisloEVJ>
+                                    </eviJednotka>
+                                </radekIS>
+                            </castIS>
+                        </castIS>
+                    </castIS>
+                </castIS>
+                <castIS aUrovenVn="2" aIDRef="is1" aID="is1.2">
+                    <nadpisIS>
+                        <obsah>II. Účetní materiál</obsah>
+                    </nadpisIS>
+                    <castIS aUrovenVn="3" aIDRef="is1.2" aID="is1.2.1">
+                        <nadpisIS>
+                            <obsah>1. Účetní knihy</obsah>
+                        </nadpisIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.2.1" aID="is1.2.1.1">
+                            <radekIS>
+                                <invCislo>10</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Pokladní kniha</obsah>
+                                <datace>
+                                    <datum aNormDat="1947" aOdhadDat="ne">1947</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>úřední kniha</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.2.1" aID="is1.2.1.2">
+                            <radekIS>
+                                <invCislo>11</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Pokladní kniha</obsah>
+                                <datace>
+                                    <datum aNormDat="1948" aOdhadDat="ne">1948</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>úřední kniha</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.2.1" aID="is1.2.1.3">
+                            <radekIS>
+                                <invCislo>12</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Pokladní kniha</obsah>
+                                <datace>
+                                    <datum aNormDat="1949" aOdhadDat="ne">1949</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>úřední kniha</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                    </castIS>
+                    <castIS aUrovenVn="3" aIDRef="is1.2" aID="is1.2.2">
+                        <nadpisIS>
+                            <obsah>2. Účetní spisy</obsah>
+                        </nadpisIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.2.2" aID="is1.2.2.1">
+                            <radekIS>
+                                <invCislo>13</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Účetní bilance</obsah>
+                                <datace>
+                                    <datum aNormDat="1938" aOdhadDat="ne">1938</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>karton</druhEVJ>
+                                    <cisloEVJ>2</cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.2.2" aID="is1.2.2.2">
+                            <radekIS>
+                                <invCislo>14</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Inventury majetku</obsah>
+                                <datace>
+                                    <datum aNormDat="1944/1946" aOdhadDat="ne">1944-1946</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>karton</druhEVJ>
+                                    <cisloEVJ>2</cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.2.2" aID="is1.2.2.3">
+                            <radekIS>
+                                <invCislo>15</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Přiznání majetkových hodnot a přiznání bernímu úřadu k dávce z majetku</obsah>
+                                <datace>
+                                    <datum aNormDat="1945/1949" aOdhadDat="ne">1945-1949</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>karton</druhEVJ>
+                                    <cisloEVJ>2</cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.2.2" aID="is1.2.2.4">
+                            <radekIS>
+                                <invCislo>16</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Účetní bilance a inventura mejetku</obsah>
+                                <datace>
+                                    <datum aNormDat="1945" aOdhadDat="ne">1945</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>karton</druhEVJ>
+                                    <cisloEVJ>2</cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.2.2" aID="is1.2.2.5">
+                            <radekIS>
+                                <invCislo>17</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Účetní bilance a inventura majetku</obsah>
+                                <datace>
+                                    <datum aNormDat="1946" aOdhadDat="ne">1946</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>karton</druhEVJ>
+                                    <cisloEVJ>2</cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.2.2" aID="is1.2.2.6">
+                            <radekIS>
+                                <invCislo>18</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Účetní bilance a inventura majetku</obsah>
+                                <datace>
+                                    <datum aNormDat="1947" aOdhadDat="ne">1947</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>karton</druhEVJ>
+                                    <cisloEVJ>2</cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.2.2" aID="is1.2.2.7">
+                            <radekIS>
+                                <invCislo>19</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Účetní bilance a inventura majetku</obsah>
+                                <datace>
+                                    <datum aNormDat="1948" aOdhadDat="ne">1948</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>karton</druhEVJ>
+                                    <cisloEVJ>2</cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                    </castIS>
+                </castIS>
+                <castIS aUrovenVn="2" aIDRef="is1" aID="is1.3">
+                    <nadpisIS>
+                        <obsah>III. Stavebně-technická dokumentace</obsah>
+                    </nadpisIS>
+                    <castIS aUrovenVn="3" aIDRef="is1.3" aID="is1.3.1">
+                        <nadpisIS>
+                            <obsah>1. Stavební dokumentace</obsah>
+                        </nadpisIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.3.1" aID="is1.3.1.1">
+                            <radekIS>
+                                <invCislo>20</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Plán stavby skladu a plnírny továrny na výrobu likéru a rumu, velkoobchod vínem v
+                                    Moravské Ostravě, číslo parcely 1145/1 (později ve vlastnictví firmy Zett).
+                                    Autor: neuveden
+                                    Měřítko: 1:100, 1:50, něm.,
+                                    světlotisk,
+                                    92x52 cm, 35x24 cm, 6 listů, zachov.
+                                </obsah>
+                                <datace>
+                                    <datum aNormDat="1919" aOdhadDat="ne">1919</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>plán</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.3.1" aID="is1.3.1.2">
+                            <radekIS>
+                                <invCislo>21</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Plán stavby ohrazení dvou skladů a vrátnice továrny na výrobu likéru a rumu,
+                                    velkoobchod vínem na parcelách 1145/1, 1152/3, 3668/14 a 3531/18 v Moravské Ostravě
+                                    (později ve vlastnictví firmy Zett).
+                                    Autor: neuveden
+                                    Měřítko: 1:100, něm.,
+                                    modrotisk,
+                                    88x70 cm, 1 list, zachov.
+                                </obsah>
+                                <datace>
+                                    <datum aNormDat="1920" aOdhadDat="ne">1920</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>plán</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.3.1" aID="is1.3.1.3">
+                            <radekIS>
+                                <invCislo>22</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Plán přístavby objektu na továrním dvoře a celkové adaptace továrny na cukrovinky
+                                    Zett Isidora Zuckermanna na Kostelní ulici č. p. 101 v Moravské Ostravě.
+                                    Autor: H. Wurzel
+                                    Měřítko: 1:100, něm.,
+                                    světlotisk kolor.,
+                                    60x50 cm, 1 list, zachov.
+                                </obsah>
+                                <datace>
+                                    <datum aNormDat="1923" aOdhadDat="ne">1923</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>plán</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.3.1" aID="is1.3.1.4">
+                            <radekIS>
+                                <invCislo>23</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Plán adaptačních prací v továrně na čokoládu Zett Isidora Zuckermana v Moravské
+                                    Ostravě.
+                                    Autor: neuveden
+                                    Měřítko: 1:100, něm.,
+                                    světlotisk kolor.,
+                                    40x35 cm, 1 list, zachov.
+                                </obsah>
+                                <datace>
+                                    <datum aNormDat="1925" aOdhadDat="ne">1925</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>plán</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.3.1" aID="is1.3.1.5">
+                            <radekIS>
+                                <invCislo>24</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Nadstavba a přestavba tovární a obytné budovy Isidora Zuckermanna na Kostelní
+                                    ulici č. p. 101 v Moravské Ostravě.
+                                    Autor: Julius Winkelsberg
+                                    Měřítko: 1:500, 1:50, česky,
+                                    světlotisk kolor.,
+                                    100x60 cm, 36x23 cm, 8 listů, zachov.
+                                </obsah>
+                                <datace>
+                                    <datum aNormDat="1927" aOdhadDat="ne">1927</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>plán</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.3.1" aID="is1.3.1.6">
+                            <radekIS>
+                                <invCislo>25</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Návrh výstavby kotelny s novým zajišťovacím parním kotlem.
+                                    Autor: neuveden
+                                    Měřítko: 1:1000, 1:50, česky,
+                                    světlotisk kolor.,
+                                    50x35 cm, 1 list, zachov.
+                                </obsah>
+                                <datace>
+                                    <datum aNormDat="1928" aOdhadDat="ne">1928</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>plán</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.3.1" aID="is1.3.1.7">
+                            <radekIS>
+                                <invCislo>26</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Plány na adaptaci objektu továrny na čokoládu a cukrovinky Isidora Zuckermanna ,
+                                    závod Zett, na parcele 1145/1 v Moravské Ostravě.
+                                    Autor: Otmar Pazourek
+                                    Měřítko: 1:50, něm.,
+                                    světlotisk kolor.,
+                                    70x57 cm, 1 list, zachov.
+                                </obsah>
+                                <datace>
+                                    <datum aNormDat="1928" aOdhadDat="ne">1928</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>plán</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.3.1" aID="is1.3.1.8">
+                            <radekIS>
+                                <invCislo>27</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Plán adaptace bytu na prodejnu v domě Isidora Zuckermanna v Moravské Ostravě č.
+                                    p. 1145.
+                                    Autor: Josef Dostál
+                                    Měřítko: 1:500, česky,
+                                    světlotisk,
+                                    80x35 cm, 1 list, zachov.
+                                </obsah>
+                                <datace>
+                                    <datum aNormDat="1934" aOdhadDat="ne">1934</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>plán</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.3.1" aID="is1.3.1.9">
+                            <radekIS>
+                                <invCislo>28</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Plán obytné administrativní budovy Josefa Zuckermanna na Kostelní ulici 101 v
+                                    Moravské Ostravě.
+                                    Autor: Hans Kotzab
+                                    Měřítko: 1:100, něm.,
+                                    světlotisk kolor.,
+                                    40x29 cm, 1 list, zachov.
+                                </obsah>
+                                <datace>
+                                    <datum aNormDat="1941" aOdhadDat="ne">1941</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>plán</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.3.1" aID="is1.3.1.10">
+                            <radekIS>
+                                <invCislo>29</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Návrh na výstavbu čtyřpodlažního obytného domu "Zett" na Sokolské ulici 1145 v
+                                    Moravské Ostravě.
+                                    Autor: neuveden
+                                    Měřítko: neuvedeno, něm., česky,
+                                    světlotisk, pauzovací papír,
+                                    35x31 cm, 4 listy, zachov.
+                                </obsah>
+                                <datace>
+                                    <datum aNormDat="" aOdhadDat="ne">b. d.</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>plán</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                    </castIS>
+                    <castIS aUrovenVn="3" aIDRef="is1.3" aID="is1.3.2">
+                        <nadpisIS>
+                            <obsah>2. Technická dokumentace</obsah>
+                        </nadpisIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.3.2" aID="is1.3.2.1">
+                            <radekIS>
+                                <invCislo>30</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Plán dieslových motorů v továrně Isidora Zuckermanna v Moravské Ostravě.
+                                    Autor: neuveden
+                                    Měřítko: 1:50, něm.,
+                                    světlotisk kolor.,
+                                    70x50 cm, 1 list, zachov.
+                                </obsah>
+                                <datace>
+                                    <datum aNormDat="1926" aOdhadDat="ne">1926</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>plán</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.3.2" aID="is1.3.2.2">
+                            <radekIS>
+                                <invCislo>31</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Plány kotelní soupravy pro továrnu Zett Isidora Zuckermanna na Kostelní ulici 101
+                                    v Moravské Ostravě.
+                                    Autor: Ing. F. Walter
+                                    Měřítko: 1:30, 1:100, něm.,
+                                    světlotisk kolor.,
+                                    77x66 cm, 45x35 cm, 3 listy, zachov.
+                                </obsah>
+                                <datace>
+                                    <datum aNormDat="1934/1935" aOdhadDat="ne">1934-1935</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>plán</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.3.2" aID="is1.3.2.3">
+                            <radekIS>
+                                <invCislo>32</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Plán vodovodního napájecího zařízení v továrně na cukrovinky Zett.
+                                    Autor: neuveden
+                                    Měřítko: 1:10, něm.,
+                                    světlotisk,
+                                    58x63 cm, 1 list, zachov.
+                                </obsah>
+                                <datace>
+                                    <datum aNormDat="1935" aOdhadDat="ne">1935</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>plán</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                        <castIS aUrovenVn="4" aIDRef="is1.3.2" aID="is1.3.2.4">
+                            <radekIS>
+                                <invCislo>33</invCislo>
+                                <puvZnaceni></puvZnaceni>
+                                <obsah>Plán rozvodu teplé vody v podniku Zett, továrna na čokoládu a cukrovinky,
+                                    Moravská Ostrava.
+                                    Autor: neuveden
+                                    Měřítko: neuvedeno, něm.,
+                                    světlotisk,
+                                    50x40 cm, 1 list, zachov.
+                                </obsah>
+                                <datace>
+                                    <datum aNormDat="" aOdhadDat="ne">b. d.</datum>
+                                </datace>
+                                <eviJednotka>
+                                    <druhEVJ>plán</druhEVJ>
+                                    <cisloEVJ></cisloEVJ>
+                                </eviJednotka>
+                            </radekIS>
+                        </castIS>
+                    </castIS>
+                </castIS>
+            </castIS>
+        </inventSeznam>
+        <rejstrik aTypRej="ciselKodu" aTypRejUpr="časových rozsahů" aID="rjIII" aRazeni="abecedni">
+            <nadpis>Rejstřík časů</nadpis>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII1">
+                <zahlaviR>1927-1937</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.1.1.1.1">1</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII2">
+                <zahlaviR>1931</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.1.1.1.2">2</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII3">
+                <zahlaviR>1940-1948</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.1.1.1.3">3</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII4">
+                <zahlaviR>1942-1950</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.1.1.1.4">4</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII5">
+                <zahlaviR>1948</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.1.1.1.5">5</lokatorR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.2.1.2">11</lokatorR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.2.2.7">19</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII6">
+                <zahlaviR>1949</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.1.1.1.6">6</lokatorR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.1.1.1.7">7</lokatorR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.2.1.3">12</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII7">
+                <zahlaviR>1927</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.1.1.2.1">8</lokatorR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.3.1.5">24</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII8">
+                <zahlaviR>1932-1942</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.1.1.2.2">9</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII9">
+                <zahlaviR>1947</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.2.1.1">10</lokatorR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.2.2.6">18</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII10">
+                <zahlaviR>1938</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.2.2.1">13</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII11">
+                <zahlaviR>1944-1946</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.2.2.2">14</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII12">
+                <zahlaviR>1945-1949</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.2.2.3">15</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII13">
+                <zahlaviR>1945</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.2.2.4">16</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII14">
+                <zahlaviR>1946</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.2.2.5">17</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII15">
+                <zahlaviR>1919</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.3.1.1">20</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII16">
+                <zahlaviR>1920</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.3.1.2">21</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII17">
+                <zahlaviR>1923</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.3.1.3">22</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII18">
+                <zahlaviR>1925</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.3.1.4">23</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII19">
+                <zahlaviR>1928</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.3.1.6">25</lokatorR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.3.1.7">26</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII20">
+                <zahlaviR>1934</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.3.1.8">27</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII21">
+                <zahlaviR>1941</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.3.1.9">28</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII22">
+                <zahlaviR>b. d.</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.3.1.10">29</lokatorR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.3.2.4">33</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII23">
+                <zahlaviR>1926</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.3.2.1">30</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII24">
+                <zahlaviR>1934-1935</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.3.2.2">31</lokatorR>
+            </hesloRej>
+            <hesloRej aUrovenVn="1" aIDRef="rjIII" aID="rjIII25">
+                <zahlaviR>1935</zahlaviR>
+                <lokatorR aZdurazneni="ne" aIDRef="is1.3.2.3">32</lokatorR>
+            </hesloRej>
+        </rejstrik>
+    </pomucka>
+</dokumentArchPomucky>

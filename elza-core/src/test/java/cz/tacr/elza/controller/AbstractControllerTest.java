@@ -234,7 +234,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         RestAssured.port = port;                        // nastavi default port pro REST-assured
         RestAssured.baseURI = RestAssured.DEFAULT_URI;  // nastavi default URI pro REST-assured. Nejcasteni localhost
         login();
-        importXmlFile(null, null, XmlImportType.PARTY, IMPORT_SCOPE, 1, XmlImportControllerTest.getFile(XML_INSTITUTION));
+        importXmlFile(null, null, XmlImportType.PARTY, IMPORT_SCOPE, 1, XmlImportControllerTest.getFile(XML_INSTITUTION), null);
     }
 
     protected void login() {
@@ -1982,7 +1982,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                      final XmlImportType type,
                                      final String scopeName,
                                      final Integer scopeId,
-                                     final File xmlFile) {
+                                     final File xmlFile,
+                                     final Integer ruleSetId) {
         HashMap<String, Object> params = new HashMap<>();
 
         if (transformationName != null) {
@@ -1999,6 +2000,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
         }
         if (scopeId != null) {
             params.put("scopeId", scopeId);
+        }
+        if (ruleSetId != null) {
+            params.put("ruleSetId", ruleSetId);
         }
         return multipart(spec -> spec.multiPart("xmlFile", xmlFile).params(params), XML_IMPORT);
     }

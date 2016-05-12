@@ -15,8 +15,6 @@ public class XmlImportConfigVO {
 
     private Integer ruleSetId;
 
-    private Integer arrangementTypeId;
-
     private RegScopeVO regScope;
 
     public XmlImportConfigVO() {
@@ -60,14 +58,6 @@ public class XmlImportConfigVO {
 
     public void setRuleSetId(Integer ruleSetId) {
         this.ruleSetId = ruleSetId;
-    }
-
-    public Integer getArrangementTypeId() {
-        return arrangementTypeId;
-    }
-
-    public void setArrangementTypeId(Integer arrangementTypeId) {
-        this.arrangementTypeId = arrangementTypeId;
     }
 
     public RegScopeVO getRegScope() {
