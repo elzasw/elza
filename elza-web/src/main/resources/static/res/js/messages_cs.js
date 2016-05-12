@@ -156,7 +156,7 @@ var messages = {
 
     "arr.fund.version": "Verze {0}",
     "arr.fund.namedOutput.active": "Přehled platných AP",
-    "arr.fund.namedOutput.hist": "Přehled historichkých AP",
+    "arr.fund.namedOutput.hist": "Přehled historických AP",
     "arr.fund.namedOutput.action.showPDF": "Zobrazit PDF",
     "arr.fund.namedOutput.version": "Verze {0}",
     "arr.fund.detail": "Detail AS",
