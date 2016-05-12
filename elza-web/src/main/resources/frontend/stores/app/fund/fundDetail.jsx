@@ -54,8 +54,14 @@ export default function fundDetail(state = initialState, action = {}) {
                     currentDataKey: '',
                 }
             } else {
-                return state
+                return state;
             }
+        case types.OUTPUT_CHANGES: {
+            return {
+                ...state,
+                currentDataKey: ''
+            }
+        }
         case types.FUNDS_SELECT_FUND:
             if (state.id !== action.id) {
                 return {

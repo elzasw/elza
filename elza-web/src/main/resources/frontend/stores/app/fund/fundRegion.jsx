@@ -52,6 +52,7 @@ export default function fundRegion(state = initialState, action = {}) {
             }
         case types.CHANGE_APPROVE_VERSION:
         case types.CHANGE_FUND:
+        case types.OUTPUT_CHANGES:
             return {
                 ...state,
                 currentDataKey: '',
