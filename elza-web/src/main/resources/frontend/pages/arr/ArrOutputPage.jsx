@@ -147,8 +147,8 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         const fund = this.getActiveFund(this.props)
         const fundOutputDetail = fund.fundOutput.fundOutputDetail
 
-        this.dispatch(fundActionFormShow())
-        this.dispatch(fundActionFormChange({nodeList: fundOutputDetail.namedOutput.nodes}))
+        this.dispatch(fundActionFormChange(fund.versionId, {nodes: fundOutputDetail.namedOutput.nodes}));
+        this.dispatch(fundActionFormShow(fund.versionId));
         this.dispatch(routerNavigate('/arr/actions'));
     }
 

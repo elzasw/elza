@@ -57,6 +57,7 @@ var messages = {
     "ribbon.action.arr.fund.approve": "Nová verze AS",
     "ribbon.action.arr.fund.ruleSet": "Změnit pravidla",
     "ribbon.action.arr.fund.bulkActions": "Hromadné akce",
+    "ribbon.action.arr.fund.newFundAction": "Připravit novou hrom. akci",
     "ribbon.action.arr.fund.output": "Výstupy",
     "ribbon.action.arr.fund.fas": "Archivní pomůcky",
     "ribbon.action.fundAction.action.new": "Nová akce",
