@@ -215,12 +215,16 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
             @Override
             public Predicate getPredicate(final CriteriaBuilder builder) {
-                if (CollectionUtils.isEmpty(packetTypes)) {
+                if (CollectionUtils.isEmpty(packetTypes) && !withoutType) {
                     throw new IllegalStateException("Musí být zadána alespoň jeden typ obalu.");
                 }
 
                 if (!withoutType) {
                     return packetTypeJoin.in(packetTypes);
+                }
+
+                if (CollectionUtils.isEmpty(packetTypes)) {
+                    return packetTypeJoin.isNull();
                 }
 
                 return builder.or(packetTypeJoin.in(packetTypes), packetTypeJoin.isNull());
@@ -261,12 +265,16 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
             @Override
             public Predicate getPredicate(final CriteriaBuilder builder) {
-                if (CollectionUtils.isEmpty(specs)) {
+                if (CollectionUtils.isEmpty(specs) && !withoutSpec) {
                     throw new IllegalStateException("Musí být zadána alespoň jedna specifikace.");
                 }
 
                 if (!withoutSpec) {
                     return specJoin.in(specs);
+                }
+
+                if (CollectionUtils.isEmpty(specs)) {
+                    return specJoin.isNull();
                 }
 
                 return builder.or(specJoin.in(specs), specJoin.isNull());

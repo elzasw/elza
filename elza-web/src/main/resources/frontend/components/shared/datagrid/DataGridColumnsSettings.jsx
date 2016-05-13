@@ -28,6 +28,9 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
             }
         })
 
+        // Seřazení dostupných sloupečků podle abecedy
+        available.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()))
+
         this.state = {
             columns: props.columns,
             leftSelected: [],
@@ -90,7 +93,7 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
             }
         })
 
-        // Vytvoření seřazeného seznamu available (newAvailable) podle pořadí, které je definované na vstupu jako columns
+        // Získání nového seznamu available
         const visibleMap = getMapFromList(newVisible)
         const newAvailable = []
         columns.forEach(col => {
@@ -98,6 +101,8 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
                 newAvailable.push(col)
             }
         })
+        // Seřazení dostupných sloupečků podle abecedy
+        newAvailable.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()))
 
         // ---
 
@@ -165,6 +170,8 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
         )
     }
 }
+
+// columns - musí být seřazeno podle definovaného pořadí!!!
 
 module.exports = connect()(DataGridColumnsSettings);
 

@@ -15,10 +15,11 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import com.jayway.restassured.mapper.ObjectMapper;
 import cz.tacr.elza.api.ArrPacket;
-import cz.tacr.elza.controller.vo.ArrNamedOutputVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.exception.FilterExpiredException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -40,32 +41,6 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.FundListCountResult;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPartyWithCount;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRecordWithCount;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
@@ -104,9 +79,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String BULK_ACTION_CONTROLLER_URL = "/api/bulkActionManagerV2";
     protected static final String PARTY_CONTROLLER_URL = "/api/partyManagerV2";
     protected static final String REGISTRY_CONTROLLER_URL = "/api/registryManagerV2";
+    protected static final String KML_CONTROLLER_URL = "/api/kmlManagerV1";
     protected static final String VALIDATION_CONTROLLER_URL = "/api/validate";
     protected static final String RULE_CONTROLLER_URL = "/api/ruleSetManagerV2";
     protected static final String XML_IMPORT_CONTROLLER_URL = "/api/xmlImportManagerV2";
+    protected static final String USER_CONTROLLER_URL = "/api/user";
 
     // ADMIN
     protected static final String REINDEX = ADMIN_CONTROLLER_URL + "/reindex";
@@ -172,6 +149,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String REMOVE_NODES_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/remove";
     protected static final String DELETE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}";
     protected static final String UPDATE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/update";
+    protected static final String FILTER_NODES = ARRANGEMENT_CONTROLLER_URL + "/filterNodes/{versionId}";
+    protected static final String FILTERED_NODES = ARRANGEMENT_CONTROLLER_URL + "/getFilterNodes/{versionId}";
+    protected static final String FILTERED_FULLTEXT_NODES = ARRANGEMENT_CONTROLLER_URL + "/getFilteredFulltext/{versionId}";
+    protected static final String FUND_POLICY = ARRANGEMENT_CONTROLLER_URL + "/fund/policy/{fundVersionId}";
+    protected static final String VALIDATION = ARRANGEMENT_CONTROLLER_URL + "/validation/{fundVersionId}/{fromIndex}/{toIndex}";
+    protected static final String VALIDATION_ERROR = ARRANGEMENT_CONTROLLER_URL + "/validation/{fundVersionId}/find/{nodeId}/{direction}";
 
     // Party
     protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations";
@@ -202,6 +185,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String UPDATE_RECORD = REGISTRY_CONTROLLER_URL + "/updateRecord";
     protected static final String DELETE_RECORD = REGISTRY_CONTROLLER_URL + "/deleteRecord";
 
+
+    protected static final String CREATE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/createRegCoordinates";
+    protected static final String UPDATE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/updateRegCoordinates";
+    protected static final String DELETE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/deleteRegCoordinates";
+
     protected static final String CREATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/createVariantRecord";
     protected static final String UPDATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/updateVariantRecord";
     protected static final String DELETE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/deleteVariantRecord";
@@ -215,12 +203,19 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DATA_TYPES = RULE_CONTROLLER_URL + "/dataTypes";
     protected static final String DESC_ITEM_TYPES = RULE_CONTROLLER_URL + "/descItemTypes";
     protected static final String PACKAGES = RULE_CONTROLLER_URL + "/getPackages";
+    protected static final String POLICY = RULE_CONTROLLER_URL + "/policy";
+    protected static final String POLICY_TYPES = POLICY + "/types/{fundVersionId}";
+    protected static final String POLICY_ALL_TYPES = POLICY + "/types";
+    protected static final String POLICY_SET = POLICY + "/{nodeId}/{fundVersionId}";
+    protected static final String POLICY_GET = POLICY + "/{nodeId}/{fundVersionId}/{includeParents}";
 
     // Validation
     protected static final String VALIDATE_UNIT_DATE = VALIDATION_CONTROLLER_URL + "/unitDate";
 
     // XmlImport
     protected final static String XML_IMPORT = XML_IMPORT_CONTROLLER_URL + "/import";
+
+    protected final static String USER_DETAIL = USER_CONTROLLER_URL + "/detail";
 
     @Value("${local.server.port}")
     private int port;
@@ -242,7 +237,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         RestAssured.port = port;                        // nastavi default port pro REST-assured
         RestAssured.baseURI = RestAssured.DEFAULT_URI;  // nastavi default URI pro REST-assured. Nejcasteni localhost
         login();
-        importXmlFile(null, null, XmlImportType.PARTY, IMPORT_SCOPE, 1, XmlImportControllerTest.getFile(XML_INSTITUTION));
+        importXmlFile(null, null, XmlImportType.PARTY, IMPORT_SCOPE, 1, XmlImportControllerTest.getFile(XML_INSTITUTION), null);
     }
 
     protected void login() {
@@ -298,15 +293,23 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                       String url,
                                       HttpMethod method,
                                       HttpStatus status) {
+        return httpMethod(params, url, method, status, JSON_CT_HEADER);
+    }
+
+    public static Response httpMethod(Function<RequestSpecification, RequestSpecification> params,
+                                      String url,
+                                      HttpMethod method,
+                                      HttpStatus status,
+                                      Header header) {
         Assert.assertNotNull(params);
         Assert.assertNotNull(url);
         Assert.assertNotNull(method);
 
         RequestSpecification requestSpecification = params.apply(given());
 
-        requestSpecification.header(JSON_CT_HEADER).log().all().config(UTF8_ENCODER_CONFIG).cookies(cookies);
+        requestSpecification.header(header).log().all().config(UTF8_ENCODER_CONFIG).cookies(cookies);
 
-        Response response = null;
+        Response response;
         switch (method) {
             case GET:
                 response = requestSpecification.get(url);
@@ -1751,6 +1754,37 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return delete(spec -> spec.queryParam("variantRecordId", id), DELETE_VARIANT_RECORD);
     }
 
+
+    /**
+     * Vytvoření reg souřadnic
+     *
+     * @param coordinates VO objektu k vytvoření
+     * @return VO
+     */
+    protected RegCoordinatesVO createRegCoordinates(final RegCoordinatesVO coordinates) {
+        return put(spec -> spec.body(coordinates), CREATE_REG_COORDINATES).getBody().as(RegCoordinatesVO.class);
+    }
+
+    /**
+     * Úprava reg souřadnic
+     *
+     * @param coordinates VO objektu k vytvoření
+     * @return VO
+     */
+    protected RegCoordinatesVO updateRegCoordinates(final RegCoordinatesVO coordinates) {
+        return put(spec -> spec.body(coordinates), UPDATE_REG_COORDINATES).getBody().as(RegCoordinatesVO.class);
+    }
+
+    /**
+     * Smazání reg souřadnic
+     *
+     * @param id variantního hesla
+     * @return response
+     */
+    protected Response deleteRegCoordinates(final int id) {
+        return delete(spec -> spec.queryParam("coordinatesId", id), DELETE_REG_COORDINATES);
+    }
+
     /**
      * Vytvoření party
      *
@@ -1951,7 +1985,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                      final XmlImportType type,
                                      final String scopeName,
                                      final Integer scopeId,
-                                     final File xmlFile) {
+                                     final File xmlFile,
+                                     final Integer ruleSetId) {
         HashMap<String, Object> params = new HashMap<>();
 
         if (transformationName != null) {
@@ -1968,6 +2003,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
         }
         if (scopeId != null) {
             params.put("scopeId", scopeId);
+        }
+        if (ruleSetId != null) {
+            params.put("ruleSetId", ruleSetId);
         }
         return multipart(spec -> spec.multiPart("xmlFile", xmlFile).params(params), XML_IMPORT);
     }
@@ -2029,6 +2067,94 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParameter("versionId", versionId)
                 .queryParameter("descItemTypeId", descItemTypeId)
                 .body(replaceDataBody), DELETE_DATA_VALUES);
+    }
+
+    /**
+     * Provede filtraci uzlů podle filtru a uloží filtrované id do session.
+     *
+     * @param versionId id verze
+     * @param filters filtry
+     *
+     * @return počet všech záznamů splňujících filtry
+     */
+    protected void filterNodes(final Integer versionId,
+                                  final Filters filters) {
+        put(spec -> spec
+                .pathParameter("versionId", versionId)
+                .body(filters), FILTER_NODES);
+    }
+
+    /**
+     * Do filtrovaného seznamu načte hodnoty atributů a vrátí podstránku záznamů.
+     *
+     * @param versionId       id verze
+     * @param page            číslo stránky, od 0
+     * @param pageSize        velikost stránky
+     * @param descItemTypeIds id typů atributů, které chceme načíst
+     * @return mapa hodnot atributů nodeId -> descItemId -> value
+     */
+    protected List<FilterNode> getFilteredNodes(final Integer versionId,
+                                                final Integer page,
+                                                final Integer pageSize,
+                                                final Set<Integer> descItemTypeIds)
+            throws FilterExpiredException {
+        return Arrays.asList(put(spec -> spec
+                .pathParameter("versionId", versionId)
+                .queryParameter("page", page)
+                .queryParameter("pageSize", pageSize)
+                .body(descItemTypeIds), FILTERED_NODES).as(FilterNode[].class));
+    }
+
+    /**
+     * Ve filtrovaném seznamu najde uzly podle fulltextu. Vrací seřazený seznam uzlů podle jejich indexu v seznamu
+     * všech filtrovaných uzlů.
+     *
+     * @param versionId id verze stromu
+     * @param fulltext  fulltext
+     * @param luceneQuery v hodnotě fulltext je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext
+     * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
+     */
+    protected List<FilterNodePosition> getFilteredFulltextNodes(final Integer versionId,
+                                                                final String fulltext,
+                                                                final Boolean luceneQuery) {
+        return Arrays.asList(get(spec -> spec
+                .pathParameter("versionId", versionId)
+                .queryParameter("fulltext", fulltext)
+                .queryParameter("luceneQuery", luceneQuery), FILTERED_FULLTEXT_NODES).as(FilterNodePosition[].class));
+    }
+
+    protected ArrangementController.ValidationItems getValidation(final Integer fundVersionId,
+                                                                  final Integer fromIndex,
+                                                                  final Integer toIndex) {
+        return get(spec -> spec
+                        .pathParameter("fundVersionId", fundVersionId)
+                        .pathParameter("fromIndex", fromIndex)
+                        .pathParameter("toIndex", toIndex)
+                , VALIDATION).as(ArrangementController.ValidationItems.class);
+    }
+
+    protected ArrangementController.ValidationItems findValidationError(final Integer fundVersionId,
+                                                                        final Integer nodeId,
+                                                                        final Integer direction) {
+        return get(spec -> spec
+                .pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("nodeId", nodeId)
+                .pathParameter("direction", direction)
+                , VALIDATION_ERROR).as(ArrangementController.ValidationItems.class);
+    }
+
+    protected List<NodeItemWithParent> getAllNodesVisiblePolicy(final Integer fundVersionId) {
+        return Arrays.asList(get(spec -> spec
+                .pathParameter("fundVersionId", fundVersionId), FUND_POLICY).as(NodeItemWithParent[].class));
+    }
+
+    /**
+     * Získání informací o přihlášeném uživateli.
+     *
+     * @return detail přihlášeného uživatele
+     */
+    protected UserDetailVO getUserDetail() {
+        return get(spec -> spec, USER_DETAIL).as(UserDetailVO.class);
     }
 
     /**
@@ -2118,7 +2244,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                  final String code,
                                                  final Boolean temporary) {
         ArrangementController.OutputNameParam param = new ArrangementController.OutputNameParam();
-        param.setCode(code);
+        param.setInternalCode(code);
         param.setName(name);
         param.setTemporary(temporary);
         return createNamedOutput(fundVersion.getId(), param);
@@ -2195,7 +2321,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                      final String name,
                                      final String code) {
         ArrangementController.OutputNameParam param = new ArrangementController.OutputNameParam();
-        param.setCode(code);
+        param.setInternalCode(code);
         param.setName(name);
         updateNamedOutput(fundVersion.getId(), output.getId(), param);
     }
@@ -2214,6 +2340,56 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParam("fundVersionId", fundVersionId)
                 .pathParam("outputId", outputId)
                 .body(param), UPDATE_NAMED_OUTPUT);
+    }
+
+    /**
+     * Vrací typy oprávnění podle verze fondu.
+     *
+     * @param fundVersionId identifikátor verze AS
+     * @return seznam typů oprávnění
+     */
+    protected List<RulPolicyTypeVO> getPolicyTypes(final Integer fundVersionId) {
+        return Arrays.asList(get(spec -> spec.pathParameter("fundVersionId", fundVersionId), POLICY_TYPES).as(RulPolicyTypeVO[].class));
+    }
+
+    /**
+     * Vrací typy oprávnění.
+     *
+     * @return seznam typů oprávnění
+     */
+    protected List<RulPolicyTypeVO> getAllPolicyTypes() {
+        return Arrays.asList(get(spec -> spec, POLICY_ALL_TYPES).as(RulPolicyTypeVO[].class));
+    }
+
+    /**
+     * Nastaví/smazaní viditelnost typu oprávnění.
+     *
+     * @param nodeId              identifikátor node ke kterému se hodnota vztahuje.
+     * @param fundVersionId       identifikátor verze AS
+     * @param visiblePolicyParams parametry nastavení
+     */
+    protected void setVisiblePolicy(final Integer nodeId,
+                                    final Integer fundVersionId,
+                                    final RuleController.VisiblePolicyParams visiblePolicyParams) {
+        put(spec -> spec.pathParameter("nodeId", nodeId)
+                .pathParameter("fundVersionId", fundVersionId)
+                .body(visiblePolicyParams), POLICY_SET);
+    }
+
+    /**
+     * Získání nastavení oprávnění pro uzly.
+     *
+     * @param nodeId         identifikátor node ke kterému hledám oprávnění
+     * @param fundVersionId  identifikátor verze AS
+     * @param includeParents zohlednit zděděné oprávnění od rodičů?
+     * @return mapa uzlů map typů a jejich zobrazení
+     */
+    protected RuleController.VisiblePolicyTypes getVisiblePolicy(final Integer nodeId,
+                                                                 final Integer fundVersionId,
+                                                                 final Boolean includeParents) {
+        return get(spec -> spec.pathParameter("nodeId", nodeId)
+                .pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("includeParents", includeParents), POLICY_GET).as(RuleController.VisiblePolicyTypes.class);
     }
 
 }

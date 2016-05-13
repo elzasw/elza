@@ -95,11 +95,20 @@ export function changeParty(partyId){
     }
 }
 
-export function changeApproveVersion(versionId) {
+export function changePartyDelete(partyId){
+    return {
+        type: types.CHANGE_PARTY_DELETED,
+        partyId: partyId
+    }
+}
+
+
+export function changeApproveVersion(fundId, versionId) {
 
     return {
         type: types.CHANGE_APPROVE_VERSION,
-        versionId
+        versionId,
+        fundId
     }
 }
 

@@ -57,6 +57,7 @@ var messages = {
     "ribbon.action.arr.fund.approve": "Nová verze AS",
     "ribbon.action.arr.fund.ruleSet": "Změnit pravidla",
     "ribbon.action.arr.fund.bulkActions": "Hromadné akce",
+    "ribbon.action.arr.fund.newFundAction": "Připravit novou hrom. akci",
     "ribbon.action.arr.fund.output": "Výstupy",
     "ribbon.action.arr.fund.fas": "Archivní pomůcky",
     "ribbon.action.fundAction.action.new": "Nová akce",
@@ -119,7 +120,7 @@ var messages = {
     "arr.output.title.nodesAdded": "JP byly přidány",
     "arr.output.title.deleted": "Výstup byl smazán",
     "arr.output.name": "Název výstupu",
-    "arr.output.code": "Interní kód výstupu",
+    "arr.output.internalCode": "Interní kód výstupu",
     "arr.output.temporary": "Dočasný výstup",
 
     "arr.fundAction.noFa" : "Není vybrán žádný archivní soubor",
@@ -155,7 +156,7 @@ var messages = {
 
     "arr.fund.version": "Verze {0}",
     "arr.fund.namedOutput.active": "Přehled platných AP",
-    "arr.fund.namedOutput.hist": "Přehled historichkých AP",
+    "arr.fund.namedOutput.hist": "Přehled historických AP",
     "arr.fund.namedOutput.action.showPDF": "Zobrazit PDF",
     "arr.fund.namedOutput.version": "Verze {0}",
     "arr.fund.detail": "Detail AS",
@@ -318,6 +319,7 @@ var messages = {
     
     "subNodeForm.countOfCoordinates": "Počet bodů: {0}",
     "subNodeForm.errorPointCoordinates": "Chybně zadaný bod. Zadávejte ve tvaru \"15.5154,49.535\"",
+    "subNodeForm.formatPointCoordinates": "Zadávejte ve tvaru \"15.5154,49.535\"",
 
     "subNodeForm.descItemTypeAdd": "Přidat prvek",
     "subNodeForm.descItemTypeUnlockAll": "Odemknout vše",
@@ -345,6 +347,7 @@ var messages = {
     "registry.coordinates.description": "Popis",
     "registry.coordinates.upload": "Importovat",
     "registry.coordinates.download": "Exportovat",
+    "registry.coordinates.format": "Zadávejte ve tvaru \"15.5154,49.535\"",
     "registry.detail.characteristics": "Charakteristika",
     "registry.detail.note": "Poznámka",
     "registry.detail.type": "Typ rejstříku - hierarchie",

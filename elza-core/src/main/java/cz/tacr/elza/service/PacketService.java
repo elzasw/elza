@@ -23,6 +23,7 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 
@@ -115,24 +116,25 @@ public class PacketService {
                                            final Integer count,
                                            final Integer[] packetIds) {
         Assert.notNull(fund);
+        String prefixFinal = StringUtils.isEmpty(prefix) ? "" : prefix;
+
         if (count <= 0
             || fromNumber < 0
             || lenNumber <= 0
-            || (packetIds != null && packetIds.length <= 0)
-            || prefix.length() < 1) {
+            || (packetIds != null && packetIds.length <= 0)) {
             throw new IllegalArgumentException("Neplatný vstup");
         }
 
         List<ArrPacket> packets = new ArrayList<>();
 
-        List<String> storageNumbers = packetRepository.findStorageNumbers(fund, prefix, Arrays.asList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED));
+        List<String> storageNumbers = packetRepository.findStorageNumbers(fund, prefixFinal, Arrays.asList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED));
         if (packetIds == null) {
             for (int i = 0; i < count; i++) {
                 ArrPacket packet = new ArrPacket();
                 packet.setFund(fund);
                 packet.setState(ArrPacket.State.OPEN);
                 packet.setPacketType(packetType);
-                String storageNumber = createAndCheckStorageNumber(prefix, lenNumber, storageNumbers, fromNumber + i);
+                String storageNumber = createAndCheckStorageNumber(prefixFinal, lenNumber, storageNumbers, fromNumber + i);
                 storageNumbers.add(storageNumber);
                 packet.setStorageNumber(storageNumber);
                 packets.add(packet);
@@ -148,7 +150,7 @@ public class PacketService {
             for (int i = 0; i < packets.size(); i++) {
                 ArrPacket packet = packets.get(i);
                 packet.setPacketType(packetType);
-                String storageNumber = createAndCheckStorageNumber(prefix, lenNumber, storageNumbers, fromNumber + i);
+                String storageNumber = createAndCheckStorageNumber(prefixFinal, lenNumber, storageNumbers, fromNumber + i);
                 storageNumbers.add(storageNumber);
                 packet.setStorageNumber(storageNumber);
             }

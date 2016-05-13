@@ -38,6 +38,7 @@ import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.ValuesTypes;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -83,9 +84,11 @@ import cz.tacr.elza.filter.condition.NotEmptyDescItemCondition;
 import cz.tacr.elza.filter.condition.NotIntervalDescItemCondition;
 import cz.tacr.elza.filter.condition.SelectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SelectedValuesDescItemEnumCondition;
+import cz.tacr.elza.filter.condition.SelectsNothingCondition;
 import cz.tacr.elza.filter.condition.SubsetDescItemCondition;
 import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -128,6 +131,9 @@ public class ClientFactoryDO {
 
     @Autowired
     private InstitutionRepository institutionRepository;
+
+    @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
 
     @Autowired
     private DescriptionItemService descriptionItemService;
@@ -656,15 +662,20 @@ public class ClientFactoryDO {
      * @return {@link ArrDataUnitdate}
      */
     private ArrDataUnitdate createUnitdate(final String value) {
+        String[] split = StringUtils.split(value, '|');
+        Integer calendarId = Integer.valueOf(split[0]);
+        ArrCalendarType arrCalendarType = calendarTypeRepository.findOne(calendarId);
+        CalendarType calendarType = CalendarType.valueOf(arrCalendarType.getCode());
+
         ArrDataUnitdate unitdate = new ArrDataUnitdate();
-        UnitDateConvertor.convertToUnitDate(value, unitdate);
+        UnitDateConvertor.convertToUnitDate(split[1], unitdate);
 
         String valueFrom = unitdate.getValueFrom();
         if (valueFrom == null) {
             unitdate.setNormalizedFrom(Long.MIN_VALUE);
         } else {
             LocalDateTime fromDate = LocalDateTime.parse(valueFrom, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            unitdate.setNormalizedFrom(CalendarConverter.toSeconds(CalendarType.GREGORIAN, fromDate));
+            unitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, fromDate));
         }
 
         String valueTo = unitdate.getValueTo();
@@ -672,7 +683,7 @@ public class ClientFactoryDO {
             unitdate.setNormalizedTo(Long.MAX_VALUE);
         } else {
             LocalDateTime toDate = LocalDateTime.parse(valueTo, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            unitdate.setNormalizedTo(CalendarConverter.toSeconds(CalendarType.GREGORIAN, toDate));
+            unitdate.setNormalizedTo(CalendarConverter.toSeconds(calendarType, toDate));
         }
 
         return unitdate;
@@ -699,11 +710,22 @@ public class ClientFactoryDO {
     }
 
     private ArrDataUnitdate getConditionValueUnitdate(final List<String> conditions) {
-        return getConditionValue(conditions, ArrDataUnitdate.class);
+        if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())
+                || conditions.size() < 2) {
+            throw new IllegalArgumentException("Není předána hodnota podmínky.");
+        }
+
+        Iterator<String> iterator = conditions.iterator();
+
+        String calendar = iterator.next();
+        String date = iterator.next();
+        List<String> dateConditions = new ArrayList<>(1);
+        dateConditions.add(calendar + "|" + date);
+        return getConditionValue(dateConditions, ArrDataUnitdate.class);
     }
 
     private Interval<Long> getConditionValueIntervalLong(final List<String> conditions) {
-        ArrDataUnitdate unitdate = getConditionValue(conditions, ArrDataUnitdate.class);
+        ArrDataUnitdate unitdate = getConditionValueUnitdate(conditions);
 
         return new Interval<Long>(unitdate.getNormalizedFrom(), unitdate.getNormalizedTo());
     }
@@ -718,27 +740,34 @@ public class ClientFactoryDO {
      */
     private void createValuesEnumCondition(final ValuesTypes valuesTypes, final List<String> values,
             final String attName, final List<DescItemCondition> conditions) {
-        if (valuesTypes != null && CollectionUtils.isNotEmpty(values)) {
-            boolean containsNull = FilterTools.removeNullValues(values);
+        if (valuesTypes == null && values == null) {
+            return;
+        }
+        Assert.notNull(valuesTypes);
+        Assert.notNull(values);
 
-            if (valuesTypes == ValuesTypes.SELECTED) {
-                if (containsNull && !values.isEmpty()) { // vybrané hodnoty i "Prázdné"
-                    conditions.add(new SelectedValuesDescItemEnumCondition(values, attName));
-                    conditions.add(new NoValuesCondition());
-                } else if (!values.isEmpty()) { // vybrané jen hodnoty
-                    conditions.add(new SelectedValuesDescItemEnumCondition(values, attName));
-                } else { // vybrané jen "Prázdné"
-                    conditions.add(new NoValuesCondition());
-                }
-            } else {
-                if (containsNull && !values.isEmpty()) { // odškrtlé hodnoty i "Prázdné" = hodnoty které neobsahují proškrtlé položky
-                    conditions.add(new UnselectedValuesDescItemEnumCondition(values, attName));
-                } else if (!values.isEmpty()) { // odškrtlé jen hodnoty = hodnoty které neobsahují proškrtlé položky + nody bez hodnot
-                    conditions.add(new UnselectedValuesDescItemEnumCondition(values, attName));
-                    conditions.add(new NoValuesCondition());
-                } else { // odškrtlé jen "Prázdné" = vše s hodnotou
-                    conditions.add(new NotEmptyDescItemCondition());
-                }
+        boolean noValues = CollectionUtils.isEmpty(values);
+        boolean containsNull = FilterTools.removeNullValues(values);
+
+        if (valuesTypes == ValuesTypes.SELECTED) {
+            if (noValues) { // nehledat nic
+                conditions.add(new SelectsNothingCondition());
+            } else if (containsNull && !values.isEmpty()) { // vybrané hodnoty i "Prázdné"
+                conditions.add(new SelectedValuesDescItemEnumCondition(values, attName));
+                conditions.add(new NoValuesCondition());
+            } else if (!values.isEmpty()) { // vybrané jen hodnoty
+                conditions.add(new SelectedValuesDescItemEnumCondition(values, attName));
+            } else { // vybrané jen "Prázdné"
+                conditions.add(new NoValuesCondition());
+            }
+        } else {
+            if (containsNull && !values.isEmpty()) { // odškrtlé hodnoty i "Prázdné" = hodnoty které neobsahují proškrtlé položky
+                conditions.add(new UnselectedValuesDescItemEnumCondition(values, attName));
+            } else if (!values.isEmpty()) { // odškrtlé jen hodnoty = hodnoty které neobsahují proškrtlé položky + nody bez hodnot
+                conditions.add(new UnselectedValuesDescItemEnumCondition(values, attName));
+                conditions.add(new NoValuesCondition());
+            } else { // odškrtlé jen "Prázdné" = vše s hodnotou
+                conditions.add(new NotEmptyDescItemCondition());
             }
         }
     }
@@ -753,27 +782,34 @@ public class ClientFactoryDO {
      */
     private void createSpecificationsEnumCondition(final ValuesTypes valuesTypes, final List<Integer> values,
             final String attName, final List<DescItemCondition> conditions) {
-        if (valuesTypes != null && CollectionUtils.isNotEmpty(values)) {
-            boolean containsNull = FilterTools.removeNullValues(values);
+        if (valuesTypes == null && values == null) {
+            return;
+        }
+        Assert.notNull(valuesTypes);
+        Assert.notNull(values);
 
-            if (valuesTypes == ValuesTypes.SELECTED) {
-                if (containsNull && !values.isEmpty()) { // vybrané hodnoty i "Prázdné"
-                    conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
-                    conditions.add(new NoSpecsCondition());
-                } else if (!values.isEmpty()) { // vybrané jen hodnoty
-                    conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
-                } else { // vybrané jen "Prázdné"
-                    conditions.add(new NoSpecsCondition());
-                }
-            } else {
-                if (containsNull && !values.isEmpty()) { // odškrtlé hodnoty i "Prázdné" = hodnoty které neobsahují proškrtlé položky
-                    conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
-                } else if (!values.isEmpty()) { // odškrtlé jen hodnoty = hodnoty které neobsahují proškrtlé položky + nody bez hodnot
-                    conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
-                    conditions.add(new NoSpecsCondition());
-                } else { // odškrtlé jen "Prázdné" = vše s hodnotou
-                    conditions.add(new NotEmptyDescItemCondition());
-                }
+        boolean noValues = CollectionUtils.isEmpty(values);
+        boolean containsNull = FilterTools.removeNullValues(values);
+
+        if (valuesTypes == ValuesTypes.SELECTED) {
+            if (noValues) { // nehledat nic
+                conditions.add(new SelectsNothingCondition());
+            } else if (containsNull && !values.isEmpty()) { // vybrané hodnoty i "Prázdné"
+                conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
+                conditions.add(new NoSpecsCondition());
+            } else if (!values.isEmpty()) { // vybrané jen hodnoty
+                conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
+            } else { // vybrané jen "Prázdné"
+                conditions.add(new NoSpecsCondition());
+            }
+        } else {
+            if (containsNull && !values.isEmpty()) { // odškrtlé hodnoty i "Prázdné" = hodnoty které neobsahují proškrtlé položky
+                conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
+            } else if (!values.isEmpty()) { // odškrtlé jen hodnoty = hodnoty které neobsahují proškrtlé položky + nody bez hodnot
+                conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
+                conditions.add(new NoSpecsCondition());
+            } else { // odškrtlé jen "Prázdné" = vše s hodnotou
+                conditions.add(new NotEmptyDescItemCondition());
             }
         }
     }

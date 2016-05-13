@@ -33,12 +33,12 @@ public interface ArrNamedOutput<F extends ArrFund> extends Serializable {
     /**
      * @return kód výstupu
      */
-    String getCode();
+    String getInternalCode();
 
     /**
-     * @param code kód výstupu
+     * @param internalCode kód výstupu
      */
-    void setCode(String code);
+    void setInternalCode(String internalCode);
 
     /**
      * @return jméno výstupu

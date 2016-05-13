@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.tacr.elza.service.FilterTreeService;
 
 
@@ -10,6 +11,7 @@ import cz.tacr.elza.service.FilterTreeService;
  * @see FilterTreeService
  * @since 22.03.2016
  */
+@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public class DescItemValue {
 
     private String value;

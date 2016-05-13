@@ -34,21 +34,12 @@ public class BulkActionController {
     private ClientFactoryVO factoryVo;
 
     @RequestMapping(
-            value = "/{versionId}/{mandatory}",
+            value = "/{versionId}",
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    List<BulkActionVO> getBulkActions(final @PathVariable(value = "versionId") Integer fundVersionId,
-                                      final @PathVariable(value = "mandatory") Boolean mandatory) {
-        return factoryVo.createBulkActionList(bulkActionService.getBulkActions(fundVersionId, mandatory));
-    }
-
-    @RequestMapping(value = "/validate/{versionId}",
-            method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    List<BulkActionVO> validate(final @PathVariable("versionId") Integer fundVersionId) {
-        return factoryVo.createBulkActionList(bulkActionService.runValidation(fundVersionId));
+    List<BulkActionVO> getBulkActions(final @PathVariable(value = "versionId") Integer fundVersionId) {
+        return factoryVo.createBulkActionList(bulkActionService.getBulkActions(fundVersionId));
     }
 
     @RequestMapping(value = "/list/{versionId}",

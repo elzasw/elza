@@ -156,7 +156,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                             <small>{date}</small>
                         </h3>
                     </div>
-                    <div><textarea className='config' readOnly={true} value="KONFIGURACE AKCE"/></div>
+                    <div><textarea className='config' readOnly={true} value=""/></div>
                     {data.error ? <div><h3>{i18n('arr.fundAction.error')}</h3>
                         <div>{data.error}</div>
                     </div> : ''}

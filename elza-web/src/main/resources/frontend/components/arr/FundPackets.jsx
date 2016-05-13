@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, Icon, i18n, FilterableListBox, Loading, AddPacketForm} from 'components/index.jsx';
 import {DropdownButton, MenuItem,Input} from 'react-bootstrap'
 import {fetchFundPacketsIfNeeded, fundPacketsFilterByText, fundPacketsChangeSelection, fundPacketsFilterByState,
-    fundPacketsChangeSelctions, fundPacketsChangeState, fundPacketsCreate, fundPacketsChangeNumbers, fundPacketsDelete} from 'actions/arr/fundPackets'
+    fundPacketsChangeSelctions, fundPacketsChangeState, fundPacketsCreate, fundPacketsChangeNumbers, fundPacketsDelete} from 'actions/arr/fundPackets.jsx'
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 
@@ -169,9 +169,9 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
                             <MenuItem onClick={this.handleAddMany} eventKey='changeNumbers'>{i18n('arr.fund.packets.action.add.more')}</MenuItem>
                         </DropdownButton>
                         <DropdownButton noCaret disabled={selectedIds.length === 0} title={<div><Icon glyph='fa-edit' /> {i18n('arr.fund.packets.action.checkedItems')}</div>}>
-                            <MenuItem onClick={this.handleChangeState.bind(this, "OPEN")} eventKey='toOpen'>{i18n('arr.fund.packets.action.changeState.toOpen')}</MenuItem>
-                            <MenuItem onClick={this.handleChangeState.bind(this, "CLOSED")} eventKey='toClosed'>{i18n('arr.fund.packets.action.changeState.toClosed')}</MenuItem>
-                            <MenuItem onClick={this.handleChangeState.bind(this, "CANCELED")} eventKey='toCanceled'>{i18n('arr.fund.packets.action.changeState.toCanceled')}</MenuItem>
+                            {filterState !== "OPEN" && <MenuItem onClick={this.handleChangeState.bind(this, "OPEN")} eventKey='toOpen'>{i18n('arr.fund.packets.action.changeState.toOpen')}</MenuItem>}
+                            {filterState !== "CLOSED" && <MenuItem onClick={this.handleChangeState.bind(this, "CLOSED")} eventKey='toClosed'>{i18n('arr.fund.packets.action.changeState.toClosed')}</MenuItem>}
+                            {filterState !== "CANCELED" && <MenuItem onClick={this.handleChangeState.bind(this, "CANCELED")} eventKey='toCanceled'>{i18n('arr.fund.packets.action.changeState.toCanceled')}</MenuItem>}
                             <MenuItem divider />
                             <MenuItem onClick={this.handleChangeNumbers} eventKey='changeNumbers'>{i18n('arr.fund.packets.action.changeNumbers')}</MenuItem>
                             <MenuItem divider />

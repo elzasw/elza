@@ -29,9 +29,11 @@ import {isFundRootId} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
+import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
+import {routerNavigate} from 'actions/router.jsx'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
@@ -60,7 +62,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             'getActiveFundId', 'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
             'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
-            'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext', 'trySetFocus');
+            'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm');
 
         this.state = {
             developerExpandedSpecsIds: {},
@@ -235,6 +237,12 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         );
     }
 
+    handleOpenFundActionForm(versionId, subNode) {
+        this.dispatch(fundActionFormChange(versionId, {nodes: [subNode]}));
+        this.dispatch(fundActionFormShow(versionId));
+        this.dispatch(routerNavigate('/arr/actions'));
+    }
+
     /**
      * Sestavení Ribbonu.
      * @return {Object} view
@@ -282,6 +290,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                         </Button>,
                         <Button key="previous-error" onClick={this.handleErrorNext.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}><Icon glyph="fa-arrow-right"/>
                             <div><span className="btnText">{i18n('ribbon.action.arr.validation.error.next')}</span></div>
+                        </Button>,
+                        <Button key="prepareFundAction" onClick={this.handleOpenFundActionForm.bind(this, activeFund.versionId, activeInfo.activeSubNode)}><Icon glyph="fa-cog"/>
+                            <div><span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span></div>
                         </Button>
                     )
                 }

@@ -30,7 +30,7 @@ var BulkActionsTable = class BulkActionsTable extends AbstractReactComponent {
         (isDirty || this.props.store.mandatory !== mandatory) && !isFetching &&
         (this.props.versionValidate ?
                 this.dispatch(bulkActionsValidateVersion(versionId, silent)) :
-                this.dispatch(bulkActionsLoadData(versionId, mandatory, silent))
+                this.dispatch(bulkActionsLoadData(versionId, silent))
         )
     }
 

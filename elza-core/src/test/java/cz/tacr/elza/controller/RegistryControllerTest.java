@@ -1,9 +1,6 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -160,8 +157,16 @@ public class RegistryControllerTest extends AbstractControllerTest {
         variant1 = createVariantRecord(variant1);
         variant2 = createVariantRecord(variant2);
 
+        RegCoordinatesVO coordinates = new RegCoordinatesVO();
+        coordinates.setRegRecordId(recordA.getRecordId());
+        coordinates.setValue("POINT(11 10)");
+        coordinates.setDescription("Karlův most");
+
+        coordinates = createRegCoordinates(coordinates);
+
         recordA = getRecord(recordA.getRecordId());
         Assert.assertTrue("Ocekavame 2 variantni hesla pro heslo A", recordA.getVariantRecords().size() == 2);
+        Assert.assertTrue("Ocekavame 1 souradnici", recordA.getCoordinates().size() == 1);
 
         String changedCharacter = "Ja nechci byt regRecordA.";
         recordA.setCharacteristics(changedCharacter);
@@ -170,12 +175,24 @@ public class RegistryControllerTest extends AbstractControllerTest {
         String changedRecord = "Upraveny record";
         variant2.setRecord(changedRecord);
         variant2 = updateVariantRecord(variant2);
-        Assert.assertTrue("Ocekavame upravny record", variant2.getRecord().equals(changedRecord));
+        Assert.assertTrue("Ocekavame upraveny record", variant2.getRecord().equals(changedRecord));
+
+        String cordNewPoint = "POINT (1 1)";
+        String cordDesc = "Karlův most odkud kam";
+        coordinates.setValue(cordNewPoint);
+        coordinates.setDescription(cordDesc);
+
+        coordinates = updateRegCoordinates(coordinates);
+        Assert.assertTrue("Ocekavame upravene souradnice", coordinates.getValue().equals(cordNewPoint) && coordinates.getDescription().equals(cordDesc));
 
         deleteVariantRecord(variant2.getVariantRecordId());
         recordA = getRecord(recordA.getRecordId());
         Assert.assertTrue("Ocekavame 1 variantni heslo pro heslo A", recordA.getVariantRecords().size() == 1);
         Assert.assertTrue("Ocekavame charakteristiku \"" + changedCharacter + "\"", recordA.getCharacteristics().equals(changedCharacter));
+
+        deleteRegCoordinates(coordinates.getCoordinatesId());
+        recordA = getRecord(recordA.getRecordId());
+        Assert.assertTrue("Ocekavame 0 souradnic pro heslo A", recordA.getCoordinates().isEmpty());
 
         RegRecordVO recordC = new RegRecordVO();
         RegRecordVO recordD = new RegRecordVO();

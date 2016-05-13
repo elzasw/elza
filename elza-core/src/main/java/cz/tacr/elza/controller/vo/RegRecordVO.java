@@ -10,7 +10,7 @@ import java.util.List;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
  */
-public class RegRecordVO {
+public class RegRecordVO extends AbstractRegRecord {
 
     /**
      * Id hesla.

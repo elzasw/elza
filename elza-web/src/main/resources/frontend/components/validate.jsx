@@ -36,6 +36,27 @@ export function validateInt(number) {
 };
 
 /**
+ * Validace souřadnice typu bod.
+ * @param value
+ */
+export function validateCoordinatePoint(value) {
+    if (value.indexOf("POINT") === 0) {
+        let left = value.indexOf('(') + 1;
+        let right = value.indexOf(')');
+        if ((right - left) == 0) {
+            return i18n('subNodeForm.validate.value.notEmpty');
+        }
+        let data = value.substr(left, value.indexOf(')') - left).split(' ');
+        if (value === '' || value === ' ' || data.length != 2 || data[0] == null || data[0] == '' || data[1] == null || data[1] == '') {
+            return i18n("subNodeForm.errorPointCoordinates");
+        } else {
+            return null;
+        }
+    }    
+    return null;
+};
+
+/**
  * Validace zda je číslo desetinným číslem kladným i záporným v intervalu desetinného čísla JAVA
  * @param doubleNumber decimal(18,6)
  **/

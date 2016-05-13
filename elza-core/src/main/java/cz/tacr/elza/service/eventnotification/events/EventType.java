@@ -12,7 +12,7 @@ public enum EventType {
     FUND_UPDATE(EventId.class),
     FUND_DELETE(EventId.class),
 
-    APPROVE_VERSION(EventVersion.class),
+    APPROVE_VERSION(EventFund.class),
 
     NODE_DELETE(EventIdInVersion.class),
 
@@ -27,9 +27,11 @@ public enum EventType {
     DELETE_LEVEL(EventDeleteNode.class),
 
     PARTY_CREATE(EventId.class),
+    PARTY_DELETE(EventId.class),
     PARTY_UPDATE(EventId.class),
 
     RECORD_CREATE(EventId.class),
+    RECORD_DELETE(EventId.class),
     RECORD_UPDATE(EventId.class),
 
     COPY_OLDER_SIBLING_ATTRIBUTE(EventIdInVersion.class),

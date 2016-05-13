@@ -5,14 +5,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { Router, Route, IndexRoute } from 'react-router';
-import { createHistory, useBasename, useQueries } from 'history';
+import { Router, Route, IndexRoute, useBasename, useRouterHistory  } from 'react-router';
+import { createHistory } from 'history';
 import { Provider } from 'react-redux'
 import { AppStore } from 'stores/index.jsx'
 
-import useRouterHistory from 'react-router/lib/useRouterHistory'
-
-const browserHistory = useRouterHistory(useBasename(createHistory))({
+const browserHistory = useRouterHistory(createHistory)({
     basename: serverContextPath + ''
 });
 

@@ -21,6 +21,10 @@ class UrlFactory {
     static exportFund(versionId, transformationName) {
         return '/api/xmlExportManagerV2/fund/' + versionId + '?transformationName=' + encodeURIComponent(transformationName);
     }
+
+    static exportRegCoordinate(objectId) {
+        return '/api/kmlManagerV1/export/regCoordinates/' + objectId;
+    }
 }
 
 /**
@@ -254,8 +258,8 @@ class WebApi{
 
     }
 
-    getBulkActions(versionId, mandatory = false) {
-        return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/' + versionId + '/' + mandatory, null);
+    getBulkActions(versionId) {
+        return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/' + versionId, null);
     }
 
     getBulkActionsState(versionId) {

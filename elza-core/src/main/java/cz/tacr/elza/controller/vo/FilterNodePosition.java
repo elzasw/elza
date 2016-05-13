@@ -25,6 +25,10 @@ public class FilterNodePosition {
      */
     private Integer index;
 
+    public FilterNodePosition() {
+
+    }
+
     public FilterNodePosition(final Integer nodeId, final Integer index) {
         this.nodeId = nodeId;
         this.index = index;

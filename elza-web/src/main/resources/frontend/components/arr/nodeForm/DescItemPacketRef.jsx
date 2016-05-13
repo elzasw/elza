@@ -39,9 +39,9 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
             cls += ' active'
         }
 
+                // {false && this.packetName(item)}
         return (
             <div className={cls} key={item.id}>
-                {false && this.packetName(item)}
                 {item.storageNumber}
             </div>
         )

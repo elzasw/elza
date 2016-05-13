@@ -121,7 +121,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
         this.dispatch(modalDialogShow(this, i18n('arr.output.title.edit'),
             <AddOutputForm
-                initData={{name: fundOutputDetail.namedOutput.name, code: fundOutputDetail.namedOutput.code}}
+                initData={{name: fundOutputDetail.namedOutput.name, internalCode: fundOutputDetail.namedOutput.internalCode}}
                 onSubmitForm={(data) => {this.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data))}}/>));
     }
 
@@ -147,8 +147,8 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         const fund = this.getActiveFund(this.props)
         const fundOutputDetail = fund.fundOutput.fundOutputDetail
 
-        this.dispatch(fundActionFormShow())
-        this.dispatch(fundActionFormChange({nodeList: fundOutputDetail.namedOutput.nodes}))
+        this.dispatch(fundActionFormChange(fund.versionId, {nodes: fundOutputDetail.namedOutput.nodes}));
+        this.dispatch(fundActionFormShow(fund.versionId));
         this.dispatch(routerNavigate('/arr/actions'));
     }
 

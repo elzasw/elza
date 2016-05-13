@@ -93,6 +93,29 @@ export default function partyRegion(state = initialState, action) {
 
             return state;
 
+        case types.CHANGE_PARTY_DELETED:
+            var isDirty = false;
+            var selectedPartyID = state.selectedPartyID == action.partyId ? null : state.selectedPartyID;
+
+            if (state.items) {
+                state.items.forEach(item => {
+                    if (item.partyId == action.partyId) {
+                        isDirty = true;
+                    }
+                });
+            }
+
+            if (isDirty) {
+                return Object.assign({}, state, {
+                    dirty: isDirty,
+                    isFetchingSearch: false,
+                    fetchedSearch: false,
+                    selectedPartyID: selectedPartyID
+                })
+            }
+
+            return state;
+
         case types.PARTY_SELECT:
             var result = {...state};
             result.panel = panel(result.panel, action);

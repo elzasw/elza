@@ -21,6 +21,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.filter.condition.DescItemCondition;
 import cz.tacr.elza.filter.condition.HibernateDescItemCondition;
 import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
+import cz.tacr.elza.filter.condition.SelectsNothingCondition;
 
 /**
  * Skupina filtrů pro typ atributu.
@@ -63,6 +64,8 @@ public class DescItemTypeFilter {
             if (condition instanceof LuceneDescItemCondition) {
                 LuceneDescItemCondition lucene = (LuceneDescItemCondition) condition;
                 luceneQueries.add(lucene.createLuceneQuery(queryBuilder));
+            } else if (condition instanceof SelectsNothingCondition) {
+                return new HashMap<>(0);
             } else {
                 HibernateDescItemCondition hibernate = (HibernateDescItemCondition) condition;
                 hibernateQueries.add(hibernate.createHibernateQuery(entityManager, fundId, descItemType.getDescItemTypeId(), lockChangeId));

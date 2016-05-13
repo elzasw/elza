@@ -13,7 +13,7 @@ public class ArrNamedOutputVO {
 
     private Integer id;
 
-    private String code;
+    private String internalCode;
 
     private String name;
 
@@ -33,12 +33,12 @@ public class ArrNamedOutputVO {
         this.id = id;
     }
 
-    public String getCode() {
-        return code;
+    public String getInternalCode() {
+        return internalCode;
     }
 
-    public void setCode(final String code) {
-        this.code = code;
+    public void setInternalCode(final String internalCode) {
+        this.internalCode = internalCode;
     }
 
     public String getName() {

@@ -6,7 +6,7 @@ import {buklActionStateChange} from 'actions/arr/bulkActions.jsx';
 import {store} from 'stores/app/AppStore.jsx';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
-        changeNodes, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
+        changeNodes, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty, changePartyDelete,
     changeMoveLevel, changeRegistryRecord, changeFund, deleteFund, changeFundRecord, changeInstitution,
     changeVisiblePolicy, fundOutputChanges, fundOutputChangesDetail, changeFundAction} from 'actions/global/change.jsx';
 
@@ -100,6 +100,10 @@ function processEvents(values) {
                 institutionChange();
                 break;
 
+            case 'PARTY_DELETE':
+                partyDelete(value);
+                break;
+
             case 'PARTY_CREATE':
             case 'PARTY_UPDATE':
                 partyUpdate(value);
@@ -185,7 +189,7 @@ function processEvents(values) {
 }
 
 function approveVersionChange(value) {
-    store.dispatch(changeApproveVersion(value.versionId));
+    store.dispatch(changeApproveVersion(value.fundId, value.versionId));
 }
 
 function addLevelAfterChange(value) {
@@ -294,6 +298,10 @@ function fundActionActionChange(value) {
 
 function partyUpdate(value){
     store.dispatch(changeParty(value.ids[0]));
+}
+
+function partyDelete(value){
+    store.dispatch(changePartyDelete(value.ids[0]));
 }
 
 /**

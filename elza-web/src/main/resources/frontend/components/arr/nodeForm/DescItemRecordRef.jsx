@@ -20,7 +20,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     }
 
     focus() {
-        this.refs.focusEl.focus()
+        this.refs.autocomplete.focus()
     }
 
     handleChange(id, valueObj) {
@@ -42,6 +42,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     }
 
     handleCreateRecord() {
+        this.refs.autocomplete.closeMenu();
         this.props.onCreateRecord();
     }
 
@@ -68,9 +69,9 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
 
     renderFooter() {
         return (
-                <div className="create-record">
-                    <Button onClick={this.handleCreateRecord}><Icon glyph='fa-plus'/>{i18n('registry.addNewRegistry')}</Button>
-                </div>
+            <div className="create-record">
+                <Button onClick={this.handleCreateRecord}><Icon glyph='fa-plus'/>{i18n('registry.addNewRegistry')}</Button>
+            </div>
         )
     }
 
@@ -97,7 +98,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
                 <div className='desc-item-value desc-item-value-parts'>
                     <Autocomplete
                             {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-record'])}
-                            ref='focusEl'
+                            ref='autocomplete'
                             customFilter
                             footer={footer}
                             value={value}

@@ -16,6 +16,7 @@ import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.UserService;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -505,6 +506,7 @@ public class RegistryController {
     public RegCoordinatesVO createRegCoordinates(@RequestBody final RegCoordinatesVO coordinatesVO) {
         Assert.isNull(coordinatesVO.getCoordinatesId(),
                 "Při vytváření záznamu nesmí být vyplněno ID (coordinatesId).");
+        Assert.isTrue(StringUtils.isNotEmpty(coordinatesVO.getValue()), "Nutno vyplnit hodnotu!");
         RegCoordinates coordinates = factoryDO.createRegCoordinates(coordinatesVO);
         coordinates = registryService.saveRegCoordinates(coordinates);
         return factoryVo.createRegCoordinates(coordinates);
@@ -522,9 +524,9 @@ public class RegistryController {
         Assert.notNull(coordinatesVO.getCoordinatesId(), "Očekáváno ID pro update.");
         RegCoordinates coordinates = regCoordinatesRepository.findOne(coordinatesVO.getCoordinatesId());
         Assert.notNull(coordinates, "Nebyl nalezen záznam pro update s id " + coordinatesVO.getCoordinatesId());
-
+        Assert.isTrue(StringUtils.isNotEmpty(coordinatesVO.getValue()), "Nutno vyplnit hodnotu!");
         RegCoordinates coordinatesDO = factoryDO.createRegCoordinates(coordinatesVO);
-        if (!"POINT".equals(coordinates.getValue().getGeometryType())) {
+        if (!"Point".equals(coordinates.getValue().getGeometryType())) {
             coordinatesDO.setValue(coordinates.getValue());
         }
 

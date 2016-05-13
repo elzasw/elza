@@ -46,6 +46,7 @@ export default function fundDetail(state = initialState, action = {}) {
             } else {
                 return state
             }
+        case types.CHANGE_APPROVE_VERSION:
         case types.CHANGE_FUND:
             if (state.id === action.fundId) {
                 return {
@@ -53,8 +54,14 @@ export default function fundDetail(state = initialState, action = {}) {
                     currentDataKey: '',
                 }
             } else {
-                return state
+                return state;
             }
+        case types.OUTPUT_CHANGES: {
+            return {
+                ...state,
+                currentDataKey: ''
+            }
+        }
         case types.FUNDS_SELECT_FUND:
             if (state.id !== action.id) {
                 return {

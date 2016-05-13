@@ -16,13 +16,13 @@ export function isBulkAction(action) {
     }
 }
 
-export function bulkActionsLoadData(versionId, mandatory = false, silent = false) {
+export function bulkActionsLoadData(versionId, silent = false) {
     return (dispatch) => {
         if (!silent) {
-            dispatch(bulkActionsDataLoading(versionId, mandatory));
+            dispatch(bulkActionsDataLoading(versionId));
         }
         barrier(
-            WebApi.getBulkActions(versionId, mandatory),
+            WebApi.getBulkActions(versionId),
             WebApi.getBulkActionsState(versionId)
         )
             .then(data => {
@@ -94,7 +94,7 @@ export function bulkActionsStateReceived(versionId, data, code) {
     }
 }
 
-export function bulkActionsDataLoading(versionId, mandatory) {
+export function bulkActionsDataLoading(versionId, mandatory = false) {
     return {
         type: types.BULK_ACTIONS_DATA_LOADING,
         mandatory,

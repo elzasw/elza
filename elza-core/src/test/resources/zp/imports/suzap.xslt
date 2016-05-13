@@ -325,6 +325,7 @@
     <fund>
     	<xsl:attribute name="arr-type-code">INV</xsl:attribute>
     	<xsl:attribute name="rule-set-code">ZP2015</xsl:attribute>
+    	<xsl:attribute name="institution-code"><xsl:value-of select="./ap:metaData/ap:oPomucce/ap:instituce"/></xsl:attribute>
     	<name><xsl:value-of select="./ap:metaData/ap:oPomucce/ap:nazevPomucky[@aTyp='nazev']"/></name>
         <xsl:choose>
           <xsl:when test="count(./ap:pomucka/ap:inventSeznam/ap:castIS)>1">

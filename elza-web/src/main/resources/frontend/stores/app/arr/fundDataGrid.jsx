@@ -54,7 +54,7 @@ function changeSearchedIndex(state, newIndex) {
             selectedIds: selectedIds,
             pageIndex: pageIndex,
             searchedCurrentIndex: newIndex,
-            cellFocus: {row: info.index - pageIndex * state.pageSize, col: 0}
+            cellFocus: {row: info.index - pageIndex * state.pageSize, col: state.cellFocus.col}
         }
     }
 }
@@ -83,6 +83,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 subNodeForm: subNodeForm(),
                 searchedItems: [],
                 searchedCurrentIndex: 0,
+                cellFocus: {row: 0, col: 0},
             }
         case types.STORE_SAVE:
             const {pageSize, pageIndex, filter, visibleColumns, columnsOrder, columnInfos} = state;
@@ -130,6 +131,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 ...state,
                 filter: {},
                 fetchedFilter: false,
+                isFetchingFilter: false,
             }
         case types.FUND_FUND_DATA_GRID_PREPARE_EDIT:
             var result = {

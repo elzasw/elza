@@ -88,6 +88,9 @@ public class RuleService {
     @Autowired
     private ArrDescItemsPostValidator descItemsPostValidator;
 
+    @Autowired
+    private PolicyService policyService;
+
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
     /**
@@ -472,19 +475,21 @@ public class RuleService {
 
         List<RulDescItemTypeExt> rulDescItemTypeExtList = createExt(itemTypeList);
 
+        RulPolicyType policyType = policyService.getPolicyTypes().stream().findFirst().get();
+
         // projde všechny typy atributů
         for (RulDescItemTypeExt rulDescItemTypeExt : rulDescItemTypeExtList) {
 
             rulDescItemTypeExt.setType(RulDescItemType.Type.IMPOSSIBLE);
             rulDescItemTypeExt.setRepeatable(true);
-            rulDescItemTypeExt.setPolicyTypeCode("PT1");
+            rulDescItemTypeExt.setPolicyTypeCode(policyType.getCode());
 
             // projde všechny specifikace typů atributů
             for (RulDescItemSpecExt rulDescItemSpecExt : rulDescItemTypeExt.getRulDescItemSpecList()) {
 
                 rulDescItemSpecExt.setType(RulDescItemSpec.Type.IMPOSSIBLE);
                 rulDescItemSpecExt.setRepeatable(true);
-                rulDescItemSpecExt.setPolicyTypeCode("PT1");
+                rulDescItemSpecExt.setPolicyTypeCode(policyType.getCode());
 
             }
         }

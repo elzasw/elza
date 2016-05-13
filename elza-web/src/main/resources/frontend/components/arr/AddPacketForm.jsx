@@ -25,9 +25,6 @@ const validate = (values, props) => {
             errors.storageNumber = i18n('global.validation.required');
         }
     } else if (props.createMany || props.changeNumbers) {
-        if (!values.prefix) {
-            errors.prefix = i18n('global.validation.required');
-        }
         if (!values.start) {
             errors.start = i18n('global.validation.required');
         }

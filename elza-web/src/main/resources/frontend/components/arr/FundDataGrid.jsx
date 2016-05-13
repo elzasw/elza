@@ -112,7 +112,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                             }
                             break
                         case 'UNITDATE':
-                            itemValue = this.state.calendarTypesMap[value.calendarTypeId].name.charAt(0) + ": " + value.calendarTypeId + "-" + value.value
+                            itemValue = this.state.calendarTypesMap[value.calendarTypeId].name.charAt(0) + ": " + value.value
                             break
                         default:
                             itemValue = value.value
@@ -286,7 +286,9 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         const {fundDataGrid, descItemTypes} = this.props
         const refTypesMap = getMapFromList(descItemTypes.items)
         const columnsOrder = this.getColumnsOrder(fundDataGrid, refTypesMap)
+        console.log('columnsOrder', columnsOrder)
         const visibleColumns = fundDataGrid.visibleColumns
+        console.log('visibleColumns', visibleColumns)
         const columns = columnsOrder.map(id => {
             const refType = refTypesMap[id]
             return {
@@ -295,7 +297,6 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 desc: refType.description,
             }
         })
-        columns.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()))
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.columnSettings.title'),
             <DataGridColumnsSettings
@@ -505,7 +506,8 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         const {fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, packetTypes} = this.props;
         const {cols} = this.state;
 
-        if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
+        if (!descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
+        // if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
             return <Loading/>
         }
 

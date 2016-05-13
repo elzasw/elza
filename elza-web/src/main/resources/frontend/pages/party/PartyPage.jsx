@@ -287,7 +287,8 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         const {splitter, userDetail, partyRegion} = this.props;
         var canEdit = false
         if (partyRegion.fetchedDetail && !partyRegion.isFetchingDetail) {
-            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyRegion.selectedPartyData.record.scopeId})) {
+            if (partyRegion.selectedPartyData
+                && userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyRegion.selectedPartyData.record.scopeId})) {
                 canEdit = true
             }
         }

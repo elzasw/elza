@@ -311,7 +311,6 @@ public class ArrangementController {
 
         Assert.notNull(input.getFromNumber());
         Assert.notNull(input.getLenNumber());
-        Assert.notNull(input.getPrefix());
         Assert.notNull(input.getCount());
 
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
@@ -731,7 +730,6 @@ public class ArrangementController {
                                 @RequestParam(value = "dateRange", required = false) final String dateRange) {
 
         Assert.hasText(name);
-        Assert.hasText(internalCode);
         Assert.notNull(institutionId);
         Assert.notNull(ruleSetId);
 
@@ -1369,7 +1367,7 @@ public class ArrangementController {
                                               @RequestBody OutputNameParam param) {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrNamedOutput namedOutput = outputService.createNamedOutput(fundVersion, param.getName(), param.getCode(), param.getTemporary());
+        ArrNamedOutput namedOutput = outputService.createNamedOutput(fundVersion, param.getName(), param.getInternalCode(), param.getTemporary());
         return factoryVo.createNamedOutput(namedOutput);
     }
 
@@ -1452,7 +1450,7 @@ public class ArrangementController {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getCode());
+        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode());
     }
 
     /**
@@ -2326,7 +2324,7 @@ public class ArrangementController {
         /**
          * Kód výstupu.
          */
-        private String code;
+        private String internalCode;
 
         /**
          * Je výstup dočasný?
@@ -2341,12 +2339,12 @@ public class ArrangementController {
             this.name = name;
         }
 
-        public String getCode() {
-            return code;
+        public String getInternalCode() {
+            return internalCode;
         }
 
-        public void setCode(final String code) {
-            this.code = code;
+        public void setInternalCode(final String internalCode) {
+            this.internalCode = internalCode;
         }
 
         public Boolean getTemporary() {

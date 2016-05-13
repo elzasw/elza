@@ -8,6 +8,9 @@ public class UnitdateDescItemValue extends DescItemValue {
 
     private Integer calendarTypeId;
 
+    public UnitdateDescItemValue() {
+
+    }
 
     public UnitdateDescItemValue(final String value, final String specCode,
                                  final Integer calendarTypeId) {

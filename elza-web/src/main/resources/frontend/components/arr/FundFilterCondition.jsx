@@ -18,7 +18,8 @@ var FundFilterCondition = class FundFilterCondition extends AbstractReactCompone
         this.bindMethods('renderValues', 'handleCodeChange', 'handleChangeValue')
 
         this.state = {
-            values: props.values
+            values: props.values,
+            errors: [],
         }
     }
 
@@ -35,16 +36,66 @@ var FundFilterCondition = class FundFilterCondition extends AbstractReactCompone
     }
 
     handleChangeValue(index, value) {
-        const {values, selectedCode, onChange} = this.props
+        const {values, items, selectedCode, onChange, validateField, normalizeField} = this.props
+        const {errors} = this.state
+        const itemsCodeMap = getMapFromList(items, 'code')
+        const selectedItem = itemsCodeMap[selectedCode]
 
         var newValues = [...values]
-        newValues[index] = value
 
-        onChange(selectedCode, newValues)
+        // Normalizace
+        var updatedValue = normalizeField ? normalizeField(selectedCode, selectedItem.values, value, index) : value
+        newValues[index] = updatedValue
+
+        // Validace
+        var hasErrors = false
+        var newErrors = [...errors]
+        const error = validateField(selectedCode, selectedItem.values, updatedValue, index)
+        if (error instanceof Promise) { // promise pro validaci - asi serverová validace
+            hasErrors = true;   // nevíme, zda projde validace, raději nastavíme, že je chyba - aby nešel formulář uložit
+
+            // Zavolání asynchronnní validace
+            error
+                .then(error => {
+                    var {values, selectedCode} = this.props
+                    var {errors} = this.state
+                    var newErrors = [...errors]
+                    newErrors[index] = error;
+
+                    this.setState({errors: newErrors})
+
+                    // Existují nějaké chyby?
+                    var hasErrors = false
+                    newErrors.forEach(err => {
+                        if (err) {
+                            hasErrors = true
+                        }
+                    })
+
+                    // On change
+                    onChange(selectedCode, values, hasErrors)
+                })
+                .catch(() => {})
+        } else {    // vlastní validační hláška
+            newErrors[index] = error;
+        }
+        
+        this.setState({errors: newErrors})
+
+        // Existují nějaké chyby?
+        newErrors.forEach(err => {
+            if (err) {
+                hasErrors = true
+            }
+        })
+
+        // On change
+        onChange(selectedCode, newValues, hasErrors)
     }
 
     renderValues() {
         const {values, children, items, selectedCode} = this.props
+        const {errors} = this.state
         const itemsCodeMap = getMapFromList(items, 'code')
         const selectedItem = itemsCodeMap[selectedCode]
 
@@ -53,6 +104,7 @@ var FundFilterCondition = class FundFilterCondition extends AbstractReactCompone
         for (var a=0; a<selectedItem.values; a++) {
             fields.push({
                 value: values[a],
+                error: errors[a],
                 onChange: this.handleChangeValue.bind(this, a)
             })
         }

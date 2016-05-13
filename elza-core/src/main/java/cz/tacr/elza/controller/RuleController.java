@@ -110,6 +110,12 @@ public class RuleController {
         }
     }
 
+    /**
+     * Vrací typy oprávnění podle verze fondu.
+     *
+     * @param fundVersionId identifikátor verze AS
+     * @return seznam typů oprávnění
+     */
     @RequestMapping(value = "/policy/types/{fundVersionId}", method = RequestMethod.GET)
     public List<RulPolicyTypeVO> getPolicyTypes(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
         Assert.notNull(fundVersionId, "Verze fondu musí být vyplněna");
@@ -121,17 +127,29 @@ public class RuleController {
         return factoryVo.createPolicyTypes(policyTypes);
     }
 
+    /**
+     * Vrací typy oprávnění.
+     *
+     * @return seznam typů oprávnění
+     */
     @RequestMapping(value = "/policy/types", method = RequestMethod.GET)
     public List<RulPolicyTypeVO> getAllPolicyTypes() {
         List<RulPolicyType> policyTypes = policyService.getPolicyTypes();
         return factoryVo.createPolicyTypes(policyTypes);
     }
 
+    /**
+     * Nastaví/smazaní viditelnost typu oprávnění.
+     *
+     * @param nodeId              identifikátor node ke kterému se hodnota vztahuje.
+     * @param fundVersionId       identifikátor verze AS
+     * @param visiblePolicyParams parametry nastavení
+     */
     @Transactional
     @RequestMapping(value = "/policy/{nodeId}/{fundVersionId}", method = RequestMethod.PUT)
     public void setVisiblePolicy(@PathVariable(value = "nodeId") final Integer nodeId,
-                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                              @RequestBody final VisiblePolicyParams visiblePolicyParams) {
+                                 @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                 @RequestBody final VisiblePolicyParams visiblePolicyParams) {
         Assert.notNull(nodeId);
         Assert.notNull(fundVersionId);
         Assert.notNull(visiblePolicyParams);
@@ -146,6 +164,14 @@ public class RuleController {
                 visiblePolicyParams.getIncludeSubtree());
     }
 
+    /**
+     * Získání nastavení oprávnění pro uzly.
+     *
+     * @param nodeId         identifikátor node ke kterému hledám oprávnění
+     * @param fundVersionId  identifikátor verze AS
+     * @param includeParents zohlednit zděděné oprávnění od rodičů?
+     * @return mapa uzlů map typů a jejich zobrazení
+     */
     @RequestMapping(value = "/policy/{nodeId}/{fundVersionId}/{includeParents}", method = RequestMethod.GET)
     public VisiblePolicyTypes getVisiblePolicy(@PathVariable(value = "nodeId") final Integer nodeId,
                                  @PathVariable(value = "fundVersionId") final Integer fundVersionId,

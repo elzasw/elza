@@ -19,10 +19,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -37,7 +33,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.google.common.collect.Iterables;
 
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrNodeConformity.State;
+import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
@@ -72,10 +71,30 @@ import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.InvalidQueryException;
+import cz.tacr.elza.repository.BulkActionNodeRepository;
+import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FundRegisterScopeRepository;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NamedOutputRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeOutputRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.eventnotification.events.EventVersion;
 
 
 /**
@@ -394,7 +413,7 @@ public class ArrangementService {
         return levelRepository.save(level);
     }
 
-    public ArrLevel createLevel(ArrChange createChange, ArrNode node, ArrNode parentNode, int position) {
+    public ArrLevel createLevel(final ArrChange createChange, final ArrNode node, final ArrNode parentNode, final int position) {
         Assert.notNull(createChange);
 
         ArrLevel level = new ArrLevel();
@@ -405,7 +424,7 @@ public class ArrangementService {
         return levelRepository.save(level);
     }
 
-    public ArrNode createNode(ArrFund fund) {
+    public ArrNode createNode(final ArrFund fund) {
         ArrNode node = new ArrNode();
         node.setLastUpdate(LocalDateTime.now());
         node.setUuid(UUID.randomUUID().toString());
@@ -535,12 +554,12 @@ public class ArrangementService {
         ruleService.conformityInfoAll(newVersion);
 
         eventNotificationService.publishEvent(
-                new EventVersion(EventType.APPROVE_VERSION, version.getFundVersionId()));
+                new EventFund(EventType.APPROVE_VERSION, version.getFund().getFundId(), version.getFundVersionId()));
 
         return newVersion;
     }
 
-    private void deleteVersion(ArrFundVersion version) {
+    private void deleteVersion(final ArrFundVersion version) {
         Assert.notNull(version);
 
         updateConformityInfoService.terminateWorkerInVersionAndWait(version);
@@ -559,7 +578,7 @@ public class ArrangementService {
         fundVersionRepository.delete(version);
     }
 
-    private void deleteConformityInfo(ArrNodeConformity conformityInfo) {
+    private void deleteConformityInfo(final ArrNodeConformity conformityInfo) {
         nodeConformityErrorsRepository.findByNodeConformity(conformityInfo).forEach(error ->
                         nodeConformityErrorsRepository.delete(error)
         );
@@ -599,7 +618,7 @@ public class ArrangementService {
         levelRepository.delete(level);
     }
 
-    private void deleteNodeForce(ArrNode node) {
+    private void deleteNodeForce(final ArrNode node) {
         Assert.notNull(node);
 
         nodeRegisterRepository.findByNode(node).forEach(relation -> {
@@ -626,7 +645,7 @@ public class ArrangementService {
      * @param fundId id archivní pomůcky
      * @return verze
      */
-    public ArrFundVersion getOpenVersionByFundId(@RequestParam(value = "fundId") Integer fundId) {
+    public ArrFundVersion getOpenVersionByFundId(@RequestParam(value = "fundId") final Integer fundId) {
         Assert.notNull(fundId);
         ArrFundVersion fundVersion = fundVersionRepository
                 .findByFundIdAndLockChangeIsNull(fundId);
@@ -802,7 +821,7 @@ public class ArrangementService {
      *
      * @return seznam id uzlů které vyhovují parametrům
      */
-    public Set<Integer> findNodeIdsByFulltext(ArrFundVersion version, Integer nodeId, String searchValue, Depth depth) {
+    public Set<Integer> findNodeIdsByFulltext(final ArrFundVersion version, final Integer nodeId, final String searchValue, final Depth depth) {
         Assert.notNull(version);
         Assert.notNull(depth);
 
@@ -810,7 +829,12 @@ public class ArrangementService {
         Integer lockChangeId = lockChange == null ? null : lockChange.getChangeId();
         Integer fundId = version.getFund().getFundId();
 
-        return nodeRepository.findByFulltextAndVersionLockChangeId(searchValue, fundId, lockChangeId);
+        Set<Integer> nodeIds = nodeRepository.findByFulltextAndVersionLockChangeId(searchValue, fundId, lockChangeId);
+
+        Set<Integer> versionNodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, nodeId, depth);
+        versionNodeIds.retainAll(nodeIds);
+
+        return versionNodeIds;
     }
 
     /**
@@ -823,8 +847,8 @@ public class ArrangementService {
      * @return seznam id uzlů které vyhovují parametrům
      * @throws InvalidQueryException neplatný lucene dotaz
      */
-    public Set<Integer> findNodeIdsByLuceneQuery(ArrFundVersion version, Integer nodeId,
-                                                 String searchValue, Depth depth) throws InvalidQueryException {
+    public Set<Integer> findNodeIdsByLuceneQuery(final ArrFundVersion version, final Integer nodeId,
+                                                 final String searchValue, final Depth depth) throws InvalidQueryException {
         Assert.notNull(version);
         Assert.notNull(depth);
 
@@ -893,11 +917,11 @@ public class ArrangementService {
      *
      * @return počet chyb
      */
-    public Integer getVersionErrorCount(ArrFundVersion fundVersion) {
+    public Integer getVersionErrorCount(final ArrFundVersion fundVersion) {
         return nodeConformityInfoRepository.findCountByFundVersionAndState(fundVersion, State.ERR);
     }
 
-    public List<ArrNodeConformity> findConformityErrors(ArrFundVersion fundVersion, final Boolean showAll) {
+    public List<ArrNodeConformity> findConformityErrors(final ArrFundVersion fundVersion, final Boolean showAll) {
         List<ArrNodeConformity> conformity = nodeConformityInfoRepository.findFirst20ByFundVersionAndStateOrderByNodeConformityIdAsc(fundVersion, State.ERR);
 
         if (conformity.isEmpty()) {
@@ -963,7 +987,7 @@ public class ArrangementService {
      *
      * @return seznam id nodů a jejich rodičů
      */
-    public List<TreeNodeFulltext> createTreeNodeFulltextList(Set<Integer> nodeIds, ArrFundVersion version) {
+    public List<TreeNodeFulltext> createTreeNodeFulltextList(final Set<Integer> nodeIds, final ArrFundVersion version) {
         Assert.notNull(nodeIds);
         Assert.notNull(version);
 
@@ -984,7 +1008,7 @@ public class ArrangementService {
         return result;
     }
 
-    public List<VersionValidationItem> createVersionValidationItems(List<ArrNodeConformity> validationErrors, ArrFundVersion version) {
+    public List<VersionValidationItem> createVersionValidationItems(final List<ArrNodeConformity> validationErrors, final ArrFundVersion version) {
         Map<Integer, String> validations = new LinkedHashMap<Integer, String>();
         for (ArrNodeConformity conformity : validationErrors) {
             String description = validations.get(conformity.getNode().getNodeId());
@@ -1209,7 +1233,7 @@ public class ArrangementService {
     }
 
     /**
-     * Přidání chyby k nodu
+     * Přidání typu chyby k nodu
      *
      * @param nodeProblemsMap typy problémů
      * @param nodeId          identifikátor uzlu
@@ -1232,6 +1256,7 @@ public class ArrangementService {
      * @param parentPolicyTypes viditelnost rodiče
      * @param policiesMap       mapa všech nastavení nad JP
      * @param nodeProblemsMap   mapa všech chybných JP podle typu
+     * @param foundNode         pomocný objekt pro vyhledání další chyby
      */
     private void recursiveAddNodes(final List<Integer> nodeIds,
                                    final TreeNode treeNode,
@@ -1240,18 +1265,28 @@ public class ArrangementService {
                                    final Map<Integer, Set<Integer>> nodeProblemsMap,
                                    final FoundNode foundNode) {
         Integer nodeId = treeNode.getId();
+
+        // výchozí status pro přidání uzlu mezi chybové
         Boolean status = false;
 
+        // pokud se vyhledává další, předchozí chyba
+        // porovnává se procházenými uzly a připadně označí
         if (foundNode != null && foundNode.getNodeId().equals(nodeId)) {
+            // index, na kterém je další/předchozí chyba
             foundNode.setIndex(nodeIds.size());
             foundNode.setNode(treeNode);
         }
 
+        // set typů problémů
         Set<Integer> nodeProblems = nodeProblemsMap.get(nodeId);
+
+        // výchozí nastavení pro daný uzel
         Map<Integer, Boolean> policyTypes = policiesMap.get(nodeId);
 
+        // aktuální nastavení pro daný uzel (výchozí se bere z rodiče)
         Map<Integer, Boolean> nodePolicyTypes = parentPolicyTypes;
 
+        // pokud existují nějaké změny pro tento uzel, provede se přepsání podle nastavní nad uzlem
         if (policyTypes != null) {
             nodePolicyTypes = new HashMap<>(parentPolicyTypes);
             for (Integer policyTypeId : nodePolicyTypes.keySet()) {
@@ -1259,19 +1294,23 @@ public class ArrangementService {
             }
         }
 
+        // prohledávají se všechny chyby a pokud nalezneme alespoň jednu neskrytou, označíme uzel jako chybový
         if (nodeProblems != null) {
             for (Map.Entry<Integer, Boolean> entry : nodePolicyTypes.entrySet()) {
-                if (entry.getValue().equals(true) && nodeProblems.contains(entry.getKey())) {
+                Boolean value = entry.getValue();
+                if (value != null && value.equals(true) && nodeProblems.contains(entry.getKey())) {
                     status = true;
                     break;
                 }
             }
         }
 
+        // přidat uzel mezi chybové?
         if (status) {
             nodeIds.add(nodeId);
         }
 
+        // rekurzivní procházení potomků
         if (treeNode.getChilds() != null) {
             for (TreeNode node : treeNode.getChilds()) {
                 recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap, foundNode);

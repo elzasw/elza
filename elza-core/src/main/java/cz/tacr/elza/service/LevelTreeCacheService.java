@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -19,7 +20,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -35,7 +35,9 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.ConfigView.ViewTitles;
+import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
@@ -679,7 +681,7 @@ public class LevelTreeCacheService {
      *
      * @return mapu id nodů a jejich rodičů
      */
-    public Map<Integer, TreeNodeClient> findParentsWithTitles(Set<Integer> nodeIds, ArrFundVersion version) {
+    public Map<Integer, TreeNodeClient> findParentsWithTitles(final Set<Integer> nodeIds, final ArrFundVersion version) {
         Assert.notNull(nodeIds);
         Assert.notNull(version);
 
@@ -795,7 +797,7 @@ public class LevelTreeCacheService {
         return result;
     }
 
-    private Set<RulDescItemType> getDescriptionItemTypes(ViewTitles viewTitles) {
+    private Set<RulDescItemType> getDescriptionItemTypes(final ViewTitles viewTitles) {
         Set<String> descItemTypeCodes = getDescItemTypeCodes(viewTitles);
 
         if (!descItemTypeCodes.isEmpty()) {
@@ -815,7 +817,7 @@ public class LevelTreeCacheService {
         return new HashSet<>();
     }
 
-    private Set<String> getDescItemTypeCodes(ViewTitles viewTitles) {
+    private Set<String> getDescItemTypeCodes(final ViewTitles viewTitles) {
         Set<String> descItemTypeCodes = new HashSet<>();
 
         if (!CollectionUtils.isEmpty(viewTitles.getAccordionLeft())) {
@@ -842,7 +844,7 @@ public class LevelTreeCacheService {
         return descItemTypeCodes;
     }
 
-    private String createTitle(List<String> codes, Map<String, TitleValues> descItemCodeToValueMap, boolean useDefaultTitle, boolean isIconTitle) {
+    private String createTitle(final List<String> codes, final Map<String, TitleValues> descItemCodeToValueMap, final boolean useDefaultTitle, final boolean isIconTitle) {
         List<String> titles = new ArrayList<String>();
 
         if (codes != null) {
@@ -878,8 +880,8 @@ public class LevelTreeCacheService {
         return title;
     }
 
-    private void fillValues(Map<String, TitleValues> descItemCodeToValueMap, ViewTitles viewTitles,
-            TreeNodeClient treeNodeClient) {
+    private void fillValues(final Map<String, TitleValues> descItemCodeToValueMap, final ViewTitles viewTitles,
+            final TreeNodeClient treeNodeClient) {
         if (descItemCodeToValueMap != null) {
             treeNodeClient.setAccordionLeft(createTitle(viewTitles.getAccordionLeft(), descItemCodeToValueMap, true, false));
             treeNodeClient.setAccordionRight(createTitle(viewTitles.getAccordionRight(), descItemCodeToValueMap, false, false));
@@ -1186,7 +1188,7 @@ public class LevelTreeCacheService {
 
 
 
-    public List<Integer> sortNodesByTreePosition(Set<Integer> nodeIds, ArrFundVersion version) {
+    public List<Integer> sortNodesByTreePosition(final Set<Integer> nodeIds, final ArrFundVersion version) {
         List<TreeNodeClient> nodes = getNodesByIds(nodeIds, version.getFundVersionId());
 
         nodes.sort((node1, node2) -> {
@@ -1317,6 +1319,49 @@ public class LevelTreeCacheService {
         return referenceMark;
     }
 
+    /**
+     * Najde id všech nodů ve verzi.
+     *
+     * @param version verze stromu
+     * @param nodeId id nodu pod kterým se má hledat
+     * @param depth hloubka v jaké se mají hledat potomci
+     *
+     * @return id všech nodů ve verzi
+     */
+    public Set<Integer> getAllNodeIdsByVersionAndParent(final ArrFundVersion version, final Integer nodeId, final Depth depth) {
+        Assert.notNull(version);
+
+        Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
+
+        if (nodeId == null) {
+            return new HashSet<>(versionTreeCache.keySet());
+        }
+
+        Assert.notNull(depth);
+
+        if (depth == Depth.ONE_LEVEL) {
+            TreeNode node = versionTreeCache.get(nodeId);
+            return node.getChilds().stream().mapToInt(TreeNode::getId).boxed().collect(Collectors.toSet());
+        }
+
+        Set<Integer> nodeIds = new HashSet<>();
+        TreeNode parentNode = versionTreeCache.get(nodeId);
+        Queue<TreeNode> children = new LinkedList<>();
+        children.add(parentNode);
+        while (!children.isEmpty()) {
+            TreeNode node = children.poll();
+
+            List<TreeNode> childs = node.getChilds();
+            if (childs != null) {
+                node.getChilds().forEach(child -> {
+                    nodeIds.add(child.getId());
+                    children.add(child);
+                });
+            }
+        }
+
+        return nodeIds;
+    }
 }
 
 
