@@ -713,10 +713,10 @@ public class XmlImportService {
 
         if (importAllParties) {
             if (parties != null) {
-                parties.forEach(party -> {
+                for (AbstractParty party: parties) {
                     usedParties.add(party.getPartyId());
                     addPartyRecords(usedRecords, party);
-                });
+                }
             }
         }
 
@@ -728,8 +728,12 @@ public class XmlImportService {
         }
     }
 
-    private void addPartyRecords(final Set<String> usedRecords, final AbstractParty party) {
-        usedRecords.add(party.getRecord().getRecordId());
+    private void addPartyRecords(final Set<String> usedRecords, final AbstractParty party) throws FatalXmlImportException {
+        Record partyRecord = party.getRecord();
+        if (partyRecord == null) {
+            throw new FatalXmlImportException("Osoba s id " + party.getPartyId() + " nemá rejstřík.");
+        }
+        usedRecords.add(partyRecord.getRecordId());
         List<Relation> events = party.getEvents();
         if (events != null) {
             events.forEach(event -> {
@@ -768,7 +772,7 @@ public class XmlImportService {
         return false;
     }
 
-    private void checkLevel(final Level level, final Set<String> usedRecords, final Set<String> usedParties, final Set<String> usedPackets) {
+    private void checkLevel(final Level level, final Set<String> usedRecords, final Set<String> usedParties, final Set<String> usedPackets) throws FatalXmlImportException {
         if (level.getRecords() != null) {
             level.getRecords().forEach(record -> {
                 usedRecords.add(record.getRecordId());
@@ -776,7 +780,7 @@ public class XmlImportService {
         }
 
         if (level.getDescItems() != null) {
-            level.getDescItems().forEach(descItem -> {
+            for (AbstractDescItem descItem : level.getDescItems()) {
                 if (descItem instanceof DescItemRecordRef) {
                     DescItemRecordRef recordRefItem = (DescItemRecordRef) descItem;
                     usedRecords.add(recordRefItem.getRecord().getRecordId());
@@ -788,13 +792,13 @@ public class XmlImportService {
                     DescItemPacketRef packetRefItem = (DescItemPacketRef) descItem;
                     usedPackets.add(packetRefItem.getPacket().getStorageNumber());
                 }
-            });
+            }
         }
 
         if (level.getSubLevels() != null) {
-            level.getSubLevels().forEach(l -> {
+            for (Level l : level.getSubLevels()) {
                 checkLevel(l, usedRecords, usedParties, usedPackets);
-            });
+            }
         }
     }
 
