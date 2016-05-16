@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ public class XmlExportController {
     @Autowired
     private XmlExportService xmlExportService;
 
+    @Transactional
     @RequestMapping(value = "/api/xmlExportManagerV2/fund/{versionId}", method = RequestMethod.GET, produces = "application/*")
     public void exportFund(final HttpServletResponse response,
                            @PathVariable(value = "versionId") final Integer versionId,
