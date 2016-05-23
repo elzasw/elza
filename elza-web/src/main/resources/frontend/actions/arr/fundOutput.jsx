@@ -28,7 +28,8 @@ export function isFundOutputDetail(action) {
         case types.FUND_OUTPUT_DETAIL_REQUEST:
         case types.FUND_OUTPUT_DETAIL_RECEIVE:
         case types.FUND_OUTPUT_SELECT_OUTPUT:
-            return true
+        case types.FUND_OUTPUT_DETAIL_CLEAR:
+            return true;
         default:
             return false
     }
@@ -76,6 +77,7 @@ export function fundOutputDelete(versionId, outputId) {
         WebApi.outputDelete(versionId, outputId)
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.output.title.deleted")));
+                dispatch(fundOutputDetailClear(versionId))
             });        
     }
 }
@@ -208,5 +210,13 @@ function fundOutputDetailReceive(versionId, data) {
         type: types.FUND_OUTPUT_DETAIL_RECEIVE,
         versionId,
         data,
+    }
+}
+
+
+export function fundOutputDetailClear(versionId) {
+    return {
+        type: types.FUND_OUTPUT_DETAIL_CLEAR,
+        versionId
     }
 }

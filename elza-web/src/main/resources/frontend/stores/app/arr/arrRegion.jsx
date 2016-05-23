@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+ import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 
 import nodes from './nodes.jsx'
@@ -113,6 +113,25 @@ export default function arrRegion(state = initialState, action) {
     }
 
     switch (action.type) {
+        case types.DELETE_FUND: {
+            const newFunds = [];
+            state.funds.map(function(item) {
+                if (item.id != action.fundId) {
+                    newFunds.push(item);
+                }
+            });
+
+            var newIndex = initialState.activeIndex;
+            if (state.activeIndex !== null && state.funds[state.activeIndex].id != action.fundId) {
+                newIndex = indexById(newFunds, state.funds[state.activeIndex].versionId, 'versionId');
+            }
+
+            return {
+                ...state,
+                funds: newFunds,
+                activeIndex: newIndex
+            }
+        }
         case types.SHOW_REGISTER_JP: {
             return {
                 ...state,
