@@ -336,10 +336,13 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
         })
     }
 
-    handleKeyUp() {
+    handleKeyUp(e) {
         if (this._performAutoCompleteOnKeyUp) {
             this._performAutoCompleteOnKeyUp = false
             this.maybeAutoCompleteText()
+        }
+        if (this.props.onKeyUp) {
+            this.props.onKeyUp(e);
         }
     }
 
@@ -662,6 +665,7 @@ Autocomplete.propTypes = {
     onBlur: React.PropTypes.func,
     onSearchChange: React.PropTypes.func,
     onChange: React.PropTypes.func,
+    onKeyUp: React.PropTypes.func,
     shouldItemRender: React.PropTypes.func,
     renderItem: React.PropTypes.func,
     inputProps: React.PropTypes.object,

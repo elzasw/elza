@@ -5,12 +5,13 @@ import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'c
 import {connect} from 'react-redux'
 import {decorateValue, decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {WebApi} from 'actions/index.jsx';
+import {indexById} from 'stores/app/utils.jsx';
 
 var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('packetName', 'findType', 'focus', 'handleSearchChange', 'handleChange', 'renderPacket');
+        this.bindMethods('packetName', 'findType', 'focus', 'handleSearchChange', 'handleChange', 'renderPacket', 'handleKeyUp');
 
         this.state = {packetTypes: []};
     }
@@ -28,6 +29,13 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
 
     focus() {
         this.refs.focusEl.focus()
+    }
+
+
+    handleKeyUp(e){
+        if (e.keyCode == 13 && this.state.packetTypes.length == 1){
+            this.props.onChange(this.state.packetTypes[0]);
+        }
     }
 
     renderPacket(item, isHighlighted, isSelected) {
@@ -78,7 +86,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     render() {
         const {descItem, locked, packetTypes, packets, singleDescItemTypeEdit} = this.props;
         var value = descItem.packet ? descItem.packet : null;
-
+        console.log(value);
         return (
             <div className='desc-item-value desc-item-value-parts'>
                 {false && <select
@@ -98,6 +106,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                     {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-packet'])}
                     ref='focusEl'
                     customFilter
+                    onKeyUp={this.handleKeyUp}
                     value={value}
                     disabled={locked}
                     items={this.state.packetTypes}
