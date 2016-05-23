@@ -290,9 +290,7 @@ public class PartyController {
     @RequestMapping(value = "/insertParty", method = RequestMethod.POST)
     @Transactional
     public ParPartyVO insertParty(@RequestBody final ParPartyVO partyVO) {
-        if (partyVO == null) {
-            return null;
-        }
+        Assert.notNull(partyVO);
 
         if(partyVO.getPartyId() != null){
             throw new IllegalArgumentException("Nová osoba nesmí mít nastaveno ID");

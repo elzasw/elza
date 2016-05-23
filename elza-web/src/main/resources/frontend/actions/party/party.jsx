@@ -313,6 +313,7 @@ function partyAddSubmit(callback, dispatch, data, submitType) {
         genealogy: data.mainPart,                           // název rodu pro soby typu rod
         scope: data.scopeId,                                          // cosi, co tu musí být
         record: {                                           // záznam patřící k ossobě
+            '@class': "cz.tacr.elza.controller.vo.RegRecordVO",
             registerTypeId: data.recordTypeId,              // identifikátor typu záznamu
             scopeId: data.scopeId                           // identifikátor tridy rejstriku
         },
