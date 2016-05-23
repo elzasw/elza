@@ -475,12 +475,19 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             ref: key
         }
 
-        var dragProps = {
-            'data-id': descItemIndex,
-            draggable: infoType.rep === 1,
-            onDragStart: this.handleDragStart,
-            onDragEnd: this.handleDragEnd,
+        var dragProps;
+        if (/MSIE 10/i.test(navigator.userAgent) || /MSIE 9/i.test(navigator.userAgent) || /rv:11.0/i.test(navigator.userAgent) || /Edge\/12./i.test(navigator.userAgent)) {
+            dragProps = {};
+        } else {
+            dragProps = {
+                'data-id': descItemIndex,
+                draggable: infoType.rep === 1,
+                onDragStart: this.handleDragStart,
+                onDragEnd: this.handleDragEnd,
+            }
         }
+
+
 
         var itemComponentKey = 'value_' + key;
         switch (rulDataType.code) {
@@ -557,7 +564,6 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             default:
                 parts.push(<div key={itemComponentKey}>-unsupported type {rulDataType.code}-</div>)
         }
-
         return (
             <Shortcuts key={key} name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}>
                 <div className={cls} {...dragProps}>
