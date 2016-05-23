@@ -62,7 +62,6 @@ public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulD
     @Column(name = "deleteChangeId", nullable = true, updatable = false, insertable = false)
     private Integer deleteChangeId;
 
-
     @Column(nullable = false)
     private Integer descItemObjectId;
 
@@ -134,6 +133,9 @@ public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulD
     @Override
     public void setDeleteChange(final ArrChange deleteChange) {
         this.deleteChange = deleteChange;
+        if (deleteChange != null) {
+            deleteChangeId = deleteChange.getChangeId();
+        }
     }
 
     @Override
