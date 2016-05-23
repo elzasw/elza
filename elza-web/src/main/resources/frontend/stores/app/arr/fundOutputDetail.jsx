@@ -56,6 +56,8 @@ export default function fundOutputDetail(state = initialState, action = {}) {
                 fetching: false,
                 fetched: true,
             }
+        case types.FUND_OUTPUT_DETAIL_CLEAR:
+            return initialState;
         default:
             return state
     }

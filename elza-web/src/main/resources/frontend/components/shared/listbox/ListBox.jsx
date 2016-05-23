@@ -276,6 +276,7 @@ var ListBox = class ListBox extends AbstractReactComponent {
         var relY = e.clientY - this.over.offsetTop;
         var height = this.over.offsetHeight / 2;
         var parent = e.target.parentNode;
+        var container = this.refs.container;
 
         var realTarget = e.target;
         var found = false;
@@ -283,6 +284,14 @@ var ListBox = class ListBox extends AbstractReactComponent {
             if (typeof realTarget.dataset.id !== 'undefined') {
                 found = true;
                 break
+            }
+            if (realTarget == container) {
+                realTarget = container.lastChild;
+                if (realTarget.className.indexOf(_ListBox_placeholder_cls) > -1) {
+                    realTarget = realTarget.previousSibling;
+                }
+                found = true;
+                break;
             }
             realTarget = realTarget.parentNode
         }

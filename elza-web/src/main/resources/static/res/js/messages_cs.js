@@ -230,6 +230,7 @@ var messages = {
     "arr.fund.filterSettings.condition.coordinates.near.100000": "100 km",
 
     "arr.fund.nodes.title.select": "Výběr jednotek popisu",
+    "arr.fund.nodes.deleteNode": "Opravdu chcete smazat tuto položku?",
     "arr.fund.title.add": "Vytvoření nového AS",
     "arr.fund.title.ruleSet": "Změnit pravidla",
     "arr.fund.title.update": "Úprava AS",

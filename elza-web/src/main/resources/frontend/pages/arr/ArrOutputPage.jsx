@@ -138,9 +138,11 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleRemoveNode(node) {
-        const fund = this.getActiveFund(this.props)
-        const fundOutputDetail = fund.fundOutput.fundOutputDetail
-        this.dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]))
+        if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
+            const fund = this.getActiveFund(this.props)
+            const fundOutputDetail = fund.fundOutput.fundOutputDetail
+            this.dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]))
+        }
     }
 
     handleBulkActions() {
@@ -272,7 +274,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         if (userDetail.hasArrOutputPage(fund ? fund.id : null)) { // má právo na tuto stránku
             if (fund) {
                 const fundOutput = fund.fundOutput
-    
+
                 var activeIndex
                 if (fundOutput.fundOutputDetail.id !== null) {
                     activeIndex = indexById(fundOutput.outputs, fundOutput.fundOutputDetail.id)
@@ -290,12 +292,12 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                         />
                     </div>
                 )
-    
+
                 centerPanel = <ArrOutputDetail
                     versionId={fund.versionId}
                     fundOutputDetail={fundOutput.fundOutputDetail}
                     />
-    
+
                 const fundOutputDetail = fund.fundOutput.fundOutputDetail
                 if (fundOutputDetail.id !== null && fundOutputDetail.fetched) {
                     rightPanel = (
