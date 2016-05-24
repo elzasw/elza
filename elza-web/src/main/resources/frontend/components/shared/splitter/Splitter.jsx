@@ -148,18 +148,20 @@ var Splitter = class Splitter extends AbstractReactComponent {
     }
 
     render() {
-        var left, right, center;
+        const {props: {left, right, center}} = this;
 
-        var parts = []
+        const parts = [];
 
-        if (this.props.left) {
-            parts.push(<Pane key='left' ref='paneLeft' className='splitter-left'>{this.props.left}</Pane>)
-            parts.push(<Resizer key='resizer-left' ref='resizerLeft' onMouseDown={this.onMouseDownLeft}/>)
+        if (left) {
+            parts.push(<Pane key='left' ref='paneLeft' className='splitter-left'>{left}</Pane>);
+            parts.push(<Resizer key='resizer-left' ref='resizerLeft' onMouseDown={this.onMouseDownLeft}/>);
         }
-        parts.push(<div key='center' className='splitter-center'>{this.props.center}</div>)
-        if (this.props.right) {
-            parts.push(<Resizer key='resizer-right' ref='resizerRight' onMouseDown={this.onMouseDownRight}/>)
-            parts.push(<Pane key='right' ref='paneRight' className='splitter-right'>{this.props.right}</Pane>)
+
+        parts.push(<div key='center' className='splitter-center'>{center}</div>);
+
+        if (right) {
+            parts.push(<Resizer key='resizer-right' ref='resizerRight' onMouseDown={this.onMouseDownRight}/>);
+            parts.push(<Pane key='right' ref='paneRight' className='splitter-right'>{right}</Pane>);
         }
 
         return (
@@ -168,7 +170,18 @@ var Splitter = class Splitter extends AbstractReactComponent {
             </div>
         )
     }
-}
+};
 
-module.exports = connect()(Splitter);
+Splitter.propTypes = {
+    left: React.PropTypes.object,
+    leftSize: React.PropTypes.object,
+    center: React.PropTypes.object.isRequired,
+    right: React.PropTypes.object,
+    rightSize: React.PropTypes.object,
+    onDragFinished: React.PropTypes.func,
+    onChange: React.PropTypes.func,
+};
+
+
+module.exports = connect(null, null, null, {withRef: true})(Splitter);
 
