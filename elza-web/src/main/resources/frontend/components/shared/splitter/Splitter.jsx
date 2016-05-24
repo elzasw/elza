@@ -174,10 +174,10 @@ var Splitter = class Splitter extends AbstractReactComponent {
 
 Splitter.propTypes = {
     left: React.PropTypes.object,
-    leftSize: React.PropTypes.object,
+    leftSize: React.PropTypes.number,
     center: React.PropTypes.object.isRequired,
     right: React.PropTypes.object,
-    rightSize: React.PropTypes.object,
+    rightSize: React.PropTypes.number,
     onDragFinished: React.PropTypes.func,
     onChange: React.PropTypes.func,
 };
