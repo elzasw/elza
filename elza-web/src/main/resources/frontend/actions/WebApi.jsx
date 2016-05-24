@@ -426,10 +426,6 @@ class WebApi{
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + versionId + '/forms', {nodeIds: nodeIds})
     }
 
-    getFundNodeForms(versionId, nodeIds) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + versionId + '/forms', {nodeIds: nodeIds})
-    }
-
     getFundNodeFormsWithAround(versionId, nodeId, around) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + versionId + '/' + nodeId + '/' + around + '/forms')
     }

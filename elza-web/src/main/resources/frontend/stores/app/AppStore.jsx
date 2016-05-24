@@ -114,6 +114,19 @@ if (_logStoreState) {
         thunkMiddleware
     )(createStore)
 }
+/* REDUX DEBUG
+ var createStoreWithMiddleware;
+ if (_logStoreState) {
+ createStoreWithMiddleware = compose(applyMiddleware(
+ thunkMiddleware,
+ loggerMiddleware
+ ), window.devToolsExtension ? window.devToolsExtension() : f => f)(createStore)
+ } else {
+ createStoreWithMiddleware = compose(applyMiddleware(
+ thunkMiddleware
+ ), window.devToolsExtension ? window.devToolsExtension() : f => f)(createStore)
+ }
+ */
 
 var initialState = {
 }
