@@ -84,7 +84,7 @@ var keyDownHandlers = {
                         onOpenCloseNode(node, true)
                     } else {    // jdeme na prvního potomka
                         var firstChild = getNodeFirstChild(nodes, selectedId);
-                        firstChild && this.handleNodeClick(firstChild, true)
+                        firstChild && parseInt(firstChild.id) && this.handleNodeClick(firstChild, true)
                     }
                 } else {    // nemá potomky, nic neděláme
                 }
