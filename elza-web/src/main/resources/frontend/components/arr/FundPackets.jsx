@@ -5,12 +5,10 @@
 require('./FundPackets.less')
 
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, FilterableListBox, Loading, AddPacketForm} from 'components/index.jsx';
-import {DropdownButton, MenuItem,Input} from 'react-bootstrap'
-import {fetchFundPacketsIfNeeded, fundPacketsFilterByText, fundPacketsChangeSelection, fundPacketsFilterByState,
-    fundPacketsChangeSelctions, fundPacketsChangeState, fundPacketsCreate, fundPacketsChangeNumbers, fundPacketsDelete} from 'actions/arr/fundPackets.jsx'
+import {AbstractReactComponent, Icon, i18n, FilterableListBox, Loading, AddPacketForm, FixedDropDownButton} from 'components/index.jsx';
+import {DropdownButton, MenuItem, Input} from 'react-bootstrap'
+import {fetchFundPacketsIfNeeded, fundPacketsFilterByText, fundPacketsChangeSelection, fundPacketsFilterByState, fundPacketsChangeState, fundPacketsCreate, fundPacketsChangeNumbers, fundPacketsDelete} from 'actions/arr/fundPackets.jsx'
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 
@@ -18,25 +16,35 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleSelectionChange', 'handleTextSearch', 'handleFilterStateChange', 'handleChangeState',
-            'handleChangeNumbers', 'handleDelete', 'handleAddOne', 'handleAddMany', 'handleCreatePacketFormSubmit',
-            'handleChangePacketNumberSubmit', 'focus', 'focus');
+        this.bindMethods(
+            'handleSelectionChange',
+            'handleTextSearch',
+            'handleFilterStateChange',
+            'handleChangeState',
+            'handleChangeNumbers',
+            'handleDelete',
+            'handleAddOne',
+            'handleAddMany',
+            'handleCreatePacketFormSubmit',
+            'handleChangePacketNumberSubmit',
+            'focus'
+        );
     }
 
     componentDidMount() {
-        const {versionId, fundId} = this.props
-        this.dispatch(fetchFundPacketsIfNeeded(versionId, fundId))
+        const {versionId, fundId} = this.props;
+        this.dispatch(fetchFundPacketsIfNeeded(versionId, fundId));
     }
 
     componentWillReceiveProps(nextProps) {
-        const {versionId, fundId} = this.props
-        this.dispatch(fetchFundPacketsIfNeeded(versionId, fundId))
+        const {versionId, fundId} = this.props;
+        this.dispatch(fetchFundPacketsIfNeeded(versionId, fundId));
     }
 
     handleSelectionChange(selectionType, ids, unselectedIds, type) {
-        const {versionId, packets, selectedIds} = this.props
+        const {versionId, packets, selectedIds} = this.props;
 
-        console.log(selectionType, ids, unselectedIds, type)
+        console.log(selectionType, ids, unselectedIds, type);
 
         var newSelectedIds
         switch (type) {
@@ -126,7 +134,7 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
         const {fundId} = this.props
         this.dispatch(fundPacketsChangeNumbers(fundId, data, selectedIds))
     }
-    
+
     focus() {
         this.refs.listBox.focus()
     }
@@ -159,7 +167,6 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
                 </Input>
             </div>
         )
-        
         return (
             <div className='fund-packets'>
                 <div className="actions-container">
@@ -168,7 +175,7 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
                             <MenuItem onClick={this.handleAddOne} eventKey='changeNumbers'>{i18n('arr.fund.packets.action.add.single')}</MenuItem>
                             <MenuItem onClick={this.handleAddMany} eventKey='changeNumbers'>{i18n('arr.fund.packets.action.add.more')}</MenuItem>
                         </DropdownButton>
-                        <DropdownButton noCaret disabled={selectedIds.length === 0} title={<div><Icon glyph='fa-edit' /> {i18n('arr.fund.packets.action.checkedItems')}</div>}>
+                        <FixedDropDownButton noCaret pullRight disabled={selectedIds.length === 0} title={<div><Icon glyph='fa-edit' /> {i18n('arr.fund.packets.action.checkedItems')}</div>} className='packetActions'>
                             {filterState !== "OPEN" && <MenuItem onClick={this.handleChangeState.bind(this, "OPEN")} eventKey='toOpen'>{i18n('arr.fund.packets.action.changeState.toOpen')}</MenuItem>}
                             {filterState !== "CLOSED" && <MenuItem onClick={this.handleChangeState.bind(this, "CLOSED")} eventKey='toClosed'>{i18n('arr.fund.packets.action.changeState.toClosed')}</MenuItem>}
                             {filterState !== "CANCELED" && <MenuItem onClick={this.handleChangeState.bind(this, "CANCELED")} eventKey='toCanceled'>{i18n('arr.fund.packets.action.changeState.toCanceled')}</MenuItem>}
@@ -176,7 +183,7 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
                             <MenuItem onClick={this.handleChangeNumbers} eventKey='changeNumbers'>{i18n('arr.fund.packets.action.changeNumbers')}</MenuItem>
                             <MenuItem divider />
                             <MenuItem onClick={this.handleDelete} eventKey='delete'>{i18n('arr.fund.packets.action.delete')}</MenuItem>
-                        </DropdownButton>
+                        </FixedDropDownButton>
                     </div>
                 </div>
 
@@ -195,5 +202,15 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
         )
     }
 }
+
+FundPackets.propTypes = {
+    fundId: React.PropTypes.number.isRequired,
+    versionId: React.PropTypes.number.isRequired,
+    packets: React.PropTypes.array,
+    selectedIds: React.PropTypes.array.isRequired,
+    filterState: React.PropTypes.string.isRequired,
+    filterText: React.PropTypes.string.isRequired,
+    fetched: React.PropTypes.bool.isRequired
+};
 
 module.exports = connect(null, null, null, { withRef: true })(FundPackets);

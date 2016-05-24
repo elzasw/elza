@@ -9,6 +9,7 @@ exports.ListBox = require('components/shared/listbox/ListBox.jsx');
 exports.ListBox2 = require('components/shared/listbox/ListBox2.jsx');
 exports.LazyListBox = require('components/shared/listbox/LazyListBox.jsx');
 exports.FilterableListBox = require('components/shared/listbox/FilterableListBox.jsx');
+exports.FixedDropDownButton = require('components/shared/fixed-dropdown-button/FixedDropDownButton.jsx');
 exports.NoFocusButton = require('components/shared/button/NoFocusButton.jsx');
 exports.Toastr = require('components/shared/toastr/index.jsx');
 exports.RibbonMenu = require('components/shared/ribbon-menu/RibbonMenu.jsx');
