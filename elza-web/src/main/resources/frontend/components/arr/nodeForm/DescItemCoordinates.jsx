@@ -10,6 +10,9 @@ import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import {Button, Input, OverlayTrigger, Tooltip} from 'react-bootstrap';
 
+
+require('./DescItemCoordinates.less');
+
 var DescItemCoordinates = class DescItemCoordinates extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -49,8 +52,8 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
         const {descItem, locked, repeatable, onUpload} = this.props;
         const tooltip = <Tooltip id='tt'>{i18n('subNodeForm.formatPointCoordinates')}</Tooltip>;
         return (
-            <div>
-                <div className='desc-item-value  desc-item-value-parts'  key='cords'>
+            <div className="desc-item-value-coordinates">
+                <div className='desc-item-value'  key='cords'>
                     <Button bsStyle="default" disabled>{wktType(this.state.type)}</Button>
                     {
                         this.state.type == "POINT" ?
@@ -63,15 +66,15 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
                                     value={this.state.data}
                                 />
                             </OverlayTrigger>
-                            : <span>{i18n('subNodeForm.countOfCoordinates', this.state.data)}</span>
+                            : <span className="textvalue">{i18n('subNodeForm.countOfCoordinates', this.state.data)}</span>
                     }
-                    { descItem.descItemObjectId && <NoFocusButton bsStyle="default" onClick={this.props.onDownload}>
-                            <i className="fa fa-download"/>
-                        </NoFocusButton>
+                    { descItem.descItemObjectId && <div className='desc-item-coordinates-action' key='download-action'><NoFocusButton onClick={this.props.onDownload}>
+                            <Icon glyph="fa-download"/>
+                        </NoFocusButton></div>
                     }
                 </div>
                 {
-                    !repeatable && <div className='desc-item-type-actions' key='cord-actions'>
+                    !repeatable && <div className='desc-item-coordinates-action' key='cord-actions'>
                         <NoFocusButton onClick={this.handleUploadClick} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-upload" /></NoFocusButton>
                         <Input className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={onUpload} />
                     </div>
