@@ -35,6 +35,19 @@ function fc() {
     console.log(document.activeElement)
     xx()
 }
+/** IE FIxy **/
+const IE = Utils.detectIE();
+if (IE !== false) {
+    (function() {
+        const html = document.getElementsByTagName("html")[0];
+        if (IE < 12) {
+            html.className = html.className + " ie ie"+ IE;
+        } else {
+            html.className = html.className + " ieEdge";
+        }
+    })();
+}
+
 //setTimeout(fc, 1500)
 
 // Načtení dat z local storage = vrácení aplikace do předchozího stavu
