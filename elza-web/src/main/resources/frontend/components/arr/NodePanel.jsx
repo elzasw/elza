@@ -685,7 +685,7 @@ return true
             }
         }
 
-        if (node.viewStartIndex + node.pageSize/2 < node.childNodes.length) {
+        if (node.childNodes.length > node.pageSize && node.viewStartIndex + node.pageSize/2 < node.childNodes.length) {
             rows.push(
                 <Button key="next" onClick={()=>this.dispatch(fundSubNodesNext(versionId, node.id, node.nodeKey))}><Icon glyph="fa-chevron-right" />{i18n('arr.fund.next')}</Button>
             )
