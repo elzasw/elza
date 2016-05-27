@@ -17,6 +17,7 @@ const initialState = {
     columnsOrder: [],   // seznam id desc item type - pořadí zobrazování sloupečků
     columnInfos: {},    // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
     selectedIds: [],
+    selectedRowsIndexes: [],
     currentDataKey: '',
     subNodeForm: subNodeForm(),
     nodeId: null,   // id node právě editovaného řádku
@@ -31,7 +32,7 @@ const initialState = {
 }
 new Array("4", "5", "8", "9", "11", "14", "17", "38", "42", "44", "50", "53").forEach(a => {
     initialState.visibleColumns[a] = true
-})
+});
 
 function changeSearchedIndex(state, newIndex) {
     if (state.searchedItems.length === 0) {
@@ -49,12 +50,15 @@ function changeSearchedIndex(state, newIndex) {
             selectedIds = []
         }
 
+        const row = info.index - pageIndex * state.pageSize;
+
         return {
             ...state,
             selectedIds: selectedIds,
             pageIndex: pageIndex,
             searchedCurrentIndex: newIndex,
-            cellFocus: {row: info.index - pageIndex * state.pageSize, col: state.cellFocus.col}
+            selectedRowIndexes: [row],
+            cellFocus: {row, col: state.cellFocus.col}
         }
     }
 }
@@ -79,6 +83,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 items: [],
                 itemsCount: 0,
                 selectedIds: [],
+                selectedRowIndexes: [],
                 currentDataKey: '',
                 subNodeForm: subNodeForm(),
                 searchedItems: [],
@@ -147,11 +152,13 @@ export default function fundDataGrid(state = initialState, action = {}) {
 
             return result
         case types.FUND_FUND_DATA_GRID_PAGE_SIZE:
+            const isBiggerPage = action.pageIndex > state.pageIndex;
             return {
                 ...state,
                 pageSize: action.pageSize,
                 pageIndex: 0,
-                selectedIds: action.pageIndex > state.pageIndex ? state.selectedIds: [],
+                selectedIds: isBiggerPage ? state.selectedIds: [],
+                selectedRowIndexes: isBiggerPage ? state.selectedRowIndexes: [],
                 cellFocus: {row: 0, col: 0},
             }
         case types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS:

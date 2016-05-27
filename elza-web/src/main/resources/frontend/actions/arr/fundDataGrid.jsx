@@ -94,6 +94,13 @@ export function fundDataChangeCellFocus(versionId, row, col) {
         col,
     }
 }
+export function fundDataChangeRowIndexes(versionId, indexes) {
+    return {
+        type: types.FUND_FUND_DATA_GRID_CHANGE_ROW_FOCUS,
+        versionId,
+        indexes
+    }
+}
 
 export function fundDataFulltextExtended(versionId) {
     return {
