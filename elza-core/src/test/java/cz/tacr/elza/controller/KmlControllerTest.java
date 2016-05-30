@@ -25,10 +25,10 @@ public class KmlControllerTest extends AbstractControllerTest {
     protected final static String EXPORT_ARR_COORDINATES = KML_CONTROLLER_URL + "/export/arrCoordinates/{descItemObjectId}/{fundVersionId}";
     protected final static String EXPORT_REG_COORDINATES = KML_CONTROLLER_URL + "/export/regCoordinates/{regCoordinatesId}";
 
-    protected final static String ALL = "coordinates" + File.separator + "all.kml";
-    protected final static String POLYGON = "coordinates" + File.separator + "polygon.kml";
-    protected final static String LINE = "coordinates" + File.separator + "line.kml";
-    protected final static String POINT = "coordinates" + File.separator + "point.kml";
+    protected final static String ALL = "coordinates/all.kml";
+    protected final static String POLYGON = "coordinates/polygon.kml";
+    protected final static String LINE = "coordinates/line.kml";
+    protected final static String POINT = "coordinates/point.kml";
 
     protected final static String IMPORT_SCOPE_FA = "IMPORT_SCOPE_FA";
     protected final static String IMPORT_SCOPE_RECORD = "IMPORT_SCOPE_RECORD";
