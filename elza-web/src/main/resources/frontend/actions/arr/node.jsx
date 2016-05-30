@@ -5,7 +5,7 @@
 import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
-import {indexById} from 'stores/app/utils.jsx'
+import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 import {createFundRoot, isFundRootId} from 'components/arr/ArrUtils.jsx'
 
 export function isNodeAction(action) {
