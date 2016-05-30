@@ -105,7 +105,7 @@ public class XmlImportControllerTest extends AbstractControllerTest {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         Assert.assertTrue(!ruleSets.isEmpty());
         File source = getFile(SUZAP_XSLT);
-        File dest = new File(this.transformationsDirectory + File.separator + "suzap.xslt");
+        File dest = new File(this.transformationsDirectory + "/suzap.xslt");
         FileCopyUtils.copy(source, dest);
         Integer ruleSetId = ruleSets.iterator().next().getId();
 
