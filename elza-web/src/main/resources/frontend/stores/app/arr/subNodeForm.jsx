@@ -254,7 +254,11 @@ export default function subNodeForm(state = initialState, action = {}) {
             state.formData = {...state.formData};
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
-            state.data.node = action.descItemResult.node;
+            if (state.data.node.id !== action.descItemResult.node.id) {
+                return state;
+            }
+            const newState = {...state};
+            newState.data.node = action.descItemResult.node;
 
             switch (action.operationType) {
                 case 'DELETE':
@@ -293,7 +297,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     break;
             }
 
-            state.formData = {...state.formData};
+            newState.formData = {...state.formData};
             return {...state};
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
             // Dohledání skupiny a desc item type
@@ -407,13 +411,6 @@ export default function subNodeForm(state = initialState, action = {}) {
             // ##
             const result = {
                 ...state,
-                data: {
-                    ...state.data,
-                    node: {
-                        id: action.nodeId,
-                        version: action.versionId
-                    }
-                },
                 isFetching: false,
                 fetched: true,
                 dirty: false,
