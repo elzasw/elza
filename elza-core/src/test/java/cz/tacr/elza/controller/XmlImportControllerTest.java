@@ -32,7 +32,7 @@ public class XmlImportControllerTest extends AbstractControllerTest {
     protected final static String IMPORT_SCOPE_RECORD = "IMPORT_SCOPE_RECORD";
     protected final static String ALL_IN_ONE_XML = "all-in-one-import.xml";
     protected final static String SUZAP_XML = "suzap-import.xml";
-    protected final static String SUZAP_XSLT = "zp" + File.separator + "imports" + File.separator + "suzap.xslt";
+    protected final static String SUZAP_XSLT = "zp/imports/suzap.xslt";
     protected final static String TRANSFORMATION_NAME = "suzap";
     protected final static String INVALID_TRANSFORMATION_NAME = "invalid unknown";
 
