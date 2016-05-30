@@ -2,6 +2,8 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.*;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.aspectj.util.FileUtil;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -32,7 +34,7 @@ public class XmlImportControllerTest extends AbstractControllerTest {
     protected final static String IMPORT_SCOPE_RECORD = "IMPORT_SCOPE_RECORD";
     protected final static String ALL_IN_ONE_XML = "all-in-one-import.xml";
     protected final static String SUZAP_XML = "suzap-import.xml";
-    protected final static String SUZAP_XSLT = "zp" + File.separator + "imports" + File.separator + "suzap.xslt";
+    protected final static String SUZAP_XSLT = "zp/imports/suzap.xslt";
     protected final static String TRANSFORMATION_NAME = "suzap";
     protected final static String INVALID_TRANSFORMATION_NAME = "invalid unknown";
 
@@ -105,7 +107,10 @@ public class XmlImportControllerTest extends AbstractControllerTest {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         Assert.assertTrue(!ruleSets.isEmpty());
         File source = getFile(SUZAP_XSLT);
-        File dest = new File(this.transformationsDirectory + File.separator + "suzap.xslt");
+
+        Assert.assertTrue(new File(this.transformationsDirectory).mkdirs());
+
+        File dest = new File(this.transformationsDirectory + "/suzap.xslt");
         FileCopyUtils.copy(source, dest);
         Integer ruleSetId = ruleSets.iterator().next().getId();
 
