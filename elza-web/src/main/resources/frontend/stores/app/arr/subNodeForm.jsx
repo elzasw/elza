@@ -405,13 +405,21 @@ export default function subNodeForm(state = initialState, action = {}) {
             // ##
             // # Result a merge formuláře.
             // ##
-            var result = Object.assign({}, state, {
+            const result = {
+                ...state,
+                data: {
+                    ...state.data,
+                    node: {
+                        id: action.nodeId,
+                        version: action.versionId
+                    }
+                },
                 isFetching: false,
                 fetched: true,
                 dirty: false,
                 versionId: action.versionId,
-                nodeId: action.nodeId,
-            })
+                nodeId: action.nodeId
+            };
 
             updateFormData(result, action.data, refTypesMap);
 
