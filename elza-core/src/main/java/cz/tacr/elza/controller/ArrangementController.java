@@ -725,7 +725,7 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrFundVO createFund(@RequestParam(value = "name") final String name,
                                 @RequestParam(value = "ruleSetId") final Integer ruleSetId,
-                                @RequestParam(value = "internalCode") final String internalCode,
+                                @RequestParam(value = "internalCode", required = false) final String internalCode,
                                 @RequestParam(value = "institutionId") final Integer institutionId,
                                 @RequestParam(value = "dateRange", required = false) final String dateRange) {
 
