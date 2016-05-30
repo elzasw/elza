@@ -2,6 +2,8 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.*;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.aspectj.util.FileUtil;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -105,6 +107,9 @@ public class XmlImportControllerTest extends AbstractControllerTest {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         Assert.assertTrue(!ruleSets.isEmpty());
         File source = getFile(SUZAP_XSLT);
+
+        Assert.assertTrue(new File(this.transformationsDirectory).mkdirs());
+
         File dest = new File(this.transformationsDirectory + "/suzap.xslt");
         FileCopyUtils.copy(source, dest);
         Integer ruleSetId = ruleSets.iterator().next().getId();
