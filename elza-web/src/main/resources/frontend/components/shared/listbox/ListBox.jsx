@@ -245,11 +245,11 @@ var ListBox = class ListBox extends AbstractReactComponent {
             this.setState(canSelect ? {lastFocus: index, activeIndex: index} : {lastFocus: index, activeIndex: null})
         }*/
         if (multiselect) {
-            this.setState({lastFocus: index, activeIndexes: {}})
+            //this.setState({lastFocus: index, activeIndexes: {}})
         } else {
-            this.setState({lastFocus: index, activeIndex: null})
+            //this.setState({lastFocus: index, activeIndex: null})
         }
-        this.props.onChangeSelection && this.props.onChangeSelection([])
+        //this.props.onChangeSelection && this.props.onChangeSelection([])
     }
 
     dragEnd(e) {

@@ -46,7 +46,13 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
     handleChangeOrder(from, to) {
         var visible = [...this.state.visible]
         visible.splice(to, 0, visible.splice(from, 1)[0]);
-        this.setState({visible: visible})
+        const index = this.state.rightSelected.indexOf(""+from);
+        const result = {visible};
+        if (index > -1) {
+            result.rightSelected = [...this.state.rightSelected];
+            result.rightSelected.splice(index, 1, ""+to);
+        }
+        this.setState(result);
     }
 
     handleAddVisible() {
@@ -69,21 +75,36 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
             }
         })
 
+        const newRightSelected = [];
+        const originalLength = visible.length;
+        for (let newLength = newVisible.length; newLength > originalLength; newLength--) {
+            newRightSelected.push(newLength-1);
+        }
+
         this.setState({
             available: newAvailable,
             visible: newVisible,
             leftSelected: [],
+            rightSelected: newRightSelected
         })
     }
 
     handleRemoveVisible() {
         const {rightSelected, available, visible} = this.state
-        const {columns} = this.props
+        const {columns} = this.props;
 
-        var selectedMap = {}
+        const selectedMap = {}
         rightSelected.forEach(index => {
             selectedMap[index] = true
-        })
+        });
+
+        const rightSelectedIds = [];
+        visible.map((item, index) => {
+            if (selectedMap[index]) {
+                rightSelectedIds.push(item.id);
+            }
+        });
+
 
         // Upravení seznamu visible
         const newVisible = []
@@ -91,7 +112,7 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
             if (!selectedMap[index]) {
                 newVisible.push(item)
             }
-        })
+        });
 
         // Získání nového seznamu available
         const visibleMap = getMapFromList(newVisible)
@@ -100,16 +121,26 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
             if (!visibleMap[col.id]) {
                 newAvailable.push(col)
             }
-        })
+        });
         // Seřazení dostupných sloupečků podle abecedy
-        newAvailable.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()))
+        newAvailable.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()));
 
         // ---
+
+        // Ziskání
+
+        const newLeftSelected = [];
+        newAvailable.map((item, index) => {
+            if (rightSelectedIds.indexOf(item.id) > -1) {
+                newLeftSelected.push(index);
+            }
+        });
 
         this.setState({
             available: newAvailable,
             visible: newVisible,
             rightSelected: [],
+            leftSelected: newLeftSelected
         })
     }
 
@@ -123,7 +154,7 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
 
     render() {
         const {onSubmitForm, onClose} = this.props
-        const {available, visible} = this.state
+        const {available, visible, leftSelected, rightSelected} = this.state
 
         var cls = this.props.className ? 'datagrid-columns-settings-container ' + this.props.className : 'datagrid-columns-settings-container'
         return (
@@ -135,7 +166,7 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
                                 <ListBox
                                     items={available}
                                     multiselect
-                                    activeIndexes={this.state.leftSelected}
+                                    activeIndexes={leftSelected}
                                     renderItemContent={(item, isActive) => <div>{item.title}</div>}
                                     onChangeSelection={this.handleChangeSelection.bind(this, 'left')}
                                     onDoubleClick={this.handleAddVisible}
@@ -152,7 +183,7 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
                                     items={visible}
                                     sortable
                                     multiselect
-                                    activeIndexes={this.state.rightSelected}
+                                    activeIndexes={rightSelected}
                                     renderItemContent={(item, isActive) => <div>{item.title}</div>}
                                     onChangeOrder={this.handleChangeOrder}
                                     onChangeSelection={this.handleChangeSelection.bind(this, 'right')}
