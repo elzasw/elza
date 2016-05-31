@@ -48,7 +48,7 @@ import {fundSubNodeFormHandleClose} from 'actions/arr/subNodeForm.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {getSpecsIds, hasDescItemTypeValue, createFundRoot} from 'components/arr/ArrUtils.jsx'
-import {getMapFromList} from 'stores/app/utils.jsx'
+import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 
 require('./FundDataGrid.less')
 
