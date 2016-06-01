@@ -61,7 +61,7 @@ public interface NodeRepositoryCustom {
      * Najde id nodů v dané verzi odpovídající filtrům. Pokud nejsou filtry předány vrátí se id všech nodů ve verzi.
      *
      * @param version verze
-     * @param filters filtry
+     * @param descItemFilters filtry
      *
      * @return id nodů odpovídající parametrům
      */

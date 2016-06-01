@@ -57,7 +57,7 @@ public enum Condition {
     /**
      * Zjistí zda podmínka podpruje daný typ atributu. Pokud ne tak vyhodí výjimku.
      *
-     * @param string kód typ atributu
+     * @param typeCode kód typ atributu
      *
      * @throws IllegalStateException atribut není podporován
      */
