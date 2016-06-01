@@ -39,7 +39,7 @@ public class XmlExportControllerTest extends AbstractControllerTest {
     public void exportTest() throws IOException {
         // import počátečních dat
         RegScopeVO scope = getScope();
-        importData(XmlImportControllerTest.getFile(ALL_IN_ONE_XML), scope);
+        importData(XmlImportControllerTest.getResourceFile(ALL_IN_ONE_XML), scope);
 
         check();
 

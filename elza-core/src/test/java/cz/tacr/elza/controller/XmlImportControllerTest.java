@@ -2,12 +2,11 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.*;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
-import org.aspectj.util.FileUtil;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.FileCopyUtils;
 
@@ -18,14 +17,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
-
 /**
  * @author Petr Compel
  * @since 23.2.2016
  */
 public class XmlImportControllerTest extends AbstractControllerTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(XmlImportControllerTest.class);
 
     protected final static String TRANSFORMATIONS = XML_IMPORT_CONTROLLER_URL + "/transformations";
 
@@ -65,9 +63,9 @@ public class XmlImportControllerTest extends AbstractControllerTest {
      */
     @Test
     public void scenarioTest() {
-        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_FA, XmlImportType.FUND, null, null, null);
+        importFile(getResourceFile(ALL_IN_ONE_XML), IMPORT_SCOPE_FA, XmlImportType.FUND, null, null, null);
         List<RegScopeVO> allScopes = getAllScopes();
-        importFile(getFile(ALL_IN_ONE_XML), null, XmlImportType.FUND, allScopes.get(0).getId(), null, null);
+        importFile(getResourceFile(ALL_IN_ONE_XML), null, XmlImportType.FUND, allScopes.get(0).getId(), null, null);
 
         List<ArrFundVO> funds = getFunds();
         Assert.assertTrue("Očekáváme 1 archivní pomůcku", funds.size() == 1);
@@ -87,8 +85,8 @@ public class XmlImportControllerTest extends AbstractControllerTest {
         List<TreeNodeClient> nodes = getNodes(idsParam);
 
         TreeNodeClient treeNodeClient = nodes.get(0);
-        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_RECORD, XmlImportType.RECORD, null, null, null);
-        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_PARTY, XmlImportType.PARTY, null, null, null);
+        importFile(getResourceFile(ALL_IN_ONE_XML), IMPORT_SCOPE_RECORD, XmlImportType.RECORD, null, null, null);
+        importFile(getResourceFile(ALL_IN_ONE_XML), IMPORT_SCOPE_PARTY, XmlImportType.PARTY, null, null, null);
 
     }
 
@@ -96,7 +94,7 @@ public class XmlImportControllerTest extends AbstractControllerTest {
         importXmlFile(transformation, null, type, scopeName, scopeId, xmlFile, ruleSetId);
     }
 
-    public static File getFile(String resourcePath) {
+    public static File getResourceFile(String resourcePath) {
         URL url = Thread.currentThread().getContextClassLoader().getResource(resourcePath);
         Assert.assertNotNull(url);
         return new File(url.getPath());
@@ -106,22 +104,28 @@ public class XmlImportControllerTest extends AbstractControllerTest {
     public void importWithTransformation() throws IOException {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         Assert.assertTrue(!ruleSets.isEmpty());
-        File source = getFile(SUZAP_XSLT);
+        File source = getResourceFile(SUZAP_XSLT);
 
-        Assert.assertTrue(new File(this.transformationsDirectory).mkdirs());
+        File dir = new File(this.transformationsDirectory);
+        logger.info(this.transformationsDirectory);
+        logger.info(dir.getAbsolutePath());
 
-        File dest = new File(this.transformationsDirectory + "/suzap.xslt");
+        if (!dir.exists()) {
+            Assert.assertTrue(dir.mkdirs());
+        }
+
+        File dest = new File(this.transformationsDirectory + File.separator + "suzap.xslt");
         FileCopyUtils.copy(source, dest);
         Integer ruleSetId = ruleSets.iterator().next().getId();
 
         try {
-            importFile(getFile(SUZAP_XML), INVALID_TRANSFORMATION_NAME, XmlImportType.FUND, null, TRANSFORMATION_NAME, ruleSetId);
+            importFile(getResourceFile(SUZAP_XML), INVALID_TRANSFORMATION_NAME, XmlImportType.FUND, null, TRANSFORMATION_NAME, ruleSetId);
         } catch (AssertionError e) {
             /** Test chybné transformace */
         }
 
         try {
-            importFile(getFile(SUZAP_XML), TRANSFORMATION_NAME, XmlImportType.FUND, null, TRANSFORMATION_NAME, ruleSetId);
+            importFile(getResourceFile(SUZAP_XML), TRANSFORMATION_NAME, XmlImportType.FUND, null, TRANSFORMATION_NAME, ruleSetId);
         } catch (AssertionError e) {
             /** Ochrana proti chybné XSLT transformaci */
         }

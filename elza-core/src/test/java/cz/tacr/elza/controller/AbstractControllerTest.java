@@ -15,7 +15,6 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import com.jayway.restassured.mapper.ObjectMapper;
 import cz.tacr.elza.api.ArrPacket;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.filter.Filters;
@@ -237,7 +236,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         RestAssured.port = port;                        // nastavi default port pro REST-assured
         RestAssured.baseURI = RestAssured.DEFAULT_URI;  // nastavi default URI pro REST-assured. Nejcasteni localhost
         login();
-        importXmlFile(null, null, XmlImportType.PARTY, IMPORT_SCOPE, 1, XmlImportControllerTest.getFile(XML_INSTITUTION), null);
+        importXmlFile(null, null, XmlImportType.PARTY, IMPORT_SCOPE, 1, XmlImportControllerTest.getResourceFile(XML_INSTITUTION), null);
     }
 
     protected void login() {

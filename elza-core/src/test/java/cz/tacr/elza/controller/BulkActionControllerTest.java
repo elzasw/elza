@@ -5,7 +5,6 @@ import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.*;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +37,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     private static final String BULK_ACTION_SERIAL_NUMBER_GENERATOR = "GENERATOR_SERIAL_NUMBER_ZP2015";
 
     private int importAndGetVersionId() {
-        importXmlFile(null, null, XmlImportType.FUND, IMPORT_SCOPE, null, XmlImportControllerTest.getFile(XML_FILE), null);
+        importXmlFile(null, null, XmlImportType.FUND, IMPORT_SCOPE, null, XmlImportControllerTest.getResourceFile(XML_FILE), null);
         List<ArrFundVO> funds = getFunds();
         Assert.assertEquals(1, funds.size());
         Assert.assertEquals(1, funds.get(0).getVersions().size());
