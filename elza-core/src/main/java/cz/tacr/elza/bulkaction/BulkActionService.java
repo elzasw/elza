@@ -177,7 +177,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         ArrFundVersion arrFundVersion = new ArrFundVersion();
         arrFundVersion.setFundVersionId(fundVersionId);
         bulkActionRun.setFundVersion(arrFundVersion);
-
+        bulkActionRun.setDatePlanned(new Date());
         storeBulkActionRun(bulkActionRun);
 
         List<ArrBulkActionNode> bulkActionNodes = new ArrayList<>(inputNodeIds.size());
@@ -238,7 +238,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * Spuštění dalších hromadných akcí, pokud splňují podmínky pro spuštění.
      */
     private void runNextWorker() {
-        List<ArrBulkActionRun> waitingActions = bulkActionRepository.findByStateGroupById(State.WAITING);
+        List<ArrBulkActionRun> waitingActions = bulkActionRepository.findByStateGroupByFundOrderById(State.WAITING);
         waitingActions.forEach(bulkActionRun -> {
             if(canRun(bulkActionRun)) {
                 run(bulkActionRun);

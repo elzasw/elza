@@ -46,7 +46,7 @@ public interface BulkActionRunRepository extends JpaRepository<ArrBulkActionRun,
                                                                 @Param(value = "code") final String code);
 
     @Query(value = "SELECT ba from arr_bulk_action_run ba WHERE ba.state = :state GROUP BY ba.fundVersion,ba.bulkActionRunId ORDER BY ba.bulkActionRunId ASC")
-    List<ArrBulkActionRun> findByStateGroupById(@Param(value = "state") final State state);
+    List<ArrBulkActionRun> findByStateGroupByFundOrderById(@Param(value = "state") final State state);
 
     @Modifying
     @Query("UPDATE arr_bulk_action_run ba SET ba.state = :toState WHERE ba.state = :fromState")
