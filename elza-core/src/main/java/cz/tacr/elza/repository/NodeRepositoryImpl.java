@@ -200,17 +200,18 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @param text hodnota
      * @param queryBuilder query builder
      *
-     * @param dotaz
+     * @return dotaz
      */
     private Query createTextQuery(final String text, final QueryBuilder queryBuilder) {
-        // rozdělení zadaného výrazu podle mezer a hledání výsledků pomocí OR tak že každý obsahuje alespoň jednu část zadaného výrazu
+        /** rozdělení zadaného výrazu podle mezer */
         String[] tokens = StringUtils.split(text.toLowerCase(), ' ');
 
+        /** hledání výsledků pomocí AND (must) tak že každý obsahuje dané části zadaného výrazu */
         BooleanJunction<BooleanJunction> textConditions = queryBuilder.bool();
         for (String token : tokens) {
             String searchValue = "*" + token + "*";
             Query createQuery = queryBuilder.keyword().wildcard().onField(LuceneDescItemCondition.FULLTEXT_ATT).matching(searchValue).createQuery();
-            textConditions.should(createQuery);
+            textConditions.must(createQuery);
         }
 
         return textConditions.createQuery();
