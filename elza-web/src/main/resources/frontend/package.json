@@ -36,7 +36,8 @@
         "react-input-enhancements": "0.4.4",
         "babel-runtime": "5.8.25",
         "dom-scroll-into-view": "1.0.1",
-        "react-shortcuts": "0.7.3"
+        "react-shortcuts": "0.7.3",
+        "lodash-compat": "^3.10.1"
     },
     "devDependencies": {
         "webpack": "1.13.0",
