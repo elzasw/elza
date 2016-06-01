@@ -640,7 +640,7 @@ public class XmlExportService {
         }
         Institution institution = new Institution();
 
-        institution.setCode(parInstitution.getInternalCode());
+        institution.setInternalCode(parInstitution.getInternalCode());
         institution.setTypeCode(parInstitution.getInstitutionType().getCode());
 
         return institution;

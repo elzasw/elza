@@ -21,19 +21,19 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 public class Institution {
 
     /** Kód instituce. Délka 50. */
-    @XmlAttribute(name = "code", required = true)
-    private String code;
+    @XmlAttribute(name = "internal-code", required = true)
+    private String internalCode;
 
     /** Kód typu instituce. */
     @XmlAttribute(name = "type-code", required = true)
     private String typeCode;
 
-    public String getCode() {
-        return code;
+    public String getInternalCode() {
+        return internalCode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setInternalCode(String internalCode) {
+        this.internalCode = internalCode;
     }
 
     public String getTypeCode() {

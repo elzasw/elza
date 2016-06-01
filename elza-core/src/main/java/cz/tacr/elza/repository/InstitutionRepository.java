@@ -16,7 +16,7 @@ import cz.tacr.elza.domain.ParParty;
 @Repository
 public interface InstitutionRepository extends JpaRepository<ParInstitution, Integer> {
 
-    ParInstitution findByCode(String institutionCode);
+    ParInstitution findByInternalCode(String institutionInternalCode);
 
     ParInstitution findByParty(ParParty parParty);
 

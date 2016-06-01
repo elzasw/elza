@@ -689,7 +689,7 @@ public class XmlImportService {
             throw new FatalXmlImportException("Kód instituce musí být vyplněn.");
         }
 
-        ParInstitution institution = institutionRepository.findByCode(institutionCode);
+        ParInstitution institution = institutionRepository.findByInternalCode(institutionCode);
         if (institution == null) {
             throw new FatalXmlImportException("Instituce s kódem " + institutionCode + " neexistuje.");
         }
@@ -955,7 +955,7 @@ public class XmlImportService {
             return;
         }
 
-        ParInstitution parInstitution = partyService.createInstitution(institution.getCode(), parInstitutionType, parParty);
+        ParInstitution parInstitution = partyService.createInstitution(institution.getInternalCode(), parInstitutionType, parParty);
         partyService.saveInstitution(parInstitution);
     }
 
@@ -1447,8 +1447,7 @@ public class XmlImportService {
     }
 
     private File getTransformationFileByName(final String transformationName) {
-        File transformationFile = new File(transformationsDirectory + File.separator + transformationName + XmlUtils.XSLT_EXTENSION);
-        return transformationFile;
+        return new File(transformationsDirectory + File.separator + transformationName + XmlUtils.XSLT_EXTENSION);
     }
 
     /**
