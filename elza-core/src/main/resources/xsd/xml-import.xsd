@@ -300,7 +300,7 @@
 
   <xs:complexType name="institution">
     <xs:sequence/>
-    <xs:attribute name="code" type="xs:string" use="required"/>
+    <xs:attribute name="internal-code" type="xs:string"/>
     <xs:attribute name="type-code" type="xs:string" use="required"/>
   </xs:complexType>
 

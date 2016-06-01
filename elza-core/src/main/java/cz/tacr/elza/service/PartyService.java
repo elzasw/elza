@@ -891,15 +891,15 @@ public class PartyService {
     /**
      * Vytvoří instituci.
      *
-     * @param code kód
+     * @param internalCode kód
      * @param institutionType typ instituce
      * @param party osoba
      *
      * @return neuložená instituce
      */
-    public ParInstitution createInstitution(String code, ParInstitutionType institutionType, ParParty party) {
+    public ParInstitution createInstitution(String internalCode, ParInstitutionType institutionType, ParParty party) {
         ParInstitution institution = new ParInstitution();
-        institution.setCode(code);
+        institution.setInternalCode(internalCode);
         institution.setInstitutionType(institutionType);
         institution.setParty(party);
 

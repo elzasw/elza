@@ -934,12 +934,12 @@ public class XmlImportService {
             importPartyGroupIdentifiers(partyGroup, parPartyGroup, stopOnError);
         }
 
-        importPartyInstituion(party, parParty, stopOnError);
+        importPartyInstitution(party, parParty, stopOnError);
 
         return partyRepository.save(parParty);
     }
 
-    private void importPartyInstituion(final AbstractParty party, final ParParty parParty, final boolean stopOnError) throws PartyImportException {
+    private void importPartyInstitution(final AbstractParty party, final ParParty parParty, final boolean stopOnError) throws PartyImportException {
         Institution institution = party.getInstitution();
         if (institution == null) {
             return;
@@ -955,17 +955,7 @@ public class XmlImportService {
             return;
         }
 
-        String code = institution.getCode();
-        ParInstitution parInstitution = institutionRepository.findByCode(code);
-        if (parInstitution != null && parInstitution.getInstitutionType().getCode().equals(typeCode)) {
-            if (stopOnError) {
-                throw new PartyImportException("Již existuje instituce s kódem " + code + ".");
-            }
-
-            return;
-        }
-
-        parInstitution = partyService.createInstitution(code, parInstitutionType, parParty);
+        ParInstitution parInstitution = partyService.createInstitution(institution.getCode(), parInstitutionType, parParty);
         partyService.saveInstitution(parInstitution);
     }
 

@@ -640,7 +640,7 @@ public class XmlExportService {
         }
         Institution institution = new Institution();
 
-        institution.setCode(parInstitution.getCode());
+        institution.setCode(parInstitution.getInternalCode());
         institution.setTypeCode(parInstitution.getInstitutionType().getCode());
 
         return institution;
@@ -1307,7 +1307,7 @@ public class XmlExportService {
         Fund fund = new Fund();
 
         RulRuleSet ruleSet = version.getRuleSet();
-        fund.setInstitutionCode(arrFund.getInstitution().getCode());
+        fund.setInstitutionCode(arrFund.getInstitution().getInternalCode());
 
         fund.setName(arrFund.getName());
         fund.setRuleSetCode(ruleSet.getCode());

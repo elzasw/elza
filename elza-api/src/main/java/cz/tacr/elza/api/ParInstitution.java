@@ -23,12 +23,12 @@ public interface ParInstitution<IT extends ParInstitutionType, P extends ParPart
     /**
      * @return kód instituce
      */
-    String getCode();
+    String getInternalCode();
 
     /**
-     * @param code kód instituce
+     * @param internalCode kód instituce
      */
-    void setCode(String code);
+    void setInternalCode(String internalCode);
 
     /**
      * @return typ instituce

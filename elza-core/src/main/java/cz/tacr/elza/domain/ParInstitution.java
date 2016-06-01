@@ -18,8 +18,8 @@ public class ParInstitution implements cz.tacr.elza.api.ParInstitution<ParInstit
     @GeneratedValue
     private Integer institutionId;
 
-    @Column(length = 50, nullable = false, unique = true)
-    private String code;
+    @Column(length = 250)
+    private String internalCode;
 
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ParInstitutionType.class)
     @JoinColumn(name = "institutionTypeId", nullable = false)
@@ -40,13 +40,13 @@ public class ParInstitution implements cz.tacr.elza.api.ParInstitution<ParInstit
     }
 
     @Override
-    public String getCode() {
-        return code;
+    public String getInternalCode() {
+        return internalCode;
     }
 
     @Override
-    public void setCode(final String code) {
-        this.code = code;
+    public void setInternalCode(final String internalCode) {
+        this.internalCode = internalCode;
     }
 
     @Override

@@ -473,7 +473,7 @@
       <characteristics>characteristics</characteristics>
     </event>
     <party-group party-id="partyId-3" record-id="recordId-1" party-type-code="GROUP_PARTY">
-      <institution code="in1" type-code="DEFAULT"/>
+      <institution internal-code="in1" type-code="DEFAULT"/>
       <preferred-name party-name-form-type-code="3">
         <main-part>mainPart 3</main-part>
         <other-part>otherPart 3</other-part>
