@@ -308,6 +308,7 @@ class WebApi{
 
     createRecord(record, characteristics, registerTypeId, parentId, scopeId) {
         return AjaxUtils.ajaxPut('/api/registryManagerV2/createRecord', null, {
+            "@class": "cz.tacr.elza.controller.vo.RegRecordVO",
             record,
             characteristics,
             local: false,
