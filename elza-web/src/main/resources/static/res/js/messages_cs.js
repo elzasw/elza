@@ -197,7 +197,7 @@ var messages = {
     "arr.fund.filterSettings.action": "Nastavit filtr pro prvek popisu",
     "arr.fund.filterSettings.title": "Nastavení filtru pro prvek popisu: {0}",
     "arr.fund.filterSettings.filterByValue.title": "Filtrovat podle hodnoty",
-    "arr.fund.filterSettings.filterBySpecification.title": "Filtrovat podle speficikace",
+    "arr.fund.filterSettings.filterBySpecification.title": "Filtrovat podle specifikace",
     "arr.fund.filterSettings.filterByPacketType.title": "Filtrovat podle typu obalu",
     "arr.fund.filterSettings.filterByCondition.title": "Filtrovat podle podmínky",
     "arr.fund.filterSettings.condition.none": "Bez podmínky",
