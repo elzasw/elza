@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,9 +15,11 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.lucene.document.FieldType;
 import org.apache.lucene.queries.ChainedFilter;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
+import org.apache.lucene.queryparser.flexible.standard.config.NumericConfig;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.NumericRangeFilter;
@@ -175,7 +178,9 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         StandardQueryParser parser = new StandardQueryParser();
         parser.setAllowLeadingWildcard(true);
-
+        HashMap<String, NumericConfig> stringNumericConfigHashMap = new HashMap<>();
+        stringNumericConfigHashMap.put("specification", new NumericConfig(1, NumberFormat.getIntegerInstance(), FieldType.NumericType.INT));
+        parser.setNumericConfigMap(stringNumericConfigHashMap);
         Query query;
         try {
             Query textQuery = parser.parse(queryText, "fulltextValue");
@@ -232,7 +237,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     /**
      * Vytvoří query builder pro danou třídu.
      *
-     * @param entityClasstřída
+     * @param entityClass třída
      *
      * @return query builder
      */
