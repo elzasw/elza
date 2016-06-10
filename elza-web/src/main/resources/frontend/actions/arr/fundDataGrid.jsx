@@ -31,6 +31,7 @@ export function isFundDataGridAction(action) {
         case types.FUND_FUND_DATA_GRID_FULLTEXT_NEXT_ITEM:
         case types.FUND_FUND_DATA_GRID_FULLTEXT_PREV_ITEM:
         case types.FUND_FUND_DATA_GRID_CHANGE_CELL_FOCUS:
+        case types.FUND_FUND_DATA_GRID_CHANGE_SELECTED_ROW_INDEXES:
             return true
         default:
             return false
@@ -96,7 +97,7 @@ export function fundDataChangeCellFocus(versionId, row, col) {
 }
 export function fundDataChangeRowIndexes(versionId, indexes) {
     return {
-        type: types.FUND_FUND_DATA_GRID_CHANGE_ROW_FOCUS,
+        type: types.FUND_FUND_DATA_GRID_CHANGE_SELECTED_ROW_INDEXES,
         versionId,
         indexes
     }

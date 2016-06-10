@@ -17,7 +17,7 @@ const initialState = {
     columnsOrder: [],   // seznam id desc item type - pořadí zobrazování sloupečků
     columnInfos: {},    // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
     selectedIds: [],
-    selectedRowsIndexes: [],
+    selectedRowIndexes: [],
     currentDataKey: '',
     subNodeForm: subNodeForm(),
     nodeId: null,   // id node právě editovaného řádku
@@ -100,6 +100,11 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 visibleColumns,
                 columnsOrder,
                 columnInfos,
+            }
+        case types.FUND_FUND_DATA_GRID_CHANGE_SELECTED_ROW_INDEXES:
+            return {
+                ...state,
+                selectedRowIndexes: action.indexes,
             }
         case types.FUND_FUND_DATA_GRID_CHANGE_CELL_FOCUS:
             return {
@@ -219,6 +224,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 itemsCount: action.itemsCount,
                 pageIndex: 0,
                 selectedIds: [],
+                selectedRowIndexes: [0],
                 currentDataKey: '', // vynucení načtení dat!!!
                 cellFocus: {row: 0, col: 0},
             }

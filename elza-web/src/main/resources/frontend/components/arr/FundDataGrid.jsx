@@ -62,7 +62,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             'handleBulkModifications', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer', 'resizeGrid', 'handleFilterClearAll',
             'handleFilterUpdateData', 'handleContextMenu', 'handleSelectInNewTab', 'handleSelectInTab', 'handleEdit', 'handleEditClose',
             'handleFulltextSearch', 'handleFulltextChange', 'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleChangeFocus',
-            'handleToggleExtendedSearch');
+            'handleToggleExtendedSearch', 'handleChangeRowIndexes');
 
         var colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
         if (!colState) {
@@ -507,7 +507,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.dispatch(fundDataChangeCellFocus(versionId, row, col))
     }
 
-    handleChangeFocus(indexes) {
+    handleChangeRowIndexes(indexes) {
         const {versionId} = this.props;
         this.dispatch(fundDataChangeRowIndexes(versionId, indexes))
     }

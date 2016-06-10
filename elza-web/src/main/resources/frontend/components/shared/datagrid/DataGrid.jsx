@@ -18,8 +18,9 @@ const keyDownHandlers = {
     changeFocus: function(newFocus) {
         this.setState({ focus: newFocus, selectedRowIndexes: {[newFocus.row]: true} }, this.ensureFocusVisible(newFocus))
 
-        const {onChangeFocus} = this.props
+        const {onChangeFocus, onChangeRowIndexes} = this.props
         onChangeFocus && onChangeFocus(newFocus.row, newFocus.col)
+        onChangeRowIndexes && onChangeRowIndexes([newFocus.row]);
     },
     'F2': function(e) {
         const {focus} = this.state
@@ -216,7 +217,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         
         const {onChangeFocus, onChangeRowIndexes} = this.props;
         onChangeFocus && onChangeFocus(newFocus.row, newFocus.col);
-        onChangeRowIndexes && onChangeRowIndexes(newSelectedRowIndexes);
+        onChangeRowIndexes && onChangeRowIndexes(Object.keys(newSelectedRowIndexes));
     }
 
     unFocus() {
