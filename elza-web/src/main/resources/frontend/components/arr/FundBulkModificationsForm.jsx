@@ -155,14 +155,14 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
         switch (operationType.value) {
             case 'findAndReplace':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.findAndReplace'
-                operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.findText')} {...findText} {...decorateFormField(findText)} />)
-                operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />)
+                operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.findAndRFeplace.findText')} {...findText} {...decorateFormField(findText)} />)
+                operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.findAndRFeplace.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />)
                 break
             case 'replace':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.replace'
                 if (refType.useSpecification) {
                     operationInputs.push(
-                        <Input type='select' label={i18n('arr.fund.bulkModifications.replaceSpec')} {...replaceSpec} {...decorateFormField(replaceSpec)}>
+                        <Input type='select' label={i18n('arr.fund.bulkModifications.replace.replaceSpec')} {...replaceSpec} {...decorateFormField(replaceSpec)}>
                             <option />
                             {refType.descItemSpecs.map(i => (
                                 <option key={i.id} value={i.id}>{i.name}</option>
@@ -171,7 +171,7 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
                     )
                 }
 
-                operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />)
+                operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.replace.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />)
                 break
             case 'delete':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.delete'
