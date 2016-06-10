@@ -138,12 +138,7 @@ public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrData
 
     @Override
     public String getFulltextValue() {
-        String ret = "";
-        RulDescItemSpec descItemSpec = getDescItem().getDescItemSpec();
-        if (descItemSpec != null) {
-            ret = descItemSpec.getName();
-        }
-        ret += calendarType == null ? "?" : calendarType.getName() + " ";
+        String ret = calendarType == null ? "?" : calendarType.getName() + " ";
 
         String from = valueFromEstimated == true ? valueFrom + "*" : valueFrom;
         String to = valueToEstimated == true ? valueTo + "*" : valueTo;

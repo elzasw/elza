@@ -40,12 +40,6 @@ public class ArrDataCoordinates extends ArrData implements cz.tacr.elza.api.ArrD
 
     @Override
     public String getFulltextValue() {
-        RulDescItemSpec descItemSpec = getDescItem().getDescItemSpec();
-        String wkt = new WKTWriter().writeFormatted(value);
-        if (descItemSpec == null) {
-            return wkt;
-        }
-
-        return descItemSpec.getName() + ": " + wkt;
+        return new WKTWriter().writeFormatted(value);
     }
 }
