@@ -169,7 +169,6 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
                             ))}
                         </Input>
                     )
-                    replaceSpec
                 }
 
                 operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />)
