@@ -89,7 +89,10 @@ function getViewStartIndex(state, selectedId) {
     var index = indexById(state.childNodes, selectedId)
     if (index !== null) {   // null může být, pokud nejsou data seznamu položek accordionu (childNodes) ještě načtena
         if (index < state.viewStartIndex || index >= state.viewStartIndex + state.pageSize) {
-            return state.pageSize * Math.floor(index / state.pageSize);
+            var newIndex = state.pageSize * Math.floor(index / state.pageSize);
+            // Chceme posunout o půlku stránky méně, aby nebyla položka sama na začátku
+            newIndex -= Math.floor(_pageSize / 2)
+            return Math.max(newIndex, 0)
         }
     }
     return state.viewStartIndex;
