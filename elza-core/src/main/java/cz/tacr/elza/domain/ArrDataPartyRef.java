@@ -57,11 +57,6 @@ public class ArrDataPartyRef extends ArrData implements cz.tacr.elza.api.ArrData
 
     @Override
     public String getFulltextValue() {
-        RulDescItemSpec descItemSpec = getDescItem().getDescItemSpec();
-        if (descItemSpec == null) {
-            return party.getRecord().getRecord();
-        }
-
-        return descItemSpec.getName() + ": " + party.getRecord().getRecord();
+        return party.getRecord().getRecord();
     }
 }

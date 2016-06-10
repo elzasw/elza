@@ -45,11 +45,6 @@ public class ArrDataDecimal extends ArrData implements cz.tacr.elza.api.ArrDataD
 
     @Override
     public String getFulltextValue() {
-        RulDescItemSpec descItemSpec = getDescItem().getDescItemSpec();
-        if (descItemSpec == null) {
-            return value.toPlainString();
-        }
-
-        return descItemSpec.getName() + ": " + value.toPlainString();
+        return value.toPlainString();
     }
 }

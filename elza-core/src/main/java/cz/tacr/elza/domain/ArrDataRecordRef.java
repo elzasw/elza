@@ -43,11 +43,6 @@ public class ArrDataRecordRef extends ArrData implements cz.tacr.elza.api.ArrDat
 
     @Override
     public String getFulltextValue() {
-        RulDescItemSpec descItemSpec = getDescItem().getDescItemSpec();
-        if (descItemSpec == null) {
-            return record.getRecord();
-        }
-
-        return descItemSpec.getName() + ": " + record.getRecord();
+        return record.getRecord();
     }
 }
