@@ -51,6 +51,6 @@ public class ArrDataPacketRef extends ArrData implements cz.tacr.elza.api.ArrDat
 
     @Override
     public String getFulltextValue() {
-        return packet.getStorageNumber();
+        return packet.getPacketType().getName() + ": " + packet.getStorageNumber();
     }
 }
