@@ -1,5 +1,63 @@
 package cz.tacr.elza.packageimport;
 
+import com.google.common.collect.Maps;
+import cz.tacr.elza.bulkaction.BulkActionConfigManager;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulDefaultItemType;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemSpecRegister;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulRule;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.drools.RulesExecutor;
+import cz.tacr.elza.packageimport.xml.DescItemSpec;
+import cz.tacr.elza.packageimport.xml.DescItemSpecRegister;
+import cz.tacr.elza.packageimport.xml.DescItemSpecs;
+import cz.tacr.elza.packageimport.xml.DescItemType;
+import cz.tacr.elza.packageimport.xml.DescItemTypes;
+import cz.tacr.elza.packageimport.xml.PackageAction;
+import cz.tacr.elza.packageimport.xml.PackageActions;
+import cz.tacr.elza.packageimport.xml.PackageInfo;
+import cz.tacr.elza.packageimport.xml.PackageRule;
+import cz.tacr.elza.packageimport.xml.PackageRules;
+import cz.tacr.elza.packageimport.xml.PacketType;
+import cz.tacr.elza.packageimport.xml.PacketTypes;
+import cz.tacr.elza.packageimport.xml.PolicyType;
+import cz.tacr.elza.packageimport.xml.PolicyTypes;
+import cz.tacr.elza.packageimport.xml.RuleSet;
+import cz.tacr.elza.packageimport.xml.RuleSets;
+import cz.tacr.elza.repository.ActionRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.DefaultItemTypeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DescItemSpecRegisterRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.PackageRepository;
+import cz.tacr.elza.repository.PacketTypeRepository;
+import cz.tacr.elza.repository.PolicyTypeRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RuleRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.ActionEvent;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,27 +77,6 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.packageimport.xml.*;
-import cz.tacr.elza.repository.*;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.bulkaction.BulkActionConfigManager;
-import cz.tacr.elza.drools.RulesExecutor;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.ActionEvent;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**
@@ -115,6 +152,9 @@ public class PackageService {
 
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
+
+    @Autowired
+    private DefaultItemTypeRepository defaultItemTypeRepository;
 
     @Autowired
     private DescItemSpecRepository descItemSpecRepository;
@@ -195,8 +235,11 @@ public class PackageService {
 
             processPolicyTypes(policyTypes, rulPackage, rulRuleSets);
 
-            processDescItemTypes(descItemTypes, descItemSpecs, rulPackage);
+            List<RulDescItemType> rulDescItemTypes = processDescItemTypes(descItemTypes, descItemSpecs, rulPackage);
             rulPackageActions = processPackageActions(packageActions, rulPackage, mapEntry, dirActions);
+
+            // Zde se může importovat vazba mezi pravidlem a atributem
+            processDefaultItemTypes(rulRuleSets, ruleSets, rulDescItemTypes);
 
             rulPackageRules = processPackageRules(packageRules, rulPackage, mapEntry, rulRuleSets,
                     dirRules);
@@ -239,6 +282,51 @@ public class PackageService {
             }
         }
 
+    }
+
+    /**
+     * Zpracování implicitních sloupců pro pravidla.
+     * @param rulRuleSets pravidla
+     * @param ruleSets xml pravidla, ze který se budou pravidla aktualizovat
+     * @param rulDescItemTypes aktuální seznam atributů
+     */
+    private void processDefaultItemTypes(final List<RulRuleSet> rulRuleSets, final RuleSets ruleSets, final List<RulDescItemType> rulDescItemTypes) {
+        if (rulRuleSets.isEmpty() || ruleSets.getRuleSets() == null || ruleSets.getRuleSets().isEmpty()) {
+            // Nejsou žádná pravidla pro synchronizaci
+            return;
+        }
+
+        // Mapa kódu na xml pravidlo
+        final Map<String, RuleSet> xmlRuleSetMap = Maps.uniqueIndex(ruleSets.getRuleSets(), RuleSet::getCode);
+
+        // Mapa kódu na atribut
+        final Map<String, RulDescItemType> rulDescItemTypeMap = Maps.uniqueIndex(rulDescItemTypes, RulDescItemType::getCode);
+
+        // Synchronizace
+        rulRuleSets.forEach(rulRuleSet -> {
+            final RuleSet xmlRuleSet = xmlRuleSetMap.get(rulRuleSet.getCode());
+
+            // Smazání původních vazeb
+            List<RulDefaultItemType> currItems = defaultItemTypeRepository.findByRuleSet(rulRuleSet);
+            defaultItemTypeRepository.delete(currItems);
+
+            // Import nových vazeb
+            if (xmlRuleSet.getDefaultItemTypes() != null) {
+                xmlRuleSet.getDefaultItemTypes().getDefaultItemTypes().forEach(defaultItemType -> {
+                    RulDescItemType rulDescItem = rulDescItemTypeMap.get(defaultItemType.getCode());
+                    if (rulDescItem == null) {
+                        throw new IllegalStateException("Pravidlo s kódem " + rulRuleSet.getCode()
+                                + " obsahuje odkaz na neexistující atribut jednotky popisu (atribut s kódem "
+                                + defaultItemType.getCode() + " neexistuje).");
+                    }
+
+                    RulDefaultItemType rel = new RulDefaultItemType();
+                    rel.setItemType(rulDescItem);
+                    rel.setRuleSet(rulRuleSet);
+                    defaultItemTypeRepository.save(rel);
+                });
+            }
+        });
     }
 
     /**
@@ -648,8 +736,9 @@ public class PackageService {
      * @param descItemTypes       seznam importovaných typů
      * @param descItemSpecs       seznam importovaných specifikací
      * @param rulPackage          balíček
+     * @return                    výsledný seznam atributů v db
      */
-    private void processDescItemTypes(final DescItemTypes descItemTypes,
+    private List<RulDescItemType> processDescItemTypes(final DescItemTypes descItemTypes,
                                       final DescItemSpecs descItemSpecs,
                                       final RulPackage rulPackage) {
 
@@ -695,6 +784,7 @@ public class PackageService {
         rulDescItemTypesDelete.removeAll(rulDescItemTypesNew);
         descItemTypeRepository.delete(rulDescItemTypesDelete);
 
+        return rulDescItemTypesNew;
     }
 
     /**
@@ -930,14 +1020,27 @@ public class PackageService {
             }
         }
 
+        // Uložení pravidel
         rulRuleSetsNew = ruleSetRepository.save(rulRuleSetsNew);
 
+        // Smazání pravidel, které již nejsou v xml
         List<RulRuleSet> rulRuleSetsDelete = new ArrayList<>(rulRuleSets);
         rulRuleSetsDelete.removeAll(rulRuleSetsNew);
-        ruleSetRepository.delete(rulRuleSetsDelete);
+        rulRuleSetsDelete.forEach(this::deleteRuleSet);
 
         return rulRuleSetsNew;
+    }
 
+    /**
+     * Smazání pravidla.
+     * @param rulRuleSet pravidlo
+     */
+    private void deleteRuleSet(final RulRuleSet rulRuleSet) {
+        // Smazání návazných záznamů
+        defaultItemTypeRepository.deleteByRuleSet(rulRuleSet);
+
+        // Smazání instance
+        ruleSetRepository.delete(rulRuleSet);
     }
 
     /**
@@ -1068,7 +1171,7 @@ public class PackageService {
 
             policyTypeRepository.deleteByRulPackage(rulPackage);
 
-            ruleSetRepository.deleteByRulPackage(rulPackage);
+            ruleSetRepository.findByRulPackage(rulPackage).forEach(this::deleteRuleSet);
 
             packetTypeRepository.deleteByRulPackage(rulPackage);
 

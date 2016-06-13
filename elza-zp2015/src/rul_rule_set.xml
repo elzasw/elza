@@ -1,5 +1,10 @@
 <rule-sets>
     <rule-set code="ZP2015">
         <name>Základní pravidla 2015</name>
+        <default-item-types>
+            <item-type code="ZP2015_LEVEL_TYPE" />
+            <item-type code="ZP2015_SERIAL_NUMBER" />
+            <item-type code="ZP2015_TITLE" />
+        </default-item-types>
     </rule-set>
 </rule-sets>
