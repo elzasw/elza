@@ -4,7 +4,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.8-SNAPSHOT</version>
     </parent>
     <artifactId>elza-zp2015</artifactId>
     <name>ELZA ZP2015</name>
