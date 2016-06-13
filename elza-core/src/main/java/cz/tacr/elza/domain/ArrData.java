@@ -83,18 +83,18 @@ public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType
     @Field(store = Store.NO)
     @FieldBridge(impl = IntegerBridge.class)
     public Integer getDescItemTypeId() {
-        return descItem.getDescItemType().getDescItemTypeId();
+        return descItem.getItemType().getItemTypeId();
     }
 
     @Field
     @Analyzer(definition = "customanalyzer")
     public Integer getSpecification() {
-        RulDescItemSpec descItemSpec = descItem.getDescItemSpec();
+        RulItemSpec descItemSpec = descItem.getItemSpec();
         if (descItemSpec == null) {
             return null;
         }
 
-        return descItemSpec.getDescItemSpecId();
+        return descItemSpec.getItemSpecId();
     }
 
     @Override

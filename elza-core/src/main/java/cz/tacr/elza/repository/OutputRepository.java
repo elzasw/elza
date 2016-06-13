@@ -17,7 +17,7 @@ import java.util.List;
 @Repository
 public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer> {
 
-    @Query("SELECT o FROM arr_output o JOIN o.namedOutput no JOIN no.fund f JOIN f.versions v WHERE v = :fundVersion AND no.deleted = false ORDER BY no.temporary ASC, no.name ASC")
+    @Query("SELECT o FROM arr_output o JOIN o.outputDefinition no JOIN no.fund f JOIN f.versions v WHERE v = :fundVersion AND no.deleted = false ORDER BY no.temporary ASC, no.name ASC")
     List<ArrOutput> findByFundVersion(@Param("fundVersion") ArrFundVersion fundVersion);
 
     @Override

@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+import cz.tacr.elza.domain.RulItemType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,7 +22,6 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.utils.ObjectListIterator;
 
 
@@ -61,7 +61,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
     @Override
     public Map<Integer, DescItemTitleInfo> findDescItemTitleInfoByNodeId(final Set<Integer> nodeIds,
-                                                                         final RulDescItemType titleType,
+                                                                         final RulItemType titleType,
                                                                          @Nullable final ArrChange lockChange) {
         Assert.notNull(titleType);
         if (CollectionUtils.isEmpty(nodeIds)) {
@@ -91,7 +91,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
         hqlBuilder.append("WHERE n.node_id IN (:ids) ");
 
         Query query = entityManager.createNativeQuery(hqlBuilder.toString());
-        query.setParameter("descItemTypeId", titleType.getDescItemTypeId());
+        query.setParameter("descItemTypeId", titleType.getItemTypeId());
 
         if (lockChange != null) {
             query.setParameter("lockChange", lockChange.getChangeId());

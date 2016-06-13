@@ -34,7 +34,7 @@ import cz.tacr.elza.search.DescItemIndexingInterceptor;
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulDescItemType, RulDescItemSpec, ArrNode> {
+public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulItemType, RulItemSpec, ArrNode> {
 
     public static final String NODE = "node";
     public static final String CREATE_CHANGE_ID = "createChangeId";
@@ -66,14 +66,14 @@ public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulD
     private Integer descItemObjectId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDescItemType.class)
-    @JoinColumn(name = "descItemTypeId", nullable = false)
-    private RulDescItemType descItemType;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemType.class)
+    @JoinColumn(name = "itemTypeId", nullable = false)
+    private RulItemType itemType;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDescItemSpec.class)
-    @JoinColumn(name = "descItemSpecId", nullable = true)
-    private RulDescItemSpec descItemSpec;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemSpec.class)
+    @JoinColumn(name = "itemSpecId", nullable = true)
+    private RulItemSpec itemSpec;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
@@ -148,24 +148,20 @@ public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulD
         this.descItemObjectId = descItemObjectId;
     }
 
-    @Override
-    public RulDescItemType getDescItemType() {
-        return descItemType;
+    public RulItemType getItemType() {
+        return itemType;
     }
 
-    @Override
-    public void setDescItemType(final RulDescItemType descItemType) {
-        this.descItemType = descItemType;
+    public void setItemType(final RulItemType itemType) {
+        this.itemType = itemType;
     }
 
-    @Override
-    public RulDescItemSpec getDescItemSpec() {
-        return descItemSpec;
+    public RulItemSpec getItemSpec() {
+        return itemSpec;
     }
 
-    @Override
-    public void setDescItemSpec(final RulDescItemSpec descItemSpec) {
-        this.descItemSpec = descItemSpec;
+    public void setItemSpec(final RulItemSpec itemSpec) {
+        this.itemSpec = itemSpec;
     }
 
     @Override

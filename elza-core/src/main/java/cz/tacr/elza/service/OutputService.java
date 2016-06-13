@@ -5,11 +5,11 @@ import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNamedOutput;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.repository.NamedOutputRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputRepository;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 public class OutputService {
 
     @Autowired
-    private NamedOutputRepository namedOutputRepository;
+    private OutputDefinitionRepository outputDefinitionRepository;
 
     @Autowired
     private OutputRepository outputRepository;
@@ -75,33 +75,33 @@ public class OutputService {
      * Smazat pojmenovaný výstup.
      *
      * @param fundVersion verze AS
-     * @param namedOutput pojmenovaný výstup
+     * @param outputDefinition pojmenovaný výstup
      * @return smazaný pojmenovaný výstup
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public ArrNamedOutput deleteNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                            final ArrNamedOutput namedOutput) {
+    public ArrOutputDefinition deleteNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                                 final ArrOutputDefinition outputDefinition) {
         Assert.notNull(fundVersion);
-        Assert.notNull(namedOutput);
+        Assert.notNull(outputDefinition);
 
         if (fundVersion.getLockChange() != null) {
             throw new IllegalArgumentException("Nelze smazat výstup v uzavřené verzi AS");
         }
 
-        checkFund(fundVersion, namedOutput);
+        checkFund(fundVersion, outputDefinition);
 
-        if (namedOutput.getDeleted()) {
+        if (outputDefinition.getDeleted()) {
             throw new IllegalArgumentException("Nelze smazat již smazaný výstup");
         }
 
-        namedOutput.setDeleted(true);
+        outputDefinition.setDeleted(true);
 
-        Integer[] outputIds = namedOutput.getOutputs().stream().map(ArrOutput::getOutputId).toArray(size -> new Integer[size]);
+        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(size -> new Integer[size]);
         EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, outputIds);
         eventNotificationService.publishEvent(event);
 
-        return namedOutputRepository.save(namedOutput);
+        return outputDefinitionRepository.save(outputDefinition);
     }
 
     /**
@@ -148,7 +148,7 @@ public class OutputService {
             throw new IllegalArgumentException("Nelze zamknout výstup v uzavřené verzi AS");
         }
 
-        checkFund(fundVersion, output.getNamedOutput());
+        checkFund(fundVersion, output.getOutputDefinition());
 
         if (output.getLockChange() != null) {
             throw new IllegalArgumentException("Výstup je již zamknutý");
@@ -173,10 +173,10 @@ public class OutputService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public ArrNamedOutput createNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                            final String name,
-                                            final String internalCode,
-                                            final Boolean temporary) {
+    public ArrOutputDefinition createOutputDefinition(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                                      final String name,
+                                                      final String internalCode,
+                                                      final Boolean temporary) {
         Assert.notNull(fundVersion);
         Assert.notNull(name);
         Assert.notNull(temporary);
@@ -185,39 +185,39 @@ public class OutputService {
             throw new IllegalArgumentException("Nelze vytvořit výstup v uzavřené verzi AS");
         }
 
-        ArrNamedOutput namedOutput = new ArrNamedOutput();
-        namedOutput.setFund(fundVersion.getFund());
-        namedOutput.setName(name);
-        namedOutput.setInternalCode(internalCode);
-        namedOutput.setDeleted(false);
-        namedOutput.setTemporary(temporary);
+        ArrOutputDefinition outputDefinition = new ArrOutputDefinition();
+        outputDefinition.setFund(fundVersion.getFund());
+        outputDefinition.setName(name);
+        outputDefinition.setInternalCode(internalCode);
+        outputDefinition.setDeleted(false);
+        outputDefinition.setTemporary(temporary);
 
-        namedOutputRepository.save(namedOutput);
+        outputDefinitionRepository.save(outputDefinition);
 
         ArrChange change = arrangementService.createChange();
-        ArrOutput output = createOutput(namedOutput, change);
+        ArrOutput output = createOutput(outputDefinition, change);
 
         EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, output.getOutputId());
         eventNotificationService.publishEvent(event);
 
-        return namedOutput;
+        return outputDefinition;
     }
 
     /**
      * Vytvoření výstupu.
      *
-     * @param namedOutput pojmenovaný výstup
+     * @param outputDefinition pojmenovaný výstup
      * @param change      změna
      * @return vytvořený výstup
      */
-    private ArrOutput createOutput(final ArrNamedOutput namedOutput,
+    private ArrOutput createOutput(final ArrOutputDefinition outputDefinition,
                                    final ArrChange change) {
-        Assert.notNull(namedOutput);
+        Assert.notNull(outputDefinition);
         Assert.notNull(change);
 
         ArrOutput output = new ArrOutput();
         output.setCreateChange(change);
-        output.setNamedOutput(namedOutput);
+        output.getOutputDefinition(outputDefinition);
 
         return outputRepository.save(output);
     }
@@ -263,11 +263,11 @@ public class OutputService {
             throw new IllegalArgumentException("Nelze odebrat uzly u zamčeného výstupu");
         }
 
-        ArrNamedOutput namedOutput = output.getNamedOutput();
+        ArrOutputDefinition outputDefinition = output.getOutputDefinition();
 
-        checkFund(fundVersion, namedOutput);
+        checkFund(fundVersion, outputDefinition);
 
-        Set<ArrNodeOutput> nodeOutputs = namedOutput.getOutputNodes().stream()
+        Set<ArrNodeOutput> nodeOutputs = outputDefinition.getOutputNodes().stream()
                 .filter(nodeOutput -> nodeOutput.getDeleteChange() == null && nodeIds.contains(nodeOutput.getNode().getNodeId()))
                 .collect(Collectors.toSet());
 
@@ -275,7 +275,7 @@ public class OutputService {
             nodeOutputs.stream().forEach(arrNodeOutput -> arrNodeOutput.setDeleteChange(change));
             nodeOutputRepository.save(nodeOutputs);
 
-            Integer[] outputIds = namedOutput.getOutputs().stream().map(ArrOutput::getOutputId).toArray(size -> new Integer[size]);
+            Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(size -> new Integer[size]);
             EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
             eventNotificationService.publishEvent(event);
         }
@@ -292,10 +292,10 @@ public class OutputService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public ArrNamedOutput updateNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                  final ArrOutput output,
-                                  final String name,
-                                  final String internalCode) {
+    public ArrOutputDefinition updateNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                                 final ArrOutput output,
+                                                 final String name,
+                                                 final String internalCode) {
         Assert.notNull(fundVersion);
         Assert.notNull(output);
         Assert.notNull(name);
@@ -308,28 +308,28 @@ public class OutputService {
             throw new IllegalArgumentException("Nelze upravit uzavřený výstup");
         }
 
-        ArrNamedOutput namedOutput = output.getNamedOutput();
+        ArrOutputDefinition outputDefinition = output.getOutputDefinition();
 
-        namedOutput.setName(name);
-        namedOutput.setInternalCode(internalCode);
+        outputDefinition.setName(name);
+        outputDefinition.setInternalCode(internalCode);
 
-        namedOutputRepository.save(namedOutput);
+        outputDefinitionRepository.save(outputDefinition);
 
-        Integer[] outputIds = namedOutput.getOutputs().stream().map(ArrOutput::getOutputId).toArray(size -> new Integer[size]);
+        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(size -> new Integer[size]);
         EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
         eventNotificationService.publishEvent(event);
 
-        return namedOutput;
+        return outputDefinition;
     }
 
     /**
      * Kontrola AS u verze a výstupu.
      *
      * @param fundVersion verze AS
-     * @param namedOutput pojmenovaný výstup
+     * @param outputDefinition pojmenovaný výstup
      */
-    private void checkFund(final ArrFundVersion fundVersion, final ArrNamedOutput namedOutput) {
-        if (!namedOutput.getFund().equals(fundVersion.getFund())) {
+    private void checkFund(final ArrFundVersion fundVersion, final ArrOutputDefinition outputDefinition) {
+        if (!outputDefinition.getFund().equals(fundVersion.getFund())) {
             throw new IllegalArgumentException("Output a verze AS nemají společný AS");
         }
     }
@@ -375,11 +375,11 @@ public class OutputService {
             throw new IllegalArgumentException("Nelze odebrat uzly u zamčeného výstupu");
         }
 
-        ArrNamedOutput namedOutput = output.getNamedOutput();
+        ArrOutputDefinition outputDefinition = output.getOutputDefinition();
 
-        checkFund(fundVersion, namedOutput);
+        checkFund(fundVersion, outputDefinition);
 
-        Set<Integer> nodesIdsDb = namedOutput.getOutputNodes().stream()
+        Set<Integer> nodesIdsDb = outputDefinition.getOutputNodes().stream()
                 .filter(arrNodeOutput -> arrNodeOutput.getDeleteChange() == null) // pouze nesmazané nody
                 .map(ArrNodeOutput::getNode)
                 .map(ArrNode::getNodeId)
@@ -394,14 +394,14 @@ public class OutputService {
                     .map(node -> {
                         ArrNodeOutput nodeOutput = new ArrNodeOutput();
                         nodeOutput.setNode(node);
-                        nodeOutput.setNamedOutput(namedOutput);
+                        nodeOutput.setOutputDefinition(outputDefinition);
                         nodeOutput.setCreateChange(change);
                         return nodeOutput;
                     }).collect(Collectors.toList());
 
             nodeOutputRepository.save(nodeOutputs);
 
-            Integer[] outputIds = namedOutput.getOutputs().stream().map(ArrOutput::getOutputId).toArray(size -> new Integer[size]);
+            Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(size -> new Integer[size]);
             EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
             eventNotificationService.publishEvent(event);
         }
@@ -430,11 +430,11 @@ public class OutputService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrNamedOutput getNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                         final ArrOutput output) {
+    public ArrOutputDefinition getNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                              final ArrOutput output) {
         Assert.notNull(fundVersion);
         Assert.notNull(output);
-        checkFund(fundVersion, output.getNamedOutput());
-        return output.getNamedOutput();
+        checkFund(fundVersion, output.getOutputDefinition());
+        return output.getOutputDefinition();
     }
 }

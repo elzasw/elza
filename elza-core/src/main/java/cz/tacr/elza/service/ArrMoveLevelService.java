@@ -27,9 +27,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -510,7 +508,7 @@ public class ArrMoveLevelService {
                                 final ArrNode staticNodeParent,
                                 final AddLevelDirection direction,
                                 @Nullable final String scenarionName,
-                                @Nullable final Set<RulDescItemType> descItemCopyTypes) {
+                                @Nullable final Set<RulItemType> descItemCopyTypes) {
 
         Assert.notNull(staticNode);
         Assert.notNull(staticNodeParent);
@@ -534,8 +532,8 @@ public class ArrMoveLevelService {
         Assert.notNull(newLevel);
         ArrChange change = newLevel.getCreateChange();
 
-        Map<Integer, RulDescItemType> descItemTypeCopyMap = ElzaTools
-                .createEntityMap(descItemCopyTypes, t -> t.getDescItemTypeId());
+        Map<Integer, RulItemType> descItemTypeCopyMap = ElzaTools
+                .createEntityMap(descItemCopyTypes, t -> t.getItemTypeId());
 
         if (StringUtils.isNotBlank(scenarionName)) {
             ScenarioOfNewLevel scenario = descriptionItemService
@@ -543,8 +541,8 @@ public class ArrMoveLevelService {
 
             for (ArrDescItem descItem : scenario.getDescItems()) {
                 //pokud se má typ kopírovat z předchozího uzlu, nebudeme ho vkládat ze scénáře
-                if (descItem.getDescItemType() == null || descItemTypeCopyMap
-                        .containsKey(descItem.getDescItemType().getDescItemTypeId())) {
+                if (descItem.getItemType() == null || descItemTypeCopyMap
+                        .containsKey(descItem.getItemType().getItemTypeId())) {
                     continue;
                 }
 

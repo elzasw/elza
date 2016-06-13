@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrNodeConformityMissing implements cz.tacr.elza.api.ArrNodeConformityMissing<ArrNodeConformity
-        , RulDescItemType, RulDescItemSpec, RulPolicyType> {
+        , RulItemType, RulItemSpec, RulPolicyType> {
 
     @Id
     @GeneratedValue
@@ -36,14 +36,14 @@ public class ArrNodeConformityMissing implements cz.tacr.elza.api.ArrNodeConform
     private ArrNodeConformity nodeConformity;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDescItemType.class)
-    @JoinColumn(name = "descItemTypeId", nullable = false)
-    private RulDescItemType descItemType;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemType.class)
+    @JoinColumn(name = "itemTypeId", nullable = false)
+    private RulItemType itemType;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDescItemSpec.class)
-    @JoinColumn(name = "descItemSpecId", nullable = true)
-    private RulDescItemSpec descItemSpec;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemSpec.class)
+    @JoinColumn(name = "itemSpecId", nullable = true)
+    private RulItemSpec descItemSpec;
 
     @Column(length = 1000, nullable = true)
     private String description;
@@ -73,23 +73,23 @@ public class ArrNodeConformityMissing implements cz.tacr.elza.api.ArrNodeConform
     }
 
     @Override
-    public RulDescItemType getDescItemType() {
-        return descItemType;
+    public RulItemType getItemType() {
+        return itemType;
     }
 
     @Override
-    public void setDescItemType(final RulDescItemType descItemType) {
-        this.descItemType = descItemType;
+    public void setItemType(final RulItemType itemType) {
+        this.itemType = itemType;
     }
 
     @Override
-    public RulDescItemSpec getDescItemSpec() {
+    public RulItemSpec getItemSpec() {
         return descItemSpec;
     }
 
     @Override
-    public void setDescItemSpec(final RulDescItemSpec descItemSpec) {
-        this.descItemSpec = descItemSpec;
+    public void setItemSpec(final RulItemSpec itemSpec) {
+        this.descItemSpec = itemSpec;
     }
 
     @Override

@@ -1,18 +1,16 @@
 package cz.tacr.elza.repository;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.utils.ObjectListIterator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.utils.ObjectListIterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 public class DataPartyRefRepositoryImpl implements DataPartyRefRepositoryCustom {
 
@@ -20,15 +18,15 @@ public class DataPartyRefRepositoryImpl implements DataPartyRefRepositoryCustom 
     private EntityManager entityManager;
 
     @Override
-    public List<ArrDataPartyRef> findByDataIdsAndVersionFetchPartyRecord(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFundVersion version) {
-        String hql = "SELECT d FROM arr_data_party_ref d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH d.party party JOIN FETCH party.record r WHERE ";
+    public List<ArrDataPartyRef> findByDataIdsAndVersionFetchPartyRecord(Set<Integer> dataIds, final Set<RulItemType> itemTypes, ArrFundVersion version) {
+        String hql = "SELECT d FROM arr_data_party_ref d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH d.party party JOIN FETCH party.record r WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";
         } else {
             hql += "di.createChange < :lockChange AND (di.deleteChange IS NULL OR di.deleteChange > :lockChange) ";
         }
 
-        hql += "AND di.descItemType IN (:descItemTypes) AND d.dataId IN (:dataIds)";
+        hql += "AND di.itemType IN (:itemTypes) AND d.dataId IN (:dataIds)";
 
 
         Query query = entityManager.createQuery(hql);
@@ -37,7 +35,7 @@ public class DataPartyRefRepositoryImpl implements DataPartyRefRepositoryCustom 
             query.setParameter("lockChange", version.getLockChange());
         }
 
-        query.setParameter("descItemTypes", descItemTypes);
+        query.setParameter("itemTypes", itemTypes);
 
         List<ArrDataPartyRef> result = new LinkedList<>();
         ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<Integer>(dataIds);

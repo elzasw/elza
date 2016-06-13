@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.xml.bind.JAXBException;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -32,55 +33,7 @@ import com.vividsolutions.jts.io.WKTReader;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPacketRef;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParCreator;
-import cz.tacr.elza.domain.ParDynasty;
-import cz.tacr.elza.domain.ParEvent;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParInstitutionType;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyGroupIdentifier;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPerson;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegExternalSource;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
 import cz.tacr.elza.domain.enumeration.StringLength;
@@ -89,7 +42,7 @@ import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -209,7 +162,7 @@ public class XmlImportService {
     private DescItemTypeRepository descItemTypeRepository;
 
     @Autowired
-    private DescItemSpecRepository descItemSpecRepository;
+    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
@@ -633,23 +586,23 @@ public class XmlImportService {
 
         String descItemTypeCode = descItem.getDescItemTypeCode();
         if (descItemTypeCode !=  null) {
-            RulDescItemType descItemType = descItemTypeRepository.findOneByCode(descItemTypeCode);
+            RulItemType descItemType = descItemTypeRepository.findOneByCode(descItemTypeCode);
             if (descItemType == null) {
                 throw new LevelImportException("Chybí desc item type");
             }
-            arrDescItem.setDescItemType(descItemType);
+            arrDescItem.setItemType(descItemType);
         } else {
             throw new LevelImportException("Chybí desc item type code");
         }
 
         String descItemSpecCode = descItem.getDescItemSpecCode();
         if (descItemSpecCode !=  null) {
-            RulDescItemSpec descItemSpec = descItemSpecRepository.findByDescItemTypeAndCode(arrDescItem.getDescItemType(), descItemSpecCode);
+            RulItemSpec descItemSpec = itemSpecRepository.findByItemTypeAndCode(arrDescItem.getItemType(), descItemSpecCode);
             if (descItemSpec == null) {
                 throw new LevelImportException("Neexistuje specifikace s kódem " + descItemSpecCode
                         + " pro desc item type s kódem " + descItemTypeCode);
             }
-            arrDescItem.setDescItemSpec(descItemSpec);
+            arrDescItem.setItemSpec(descItemSpec);
         }
 
         return arrDescItem;

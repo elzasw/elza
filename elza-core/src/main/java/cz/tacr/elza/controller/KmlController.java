@@ -102,7 +102,7 @@ public class KmlController {
         Assert.notNull(nodeId);
         Assert.notNull(nodeVersion);
 
-        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
         if (descItemType == null) {
             throw new IllegalStateException("Typ s ID=" + descItemTypeId + " neexistuje");
         }
@@ -127,7 +127,7 @@ public class KmlController {
             }
             ArrDescItemCoordinates descItem = new ArrDescItemCoordinates();
             descItem.setValue(geometry);
-            descItem.setDescItemType(descItemType);
+            descItem.setItemType(descItemType);
             toCreate.add(descItem);
         }
 
@@ -135,12 +135,12 @@ public class KmlController {
             throw new IllegalStateException("Nebyli nalezeny souřadnice.");
         }
 
-        List<RulDescItemTypeExt> descriptionItemTypes = ruleService.getDescriptionItemTypes(fundVersionId, nodeId);
+        List<RulItemTypeExt> descriptionItemTypes = ruleService.getDescriptionItemTypes(fundVersionId, nodeId);
 
-        RulDescItemTypeExt rule = null;
+        RulItemTypeExt rule = null;
 
-        for (RulDescItemTypeExt desc : descriptionItemTypes) {
-            if (descItemType.getDescItemTypeId().equals(desc.getDescItemTypeId())) {
+        for (RulItemTypeExt desc : descriptionItemTypes) {
+            if (descItemType.getItemTypeId().equals(desc.getItemTypeId())) {
                 rule = desc;
                 break;
             }

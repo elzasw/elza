@@ -14,6 +14,7 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,21 +33,14 @@ import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataPacketRef;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.domain.vo.DescItemValue;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.vo.DescItemValues;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
@@ -77,7 +71,7 @@ public class FilterTreeService {
     @Autowired
     private PacketTypeRepository packetTypeRepository;
     @Autowired
-    private DescItemSpecRepository descItemSpecRepository;
+    private ItemSpecRepository itemSpecRepository;
     @Autowired
     private ArrangementService arrangementService;
 
@@ -130,8 +124,8 @@ public class FilterTreeService {
                                                               final Set<Integer> descItemTypeIds)
             throws FilterExpiredException {
 
-        Map<String, RulDescItemType> descItemTypeMap = new HashMap<>();
-        for (RulDescItemType descItemType : descItemTypeRepository.findAll(descItemTypeIds)) {
+        Map<String, RulItemType> descItemTypeMap = new HashMap<>();
+        for (RulItemType descItemType : descItemTypeRepository.findAll(descItemTypeIds)) {
             descItemTypeMap.put(descItemType.getCode(), descItemType);
         }
 
@@ -204,7 +198,7 @@ public class FilterTreeService {
 
 
     public List<String> filterUniqueValues(final ArrFundVersion version,
-                                           final RulDescItemType descItemType,
+                                           final RulItemType descItemType,
                                            @Nullable final Set<Integer> specIds,
                                            @Nullable final String fulltext,
                                            final int max) {
@@ -220,12 +214,12 @@ public class FilterTreeService {
             return dataRepository.findUniquePacketValuesInVersion(version, descItemType, dataTypeClass, packetTypes,
                     withoutType, fulltext, max);
         } else {
-            Set<RulDescItemSpec> specs = null;
+            Set<RulItemSpec> specs = null;
             boolean withoutSpec = false;
             if (descItemType.getUseSpecification()) {
                 Assert.notEmpty(specIds);
                 withoutSpec = FilterTools.removeNullValues(specIds);
-                specs = new HashSet<>(descItemSpecRepository.findAll(specIds));
+                specs = new HashSet<>(itemSpecRepository.findAll(specIds));
             }
 
             return dataRepository.findUniqueSpecValuesInVersion(version, descItemType, dataTypeClass, specs, withoutSpec,
@@ -246,7 +240,7 @@ public class FilterTreeService {
      */
     private List<FilterNode> createResult(final ArrFundVersion version, final List<Integer> filteredIds,
                                           final Map<Integer, TreeNode> versionCache,
-                                          final Map<String, RulDescItemType> descItemTypeMap,
+                                          final Map<String, RulItemType> descItemTypeMap,
                                           final Map<Integer, Map<String, TitleValues>> valuesMap) {
 
         List<FilterNode> result = new ArrayList<>(filteredIds.size());
@@ -276,7 +270,7 @@ public class FilterTreeService {
             if (nodeValues != null) {
                 for (Map.Entry<String, TitleValues> nodeValueEntry : nodeValues.entrySet()) {
                     DescItemValues values = new DescItemValues();
-                    Integer descItymTypeId = descItemTypeMap.get(nodeValueEntry.getKey()).getDescItemTypeId();
+                    Integer descItymTypeId = descItemTypeMap.get(nodeValueEntry.getKey()).getItemTypeId();
 
 
                     Iterator<TitleValue> valueIterator = nodeValueEntry.getValue().getValues().iterator();

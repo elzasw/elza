@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -17,14 +16,14 @@ import javax.persistence.Table;
  */
 @Entity(name = "rul_default_item_type")
 @Table
-public class RulDefaultItemType implements cz.tacr.elza.api.RulDefaultItemType<RulRuleSet, RulDescItemType> {
+public class RulDefaultItemType implements cz.tacr.elza.api.RulDefaultItemType<RulRuleSet, RulItemType> {
     @Id
     @GeneratedValue
     private Integer defaultItemTypeId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDescItemType.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemType.class)
     @JoinColumn(name = "itemTypeId", nullable = false)
-    private RulDescItemType itemType;
+    private RulItemType itemType;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
@@ -41,13 +40,13 @@ public class RulDefaultItemType implements cz.tacr.elza.api.RulDefaultItemType<R
     }
 
     @Override
-    public void setItemType(final RulDescItemType itemType) {
+    public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
 
     }
 
     @Override
-    public RulDescItemType getItemType() {
+    public RulItemType getItemType() {
         return itemType;
     }
 }

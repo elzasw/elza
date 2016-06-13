@@ -7,10 +7,10 @@ package cz.tacr.elza.domain;
  * @since 15.9.15
  */
 public class ArrDescItemEnum extends ArrDescItem
-        implements cz.tacr.elza.api.ArrDescItemEnum<ArrChange, RulDescItemType, RulDescItemSpec, ArrNode> {
+        implements cz.tacr.elza.api.ArrDescItemEnum<ArrChange, RulItemType, RulItemSpec, ArrNode> {
 
     @Override
     public String toString() {
-        return getDescItemSpec().getName();
+        return getItemSpec().getName();
     }
 }

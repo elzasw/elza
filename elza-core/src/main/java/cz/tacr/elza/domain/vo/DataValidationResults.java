@@ -8,8 +8,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.vo.DataValidationResult.ValidationResultType;
 
 /**
@@ -26,7 +26,7 @@ public class DataValidationResults {
 	List<DataValidationResult> results = new LinkedList<>();
 
     private Set<ArrDescItem> impossibleItems = new HashSet<>();
-    private Set<RulDescItemType> requiredTypes = new HashSet<>();
+    private Set<RulItemType> requiredTypes = new HashSet<>();
 
 
 	public List<DataValidationResult> getResults() {
@@ -95,11 +95,11 @@ public class DataValidationResults {
      * @param spec missing specification
      * @return error description or null, if it is duplicate error
      */
-    public DataValidationResult createMissingRequired(final RulDescItemType type,
-                                                      @Nullable final RulDescItemSpec spec,
+    public DataValidationResult createMissingRequired(final RulItemType type,
+                                                      @Nullable final RulItemSpec spec,
                                                       final String policyTypeCode) {
 
-        RulDescItemType inType = spec == null ? type : spec.getDescItemType();
+        RulItemType inType = spec == null ? type : spec.getItemType();
 
         if (!requiredTypes.contains(inType)) {
             requiredTypes.add(inType);
@@ -109,8 +109,8 @@ public class DataValidationResults {
         return null;
     }
 
-    public DataValidationResult createMissing(final RulDescItemType type,
-                                              final RulDescItemSpec spec,
+    public DataValidationResult createMissing(final RulItemType type,
+                                              final RulItemSpec spec,
                                               final String policyTypeCode)
     {
         DataValidationResult result = new DataValidationResult(ValidationResultType.MISSING);

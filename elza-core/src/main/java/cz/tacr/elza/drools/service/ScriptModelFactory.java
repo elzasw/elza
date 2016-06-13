@@ -6,7 +6,7 @@ import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.model.*;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ public class ScriptModelFactory {
     private DescItemTypeRepository descItemTypeRepository;
 
     @Autowired
-    private DescItemSpecRepository descItemSpecRepository;
+    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private DescItemRepository descItemRepository;
@@ -86,8 +86,8 @@ public class ScriptModelFactory {
             return Collections.emptyList();
         }
 
-        Set<RulDescItemType> descItemTypesForPackets = descItemTypeRepository.findDescItemTypesForPackets();
-        Set<RulDescItemType> descItemTypesForIntegers = descItemTypeRepository.findDescItemTypesForIntegers();
+        Set<RulItemType> descItemTypesForPackets = descItemTypeRepository.findDescItemTypesForPackets();
+        Set<RulItemType> descItemTypesForIntegers = descItemTypeRepository.findDescItemTypesForIntegers();
 
         return ModelFactory.createDescItems(descItems, descItemTypesForPackets, descItemTypesForIntegers, descItemFactory);
     }
@@ -155,15 +155,15 @@ public class ScriptModelFactory {
 
         List<ArrDescItem> descItems = new ArrayList<>();
         for (DescItem descItemVO : newLevelApproach.getDescItems()) {
-            RulDescItemType rulDescItemType = descItemTypeRepository.getOneByCode(descItemVO.getType());
+            RulItemType rulDescItemType = descItemTypeRepository.getOneByCode(descItemVO.getType());
             Assert.notNull(rulDescItemType);
             ArrDescItem descItem = descItemFactory.createDescItemByType(rulDescItemType.getDataType());
-            descItem.setDescItemType(rulDescItemType);
+            descItem.setItemType(rulDescItemType);
 
             if (descItemVO.getSpecCode() != null) {
-                RulDescItemSpec rulDescItemSpec = descItemSpecRepository.getOneByCode(descItemVO.getSpecCode());
+                RulItemSpec rulDescItemSpec = itemSpecRepository.getOneByCode(descItemVO.getSpecCode());
                 Assert.notNull(rulDescItemSpec);
-                descItem.setDescItemSpec(rulDescItemSpec);
+                descItem.setItemSpec(rulDescItemSpec);
             } else if (descItemVO.getInteger() != null && descItem instanceof ArrDescItemInt) {
                 ((ArrDescItemInt) descItem).setValue(descItemVO.getInteger());
             } else if (descItem instanceof ArrDescItemEnum) {

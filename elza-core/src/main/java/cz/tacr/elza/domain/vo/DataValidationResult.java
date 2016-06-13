@@ -1,8 +1,8 @@
 package cz.tacr.elza.domain.vo;
 
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPolicyType;
 
 
@@ -36,7 +36,7 @@ public class DataValidationResult {
     /**
      * Typ atributu.
      */
-    private RulDescItemType type;
+    private RulItemType type;
     /**
      * Kód typu atributu, který chybí
      */
@@ -45,7 +45,7 @@ public class DataValidationResult {
     /**
      * Specifikace atributu.
      */
-    private RulDescItemSpec spec;
+    private RulItemSpec spec;
 
     /**
      * Kód typu kontroly
@@ -82,19 +82,19 @@ public class DataValidationResult {
         this.descItem = descItem;
     }
 
-    public RulDescItemType getType() {
+    public RulItemType getType() {
         return type;
     }
 
-    public void setType(final RulDescItemType type) {
+    public void setType(final RulItemType type) {
         this.type = type;
     }
 
-    public RulDescItemSpec getSpec() {
+    public RulItemSpec getSpec() {
         return spec;
     }
 
-    protected void setSpec(final RulDescItemSpec spec) {
+    protected void setSpec(final RulItemSpec spec) {
         this.spec = spec;
     }
 

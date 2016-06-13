@@ -3,22 +3,13 @@ package cz.tacr.elza.bulkaction.generator;
 import cz.tacr.elza.api.ArrBulkActionRun.State;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDescItemInt;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -61,7 +52,7 @@ public class SerialNumberBulkAction extends BulkAction {
     /**
      * Typ atributu
      */
-    private RulDescItemType descItemType;
+    private RulItemType descItemType;
 
     /**
      * Stav hromadné akce
@@ -71,12 +62,12 @@ public class SerialNumberBulkAction extends BulkAction {
     /**
      * Typ atributu pro zastaveni
      */
-    private RulDescItemType descItemEndType;
+    private RulItemType descItemEndType;
 
     /**
      * Specifikace atributu pro zastaveni
      */
-    private RulDescItemSpec descItemEndSpec;
+    private RulItemSpec descItemEndSpec;
 
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
@@ -85,7 +76,7 @@ public class SerialNumberBulkAction extends BulkAction {
     private DescItemRepository descItemRepository;
 
     @Autowired
-    private DescItemSpecRepository descItemSpecRepository;
+    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private DescItemFactory descItemFactory;
@@ -116,7 +107,7 @@ public class SerialNumberBulkAction extends BulkAction {
             String levelTypeEndGenerationForArrType = (String) bulkActionConfig.getProperty(
                     "level_type_end_generation_for_arr_type");
             Assert.notNull(levelTypeEndGenerationForArrType);
-            descItemEndSpec = descItemSpecRepository.getOneByCode(levelTypeEndGenerationForArrType);
+            descItemEndSpec = itemSpecRepository.getOneByCode(levelTypeEndGenerationForArrType);
             Assert.notNull(descItemEndSpec);
         }
     }
@@ -140,7 +131,7 @@ public class SerialNumberBulkAction extends BulkAction {
             // vytvoření nového atributu
             if (descItem == null) {
                 descItem = new ArrDescItemInt();
-                descItem.setDescItemType(descItemType);
+                descItem.setItemType(descItemType);
                 descItem.setNode(level.getNode());
             }
 
@@ -178,8 +169,8 @@ public class SerialNumberBulkAction extends BulkAction {
      * @return nalezený atribut
      */
     private ArrDescItem loadDescItem(final ArrLevel level) {
-        List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndDescItemTypeId(
-                level.getNode(), descItemType.getDescItemTypeId());
+        List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndItemTypeId(
+                level.getNode(), descItemType.getItemTypeId());
         if (descItems.size() == 0) {
             return null;
         }
@@ -199,11 +190,11 @@ public class SerialNumberBulkAction extends BulkAction {
      * @return nalezený atribut
      */
     private ArrDescItem loadDescItem(final ArrLevel level,
-                                     final RulDescItemType rulDescItemType,
-                                     final RulDescItemSpec rulDescItemSpec) {
+                                     final RulItemType rulDescItemType,
+                                     final RulItemSpec rulDescItemSpec) {
         List<ArrDescItem> descItems = descItemRepository
-                .findByNodeAndDeleteChangeIsNullAndDescItemTypeIdAndSpecItemTypeId(
-                        level.getNode(), rulDescItemType.getDescItemTypeId(), rulDescItemSpec.getDescItemSpecId());
+                .findByNodeAndDeleteChangeIsNullAndItemTypeIdAndSpecItemTypeId(
+                        level.getNode(), rulDescItemType.getItemTypeId(), rulDescItemSpec.getItemSpecId());
         if (descItems.size() == 0) {
             return null;
         }

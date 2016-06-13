@@ -1,17 +1,22 @@
 package cz.tacr.elza.controller.config;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
-
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
+import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.nodes.*;
 import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
+import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -19,28 +24,18 @@ import ma.glasnost.orika.converter.BidirectionalConverter;
 import ma.glasnost.orika.converter.builtin.PassThroughConverter;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import ma.glasnost.orika.metadata.Type;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
-import cz.tacr.elza.controller.vo.nodes.DescItemTypeDescItemsLiteVO;
-import cz.tacr.elza.controller.vo.nodes.DescItemTypeLiteVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -120,10 +115,10 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         super.mapAtoB(arrNodeConformityMissing, nodeConformityMissingVO, context);
                         nodeConformityMissingVO.setDescItemTypeId(
-                                arrNodeConformityMissing.getDescItemType().getDescItemTypeId());
+                                arrNodeConformityMissing.getItemType().getItemTypeId());
                         nodeConformityMissingVO.setDescItemSpecId(
-                                arrNodeConformityMissing.getDescItemSpec() == null ? null : arrNodeConformityMissing
-                                        .getDescItemSpec().getDescItemSpecId());
+                                arrNodeConformityMissing.getItemSpec() == null ? null : arrNodeConformityMissing
+                                        .getItemSpec().getItemSpecId());
                         Integer policyTypeId = arrNodeConformityMissing.getPolicyType() == null ?
                                 null : arrNodeConformityMissing.getPolicyType().getPolicyTypeId();
                         nodeConformityMissingVO.setPolicyTypeId(policyTypeId);
@@ -567,22 +562,22 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(RulDataType.class, RulDataTypeVO.class).byDefault().field("dataTypeId", "id").register();
 
 
-        mapperFactory.classMap(RulDescItemType.class, RulDescItemTypeDescItemsVO.class).byDefault().field(
-                "descItemTypeId",
+        mapperFactory.classMap(RulItemType.class, RulDescItemTypeDescItemsVO.class).byDefault().field(
+                "itemTypeId",
                 "id").register();
-        mapperFactory.classMap(RulDescItemType.class, DescItemTypeDescItemsLiteVO.class).byDefault()
-                .field("descItemTypeId", "id")
+        mapperFactory.classMap(RulItemType.class, DescItemTypeDescItemsLiteVO.class).byDefault()
+                .field("itemTypeId", "id")
                 .register();
-        mapperFactory.classMap(RulDescItemTypeExt.class, RulDescItemTypeExtVO.class).byDefault()
-                .field("descItemTypeId", "id")
-                .field("rulDescItemSpecList", "descItemSpecs")
+        mapperFactory.classMap(RulItemTypeExt.class, RulDescItemTypeExtVO.class).byDefault()
+                .field("itemTypeId", "id")
+                .field("rulItemSpecList", "descItemSpecs")
                 .register();
-        mapperFactory.classMap(RulDescItemTypeExt.class, DescItemTypeLiteVO.class).byDefault()
-                .field("descItemTypeId", "id")
-                .field("rulDescItemSpecList", "specs")
-                .customize(new CustomMapper<RulDescItemTypeExt, DescItemTypeLiteVO>() {
+        mapperFactory.classMap(RulItemTypeExt.class, DescItemTypeLiteVO.class).byDefault()
+                .field("itemTypeId", "id")
+                .field("rulItemSpecList", "specs")
+                .customize(new CustomMapper<RulItemTypeExt, DescItemTypeLiteVO>() {
                     @Override
-                    public void mapAtoB(final RulDescItemTypeExt rulDescItemTypeExt,
+                    public void mapAtoB(final RulItemTypeExt rulDescItemTypeExt,
                                         final DescItemTypeLiteVO descItemTypeLiteVO,
                                         final MappingContext context) {
                         super.mapAtoB(rulDescItemTypeExt, descItemTypeLiteVO, context);
@@ -590,14 +585,14 @@ public class ConfigMapperConfiguration {
                     }
                 })
                 .register();
-        mapperFactory.classMap(RulDescItemSpec.class, RulDescItemSpecVO.class).byDefault().field("descItemSpecId", "id").register();
-        mapperFactory.classMap(RulDescItemSpecExt.class, RulDescItemSpecExtVO.class).byDefault().field("descItemSpecId",
+        mapperFactory.classMap(RulItemSpec.class, RulDescItemSpecVO.class).byDefault().field("itemSpecId", "id").register();
+        mapperFactory.classMap(RulItemSpecExt.class, RulDescItemSpecExtVO.class).byDefault().field("itemSpecId",
                 "id").register();
-        mapperFactory.classMap(RulDescItemSpecExt.class, DescItemSpecLiteVO.class).byDefault()
-                .field("descItemSpecId", "id")
-                .customize(new CustomMapper<RulDescItemSpecExt, DescItemSpecLiteVO>() {
+        mapperFactory.classMap(RulItemSpecExt.class, DescItemSpecLiteVO.class).byDefault()
+                .field("itemSpecId", "id")
+                .customize(new CustomMapper<RulItemSpecExt, DescItemSpecLiteVO>() {
                     @Override
-                    public void mapAtoB(final RulDescItemSpecExt rulDescItemSpecExt,
+                    public void mapAtoB(final RulItemSpecExt rulDescItemSpecExt,
                                         final DescItemSpecLiteVO descItemSpecLiteVO,
                                         final MappingContext context) {
                         super.mapAtoB(rulDescItemSpecExt, descItemSpecLiteVO, context);
@@ -617,8 +612,8 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrFundVersion.class, ArrFundVersionVO.class).byDefault().field(
                 "fundVersionId", "id").
                 exclude("arrangementType").register();
-        mapperFactory.classMap(ArrNamedOutput.class, ArrNamedOutputVO.class).exclude("outputs").exclude("nodes").byDefault()
-                .field("namedOutputId", "id").register();
+        mapperFactory.classMap(ArrOutputDefinition.class, ArrOutputDefinitionVO.class).exclude("outputs").exclude("nodes").byDefault()
+                .field("outputDefinitionId", "id").register();
         mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class).byDefault().field("outputId", "id").register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
 
@@ -698,11 +693,11 @@ public class ConfigMapperConfiguration {
         }
     }
 
-    public class DescItemTypeEnumConverter extends BidirectionalConverter<RulDescItemType.Type, Integer> {
+    public class DescItemTypeEnumConverter extends BidirectionalConverter<RulItemType.Type, Integer> {
 
 
         @Override
-        public Integer convertTo(final RulDescItemType.Type type,
+        public Integer convertTo(final RulItemType.Type type,
                                                  final Type<Integer> type2) {
             switch (type) {
                 case REQUIRED:
@@ -719,17 +714,17 @@ public class ConfigMapperConfiguration {
         }
 
         @Override
-        public RulDescItemType.Type convertFrom(final Integer type,
-                                                final Type<RulDescItemType.Type> type2) {
+        public RulItemType.Type convertFrom(final Integer type,
+                                            final Type<RulItemType.Type> type2) {
             switch (type) {
                 case 3:
-                    return RulDescItemType.Type.REQUIRED;
+                    return RulItemType.Type.REQUIRED;
                 case 2:
-                    return RulDescItemType.Type.RECOMMENDED;
+                    return RulItemType.Type.RECOMMENDED;
                 case 1:
-                    return RulDescItemType.Type.POSSIBLE;
+                    return RulItemType.Type.POSSIBLE;
                 case 0:
-                    return RulDescItemType.Type.IMPOSSIBLE;
+                    return RulItemType.Type.IMPOSSIBLE;
                 default:
                     throw new IllegalStateException("Type convert not defined: " + type);
             }
@@ -737,11 +732,11 @@ public class ConfigMapperConfiguration {
 
     }
 
-    public class DescItemSpecEnumConverter extends BidirectionalConverter<RulDescItemSpec.Type, Integer> {
+    public class DescItemSpecEnumConverter extends BidirectionalConverter<RulItemSpec.Type, Integer> {
 
 
         @Override
-        public Integer convertTo(final RulDescItemSpec.Type type,
+        public Integer convertTo(final RulItemSpec.Type type,
                                                  final Type<Integer> type2) {
             switch (type) {
                 case REQUIRED:
@@ -758,17 +753,17 @@ public class ConfigMapperConfiguration {
         }
 
         @Override
-        public RulDescItemSpec.Type convertFrom(final Integer type,
-                                                final Type<RulDescItemSpec.Type> type2) {
+        public RulItemSpec.Type convertFrom(final Integer type,
+                                            final Type<RulItemSpec.Type> type2) {
             switch (type) {
                 case 3:
-                    return RulDescItemSpec.Type.REQUIRED;
+                    return RulItemSpec.Type.REQUIRED;
                 case 2:
-                    return RulDescItemSpec.Type.RECOMMENDED;
+                    return RulItemSpec.Type.RECOMMENDED;
                 case 1:
-                    return RulDescItemSpec.Type.POSSIBLE;
+                    return RulItemSpec.Type.POSSIBLE;
                 case 0:
-                    return RulDescItemSpec.Type.IMPOSSIBLE;
+                    return RulItemSpec.Type.IMPOSSIBLE;
                 default:
                     throw new IllegalStateException("Type convert not defined: " + type);
             }

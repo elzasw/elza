@@ -1,99 +1,34 @@
 package cz.tacr.elza.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-
 import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.controller.vo.ArrNamedOutputVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.domain.ArrNamedOutput;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.service.OutputService;
-import cz.tacr.elza.service.UserService;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.FundListCountResult;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulDescItemTypeExt;
-import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.DescItemSpecRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
-import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.service.ArrMoveLevelService;
-import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.DescriptionItemService;
-import cz.tacr.elza.service.FilterTreeService;
-import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.service.PacketService;
-import cz.tacr.elza.service.PolicyService;
-import cz.tacr.elza.service.RegistryService;
-import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.*;
 import cz.tacr.elza.service.exception.DeleteFailedException;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+import java.util.*;
 
 
 /**
@@ -158,7 +93,7 @@ public class ArrangementController {
     private InstitutionRepository institutionRepository;
 
     @Autowired
-    private DescItemSpecRepository descItemSpecRepository;
+    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private FundRepository fundRepository;
@@ -629,11 +564,11 @@ public class ArrangementController {
         Assert.notNull(node, "Uzel neexistuje");
 
         List<ArrDescItem> descItems = arrangementService.getDescItems(version, node);
-        List<RulDescItemTypeExt> descItemTypes;
+        List<RulItemTypeExt> itemTypes;
         try {
-            descItemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
+            itemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
         } catch (Exception e) {
-            descItemTypes = new ArrayList<>();
+            itemTypes = new ArrayList<>();
         }
 
         Integer fundId = version.getFund().getFundId();
@@ -642,7 +577,7 @@ public class ArrangementController {
         ArrNodeVO nodeVO = factoryVo.createArrNode(node);
         List<DescItemGroupVO> descItemGroupsVO = factoryVo.createDescItemGroupsNew(ruleCode, fundId, descItems);
         List<DescItemTypeGroupVO> descItemTypeGroupsVO = factoryVo
-                .createDescItemTypeGroupsNew(ruleCode, fundId, descItemTypes);
+                .createDescItemTypeGroupsNew(ruleCode, fundId, itemTypes);
         return new NodeFormDataNewVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
     }
 
@@ -898,7 +833,7 @@ public class ArrangementController {
         ArrNode staticParentNode = addLevelParam.getStaticNodeParent() == null ? null : factoryDO
                 .createNode(addLevelParam.getStaticNodeParent());
 
-        Set<RulDescItemType> descItemCopyTypes = new HashSet<>();
+        Set<RulItemType> descItemCopyTypes = new HashSet<>();
         if (CollectionUtils.isNotEmpty(addLevelParam.getDescItemCopyTypes())) {
             descItemCopyTypes.addAll(descItemTypeRepository.findAll(addLevelParam.getDescItemCopyTypes()));
         }
@@ -957,7 +892,7 @@ public class ArrangementController {
             @RequestBody final ArrNodeVO nodeVO) {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        RulDescItemType descItemType = descItemTypeRepository.getOneCheckExist(descItemTypeId);
+        RulItemType descItemType = descItemTypeRepository.getOneCheckExist(descItemTypeId);
         ArrNode node = factoryDO.createNode(nodeVO);
         ArrLevel level = arrangementService.lockNode(node, version);
 
@@ -1212,7 +1147,7 @@ public class ArrangementController {
                                            @RequestBody(required = false) final Set<Integer> specIds) {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
 
 
         return filterTreeService.filterUniqueValues(version, descItemType, specIds, fulltext, max);
@@ -1236,13 +1171,13 @@ public class ArrangementController {
                                   @RequestBody final ReplaceDataBody replaceDataBody) {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
 
         Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
 
-        Set<RulDescItemSpec> specifications =
+        Set<RulItemSpec> specifications =
                 CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
-                new HashSet<>(descItemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+                new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
         descriptionItemService.replaceDescItemValues(version, descItemType, nodesDO, specifications, searchText, replaceText);
     }
@@ -1264,15 +1199,15 @@ public class ArrangementController {
                                 @RequestParam("text") final String text,
                                 @RequestBody final ReplaceDataBody replaceDataBody) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
 
         Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
 
-        RulDescItemSpec newDescItemSpec = newDescItemSpecId == null ? null
-                                                                    : descItemSpecRepository.findOne(newDescItemSpecId);
-        Set<RulDescItemSpec> specifications =
+        RulItemSpec newDescItemSpec = newDescItemSpecId == null ? null
+                                                                    : itemSpecRepository.findOne(newDescItemSpecId);
+        Set<RulItemSpec> specifications =
                 CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
-                new HashSet<>(descItemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+                new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
         descriptionItemService
                 .placeDescItemValues(version, descItemType, nodesDO, newDescItemSpec, specifications, text);
@@ -1292,13 +1227,13 @@ public class ArrangementController {
                                  @RequestParam("descItemTypeId") final Integer descItemTypeId,
                                  @RequestBody final ReplaceDataBody replaceDataBody) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
 
         Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
 
-        Set<RulDescItemSpec> specifications =
+        Set<RulItemSpec> specifications =
                 CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
-                new HashSet<>(descItemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+                new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
         descriptionItemService.deleteDescItemValues(version, descItemType, nodesDO, specifications);
     }
@@ -1363,12 +1298,12 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}", method = RequestMethod.PUT)
-    public ArrNamedOutputVO createNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                              @RequestBody OutputNameParam param) {
+    public ArrOutputDefinitionVO createNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                   @RequestBody OutputNameParam param) {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrNamedOutput namedOutput = outputService.createNamedOutput(fundVersion, param.getName(), param.getInternalCode(), param.getTemporary());
-        return factoryVo.createNamedOutput(namedOutput);
+        ArrOutputDefinition outputDefinition = outputService.createOutputDefinition(fundVersion, param.getName(), param.getInternalCode(), param.getTemporary());
+        return factoryVo.createOutputDefinition(outputDefinition);
     }
 
     /**
@@ -1432,7 +1367,7 @@ public class ArrangementController {
                                   @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        outputService.deleteNamedOutput(fundVersion, output.getNamedOutput());
+        outputService.deleteNamedOutput(fundVersion, output.getOutputDefinition());
     }
 
     /**

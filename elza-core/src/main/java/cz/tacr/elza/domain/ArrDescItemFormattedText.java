@@ -6,7 +6,7 @@ package cz.tacr.elza.domain;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrDescItemFormattedText extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemFormattedText<ArrChange, RulDescItemType, RulDescItemSpec, ArrNode> {
+public class ArrDescItemFormattedText extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemFormattedText<ArrChange, RulItemType, RulItemSpec, ArrNode> {
 
     private String value;
 

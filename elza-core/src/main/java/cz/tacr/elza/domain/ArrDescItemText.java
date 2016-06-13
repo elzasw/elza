@@ -6,7 +6,7 @@ package cz.tacr.elza.domain;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrDescItemText extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemText<ArrChange, RulDescItemType, RulDescItemSpec, ArrNode>  {
+public class ArrDescItemText extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemText<ArrChange, RulItemType, RulItemSpec, ArrNode>  {
 
     private String value;
 

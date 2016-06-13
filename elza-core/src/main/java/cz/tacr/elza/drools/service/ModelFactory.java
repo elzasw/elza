@@ -2,21 +2,13 @@ package cz.tacr.elza.drools.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDescItemInt;
-import cz.tacr.elza.domain.ArrDescItemPacketRef;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
@@ -38,9 +30,9 @@ public class ModelFactory {
     static public DescItem createDescItem(final ArrDescItem descItem) {
         DescItem item = new DescItem();
         item.setDescItemId(descItem.getDescItemId());
-        item.setType(descItem.getDescItemType().getCode());
-        item.setSpecCode(descItem.getDescItemSpec() == null ? null : descItem.getDescItemSpec().getCode());
-        item.setDataType(descItem.getDescItemType().getDataType().getCode());
+        item.setType(descItem.getItemType().getCode());
+        item.setSpecCode(descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode());
+        item.setDataType(descItem.getItemType().getDataType().getCode());
 
         return item;
     }
@@ -67,8 +59,8 @@ public class ModelFactory {
      * @return seznam vo hodnot atributu
      */
     static public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems,
-    		Set<RulDescItemType> descItemTypesForPackets,
-    		Set<RulDescItemType> descItemTypesForIntegers,
+    		Set<RulItemType> descItemTypesForPackets,
+    		Set<RulItemType> descItemTypesForIntegers,
     		DescItemFactory descItemFactory
     		) 
     {
@@ -80,14 +72,14 @@ public class ModelFactory {
             DescItem voDescItem = createDescItem(descItem);
             result.add(voDescItem);
 
-            if (descItemTypesForPackets.contains(descItem.getDescItemType())) {
+            if (descItemTypesForPackets.contains(descItem.getItemType())) {
                 ArrDescItemPacketRef packetRef = (ArrDescItemPacketRef) descItemFactory.getDescItem(descItem);
 
                 ArrPacket packet = packetRef.getPacket();
                 if (packet != null) {
                     voDescItem.setPacket(createPacket(packet));
                 }
-            } else if (descItemTypesForIntegers.contains(descItem.getDescItemType())) {
+            } else if (descItemTypesForIntegers.contains(descItem.getItemType())) {
                 ArrDescItemInt integer = (ArrDescItemInt) descItemFactory.getDescItem(descItem);
                 voDescItem.setInteger(integer.getValue());
             }

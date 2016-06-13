@@ -14,19 +14,19 @@ public class ArrOutputExtVO extends ArrOutputVO {
     /**
      * Pojmenovený výstup z AS.
      */
-    private ArrNamedOutputVO namedOutput;
+    private ArrOutputDefinitionVO outputDefinition;
 
     /**
      * Změna vytvoření verze.
      */
     private Date createDate;
 
-    public ArrNamedOutputVO getNamedOutput() {
-        return namedOutput;
+    public ArrOutputDefinitionVO getOutputDefinition() {
+        return outputDefinition;
     }
 
-    public void setNamedOutput(final ArrNamedOutputVO namedOutput) {
-        this.namedOutput = namedOutput;
+    public void setOutputDefinition(final ArrOutputDefinitionVO outputDefinition) {
+        this.outputDefinition = outputDefinition;
     }
 
     public Date getCreateDate() {
@@ -43,12 +43,12 @@ public class ArrOutputExtVO extends ArrOutputVO {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         ArrOutputExtVO that = (ArrOutputExtVO) o;
-        return Objects.equals(namedOutput, that.namedOutput) &&
+        return Objects.equals(outputDefinition, that.outputDefinition) &&
                 Objects.equals(createDate, that.createDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), namedOutput, createDate);
+        return Objects.hash(super.hashCode(), outputDefinition, createDate);
     }
 }

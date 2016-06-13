@@ -3,12 +3,10 @@ package cz.tacr.elza.controller;
 import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.domain.RulDescItemType;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.net.URL;
 import java.util.*;

@@ -1,38 +1,8 @@
 package cz.tacr.elza.controller;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import cz.tacr.elza.api.ArrPacket;
-import cz.tacr.elza.controller.vo.ArrNamedOutputVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.filter.Filters;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
@@ -42,9 +12,18 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.service.ArrMoveLevelService;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
+
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 /**
@@ -149,8 +128,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ArrOutputExtVO> outputs = getOutputs(fundVersion.getId());
         Assert.isTrue(outputs.size() == 0);
 
-        ArrNamedOutputVO namedOutput = createNamedOutput(fundVersion, "Test", "TST", false);
-        Assert.notNull(namedOutput);
+        ArrOutputDefinitionVO outputDefinition = createNamedOutput(fundVersion, "Test", "TST", false);
+        Assert.notNull(outputDefinition);
 
         outputs = getOutputs(fundVersion.getId());
         Assert.isTrue(outputs.size() == 1);
@@ -170,17 +149,17 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         addNodesNamedOutput(fundVersion.getId(), outputDetail.getId(), nodeIds);
 
         outputDetail = getOutput(fundVersion.getId(), output.getId());
-        Assert.isTrue(outputDetail.getNamedOutput().getNodes().size() == nodeIds.size());
+        Assert.isTrue(outputDetail.getOutputDefinition().getNodes().size() == nodeIds.size());
 
         removeNodesNamedOutput(fundVersion.getId(), outputDetail.getId(), nodeIds);
 
         outputDetail = getOutput(fundVersion.getId(), output.getId());
-        Assert.isTrue(outputDetail.getNamedOutput().getNodes().size() == 0);
+        Assert.isTrue(outputDetail.getOutputDefinition().getNodes().size() == 0);
 
         updateNamedOutput(fundVersion, outputDetail, "Test 2", "TST2");
         outputDetail = getOutput(fundVersion.getId(), output.getId());
-        Assert.isTrue(outputDetail.getNamedOutput().getName().equals("Test 2"));
-        Assert.isTrue(outputDetail.getNamedOutput().getInternalCode().equals("TST2"));
+        Assert.isTrue(outputDetail.getOutputDefinition().getName().equals("Test 2"));
+        Assert.isTrue(outputDetail.getOutputDefinition().getInternalCode().equals("TST2"));
 
         outputLock(fundVersion.getId(), outputDetail.getId());
         outputDetail = getOutput(fundVersion.getId(), output.getId());
@@ -801,7 +780,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
 
         //nalezení hodnot podle změněné hodnoty
-        RulDescItemType type = descItemTypeRepository.findOneByCode("ZP2015_TITLE");
+        RulItemType type = descItemTypeRepository.findOneByCode("ZP2015_TITLE");
         type.setDataType(dataTypeRepository.findByCode("TEXT"));  //kvůli transakci (no session)
         List<ArrData> nodesContainingText = dataRepository.findByNodesContainingText(nodeRepository.findAll(nodeIds),
                 type, null, "valXYZ");
@@ -823,7 +802,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
                 .findByNodesAndDeleteChangeIsNull(nodeRepository.findAll(nodeIds));
         Assert.isTrue(byNodesAndDeleteChangeIsNull.size() >= nodeIds.size());
         for (ArrData arrData : byNodesAndDeleteChangeIsNull) {
-            if (arrData.getDescItem().getDescItemType().getDescItemTypeId().equals(typeVo.getId())) {
+            if (arrData.getDescItem().getItemType().getItemTypeId().equals(typeVo.getId())) {
                 ArrDataText text = (ArrDataText) arrData;
                 Assert.isTrue(text.getValue().equals("nova_value"));
             }

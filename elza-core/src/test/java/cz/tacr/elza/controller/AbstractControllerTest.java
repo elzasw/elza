@@ -2221,12 +2221,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param param         vstupní parametry pro vytvoření outputu
      * @return vytvořený výstup
      */
-    protected ArrNamedOutputVO createNamedOutput(final Integer fundVersionId,
-                                                 final ArrangementController.OutputNameParam param) {
+    protected ArrOutputDefinitionVO createNamedOutput(final Integer fundVersionId,
+                                                      final ArrangementController.OutputNameParam param) {
         return put(spec -> spec
                 .pathParam("fundVersionId", fundVersionId)
                 .body(param), CREATE_NAMED_OUTPUT)
-                .getBody().as(ArrNamedOutputVO.class);
+                .getBody().as(ArrOutputDefinitionVO.class);
     }
 
     /**
@@ -2238,10 +2238,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param temporary   dočasný výstup?
      * @return vytvořený výstup
      */
-    protected ArrNamedOutputVO createNamedOutput(final ArrFundVersionVO fundVersion,
-                                                 final String name,
-                                                 final String code,
-                                                 final Boolean temporary) {
+    protected ArrOutputDefinitionVO createNamedOutput(final ArrFundVersionVO fundVersion,
+                                                      final String name,
+                                                      final String code,
+                                                      final Boolean temporary) {
         ArrangementController.OutputNameParam param = new ArrangementController.OutputNameParam();
         param.setInternalCode(code);
         param.setName(name);

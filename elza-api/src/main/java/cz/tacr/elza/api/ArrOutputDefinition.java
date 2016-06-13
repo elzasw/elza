@@ -8,17 +8,17 @@ import java.io.Serializable;
  * @author Martin Šlapa
  * @since 01.04.2016
  */
-public interface ArrNamedOutput<F extends ArrFund> extends Serializable {
+public interface ArrOutputDefinition<F extends ArrFund> extends Serializable {
 
     /**
      * @return identifikátor entity
      */
-    Integer getNamedOutputId();
+    Integer getOutputDefinitionId();
 
     /**
-     * @param namedOutputId identifikátor entity
+     * @param outputDefinitionId identifikátor entity
      */
-    void setNamedOutputId(Integer namedOutputId);
+    void setOutputDefinitionId(Integer outputDefinitionId);
 
     /**
      * @return archivní soubor

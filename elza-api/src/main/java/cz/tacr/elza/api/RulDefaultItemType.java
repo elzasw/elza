@@ -6,7 +6,7 @@ package cz.tacr.elza.api;
  * @author Pavel Stánek
  * @since 10.06.2016
  */
-public interface RulDefaultItemType<RS extends RulRuleSet, DIT extends RulDescItemType> {
+public interface RulDefaultItemType<RS extends RulRuleSet, DIT extends RulItemType> {
     void setRuleSet(RS ruleSet);
 
     RS getRuleSet();

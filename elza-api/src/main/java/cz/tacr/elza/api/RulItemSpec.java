@@ -11,9 +11,7 @@ import java.io.Serializable;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-public interface RulDescItemSpec<RIT extends RulDescItemType, P extends RulPackage>
-        extends
-        Serializable {
+public interface RulItemSpec<RIT extends RulItemType, P extends RulPackage> extends Serializable {
 
     enum Type {
         /**
@@ -37,16 +35,16 @@ public interface RulDescItemSpec<RIT extends RulDescItemType, P extends RulPacka
         IMPOSSIBLE
     }
 
-    Integer getDescItemSpecId();
+    Integer getItemSpecId();
 
 
-    void setDescItemSpecId(final Integer descItemSpecId);
+    void setItemSpecId(final Integer itemSpecId);
 
 
-    RIT getDescItemType();
+    RIT getItemType();
 
 
-    void setDescItemType(final RIT descItemType);
+    void setItemType(final RIT itemType);
 
 
     String getCode();

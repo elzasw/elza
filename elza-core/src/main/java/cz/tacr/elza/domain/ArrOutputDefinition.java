@@ -7,18 +7,18 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import javax.persistence.*;
 
 /**
- * Implementace třídy {@link cz.tacr.elza.api.ArrNamedOutput}
+ * Implementace třídy {@link cz.tacr.elza.api.ArrOutputDefinition}
  *
  * @author Martin Šlapa
  * @since 01.04.2016
  */
-@Entity(name = "arr_named_output")
+@Entity(name = "arr_output_definition")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrNamedOutput implements cz.tacr.elza.api.ArrNamedOutput<ArrFund> {
+public class ArrOutputDefinition implements cz.tacr.elza.api.ArrOutputDefinition<ArrFund> {
 
     @Id
     @GeneratedValue
-    private Integer namedOutputId;
+    private Integer outputDefinitionId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
     @JoinColumn(name = "fundId", nullable = false)
@@ -36,20 +36,20 @@ public class ArrNamedOutput implements cz.tacr.elza.api.ArrNamedOutput<ArrFund> 
     @Column(nullable = false)
     private Boolean deleted;
 
-    @OneToMany(mappedBy = "namedOutput", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "outputDefinition", fetch = FetchType.LAZY)
     private List<ArrOutput> outputs;
 
-    @OneToMany(mappedBy = "namedOutput", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "outputDefinition", fetch = FetchType.LAZY)
     private List<ArrNodeOutput> outputNodes;
 
     @Override
-    public Integer getNamedOutputId() {
-        return namedOutputId;
+    public Integer getOutputDefinitionId() {
+        return outputDefinitionId;
     }
 
     @Override
-    public void setNamedOutputId(final Integer namedOutputId) {
-        this.namedOutputId = namedOutputId;
+    public void setOutputDefinitionId(final Integer outputDefinitionId) {
+        this.outputDefinitionId = outputDefinitionId;
     }
 
     @Override

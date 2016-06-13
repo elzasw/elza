@@ -3,7 +3,7 @@ package cz.tacr.elza.controller.vo;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import cz.tacr.elza.api.RulDescItemSpec;
+import cz.tacr.elza.api.RulItemSpec;
 
 
 /**
@@ -49,7 +49,7 @@ public class RulDescItemSpecVO {
      * typ důležitosti
      */
     @Deprecated
-    private RulDescItemSpec.Type type;
+    private RulItemSpec.Type type;
 
     /**
      * opakovatelnost
@@ -105,11 +105,11 @@ public class RulDescItemSpecVO {
         this.viewOrder = viewOrder;
     }
 
-    public RulDescItemSpec.Type getType() {
+    public RulItemSpec.Type getType() {
         return type;
     }
 
-    public void setType(final RulDescItemSpec.Type type) {
+    public void setType(final RulItemSpec.Type type) {
         this.type = type;
     }
 

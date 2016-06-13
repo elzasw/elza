@@ -22,29 +22,27 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
- * Evidence možných specifikací typů atributů archivního popisu. Evidence je společná pro všechny
- * archivní pomůcky. Vazba výčtu specifikací na různá pravidla bude řešeno později. Podtyp atributu
- * (Role entit - Malíř, Role entit - Sochař, Role entit - Spisovatel).
- *
+ * popis {@link cz.tacr.elza.api.RulItemType}.
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-@Entity(name = "rul_desc_item_spec")
+@Entity(name = "rul_item_type")
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"code"}),
         @UniqueConstraint(columnNames = {"viewOrder"})})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpec<RulDescItemType, RulPackage> {
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class RulItemType implements cz.tacr.elza.api.RulItemType<RulDataType, RulPackage> {
 
     @Id
     @GeneratedValue
-    private Integer descItemSpecId;
+    @Column(name = "item_type_id")
+    private Integer itemTypeId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDescItemType.class)
-    @JoinColumn(name = "descItemTypeId", nullable = false)
-    private RulDescItemType descItemType;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDataType.class)
+    @JoinColumn(name = "dataTypeId", nullable = false)
+    private RulDataType dataType;
 
     @Column(length = 50, nullable = false)
     private String code;
@@ -59,6 +57,15 @@ public class RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpec<RulDesc
     @Lob
     @org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
     private String description;
+
+    @Column(nullable = false)
+    private Boolean isValueUnique;
+
+    @Column(nullable = false)
+    private Boolean canBeOrdered;
+
+    @Column(nullable = false)
+    private Boolean useSpecification;
 
     @Column(nullable = false)
     private Integer viewOrder;
@@ -76,24 +83,22 @@ public class RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpec<RulDesc
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @Override
-    public Integer getDescItemSpecId() {
-        return descItemSpecId;
+    public Integer getItemTypeId() {
+        return itemTypeId;
+    }
+
+    public void setItemTypeId(final Integer descItemTypeId) {
+        this.itemTypeId = descItemTypeId;
     }
 
     @Override
-    public void setDescItemSpecId(final Integer descItemSpecId) {
-        this.descItemSpecId = descItemSpecId;
+    public RulDataType getDataType() {
+        return dataType;
     }
 
     @Override
-    public RulDescItemType getDescItemType() {
-        return descItemType;
-    }
-
-    @Override
-    public void setDescItemType(final RulDescItemType descItemType) {
-        this.descItemType = descItemType;
+    public void setDataType(final RulDataType dataType) {
+        this.dataType = dataType;
     }
 
     @Override
@@ -137,6 +142,36 @@ public class RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpec<RulDesc
     }
 
     @Override
+    public Boolean getIsValueUnique() {
+        return isValueUnique;
+    }
+
+    @Override
+    public void setIsValueUnique(final Boolean isValueUnique) {
+        this.isValueUnique = isValueUnique;
+    }
+
+    @Override
+    public Boolean getCanBeOrdered() {
+        return canBeOrdered;
+    }
+
+    @Override
+    public void setCanBeOrdered(final Boolean canBeOrdered) {
+        this.canBeOrdered = canBeOrdered;
+    }
+
+    @Override
+    public Boolean getUseSpecification() {
+        return useSpecification;
+    }
+
+    @Override
+    public void setUseSpecification(final Boolean useSpecification) {
+        this.useSpecification = useSpecification;
+    }
+
+    @Override
     public Integer getViewOrder() {
         return viewOrder;
     }
@@ -167,16 +202,6 @@ public class RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpec<RulDesc
     }
 
     @Override
-    public String getPolicyTypeCode() {
-        return policyTypeCode;
-    }
-
-    @Override
-    public void setPolicyTypeCode(final String policyTypeCode) {
-        this.policyTypeCode = policyTypeCode;
-    }
-
-    @Override
     public RulPackage getPackage() {
         return rulPackage;
     }
@@ -187,26 +212,36 @@ public class RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpec<RulDesc
     }
 
     @Override
+    public String getPolicyTypeCode() {
+        return policyTypeCode;
+    }
+
+    @Override
+    public void setPolicyTypeCode(final String policyTypeCode) {
+        this.policyTypeCode = policyTypeCode;
+    }
+
+    @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof RulDescItemSpec)) {
+        if (!(obj instanceof cz.tacr.elza.domain.RulItemType)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        RulDescItemSpec other = (RulDescItemSpec) obj;
+        cz.tacr.elza.domain.RulItemType other = (cz.tacr.elza.domain.RulItemType) obj;
 
-        return new EqualsBuilder().append(descItemSpecId, other.getDescItemSpecId()).isEquals();
+        return new EqualsBuilder().append(itemTypeId, other.getItemTypeId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(descItemSpecId).append(name).append(code).toHashCode();
+        return new HashCodeBuilder().append(itemTypeId).append(name).append(code).toHashCode();
     }
 
     @Override
     public String toString() {
-        return "RulDescItemSpec pk=" + descItemSpecId;
+        return "RulItemType pk=" + itemTypeId;
     }
 }

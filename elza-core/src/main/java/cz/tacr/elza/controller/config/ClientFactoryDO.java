@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,26 +39,7 @@ import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.ValuesTypes;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.RegCoordinates;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
@@ -89,7 +71,7 @@ import cz.tacr.elza.filter.condition.SubsetDescItemCondition;
 import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
 import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
@@ -118,7 +100,7 @@ public class ClientFactoryDO {
     private DescItemTypeRepository descItemTypeRepository;
 
     @Autowired
-    private DescItemSpecRepository descItemSpecRepository;
+    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private FundRepository fundRepository;
@@ -231,18 +213,18 @@ public class ClientFactoryDO {
 
         ArrDescItem descItem = mapper.map(descItemVO, ArrDescItem.class);
 
-        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
         if (descItemType == null) {
             throw new IllegalStateException("Typ s ID=" + descItemVO.getDescItemSpecId() + " neexistuje");
         }
-        descItem.setDescItemType(descItemType);
+        descItem.setItemType(descItemType);
 
         if (descItemVO.getDescItemSpecId() != null) {
-            RulDescItemSpec descItemSpec = descItemSpecRepository.findOne(descItemVO.getDescItemSpecId());
+            RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());
             if (descItemSpec == null) {
                 throw new IllegalStateException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje");
             }
-            descItem.setDescItemSpec(descItemSpec);
+            descItem.setItemSpec(descItemSpec);
         }
 
         return descItem;
@@ -288,11 +270,11 @@ public class ClientFactoryDO {
         ArrDescItem descItem = mapper.map(descItemVO, ArrDescItem.class);
 
         if (descItemVO.getDescItemSpecId() != null) {
-            RulDescItemSpec descItemSpec = descItemSpecRepository.findOne(descItemVO.getDescItemSpecId());
+            RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());
             if (descItemSpec == null) {
                 throw new IllegalStateException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje");
             }
-            descItem.setDescItemSpec(descItemSpec);
+            descItem.setItemSpec(descItemSpec);
         }
 
         return descItem;
@@ -411,12 +393,12 @@ public class ClientFactoryDO {
 
         Map<Integer, Filter> filtersMap = filters.getFilters();
         Set<Integer> descItemTypeIds = filtersMap.keySet();
-        List<RulDescItemType> descItemTypes = descItemTypeRepository.findAll(descItemTypeIds);
+        List<RulItemType> descItemTypes = descItemTypeRepository.findAll(descItemTypeIds);
 
 
         List<DescItemTypeFilter> descItemTypeFilters = new ArrayList<>(descItemTypes.size());;
         descItemTypes.forEach(type -> {
-            Filter filter = filtersMap.get(type.getDescItemTypeId());
+            Filter filter = filtersMap.get(type.getItemTypeId());
             if (filter != null) {
                 DescItemTypeFilter descItemTypeFilter = createDescItemFilter(type, filter);
                 if (descItemTypeFilter != null) {
@@ -436,7 +418,7 @@ public class ClientFactoryDO {
      *
      * @return filtr pro daný typ atributu
      */
-    private DescItemTypeFilter createDescItemFilter(final RulDescItemType descItemType, final Filter filter) {
+    private DescItemTypeFilter createDescItemFilter(final RulItemType descItemType, final Filter filter) {
         Assert.notNull(descItemType);
         Assert.notNull(filter);
 

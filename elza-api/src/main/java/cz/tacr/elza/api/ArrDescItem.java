@@ -11,8 +11,8 @@ import java.io.Serializable;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-public interface ArrDescItem<FC extends ArrChange, RT extends RulDescItemType,
-    RS extends RulDescItemSpec, N extends ArrNode> extends Serializable {
+public interface ArrDescItem<FC extends ArrChange, RT extends RulItemType,
+    RS extends RulItemSpec, N extends ArrNode> extends Serializable {
 
     /**
      * @return identifikátor hodnoty atributu, který se mění při každé verzované změně hodnoty.
@@ -65,26 +65,26 @@ public interface ArrDescItem<FC extends ArrChange, RT extends RulDescItemType,
      *
      * @return Odkaz na typ atributu.
      */
-    RT getDescItemType();
+    RT getItemType();
 
     /**
      * Nastaví odkaz na typ atributu.
      *
-     * @param descItemType odkaz na typ atributu.
+     * @param itemType odkaz na typ atributu.
      */
-    void setDescItemType(RT descItemType);
+    void setItemType(RT itemType);
 
     /**
      * @return Odkaz na podtyp atributu.
      */
-    RS getDescItemSpec();
+    RS getItemSpec();
 
     /**
      * Nastaví odkaz na podtyp atributu.
      *
-     * @param descItemSpec odkaz na podtyp atributu.
+     * @param itemSpec odkaz na podtyp atributu.
      */
-    void setDescItemSpec(RS descItemSpec);
+    void setItemSpec(RS itemSpec);
 
     /**
      * @return nod.

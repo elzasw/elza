@@ -47,9 +47,9 @@ public abstract class AbstractTest {
     @Autowired
     protected DescItemTypeRepository descItemTypeRepository;
     @Autowired
-    protected DescItemSpecRepository descItemSpecRepository;
+    protected ItemSpecRepository itemSpecRepository;
     @Autowired
-    private DescItemSpecRegisterRepository descItemSpecRegisterRepository;
+    private ItemSpecRegisterRepository itemSpecRegisterRepository;
     @Autowired
     protected DataTypeRepository dataTypeRepository;
     @Autowired
@@ -222,7 +222,7 @@ public abstract class AbstractTest {
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();
         descItemRepository.deleteAll();
-        descItemSpecRegisterRepository.deleteAll();
+        itemSpecRegisterRepository.deleteAll();
         nodeRepository.deleteAll();
         changeRepository.deleteAll();
         fundRepository.deleteAll();

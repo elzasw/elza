@@ -3,24 +3,24 @@ package cz.tacr.elza.api;
 import java.util.List;
 
 /**
- * Rozšíření {@link RulDescItemType} o podtypy a pravidla.
+ * Rozšíření {@link RulItemType} o podtypy a pravidla.
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  *
  * @param <RT> {@link RulDataType}
- * @param <RS> {@link RulDescItemSpecExt}
+ * @param <RS> {@link RulItemSpecExt}
  */
-public interface RulDescItemTypeExt<RT extends RulDataType, RS extends RulDescItemSpecExt, P extends RulPackage> extends RulDescItemType<RT, P> {
+public interface RulItemTypeExt<RT extends RulDataType, RS extends RulItemSpecExt, P extends RulPackage> extends RulItemType<RT, P> {
 
     /**
      * 
      * @return podtypy typů atributů.
      */
-    List<RS> getRulDescItemSpecList();
+    List<RS> getRulItemSpecList();
 
     /**
      * 
      * @param rulDescItemSpecList podtypy typů atributů.
      */
-    void setRulDescItemSpecList(List<RS> rulDescItemSpecList);
+    void setRulItemSpecList(List<RS> rulDescItemSpecList);
 }

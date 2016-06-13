@@ -63,24 +63,24 @@ var FundDetailExt = class FundDetailExt extends AbstractReactComponent {
         //         ]},
         // ]
 
-        const validOutputs = fundDetail.validNamedOutputs.map(namedOutput => {
+        const validOutputs = fundDetail.validNamedOutputs.map(outputDefinition => {
             return (
                 <div className="output">
-                    <div className="output-label">{namedOutput.name}</div>
-                    <Button bsStyle="link">{i18n('arr.fund.namedOutput.action.showPDF')}</Button>
+                    <div className="output-label">{outputDefinition.name}</div>
+                    <Button bsStyle="link">{i18n('arr.fund.outputDefinition.action.showPDF')}</Button>
                 </div>
             )
         })
 
-        const histOutputs = fundDetail.historicalNamedOutputs.map(namedOutput => {
+        const histOutputs = fundDetail.historicalNamedOutputs.map(outputDefinition => {
             return (
                 <div className="output with-versions">
-                    <div className="output-label">{namedOutput.name}</div>
+                    <div className="output-label">{outputDefinition.name}</div>
                     <div className="versions-container">
-                        {namedOutput.outputs.map(output => (
+                        {outputDefinition.outputs.map(output => (
                             <div className="version">
-                                <div className="version-label">{i18n('arr.fund.namedOutput.version', dateToString(new Date(output.lockDate)))}</div>
-                                <Button bsStyle="link">{i18n('arr.fund.namedOutput.action.showPDF')}</Button>
+                                <div className="version-label">{i18n('arr.fund.outputDefinition.version', dateToString(new Date(output.lockDate)))}</div>
+                                <Button bsStyle="link">{i18n('arr.fund.outputDefinition.action.showPDF')}</Button>
                             </div>
                         ))}
                     </div>
@@ -91,11 +91,11 @@ var FundDetailExt = class FundDetailExt extends AbstractReactComponent {
         return (
             <div className='fund-detail-ext-container'>
                 {validOutputs.length > 0 && <div className="outputs-container">
-                    <h1>{i18n('arr.fund.namedOutput.active')}</h1>
+                    <h1>{i18n('arr.fund.outputDefinition.active')}</h1>
                     {validOutputs}
                 </div>}
                 {histOutputs.length > 0 && <div className="outputs-container">
-                    <h1>{i18n('arr.fund.namedOutput.hist')}</h1>
+                    <h1>{i18n('arr.fund.outputDefinition.hist')}</h1>
                     {histOutputs}
                 </div>}
             </div>

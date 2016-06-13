@@ -9,7 +9,7 @@ import java.util.List;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 14.04.2016
  */
-public class ArrNamedOutputVO {
+public class ArrOutputDefinitionVO {
 
     private Integer id;
 

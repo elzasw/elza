@@ -9,6 +9,7 @@ import java.util.Set;
 
 import cz.tacr.elza.domain.ArrFundVersion;
 
+import cz.tacr.elza.domain.RulItemTypeExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -20,7 +21,6 @@ import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 
@@ -69,9 +69,9 @@ public class RulesExecutor implements InitializingBean {
      * @param version                verze AP
      * @return seznam typů atributů odpovídající pravidlům
      */
-    public List<RulDescItemTypeExt> executeDescItemTypesRules(final ArrLevel level,
-                                                              final List<RulDescItemTypeExt> rulDescItemTypeExtList,
-                                                              final ArrFundVersion version) {
+    public List<RulItemTypeExt> executeDescItemTypesRules(final ArrLevel level,
+                                                          final List<RulItemTypeExt> rulDescItemTypeExtList,
+                                                          final ArrFundVersion version) {
 
         try {
             return descItemTypesRules

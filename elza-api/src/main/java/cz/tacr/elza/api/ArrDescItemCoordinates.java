@@ -8,7 +8,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public interface ArrDescItemCoordinates<FC extends ArrChange, RT extends RulDescItemType, RS extends RulDescItemSpec, N extends ArrNode> extends ArrDescItem<FC, RT, RS, N> {
+public interface ArrDescItemCoordinates<FC extends ArrChange, RT extends RulItemType, RS extends RulItemSpec, N extends ArrNode> extends ArrDescItem<FC, RT, RS, N> {
 
     Geometry getValue();
 

@@ -31,7 +31,7 @@ public interface NodeRepository extends JpaRepository<ArrNode, Integer>, NodeRep
      * @param createChange vytvoření výstupu
      * @return seznam uzlů
      */
-    @Query("SELECT n FROM arr_output o JOIN o.namedOutput no JOIN no.outputNodes non JOIN non.node n WHERE o = :output AND non.createChange >= :createChange AND non.deleteChange IS NULL")
+    @Query("SELECT n FROM arr_output o JOIN o.outputDefinition no JOIN no.outputNodes non JOIN non.node n WHERE o = :output AND non.createChange >= :createChange AND non.deleteChange IS NULL")
     List<ArrNode> findNodesForOutput(@Param("output") ArrOutput output,
                                      @Param("createChange") ArrChange createChange);
 
@@ -43,7 +43,7 @@ public interface NodeRepository extends JpaRepository<ArrNode, Integer>, NodeRep
      * @param lockChange   uzavření výstupu
      * @return seznam uzlů
      */
-    @Query("SELECT n FROM arr_output o JOIN o.namedOutput no JOIN no.outputNodes non JOIN non.node n WHERE o = :output AND non.createChange >= :createChange AND (non.deleteChange IS NULL OR non.deleteChange >= :lockChange)")
+    @Query("SELECT n FROM arr_output o JOIN o.outputDefinition no JOIN no.outputNodes non JOIN non.node n WHERE o = :output AND non.createChange >= :createChange AND (non.deleteChange IS NULL OR non.deleteChange >= :lockChange)")
     List<ArrNode> findNodesForOutput(@Param("output") ArrOutput output,
                                      @Param("createChange") ArrChange createChange,
                                      @Param("lockChange") ArrChange lockChange);

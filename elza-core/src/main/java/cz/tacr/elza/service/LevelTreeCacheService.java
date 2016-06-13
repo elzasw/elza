@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.RulItemType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -44,7 +45,6 @@ import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.repository.CalendarTypeRepository;
@@ -797,13 +797,13 @@ public class LevelTreeCacheService {
         return result;
     }
 
-    private Set<RulDescItemType> getDescriptionItemTypes(final ViewTitles viewTitles) {
+    private Set<RulItemType> getDescriptionItemTypes(final ViewTitles viewTitles) {
         Set<String> descItemTypeCodes = getDescItemTypeCodes(viewTitles);
 
         if (!descItemTypeCodes.isEmpty()) {
-            Set<RulDescItemType> descItemTypes = descItemTypeRepository.findByCode(descItemTypeCodes);
+            Set<RulItemType> descItemTypes = descItemTypeRepository.findByCode(descItemTypeCodes);
             if (descItemTypes.size() != descItemTypeCodes.size()) {
-                List<String> foundCodes = descItemTypes.stream().map(RulDescItemType::getCode).collect(Collectors.toList());
+                List<String> foundCodes = descItemTypes.stream().map(RulItemType::getCode).collect(Collectors.toList());
                 Collection<String> missingCodes = new HashSet<>(descItemTypeCodes);
                 missingCodes.removeAll(foundCodes);
 
@@ -922,7 +922,7 @@ public class LevelTreeCacheService {
 
         ViewTitles viewTitles = configView
                 .getViewTitles(version.getRuleSet().getCode(), version.getFund().getFundId());
-        Set<RulDescItemType> descItemTypes = getDescriptionItemTypes(viewTitles);
+        Set<RulItemType> descItemTypes = getDescriptionItemTypes(viewTitles);
 
         return descriptionItemService.createNodeValuesMap(treeNodeMap.keySet(), subtreeRoot, descItemTypes, version);
     }

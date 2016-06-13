@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-public interface RulDescItemType<RT extends RulDataType, P extends RulPackage> extends Serializable {
+public interface RulItemType<RT extends RulDataType, P extends RulPackage> extends Serializable {
 
     enum Type {
         /**
@@ -34,10 +34,10 @@ public interface RulDescItemType<RT extends RulDataType, P extends RulPackage> e
         IMPOSSIBLE
     }
 
-    Integer getDescItemTypeId();
+    Integer getItemTypeId();
 
 
-    void setDescItemTypeId(final Integer descItemTypeId);
+    void setItemTypeId(final Integer descItemTypeId);
 
 
     RT getDataType();

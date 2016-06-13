@@ -1,9 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulItemType;
 
 
 /**
@@ -68,7 +66,7 @@ public class RulDescItemTypeVO {
      * typ důležitosti
      */
     @Deprecated
-    private RulDescItemType.Type type;
+    private RulItemType.Type type;
 
     /**
      * opakovatelnost
@@ -161,11 +159,11 @@ public class RulDescItemTypeVO {
         this.viewOrder = viewOrder;
     }
 
-    public RulDescItemType.Type getType() {
+    public RulItemType.Type getType() {
         return type;
     }
 
-    public void setType(final RulDescItemType.Type type) {
+    public void setType(final RulItemType.Type type) {
         this.type = type;
     }
 

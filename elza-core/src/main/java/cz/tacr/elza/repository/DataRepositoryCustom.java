@@ -6,12 +6,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.RulItemSpec;
 
 
 /**
@@ -21,11 +17,11 @@ import cz.tacr.elza.domain.RulPacketType;
 public interface DataRepositoryCustom {
 
     List<ArrData> findDescItemsByNodeIds(Set<Integer> nodeIds,
-                                         Set<RulDescItemType> descItemTypes,
+                                         Set<RulItemType> descItemTypes,
                                          ArrFundVersion version);
 
     List<ArrData> findByDataIdsAndVersionFetchSpecification(Set<Integer> nodeIds,
-            Set<RulDescItemType> descItemTypes,
+            Set<RulItemType> descItemTypes,
             ArrFundVersion version);
 
 
@@ -37,8 +33,8 @@ public interface DataRepositoryCustom {
      * @param specifications seznam specifikací (pokud se jedná o typ atributu se specifikací)
      *@param text hledaný text  @return seznam hodnot atributů
      */
-    <T extends ArrData> List<T> findByNodesContainingText(Collection<ArrNode> nodes, RulDescItemType descItemType,
-                                                          final Set<RulDescItemSpec> specifications, String text);
+    <T extends ArrData> List<T> findByNodesContainingText(Collection<ArrNode> nodes, RulItemType descItemType,
+                                                          final Set<RulItemSpec> specifications, String text);
 
 
     /**
@@ -54,7 +50,7 @@ public interface DataRepositoryCustom {
      * @return seznam unikátních hodnot
      */
     List<String> findUniquePacketValuesInVersion(ArrFundVersion version,
-                                                 RulDescItemType descItemType,
+                                                 RulItemType descItemType,
                                                  Class<? extends ArrData> dataTypeClass,
                                                  Set<RulPacketType> packetTypes,
                                                  boolean withoutType, @Nullable String fulltext,
@@ -74,9 +70,9 @@ public interface DataRepositoryCustom {
      * @return seznam unikátních hodnot
      */
     List<String> findUniqueSpecValuesInVersion(ArrFundVersion version,
-                                               RulDescItemType descItemType,
+                                               RulItemType descItemType,
                                                Class<? extends ArrData> dataTypeClass,
-                                               @Nullable Set<RulDescItemSpec> specs,
+                                               @Nullable Set<RulItemSpec> specs,
                                                boolean withoutSpec, @Nullable String fulltext,
                                                int max);
 }

@@ -3,7 +3,7 @@ package cz.tacr.elza.validation.impl;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.drools.ValidationRules;
@@ -50,7 +50,7 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
         }
 
 
-        List<RulDescItemTypeExt> nodeTypes = ruleService.getDescriptionItemTypes(version, level.getNode());
+        List<RulItemTypeExt> nodeTypes = ruleService.getDescriptionItemTypes(version, level.getNode());
 
         // Create validator and validate
         Validator validator = new Validator(nodeTypes, levelData, descItemFactory);

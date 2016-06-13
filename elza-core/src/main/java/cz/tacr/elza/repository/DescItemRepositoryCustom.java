@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulItemType;
 
 
 /**
@@ -33,7 +33,7 @@ public interface DescItemRepositoryCustom {
      * @return mapa popisků uzlů (nodeid -> popisek)
      */
     Map<Integer, DescItemTitleInfo> findDescItemTitleInfoByNodeId(Set<Integer> nodeIds,
-                                                                  RulDescItemType titleType,
+                                                                  RulItemType titleType,
                                                                   @Nullable ArrChange lockChange);
 
 

@@ -10,7 +10,7 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
@@ -58,8 +58,8 @@ public class DescItemReader {
 	 * @param version Version of the fund
 	 */
 	public void read(ArrFundVersion version) {
-        Set<RulDescItemType> descItemTypesForPackets = descItemTypeRepository.findDescItemTypesForPackets();
-        Set<RulDescItemType> descItemTypesForIntegers = descItemTypeRepository.findDescItemTypesForIntegers();		
+        Set<RulItemType> descItemTypesForPackets = descItemTypeRepository.findDescItemTypesForPackets();
+        Set<RulItemType> descItemTypesForIntegers = descItemTypeRepository.findDescItemTypesForIntegers();
 		
 		Collection<ArrNode> nodes = items.values();
 		Set<Level> levels = items.keySet();

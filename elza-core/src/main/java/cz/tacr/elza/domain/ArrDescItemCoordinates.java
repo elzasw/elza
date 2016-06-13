@@ -9,7 +9,7 @@ import com.vividsolutions.jts.io.WKTWriter;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrDescItemCoordinates extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemCoordinates<ArrChange, RulDescItemType, RulDescItemSpec, ArrNode> {
+public class ArrDescItemCoordinates extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemCoordinates<ArrChange, RulItemType, RulItemSpec, ArrNode> {
 
     private Geometry value;
 

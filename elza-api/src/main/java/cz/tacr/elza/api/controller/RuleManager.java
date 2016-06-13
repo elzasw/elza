@@ -3,13 +3,8 @@ package cz.tacr.elza.api.controller;
 import java.io.File;
 import java.util.List;
 
-import cz.tacr.elza.api.ArrDescItem;
-import cz.tacr.elza.api.ArrFundVersion;
-import cz.tacr.elza.api.RulDataType;
-import cz.tacr.elza.api.RulDescItemSpec;
-import cz.tacr.elza.api.RulDescItemType;
-import cz.tacr.elza.api.RulPackage;
-import cz.tacr.elza.api.RulRuleSet;
+import cz.tacr.elza.api.*;
+import cz.tacr.elza.api.RulItemSpec;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 
@@ -18,13 +13,13 @@ import cz.tacr.elza.api.vo.RelatedNodeDirection;
  * Rozhraní operací pro pravidla.
  *
  * @param <DT> {@link RulDataType} datový typ atribut arch. popisu
- * @param <DIT> {@link RulDescItemType} datový typ atributů arch. popisu
- * @param <DIS> {@link RulDescItemSpec} datový typ specifických atributů arch. popisu
+ * @param <DIT> {@link RulItemType} datový typ atributů arch. popisu
+ * @param <DIS> {@link RulItemSpec} datový typ specifických atributů arch. popisu
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
-public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec,
+public interface RuleManager<DT extends RulDataType, DIT extends RulItemType, DIS extends RulItemSpec,
         NTO extends NodeTypeOperation, RND extends RelatedNodeDirection, DI extends ArrDescItem,
         FAV extends ArrFundVersion, P extends RulPackage> {
 
@@ -48,7 +43,7 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @param ruleSetId     Identifikátor sady pravidel
      * @return  seznam typů hodnot atrubutů
      */
-    List<? extends RulDescItemType> getDescriptionItemTypes(Integer ruleSetId);
+    List<? extends RulItemType> getDescriptionItemTypes(Integer ruleSetId);
 
     /**
      * Vrátí všechny typy hodnot atributů archivního popisu k uzlu.
@@ -56,8 +51,8 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @param nodeId        Identifikátor uzlu
      * @return  Seznam typů hodnot atributů
      */
-    List<? extends RulDescItemType> getDescriptionItemTypesForNode(Integer fundVersionId,
-                                                                   Integer nodeId);
+    List<? extends RulItemType> getDescriptionItemTypesForNode(Integer fundVersionId,
+                                                               Integer nodeId);
 
     /**
      * Vrací specifikace podle typu atributu.

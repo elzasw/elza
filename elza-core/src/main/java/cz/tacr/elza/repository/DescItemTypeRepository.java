@@ -1,14 +1,13 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-import java.util.Set;
-
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPackage;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulPackage;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -16,10 +15,10 @@ import cz.tacr.elza.domain.RulPackage;
  * @since 20.8.2015
  */
 @Repository
-public interface DescItemTypeRepository extends ElzaJpaRepository<RulDescItemType, Integer> {
+public interface DescItemTypeRepository extends ElzaJpaRepository<RulItemType, Integer> {
 
-    @Query("SELECT DISTINCT t.dataType FROM rul_desc_item_type t WHERE t = ?1")
-    List<RulDataType> findRulDataType(RulDescItemType descItemType);
+    @Query("SELECT DISTINCT t.dataType FROM rul_item_type t WHERE t = ?1")
+    List<RulDataType> findRulDataType(RulItemType descItemType);
 
 
     /**
@@ -27,35 +26,35 @@ public interface DescItemTypeRepository extends ElzaJpaRepository<RulDescItemTyp
      *
      * @return všechny typy, které mají obal
      */
-    @Query(value = "SELECT t FROM rul_desc_item_type t join t.dataType dt "
+    @Query(value = "SELECT t FROM rul_item_type t join t.dataType dt "
             + "WHERE dt.code = 'PACKET_REF'")
-    Set<RulDescItemType> findDescItemTypesForPackets();
+    Set<RulItemType> findDescItemTypesForPackets();
 
     /**
      * Najde všechny typy, které mají int. (Jsou typu s kódem "INT".
      *
      * @return všechny typy, které mají obal
      */
-    @Query(value = "SELECT t FROM rul_desc_item_type t join t.dataType dt "
+    @Query(value = "SELECT t FROM rul_item_type t join t.dataType dt "
             + "WHERE dt.code = 'INT'")
-    Set<RulDescItemType> findDescItemTypesForIntegers();
+    Set<RulItemType> findDescItemTypesForIntegers();
 
-    RulDescItemType getOneByCode(String code);
+    RulItemType getOneByCode(String code);
 
 
-    List<RulDescItemType> findByRulPackage(RulPackage rulPackage);
+    List<RulItemType> findByRulPackage(RulPackage rulPackage);
 
 
     void deleteByRulPackage(RulPackage rulPackage);
 
 
-    RulDescItemType findOneByCode(String code);
+    RulItemType findOneByCode(String code);
 
     @Override
     default String getClassName() {
-        return RulDescItemType.class.getSimpleName();
+        return RulItemType.class.getSimpleName();
     }
 
-    @Query(value = "SELECT t FROM rul_desc_item_type t  WHERE t.code in (?1)")
-    Set<RulDescItemType> findByCode(Set<String> descItemTypeCodes);
+    @Query(value = "SELECT t FROM rul_item_type t  WHERE t.code in (?1)")
+    Set<RulItemType> findByCode(Set<String> descItemTypeCodes);
 }

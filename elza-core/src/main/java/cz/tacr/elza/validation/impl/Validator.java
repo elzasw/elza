@@ -1,12 +1,8 @@
 package cz.tacr.elza.validation.impl;
 
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemSpecExt;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
@@ -32,12 +28,12 @@ public class Validator {
 
 	DataValidationResults validationResults = new DataValidationResults();
 	
-	List<RulDescItemTypeExt> nodeTypes;
+	List<RulItemTypeExt> nodeTypes;
 	
 	List<ArrData> levelData;
 	DescItemFactory descItemFactory;
 
-	public Validator(List<RulDescItemTypeExt> nodeTypes, List<ArrData> levelData, DescItemFactory descItemFactory) {
+	public Validator(List<RulItemTypeExt> nodeTypes, List<ArrData> levelData, DescItemFactory descItemFactory) {
 		this.nodeTypes = nodeTypes;
 		this.levelData = levelData;
 		this.descItemFactory = descItemFactory;
@@ -55,30 +51,30 @@ public class Validator {
      * Provede validaci hodnot jednoho daného typu atributu.
      */
     void postValidateDescItemsInType(final List<ArrDescItem> descItemsOfType,
-                                     final RulDescItemTypeExt type) {
+                                     final RulItemTypeExt type) {
         Assert.notNull(type);
         Assert.notNull(descItemsOfType);
 
-        Map<Integer, RulDescItemSpecExt> specExtMap = ElzaTools.createEntityMap(type.getRulDescItemSpecList(),
-                s -> s.getDescItemSpecId());
-        Map<RulDescItemSpecExt, List<ArrDescItem>> specItemsMap = new HashMap<>();
+        Map<Integer, RulItemSpecExt> specExtMap = ElzaTools.createEntityMap(type.getRulItemSpecList(),
+                s -> s.getItemSpecId());
+        Map<RulItemSpecExt, List<ArrDescItem>> specItemsMap = new HashMap<>();
 
         //musí mít hodnoty specifikaci?
         if (type.getUseSpecification()) {
             //seznam požadovaných,ale chybějících hodnot
-            Set<RulDescItemSpecExt> missingSpecs = new HashSet<>(specExtMap.values());
+            Set<RulItemSpecExt> missingSpecs = new HashSet<>(specExtMap.values());
 
             for (ArrDescItem descItem : descItemsOfType) {
 
-                RulDescItemSpecExt extSpec = specExtMap.get(descItem.getDescItemSpec().getDescItemSpecId());
+                RulItemSpecExt extSpec = specExtMap.get(descItem.getItemSpec().getItemSpecId());
                 if (extSpec == null) {
                     continue;
-                } else if (RulDescItemSpec.Type.IMPOSSIBLE.equals(extSpec.getType())) {
+                } else if (RulItemSpec.Type.IMPOSSIBLE.equals(extSpec.getType())) {
                     validationResults.createErrorImpossible(descItem, "Prvek " + type.getName() + " se specifikací "
                             + extSpec.getName() + " není možné evidovat u této jednotky archivního popisu.", extSpec.getPolicyTypeCode());
                 }
 
-                List<ArrDescItem> specItems = specItemsMap.get(descItem.getDescItemSpec());
+                List<ArrDescItem> specItems = specItemsMap.get(descItem.getItemSpec());
                 if (specItems == null) {
                     specItems = new LinkedList<>();
                     specItemsMap.put(extSpec, specItems);
@@ -87,27 +83,27 @@ public class Validator {
             }
 
 
-            for (Map.Entry<RulDescItemSpecExt, List<ArrDescItem>> specItemsEntry : specItemsMap.entrySet()) {
+            for (Map.Entry<RulItemSpecExt, List<ArrDescItem>> specItemsEntry : specItemsMap.entrySet()) {
                 missingSpecs.remove(specItemsEntry.getKey());
 
                 postValidateRepeatable(BooleanUtils.isNotFalse(specItemsEntry.getKey().getRepeatable()),
-                        specItemsEntry.getValue(), specItemsEntry.getKey().getDescItemType());
+                        specItemsEntry.getValue(), specItemsEntry.getKey().getItemType());
             }
 
             //required specifikace
-            for (RulDescItemSpecExt missingSpec : missingSpecs) {
-                if (RulDescItemSpec.Type.REQUIRED.equals(missingSpec.getType())) {
+            for (RulItemSpecExt missingSpec : missingSpecs) {
+                if (RulItemSpec.Type.REQUIRED.equals(missingSpec.getType())) {
                     validationResults.createMissingRequired(type, missingSpec, missingSpec.getPolicyTypeCode());
                 }
             }
         }
 
-        Map<Integer, RulDescItemTypeExt> extNodeTypes = ElzaTools.createEntityMap(nodeTypes, typex ->
-                typex.getDescItemTypeId());
+        Map<Integer, RulItemTypeExt> extNodeTypes = ElzaTools.createEntityMap(nodeTypes, typex ->
+                typex.getItemTypeId());
 
         for (ArrDescItem descItem : descItemsOfType) {
-            RulDescItemTypeExt rulDescItemTypeExt = extNodeTypes.get(descItem.getDescItemType().getDescItemTypeId());
-            if (RulDescItemType.Type.IMPOSSIBLE.equals(rulDescItemTypeExt.getType())) {
+            RulItemTypeExt rulDescItemTypeExt = extNodeTypes.get(descItem.getItemType().getItemTypeId());
+            if (RulItemType.Type.IMPOSSIBLE.equals(rulDescItemTypeExt.getType())) {
                 validationResults.createErrorImpossible(descItem, "Prvek " + rulDescItemTypeExt.getName()
                         + " není možné evidovat u této jednotky archivního popisu.", rulDescItemTypeExt.getPolicyTypeCode());
             }
@@ -125,7 +121,7 @@ public class Validator {
 	 * @param type         typ
 	 */
 	private void postValidateRepeatable(final boolean repeatable, final Collection<ArrDescItem> descItems,
-			final RulDescItemType type) {
+			final RulItemType type) {
 		if (!repeatable && CollectionUtils.size(descItems) > 1) {
 			validationResults.createError(descItems.iterator().next(),
 					"Atribut " + type.getName() + " není opakovatelný.", type.getPolicyTypeCode());
@@ -136,9 +132,9 @@ public class Validator {
 	 * Append set of required types
 	 * @param requiredTypes
 	 */
-	void writeRequiredTypes(Set<RulDescItemTypeExt> requiredTypes) {
-        for (RulDescItemTypeExt requiredType : requiredTypes) {
-            if (RulDescItemType.Type.REQUIRED.equals(requiredType.getType())) {
+	void writeRequiredTypes(Set<RulItemTypeExt> requiredTypes) {
+        for (RulItemTypeExt requiredType : requiredTypes) {
+            if (RulItemType.Type.REQUIRED.equals(requiredType.getType())) {
             	validationResults.createMissingRequired(requiredType, null, requiredType.getPolicyTypeCode());
             }
         }		
@@ -149,9 +145,9 @@ public class Validator {
 	 */
 	public void validate() {
         // Set of required but non existing types
-        Set<RulDescItemTypeExt> requiredTypes = new HashSet<>(nodeTypes);
-        Map<Integer, RulDescItemTypeExt> extNodeTypes = ElzaTools.createEntityMap(nodeTypes, type ->
-                type.getDescItemTypeId());
+        Set<RulItemTypeExt> requiredTypes = new HashSet<>(nodeTypes);
+        Map<Integer, RulItemTypeExt> extNodeTypes = ElzaTools.createEntityMap(nodeTypes, type ->
+                type.getItemTypeId());
 
         //rozdělení hodnot podle typu
         Map<Integer, List<ArrDescItem>> descItemsInTypeMap = new HashMap<>();
@@ -159,23 +155,23 @@ public class Validator {
         for (ArrData arrData : levelData) {
             ArrDescItem descItem = arrData.getDescItem();
             descItem = descItemFactory.getDescItem(descItem);
-            if (!extNodeTypes.containsKey(descItem.getDescItemType().getDescItemTypeId())) {
-                validationResults.createError(descItem, "Prvek " + descItem.getDescItemType().getName()
-                                + " není možný u této jednotky popisu.", descItem.getDescItemType().getPolicyTypeCode());
+            if (!extNodeTypes.containsKey(descItem.getItemType().getItemTypeId())) {
+                validationResults.createError(descItem, "Prvek " + descItem.getItemType().getName()
+                                + " není možný u této jednotky popisu.", descItem.getItemType().getPolicyTypeCode());
                 continue;
             }
 
-            List<ArrDescItem> itemsInType = descItemsInTypeMap.get(descItem.getDescItemType().getDescItemTypeId());
+            List<ArrDescItem> itemsInType = descItemsInTypeMap.get(descItem.getItemType().getItemTypeId());
             if (itemsInType == null) {
                 itemsInType = new LinkedList<>();
-                descItemsInTypeMap.put(descItem.getDescItemType().getDescItemTypeId(), itemsInType);
+                descItemsInTypeMap.put(descItem.getItemType().getItemTypeId(), itemsInType);
             }
             itemsInType.add(descItem);
         }
 
 
         for (Integer destItemTypeId : descItemsInTypeMap.keySet()) {
-            RulDescItemTypeExt extType = extNodeTypes.get(destItemTypeId);
+            RulItemTypeExt extType = extNodeTypes.get(destItemTypeId);
             if(extType != null){
                 requiredTypes.remove(extType);
                 postValidateDescItemsInType(descItemsInTypeMap.get(destItemTypeId), extType);

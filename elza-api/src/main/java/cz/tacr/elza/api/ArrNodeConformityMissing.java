@@ -7,7 +7,7 @@ package cz.tacr.elza.api;
  * @since 19.11.2015
  */
 public interface ArrNodeConformityMissing<ANCI extends ArrNodeConformity,
-        RDIT extends RulDescItemType, RDIS extends RulDescItemSpec, PT extends RulPolicyType> {
+        RDIT extends RulItemType, RDIS extends RulItemSpec, PT extends RulPolicyType> {
 
     /**
      * @return id textového popisu
@@ -36,25 +36,25 @@ public interface ArrNodeConformityMissing<ANCI extends ArrNodeConformity,
     /**
      * @return typ atributu
      */
-    RDIT getDescItemType();
+    RDIT getItemType();
 
 
     /**
-     * @param descItemType typ atributu
+     * @param itemType typ atributu
      */
-    void setDescItemType(RDIT descItemType);
+    void setItemType(RDIT itemType);
 
 
     /**
      * @return specifikace typu atributu
      */
-    RDIS getDescItemSpec();
+    RDIS getItemSpec();
 
 
     /**
-     * @param descItemSpec specifikace typu atributu
+     * @param itemSpec specifikace typu atributu
      */
-    void setDescItemSpec(RDIS descItemSpec);
+    void setItemSpec(RDIS itemSpec);
 
 
     /**

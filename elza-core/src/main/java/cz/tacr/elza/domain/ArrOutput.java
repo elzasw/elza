@@ -12,15 +12,15 @@ import javax.persistence.*;
  */
 @Entity(name = "arr_output")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrOutput implements cz.tacr.elza.api.ArrOutput<ArrNamedOutput, ArrChange> {
+public class ArrOutput implements cz.tacr.elza.api.ArrOutput<ArrOutputDefinition, ArrChange> {
 
     @Id
     @GeneratedValue
     private Integer outputId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNamedOutput.class)
-    @JoinColumn(name = "namedOutputId", nullable = false)
-    private ArrNamedOutput namedOutput;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputDefinition.class)
+    @JoinColumn(name = "outputDefinitionId", nullable = false)
+    private ArrOutputDefinition outputDefinition;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
@@ -41,13 +41,13 @@ public class ArrOutput implements cz.tacr.elza.api.ArrOutput<ArrNamedOutput, Arr
     }
 
     @Override
-    public ArrNamedOutput getNamedOutput() {
-        return namedOutput;
+    public ArrOutputDefinition getOutputDefinition() {
+        return outputDefinition;
     }
 
     @Override
-    public void setNamedOutput(final ArrNamedOutput namedOutput) {
-        this.namedOutput = namedOutput;
+    public void getOutputDefinition(final ArrOutputDefinition outputDefinition) {
+        this.outputDefinition = outputDefinition;
     }
 
     @Override

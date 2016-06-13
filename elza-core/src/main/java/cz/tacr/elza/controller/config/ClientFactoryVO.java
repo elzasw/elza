@@ -1,26 +1,21 @@
 package cz.tacr.elza.controller.config;
 
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.nodes.*;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
+import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MapperFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
@@ -29,20 +24,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.config.ConfigRules;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.DescItemTypeDescItemsLiteVO;
-import cz.tacr.elza.controller.vo.nodes.DescItemTypeLiteVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
-import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
+import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -92,7 +78,7 @@ public class ClientFactoryVO {
     private ConfigRules elzaRules;
 
     @Autowired
-    private NamedOutputRepository namedOutputRepository;
+    private OutputDefinitionRepository outputDefinitionRepository;
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
@@ -633,8 +619,8 @@ public class ClientFactoryVO {
             }
             fundVO.setVersions(versionVOs);
 
-            fundVO.setValidNamedOutputs(createNamedOutputs(namedOutputRepository.findValidNamedOutputByFund(fund), false));
-            fundVO.setHistoricalNamedOutputs(createNamedOutputs(namedOutputRepository.findHistoricalNamedOutputByFund(fund), true));
+            fundVO.setValidNamedOutputs(createOutputDefinitions(outputDefinitionRepository.findValidOutputDefinitionByFund(fund), false));
+            fundVO.setHistoricalNamedOutputs(createOutputDefinitions(outputDefinitionRepository.findHistoricalOutputDefinitionByFund(fund), true));
         }
 
         return fundVO;
@@ -669,26 +655,26 @@ public class ClientFactoryVO {
     /**
      * Vytvoří třídy výstupů archivního souboru.
      *
-     * @param namedOutputs seznam DO
+     * @param outputDefinitions seznam DO
      * @param loadOutputs  mají se do objektu načíst verze? (arr_output)
      * @return seznam VO
      */
-    public List<ArrNamedOutputVO> createNamedOutputs(final Collection<ArrNamedOutput> namedOutputs,
-                                                     final boolean loadOutputs) {
-        Assert.notNull(namedOutputs);
+    public List<ArrOutputDefinitionVO> createOutputDefinitions(final Collection<ArrOutputDefinition> outputDefinitions,
+                                                               final boolean loadOutputs) {
+        Assert.notNull(outputDefinitions);
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        List<ArrNamedOutputVO> result = new ArrayList<>(namedOutputs.size());
-        for (ArrNamedOutput namedOutput : namedOutputs) {
+        List<ArrOutputDefinitionVO> result = new ArrayList<>(outputDefinitions.size());
+        for (ArrOutputDefinition outputDefinition : outputDefinitions) {
 
-            ArrNamedOutputVO namedOutputVO = mapper.map(namedOutput, ArrNamedOutputVO.class);
+            ArrOutputDefinitionVO outputDefinitionVO = mapper.map(outputDefinition, ArrOutputDefinitionVO.class);
 
             if (loadOutputs) {
-                namedOutputVO.setOutputs(createOutputsVO(namedOutput.getOutputs()));
+                outputDefinitionVO.setOutputs(createOutputsVO(outputDefinition.getOutputs()));
             }
 
-            result.add(namedOutputVO);
+            result.add(outputDefinitionVO);
         }
         return result;
     }
@@ -696,14 +682,14 @@ public class ClientFactoryVO {
     /**
      * Vytvoří třídy výstupů archivního souboru.
      *
-     * @param namedOutput DO
+     * @param outputDefinition DO
      * @return VO
      */
-    public ArrNamedOutputVO createNamedOutput(final ArrNamedOutput namedOutput) {
-        Assert.notNull(namedOutput);
+    public ArrOutputDefinitionVO createOutputDefinition(final ArrOutputDefinition outputDefinition) {
+        Assert.notNull(outputDefinition);
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrNamedOutputVO namedOutputVO = mapper.map(namedOutput, ArrNamedOutputVO.class);
-        return namedOutputVO;
+        ArrOutputDefinitionVO outputDefinitionVO = mapper.map(outputDefinition, ArrOutputDefinitionVO.class);
+        return outputDefinitionVO;
     }
 
     /**
@@ -741,7 +727,7 @@ public class ClientFactoryVO {
      * @param descItemSpec specifikace hodnoty atributu
      * @return VO specifikace hodnoty atributu
      */
-    public RulDescItemSpecVO createDescItemSpecVO(final RulDescItemSpec descItemSpec) {
+    public RulDescItemSpecVO createDescItemSpecVO(final RulItemSpec descItemSpec) {
         Assert.notNull(descItemSpec);
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemSpecVO descItemSpecVO = mapper.map(descItemSpec, RulDescItemSpecVO.class);
@@ -754,7 +740,7 @@ public class ClientFactoryVO {
      * @param descItemType typ hodnoty atributu
      * @return VO typ hodnoty atributu
      */
-    public RulDescItemTypeDescItemsVO createDescItemTypeVO(final RulDescItemType descItemType) {
+    public RulDescItemTypeDescItemsVO createDescItemTypeVO(final RulItemType descItemType) {
         Assert.notNull(descItemType);
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemTypeDescItemsVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeDescItemsVO.class);
@@ -768,7 +754,7 @@ public class ClientFactoryVO {
      * @param descItemType typ hodnoty atributu
      * @return VO typ hodnoty atributu
      */
-    public DescItemTypeDescItemsLiteVO createDescItemTypeLiteVO(final RulDescItemType descItemType) {
+    public DescItemTypeDescItemsLiteVO createDescItemTypeLiteVO(final RulItemType descItemType) {
         Assert.notNull(descItemType);
         MapperFacade mapper = mapperFactory.getMapperFacade();
         DescItemTypeDescItemsLiteVO descItemTypeVO = mapper.map(descItemType, DescItemTypeDescItemsLiteVO.class);
@@ -785,7 +771,7 @@ public class ClientFactoryVO {
         Assert.notNull(descItem);
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrDescItemVO descItemVO = mapper.map(descItem, ArrDescItemVO.class);
-        Integer specId = (descItem.getDescItemSpec() == null) ? null : descItem.getDescItemSpec().getDescItemSpecId();
+        Integer specId = (descItem.getItemSpec() == null) ? null : descItem.getItemSpec().getItemSpecId();
         descItemVO.setDescItemSpecId(specId);
         return descItemVO;
     }
@@ -812,23 +798,23 @@ public class ClientFactoryVO {
      */
     public List<DescItemGroupVO> createDescItemGroupsNew(final String ruleCode, final Integer fundId, final List<ArrDescItem> descItems) {
         Map<String, DescItemGroupVO> descItemGroupVOMap = new HashMap<>();
-        Map<RulDescItemType, List<ArrDescItemVO>> descItemByType = new HashMap<>();
+        Map<RulItemType, List<ArrDescItemVO>> descItemByType = new HashMap<>();
         List<DescItemTypeDescItemsLiteVO> descItemTypeVOList = new ArrayList<>();
 
         // vytvoření VO hodnot atributů
         for (ArrDescItem descItem : descItems) {
-            List<ArrDescItemVO> descItemList = descItemByType.get(descItem.getDescItemType());
+            List<ArrDescItemVO> descItemList = descItemByType.get(descItem.getItemType());
 
             if (descItemList == null) {
                 descItemList = new ArrayList<>();
-                descItemByType.put(descItem.getDescItemType(), descItemList);
+                descItemByType.put(descItem.getItemType(), descItemList);
             }
 
             descItemList.add(createDescItem(descItem));
         }
 
         // zjištění použitých typů atributů a jejich převod do VO
-        for (RulDescItemType descItemType : descItemByType.keySet()) {
+        for (RulItemType descItemType : descItemByType.keySet()) {
             DescItemTypeDescItemsLiteVO descItemTypeVO = createDescItemTypeLiteVO(descItemType);
             descItemTypeVOList.add(descItemTypeVO);
             descItemTypeVO.setDescItems(descItemByType.get(descItemType));
@@ -836,7 +822,7 @@ public class ClientFactoryVO {
 
         Map<Integer, String> codeToId = new HashMap<>();
 
-        descItemByType.keySet().forEach(type -> codeToId.put(type.getDescItemTypeId(), type.getCode()));
+        descItemByType.keySet().forEach(type -> codeToId.put(type.getItemTypeId(), type.getCode()));
 
         // rozřazení do skupin podle konfigurace
         for (DescItemTypeDescItemsLiteVO descItemTypeVO : descItemTypeVOList) {
@@ -920,14 +906,14 @@ public class ClientFactoryVO {
      * @param descItemTypes seznam typů hodnot atributů
      * @return seznam skupin s typy hodnot atributů
      */
-    public List<DescItemTypeGroupVO> createDescItemTypeGroupsNew(final String ruleCode, final Integer fundId, final List<RulDescItemTypeExt> descItemTypes) {
+    public List<DescItemTypeGroupVO> createDescItemTypeGroupsNew(final String ruleCode, final Integer fundId, final List<RulItemTypeExt> descItemTypes) {
 
         List<DescItemTypeLiteVO> descItemTypeExtList = createList(descItemTypes, DescItemTypeLiteVO.class,
                 this::createDescItemTypeLite);
 
         Map<Integer, String> codeToId = new HashMap<>();
 
-        descItemTypes.forEach(type -> codeToId.put(type.getDescItemTypeId(), type.getCode()));
+        descItemTypes.forEach(type -> codeToId.put(type.getItemTypeId(), type.getCode()));
 
         Map<String, DescItemTypeGroupVO> descItemTypeGroupVOMap = new HashMap<>();
 
@@ -953,7 +939,7 @@ public class ClientFactoryVO {
         return new ArrayList<>(descItemTypeGroupVOMap.values());
     }
 
-    private DescItemTypeLiteVO createDescItemTypeLite(final RulDescItemTypeExt descItemTypeExt) {
+    private DescItemTypeLiteVO createDescItemTypeLite(final RulItemTypeExt descItemTypeExt) {
         Assert.notNull(descItemTypeExt);
         MapperFacade mapper = mapperFactory.getMapperFacade();
         DescItemTypeLiteVO descItemTypeVO = mapper.map(descItemTypeExt, DescItemTypeLiteVO.class);
@@ -966,7 +952,7 @@ public class ClientFactoryVO {
      * @param descItemType typ hodnoty atributu se specifikacemi
      * @return VO typu hodnoty atributu se specifikacemi
      */
-    public RulDescItemTypeExtVO createDescItemTypeExt(final RulDescItemTypeExt descItemType) {
+    public RulDescItemTypeExtVO createDescItemTypeExt(final RulItemTypeExt descItemType) {
         Assert.notNull(descItemType);
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemTypeExtVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeExtVO.class);
@@ -980,7 +966,7 @@ public class ClientFactoryVO {
      * @param descItemTypes DO typů hodnot
      * @return VO typů hodnot
      */
-    public List<RulDescItemTypeExtVO> createDescItemTypeExtList(final List<RulDescItemTypeExt> descItemTypes) {
+    public List<RulDescItemTypeExtVO> createDescItemTypeExtList(final List<RulItemTypeExt> descItemTypes) {
         return createList(descItemTypes, RulDescItemTypeExtVO.class, this::createDescItemTypeExt);
     }
 
@@ -1252,13 +1238,13 @@ public class ClientFactoryVO {
     public ArrOutputExtVO createOutputExt(final ArrOutput output, final ArrFundVersion fundVersion) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrOutputExtVO outputExt = mapper.map(output, ArrOutputExtVO.class);
-        outputExt.setNamedOutput(mapper.map(output.getNamedOutput(), ArrNamedOutputVO.class));
+        outputExt.setOutputDefinition(mapper.map(output.getOutputDefinition(), ArrOutputDefinitionVO.class));
         outputExt.setCreateDate(mapper.map(output.getCreateChange().getChangeDate(), Date.class));
         outputExt.setLockDate(output.getLockChange() != null ? mapper.map(output.getLockChange().getChangeDate(), Date.class) : null);
 
         List<ArrNode> nodes = outputService.getNodesForOutput(output);
         List<Integer> nodeIds = nodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList());
-        outputExt.getNamedOutput().setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
+        outputExt.getOutputDefinition().setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
         return outputExt;
     }
 }

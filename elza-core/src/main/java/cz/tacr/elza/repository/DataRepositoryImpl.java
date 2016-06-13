@@ -1,52 +1,19 @@
 package cz.tacr.elza.repository;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.Tuple;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Selection;
-
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.utils.ObjectListIterator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.jpa.criteria.OrderImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataPacketRef;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.utils.ObjectListIterator;
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.Tuple;
+import javax.persistence.criteria.*;
+import java.util.*;
 
 
 /**
@@ -61,11 +28,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
     @Override
     public List<ArrData> findDescItemsByNodeIds(final Set<Integer> nodeIds,
-                                                final Set<RulDescItemType> descItemTypes,
+                                                final Set<RulItemType> itemTypes,
                                                 final ArrFundVersion version) {
 
 
-        String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit LEFT JOIN FETCH di.descItemSpec dis JOIN FETCH d.dataType dt WHERE ";
+        String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis JOIN FETCH d.dataType dt WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";
         } else {
@@ -74,8 +41,8 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         hql += "AND n.nodeId IN (:nodeIds)";
 
-        if (CollectionUtils.isNotEmpty(descItemTypes)) {
-            hql += " AND di.descItemType IN (:descItemTypes)";
+        if (CollectionUtils.isNotEmpty(itemTypes)) {
+            hql += " AND di.itemType IN (:itemTypes)";
         }
 
 
@@ -85,8 +52,8 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             query.setParameter("lockChange", version.getLockChange());
         }
 
-        if (CollectionUtils.isNotEmpty(descItemTypes)) {
-            query.setParameter("descItemTypes", descItemTypes);
+        if (CollectionUtils.isNotEmpty(itemTypes)) {
+            query.setParameter("itemTypes", itemTypes);
         }
 
         List<ArrData> result = new LinkedList<>();
@@ -102,15 +69,15 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
 
     @Override
-    public List<ArrData> findByDataIdsAndVersionFetchSpecification(final Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, final ArrFundVersion version) {
-        String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH di.descItemSpec dis JOIN FETCH d.dataType dt WHERE ";
+    public List<ArrData> findByDataIdsAndVersionFetchSpecification(final Set<Integer> dataIds, final Set<RulItemType> itemTypes, final ArrFundVersion version) {
+        String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH di.itemSpec dis JOIN FETCH d.dataType dt WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";
         } else {
             hql += "di.createChange < :lockChange AND (di.deleteChange IS NULL OR di.deleteChange > :lockChange) ";
         }
 
-        hql += "AND di.descItemType IN (:descItemTypes) AND d.dataId IN (:dataIds)";
+        hql += "AND di.itemType IN (:itemTypes) AND d.dataId IN (:dataIds)";
 
 
         Query query = entityManager.createQuery(hql);
@@ -119,7 +86,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             query.setParameter("lockChange", version.getLockChange());
         }
 
-        query.setParameter("descItemTypes", descItemTypes);
+        query.setParameter("itemTypes", itemTypes);
 
         List<ArrData> result = new LinkedList<>();
         ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<Integer>(dataIds);
@@ -135,15 +102,15 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
     @Override
     public <T extends ArrData> List<T> findByNodesContainingText(final Collection<ArrNode> nodes,
-                                                                 final RulDescItemType descItemType,
-                                                                 final Set<RulDescItemSpec> specifications,
+                                                                 final RulItemType itemType,
+                                                                 final Set<RulItemSpec> specifications,
                                                                  final String text) {
 
         if(StringUtils.isBlank(text)){
             throw new IllegalArgumentException("Parametr text nesmí mít prázdnou hodnotu.");
         }
 
-        if(descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)){
+        if(itemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)){
             throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
         }
 
@@ -151,33 +118,33 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         String searchText = "%" + text + "%";
 
         String tableName;
-        switch (descItemType.getDataType().getCode()){
+        switch (itemType.getDataType().getCode()){
             case "STRING":
-                tableName = descItemType.getDataType().getStorageTable();
+                tableName = itemType.getDataType().getStorageTable();
                 break;
             case "TEXT":
-                tableName = descItemType.getDataType().getStorageTable();
+                tableName = itemType.getDataType().getStorageTable();
                 break;
             default:
                 throw new IllegalStateException(
-                        "Není zatím implementováno pro typ " + descItemType.getDataType().getCode());
+                        "Není zatím implementováno pro typ " + itemType.getDataType().getCode());
         }
 
         String hql = "SELECT d FROM " + tableName +" d"
                 + " JOIN FETCH d.descItem di "
-                + " JOIN FETCH di.node n WHERE di.descItemType = :descItemType";
+                + " JOIN FETCH di.node n WHERE di.itemType = :itemType";
 
-        if(descItemType.getUseSpecification()){
-            hql+= " AND di.descItemSpec IN (:specs)";
+        if(itemType.getUseSpecification()){
+            hql+= " AND di.itemSpec IN (:specs)";
         }
 
         hql += " AND di.node IN (:nodes) AND d.value like :text AND di.deleteChange IS NULL";
 
         Query query = entityManager.createQuery(hql);
-        query.setParameter("descItemType", descItemType);
+        query.setParameter("itemType", itemType);
         query.setParameter("nodes", nodes);
         query.setParameter("text", searchText);
-        if (descItemType.getUseSpecification()) {
+        if (itemType.getUseSpecification()) {
             query.setParameter("specs", specifications);
         }
 
@@ -188,7 +155,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
     @Override
     public List<String> findUniquePacketValuesInVersion(final ArrFundVersion version,
-                                                         final RulDescItemType descItemType,
+                                                         final RulItemType itemType,
                                                          final Class<? extends ArrData> dataTypeClass,
                                                          @Nullable final Set<RulPacketType> packetTypes,
                                                          final boolean withoutType,
@@ -236,15 +203,15 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             }
         };
 
-        return findUniqueValuesInVersion(version, descItemType, dataTypeClass, specHelper, fulltext, max, withoutType);
+        return findUniqueValuesInVersion(version, itemType, dataTypeClass, specHelper, fulltext, max, withoutType);
 
     }
 
     @Override
     public List<String> findUniqueSpecValuesInVersion(final ArrFundVersion version,
-                                                       final RulDescItemType descItemType,
+                                                       final RulItemType itemType,
                                                        final Class<? extends ArrData> dataTypeClass,
-                                                       @Nullable final Set<RulDescItemSpec> specs,
+                                                       @Nullable final Set<RulItemSpec> specs,
                                                        final boolean withoutSpec,
                                                        @Nullable final String fulltext,
                                                        final int max){
@@ -260,7 +227,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
             @Override
             public boolean useSpec() {
-                return descItemType.getUseSpecification();
+                return itemType.getUseSpecification();
             }
 
             @Override
@@ -286,14 +253,14 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             }
         };
 
-        return findUniqueValuesInVersion(version, descItemType, dataTypeClass, specHelper, fulltext, max, withoutSpec);
+        return findUniqueValuesInVersion(version, itemType, dataTypeClass, specHelper, fulltext, max, withoutSpec);
     }
 
     /**
      * Provede načtení unikátních hodnot atributů.
      *
      * @param version                     id verze stromu
-     * @param descItemType                typ atributu
+     * @param itemType                    typ atributu
      * @param dataTypeClass               třída hodnot atributu
      * @param specificationDataTypeHelper obsluha načtení specifikací / obalů
      * @param fulltext                    fulltext
@@ -302,7 +269,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
      * @return seznam unikátních hodnot
      */
     private List<String> findUniqueValuesInVersion(final ArrFundVersion version,
-                                                   final RulDescItemType descItemType,
+                                                   final RulItemType itemType,
                                                    final Class<? extends ArrData> dataTypeClass,
                                                    final SpecificationDataTypeHelper specificationDataTypeHelper,
                                                    @Nullable final String fulltext,
@@ -338,7 +305,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         List<Predicate> andPredicates = new LinkedList<>();
         andPredicates.add(builder.equal(node.get(ArrNode.FUND), version.getFund()));
         andPredicates.add(versionPredicate);
-        andPredicates.add(builder.equal(descItem.get(ArrDescItem.DESC_ITEM_TYPE), descItemType));
+        andPredicates.add(builder.equal(descItem.get(ArrDescItem.DESC_ITEM_TYPE), itemType));
         if (specificationDataTypeHelper.useSpec()) {
             specificationDataTypeHelper.init(data, descItem);
 

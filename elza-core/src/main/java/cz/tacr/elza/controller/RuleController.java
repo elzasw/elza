@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -77,7 +76,7 @@ public class RuleController {
 
     @RequestMapping(value = "/descItemTypes", method = RequestMethod.GET)
     public List<RulDescItemTypeExtVO> getDescItemTypes() {
-        List<RulDescItemTypeExt> descItemTypes = ruleService.getAllDescriptionItemTypes();
+        List<RulItemTypeExt> descItemTypes = ruleService.getAllDescriptionItemTypes();
         return factoryVo.createDescItemTypeExtList(descItemTypes);
     }
 

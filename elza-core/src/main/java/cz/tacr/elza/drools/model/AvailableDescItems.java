@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemSpecExt;
-import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.domain.RulItemTypeExt;
 
 /**
  * Results of DescItemTypesRules
@@ -16,9 +16,9 @@ import cz.tacr.elza.domain.RulDescItemTypeExt;
  *
  */
 public class AvailableDescItems {
-	List<RulDescItemTypeExt> descItemTypes = new ArrayList<>();
+	List<RulItemTypeExt> descItemTypes = new ArrayList<>();
 	
-	public List<RulDescItemTypeExt> getDescItemTypes() {
+	public List<RulItemTypeExt> getDescItemTypes() {
 		return descItemTypes;
 	}
 	
@@ -27,7 +27,7 @@ public class AvailableDescItems {
 	 * 
 	 * @param descItemType Description item type
 	 */
-	public void add(RulDescItemTypeExt descItemType) {
+	public void add(RulItemTypeExt descItemType) {
 		descItemTypes.add(descItemType);
 	}
 	
@@ -36,9 +36,9 @@ public class AvailableDescItems {
 	 * @param descItemType	description item type
 	 * @param specType		specification type
 	 */
-	public void setSpecTypeForAll(RulDescItemTypeExt descItemType, RulDescItemSpec.Type specType)
+	public void setSpecTypeForAll(RulItemTypeExt descItemType, RulItemSpec.Type specType)
 	{
-		for( RulDescItemSpecExt spec: descItemType.getRulDescItemSpecList() )
+		for( RulItemSpecExt spec: descItemType.getRulItemSpecList() )
 		{
 			spec.setType(specType);
 		}
@@ -50,11 +50,11 @@ public class AvailableDescItems {
 	public void finalize()
 	{
 		// Remove specifications without type
-		for(RulDescItemTypeExt descItemType: descItemTypes)
+		for(RulItemTypeExt descItemType: descItemTypes)
 		{
-			List<RulDescItemSpecExt> reducedList;
-			reducedList = descItemType.getRulDescItemSpecList().stream().filter(t -> t.getType()!=null ).collect(Collectors.toList());
-			descItemType.setRulDescItemSpecList(reducedList);
+			List<RulItemSpecExt> reducedList;
+			reducedList = descItemType.getRulItemSpecList().stream().filter(t -> t.getType()!=null ).collect(Collectors.toList());
+			descItemType.setRulItemSpecList(reducedList);
 		}
 	}
 }

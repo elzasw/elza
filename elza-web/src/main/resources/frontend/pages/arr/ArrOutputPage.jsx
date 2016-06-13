@@ -121,7 +121,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
         this.dispatch(modalDialogShow(this, i18n('arr.output.title.edit'),
             <AddOutputForm
-                initData={{name: fundOutputDetail.namedOutput.name, internalCode: fundOutputDetail.namedOutput.internalCode}}
+                initData={{name: fundOutputDetail.outputDefinition.name, internalCode: fundOutputDetail.outputDefinition.internalCode}}
                 onSubmitForm={(data) => {this.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data))}}/>));
     }
 
@@ -149,7 +149,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         const fund = this.getActiveFund(this.props)
         const fundOutputDetail = fund.fundOutput.fundOutputDetail
 
-        this.dispatch(fundActionFormChange(fund.versionId, {nodes: fundOutputDetail.namedOutput.nodes}));
+        this.dispatch(fundActionFormChange(fund.versionId, {nodes: fundOutputDetail.outputDefinition.nodes}));
         this.dispatch(fundActionFormShow(fund.versionId));
         this.dispatch(routerNavigate('/arr/actions'));
     }
@@ -196,7 +196,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                     )
                 }
 
-                if (fundOutputDetail.namedOutput.nodes.length > 0) {
+                if (fundOutputDetail.outputDefinition.nodes.length > 0) {
                     if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) { // právo na hromadné akce
                         itemActions.push(
                             <Button key="fund-output-bulk-actions" onClick={this.handleBulkActions}><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span></div></Button>
@@ -243,8 +243,8 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
         var temporaryChanged = false
 
-        const currTemporary = item.namedOutput.temporary
-        var prevTemporary = index - 1 >= 0 ? fundOutput.outputs[index - 1].namedOutput.temporary : false
+        const currTemporary = item.outputDefinition.temporary
+        var prevTemporary = index - 1 >= 0 ? fundOutput.outputs[index - 1].outputDefinition.temporary : false
 
         var cls = {
             item: true,
@@ -253,7 +253,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
         return (
             <div className={classNames(cls)}>
-                <div className='name'>{item.namedOutput.name}</div>
+                <div className='name'>{item.outputDefinition.name}</div>
                 {item.lockDate ? <div>{Utils.dateTimeToString(new Date(item.lockDate))}</div> : <div>&nbsp;</div>}
             </div>
         )
@@ -303,7 +303,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                     rightPanel = (
                         <div className="fund-nodes-container">
                             <FundNodesList
-                                nodes={fundOutputDetail.namedOutput.nodes}
+                                nodes={fundOutputDetail.outputDefinition.nodes}
                                 onDeleteNode={this.handleRemoveNode}
                                 readOnly={fundOutputDetail.lockDate ? true : false}
                                 />

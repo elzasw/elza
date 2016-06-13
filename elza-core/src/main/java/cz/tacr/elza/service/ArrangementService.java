@@ -1,37 +1,6 @@
 package cz.tacr.elza.service;
 
-import java.text.Normalizer;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import com.google.common.collect.Iterables;
-
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
@@ -49,52 +18,33 @@ import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundRegisterScope;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNamedOutput;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.UIVisiblePolicy;
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.InvalidQueryException;
-import cz.tacr.elza.repository.BulkActionNodeRepository;
-import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundRegisterScopeRepository;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NamedOutputRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeOutputRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.VisiblePolicyRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.annotation.Nullable;
+import java.text.Normalizer;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -194,7 +144,7 @@ public class ArrangementService {
     private PolicyService policyService;
 
     @Autowired
-    private NamedOutputRepository namedOutputRepository;
+    private OutputDefinitionRepository outputDefinitionRepository;
 
     @Autowired
     private OutputRepository outputRepository;
@@ -474,12 +424,12 @@ public class ArrangementService {
         ArrFundVersion version = getOpenVersionByFundId(fundId);
         ArrFund fund = version.getFund();
 
-        List<ArrNamedOutput> namedOutputs = namedOutputRepository.findByFund(fund);
-        if(!namedOutputs.isEmpty()){
-            for (ArrNamedOutput namedOutput : namedOutputs) {
-                outputRepository.delete(namedOutput.getOutputs());
-                nodeOutputRepository.delete(namedOutput.getOutputNodes());
-                namedOutputRepository.delete(namedOutput);
+        List<ArrOutputDefinition> outputDefinitions = outputDefinitionRepository.findByFund(fund);
+        if(!outputDefinitions.isEmpty()){
+            for (ArrOutputDefinition outputDefinition : outputDefinitions) {
+                outputRepository.delete(outputDefinition.getOutputs());
+                nodeOutputRepository.delete(outputDefinition.getOutputNodes());
+                outputDefinitionRepository.delete(outputDefinition);
             }
         }
 
@@ -749,7 +699,7 @@ public class ArrangementService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrDescItem> copyOlderSiblingAttribute(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
-                                                       final RulDescItemType descItemType,
+                                                       final RulItemType descItemType,
                                                        final ArrLevel level) {
         Assert.notNull(version);
         Assert.notNull(descItemType);
@@ -757,7 +707,7 @@ public class ArrangementService {
 
         isValidAndOpenVersion(version);
 
-        Set<RulDescItemType> typeSet = new HashSet<>();
+        Set<RulItemType> typeSet = new HashSet<>();
         typeSet.add(descItemType);
 
         ArrLevel olderSibling = levelRepository.findOlderSibling(level, version.getLockChange());

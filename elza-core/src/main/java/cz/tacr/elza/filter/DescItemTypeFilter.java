@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.domain.RulItemType;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
@@ -17,7 +18,6 @@ import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.filter.condition.DescItemCondition;
 import cz.tacr.elza.filter.condition.HibernateDescItemCondition;
 import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
@@ -32,7 +32,7 @@ import cz.tacr.elza.filter.condition.SelectsNothingCondition;
 public class DescItemTypeFilter {
 
     /** Typ hodnoty na který se má filtr aplikovat. */
-    private RulDescItemType descItemType;
+    private RulItemType descItemType;
 
     /** Třída na kterou se bude aplikovat filtr. */
     private Class<?> cls;
@@ -47,7 +47,7 @@ public class DescItemTypeFilter {
      * @param cls třída na kterou se mají podmínky aplikovat
      * @param conditions podmínky
      */
-    public DescItemTypeFilter(final RulDescItemType descItemType, final Class<?> cls, final List<DescItemCondition> conditions) {
+    public DescItemTypeFilter(final RulItemType descItemType, final Class<?> cls, final List<DescItemCondition> conditions) {
         Assert.notNull(descItemType);
         Assert.notNull(cls);
         Assert.notEmpty(conditions);
@@ -68,7 +68,7 @@ public class DescItemTypeFilter {
                 return new HashMap<>(0);
             } else {
                 HibernateDescItemCondition hibernate = (HibernateDescItemCondition) condition;
-                hibernateQueries.add(hibernate.createHibernateQuery(entityManager, fundId, descItemType.getDescItemTypeId(), lockChangeId));
+                hibernateQueries.add(hibernate.createHibernateQuery(entityManager, fundId, descItemType.getItemTypeId(), lockChangeId));
             }
         }
 
@@ -156,7 +156,7 @@ public class DescItemTypeFilter {
 //    }
 
     private Query createDescItemTypeQuery(final QueryBuilder queryBuilder) {
-        Integer descItemTypeId = descItemType.getDescItemTypeId();
+        Integer descItemTypeId = descItemType.getItemTypeId();
         return queryBuilder.range().onField(ArrData.LUCENE_DESC_ITEM_TYPE_ID).from(descItemTypeId).to(descItemTypeId).
                 createQuery();
     }
@@ -170,7 +170,7 @@ public class DescItemTypeFilter {
         return cls;
     }
 
-    public RulDescItemType getDescItemType() {
+    public RulItemType getDescItemType() {
         return descItemType;
     }
 }

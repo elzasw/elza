@@ -3,19 +3,11 @@ package cz.tacr.elza.bulkaction.generator;
 import cz.tacr.elza.api.ArrBulkActionRun.State;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDescItemString;
-import cz.tacr.elza.domain.ArrDescItemUnitid;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,22 +43,22 @@ public class UnitIdBulkAction extends BulkAction {
     /**
      * Typ atributu
      */
-    private RulDescItemType descItemType;
+    private RulItemType descItemType;
 
     /**
      * Typ atributu levelu
      */
-    private RulDescItemType descItemLevelType;
+    private RulItemType descItemLevelType;
 
     /**
      * Typ atributu pro předchozí uložení
      */
-    private RulDescItemType descItemPreviousType;
+    private RulItemType descItemPreviousType;
 
     /**
      * Specifikace atributu pro předchozí uložení
      */
-    private RulDescItemSpec descItemPreviousSpec;
+    private RulItemSpec descItemPreviousSpec;
 
     /**
      * Vedlejší oddělovač
@@ -92,7 +84,7 @@ public class UnitIdBulkAction extends BulkAction {
     private DescItemTypeRepository descItemTypeRepository;
 
     @Autowired
-    private DescItemSpecRepository descItemSpecRepository;
+    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private DescItemRepository descItemRepository;
@@ -134,7 +126,7 @@ public class UnitIdBulkAction extends BulkAction {
         Assert.notNull(descItemPreviousType);
 
         String previousIdSpecCode = (String) bulkActionConfig.getProperty("previous_id_spec_code");
-        descItemPreviousSpec = descItemSpecRepository.getOneByCode(previousIdSpecCode);
+        descItemPreviousSpec = itemSpecRepository.getOneByCode(previousIdSpecCode);
         Assert.notNull(descItemPreviousSpec);
 
         String delimiterMajorLevelTypeNotUse = (String) bulkActionConfig
@@ -170,7 +162,7 @@ public class UnitIdBulkAction extends BulkAction {
                 if (unitId == null) {
                     unitId = new UnitId(1);
                 } else {
-                    String specCode = descItemLevel == null ? null : descItemLevel.getDescItemSpec().getCode();
+                    String specCode = descItemLevel == null ? null : descItemLevel.getItemSpec().getCode();
 
                     if ((specCode == null && parentSpecCode == null)
                             || (specCode != null && specCode.equals(parentSpecCode))
@@ -187,7 +179,7 @@ public class UnitIdBulkAction extends BulkAction {
                 // vytvoření nového atributu
                 if (descItem == null) {
                     descItem = new ArrDescItemUnitid();
-                    descItem.setDescItemType(descItemType);
+                    descItem.setItemType(descItemType);
                     descItem.setNode(level.getNode());
                 }
 
@@ -205,8 +197,8 @@ public class UnitIdBulkAction extends BulkAction {
                     if (descItem.getDescItemObjectId() != null && descItem.getCreateChange().getChangeId() < version
                             .getCreateChange().getChangeId()) {
                         ArrDescItem descItemPrev = descItemFactory.createDescItemByType(descItemPreviousType.getDataType());
-                        descItemPrev.setDescItemType(descItemPreviousType);
-                        descItemPrev.setDescItemSpec(descItemPreviousSpec);
+                        descItemPrev.setItemType(descItemPreviousType);
+                        descItemPrev.setItemSpec(descItemPreviousSpec);
                         descItemPrev.setNode(level.getNode());
 
                         if (descItemPrev instanceof ArrDescItemString) {
@@ -242,7 +234,7 @@ public class UnitIdBulkAction extends BulkAction {
             if (unitId != null && unitIdChild == null) {
                 unitIdChild = unitId.getClone();
             }
-            generate(childLevel, rootNode, unitIdChild, descItemLevel == null ? null : descItemLevel.getDescItemSpec().getCode());
+            generate(childLevel, rootNode, unitIdChild, descItemLevel == null ? null : descItemLevel.getItemSpec().getCode());
         }
 
     }
@@ -255,7 +247,7 @@ public class UnitIdBulkAction extends BulkAction {
      */
     private ArrDescItem loadDescItem(final ArrLevel level) {
         List<ArrDescItem> descItems = descItemRepository
-                .findByNodeAndDeleteChangeIsNullAndDescItemTypeId(level.getNode(), descItemType.getDescItemTypeId());
+                .findByNodeAndDeleteChangeIsNullAndItemTypeId(level.getNode(), descItemType.getItemTypeId());
         if (descItems.size() == 0) {
             return null;
         }
@@ -274,8 +266,8 @@ public class UnitIdBulkAction extends BulkAction {
      */
     private ArrDescItem loadDescItemLevel(final ArrLevel level) {
         List<ArrDescItem> descItems = descItemRepository
-                .findByNodeAndDeleteChangeIsNullAndDescItemTypeId(level.getNode(),
-                        descItemLevelType.getDescItemTypeId());
+                .findByNodeAndDeleteChangeIsNullAndItemTypeId(level.getNode(),
+                        descItemLevelType.getItemTypeId());
         if (descItems.size() == 0) {
             return null;
         }
@@ -327,11 +319,11 @@ public class UnitIdBulkAction extends BulkAction {
                     if (unitId != null && unitIdChild == null) {
                         unitIdChild = unitId.getClone();
                     }
-                    generate(childLevel, rootNode, unitIdChild, descItemLevel == null ? null : descItemLevel.getDescItemSpec().getCode());
+                    generate(childLevel, rootNode, unitIdChild, descItemLevel == null ? null : descItemLevel.getItemSpec().getCode());
                 }
 
             } else if(node.equals(rootNode)) {
-                generate(level, rootNode, null, descItemLevel == null ? null : descItemLevel.getDescItemSpec().getCode());
+                generate(level, rootNode, null, descItemLevel == null ? null : descItemLevel.getItemSpec().getCode());
             }
 
         }

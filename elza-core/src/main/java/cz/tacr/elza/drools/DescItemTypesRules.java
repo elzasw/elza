@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.drools.model.ActiveLevel;
@@ -42,9 +42,9 @@ public class DescItemTypesRules extends Rules {
      * @param rulDescItemTypeExtList seznam všech atributů
      */
     // TODO: je nutné používat synchronized?
-    public synchronized List<RulDescItemTypeExt> execute(final ArrLevel level,
-                                                         final ArrFundVersion version,
-                                                         final List<RulDescItemTypeExt> rulDescItemTypeExtList)
+    public synchronized List<RulItemTypeExt> execute(final ArrLevel level,
+                                                     final ArrFundVersion version,
+                                                     final List<RulItemTypeExt> rulDescItemTypeExtList)
             throws Exception
     {
 

@@ -52,7 +52,6 @@ import cz.tacr.elza.domain.ArrDescItemText;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrDescItemUnitid;
 import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.DataDecimalRepository;
 import cz.tacr.elza.repository.DataIntegerRepository;
@@ -66,9 +65,6 @@ import cz.tacr.elza.repository.DataTextRepository;
 import cz.tacr.elza.repository.DataUnitdateRepository;
 import cz.tacr.elza.repository.DataUnitidRepository;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
 
 
 /**
@@ -172,7 +168,7 @@ public class DescItemFactory implements InitializingBean {
                     public void mapAtoB(ArrDescItemCoordinates arrDescItemCoordinates,
                                         ArrDataCoordinates arrDataCoordinates,
                                         MappingContext context) {
-                        arrDataCoordinates.setDataType(arrDescItemCoordinates.getDescItemType().getDataType());
+                        arrDataCoordinates.setDataType(arrDescItemCoordinates.getItemType().getDataType());
                         arrDataCoordinates.setDescItem(arrDescItemCoordinates);
                         arrDataCoordinates.setValue(arrDescItemCoordinates.getValue());
                     }
@@ -210,7 +206,7 @@ public class DescItemFactory implements InitializingBean {
                     public void mapAtoB(ArrDescItemFormattedText arrDescItemFormattedText,
                                         ArrDataText arrDataText,
                                         MappingContext context) {
-                        arrDataText.setDataType(arrDescItemFormattedText.getDescItemType().getDataType());
+                        arrDataText.setDataType(arrDescItemFormattedText.getItemType().getDataType());
                         arrDataText.setDescItem(arrDescItemFormattedText);
                         arrDataText.setValue(arrDescItemFormattedText.getValue());
                     }
@@ -245,7 +241,7 @@ public class DescItemFactory implements InitializingBean {
                     public void mapAtoB(ArrDescItemInt arrDescItemInt,
                                         ArrDataInteger arrDataInteger,
                                         MappingContext context) {
-                        arrDataInteger.setDataType(arrDescItemInt.getDescItemType().getDataType());
+                        arrDataInteger.setDataType(arrDescItemInt.getItemType().getDataType());
                         arrDataInteger.setDescItem(arrDescItemInt);
                         arrDataInteger.setValue(arrDescItemInt.getValue());
                     }
@@ -283,7 +279,7 @@ public class DescItemFactory implements InitializingBean {
                     public void mapAtoB(ArrDescItemPartyRef arrDescItemPartyRef,
                                         ArrDataPartyRef arrDataPartyRef,
                                         MappingContext context) {
-                        arrDataPartyRef.setDataType(arrDescItemPartyRef.getDescItemType().getDataType());
+                        arrDataPartyRef.setDataType(arrDescItemPartyRef.getItemType().getDataType());
                         arrDataPartyRef.setDescItem(arrDescItemPartyRef);
                         arrDataPartyRef.setParty(arrDescItemPartyRef.getParty());
                     }
@@ -321,7 +317,7 @@ public class DescItemFactory implements InitializingBean {
                     public void mapAtoB(ArrDescItemPacketRef arrDescItemPartyRef,
                                         ArrDataPacketRef arrDataPartyRef,
                                         MappingContext context) {
-                        arrDataPartyRef.setDataType(arrDescItemPartyRef.getDescItemType().getDataType());
+                        arrDataPartyRef.setDataType(arrDescItemPartyRef.getItemType().getDataType());
                         arrDataPartyRef.setDescItem(arrDescItemPartyRef);
                         arrDataPartyRef.setPacket(arrDescItemPartyRef.getPacket());
                     }
@@ -359,7 +355,7 @@ public class DescItemFactory implements InitializingBean {
                     public void mapAtoB(ArrDescItemRecordRef arrDescItemRecordRef,
                                         ArrDataRecordRef arrDataRecordRef,
                                         MappingContext context) {
-                        arrDataRecordRef.setDataType(arrDescItemRecordRef.getDescItemType().getDataType());
+                        arrDataRecordRef.setDataType(arrDescItemRecordRef.getItemType().getDataType());
                         arrDataRecordRef.setDescItem(arrDescItemRecordRef);
                         arrDataRecordRef.setRecord(arrDescItemRecordRef.getRecord());
                     }
@@ -397,7 +393,7 @@ public class DescItemFactory implements InitializingBean {
                     public void mapAtoB(ArrDescItemString arrDescItemString,
                                         ArrDataString arrDataString,
                                         MappingContext context) {
-                        arrDataString.setDataType(arrDescItemString.getDescItemType().getDataType());
+                        arrDataString.setDataType(arrDescItemString.getItemType().getDataType());
                         arrDataString.setDescItem(arrDescItemString);
                         arrDataString.setValue(arrDescItemString.getValue());
                     }
@@ -435,7 +431,7 @@ public class DescItemFactory implements InitializingBean {
                     public void mapAtoB(ArrDescItemText arrDescItemText,
                                         ArrDataText arrDataText,
                                         MappingContext context) {
-                        arrDataText.setDataType(arrDescItemText.getDescItemType().getDataType());
+                        arrDataText.setDataType(arrDescItemText.getItemType().getDataType());
                         arrDataText.setDescItem(arrDescItemText);
                         arrDataText.setValue(arrDescItemText.getValue());
                     }
@@ -470,7 +466,7 @@ public class DescItemFactory implements InitializingBean {
                     public void mapAtoB(ArrDescItemUnitdate arrDescItemUnitdate,
                                         ArrDataUnitdate arrDataUnitdate,
                                         MappingContext context) {
-                        arrDataUnitdate.setDataType(arrDescItemUnitdate.getDescItemType().getDataType());
+                        arrDataUnitdate.setDataType(arrDescItemUnitdate.getItemType().getDataType());
                         arrDataUnitdate.setDescItem(arrDescItemUnitdate);
 
                         if (arrDescItemUnitdate.getFormat() == null) {
@@ -591,7 +587,7 @@ public class DescItemFactory implements InitializingBean {
                     public void mapAtoB(ArrDescItemUnitid arrDescItemUnitid,
                                         ArrDataUnitid arrDataUnitid,
                                         MappingContext context) {
-                        arrDataUnitid.setDataType(arrDescItemUnitid.getDescItemType().getDataType());
+                        arrDataUnitid.setDataType(arrDescItemUnitid.getItemType().getDataType());
                         arrDataUnitid.setDescItem(arrDescItemUnitid);
                         arrDataUnitid.setValue(arrDescItemUnitid.getValue());
                     }
@@ -628,7 +624,7 @@ public class DescItemFactory implements InitializingBean {
                     public void mapAtoB(ArrDescItemDecimal arrDescItemDecimal,
                                         ArrDataDecimal arrDataDecimal,
                                         MappingContext context) {
-                        arrDataDecimal.setDataType(arrDescItemDecimal.getDescItemType().getDataType());
+                        arrDataDecimal.setDataType(arrDescItemDecimal.getItemType().getDataType());
                         arrDataDecimal.setDescItem(arrDescItemDecimal);
                         arrDataDecimal.setValue(arrDescItemDecimal.getValue());
                     }
@@ -665,7 +661,7 @@ public class DescItemFactory implements InitializingBean {
                     public void mapAtoB(ArrDescItemEnum arrDescItemEnum,
                                         ArrDataNull arrDataNull,
                                         MappingContext context) {
-                        arrDataNull.setDataType(arrDescItemEnum.getDescItemType().getDataType());
+                        arrDataNull.setDataType(arrDescItemEnum.getItemType().getDataType());
                         arrDataNull.setDescItem(arrDescItemEnum);
                     }
 
@@ -712,7 +708,7 @@ public class DescItemFactory implements InitializingBean {
      */
     public ArrDescItem getDescItem(ArrDescItem descItem) {
         ArrData data = getDataByDescItem(descItem);
-        ArrDescItem descItemTmp = createDescItemByType(descItem.getDescItemType().getDataType());
+        ArrDescItem descItemTmp = createDescItemByType(descItem.getItemType().getDataType());
         BeanUtils.copyProperties(descItem, descItemTmp);
         facade.map(data, descItemTmp);
         return descItemTmp;

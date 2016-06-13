@@ -6,7 +6,7 @@ package cz.tacr.elza.domain;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrDescItemRecordRef extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemRecordRef<ArrChange, RulDescItemType, RulDescItemSpec, ArrNode, RegRecord> {
+public class ArrDescItemRecordRef extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemRecordRef<ArrChange, RulItemType, RulItemSpec, ArrNode, RegRecord> {
 
     private RegRecord record;
 

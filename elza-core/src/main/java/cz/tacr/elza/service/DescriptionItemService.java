@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -29,28 +29,7 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPacketRef;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
@@ -65,7 +44,7 @@ import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -106,7 +85,7 @@ public class DescriptionItemService {
     private DescItemFactory descItemFactory;
 
     @Autowired
-    private DescItemSpecRepository descItemSpecRepository;
+    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
@@ -214,7 +193,7 @@ public class DescriptionItemService {
 
         ArrChange change = arrangementService.createChange();
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
 
         Assert.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
         Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");
@@ -260,7 +239,7 @@ public class DescriptionItemService {
 
         ArrChange change = arrangementService.createChange();
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
 
         Assert.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
         Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");
@@ -451,7 +430,7 @@ public class DescriptionItemService {
 
         // načtení hodnot, které je potřeba přesunout níž
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
-                descItem.getDescItemType(),
+                descItem.getItemType(),
                 descItem.getNode(),
                 descItem.getPosition() - 1);
 
@@ -484,8 +463,8 @@ public class DescriptionItemService {
      * @param descItem hodnota atributu
      */
     private void checkValidTypeAndSpec(final ArrDescItem descItem) {
-        RulDescItemType descItemType = descItem.getDescItemType();
-        RulDescItemSpec descItemSpec = descItem.getDescItemSpec();
+        RulItemType descItemType = descItem.getItemType();
+        RulItemSpec descItemSpec = descItem.getItemSpec();
 
         Assert.notNull(descItemType, "Hodnota atributu musí mít vyplněný typ");
 
@@ -496,7 +475,7 @@ public class DescriptionItemService {
         }
 
         if (descItemSpec != null) {
-            List<RulDescItemSpec> descItemSpecs = descItemSpecRepository.findByDescItemType(descItemType);
+            List<RulItemSpec> descItemSpecs = itemSpecRepository.findByItemType(descItemType);
             if (!descItemSpecs.contains(descItemSpec)) {
                 throw new IllegalStateException("Specifikace neodpovídá typu hodnoty atributu");
             }
@@ -526,7 +505,7 @@ public class DescriptionItemService {
         if (moveAfter) {
             // načtení hodnot, které je potřeba přesunout výš
             List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
-                    descItem.getDescItemType(),
+                    descItem.getItemType(),
                     descItem.getNode(),
                     descItem.getPosition());
 
@@ -899,7 +878,7 @@ public class DescriptionItemService {
                 ArrDescItem descItemNew = descItemOrig.getClass().newInstance();
                 BeanUtils.copyProperties(descItemOrig, descItemNew);
                 copyPropertiesSubclass(descItem, descItemNew, ArrDescItem.class);
-                descItemNew.setDescItemSpec(descItem.getDescItemSpec());
+                descItemNew.setItemSpec(descItem.getItemSpec());
 
                 descItemOrig.setDeleteChange(change);
                 descItemNew.setDescItemId(null);
@@ -913,7 +892,7 @@ public class DescriptionItemService {
             }
         } else {
             copyPropertiesSubclass(descItem, descItemOrig, ArrDescItem.class);
-            descItemOrig.setDescItemSpec(descItem.getDescItemSpec());
+            descItemOrig.setItemSpec(descItem.getItemSpec());
             descItemUpdated = descItemFactory.saveDescItemWithData(descItemOrig, false);
         }
 
@@ -926,7 +905,7 @@ public class DescriptionItemService {
 
     public Map<Integer, Map<String, TitleValues>> createNodeValuesMap(final Set<Integer> subtreeNodeIds,
                                                                      @Nullable final TreeNode subtreeRoot,
-                                                                     Set<RulDescItemType> descItemTypes,
+                                                                     Set<RulItemType> descItemTypes,
                                                                      ArrFundVersion version) {
         Map<Integer, Map<String, TitleValues>> valueMap = new HashMap<>();
 
@@ -952,8 +931,8 @@ public class DescriptionItemService {
         for (ArrData data : dataList) {
 
             TitleValue value = null;
-            String code = data.getDescItem().getDescItemType().getCode();
-            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
+            String code = data.getDescItem().getItemType().getCode();
+            String specCode = data.getDescItem().getItemSpec() == null ? null : data.getDescItem().getItemSpec()
                     .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
             Integer position = data.getDescItem().getPosition();
@@ -1007,10 +986,10 @@ public class DescriptionItemService {
 
         List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, version);
         for (ArrData data : enumData) {
-            TitleValue value = new TitleValue(data.getDescItem().getDescItemSpec().getName());
+            TitleValue value = new TitleValue(data.getDescItem().getItemSpec().getName());
             String iconValue = getIconValue(data);
-            String code = data.getDescItem().getDescItemType().getCode();
-            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
+            String code = data.getDescItem().getItemType().getCode();
+            String specCode = data.getDescItem().getItemSpec() == null ? null : data.getDescItem().getItemSpec()
                     .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
             Integer position = data.getDescItem().getPosition();
@@ -1022,8 +1001,8 @@ public class DescriptionItemService {
         for (ArrDataPartyRef data : partyData) {
             TitleValue value = new TitleValue(data.getParty().getRecord().getRecord());
             String iconValue = getIconValue(data);
-            String code = data.getDescItem().getDescItemType().getCode();
-            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
+            String code = data.getDescItem().getItemType().getCode();
+            String specCode = data.getDescItem().getItemSpec() == null ? null : data.getDescItem().getItemSpec()
                     .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
             Integer position = data.getDescItem().getPosition();
@@ -1035,8 +1014,8 @@ public class DescriptionItemService {
         for (ArrDataRecordRef data : recordData) {
             TitleValue value = new TitleValue(data.getRecord().getRecord());
             String iconValue = getIconValue(data);
-            String code = data.getDescItem().getDescItemType().getCode();
-            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
+            String code = data.getDescItem().getItemType().getCode();
+            String specCode = data.getDescItem().getItemSpec() == null ? null : data.getDescItem().getItemSpec()
                     .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
             Integer position = data.getDescItem().getPosition();
@@ -1055,8 +1034,8 @@ public class DescriptionItemService {
                 value = new TitleValue(packetType.getName() + ": " + packet.getStorageNumber());
             }
             String iconValue = getIconValue(data);
-            String code = data.getDescItem().getDescItemType().getCode();
-            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
+            String code = data.getDescItem().getItemType().getCode();
+            String specCode = data.getDescItem().getItemSpec() == null ? null : data.getDescItem().getItemSpec()
                     .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
             Integer position = data.getDescItem().getPosition();
@@ -1097,8 +1076,8 @@ public class DescriptionItemService {
 
 
     private String getIconValue(ArrData data) {
-        if (data.getDescItem().getDescItemSpec() != null) {
-            return data.getDescItem().getDescItemSpec().getCode();
+        if (data.getDescItem().getItemSpec() != null) {
+            return data.getDescItem().getItemSpec().getCode();
         }
         return null;
     }
@@ -1115,9 +1094,9 @@ public class DescriptionItemService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void replaceDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
-                                      final RulDescItemType descItemType,
+                                      final RulItemType descItemType,
                                       final Set<ArrNode> nodes,
-                                      final Set<RulDescItemSpec> specifications, final String findText,
+                                      final Set<RulItemSpec> specifications, final String findText,
                                       final String replaceText) {
         Assert.notNull(version);
         Assert.notNull(descItemType);
@@ -1143,7 +1122,7 @@ public class DescriptionItemService {
         }
     }
 
-    public Class<? extends ArrData> getDescItemDataTypeClass(final RulDescItemType descItemType) {
+    public Class<? extends ArrData> getDescItemDataTypeClass(final RulItemType descItemType) {
         switch (descItemType.getDataType().getCode()) {
             case "INT":
                 return ArrDataInteger.class;
@@ -1179,7 +1158,7 @@ public class DescriptionItemService {
      * @param descItemType typ atributu
      * @return konkrétní instance
      */
-    private ArrData createDataByType(final RulDescItemType descItemType) {
+    private ArrData createDataByType(final RulItemType descItemType) {
         Class<? extends ArrData> dataTypeClass = getDescItemDataTypeClass(descItemType);
         try {
             return dataTypeClass.newInstance();
@@ -1199,10 +1178,10 @@ public class DescriptionItemService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void placeDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
-                                    final RulDescItemType descItemType,
+                                    final RulItemType descItemType,
                                     final Set<ArrNode> nodes,
-                                    final RulDescItemSpec newItemSpecification,
-                                    final Set<RulDescItemSpec> specifications, final String text) {
+                                    final RulItemSpec newItemSpecification,
+                                    final Set<RulItemSpec> specifications, final String text) {
         Assert.hasText(text);
         Assert.isTrue(!descItemType.getUseSpecification() || newItemSpecification != null);
         if (descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)) {
@@ -1242,8 +1221,8 @@ public class DescriptionItemService {
 
             ArrDescItem newDescItem = new ArrDescItem();
             newDescItem.setNode(dbNode);
-            newDescItem.setDescItemType(descItemType);
-            newDescItem.setDescItemSpec(newItemSpecification);
+            newDescItem.setItemType(descItemType);
+            newDescItem.setItemSpec(newItemSpecification);
             newDescItem.setCreateChange(change);
             newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
             newDescItem.setPosition(1);
@@ -1290,7 +1269,7 @@ public class DescriptionItemService {
         ArrData newData = createCopyDescItemData(data, newDescItem);
 
 
-        switch (data.getDescItem().getDescItemType().getDataType().getCode()) {
+        switch (data.getDescItem().getItemType().getDataType().getCode()) {
             case "STRING":
                 ArrDataString oldStringData = (ArrDataString) data;
 
@@ -1306,7 +1285,7 @@ public class DescriptionItemService {
 
             default:
                 throw new IllegalStateException(
-                        "Zatím není implementováno pro kod " + data.getDescItem().getDescItemType().getCode());
+                        "Zatím není implementováno pro kod " + data.getDescItem().getItemType().getCode());
         }
 
         dataRepository.save(newData);
@@ -1323,9 +1302,9 @@ public class DescriptionItemService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deleteDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
-                                     final RulDescItemType descItemType,
+                                     final RulItemType descItemType,
                                      final Set<ArrNode> nodes,
-                                     final Set<RulDescItemSpec> specifications) {
+                                     final Set<RulItemSpec> specifications) {
         Assert.notNull(version);
         Assert.notNull(descItemType);
         if (descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)) {
@@ -1372,7 +1351,7 @@ public class DescriptionItemService {
     private int getMaxPosition(final ArrDescItem descItem) {
         int maxPosition = 0;
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
-                descItem.getDescItemType(),
+                descItem.getItemType(),
                 descItem.getNode(),
                 0);
         for (ArrDescItem item : descItems) {
@@ -1395,7 +1374,7 @@ public class DescriptionItemService {
                                                            final Integer positionFrom,
                                                            final Integer positionTo) {
 
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsBetweenPositions(descItem.getDescItemType(),
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsBetweenPositions(descItem.getItemType(),
                 descItem.getNode(), positionFrom, positionTo);
 
         return descItems;

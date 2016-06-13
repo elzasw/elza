@@ -18,20 +18,20 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
- * Vazební tabulka mezi entitami {@link RegRegisterType} a {@link RulDescItemSpec}.
+ * Vazební tabulka mezi entitami {@link RegRegisterType} a {@link RulItemSpec}.
  *
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  * @since 21.10.2015
  */
-@Entity(name = "rul_desc_item_spec_register")
+@Entity(name = "rul_item_spec_register")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulDescItemSpecRegister implements  cz.tacr.elza.api.RulDescItemSpecRegister<RegRegisterType, RulDescItemSpec> {
+public class RulItemSpecRegister implements cz.tacr.elza.api.RulItemSpecRegister<RegRegisterType, RulItemSpec> {
 
     @Id
     @GeneratedValue
-    private Integer descItemSpecRegisterId;
+    private Integer itemSpecRegisterId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRegisterType.class)
@@ -39,18 +39,16 @@ public class RulDescItemSpecRegister implements  cz.tacr.elza.api.RulDescItemSpe
     private RegRegisterType registerType;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDescItemSpec.class)
-    @JoinColumn(name = "descItemSpecId", nullable = true)
-    private RulDescItemSpec descItemSpec;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemSpec.class)
+    @JoinColumn(name = "itemSpecId", nullable = true)
+    private RulItemSpec itemSpec;
 
-    @Override
-    public Integer getDescItemSpecRegisterId() {
-        return descItemSpecRegisterId;
+    public Integer getItemSpecRegisterId() {
+        return itemSpecRegisterId;
     }
 
-    @Override
-    public void setDescItemSpecRegisterId(Integer descItemSpecRegisterId) {
-        this.descItemSpecRegisterId = descItemSpecRegisterId;
+    public void setItemSpecRegisterId(Integer descItemSpecRegisterId) {
+        this.itemSpecRegisterId = descItemSpecRegisterId;
     }
 
     @Override
@@ -63,37 +61,35 @@ public class RulDescItemSpecRegister implements  cz.tacr.elza.api.RulDescItemSpe
         this.registerType = registerType;
     }
 
-    @Override
-    public RulDescItemSpec getDescItemSpec() {
-        return descItemSpec;
+    public RulItemSpec getItemSpec() {
+        return itemSpec;
     }
 
-    @Override
-    public void setDescItemSpec(RulDescItemSpec descItemSpec) {
-        this.descItemSpec = descItemSpec;
+    public void setItemSpec(RulItemSpec descItemSpec) {
+        this.itemSpec = descItemSpec;
     }
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof RulDescItemSpecRegister)) {
+        if (!(obj instanceof RulItemSpecRegister)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        cz.tacr.elza.api.RulDescItemSpecRegister other = (cz.tacr.elza.api.RulDescItemSpecRegister) obj;
+        cz.tacr.elza.api.RulItemSpecRegister other = (cz.tacr.elza.api.RulItemSpecRegister) obj;
 
-        return new EqualsBuilder().append(descItemSpecRegisterId, other.getDescItemSpecRegisterId()).isEquals();
+        return new EqualsBuilder().append(itemSpecRegisterId, other.getItemSpecRegisterId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(descItemSpecRegisterId).toHashCode();
+        return new HashCodeBuilder().append(itemSpecRegisterId).toHashCode();
     }
 
     @Override
     public String toString() {
-        return "RulDescItemSpecRegister pk=" + descItemSpecRegisterId;
+        return "RulItemSpecRegister pk=" + itemSpecRegisterId;
     }
 }

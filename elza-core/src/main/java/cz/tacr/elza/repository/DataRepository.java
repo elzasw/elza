@@ -23,16 +23,16 @@ public interface DataRepository extends JpaRepository<ArrData, Integer>, DataRep
     @Query(value = "SELECT d FROM arr_data d join fetch d.descItem i "
             + "left join fetch i.createChange cc "
             + "left join fetch i.deleteChange dc "
-            + "left join fetch i.descItemType it "
-            + "left join fetch i.descItemSpec dis "
+            + "left join fetch i.itemType it "
+            + "left join fetch i.itemSpec dis "
             + "WHERE i.node = ?1 and i.deleteChange is null")
     List<ArrData> findByNodeAndDeleteChangeIsNull(ArrNode node);
 
     @Query(value = "SELECT d FROM arr_data d join fetch d.descItem i "
             + "left join fetch i.createChange cc "
             + "left join fetch i.deleteChange dc "
-            + "left join fetch i.descItemType it "
-            + "left join fetch i.descItemSpec dis "
+            + "left join fetch i.itemType it "
+            + "left join fetch i.itemSpec dis "
             + "WHERE i.node in (?1) and i.deleteChange is null")
     List<ArrData> findByNodesAndDeleteChangeIsNull(Collection<ArrNode> nodes);
 
