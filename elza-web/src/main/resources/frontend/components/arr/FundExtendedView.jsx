@@ -117,7 +117,7 @@ var FundExtendedView = class FundExtendedView extends AbstractReactComponent {
     }
 
     render() {
-        const {fund, descItemTypes, calendarTypes, packetTypes, rulDataTypes} = this.props;
+        const {fund, descItemTypes, ruleSet, calendarTypes, packetTypes, rulDataTypes} = this.props;
 
         var tabContent = [];
         var tabContentClassName;
@@ -143,6 +143,7 @@ var FundExtendedView = class FundExtendedView extends AbstractReactComponent {
                     packetTypes={packetTypes}
                     calendarTypes={calendarTypes}
                     rulDataTypes={rulDataTypes}
+                    ruleSet={ruleSet}
                 />
             )
         } else if (this.state.selectedTabItem.id == 2) {
@@ -201,6 +202,7 @@ FundExtendedView.propTypes = {
     packetTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
+    ruleSet: React.PropTypes.object.isRequired,
 }
 
 module.exports = connect()(FundExtendedView);

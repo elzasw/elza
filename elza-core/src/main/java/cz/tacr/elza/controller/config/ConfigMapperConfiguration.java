@@ -12,6 +12,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
+import cz.tacr.elza.service.RuleService;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -61,6 +62,8 @@ public class ConfigMapperConfiguration {
     private PartyRepository partyRepository;
     @Autowired
     private RegRecordRepository recordRepository;
+    @Autowired
+    private RuleService ruleService;
 
     /**
      * @return Tovární třída.
@@ -608,7 +611,18 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(RulPacketType.class, RulPacketTypeVO.class).byDefault().field("packetTypeId", "id").register();
 
-        mapperFactory.classMap(RulRuleSet.class, RulRuleSetVO.class).byDefault().field("ruleSetId", "id").register();
+        mapperFactory.classMap(RulRuleSet.class, RulRuleSetVO.class)
+                .byDefault()
+                .field("ruleSetId", "id")
+                .customize(new CustomMapper<RulRuleSet, RulRuleSetVO>() {
+                    @Override
+                    public void mapAtoB(final RulRuleSet rulRuleSet, final RulRuleSetVO rulRuleSetVO, final MappingContext context) {
+                        super.mapAtoB(rulRuleSet, rulRuleSetVO, context);
+                        rulRuleSetVO.setItemTypeCodes(ruleService.getDefaultItemTypeCodes(rulRuleSet));
+                    }
+                })
+                .register();
+
         mapperFactory.classMap(RulPolicyType.class, RulPolicyTypeVO.class).byDefault().field("policyTypeId", "id").register();
 
         mapperFactory.classMap(ScenarioOfNewLevel.class, ScenarioOfNewLevelVO.class).byDefault().register();

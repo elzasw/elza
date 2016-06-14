@@ -4,6 +4,7 @@ import subNodeForm from './subNodeForm.jsx'
 import {isSubNodeFormAction} from 'actions/arr/subNodeForm.jsx'
 
 const initialState = {
+    initialised: false, // jestli byl prvotně inicializován, např. seznam zobrazovaných sloupců atp.
     isFetchingFilter: false,
     fetchedFilter: false,
     isFetchingData: false,
@@ -30,9 +31,9 @@ const initialState = {
     searchedCurrentIndex: 0,    // index aktuálně vybrané položky ve výsledcích hledání
     cellFocus: {row: 0, col: 0},
 }
-new Array("4", "5", "8", "9", "11", "14", "17", "38", "42", "44", "50", "53").forEach(a => {
-    initialState.visibleColumns[a] = true
-});
+// new Array("4", "5", "8", "9", "11", "14", "17", "38", "42", "44", "50", "53").forEach(a => {
+//     initialState.visibleColumns[a] = true
+// });
 
 function changeSearchedIndex(state, newIndex) {
     if (state.searchedItems.length === 0) {
@@ -91,15 +92,32 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 cellFocus: {row: 0, col: 0},
             }
         case types.STORE_SAVE:
-            const {pageSize, pageIndex, filter, visibleColumns, columnsOrder, columnInfos} = state;
+            const {pageSize, initialised, pageIndex, filter, visibleColumns, columnsOrder, columnInfos} = state;
 
             return {
+                initialised,
                 pageSize,
                 pageIndex,
                 filter,
                 visibleColumns,
                 columnsOrder,
                 columnInfos,
+            }
+        case types.FUND_FUND_DATA_GRID_INIT:
+            var visibleColumns = {}
+            action.initData.visibleColumns.forEach(id => {
+                visibleColumns[id] = true;
+            })
+
+            return {
+                ...state,
+                initialised: true,
+                visibleColumns: visibleColumns,
+                currentDataKey: '',
+                isFetchingFilter: false,
+                fetchedFilter: false,
+                isFetchingData: false,
+                fetchedData: false,
             }
         case types.FUND_FUND_DATA_GRID_CHANGE_SELECTED_ROW_INDEXES:
             return {

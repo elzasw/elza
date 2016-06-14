@@ -1,5 +1,48 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.api.vo.NodeTypeOperation;
+import cz.tacr.elza.api.vo.RelatedNodeDirection;
+import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
+import cz.tacr.elza.config.ConfigRules;
+import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemSpecExt;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.DataValidationResult;
+import cz.tacr.elza.drools.RulesExecutor;
+import cz.tacr.elza.exception.LockVersionChangeException;
+import cz.tacr.elza.repository.DefaultItemTypeRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.utils.ObjectListIterator;
+import cz.tacr.elza.validation.ArrDescItemsPostValidator;
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,38 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.validation.ArrDescItemsPostValidator;
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.config.ConfigRules;
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.api.vo.NodeTypeOperation;
-import cz.tacr.elza.api.vo.RelatedNodeDirection;
-import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.vo.DataValidationResult;
-import cz.tacr.elza.drools.RulesExecutor;
-import cz.tacr.elza.exception.LockVersionChangeException;
-import cz.tacr.elza.repository.DescItemSpecRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.utils.ObjectListIterator;
 
 
 /**
@@ -84,7 +95,8 @@ public class RuleService {
     private DescItemSpecRepository descItemSpecRepository;
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
-
+    @Autowired
+    private DefaultItemTypeRepository defaultItemTypeRepository;
     @Autowired
     private ArrDescItemsPostValidator descItemsPostValidator;
 
@@ -494,6 +506,16 @@ public class RuleService {
             }
         }
         return rulDescItemTypeExtList;
+    }
+
+    /**
+     * Načtení seznamu kódů atributů - implicitní atributy pro zobrazení tabulky hromadných akcí, seznam je seřazený podle
+     * pořadí, které jedefinováno u atributů.
+     * @param ruleSet pravidla
+     * @return seznam kódů
+     */
+    public List<String> getDefaultItemTypeCodes(final RulRuleSet ruleSet) {
+        return defaultItemTypeRepository.findItemTypeCodes(ruleSet);
     }
 
     /**

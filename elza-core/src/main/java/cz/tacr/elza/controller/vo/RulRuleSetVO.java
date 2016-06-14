@@ -1,11 +1,10 @@
 package cz.tacr.elza.controller.vo;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+
+import java.util.List;
 
 
 /**
@@ -21,6 +20,9 @@ public class RulRuleSetVO {
     private String code;
 
     private String name;
+
+    /** Kódy atributů pro zobrazení v gridu hromadných úprav - jaké jsou implicitní atributy a jaké je jejich pořadí. */
+    private List<String> itemTypeCodes;
 
     public Integer getId() {
         return id;
@@ -59,5 +61,13 @@ public class RulRuleSetVO {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
+    }
+
+    public List<String> getItemTypeCodes() {
+        return itemTypeCodes;
+    }
+
+    public void setItemTypeCodes(List<String> itemTypeCodes) {
+        this.itemTypeCodes = itemTypeCodes;
     }
 }

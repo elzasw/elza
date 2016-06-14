@@ -629,7 +629,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     render() {
-        const {focus, splitter, arrRegion, userDetail, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+        const {focus, splitter, arrRegion, userDetail, ruleSet, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
 
         var showRegisterJp = arrRegion.showRegisterJp;
 
@@ -661,6 +661,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                             packetTypes={packetTypes}
                             calendarTypes={calendarTypes}
                             rulDataTypes={rulDataTypes}
+                            ruleSet={ruleSet}
                         />
                     )
                 } else if (activeFund.nodes) {
@@ -728,6 +729,7 @@ function mapStateToProps(state) {
         calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
         packetTypes: refTables.packetTypes,
+        ruleSet: refTables.ruleSet,
     }
 }
 
@@ -741,6 +743,7 @@ ArrPage.propTypes = {
     packetTypes: React.PropTypes.object.isRequired,
     focus: React.PropTypes.object.isRequired,
     userDetail: React.PropTypes.object.isRequired,
+    ruleSet: React.PropTypes.object.isRequired,
 }
 
 ArrPage.childContextTypes = {
