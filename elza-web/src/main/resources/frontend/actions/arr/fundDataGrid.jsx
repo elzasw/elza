@@ -12,6 +12,7 @@ export const FILTER_NULL_VALUE = "____$<NULL>$___"
 
 export function isFundDataGridAction(action) {
     switch (action.type) {
+        case types.FUND_FUND_DATA_GRID_INIT:
         case types.FUND_FUND_DATA_GRID_FILTER:
         case types.FUND_FUND_DATA_GRID_FILTER_REQUEST:
         case types.FUND_FUND_DATA_GRID_FILTER_RECEIVE:
@@ -59,21 +60,30 @@ export function fundBulkModifications(versionId, descItemTypeId, specsIds, opera
     }
 }
 
+export function fundDataInitIfNeeded(versionId, initData) {
+    return (dispatch, getState) => {
+        console.log("######################")
+        const fundDataGrid = getFundDataGrid(getState, versionId)
+        if (fundDataGrid && !fundDataGrid.initialised) {
+            dispatch({
+                type: types.FUND_FUND_DATA_GRID_INIT,
+                versionId,
+                initData,
+            })
+        }
+    }
+}
+
 export function fundDataFulltextSearch(versionId, filterText) {
     return (dispatch, getState) => {
         if (filterText !== '') {
-            const state = getState();
-            const fund = objectById(state.arrRegion.funds, versionId, 'versionId')
-            if (!fund) {
-                return
+            const fundDataGrid = getFundDataGrid(getState, versionId)
+            if (fundDataGrid) {
+                WebApi.getFilteredFulltextNodes(versionId, filterText, fundDataGrid.searchExtended)
+                    .then(json => {
+                        dispatch(fundDataFulltextSearchResult(versionId, filterText, json))
+                    })
             }
-
-            const fundDataGrid = fund.fundDataGrid
-
-            WebApi.getFilteredFulltextNodes(versionId, filterText, fundDataGrid.searchExtended)
-                .then(json => {
-                    dispatch(fundDataFulltextSearchResult(versionId, filterText, json))
-                })
         }
     }
 }
@@ -131,16 +141,21 @@ export function fundDataFulltextNextItem(versionId) {
     }
 }
 
+function getFundDataGrid(getState, versionId) {
+    const state = getState();
+    const fund = objectById(state.arrRegion.funds, versionId, 'versionId')
+    if (!fund) {
+        return null
+    }
+
+    const fundDataGrid = fund.fundDataGrid
+    return fundDataGrid;
+}
+
 export function fundDataGridFetchFilterIfNeeded(versionId) {
     return (dispatch, getState) => {
-        const state = getState();
-        const fund = objectById(state.arrRegion.funds, versionId, 'versionId')
-        if (!fund) {
-            return
-        }
-
-        const fundDataGrid = fund.fundDataGrid
-        if (!fundDataGrid.fetchedFilter && !fundDataGrid.isFetchingFilter) {
+        const fundDataGrid = getFundDataGrid(getState, versionId)
+        if (fundDataGrid && !fundDataGrid.fetchedFilter && !fundDataGrid.isFetchingFilter) {
             dispatch(fundDataGridFilter(versionId, fundDataGrid.filter))
         }
     }
@@ -200,13 +215,11 @@ export function fundDataGridFilterChange(versionId, descItemTypeId, filter) {
 
 export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
     return (dispatch, getState) => {
-        const state = getState();
-        const fund = objectById(state.arrRegion.funds, versionId, 'versionId')
-        if (!fund) {
+        const fundDataGrid = getFundDataGrid(getState, versionId)
+        if (!fundDataGrid) {
             return
         }
 
-        const fundDataGrid = fund.fundDataGrid
         if (!fundDataGrid.fetchedFilter || fundDataGrid.isFetchingFilter) {  // již musí být načtený filtr
             return
         }
@@ -217,9 +230,9 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
 
             WebApi.getFilteredNodes(versionId, pageIndex, pageSize, Object.keys(fundDataGrid.visibleColumns)).then(nodes => {
                 const newState = getState();
-                const newFund = objectById(state.arrRegion.funds, versionId, 'versionId')
+                const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId')
                 if (newFund !== null) {
-                    const newFundDataGrid = fund.fundDataGrid
+                    const newFundDataGrid = newFund.fundDataGrid
                     const newDataKey = _fundDataGridKey(newFundDataGrid)
 
                     if (newDataKey === dataKey) {   // ještě je pořád v tom stavu, pro jaký se načítala data

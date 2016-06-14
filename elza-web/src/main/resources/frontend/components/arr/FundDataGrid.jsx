@@ -39,11 +39,13 @@ import {
     fundDataChangeCellFocus,
     fundDataChangeRowIndexes,
     fundDataFulltextClear,
-    fundDataFulltextExtended
+    fundDataFulltextExtended,
+    fundDataInitIfNeeded
 } from 'actions/arr/fundDataGrid.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
+import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {fundSubNodeFormHandleClose} from 'actions/arr/subNodeForm.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
@@ -62,7 +64,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             'handleBulkModifications', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer', 'resizeGrid', 'handleFilterClearAll',
             'handleFilterUpdateData', 'handleContextMenu', 'handleSelectInNewTab', 'handleSelectInTab', 'handleEdit', 'handleEditClose',
             'handleFulltextSearch', 'handleFulltextChange', 'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleChangeFocus',
-            'handleToggleExtendedSearch', 'handleChangeRowIndexes');
+            'handleToggleExtendedSearch', 'handleChangeRowIndexes', 'fetchData');
 
         var colState = this.getColsStateFromProps(props, {fundDataGrid: {}})
         if (!colState) {
@@ -75,25 +77,35 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        const {fundDataGrid, versionId} = this.props;
-        //this.requestFundTreeData(versionId, expandedIds, selectedId);
-        this.dispatch(descItemTypesFetchIfNeeded())
-        this.dispatch(packetTypesFetchIfNeeded())
-        this.dispatch(refRulDataTypesFetchIfNeeded())
-        this.dispatch(fundDataGridFetchFilterIfNeeded(versionId))
-        this.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize))
+        this.fetchData(this.props)
 
         this.setState({}, this.resizeGrid)
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {fundDataGrid, versionId, descItemTypes} = nextProps;
-        //this.requestFundTreeData(versionId, expandedIds, selectedId);
+    fetchData(props) {
+        const {fundDataGrid, descItemTypes, fund, versionId, ruleSet} = props;
         this.dispatch(descItemTypesFetchIfNeeded())
         this.dispatch(packetTypesFetchIfNeeded())
         this.dispatch(refRulDataTypesFetchIfNeeded())
         this.dispatch(fundDataGridFetchFilterIfNeeded(versionId))
         this.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize))
+        this.dispatch(refRuleSetFetchIfNeeded())
+        if (ruleSet.fetched && descItemTypes.fetched && fund.activeVersion) {
+            var initData = { visibleColumns: [] }
+            var ruleMap = getMapFromList(ruleSet.items);
+            var rule = ruleMap[fund.activeVersion.ruleSetId];
+            var codeSet = getSetFromIdsList(rule.itemTypeCodes);
+            descItemTypes.items.forEach(item => {
+                if (codeSet[item.code]) {
+                    initData.visibleColumns.push(item.id);
+                }
+            })
+            this.dispatch(fundDataInitIfNeeded(versionId, initData));
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.fetchData(nextProps)
 
         var colState = this.getColsStateFromProps(nextProps, this.props)
         if (!colState) {
@@ -216,6 +228,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                 || props.rulDataTypes !== rulDataTypes
                 || props.fundDataGrid.columnInfos !== fundDataGrid.columnInfos
                 || props.fundDataGrid.filter !== fundDataGrid.filter
+                || props.fundDataGrid.visibleColumns !== fundDataGrid.visibleColumns
             ) {
                 const cols = this.buildColumns(fundDataGrid, descItemTypes, rulDataTypes)
                 return {cols: cols}
@@ -229,14 +242,14 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             return true;
         }
 
-        var eqProps = ['versionId', 'descItemTypes', 'packetTypes', 'rulDataTypes']
+        var eqProps = ['versionId', 'descItemTypes', 'ruleSet', 'packetTypes', 'rulDataTypes']
         if (!propsEquals(this.props, nextProps, eqProps)) {
             return true
         }
 
         var eqProps2 = [
             'isFetchingFilter', 'fetchedFilter', 'isFetchingData', 'fetchedData', 'pageSize', 'pageIndex',
-            'items', 'itemsCount', 'filter', 'visibleColumns', 'columnsOrder', 'columnInfos', 'selectedIds'
+            'items', 'itemsCount', 'filter', 'visibleColumns', 'initialised', 'columnsOrder', 'columnInfos', 'selectedIds'
         ]
         if (!propsEquals(this.props.fundDataGrid, nextProps.fundDataGrid, eqProps2)) {
             return true
@@ -610,7 +623,8 @@ FundDataGrid.propTypes = {
     fund: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,
-    packetTypes: React.PropTypes.object.isRequired
+    packetTypes: React.PropTypes.object.isRequired,
+    ruleSet: React.PropTypes.object.isRequired,
 };
 
 function mapStateToProps(state) {

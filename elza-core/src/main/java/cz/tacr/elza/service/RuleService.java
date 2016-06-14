@@ -64,7 +64,8 @@ public class RuleService {
     private ItemSpecRepository itemSpecRepository;
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
-
+    @Autowired
+    private DefaultItemTypeRepository defaultItemTypeRepository;
     @Autowired
     private ArrDescItemsPostValidator descItemsPostValidator;
 
@@ -474,6 +475,16 @@ public class RuleService {
             }
         }
         return rulDescItemTypeExtList;
+    }
+
+    /**
+     * Načtení seznamu kódů atributů - implicitní atributy pro zobrazení tabulky hromadných akcí, seznam je seřazený podle
+     * pořadí, které jedefinováno u atributů.
+     * @param ruleSet pravidla
+     * @return seznam kódů
+     */
+    public List<String> getDefaultItemTypeCodes(final RulRuleSet ruleSet) {
+        return defaultItemTypeRepository.findItemTypeCodes(ruleSet);
     }
 
     /**
