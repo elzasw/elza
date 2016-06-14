@@ -8,7 +8,7 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.packageimport.PackageService;
