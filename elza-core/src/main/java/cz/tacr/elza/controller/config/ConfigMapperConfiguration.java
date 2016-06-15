@@ -693,6 +693,11 @@ public class ConfigMapperConfiguration {
                 .field("userId", "id")
                 .register();
 
+        mapperFactory.classMap(UsrGroup.class, GroupVO.class)
+                .byDefault()
+                .field("groupId", "id")
+                .register();
+
         mapperFactory.classMap(UserPermission.class, UserPermissionVO.class).byDefault().register();
     }
 

@@ -1,8 +1,10 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
@@ -21,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.sun.jmx.snmp.EnumRowStatus.active;
+
 /**
  * Serviska pro uživatele.
  *
@@ -32,6 +36,8 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private GroupRepository groupRepository;
     @Autowired
     private PermissionRepository permissionRepository;
 
@@ -196,5 +202,16 @@ public class UserService {
         }
 
         return userRepository.findUserByTextAndStateCount(search, active, disabled, firstResult, maxResults);
+    }
+
+    /**
+     * Hledání skupin na základě podmínek.
+     * @param search hledaný text
+     * @param firstResult od jakého záznamu
+     * @param maxResults maximální počet vrácených záznamů
+     * @return výsledky hledání
+     */
+    public FilteredResult<UsrGroup> findGroup(final String search, final Integer firstResult, final Integer maxResults) {
+        return groupRepository.findGroupByTextCount(search, firstResult, maxResults);
     }
 }

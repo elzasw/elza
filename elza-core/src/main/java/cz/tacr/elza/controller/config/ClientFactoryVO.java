@@ -1257,4 +1257,14 @@ public class ClientFactoryVO {
         outputExt.getOutputDefinition().setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
         return outputExt;
     }
+
+    /**
+     * Vytvoří seznam VO.
+     * @param groups vstupní seznam skupin
+     * @return seznam VO
+     */
+    public List<GroupVO> createGroupList(final List<UsrGroup> groups) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.mapAsList(groups, GroupVO.class);
+    }
 }

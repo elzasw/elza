@@ -2,8 +2,10 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.GroupVO;
 import cz.tacr.elza.controller.vo.UserDetailVO;
 import cz.tacr.elza.controller.vo.UserVO;
+import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.security.UserDetail;
@@ -69,4 +71,20 @@ public class UserController {
         return new FilteredResultVO<UserVO>(resultVo, users.getTotalCount());
     }
 
+    /**
+     * Načte seznam skupin.
+     * @param search hledaný řetězec
+     * @param from počáteční záznam
+     * @param count počet vrácených záznamů
+     * @return seznam s celkovým počtem
+     */
+    @RequestMapping(value = "/findGroup", method = RequestMethod.GET)
+    public FilteredResultVO<GroupVO> findGroup(@Nullable @RequestParam(value = "search", required = false) final String search,
+                                               @RequestParam("from") final Integer from,
+                                               @RequestParam("count") final Integer count
+    ) {
+        FilteredResult<UsrGroup> groups = userService.findGroup(search, from, count);
+        List<GroupVO> resultVo = factoryVO.createGroupList(groups.getList());
+        return new FilteredResultVO<GroupVO>(resultVo, groups.getTotalCount());
+    }
 }

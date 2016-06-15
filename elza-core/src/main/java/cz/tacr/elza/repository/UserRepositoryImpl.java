@@ -76,8 +76,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         if (condition != null) {
             Join party = user.join(UsrUser.PARTY, JoinType.INNER);
             Join record = party.join(ParParty.RECORD, JoinType.INNER);
-            Order order = builder.asc(record.get(RegRecord.RECORD));
-            query.where(condition).orderBy(order);
+            Order order1 = builder.asc(record.get(RegRecord.RECORD));
+            Order order2 = builder.asc(user.get(UsrUser.USERNAME));
+            query.where(condition).orderBy(order1, order2);
 
             queryCount.where(conditionCount);
         }

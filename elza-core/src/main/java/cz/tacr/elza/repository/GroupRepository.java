@@ -11,5 +11,5 @@ import org.springframework.stereotype.Repository;
  * @since 11.04.2016
  */
 @Repository
-public interface GroupRepository extends JpaRepository<UsrGroup, Integer> {
+public interface GroupRepository extends JpaRepository<UsrGroup, Integer>, GroupRepositoryCustom {
 }
