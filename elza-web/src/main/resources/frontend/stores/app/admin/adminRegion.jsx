@@ -6,7 +6,11 @@
  */
 import * as types from 'actions/constants/ActionTypes.js';
 import packages from './packages.jsx'
+import user from './user.jsx'
+import group from './group.jsx'
 import fulltext from './fulltext.jsx'
+import {isUserAction} from 'actions/admin/user.jsx'
+import {isGroupAction} from 'actions/admin/group.jsx'
 
 /**
  * Výchozí stav store
@@ -15,12 +19,25 @@ const initialState = {
 
     // seznam importovaných balíčků
     packages: packages(),
-    fulltext: fulltext()
+    fulltext: fulltext(),
+    user: user(),
+    group: group(),
 }
 
 export default function adminRegion(state = initialState, action = {}) {
-    switch (action.type) {
+    if (isUserAction(action)) {
+        return {
+            ...state,
+            user: user(state.user, action)
+        }
+    } else if (isGroupAction(action)) {
+        return {
+            ...state,
+            group: group(state.group, action)
+        }
+    }
 
+    switch (action.type) {
         case types.ADMIN_PACKAGES_REQUEST:
         case types.ADMIN_PACKAGES_RECEIVE:
         case types.ADMIN_PACKAGES_DELETE_RECEIVE:

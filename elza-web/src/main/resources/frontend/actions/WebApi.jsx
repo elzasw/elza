@@ -754,29 +754,16 @@ class WebApi{
     findFunds(fulltext, max=200) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFunds', {fulltext, max})
             .then(json => ({funds: json.list, fundCount: json.count}))
+    }
 
-        return new Promise(function (resolve, reject) {
-            var funds = [
-                {id: 1, name: 'Nazev 1', number: '111'},
-                {id: 2, name: 'Nazev 2', number: '222'},
-                {id: 3, name: 'Nazev 3', number: '333'},
-                {id: 4, name: 'Nazev 4', number: '444'},
-                {id: 5, name: 'Nazev 5', number: '555'},
-            ]
-
-            var ff = []
-            funds.forEach(f => {
-                if (f.name.toLowerCase().indexOf(fulltext.toLowerCase()) !== -1
-                    || f.number.toLowerCase().indexOf(fulltext.toLowerCase()) !== -1) {
-                    ff.push(f)
-                }
-            })
-
-            resolve({
-                fundCount: 500,
-                funds: ff,
-            })
-        })
+    findUser(fulltext, active, disabled, max=200) {
+        return AjaxUtils.ajaxGet('/api/user/findUser', {search: fulltext, active, disabled, from: 0, count: max})
+            .then(json => ({users: json.list, usersCount: json.totalCount}))
+    }
+    
+    findGroup(fulltext, max=200) {
+        return AjaxUtils.ajaxGet('/api/user/findGroup', {search: fulltext, from: 0, count: max})
+            .then(json => ({groups: json.list, groupsCount: json.totalCount}))
     }
 
     getFundDetail(fundId) {

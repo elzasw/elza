@@ -45,7 +45,7 @@ export function fundsFundDetailFetchIfNeeded() {
             WebApi.getFundDetail(fundDetail.id)
                 .then(json => {
                     var newState = getState();
-                    const newFundDetail = state.fundRegion.fundDetail;
+                    const newFundDetail = newState.fundRegion.fundDetail;
                     const newDataKey = _fundDetailDataKey(newFundDetail)
                     if (newDataKey === dataKey) {
                         dispatch(fundsFundDetailReceive(json))
@@ -69,7 +69,7 @@ export function fundsFetchIfNeeded() {
             WebApi.findFunds(fundRegion.filterText)
                 .then(json => {
                     var newState = getState();
-                    const newFundRegion = state.fundRegion;
+                    const newFundRegion = newState.fundRegion;
                     const newDataKey = _fundRegionDataKey(newFundRegion)
                     if (newDataKey === dataKey) {
                         dispatch(fundsReceive(json))

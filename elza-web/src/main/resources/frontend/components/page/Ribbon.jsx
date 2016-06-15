@@ -57,6 +57,12 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
             if (userDetail.hasOne(perms.FUND_ADMIN)) {
                 section = (
                     <RibbonGroup className="large">
+                        <LinkContainer to="/admin/user"><Button><Icon glyph="fa-user"/>
+                            <div><span className="btnText">{i18n('ribbon.action.admin.user')}</span></div>
+                        </Button></LinkContainer>
+                        <LinkContainer to="/admin/group"><Button><Icon glyph="fa-group"/>
+                            <div><span className="btnText">{i18n('ribbon.action.admin.group')}</span></div>
+                        </Button></LinkContainer>
                         <LinkContainer to="/admin/packages"><Button><Icon glyph="fa-archive"/>
                             <div><span className="btnText">{i18n('ribbon.action.admin.packages')}</span></div>
                         </Button></LinkContainer>

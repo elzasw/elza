@@ -72,6 +72,8 @@ var messages = {
     "ribbon.action.admin": "Administrace",
     "ribbon.action.admin.developer": "Developer mode",
     "ribbon.action.admin.packages": "Správa balíčků",
+    "ribbon.action.admin.user": "Uživatelé",
+    "ribbon.action.admin.group": "Skupiny",
     "ribbon.action.admin.fulltext": "Fulltext",
     "ribbon.action.admin.resetLocalStorage": "Smazat lokální cache",
     "ribbon.action.admin.resetLocalStorage.title": "Smaže historii posledně otevřených položek a uvede zobrazení aplikace do výchozího stavu",
