@@ -101,6 +101,16 @@ public class ClientFactoryVO {
     }
 
     /**
+     * Vytvoří seznam VO.
+     * @param users vstupní seznam uživatelů
+     * @return seznam VO
+     */
+    public List<UserVO> createUserList(final List<UsrUser> users) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.mapAsList(users, UserVO.class);
+    }
+
+    /**
      * Vytvoří detailní objekt osoby. Načte všechna navázaná data.
      *
      * @param party osoba

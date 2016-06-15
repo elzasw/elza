@@ -38,6 +38,12 @@ public class UsrUser implements cz.tacr.elza.api.UsrUser<ParParty>, Serializable
     @Column(length = 250)
     private String description;
 
+    /* Konstanty pro vazby a fieldy. */
+    public static final String PARTY = "party";
+    public static final String USERNAME = "username";
+    public static final String DESCRIPTION = "description";
+    public static final String ACTIVE = "active";
+
     @Override
     public Integer getUserId() {
         return userId;

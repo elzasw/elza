@@ -688,6 +688,11 @@ public class ConfigMapperConfiguration {
                 .field("userPermission", "userPermissions")
                 .register();
 
+        mapperFactory.classMap(UsrUser.class, UserVO.class)
+                .byDefault()
+                .field("userId", "id")
+                .register();
+
         mapperFactory.classMap(UserPermission.class, UserPermissionVO.class).byDefault().register();
     }
 

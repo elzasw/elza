@@ -1,11 +1,12 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.security.UserPermission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
@@ -31,7 +32,6 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private PermissionRepository permissionRepository;
 
@@ -179,5 +179,22 @@ public class UserService {
             }
         }
         return false;
+    }
+
+    /**
+     * Hledání uživatelů na základě podmínek.
+     * @param search hledaný text
+     * @param active aktivní uživatelé
+     * @param disabled zakázaní uživatelé
+     * @param firstResult od jakého záznamu
+     * @param maxResults maximální počet vrácených záznamů
+     * @return výsledky hledání
+     */
+    public FilteredResult<UsrUser> findUser(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults) {
+        if (!active && !disabled) {
+            throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
+        }
+
+        return userRepository.findUserByTextAndStateCount(search, active, disabled, firstResult, maxResults);
     }
 }
