@@ -8,6 +8,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Ribbon} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
+import {Input} from 'react-bootstrap';
 import {i18n, Search, ListBox, AbstractReactComponent} from 'components/index.jsx';
 import {usersFetchIfNeeded, usersSelectUser, usersSearch} from 'actions/admin/user.jsx'
 
@@ -21,6 +22,7 @@ var AdminUserPage = class AdminUserPage extends AbstractReactComponent{
             'renderListItem',
             'handleSearch',
             'handleSearchClear',
+            'handleFilterStateChange',
         );
     }
 
@@ -30,24 +32,27 @@ var AdminUserPage = class AdminUserPage extends AbstractReactComponent{
 
     componentDidMount() {
         this.dispatch(usersFetchIfNeeded())
-    }    
+    }
 
     handleSearch(filterText) {
         const {user} = this.props;
-        
         this.dispatch(usersSearch(filterText, user.filterState))
     }
 
     handleSearchClear() {
         const {user} = this.props;
-        
         this.dispatch(usersSearch('', user.filterState))
-    }    
-    
+    }
+
     buildRibbon() {
         return (
             <Ribbon admin {...this.props} />
         )
+    }
+
+    handleFilterStateChange(e) {
+        const {user} = this.props;
+        this.dispatch(usersSearch(user.filterText, {type: e.target.value}))
     }
 
     renderListItem(item) {
@@ -71,6 +76,10 @@ var AdminUserPage = class AdminUserPage extends AbstractReactComponent{
                     placeholder={i18n('search.input.search')}
                     value={user.filterText}
                 />
+                <Input type="select" value={user.filterState.type} onChange={this.handleFilterStateChange}>
+                    <option value="all">{i18n("admin.user.filter.all")}</option>
+                    <option value="onlyActive">{i18n("admin.user.filter.onlyActive")}</option>
+                </Input>
                 <ListBox
                     className='user-listbox'
                     ref='userList'

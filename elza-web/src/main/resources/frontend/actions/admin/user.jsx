@@ -41,7 +41,7 @@ export function usersFetchIfNeeded() {
             dispatch(usersRequest(dataKey))
 
             var active = true
-            var disabled = (user.filterState === "all")
+            var disabled = (user.filterState.type === "all")
 
             WebApi.findUser(user.filterText, active, disabled)
                 .then(json => {

@@ -469,6 +469,9 @@ var messages = {
     "admin.packages.message.delete.title": "Smazání balíčku",
     "admin.packages.message.delete.message": "Balíček {0} byl úspěšně smazán",
 
+    "admin.user.filter.all": "Všichni uživatlé",
+    "admin.user.filter.onlyActive": "Aktivní uživatelé",
+    
     "admin.fulltext.action.reindex": "Reindexovat",
 	"admin.fulltext.message.reindexing": "Probíhá reindexace...",
     "admin.fulltext.message.success": "Reindexace fulltextu dokončena",
