@@ -6,12 +6,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Oprávnění uživatele.
+ * Informace o oprávnění uživatele.
  *
  * @author Pavel Stánek
  * @since 27.04.2016
  */
-public class UserPermissionVO {
+public class UserPermissionInfoVO {
     /** Typ oprávnění. */
     private UsrPermission.Permission permission;
 

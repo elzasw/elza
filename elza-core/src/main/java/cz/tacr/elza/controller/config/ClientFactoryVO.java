@@ -63,6 +63,15 @@ public class ClientFactoryVO {
     private RegRecordRepository recordRepository;
 
     @Autowired
+    private PermissionRepository permissionRepository;
+
+    @Autowired
+    private GroupRepository groupRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private PartyRepository partyRepository;
 
     @Autowired
@@ -94,9 +103,9 @@ public class ClientFactoryVO {
      * @param userDetail detail objekt
      * @return detail VO objekt
      */
-    public UserDetailVO createUserDetail(final UserDetail userDetail) {
+    public UserInfoVO createUserInfo(final UserDetail userDetail) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        UserDetailVO result = mapper.map(userDetail, UserDetailVO.class);
+        UserInfoVO result = mapper.map(userDetail, UserInfoVO.class);
         return result;
     }
 
@@ -105,9 +114,9 @@ public class ClientFactoryVO {
      * @param users vstupní seznam uživatelů
      * @return seznam VO
      */
-    public List<UserVO> createUserList(final List<UsrUser> users) {
+    public List<UsrUserVO> createUserList(final List<UsrUser> users) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.mapAsList(users, UserVO.class);
+        return mapper.mapAsList(users, UsrUserVO.class);
     }
 
     /**
@@ -1261,10 +1270,70 @@ public class ClientFactoryVO {
     /**
      * Vytvoří seznam VO.
      * @param groups vstupní seznam skupin
+     * @param initPermissions mají se plnit oprávnění
+     * @param initUsers mají se plnit uživatelé?
      * @return seznam VO
      */
-    public List<GroupVO> createGroupList(final List<UsrGroup> groups) {
+    public List<UsrGroupVO> createGroupList(final List<UsrGroup> groups, final boolean initPermissions, final boolean initUsers) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.mapAsList(groups, GroupVO.class);
+        List<UsrGroupVO> result = new ArrayList<>();
+        for (UsrGroup group : groups) {
+            result.add(createGroup(group, initPermissions, initUsers));
+        }
+        return result;
+    }
+
+    /**
+     * Vytvoří seznam VO.
+     * @param permissions vstupní seznam oprávnění
+     * @return seznam VO
+     */
+    public List<UsrPermissionVO> createPermissionList(final List<UsrPermission> permissions) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.mapAsList(permissions, UsrPermissionVO.class);
+    }
+
+    /**
+     * Vytvoří VO uživatele s návaznými daty.
+     * @param user uživatel
+     * @return VO
+     */
+    public UsrUserVO createUser(final UsrUser user) {
+        // Hlavní objekt
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        UsrUserVO result = mapper.map(user, UsrUserVO.class);
+
+        // Načtení oprávnění
+        List<UsrPermission> permissions = permissionRepository.findByUser(user);
+        result.setPermissions(createPermissionList(permissions));
+
+        // Načtení členství ve skupinách
+        List<UsrGroup> groups = groupRepository.findByUser(user);
+        result.setGroups(createGroupList(groups, false, false));
+
+        return result;
+    }
+
+    /**
+     * Vytvoří VO skupiny s návaznými daty.
+     * @param group skupina
+     * @param initPermissions mají se plnit oprávnění
+     * @param initUsers mají se plnit uživatelé?
+     * @return VO
+     */
+    public UsrGroupVO createGroup(final UsrGroup group, final boolean initPermissions, final boolean initUsers) {
+        // Hlavní objekt
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        UsrGroupVO result = mapper.map(group, UsrGroupVO.class);
+
+        // Načtení oprávnění
+        List<UsrPermission> permissions = permissionRepository.findByGroup(group);
+        result.setPermissions(createPermissionList(permissions));
+
+        // Přiřazení uživatelé
+        List<UsrUser> users = userRepository.findByGroup(group);
+        result.setUsers(createUserList(users));
+
+        return result;
     }
 }

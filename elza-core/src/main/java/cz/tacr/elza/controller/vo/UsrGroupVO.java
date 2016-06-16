@@ -1,12 +1,14 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.List;
+
 /**
- * VO skupiny.
+ * VO skupiny oprávnění.
  *
  * @author Pavel Stánek
- * @since 15.06.2016
+ * @since 16.06.2016
  */
-public class GroupVO {
+public class UsrGroupVO {
     /** Identifikátor. */
     private Integer id;
     /** Kód. */
@@ -15,8 +17,11 @@ public class GroupVO {
     private String name;
     /** Popis. */
     private String description;
+    /** Oprávnění. */
+    private List<UsrPermissionVO> permissions;
+    /** Uživatelé přiřazení do skupiny. */
+    private List<UsrUserVO> users;
 
-    /** Identifikátor. */
     public Integer getId() {
         return id;
     }
@@ -25,16 +30,14 @@ public class GroupVO {
         this.id = id;
     }
 
-    /** Kód. */
     public String getCode() {
         return code;
     }
 
-    public void setCode(final String code) {
+    public void setCode(String code) {
         this.code = code;
     }
 
-    /** Název. */
     public String getName() {
         return name;
     }
@@ -43,12 +46,27 @@ public class GroupVO {
         this.name = name;
     }
 
-    /** Popis. */
     public String getDescription() {
         return description;
     }
 
     public void setDescription(final String description) {
         this.description = description;
+    }
+
+    public List<UsrPermissionVO> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(final List<UsrPermissionVO> permissions) {
+        this.permissions = permissions;
+    }
+
+    public List<UsrUserVO> getUsers() {
+        return users;
+    }
+
+    public void setUsers(final List<UsrUserVO> users) {
+        this.users = users;
     }
 }

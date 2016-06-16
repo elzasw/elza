@@ -1,10 +1,10 @@
 package cz.tacr.elza.repository;
 
-import java.io.Serializable;
-
-import org.hibernate.proxy.HibernateProxy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
+
+import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
 
 
 /**
@@ -24,32 +24,29 @@ public interface ElzaJpaRepository<T, ID extends Serializable> extends JpaReposi
      * @throws IllegalStateException objekt nebyl nalezen
      */
     default T getOneCheckExist(ID id) throws IllegalStateException {
-        T result = getOne(id);
-
+        T result = findOne(id);
 
         if (result == null) {
             throw new IllegalStateException("Nebyla nalezena entita v úložišti " + getClassName() + " s id " + id);
-        } else {
-            try {
-                if (result instanceof HibernateProxy) {
-                    HibernateProxy proxy = (HibernateProxy) result;
-
-                    //provedeme inicializaci, která nám zaručí existenci entity
-                    proxy.getHibernateLazyInitializer().initialize();
-                }
-            } catch (Exception e) {
-                throw new IllegalStateException("Nebyla nalezena entita " + getClassName() + " s id " + id);
-            }
         }
 
         return result;
     }
 
-
     /**
-     * Vrací název DO objektu.
+     * Vrací název DO objektu. Pokud v některých případech nebude fungovat automatické zjištění, je nutné v konkrétním
+     * repository tuto metodu překrýt.
      *
      * @return název DO objektu
      */
-    String getClassName();
+    default String getClassName() {
+        try {
+            // Načtení názvu entity z generic parametru rozhraní repository
+            ParameterizedType pt = (ParameterizedType) Class.forName(this.getClass().getGenericInterfaces()[0].getTypeName()).getGenericInterfaces()[0];
+            final String className = ((Class) pt.getActualTypeArguments()[0]).getSimpleName();
+            return className;
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Nelze automaticky zjistit název datového objektu, je nutné překrýt metodu getClassName!", e);
+        }
+    }
 }

@@ -683,22 +683,26 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(XmlImportConfig.class, XmlImportConfigVO.class).byDefault().register();
 
-        mapperFactory.classMap(UserDetail.class, UserDetailVO.class)
+        mapperFactory.classMap(UserDetail.class, UserInfoVO.class)
                 .byDefault()
                 .field("userPermission", "userPermissions")
                 .register();
+        mapperFactory.classMap(UserPermission.class, UserPermissionInfoVO.class)
+                .byDefault()
+                .register();
 
-        mapperFactory.classMap(UsrUser.class, UserVO.class)
+        mapperFactory.classMap(UsrUser.class, UsrUserVO.class)
                 .byDefault()
                 .field("userId", "id")
                 .register();
-
-        mapperFactory.classMap(UsrGroup.class, GroupVO.class)
+        mapperFactory.classMap(UsrGroup.class, UsrGroupVO.class)
                 .byDefault()
                 .field("groupId", "id")
                 .register();
-
-        mapperFactory.classMap(UserPermission.class, UserPermissionVO.class).byDefault().register();
+        mapperFactory.classMap(UsrPermission.class, UsrPermissionVO.class)
+                .byDefault()
+                .field("permissionId", "id")
+                .register();
     }
 
     /**

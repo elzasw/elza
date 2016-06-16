@@ -16,14 +16,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.sun.jmx.snmp.EnumRowStatus.active;
 
 /**
  * Serviska pro uživatele.
@@ -103,7 +102,7 @@ public class UserService {
     public Collection<UserPermission> calcUserPermission(final UsrUser user) {
         Map<UsrPermission.Permission, UserPermission> userPermissions = new HashMap<>();
 
-        List<UsrPermission> permissions = permissionRepository.getPermissions(user);
+        List<UsrPermission> permissions = permissionRepository.getAllPermissions(user);
 
         for (UsrPermission permission : permissions) {
             UserPermission userPermission = userPermissions.get(permission.getPermission());
@@ -213,5 +212,25 @@ public class UserService {
      */
     public FilteredResult<UsrGroup> findGroup(final String search, final Integer firstResult, final Integer maxResults) {
         return groupRepository.findGroupByTextCount(search, firstResult, maxResults);
+    }
+
+    /**
+     * Načtení objektu uživatele dle id.
+     * @param userId id
+     * @return objekt
+     */
+    public UsrUser getUser(final Integer userId) {
+        Assert.notNull(userId);
+        return userRepository.getOneCheckExist(userId);
+    }
+
+    /**
+     * Načtení objektu skupiny dle id.
+     * @param groupId id
+     * @return objekt
+     */
+    public UsrGroup getGroup(final Integer groupId) {
+        Assert.notNull(groupId);
+        return groupRepository.getOneCheckExist(groupId);
     }
 }

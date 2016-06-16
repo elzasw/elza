@@ -42,9 +42,17 @@ public class UsrPermission implements cz.tacr.elza.api.UsrPermission<UsrUser, Us
     @JoinColumn(name = "fundId")
     private ArrFund fund;
 
+    /** Slouží jen pro čtení. */
+    @Column(name = "fundId", updatable = false, insertable = false, nullable = false)
+    private Integer fundId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegScope.class)
     @JoinColumn(name = "scopeId")
     private RegScope scope;
+
+    /** Slouží jen pro čtení. */
+    @Column(name = "scopeId", updatable = false, insertable = false, nullable = false)
+    private Integer scopeId;
 
     @Override
     public Integer getPermissionId() {
@@ -94,6 +102,8 @@ public class UsrPermission implements cz.tacr.elza.api.UsrPermission<UsrUser, Us
     @Override
     public void setFund(final ArrFund fund) {
         this.fund = fund;
+        this.fundId = fund == null ? null : fund.getFundId();
+
     }
 
     @Override
@@ -104,5 +114,6 @@ public class UsrPermission implements cz.tacr.elza.api.UsrPermission<UsrUser, Us
     @Override
     public void setScope(final RegScope scope) {
         this.scope = scope;
+        this.scopeId = scope == null ? null : scope.getScopeId();
     }
 }

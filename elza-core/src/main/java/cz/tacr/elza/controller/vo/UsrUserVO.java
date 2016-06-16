@@ -1,12 +1,14 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.List;
+
 /**
  * Vo objekt uživatele, obsahuje informace o osobě.
  *
  * @author Pavel Stánek
  * @since 15.06.2016
  */
-public class UserVO {
+public class UsrUserVO {
     /** Uživatelské jméno. */
     private String username;
     /** Identifikátor uživatele. */
@@ -17,6 +19,10 @@ public class UserVO {
     private String description;
     /** Osoba. */
     private ParPartyVO party;
+    /** Oprávnění. */
+    private List<UsrPermissionVO> permissions;
+    /** Seznam skupin. */
+    private List<UsrGroupVO> groups;
 
     public String getUsername() {
         return username;
@@ -56,5 +62,21 @@ public class UserVO {
 
     public void setParty(final ParPartyVO party) {
         this.party = party;
+    }
+
+    public List<UsrPermissionVO> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(final List<UsrPermissionVO> permissions) {
+        this.permissions = permissions;
+    }
+
+    public List<UsrGroupVO> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(final List<UsrGroupVO> groups) {
+        this.groups = groups;
     }
 }

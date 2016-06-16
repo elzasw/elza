@@ -53,9 +53,4 @@ public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, P
      */
     @Query("SELECT c.creatorParty FROM par_creator c WHERE c.party = ?1 ORDER BY c.creatorId")
     List<ParParty> findCreatorsByParty(ParParty party);
-
-    @Override
-    default String getClassName() {
-        return ParParty.class.getSimpleName();
-    }
 }

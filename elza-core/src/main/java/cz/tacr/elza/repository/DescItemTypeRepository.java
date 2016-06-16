@@ -50,11 +50,6 @@ public interface DescItemTypeRepository extends ElzaJpaRepository<RulItemType, I
 
     RulItemType findOneByCode(String code);
 
-    @Override
-    default String getClassName() {
-        return RulItemType.class.getSimpleName();
-    }
-
     @Query(value = "SELECT t FROM rul_item_type t  WHERE t.code in (?1)")
     Set<RulItemType> findByCode(Set<String> descItemTypeCodes);
 }

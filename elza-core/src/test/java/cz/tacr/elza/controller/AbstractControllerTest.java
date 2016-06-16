@@ -2152,8 +2152,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @return detail přihlášeného uživatele
      */
-    protected UserDetailVO getUserDetail() {
-        return get(spec -> spec, USER_DETAIL).as(UserDetailVO.class);
+    protected UserInfoVO getUserDetail() {
+        return get(spec -> spec, USER_DETAIL).as(UserInfoVO.class);
     }
 
     /**

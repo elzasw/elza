@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.vo.UserDetailVO;
+import cz.tacr.elza.controller.vo.UserInfoVO;
 import org.junit.Test;
 import org.springframework.util.Assert;
 
@@ -13,7 +13,7 @@ public class UserControllerTest extends AbstractControllerTest {
 
     @Test
     public void userDetail() {
-        UserDetailVO userDetail = getUserDetail();
+        UserInfoVO userDetail = getUserDetail();
         Assert.notNull(userDetail);
         Assert.notNull(userDetail.getUsername());
         Assert.notEmpty(userDetail.getUserPermissions());

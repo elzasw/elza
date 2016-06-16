@@ -71,9 +71,4 @@ public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Intege
      * @return nalezená hesla
      */
     List<RegRecord> findByScope(RegScope scope);
-
-    @Override
-    default String getClassName() {
-        return RegRecord.class.getSimpleName();
-    }
 }

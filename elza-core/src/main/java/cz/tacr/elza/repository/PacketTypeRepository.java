@@ -1,10 +1,9 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
-
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPacketType;
+
+import java.util.List;
 
 /**
  * Repository pro typ obalu.
@@ -19,9 +18,4 @@ public interface PacketTypeRepository extends ElzaJpaRepository<RulPacketType, I
     void deleteByRulPackage(RulPackage rulPackage);
 
     RulPacketType findByCode(String packetTypeCode);
-
-    @Override
-    default String getClassName() {
-        return RulPacketType.class.getSimpleName();
-    }
 }
