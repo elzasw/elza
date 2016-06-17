@@ -9,8 +9,9 @@ import {connect} from 'react-redux'
 import {Ribbon} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
 import {Input} from 'react-bootstrap';
-import {i18n, Search, ListBox, AbstractReactComponent} from 'components/index.jsx';
-import {usersFetchIfNeeded, usersSelectUser, usersSearch} from 'actions/admin/user.jsx'
+import {i18n, UserDetail, Search, ListBox, AbstractReactComponent} from 'components/index.jsx';
+import {usersFetchIfNeeded, usersUserDetailFetchIfNeeded, usersSelectUser, usersSearch} from 'actions/admin/user.jsx'
+import {indexById} from 'stores/app/utils.jsx'
 
 var AdminUserPage = class AdminUserPage extends AbstractReactComponent{
     constructor(props) {
@@ -23,6 +24,7 @@ var AdminUserPage = class AdminUserPage extends AbstractReactComponent{
             'handleSearch',
             'handleSearchClear',
             'handleFilterStateChange',
+            'handleSelect',
         );
     }
 
@@ -32,6 +34,10 @@ var AdminUserPage = class AdminUserPage extends AbstractReactComponent{
 
     componentDidMount() {
         this.dispatch(usersFetchIfNeeded())
+    }
+
+    handleSelect(item) {
+        this.dispatch(usersSelectUser(item.id))
     }
 
     handleSearch(filterText) {
@@ -67,6 +73,9 @@ var AdminUserPage = class AdminUserPage extends AbstractReactComponent{
         const {splitter, user} = this.props;
 
         var activeIndex
+        if (user.userDetail.id !== null) {
+            activeIndex = indexById(user.users, user.userDetail.id)
+        }
 
         var leftPanel = (
             <div className="user-list-container">
@@ -93,9 +102,9 @@ var AdminUserPage = class AdminUserPage extends AbstractReactComponent{
         )
 
         var centerPanel = (
-            <div>
-                ...users
-            </div>
+            <UserDetail
+                userDetail={user.userDetail}
+            />
         )
 
         return (

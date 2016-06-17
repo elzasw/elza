@@ -1,16 +1,16 @@
 /**
  * Stránka pro správu uživatelů.
  */
-import React from 'react';
-import ReactDOM from 'react-dom';
-
 require ('./AdminGroupPage.less');
 
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Ribbon} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
-import {i18n, Search, ListBox, AbstractReactComponent} from 'components/index.jsx';
-import {groupsFetchIfNeeded, groupsSelectGroup, groupsSearch} from 'actions/admin/group.jsx'
+import {i18n, GroupDetail, Search, ListBox, AbstractReactComponent} from 'components/index.jsx';
+import {groupsFetchIfNeeded, groupsGroupDetailFetchIfNeeded, groupsSelectGroup, groupsSearch} from 'actions/admin/group.jsx'
+import {indexById} from 'stores/app/utils.jsx'
 
 var AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     constructor(props) {
@@ -22,17 +22,24 @@ var AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
             'renderListItem',
             'handleSearch',
             'handleSearchClear',
+            'handleSelect',
         );
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(groupsFetchIfNeeded())
+        this.dispatch(groupsGroupDetailFetchIfNeeded())
     }
 
     componentDidMount() {
         this.dispatch(groupsFetchIfNeeded())
+        this.dispatch(groupsGroupDetailFetchIfNeeded())
     }
 
+    handleSelect(item) {
+        this.dispatch(groupsSelectGroup(item.id))
+    }    
+    
     handleSearch(filterText) {
         this.dispatch(groupsSearch(filterText))
     }
@@ -59,6 +66,9 @@ var AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
         const {splitter, group} = this.props;
 
         var activeIndex
+        if (group.groupDetail.id !== null) {
+            activeIndex = indexById(group.groups, group.groupDetail.id)
+        }
 
         var leftPanel = (
             <div className="group-list-container">
@@ -81,9 +91,9 @@ var AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
         )
 
         var centerPanel = (
-            <div>
-                ...groups
-            </div>
+            <GroupDetail
+                groupDetail={group.groupDetail}
+            />
         )
 
         return (

@@ -23,6 +23,7 @@ var messages = {
     "global.action.create": "Vytvořit",
     "global.action.update": "Upravit",
     "global.action.add": "Přidat",
+    "global.action.remove": "Odebrat",
     "global.action.cancel": "Storno",
     "global.action.close": "Zavřít",
     "global.action.store": "Ok",
@@ -471,7 +472,12 @@ var messages = {
 
     "admin.user.filter.all": "Všichni uživatlé",
     "admin.user.filter.onlyActive": "Aktivní uživatelé",
-    
+    "admin.user.label.username": "Uživatelské jméno",
+    "admin.user.title.groups": "Členství ve skupinách",
+    "admin.user.title.permissions": "Oprávnění uživatele",
+    "admin.user.group.action.delete": "Odebrat členství ve skupině",
+    "admin.user.group.action.add": "Přiřadit skupiny",
+
     "admin.fulltext.action.reindex": "Reindexovat",
 	"admin.fulltext.message.reindexing": "Probíhá reindexace...",
     "admin.fulltext.message.success": "Reindexace fulltextu dokončena",

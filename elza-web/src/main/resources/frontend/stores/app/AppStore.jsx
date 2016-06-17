@@ -180,13 +180,16 @@ var save = function(store) {
     // result.registryRegion._info = result.registryRegion.registryRegionData._info
     // result.registryRegion.selectedId = result.registryRegion.registryRegionData.selectedId
 
-    return {
+    var result = {
         partyRegion: partyRegion(store.partyRegion, action),
         registryRegion: registryRegion(store.registryRegion, action),
         arrRegion: arrRegion(store.arrRegion, action),
         fundRegion: fundRegion(store.fundRegion, action),
+        adminRegion: adminRegion(store.adminRegion, action),
         splitter: splitter(store.splitter, action)
     }
+    // console.log("SAVE", result)
+    return result;
 }
 
 module.exports = {

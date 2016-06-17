@@ -6,6 +6,10 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
 
 export function isUserAction(action) {
+    if (isUserDetailAction(action)) {
+        return true;
+    }
+    
     switch (action.type) {
         case types.USERS_RECEIVE:
         case types.USERS_REQUEST:
@@ -16,8 +20,34 @@ export function isUserAction(action) {
     }
 }
 
+export function isUserDetailAction(action) {
+    switch (action.type) {
+        case types.USERS_SELECT_USER:
+        case types.USERS_USER_DETAIL_REQUEST:
+        case types.USERS_USER_DETAIL_RECEIVE:
+            return true
+        default:
+            return false
+    }
+}
+
 function _userDataKey(user) {
     return user.filterText + '_' + JSON.stringify(user.filterState)
+}
+
+function _userDetailDataKey(userDetail) {
+    if (userDetail.id !== null) {
+        return userDetail.id + '_'
+    } else {
+        return ''
+    }
+}
+
+export function usersSelectUser(id) {
+    return {
+        type: types.USERS_SELECT_USER,
+        id,
+    }
 }
 
 export function usersSearch(filterText, filterState) {
@@ -25,6 +55,30 @@ export function usersSearch(filterText, filterState) {
         type: types.USERS_SEARCH,
         filterText,
         filterState,
+    }
+}
+
+/**
+ * Fetch dat pro detail uživatele.
+ */
+export function usersUserDetailFetchIfNeeded() {
+    return (dispatch, getState) => {
+        var state = getState();
+        const userDetail = state.adminRegion.user.userDetail
+        const dataKey = _userDetailDataKey(userDetail)
+
+        if (userDetail.currentDataKey !== dataKey) {
+            dispatch(usersUserDetailRequest(dataKey))
+            WebApi.getUser(userDetail.id)
+                .then(json => {
+                    var newState = getState();
+                    const newUserDetail = newState.adminRegion.user.userDetail;
+                    const newDataKey = _userDetailDataKey(newUserDetail)
+                    if (newDataKey === dataKey) {
+                        dispatch(usersUserDetailReceive(json))
+                    }
+                })
+        }
     }
 }
 
@@ -66,6 +120,20 @@ function usersRequest(dataKey) {
 function usersReceive(data) {
     return {
         type: types.USERS_RECEIVE,
+        data,
+    }
+}
+
+function usersUserDetailRequest(dataKey) {
+    return {
+        type: types.USERS_USER_DETAIL_REQUEST,
+        dataKey,
+    }
+}
+
+function usersUserDetailReceive(data) {
+    return {
+        type: types.USERS_USER_DETAIL_RECEIVE,
         data,
     }
 }

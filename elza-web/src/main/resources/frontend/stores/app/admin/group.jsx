@@ -1,4 +1,6 @@
 import * as types from 'actions/constants/ActionTypes.js';
+import groupDetail from './groupDetail.jsx'
+import {isGroupDetailAction} from 'actions/admin/group.jsx'
 
 const initialState = {
     fetched: false,
@@ -7,16 +9,26 @@ const initialState = {
     currentDataKey: '',
     groups: [],
     groupsCount: 0,
+    groupDetail: groupDetail(),
 }
 
 export default function group(state = initialState, action = {}) {
+    if (isGroupDetailAction(action)) {
+        return {
+            ...state,
+            groupDetail: groupDetail(state.groupDetail, action)
+        }
+    }
+    
     switch (action.type) {
         case types.STORE_SAVE:
-                // fundDetail: fundDetail(state.fundDetail, action)
+            const {filterText} = state
             return {
+                filterText,
+                groupDetail: groupDetail(state.groupDetail, action),
             }
         case types.STORE_LOAD:
-            if (action.fundRegion) {
+            if (action.adminRegion) {
                 return {
                     ...state,
                     fetched: false,
@@ -26,18 +38,11 @@ export default function group(state = initialState, action = {}) {
                     groups: [],
                     groupsCount: 0,
                     ...action.adminRegion.group,
+                    groupDetail: groupDetail(action.adminRegion.group.groupDetail, action),
                 }
-                    // fundDetail: fundDetail(action.fundRegion.fundDetail, action),
             } else {
                 return state
             }
-        // case types.FUNDS_SELECT_FUND:
-        // case types.FUNDS_FUND_DETAIL_REQUEST:
-        // case types.FUNDS_FUND_DETAIL_RECEIVE:
-        //     return {
-        //         ...state,
-        //         fundDetail: fundDetail(state.fundDetail, action),
-        //     }
         case types.GROUPS_SEARCH:
             return {
                 ...state,

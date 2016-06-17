@@ -766,6 +766,14 @@ class WebApi{
             .then(json => ({groups: json.list, groupsCount: json.totalCount}))
     }
 
+    getUser(userId){
+        return AjaxUtils.ajaxGet('/api/user/getUser', {userId});
+    }
+
+    getGroup(groupId){
+        return AjaxUtils.ajaxGet('/api/user/getGroup', {groupId});
+    }
+
     getFundDetail(fundId) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFund/' + fundId)
             .then(json => {

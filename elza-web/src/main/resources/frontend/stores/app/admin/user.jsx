@@ -1,4 +1,6 @@
 import * as types from 'actions/constants/ActionTypes.js';
+import userDetail from './userDetail.jsx'
+import {isUserDetailAction} from 'actions/admin/user.jsx'
 
 const initialState = {
     fetched: false,
@@ -8,16 +10,28 @@ const initialState = {
     currentDataKey: '',
     users: [],
     usersCount: 0,
+    userDetail: userDetail(),
 }
 
 export default function user(state = initialState, action = {}) {
+    if (isUserDetailAction(action)) {
+        return {
+            ...state,
+            userDetail: userDetail(state.userDetail, action)
+        }
+    }
+
     switch (action.type) {
         case types.STORE_SAVE:
-                // fundDetail: fundDetail(state.fundDetail, action)
+            const {filterText, filterState} = state
+
             return {
+                filterText,
+                filterState,
+                userDetail: userDetail(state.userDetail, action),
             }
         case types.STORE_LOAD:
-            if (action.fundRegion) {
+            if (action.adminRegion) {
                 return {
                     ...state,
                     fetched: false,
@@ -28,18 +42,11 @@ export default function user(state = initialState, action = {}) {
                     users: [],
                     usersCount: 0,
                     ...action.adminRegion.user,
+                    userDetail: userDetail(action.adminRegion.user.userDetail, action),
                 }
-                    // fundDetail: fundDetail(action.fundRegion.fundDetail, action),
             } else {
                 return state
             }
-        // case types.FUNDS_SELECT_FUND:
-        // case types.FUNDS_FUND_DETAIL_REQUEST:
-        // case types.FUNDS_FUND_DETAIL_RECEIVE:
-        //     return {
-        //         ...state,
-        //         fundDetail: fundDetail(state.fundDetail, action),
-        //     }
         case types.USERS_SEARCH:
             return {
                 ...state,

@@ -6,6 +6,7 @@ const initialState = {
     registryRegionFront: [],
     arrRegion: null,
     fundRegion: null,
+    adminRegion: null,
     arrRegionFront: [],
 }
 
@@ -61,6 +62,9 @@ export default function stateRegion(state = initialState, action) {
             }
             if (action.fundRegion) {
                 result.fundRegion = action.fundRegion
+            }
+            if (action.adminRegion) {
+                result.adminRegion = action.adminRegion
             }
             if (action.arrRegion) {
                 result.arrRegion = action.arrRegion

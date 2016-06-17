@@ -23,6 +23,7 @@ exports.SearchWithGoto = require('components/shared/search/SearchWithGoto.jsx');
 exports.DropDownTree = require('components/shared/drop-down-tree/DropDownTree.jsx');
 exports.Loading = require('components/shared/loading/Loading.jsx');
 exports.VirtualList = require('components/shared/virtual-list/VirtualList.jsx');
+exports.AddRemoveList = require('components/shared/list/AddRemoveList.jsx');
 exports.Accordion = require('components/shared/accordion/Accordion.jsx');
 exports.ContextMenu = require('components/shared/context-menu/ContextMenu.jsx');
 exports.ModalDialog = require('components/shared/dialog/ModalDialog.jsx');
@@ -97,4 +98,5 @@ exports.RelationForm = require('components/party/RelationForm.jsx');
 exports.AdminPackagesList = require('components/admin/AdminPackagesList.jsx');
 exports.AdminPackagesUpload = require('components/admin/AdminPackagesUpload.jsx');
 exports.AdminFulltextReindex = require('components/admin/AdminFulltextReindex.jsx');
-
+exports.UserDetail = require('components/admin/UserDetail.jsx');
+exports.GroupDetail = require('components/admin/GroupDetail.jsx');

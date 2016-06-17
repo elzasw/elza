@@ -38,6 +38,22 @@ export default function adminRegion(state = initialState, action = {}) {
     }
 
     switch (action.type) {
+        case types.STORE_LOAD:
+            console.log("ADMIN region LOAD", action.adminRegion)
+            if (action.adminRegion) {
+                return {
+                    ...state,
+                    ...action.adminRegion,
+                    user: user(action.adminRegion.user, action),
+                    group: group(action.adminRegion.group, action),
+                }
+            }
+        case types.STORE_SAVE:
+            // const {activeIndex, nodeSettings, extendedView} = state;
+            return {
+                user: user(state.user, action),
+                group: group(state.group, action),
+            }
         case types.ADMIN_PACKAGES_REQUEST:
         case types.ADMIN_PACKAGES_RECEIVE:
         case types.ADMIN_PACKAGES_DELETE_RECEIVE:

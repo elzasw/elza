@@ -41,6 +41,9 @@ export function storeRestoreFromStorage() {
                     if (stateRegion.registryRegionFront && stateRegion.registryRegionFront.length > 0) {
                         dispatch(storeLoadData('REGISTRY_REGION', stateRegion.registryRegionFront[0], false));
                     }
+                    if (stateRegion.adminRegion) {
+                        dispatch(storeLoadData('ADMIN_REGION', stateRegion.adminRegion, false));
+                    }
                 }
             }
         }
@@ -108,6 +111,12 @@ export function storeLoadData(type, data, switchView = true) {
                 dispatch(storeLoad({arrRegion: data}));
                 if (switchView) {
                     dispatch(routerNavigate('/arr'));
+                }
+                break;
+            case 'ADMIN_REGION':
+                dispatch(storeLoad({adminRegion: data}));
+                if (switchView) {
+                    dispatch(routerNavigate('/admin'));
                 }
                 break;
             case 'FUND_REGION':
