@@ -44,6 +44,8 @@ export default function adminRegion(state = initialState, action = {}) {
                 return {
                     ...state,
                     ...action.adminRegion,
+                    packages: packages(),
+                    fulltext: fulltext(),
                     user: user(action.adminRegion.user, action),
                     group: group(action.adminRegion.group, action)
                 }
