@@ -5,26 +5,32 @@ const initialState = {
     fetched: false,
     dirty: false,
     items: []
-}
+};
 
 export default function institutions(state = initialState, action = {}) {
     switch (action.type) {
-        case types.REF_INSTITUTIONS_REQUEST:
-            return Object.assign({}, state, {
+        case types.REF_INSTITUTIONS_REQUEST:{
+            return {
+                ...state,
                 isFetching: true,
-            })
-        case types.REF_INSTITUTIONS_RECEIVE:
-            return Object.assign({}, state, {
+            }
+        }
+        case types.REF_INSTITUTIONS_RECEIVE:{
+            return {
+                ...state,
                 isFetching: false,
                 fetched: true,
                 dirty: false,
                 items: action.items,
                 lastUpdated: action.receivedAt
-            })
-        case types.CHANGE_INSTITUTION:
-            return Object.assign({}, state, {
+            }
+        }
+        case types.CHANGE_INSTITUTION:{
+            return {
+                ...state,
                 dirty: true
-            })
+            }
+        }
         default:
             return state
     }

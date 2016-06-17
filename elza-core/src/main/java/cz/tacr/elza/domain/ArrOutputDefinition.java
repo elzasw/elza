@@ -14,7 +14,7 @@ import javax.persistence.*;
  */
 @Entity(name = "arr_output_definition")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrOutputDefinition implements cz.tacr.elza.api.ArrOutputDefinition<ArrFund> {
+public class ArrOutputDefinition implements cz.tacr.elza.api.ArrOutputDefinition<ArrFund, ArrNodeOutput, ArrOutput, RulOutputType> {
 
     @Id
     @GeneratedValue
@@ -41,6 +41,10 @@ public class ArrOutputDefinition implements cz.tacr.elza.api.ArrOutputDefinition
 
     @OneToMany(mappedBy = "outputDefinition", fetch = FetchType.LAZY)
     private List<ArrNodeOutput> outputNodes;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulOutputType.class)
+    @JoinColumn(name = "outputTypeId", nullable = false)
+    private RulOutputType outputType;
 
     @Override
     public Integer getOutputDefinitionId() {
@@ -102,19 +106,33 @@ public class ArrOutputDefinition implements cz.tacr.elza.api.ArrOutputDefinition
         this.deleted = deleted;
     }
 
+    @Override
     public List<ArrOutput> getOutputs() {
         return outputs;
     }
 
+    @Override
     public void setOutputs(final List<ArrOutput> outputs) {
         this.outputs = outputs;
     }
 
+    @Override
     public List<ArrNodeOutput> getOutputNodes() {
         return outputNodes;
     }
 
+    @Override
     public void setOutputNodes(final List<ArrNodeOutput> outputNodes) {
         this.outputNodes = outputNodes;
+    }
+
+    @Override
+    public RulOutputType getOutputType() {
+        return outputType;
+    }
+
+    @Override
+    public void setOutputType(RulOutputType outputType) {
+        this.outputType = outputType;
     }
 }

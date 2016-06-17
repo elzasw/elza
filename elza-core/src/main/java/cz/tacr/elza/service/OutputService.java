@@ -3,16 +3,8 @@ package cz.tacr.elza.service;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
-import cz.tacr.elza.repository.NodeOutputRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -40,6 +32,9 @@ public class OutputService {
 
     @Autowired
     private OutputRepository outputRepository;
+
+    @Autowired
+    private OutputTypeRepository outputTypeRepository;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -176,10 +171,12 @@ public class OutputService {
     public ArrOutputDefinition createOutputDefinition(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                                       final String name,
                                                       final String internalCode,
-                                                      final Boolean temporary) {
+                                                      final Boolean temporary,
+                                                      final Integer outputTypeId) {
         Assert.notNull(fundVersion);
         Assert.notNull(name);
         Assert.notNull(temporary);
+        Assert.notNull(outputTypeId);
 
         if (fundVersion.getLockChange() != null) {
             throw new IllegalArgumentException("Nelze vytvořit výstup v uzavřené verzi AS");
@@ -191,6 +188,11 @@ public class OutputService {
         outputDefinition.setInternalCode(internalCode);
         outputDefinition.setDeleted(false);
         outputDefinition.setTemporary(temporary);
+
+        RulOutputType type = outputTypeRepository.findOne(outputTypeId);
+        Assert.notNull(type);
+
+        outputDefinition.setOutputType(type);
 
         outputDefinitionRepository.save(outputDefinition);
 
@@ -436,5 +438,9 @@ public class OutputService {
         Assert.notNull(output);
         checkFund(fundVersion, output.getOutputDefinition());
         return output.getOutputDefinition();
+    }
+
+    public List<RulOutputType> getOutputTypes() {
+        return outputTypeRepository.findAll();
     }
 }

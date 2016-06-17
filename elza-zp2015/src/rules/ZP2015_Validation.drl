@@ -57,7 +57,7 @@ no-loop
 when
 	$activeLevel : ActiveLevel( )
 	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
-	not DescItem(type=="ZP2015_SERIAL_NUMBER" && !effectiveAttribute) from $activeLevel.descItems 
+	not DescItem(type=="ZP2015_SERIAL_NUMBER" && !isInherited()) from $activeLevel.descItems
 then
 	results.createMissing("ZP2015_SERIAL_NUMBER", "Pořadové číslo musí být nastaveno", "SERIAL_NO");
 end
@@ -68,7 +68,7 @@ no-loop
 when
 	$activeLevel: ActiveLevel( parent!=null )
 	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
-	not DescItem(type=="ZP2015_UNIT_ID" && !effectiveAttribute) from $activeLevel.descItems
+	not DescItem(type=="ZP2015_UNIT_ID" && !isInherited()) from $activeLevel.descItems
 then
 	results.createMissing("ZP2015_UNIT_ID", "Referenční označení musí byt přiřazeno", "REF_NO");
 end

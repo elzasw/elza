@@ -39,8 +39,8 @@ public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulI
     public static final String NODE = "node";
     public static final String CREATE_CHANGE_ID = "createChangeId";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
-    public static final String DESC_ITEM_SPEC = "descItemSpec";
-    public static final String DESC_ITEM_TYPE = "descItemType";
+    public static final String ITEM_SPEC = "itemSpec";
+    public static final String ITEM_TYPE = "itemType";
 
     @Id
     @GeneratedValue

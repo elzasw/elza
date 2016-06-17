@@ -128,7 +128,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ArrOutputExtVO> outputs = getOutputs(fundVersion.getId());
         Assert.isTrue(outputs.size() == 0);
 
-        ArrOutputDefinitionVO outputDefinition = createNamedOutput(fundVersion, "Test", "TST", false);
+        List<RulOutputTypeVO> outputTypes = getOutputTypes();
+        Assert.notEmpty(outputTypes);
+
+        ArrOutputDefinitionVO outputDefinition = createNamedOutput(fundVersion, "Test", "TST", false, outputTypes.iterator().next().getId());
         Assert.notNull(outputDefinition);
 
         outputs = getOutputs(fundVersion.getId());
@@ -780,7 +783,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
 
         //nalezení hodnot podle změněné hodnoty
-        RulItemType type = descItemTypeRepository.findOneByCode("ZP2015_TITLE");
+        RulItemType type = itemTypeRepository.findOneByCode("ZP2015_TITLE");
         type.setDataType(dataTypeRepository.findByCode("TEXT"));  //kvůli transakci (no session)
         List<ArrData> nodesContainingText = dataRepository.findByNodesContainingText(nodeRepository.findAll(nodeIds),
                 type, null, "valXYZ");

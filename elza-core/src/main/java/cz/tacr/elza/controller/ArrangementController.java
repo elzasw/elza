@@ -63,7 +63,7 @@ public class ArrangementController {
     private RuleSetRepository ruleSetRepository;
 
     @Autowired
-    private DescItemTypeRepository descItemTypeRepository;
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private ClientFactoryDO factoryDO;
@@ -835,7 +835,7 @@ public class ArrangementController {
 
         Set<RulItemType> descItemCopyTypes = new HashSet<>();
         if (CollectionUtils.isNotEmpty(addLevelParam.getDescItemCopyTypes())) {
-            descItemCopyTypes.addAll(descItemTypeRepository.findAll(addLevelParam.getDescItemCopyTypes()));
+            descItemCopyTypes.addAll(itemTypeRepository.findAll(addLevelParam.getDescItemCopyTypes()));
         }
 
 
@@ -892,7 +892,7 @@ public class ArrangementController {
             @RequestBody final ArrNodeVO nodeVO) {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        RulItemType descItemType = descItemTypeRepository.getOneCheckExist(descItemTypeId);
+        RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
         ArrNode node = factoryDO.createNode(nodeVO);
         ArrLevel level = arrangementService.lockNode(node, version);
 
@@ -1147,7 +1147,7 @@ public class ArrangementController {
                                            @RequestBody(required = false) final Set<Integer> specIds) {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
 
 
         return filterTreeService.filterUniqueValues(version, descItemType, specIds, fulltext, max);
@@ -1171,7 +1171,7 @@ public class ArrangementController {
                                   @RequestBody final ReplaceDataBody replaceDataBody) {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
 
         Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
 
@@ -1199,7 +1199,7 @@ public class ArrangementController {
                                 @RequestParam("text") final String text,
                                 @RequestBody final ReplaceDataBody replaceDataBody) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
 
         Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
 
@@ -1227,7 +1227,7 @@ public class ArrangementController {
                                  @RequestParam("descItemTypeId") final Integer descItemTypeId,
                                  @RequestBody final ReplaceDataBody replaceDataBody) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
 
         Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
 
@@ -1259,6 +1259,18 @@ public class ArrangementController {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
         return policyService.getTreePolicy(version);
     }
+
+    /**
+     * Vrací typy oprávnění.
+     *
+     * @return seznam typů oprávnění
+     */
+    @RequestMapping(value = "/output/types", method = RequestMethod.GET)
+    public List<RulOutputTypeVO> getAllPolicyTypes() {
+        List<RulOutputType> outputTypes = outputService.getOutputTypes();
+        return factoryVo.createOutputTypes(outputTypes);
+    }
+
 
     /**
      * Načtení seznamu outputů - objekt outputu s vazbou na objekt named output.
@@ -1302,7 +1314,7 @@ public class ArrangementController {
                                                    @RequestBody OutputNameParam param) {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrOutputDefinition outputDefinition = outputService.createOutputDefinition(fundVersion, param.getName(), param.getInternalCode(), param.getTemporary());
+        ArrOutputDefinition outputDefinition = outputService.createOutputDefinition(fundVersion, param.getName(), param.getInternalCode(), param.getTemporary(), param.getOutputTypeId());
         return factoryVo.createOutputDefinition(outputDefinition);
     }
 
@@ -2266,6 +2278,11 @@ public class ArrangementController {
          */
         private Boolean temporary;
 
+        /**
+         * Rul Output Type ID
+         */
+        private Integer outputTypeId;
+
         public String getName() {
             return name;
         }
@@ -2288,6 +2305,14 @@ public class ArrangementController {
 
         public void setTemporary(final Boolean temporary) {
             this.temporary = temporary;
+        }
+
+        public Integer getOutputTypeId() {
+            return outputTypeId;
+        }
+
+        public void setOutputTypeId(Integer outputTypeId) {
+            this.outputTypeId = outputTypeId;
         }
     }
 }

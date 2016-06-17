@@ -7,6 +7,7 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx'
 
 /**
  * Validace formuláře.
@@ -16,6 +17,9 @@ const validate = (values, props) => {
 
     if (!values.name) {
         errors.name = i18n('global.validation.required');
+    }
+    if (props.create && !values.outputTypeId) {
+        errors.outputTypeId = i18n('global.validation.required');
     }
 
     return errors;
@@ -28,15 +32,16 @@ var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        this.dispatch(outputTypesFetchIfNeeded());
     }
 
     componentDidMount() {
+        this.dispatch(outputTypesFetchIfNeeded());
         // this.props.load(this.props.initData);
     }
 
     render() {
-        const {fields: {name, internalCode, temporary}, create, handleSubmit, onClose} = this.props;
-
+        const {fields: {name, internalCode, temporary, outputTypeId}, create, handleSubmit, onClose, outputTypes} = this.props;
         var submitForm = submitReduxForm.bind(this, validate)
 
         return (
@@ -45,6 +50,10 @@ var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
                     <form onSubmit={handleSubmit(submitForm)}>
                         <Input type="text" label={i18n('arr.output.name')} {...name} {...decorateFormField(name)} />
                         <Input type="text" label={i18n('arr.output.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />
+                        {create && <Input type="select" label={i18n('arr.output.outputType')} {...outputTypeId} {...decorateFormField(outputTypeId)}>
+                            <option key='-outputTypeId'/>
+                            {outputTypes.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
+                        </Input>}
                         {create && <Input type="checkbox" label={i18n('arr.output.temporary')} {...temporary} {...decorateFormField(temporary)} />}
                     </form>
                 </Modal.Body>
@@ -57,15 +66,20 @@ var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
     }
 }
 
+AddOutputForm.propTypes = {
+    create: React.PropTypes.bool,
+    initData: React.PropTypes.object,
+    onSubmitForm: React.PropTypes.func.isRequired
+};
+
 module.exports = reduxForm({
         form: 'addOutputForm',
-        fields: ['name', 'internalCode', 'temporary'],
+        fields: ['name', 'internalCode', 'temporary', 'outputTypeId'],
     },(state, props) => {
-        if (props.create) {
-            return {initialValues: {temporary: false}}
-        } else {
-            return {initialValues: props.initData}
+        return {
+            initialValues: props.create ? {temporary: false} : props.initData,
+            outputTypes: state.refTables.outputTypes.items
         }
     },
     {/*load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addPacketForm', data})*/}
-)(AddOutputForm)
+)(AddOutputForm);

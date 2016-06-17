@@ -48,7 +48,7 @@ import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LevelRepositoryCustom;
@@ -90,7 +90,7 @@ public class LevelTreeCacheService {
     private RuleService ruleService;
 
     @Autowired
-    private DescItemTypeRepository descItemTypeRepository;
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private ClientFactoryVO clientFactoryVO;
@@ -801,7 +801,7 @@ public class LevelTreeCacheService {
         Set<String> descItemTypeCodes = getDescItemTypeCodes(viewTitles);
 
         if (!descItemTypeCodes.isEmpty()) {
-            Set<RulItemType> descItemTypes = descItemTypeRepository.findByCode(descItemTypeCodes);
+            Set<RulItemType> descItemTypes = itemTypeRepository.findByCode(descItemTypeCodes);
             if (descItemTypes.size() != descItemTypeCodes.size()) {
                 List<String> foundCodes = descItemTypes.stream().map(RulItemType::getCode).collect(Collectors.toList());
                 Collection<String> missingCodes = new HashSet<>(descItemTypeCodes);

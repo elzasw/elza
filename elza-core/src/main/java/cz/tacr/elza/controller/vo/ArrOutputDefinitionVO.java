@@ -25,6 +25,8 @@ public class ArrOutputDefinitionVO {
 
     private List<TreeNodeClient> nodes;
 
+    private Integer outputTypeId;
+
     public Integer getId() {
         return id;
     }
@@ -79,5 +81,13 @@ public class ArrOutputDefinitionVO {
 
     public void setNodes(final List<TreeNodeClient> nodes) {
         this.nodes = nodes;
+    }
+
+    public Integer getOutputTypeId() {
+        return outputTypeId;
+    }
+
+    public void setOutputTypeId(Integer outputTypeId) {
+        this.outputTypeId = outputTypeId;
     }
 }

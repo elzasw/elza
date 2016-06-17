@@ -3,37 +3,9 @@ package cz.tacr.elza.packageimport;
 import com.google.common.collect.Maps;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.drools.RulesExecutor;
-import cz.tacr.elza.packageimport.xml.DescItemSpec;
-import cz.tacr.elza.packageimport.xml.DescItemSpecRegister;
-import cz.tacr.elza.packageimport.xml.DescItemSpecs;
-import cz.tacr.elza.packageimport.xml.DescItemType;
-import cz.tacr.elza.packageimport.xml.DescItemTypes;
-import cz.tacr.elza.packageimport.xml.PackageAction;
-import cz.tacr.elza.packageimport.xml.PackageActions;
-import cz.tacr.elza.packageimport.xml.PackageInfo;
-import cz.tacr.elza.packageimport.xml.PackageRule;
-import cz.tacr.elza.packageimport.xml.PackageRules;
-import cz.tacr.elza.packageimport.xml.PacketType;
-import cz.tacr.elza.packageimport.xml.PacketTypes;
-import cz.tacr.elza.packageimport.xml.PolicyType;
-import cz.tacr.elza.packageimport.xml.PolicyTypes;
-import cz.tacr.elza.packageimport.xml.RuleSet;
-import cz.tacr.elza.packageimport.xml.RuleSets;
-import cz.tacr.elza.repository.ActionRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.DefaultItemTypeRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
-import cz.tacr.elza.repository.PolicyTypeRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.RuleRepository;
-import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.packageimport.xml.*;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -48,21 +20,9 @@ import javax.persistence.PersistenceContext;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -96,12 +56,12 @@ public class PackageService {
     /**
      * specifikace atributů v zipu
      */
-    public static final String DESC_ITEM_SPEC_XML = "rul_desc_item_spec.xml";
+    public static final String ITEM_SPEC_XML = "rul_item_spec.xml";
 
     /**
      * typy atributů v zipu
      */
-    public static final String DESC_ITEM_TYPE_XML = "rul_desc_item_type.xml";
+    public static final String ITEM_TYPE_XML = "rul_item_type.xml";
 
     /**
      * hromadné akce v zipu
@@ -112,6 +72,11 @@ public class PackageService {
      * pravidla v zipu
      */
     public static final String PACKAGE_RULES_XML = "rul_package_rules.xml";
+
+    /**
+     * pravidla v zipu
+     */
+    public static final String OUTPUT_TYPE_XML = "rul_output_type.xml";
 
     /**
      * typy packet v zipu
@@ -141,7 +106,7 @@ public class PackageService {
     private DataTypeRepository dataTypeRepository;
 
     @Autowired
-    private DescItemTypeRepository descItemTypeRepository;
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private DefaultItemTypeRepository defaultItemTypeRepository;
@@ -179,6 +144,9 @@ public class PackageService {
     @Autowired
     private DescItemRepository descItemRepository;
 
+    @Autowired
+    private OutputTypeRepository outputTypeRepository;
+
     /**
      * Provede import balíčku.
      *
@@ -209,30 +177,31 @@ public class PackageService {
 
             PolicyTypes policyTypes = convertXmlStreamToObject(PolicyTypes.class, mapEntry.get(POLICY_TYPE_XML));
 
-            DescItemSpecs descItemSpecs = convertXmlStreamToObject(DescItemSpecs.class,
-                    mapEntry.get(DESC_ITEM_SPEC_XML));
-            DescItemTypes descItemTypes = convertXmlStreamToObject(DescItemTypes.class,
-                    mapEntry.get(DESC_ITEM_TYPE_XML));
-            PackageActions packageActions = convertXmlStreamToObject(PackageActions.class,
-                    mapEntry.get(PACKAGE_ACTIONS_XML));
-            PackageRules packageRules = convertXmlStreamToObject(PackageRules.class,
-                    mapEntry.get(PACKAGE_RULES_XML));
+            ItemSpecs itemSpecs = convertXmlStreamToObject(ItemSpecs.class, mapEntry.get(ITEM_SPEC_XML));
+            ItemTypes itemTypes = convertXmlStreamToObject(ItemTypes.class, mapEntry.get(ITEM_TYPE_XML));
+
+            PackageActions packageActions = convertXmlStreamToObject(PackageActions.class, mapEntry.get(PACKAGE_ACTIONS_XML));
+
+            PackageRules packageRules = convertXmlStreamToObject(PackageRules.class, mapEntry.get(PACKAGE_RULES_XML));
+
+            OutputTypes outputTypes = convertXmlStreamToObject(OutputTypes.class, mapEntry.get(OUTPUT_TYPE_XML));
+
             PacketTypes packetTypes = convertXmlStreamToObject(PacketTypes.class, mapEntry.get(PACKET_TYPE_XML));
 
             processPacketTypes(packetTypes, rulPackage);
+            processOutputTypes(outputTypes, rulPackage);
 
             List<RulRuleSet> rulRuleSets = processRuleSets(ruleSets, rulPackage);
 
             processPolicyTypes(policyTypes, rulPackage, rulRuleSets);
 
-            List<RulItemType> rulDescItemTypes = processDescItemTypes(descItemTypes, descItemSpecs, rulPackage);
+            List<RulItemType> rulDescItemTypes = processItemTypes(itemTypes, itemSpecs, rulPackage);
             rulPackageActions = processPackageActions(packageActions, rulPackage, mapEntry, dirActions);
 
             // Zde se může importovat vazba mezi pravidlem a atributem
             processDefaultItemTypes(rulRuleSets, ruleSets, rulDescItemTypes);
 
-            rulPackageRules = processPackageRules(packageRules, rulPackage, mapEntry, rulRuleSets,
-                    dirRules);
+            rulPackageRules = processPackageRules(packageRules, rulPackage, mapEntry, rulRuleSets, dirRules);
 
             entityManager.flush();
 
@@ -422,6 +391,39 @@ public class PackageService {
     }
 
     /**
+     * Zpracování output types.
+     *
+     * @param outputTypes importovaný seznam output types
+     * @param rulPackage  balíček
+     */
+    private void processOutputTypes(final OutputTypes outputTypes, final RulPackage rulPackage) {
+        List<RulOutputType> rulOutputTypes = outputTypeRepository.findByRulPackage(rulPackage);
+        List<RulOutputType> rulOutputTypesNew = new ArrayList<>();
+
+        if (!CollectionUtils.isEmpty(outputTypes.getOutputTypes())) {
+            for (OutputType outputType : outputTypes.getOutputTypes()) {
+                List<RulOutputType> findItems = rulOutputTypes.stream()
+                        .filter((r) -> r.getCode().equals(outputType.getCode())).collect(Collectors.toList());
+                RulOutputType item;
+                if (findItems.size() > 0) {
+                    item = findItems.get(0);
+                } else {
+                    item = new RulOutputType();
+                }
+
+                convertRulOutputType(rulPackage, outputType, item);
+                rulOutputTypesNew.add(item);
+            }
+        }
+
+        rulOutputTypesNew = outputTypeRepository.save(rulOutputTypesNew);
+
+        List<RulOutputType> rulPacketTypesDelete = new ArrayList<>(rulOutputTypesNew);
+        rulPacketTypesDelete.removeAll(rulOutputTypesNew);
+        outputTypeRepository.delete(rulPacketTypesDelete);
+    }
+
+    /**
      * Převod VO na DAO packet.
      *
      * @param rulPackage    balíček
@@ -435,6 +437,21 @@ public class PackageService {
         rulPacketType.setCode(packetType.getCode());
         rulPacketType.setName(packetType.getName());
         rulPacketType.setShortcut(packetType.getShortcut());
+    }
+
+    /**
+     * Převod VO na DAO packet.
+     *
+     * @param rulPackage    balíček
+     * @param outputType    VO packet
+     * @param rulOutputType DAO packet
+     */
+    private void convertRulOutputType(final RulPackage rulPackage,
+                                      final OutputType outputType,
+                                      final RulOutputType rulOutputType) {
+        rulOutputType.setPackage(rulPackage);
+        rulOutputType.setCode(outputType.getCode());
+        rulOutputType.setName(outputType.getName());
     }
 
     /**
@@ -723,31 +740,31 @@ public class PackageService {
     /**
      * Zpracování typů atributů.
      *
-     * @param descItemTypes       seznam importovaných typů
-     * @param descItemSpecs       seznam importovaných specifikací
-     * @param rulPackage          balíček
-     * @return                    výsledný seznam atributů v db
+     * @param itemTypes       seznam importovaných typů
+     * @param itemSpecs       seznam importovaných specifikací
+     * @param rulPackage      balíček
+     * @return                výsledný seznam atributů v db
      */
-    private List<RulItemType> processDescItemTypes(final DescItemTypes descItemTypes,
-                                                   final DescItemSpecs descItemSpecs,
-                                                   final RulPackage rulPackage) {
+    private List<RulItemType> processItemTypes(final ItemTypes itemTypes,
+                                               final ItemSpecs itemSpecs,
+                                               final RulPackage rulPackage) {
 
         List<RulDataType> rulDataTypes = dataTypeRepository.findAll();
 
-        List<RulItemType> rulDescItemTypes = descItemTypeRepository.findByRulPackage(rulPackage);
-        List<RulItemType> rulDescItemTypesNew = new ArrayList<>();
+        List<RulItemType> rulItemTypes = itemTypeRepository.findByRulPackage(rulPackage);
+        List<RulItemType> rulItemTypesNew = new ArrayList<>();
 
-        if (!CollectionUtils.isEmpty(descItemTypes.getDescItemTypes())) {
-            for (DescItemType descItemType : descItemTypes.getDescItemTypes()) {
-                List<RulItemType> findItems = rulDescItemTypes.stream().filter(
-                        (r) -> r.getCode().equals(descItemType.getCode())).collect(
+        if (!CollectionUtils.isEmpty(itemTypes.getItemTypes())) {
+            for (ItemType itemType : itemTypes.getItemTypes()) {
+                List<RulItemType> findItems = rulItemTypes.stream().filter(
+                        (r) -> r.getCode().equals(itemType.getCode())).collect(
                         Collectors.toList());
                 RulItemType item;
                 if (findItems.size() > 0) {
                     item = findItems.get(0);
 
                     // provedla se změna pro použití specifikace?
-                    if (!item.getUseSpecification().equals(descItemType.getUseSpecification())) {
+                    if (!item.getUseSpecification().equals(itemType.getUseSpecification())) {
                         // je nutné zkontrolovat, jestli neexistuje nějaký záznam
 
                         Long countDescItems = descItemRepository.getCountByType(item);
@@ -761,39 +778,39 @@ public class PackageService {
                     item = new RulItemType();
                 }
 
-                convertRulDescItemType(rulPackage, descItemType, item, rulDataTypes);
-                rulDescItemTypesNew.add(item);
+                convertRulDescItemType(rulPackage, itemType, item, rulDataTypes);
+                rulItemTypesNew.add(item);
             }
         }
 
-        rulDescItemTypesNew = descItemTypeRepository.save(rulDescItemTypesNew);
+        rulItemTypesNew = itemTypeRepository.save(rulItemTypesNew);
 
-        processDescItemSpecs(descItemSpecs, rulPackage, rulDescItemTypesNew);
+        processDescItemSpecs(itemSpecs, rulPackage, rulItemTypesNew);
 
-        List<RulItemType> rulDescItemTypesDelete = new ArrayList<>(rulDescItemTypes);
-        rulDescItemTypesDelete.removeAll(rulDescItemTypesNew);
-        descItemTypeRepository.delete(rulDescItemTypesDelete);
+        List<RulItemType> rulDescItemTypesDelete = new ArrayList<>(rulItemTypes);
+        rulDescItemTypesDelete.removeAll(rulItemTypesNew);
+        itemTypeRepository.delete(rulDescItemTypesDelete);
 
-        return rulDescItemTypesNew;
+        return rulItemTypesNew;
     }
 
     /**
      * Zpracování specifikací atributů.
      *
-     * @param descItemSpecs       seznam importovaných specifikací
+     * @param itemSpecs       seznam importovaných specifikací
      * @param rulPackage          balíček
      * @param rulDescItemTypes    seznam typů atributů
      */
-    private void processDescItemSpecs(final DescItemSpecs descItemSpecs,
+    private void processDescItemSpecs(final ItemSpecs itemSpecs,
                                       final RulPackage rulPackage, final List<RulItemType> rulDescItemTypes) {
 
         List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
         List<RulItemSpec> rulDescItemSpecsNew = new ArrayList<>();
 
-        if (!CollectionUtils.isEmpty(descItemSpecs.getDescItemSpecs())) {
-            for (DescItemSpec descItemSpec : descItemSpecs.getDescItemSpecs()) {
+        if (!CollectionUtils.isEmpty(itemSpecs.getItemSpecs())) {
+            for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
                 List<RulItemSpec> findItems = rulDescItemSpecs.stream()
-                        .filter((r) -> r.getCode().equals(descItemSpec.getCode())).collect(
+                        .filter((r) -> r.getCode().equals(itemSpec.getCode())).collect(
                                 Collectors.toList());
                 RulItemSpec item;
                 if (findItems.size() > 0) {
@@ -802,14 +819,14 @@ public class PackageService {
                     item = new RulItemSpec();
                 }
 
-                convertRulDescItemSpec(rulPackage, descItemSpec, item, rulDescItemTypes);
+                convertRulDescItemSpec(rulPackage, itemSpec, item, rulDescItemTypes);
                 rulDescItemSpecsNew.add(item);
             }
         }
 
         rulDescItemSpecsNew = itemSpecRepository.save(rulDescItemSpecsNew);
 
-        processDescItemSpecsRegister(descItemSpecs, rulDescItemSpecsNew);
+        processDescItemSpecsRegister(itemSpecs, rulDescItemSpecsNew);
 
         List<RulItemSpec> rulDescItemSpecsDelete = new ArrayList<>(rulDescItemSpecs);
         rulDescItemSpecsDelete.removeAll(rulDescItemSpecsNew);
@@ -822,22 +839,22 @@ public class PackageService {
     /**
      * Zpracování napojení specifikací na reg.
      *
-     * @param descItemSpecs    seznam importovaných specifikací
+     * @param itemSpecs    seznam importovaných specifikací
      * @param rulDescItemSpecs seznam specifikací atributů
      */
-    private void processDescItemSpecsRegister(final DescItemSpecs descItemSpecs,
+    private void processDescItemSpecsRegister(final ItemSpecs itemSpecs,
                                               final List<RulItemSpec> rulDescItemSpecs) {
 
         List<RegRegisterType> regRegisterTypes = registerTypeRepository.findAll();
 
         for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
-            List<DescItemSpec> findItemsSpec = descItemSpecs.getDescItemSpecs().stream().filter(
+            List<ItemSpec> findItemsSpec = itemSpecs.getItemSpecs().stream().filter(
                     (r) -> r.getCode().equals(rulDescItemSpec.getCode())).collect(Collectors.toList());
-            DescItemSpec item;
+            ItemSpec item;
             if (findItemsSpec.size() > 0) {
                 item = findItemsSpec.get(0);
             } else {
-                throw new IllegalStateException("Kód " + rulDescItemSpec.getCode() + " neexistuje v DescItemSpecs");
+                throw new IllegalStateException("Kód " + rulDescItemSpec.getCode() + " neexistuje v ItemSpecs");
             }
 
             List<RulItemSpecRegister> rulItemSpecRegisters = itemSpecRegisterRepository
@@ -909,24 +926,24 @@ public class PackageService {
      * Převod VO na DAO specifikace atributu.
      *
      * @param rulPackage       balíček
-     * @param descItemSpec     VO specifikace
+     * @param itemSpec     VO specifikace
      * @param rulDescItemSpec  DAO specifikace
      * @param rulDescItemTypes seznam typů atributů
      */
     private void convertRulDescItemSpec(final RulPackage rulPackage,
-                                        final DescItemSpec descItemSpec,
+                                        final ItemSpec itemSpec,
                                         final RulItemSpec rulDescItemSpec,
                                         final List<RulItemType> rulDescItemTypes) {
 
-        rulDescItemSpec.setName(descItemSpec.getName());
-        rulDescItemSpec.setCode(descItemSpec.getCode());
-        rulDescItemSpec.setViewOrder(descItemSpec.getViewOrder());
-        rulDescItemSpec.setDescription(descItemSpec.getDescription());
-        rulDescItemSpec.setShortcut(descItemSpec.getShortcut());
+        rulDescItemSpec.setName(itemSpec.getName());
+        rulDescItemSpec.setCode(itemSpec.getCode());
+        rulDescItemSpec.setViewOrder(itemSpec.getViewOrder());
+        rulDescItemSpec.setDescription(itemSpec.getDescription());
+        rulDescItemSpec.setShortcut(itemSpec.getShortcut());
         rulDescItemSpec.setPackage(rulPackage);
 
         List<RulItemType> findItems = rulDescItemTypes.stream()
-                .filter((r) -> r.getCode().equals(descItemSpec.getDescItemType()))
+                .filter((r) -> r.getCode().equals(itemSpec.getItemType()))
                 .collect(Collectors.toList());
 
         RulItemType item;
@@ -934,7 +951,7 @@ public class PackageService {
         if (findItems.size() > 0) {
             item = findItems.get(0);
         } else {
-            throw new IllegalStateException("Kód " + descItemSpec.getDescItemType() + " neexistuje v RulItemType");
+            throw new IllegalStateException("Kód " + itemSpec.getItemType() + " neexistuje v RulItemType");
         }
 
         rulDescItemSpec.setItemType(item);
@@ -944,20 +961,20 @@ public class PackageService {
      * Převod VO na DAO typu atributu.
      *
      * @param rulPackage      balíček
-     * @param descItemType    VO typu
+     * @param itemType    VO typu
      * @param rulDescItemType DAO typy
      * @param rulDataTypes    datové typy atributů
      */
     private void convertRulDescItemType(final RulPackage rulPackage,
-                                        final DescItemType descItemType,
+                                        final ItemType itemType,
                                         final RulItemType rulDescItemType,
                                         final List<RulDataType> rulDataTypes) {
 
-        rulDescItemType.setCode(descItemType.getCode());
-        rulDescItemType.setName(descItemType.getName());
+        rulDescItemType.setCode(itemType.getCode());
+        rulDescItemType.setName(itemType.getName());
 
         List<RulDataType> findItems = rulDataTypes.stream()
-                .filter((r) -> r.getCode().equals(descItemType.getDataType()))
+                .filter((r) -> r.getCode().equals(itemType.getDataType()))
                 .collect(Collectors.toList());
 
         RulDataType item;
@@ -965,16 +982,16 @@ public class PackageService {
         if (findItems.size() > 0) {
             item = findItems.get(0);
         } else {
-            throw new IllegalStateException("Kód " + descItemType.getDataType() + " neexistuje v RulDataType");
+            throw new IllegalStateException("Kód " + itemType.getDataType() + " neexistuje v RulDataType");
         }
 
         rulDescItemType.setDataType(item);
-        rulDescItemType.setShortcut(descItemType.getShortcut());
-        rulDescItemType.setDescription(descItemType.getDescription());
-        rulDescItemType.setIsValueUnique(descItemType.getIsValueUnique());
-        rulDescItemType.setCanBeOrdered(descItemType.getCanBeOrdered());
-        rulDescItemType.setUseSpecification(descItemType.getUseSpecification());
-        rulDescItemType.setViewOrder(descItemType.getViewOrder());
+        rulDescItemType.setShortcut(itemType.getShortcut());
+        rulDescItemType.setDescription(itemType.getDescription());
+        rulDescItemType.setIsValueUnique(itemType.getIsValueUnique());
+        rulDescItemType.setCanBeOrdered(itemType.getCanBeOrdered());
+        rulDescItemType.setUseSpecification(itemType.getUseSpecification());
+        rulDescItemType.setViewOrder(itemType.getViewOrder());
 
         rulDescItemType.setPackage(rulPackage);
     }
@@ -1138,7 +1155,7 @@ public class PackageService {
         }
         itemSpecRepository.delete(rulDescItemSpecs);
 
-        descItemTypeRepository.deleteByRulPackage(rulPackage);
+        itemTypeRepository.deleteByRulPackage(rulPackage);
 
         File dirActions = new File(bulkActionConfigManager.getPath());
         File dirRules = new File(rulesExecutor.getRootPath());
@@ -1164,6 +1181,8 @@ public class PackageService {
             ruleSetRepository.findByRulPackage(rulPackage).forEach(this::deleteRuleSet);
 
             packetTypeRepository.deleteByRulPackage(rulPackage);
+
+            outputTypeRepository.deleteByRulPackage(rulPackage);
 
             packageRepository.delete(rulPackage);
 
@@ -1377,18 +1396,18 @@ public class PackageService {
      * @param zos        stream zip souboru
      */
     private void exportDescItemTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
-        DescItemTypes descItemTypes = new DescItemTypes();
-        List<RulItemType> rulDescItemTypes = descItemTypeRepository.findByRulPackage(rulPackage);
-        List<DescItemType> descItemTypeList = new ArrayList<>(rulDescItemTypes.size());
-        descItemTypes.setDescItemTypes(descItemTypeList);
+        ItemTypes itemTypes = new ItemTypes();
+        List<RulItemType> rulDescItemTypes = itemTypeRepository.findByRulPackage(rulPackage);
+        List<ItemType> itemTypeList = new ArrayList<>(rulDescItemTypes.size());
+        itemTypes.setItemTypes(itemTypeList);
 
         for (RulItemType rulDescItemType : rulDescItemTypes) {
-            DescItemType descItemType = new DescItemType();
-            convertDescItemType(rulDescItemType, descItemType);
-            descItemTypeList.add(descItemType);
+            ItemType itemType = new ItemType();
+            convertDescItemType(rulDescItemType, itemType);
+            itemTypeList.add(itemType);
         }
 
-        addObjectToZipFile(descItemTypes, zos, DESC_ITEM_TYPE_XML);
+        addObjectToZipFile(itemTypes, zos, ITEM_TYPE_XML);
     }
 
     /**
@@ -1398,18 +1417,18 @@ public class PackageService {
      * @param zos        stream zip souboru
      */
     private void exportDescItemSpecs(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
-        DescItemSpecs descItemSpecs = new DescItemSpecs();
+        ItemSpecs itemSpecs = new ItemSpecs();
         List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
-        List<DescItemSpec> descItemSpecList = new ArrayList<>(rulDescItemSpecs.size());
-        descItemSpecs.setDescItemSpecs(descItemSpecList);
+        List<ItemSpec> itemSpecList = new ArrayList<>(rulDescItemSpecs.size());
+        itemSpecs.setItemSpecs(itemSpecList);
 
         for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
-            DescItemSpec descItemSpec = new DescItemSpec();
-            convertDescItemSpec(rulDescItemSpec, descItemSpec);
-            descItemSpecList.add(descItemSpec);
+            ItemSpec itemSpec = new ItemSpec();
+            convertDescItemSpec(rulDescItemSpec, itemSpec);
+            itemSpecList.add(itemSpec);
         }
 
-        addObjectToZipFile(descItemSpecs, zos, DESC_ITEM_SPEC_XML);
+        addObjectToZipFile(itemSpecs, zos, ITEM_SPEC_XML);
     }
 
     /**
@@ -1439,33 +1458,33 @@ public class PackageService {
      * Převod DAO na VO typů atributu.
      *
      * @param rulDescItemType DAO typy
-     * @param descItemType    VO typu
+     * @param itemType    VO typu
      */
-    private void convertDescItemType(final RulItemType rulDescItemType, final DescItemType descItemType) {
-        descItemType.setCode(rulDescItemType.getCode());
-        descItemType.setName(rulDescItemType.getName());
-        descItemType.setShortcut(rulDescItemType.getShortcut());
-        descItemType.setCanBeOrdered(rulDescItemType.getCanBeOrdered());
-        descItemType.setDataType(rulDescItemType.getDataType().getCode());
-        descItemType.setDescription(rulDescItemType.getDescription());
-        descItemType.setIsValueUnique(rulDescItemType.getIsValueUnique());
-        descItemType.setUseSpecification(rulDescItemType.getUseSpecification());
-        descItemType.setViewOrder(rulDescItemType.getViewOrder());
+    private void convertDescItemType(final RulItemType rulDescItemType, final ItemType itemType) {
+        itemType.setCode(rulDescItemType.getCode());
+        itemType.setName(rulDescItemType.getName());
+        itemType.setShortcut(rulDescItemType.getShortcut());
+        itemType.setCanBeOrdered(rulDescItemType.getCanBeOrdered());
+        itemType.setDataType(rulDescItemType.getDataType().getCode());
+        itemType.setDescription(rulDescItemType.getDescription());
+        itemType.setIsValueUnique(rulDescItemType.getIsValueUnique());
+        itemType.setUseSpecification(rulDescItemType.getUseSpecification());
+        itemType.setViewOrder(rulDescItemType.getViewOrder());
     }
 
     /**
      * Převod DAO na VO specifikace.
      *
      * @param rulDescItemSpec DAO specifikace
-     * @param descItemSpec    VO specifikace
+     * @param itemSpec    VO specifikace
      */
-    private void convertDescItemSpec(final RulItemSpec rulDescItemSpec, final DescItemSpec descItemSpec) {
-        descItemSpec.setCode(rulDescItemSpec.getCode());
-        descItemSpec.setName(rulDescItemSpec.getName());
-        descItemSpec.setViewOrder(rulDescItemSpec.getViewOrder());
-        descItemSpec.setDescription(rulDescItemSpec.getDescription());
-        descItemSpec.setDescItemType(rulDescItemSpec.getItemType().getCode());
-        descItemSpec.setShortcut(rulDescItemSpec.getShortcut());
+    private void convertDescItemSpec(final RulItemSpec rulDescItemSpec, final ItemSpec itemSpec) {
+        itemSpec.setCode(rulDescItemSpec.getCode());
+        itemSpec.setName(rulDescItemSpec.getName());
+        itemSpec.setViewOrder(rulDescItemSpec.getViewOrder());
+        itemSpec.setDescription(rulDescItemSpec.getDescription());
+        itemSpec.setItemType(rulDescItemSpec.getItemType().getCode());
+        itemSpec.setShortcut(rulDescItemSpec.getShortcut());
 
         List<RulItemSpecRegister> rulItemSpecRegisters = itemSpecRegisterRepository
                 .findByDescItemSpecId(rulDescItemSpec);
@@ -1478,7 +1497,7 @@ public class PackageService {
             descItemSpecRegisterList.add(descItemSpecRegister);
         }
 
-        descItemSpec.setDescItemSpecRegisters(descItemSpecRegisterList);
+        itemSpec.setDescItemSpecRegisters(descItemSpecRegisterList);
     }
 
     /**

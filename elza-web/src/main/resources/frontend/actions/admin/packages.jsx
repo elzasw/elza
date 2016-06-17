@@ -11,11 +11,11 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 
 /**
  * Získání seznamu importovaných balíčků ze serveru.
- * @returns {dispatch} dispatch
+ * @returns {Function} dispatch
  */
 export function getPackagesFetch() {
     return dispatch => {
-        dispatch(getPackagesRequest())
+        dispatch(getPackagesRequest());
         return WebApi.getPackages().then(json => dispatch(getPackagesReceive(json)));
     }
 }
@@ -27,8 +27,8 @@ export function getPackagesFetch() {
  */
 export function getPackagesFetchIfNeeded() {
     return (dispatch, getState) => {
-        var state = getState();
-        if ((!state.adminRegion.packages.fetched || state.adminRegion.packages.dirty) && !state.adminRegion.packages.isFetching) {
+        const {adminRegion: {packages: {fetched, dirty, isFetching}}} = getState();
+        if ((!fetched || dirty) && !isFetching) {
             return dispatch(getPackagesFetch());
         }
     }

@@ -605,6 +605,7 @@ public class ConfigMapperConfiguration {
                 .register();
 
         mapperFactory.classMap(RulPacketType.class, RulPacketTypeVO.class).byDefault().field("packetTypeId", "id").register();
+        mapperFactory.classMap(RulOutputType.class, RulOutputTypeVO.class).byDefault().field("outputTypeId", "id").register();
 
         mapperFactory.classMap(RulRuleSet.class, RulRuleSetVO.class)
                 .byDefault()
@@ -627,7 +628,23 @@ public class ConfigMapperConfiguration {
                 "fundVersionId", "id").
                 exclude("arrangementType").register();
         mapperFactory.classMap(ArrOutputDefinition.class, ArrOutputDefinitionVO.class).exclude("outputs").exclude("nodes").byDefault()
-                .field("outputDefinitionId", "id").register();
+                .field("outputDefinitionId", "id").customize(new CustomMapper<ArrOutputDefinition, ArrOutputDefinitionVO>() {
+            @Override
+            public void mapAtoB(final ArrOutputDefinition outputDefinition,
+                                final ArrOutputDefinitionVO outputDefinitionVO,
+                                final MappingContext context) {
+                outputDefinitionVO.setOutputTypeId(outputDefinition.getOutputType().getOutputTypeId());
+            }
+
+            @Override
+            public void mapBtoA(final ArrOutputDefinitionVO outputDefinitionVO,
+                                final ArrOutputDefinition outputDefinition,
+                                final MappingContext context) {
+                RulOutputType rulOutputType = new RulOutputType();
+                rulOutputType.setOutputTypeId(outputDefinitionVO.getOutputTypeId());
+                outputDefinition.setOutputType(rulOutputType);
+            }
+        }).register();
         mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class).byDefault().field("outputId", "id").register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
 

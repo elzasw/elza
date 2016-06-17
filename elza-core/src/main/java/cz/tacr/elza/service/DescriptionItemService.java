@@ -45,7 +45,7 @@ import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -88,7 +88,7 @@ public class DescriptionItemService {
     private ItemSpecRepository itemSpecRepository;
 
     @Autowired
-    private DescItemTypeRepository descItemTypeRepository;
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private LevelRepository levelRepository;
@@ -193,7 +193,7 @@ public class DescriptionItemService {
 
         ArrChange change = arrangementService.createChange();
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
 
         Assert.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
         Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");
@@ -239,7 +239,7 @@ public class DescriptionItemService {
 
         ArrChange change = arrangementService.createChange();
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
 
         Assert.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
         Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");

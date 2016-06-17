@@ -125,6 +125,7 @@ var messages = {
     "arr.output.name": "Název výstupu",
     "arr.output.internalCode": "Interní kód výstupu",
     "arr.output.temporary": "Dočasný výstup",
+    "arr.output.outputType": "Typ výstup",
 
     "arr.fundAction.noFa" : "Není vybrán žádný archivní soubor",
     "arr.fundAction.form.newAction" : "Nová akce",

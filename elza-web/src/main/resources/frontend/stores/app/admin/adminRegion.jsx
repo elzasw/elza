@@ -22,7 +22,7 @@ const initialState = {
     fulltext: fulltext(),
     user: user(),
     group: group(),
-}
+};
 
 export default function adminRegion(state = initialState, action = {}) {
     if (isUserAction(action)) {
@@ -38,60 +38,66 @@ export default function adminRegion(state = initialState, action = {}) {
     }
 
     switch (action.type) {
-        case types.STORE_LOAD:
-            console.log("ADMIN region LOAD", action.adminRegion)
+        case types.STORE_LOAD:{
+            console.log("ADMIN region LOAD", action.adminRegion);
             if (action.adminRegion) {
                 return {
                     ...state,
                     ...action.adminRegion,
                     user: user(action.adminRegion.user, action),
-                    group: group(action.adminRegion.group, action),
+                    group: group(action.adminRegion.group, action)
                 }
             }
-        case types.STORE_SAVE:
+            return state;
+        }
+        case types.STORE_SAVE:{
             // const {activeIndex, nodeSettings, extendedView} = state;
             return {
                 user: user(state.user, action),
-                group: group(state.group, action),
+                group: group(state.group, action)
             }
+        }
         case types.ADMIN_PACKAGES_REQUEST:
         case types.ADMIN_PACKAGES_RECEIVE:
         case types.ADMIN_PACKAGES_DELETE_RECEIVE:
-        case types.ADMIN_PACKAGES_IMPORT_RECEIVE:
-            return Object.assign({}, state, {
+        case types.ADMIN_PACKAGES_IMPORT_RECEIVE:{
+            return {
+                ...state,
                 packages: packages(state.packages, action)
-            });
+            }
+        }
         case types.ADMIN_FULLTEXT_REINDEXING_REQUEST:
         case types.ADMIN_FULLTEXT_REINDEXING_STATE_REQUEST:
-        case types.ADMIN_FULLTEXT_REINDEXING_STATE_RECEIVE:
-            return Object.assign({}, state, {
+        case types.ADMIN_FULLTEXT_REINDEXING_STATE_RECEIVE:{
+            return {
+                ...state,
                 fulltext: fulltext(state.fulltext, action)
-            });
-
-        case types.CHANGE_INDEXING_FINISHED:
-
-            var fulltextChange = fulltext(state.fulltext, action);
+            }
+        }
+        case types.CHANGE_INDEXING_FINISHED:{
+            const fulltextChange = fulltext(state.fulltext, action);
 
             if (fulltextChange !== state.fulltext) {
-                return Object.assign({}, state, {
+                return {
+                    ...state,
                     fulltext: fulltextChange
-                });
+                }
             }
 
             return state;
-
-        case types.CHANGE_PACKAGE:
-
-            var packagesChange = packages(state.packages, action);
+        }
+        case types.CHANGE_PACKAGE:{
+            const packagesChange = packages(state.packages, action);
 
             if (packagesChange !== state.packages) {
-                return Object.assign({}, state, {
+                return {
+                    ...state,
                     packages: packagesChange
-                });
+                }
             }
 
             return state;
-
+        }
         default:
             return state;
     }

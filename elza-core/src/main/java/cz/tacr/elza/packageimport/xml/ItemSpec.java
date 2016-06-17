@@ -1,30 +1,24 @@
 package cz.tacr.elza.packageimport.xml;
 
+import javax.xml.bind.annotation.*;
 import java.util.List;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * DescItemSpec.
+ * ItemSpec.
  *
  * @author Martin Šlapa
  * @since 14.12.2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "desc-item-spec")
-public class DescItemSpec {
+@XmlType(name = "item-spec")
+public class ItemSpec {
 
     @XmlAttribute(name = "code", required = true)
     private String code;
 
-    @XmlAttribute(name = "desc-item-type", required = true)
-    private String descItemType;
+    @XmlAttribute(name = "item-type", required = true)
+    private String itemType;
 
     @XmlElement(name = "name", required = true)
     private String name;
@@ -50,12 +44,12 @@ public class DescItemSpec {
         this.code = code;
     }
 
-    public String getDescItemType() {
-        return descItemType;
+    public String getItemType() {
+        return itemType;
     }
 
-    public void setDescItemType(final String descItemType) {
-        this.descItemType = descItemType;
+    public void setItemType(final String itemType) {
+        this.itemType = itemType;
     }
 
     public String getName() {

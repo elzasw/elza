@@ -8,14 +8,14 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * VO DescItemType.
+ * VO ItemType.
  *
  * @author Martin Šlapa
  * @since 14.12.2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "desc-item-type")
-public class DescItemType {
+@XmlType(name = "item-type")
+public class ItemType {
 
     @XmlAttribute(name = "code", required = true)
     private String code;

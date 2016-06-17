@@ -45,7 +45,7 @@ public abstract class AbstractTest {
     @Autowired
     protected DescItemRepository descItemRepository;
     @Autowired
-    protected DescItemTypeRepository descItemTypeRepository;
+    protected ItemTypeRepository itemTypeRepository;
     @Autowired
     protected ItemSpecRepository itemSpecRepository;
     @Autowired

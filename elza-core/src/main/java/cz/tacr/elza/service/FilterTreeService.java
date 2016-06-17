@@ -41,7 +41,7 @@ import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 
@@ -61,7 +61,7 @@ public class FilterTreeService {
     @Autowired
     private LevelTreeCacheWalker levelTreeCacheWalker;
     @Autowired
-    private DescItemTypeRepository descItemTypeRepository;
+    private ItemTypeRepository itemTypeRepository;
     @Autowired
     private DescriptionItemService descriptionItemService;
     @Autowired
@@ -125,7 +125,7 @@ public class FilterTreeService {
             throws FilterExpiredException {
 
         Map<String, RulItemType> descItemTypeMap = new HashMap<>();
-        for (RulItemType descItemType : descItemTypeRepository.findAll(descItemTypeIds)) {
+        for (RulItemType descItemType : itemTypeRepository.findAll(descItemTypeIds)) {
             descItemTypeMap.put(descItemType.getCode(), descItemType);
         }
 

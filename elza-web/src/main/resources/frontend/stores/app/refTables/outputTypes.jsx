@@ -7,15 +7,15 @@ const initialState = {
     items: []
 };
 
-export default function partyNameFormTypes(state = initialState, action = {}) {
+export default function outputTypes(state = initialState, action = {}) {
     switch (action.type) {
-        case types.REF_PARTY_NAME_FORM_TYPES_REQUEST:{
+        case types.REF_OUTPUT_TYPES_REQUEST:{
             return {
                 ...state,
-                isFetching: true,
+                isFetching: true
             }
         }
-        case types.REF_PARTY_NAME_FORM_TYPES_RECEIVE:{
+        case types.REF_OUTPUT_TYPES_RECEIVE:{
             return {
                 ...state,
                 isFetching: false,
@@ -25,7 +25,12 @@ export default function partyNameFormTypes(state = initialState, action = {}) {
                 lastUpdated: action.receivedAt
             }
         }
+        case types.CHANGE_PACKAGE:{
+            return {
+                dirty: true
+            }
+        }
         default:
-            return state
+            return state;
     }
 }

@@ -8,7 +8,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -81,7 +81,7 @@ public class UnitIdBulkAction extends BulkAction {
     private ArrBulkActionRun bulkActionRun;
 
     @Autowired
-    private DescItemTypeRepository descItemTypeRepository;
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
@@ -104,13 +104,13 @@ public class UnitIdBulkAction extends BulkAction {
         String unitIdCode = (String) bulkActionConfig.getProperty("unit_id_code");
         Assert.notNull(unitIdCode);
 
-        descItemType = descItemTypeRepository.getOneByCode(unitIdCode);
+        descItemType = itemTypeRepository.getOneByCode(unitIdCode);
         Assert.notNull(descItemType);
 
         String levelTypeCode = (String) bulkActionConfig.getProperty("level_type_code");
         Assert.notNull(levelTypeCode);
 
-        descItemLevelType = descItemTypeRepository.getOneByCode(levelTypeCode);
+        descItemLevelType = itemTypeRepository.getOneByCode(levelTypeCode);
         Assert.notNull(descItemLevelType);
 
         String delimiterMajor = (String) bulkActionConfig.getProperty("delimiter_major");
@@ -122,7 +122,7 @@ public class UnitIdBulkAction extends BulkAction {
         this.delimiterMinor = delimiterMinor;
 
         String previousIdCode = (String) bulkActionConfig.getProperty("previous_id_code");
-        descItemPreviousType = descItemTypeRepository.getOneByCode(previousIdCode);
+        descItemPreviousType = itemTypeRepository.getOneByCode(previousIdCode);
         Assert.notNull(descItemPreviousType);
 
         String previousIdSpecCode = (String) bulkActionConfig.getProperty("previous_id_spec_code");

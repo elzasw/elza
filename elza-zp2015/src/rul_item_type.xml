@@ -1,5 +1,5 @@
-<desc-item-types>
-    <desc-item-type code="ZP2015_ARRANGEMENT_TYPE" data-type="ENUM">
+<item-types>
+    <item-type code="ZP2015_ARRANGEMENT_TYPE" data-type="ENUM">
         <name>Způsob pořádání</name>
         <shortcut>Způsob pořádání</shortcut>
         <description>Způsob pořádání podle Základních pravidel 2015</description>
@@ -7,8 +7,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>0</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_LEVEL_TYPE" data-type="ENUM">
+    </item-type>
+    <item-type code="ZP2015_LEVEL_TYPE" data-type="ENUM">
         <name>Úroveň popisu</name>
         <shortcut>Úroveň</shortcut>
         <description>ZP4.2.7 Úroveň popisu</description>
@@ -16,8 +16,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>1</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_FOLDER_TYPE" data-type="ENUM">
+    </item-type>
+    <item-type code="ZP2015_FOLDER_TYPE" data-type="ENUM">
         <name>Typ složky</name>
         <shortcut>Typ složky</shortcut>
         <description>Počet evidenčních jednotek, uvádí se pro složku s uvedením EJ</description>
@@ -25,8 +25,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>2</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_TYPE" data-type="ENUM">
+    </item-type>
+    <item-type code="ZP2015_UNIT_TYPE" data-type="ENUM">
         <name>Typ archiválie</name>
         <shortcut>Typ arch.</shortcut>
         <description>Typ archiválie</description>
@@ -34,8 +34,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>3</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_COUNT" data-type="INT">
+    </item-type>
+    <item-type code="ZP2015_UNIT_COUNT" data-type="INT">
         <name>Počet evidenčních jednotek</name>
         <shortcut>Počet EJ</shortcut>
         <description>Počet evidenčních jednotek - ZP4.2.8</description>
@@ -43,8 +43,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>4</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_STORAGE_ID" data-type="PACKET_REF">
+    </item-type>
+    <item-type code="ZP2015_STORAGE_ID" data-type="PACKET_REF">
         <name>Ukládací jednotka</name>
         <shortcut>Ukl. j.</shortcut>
         <description>ZP4.2.10 Ukládací jednotka a číslo</description>
@@ -52,8 +52,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>5</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_EXTRA_UNITS" data-type="INT">
+    </item-type>
+    <item-type code="ZP2015_EXTRA_UNITS" data-type="INT">
         <name>Další evidenční jednotky ve složce</name>
         <shortcut>Další EJ</shortcut>
         <description>Typ archiválie a počet pro složku manipulačního seznamu</description>
@@ -61,8 +61,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>6</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_EXT_TYPE" data-type="ENUM">
+    </item-type>
+    <item-type code="ZP2015_UNIT_EXT_TYPE" data-type="ENUM">
         <name>Rozšířený popis archiválie</name>
         <shortcut>Rozšířený typ</shortcut>
         <description>Rozšíený typ archiválií</description>
@@ -70,8 +70,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>7</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_ID" data-type="UNITID">
+    </item-type>
+    <item-type code="ZP2015_UNIT_ID" data-type="UNITID">
         <name>Referenční označení (pořadové číslo)</name>
         <shortcut>Ref. ozn.</shortcut>
         <description>ZP4.2.1 Referenční označení (pořadové číslo)</description>
@@ -79,8 +79,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>8</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_OTHER_ID" data-type="STRING">
+    </item-type>
+    <item-type code="ZP2015_OTHER_ID" data-type="STRING">
         <name>Jiná označení - specifikace a hodnota</name>
         <shortcut>Jiná ozn.</shortcut>
         <description>ZP4.2.2 Jiná označení - specifikace a hodnota</description>
@@ -88,8 +88,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>9</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_SERIAL_NUMBER" data-type="INT">
+    </item-type>
+    <item-type code="ZP2015_SERIAL_NUMBER" data-type="INT">
         <name>Jiná označení - Pořadové číslo</name>
         <shortcut>Poř. č.</shortcut>
         <description>ZP4.2.2 Jiná označení - Pořadové číslo</description>
@@ -97,8 +97,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>10</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_TITLE" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_TITLE" data-type="TEXT">
         <name>Obsah, regest</name>
         <shortcut>Obsah</shortcut>
         <description>ZP4.2.3 Obsah, regest</description>
@@ -106,8 +106,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>11</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_FORMAL_TITLE" data-type="STRING">
+    </item-type>
+    <item-type code="ZP2015_FORMAL_TITLE" data-type="STRING">
         <name>Formální název jednotky popisu</name>
         <shortcut>Form. název</shortcut>
         <description>ZP4.2.4 Formální název jednotky popisu</description>
@@ -115,8 +115,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>12</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_DATE_PRE" data-type="UNITDATE">
+    </item-type>
+    <item-type code="ZP2015_UNIT_DATE_PRE" data-type="UNITDATE">
         <name>Datace prior vzniku jednotky popisu - strojově čitelný</name>
         <shortcut>Dat. vzniku - prior</shortcut>
         <description>ZP4.2.5 Datace vzniku jednotky popisu - strojově čitelný</description>
@@ -124,8 +124,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>13</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_DATE" data-type="UNITDATE">
+    </item-type>
+    <item-type code="ZP2015_UNIT_DATE" data-type="UNITDATE">
         <name>Datace vzniku jednotky popisu - strojově čitelný</name>
         <shortcut>Dat. vzniku</shortcut>
         <description>ZP4.2.5 Datace vzniku jednotky popisu - strojově čitelný</description>
@@ -133,8 +133,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>14</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_DATE_POST" data-type="UNITDATE">
+    </item-type>
+    <item-type code="ZP2015_UNIT_DATE_POST" data-type="UNITDATE">
         <name>Datace posterior vzniku jednotky popisu - strojově čitelný</name>
         <shortcut>Dat. vzniku - posterior</shortcut>
         <description>ZP4.2.5 Datace vzniku jednotky popisu - strojově čitelný</description>
@@ -142,8 +142,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>15</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_DATE_TEXT" data-type="STRING">
+    </item-type>
+    <item-type code="ZP2015_UNIT_DATE_TEXT" data-type="STRING">
         <name>Datace vzniku jednotky popisu - Textový zápis</name>
         <shortcut>Dat. vzniku - Textově</shortcut>
         <description>ZP4.2.5 Datace vzniku jednotky popisu - strojově čitelný</description>
@@ -151,8 +151,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>16</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_ORIGINATOR" data-type="PARTY_REF">
+    </item-type>
+    <item-type code="ZP2015_ORIGINATOR" data-type="PARTY_REF">
         <name>Původce</name>
         <shortcut>Původce</shortcut>
         <description>ZP4.3.1 Odkaz na původce</description>
@@ -160,8 +160,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>17</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_HIST" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_UNIT_HIST" data-type="TEXT">
         <name>Dějiny jednotky popisu</name>
         <shortcut>Dějiny jednotky popisu</shortcut>
         <description>ZP4.3.2 Dějiny jednotky popisu</description>
@@ -169,8 +169,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>18</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_ARR" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_UNIT_ARR" data-type="TEXT">
         <name>Způsob uspořádání jednotky popisu</name>
         <shortcut>Způsob uspořádání jednotky popisu</shortcut>
         <description>ZP4.3.3 Způsob uspořádání jednotky popisu</description>
@@ -178,8 +178,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>19</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_CONTENT" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_UNIT_CONTENT" data-type="TEXT">
         <name>Tematický popis jednotky popisu</name>
         <shortcut>Tematický popis jednotky popisu</shortcut>
         <description>ZP4.3.4 Tematický popis jednotky popisu</description>
@@ -187,8 +187,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>20</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_SOURCE" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_UNIT_SOURCE" data-type="TEXT">
         <name>Přímý zdroj akvizice</name>
         <shortcut>Přímý zdroj akvizice</shortcut>
         <description>ZP4.3.5 Přímý zdroj akvizice</description>
@@ -196,8 +196,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>21</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_FUTURE_UNITS" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_FUTURE_UNITS" data-type="TEXT">
         <name>Budoucí přírůstky</name>
         <shortcut>Budoucí přírůstky</shortcut>
         <description>ZP4.3.6 Budoucí přírůstky</description>
@@ -205,8 +205,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>22</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_ACCESS" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_UNIT_ACCESS" data-type="TEXT">
         <name>Podmínky přístupu, práva k jednotce popisu a její reprodukci</name>
         <shortcut>Přístup a práva</shortcut>
         <description>ZP4.4.1 Podmínky přístupu, práva k jednotce popisu a její reprodukci</description>
@@ -214,8 +214,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>23</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_INFO_RIGHTS" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_UNIT_INFO_RIGHTS" data-type="TEXT">
         <name>Možnost zveřejnění informací o jednotce popisu</name>
         <shortcut>Zveř. inf.</shortcut>
         <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
@@ -223,8 +223,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>24</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_COPY_RIGHTS" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_UNIT_COPY_RIGHTS" data-type="TEXT">
         <name>Možnost zveřejnění reprodukce jednotky popisu</name>
         <shortcut>Zveř. reprod.</shortcut>
         <description>ZP4.4.3 Možnost zveřejnění reprodukce jednotky popisu</description>
@@ -232,8 +232,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>25</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_CURRENT_STATUS" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_UNIT_CURRENT_STATUS" data-type="TEXT">
         <name>Fyzický stav jednotky popisu a technické požadavky</name>
         <shortcut>Fyz. stav</shortcut>
         <description>ZP4.4.4 Fyzický stav jednotky popisu a technické požadavky</description>
@@ -241,8 +241,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>26</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_COPY_SOURCE" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_COPY_SOURCE" data-type="TEXT">
         <name>Identifikace předlohy kopie</name>
         <shortcut>Předloha kopie</shortcut>
         <description>ZP4.5.1 Identifikace předlohy kopie</description>
@@ -250,8 +250,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>27</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_RELATED_UNITS" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_RELATED_UNITS" data-type="TEXT">
         <name>Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání</name>
         <shortcut>Odkazy</shortcut>
         <description>ZP4.5.2 Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání</description>
@@ -259,8 +259,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>28</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_EXISTING_COPY" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_EXISTING_COPY" data-type="TEXT">
         <name>Existence kopií jednotky popisu</name>
         <shortcut>Kopie</shortcut>
         <description>ZP4.5.3 Existence kopií jednotky popisu</description>
@@ -268,8 +268,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>29</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_INTERNAL_NOTE" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_INTERNAL_NOTE" data-type="TEXT">
         <name>Služební poznámka</name>
         <shortcut>Služ. pozn.</shortcut>
         <description>ZP4.6.1 Služební poznámka</description>
@@ -277,8 +277,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>30</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_NOTE" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_NOTE" data-type="TEXT">
         <name>Veřejná poznámka</name>
         <shortcut>Veř. pozn.</shortcut>
         <description>ZP4.6.2 Veřejná poznámka</description>
@@ -286,8 +286,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>31</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_ARRANGE_RULES" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_ARRANGE_RULES" data-type="TEXT">
         <name>Pravidla zpracování jednotky popisu</name>
         <shortcut>Pravidla</shortcut>
         <description>ZP4.7.2 Pravidla zpracování jednotky popisu</description>
@@ -295,8 +295,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>32</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_4_OTHER" data-type="UNITDATE">
+    </item-type>
+    <item-type code="ZP2015_4_OTHER" data-type="UNITDATE">
         <name>Jiné datace jednotky popisu než datace vzniku jednotky popisu - specifikace a hodnota</name>
         <shortcut>Typ datace</shortcut>
         <description>ZP5.2.1 Jiné datace jednotky popisu než datace vzniku jednotky popisu - specifikace a hodnota
@@ -305,8 +305,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>33</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_ITEM_TITLE" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_ITEM_TITLE" data-type="TEXT">
         <name>Název autorského díla</name>
         <shortcut>Náz. aut. díla</shortcut>
         <description>ZP5.2.2 Název autorského díla</description>
@@ -314,8 +314,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>34</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_STORAGE_COND" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_STORAGE_COND" data-type="TEXT">
         <name>Způsob a forma dochování</name>
         <shortcut>Dochování</shortcut>
         <description>ZP5.2.3 Způsob a forma dochování</description>
@@ -323,8 +323,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>35</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_SIZE" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_SIZE" data-type="TEXT">
         <name>Rozměry, hmotnost, velikost, množství</name>
         <shortcut>Kvantita</shortcut>
         <description>ZP5.2.4 Rozměry, hmotnost, velikost, množství</description>
@@ -332,8 +332,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>36</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_SCALE" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_SCALE" data-type="TEXT">
         <name>Měřítko</name>
         <shortcut>Měř.</shortcut>
         <description>ZP5.2.5 Měřítko</description>
@@ -341,8 +341,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>37</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_POSITION" data-type="COORDINATES">
+    </item-type>
+    <item-type code="ZP2015_POSITION" data-type="COORDINATES">
         <name>Souřadnice - tvar a souřadnice</name>
         <shortcut>Souř.</shortcut>
         <description>ZP5.2.6 Souřadnice - tvar a souřadnice</description>
@@ -350,8 +350,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>38</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_ORIENTATION" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_ORIENTATION" data-type="TEXT">
         <name>Orientace z hlediska světových stran</name>
         <shortcut>Orient.</shortcut>
         <description>ZP5.2.7 Orientace z hlediska světových stran</description>
@@ -359,8 +359,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>39</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_ITEM_MAT" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_ITEM_MAT" data-type="TEXT">
         <name>Technika, adjustace, nosič a látka záznamu</name>
         <shortcut>Techn. záznamu</shortcut>
         <description>ZP5.2.8 Technika, adjustace, nosič a látka záznamu</description>
@@ -368,8 +368,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>40</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_PART" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_PART" data-type="TEXT">
         <name>Díl, část, pořadí vydání jednotky popisu</name>
         <shortcut>Část</shortcut>
         <description>ZP5.2.9 Díl, část, pořadí vydání jednotky popisu</description>
@@ -377,8 +377,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>41</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_LANGUAGE" data-type="ENUM">
+    </item-type>
+    <item-type code="ZP2015_LANGUAGE" data-type="ENUM">
         <name>Jazyk, písmo</name>
         <shortcut>Jazyk</shortcut>
         <description>ZP5.2.10 Jazyk, písmo</description>
@@ -386,8 +386,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>42</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_EDITION" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_EDITION" data-type="TEXT">
         <name>Edice a literatura</name>
         <shortcut>Ed. a lit.</shortcut>
         <description>ZP5.2.11 Edice a literatura</description>
@@ -395,8 +395,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>43</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_ENTITY_ROLE" data-type="RECORD_REF">
+    </item-type>
+    <item-type code="ZP2015_ENTITY_ROLE" data-type="RECORD_REF">
         <name>Role entit (specifikace + hodnota)</name>
         <shortcut>Typ role</shortcut>
         <description>ZP5.3-5.6 Role entit (specifikace + hodnota)</description>
@@ -404,8 +404,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
         <view-order>44</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_EXERQUE" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_EXERQUE" data-type="TEXT">
         <name>Opis, nápis, exerque</name>
         <shortcut>3y</shortcut>
         <description>ZP5.7.1 Opis, nápis, exerque</description>
@@ -413,8 +413,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>45</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_PAINTING_CHAR" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_PAINTING_CHAR" data-type="TEXT">
         <name>Popis obrazu v poli typáře či otisku</name>
         <shortcut>Popis obr.</shortcut>
         <description>ZP5.7.2 Popis obrazu v poli typáře či otisku</description>
@@ -422,8 +422,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>46</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_CORROBORATION" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_CORROBORATION" data-type="TEXT">
         <name>Koroborace dokumentu, k němuž byl popisovaný otisk připojen</name>
         <shortcut>Koroborace</shortcut>
         <description>ZP5.7.3 Koroborace dokumentu, k němuž byl popisovaný otisk připojen</description>
@@ -431,8 +431,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>47</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_IMPRINT_COUNT" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_IMPRINT_COUNT" data-type="TEXT">
         <name>Počet otisků původní a současný</name>
         <shortcut>Poč. ot.</shortcut>
         <description>ZP5.7.4 Počet otisků původní a současný</description>
@@ -440,8 +440,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>48</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_IMPRINT_ORDER" data-type="TEXT">
+    </item-type>
+    <item-type code="ZP2015_IMPRINT_ORDER" data-type="TEXT">
         <name>Pořadí otisku</name>
         <shortcut>Poř. ot.</shortcut>
         <description>ZP5.7.5 Pořadí otisku</description>
@@ -449,8 +449,8 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>49</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_LEGEND" data-type="FORMATTED_TEXT">
+    </item-type>
+    <item-type code="ZP2015_LEGEND" data-type="FORMATTED_TEXT">
         <name>Legenda</name>
         <shortcut>Legenda</shortcut>
         <description>ZP5.11.1 Legenda</description>
@@ -458,8 +458,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>50</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_MOVIE_LENGTH" data-type="INT">
+    </item-type>
+    <item-type code="ZP2015_MOVIE_LENGTH" data-type="INT">
         <name>Délka filmového záznamu</name>
         <shortcut>Délka film. zázn.</shortcut>
         <description>ZP5.13.1 Délka filmového záznamu</description>
@@ -467,8 +467,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>51</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_RECORD_LENGTH" data-type="INT">
+    </item-type>
+    <item-type code="ZP2015_RECORD_LENGTH" data-type="INT">
         <name>Délka zvukového záznamu</name>
         <shortcut>Délka zv. zázn.</shortcut>
         <description>ZP5.14.1 Délka zvukového záznamu</description>
@@ -476,8 +476,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>52</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_COLL_EXTENT_LENGTH" data-type="DECIMAL">
+    </item-type>
+    <item-type code="ZP2015_COLL_EXTENT_LENGTH" data-type="DECIMAL">
         <name>Rozsah archivního souboru</name>
         <shortcut>Rozsah souboru</shortcut>
         <description>Rozsah archivního souboru nebo jeho části</description>
@@ -485,8 +485,8 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>53</view-order>
-    </desc-item-type>
-    <desc-item-type code="ZP2015_NAD" data-type="STRING">
+    </item-type>
+    <item-type code="ZP2015_NAD" data-type="STRING">
         <name>Číslo NAD</name>
         <shortcut>Číslo NAD</shortcut>
         <description>Číslo v evidenci NAD</description>
@@ -494,5 +494,5 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>54</view-order>
-    </desc-item-type>
-</desc-item-types>
+    </item-type>
+</item-types>

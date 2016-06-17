@@ -222,7 +222,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
             @Override
             public void init(final Root root, final Join descItemJoin) {
-                specJoin = descItemJoin.join(ArrDescItem.DESC_ITEM_SPEC, JoinType.LEFT);
+                specJoin = descItemJoin.join(ArrDescItem.ITEM_SPEC, JoinType.LEFT);
             }
 
             @Override
@@ -305,7 +305,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         List<Predicate> andPredicates = new LinkedList<>();
         andPredicates.add(builder.equal(node.get(ArrNode.FUND), version.getFund()));
         andPredicates.add(versionPredicate);
-        andPredicates.add(builder.equal(descItem.get(ArrDescItem.DESC_ITEM_TYPE), itemType));
+        andPredicates.add(builder.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
         if (specificationDataTypeHelper.useSpec()) {
             specificationDataTypeHelper.init(data, descItem);
 

@@ -1,24 +1,23 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.io.File;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
+import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.EncoderConfig;
+import com.jayway.restassured.config.RestAssuredConfig;
+import com.jayway.restassured.response.Header;
+import com.jayway.restassured.response.Response;
+import com.jayway.restassured.specification.RequestSpecification;
+import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.api.ArrPacket;
+import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.*;
+import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.exception.FilterExpiredException;
+import cz.tacr.elza.service.ArrMoveLevelService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -31,33 +30,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.EncoderConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
-import com.jayway.restassured.response.Header;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.specification.RequestSpecification;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.function.Function;
 
-import cz.tacr.elza.AbstractTest;
-import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemCoordinatesVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemDecimalVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemEnumVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemIntVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPacketVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPartyRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemRecordRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitdateVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitidVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.service.ArrMoveLevelService;
+import static com.jayway.restassured.RestAssured.given;
 
 
 public abstract class AbstractControllerTest extends AbstractTest {
@@ -140,6 +119,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/deleteDataValues/{versionId}";
     protected static final String FILTER_UNIQUE_VALUES = ARRANGEMENT_CONTROLLER_URL + "/filterUniqueValues/{versionId}";
     protected static final String OUTPUTS = ARRANGEMENT_CONTROLLER_URL + "/output";
+    protected static final String OUTPUT_TYPES = OUTPUTS + "/types";
     protected static final String GET_OUTPUTS = OUTPUTS + "/{fundVersionId}";
     protected static final String GET_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}";
     protected static final String CREATE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}";
@@ -374,6 +354,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected List<RulRuleSetVO> getRuleSets() {
         Response response = get(RULE_SETS);
         return Arrays.asList(response.getBody().as(RulRuleSetVO[].class));
+    }
+
+    /**
+     * Získání seznamu pravidel.
+     *
+     * @return seznam pravidel
+     */
+    protected List<RulOutputTypeVO> getOutputTypes() {
+        Response response = get(OUTPUT_TYPES);
+        return Arrays.asList(response.getBody().as(RulOutputTypeVO[].class));
     }
 
     /**
@@ -2241,11 +2231,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected ArrOutputDefinitionVO createNamedOutput(final ArrFundVersionVO fundVersion,
                                                       final String name,
                                                       final String code,
-                                                      final Boolean temporary) {
+                                                      final Boolean temporary,
+                                                      final Integer outputTypeId) {
         ArrangementController.OutputNameParam param = new ArrangementController.OutputNameParam();
         param.setInternalCode(code);
         param.setName(name);
         param.setTemporary(temporary);
+        param.setOutputTypeId(outputTypeId);
         return createNamedOutput(fundVersion.getId(), param);
     }
 

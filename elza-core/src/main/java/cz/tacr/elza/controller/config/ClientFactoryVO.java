@@ -1226,6 +1226,28 @@ public class ClientFactoryVO {
         return policyTypeVO;
     }
 
+    /**
+     * Vytvoří VO pro seznam typů outputů.
+     *
+     * @param outputTypes   seznam DO
+     * @return seznam VO
+     */
+    public List<RulOutputTypeVO> createOutputTypes(final List<RulOutputType> outputTypes) {
+        return createList(outputTypes, RulOutputTypeVO.class, this::createOutputType);
+    }
+
+    /**
+     * Vytvoří VO pro typ outputů.
+     *
+     * @param outputType   DO typu outputu
+     * @return seznam VO typu outputu
+     */
+    public RulOutputTypeVO createOutputType(final RulOutputType outputType) {
+        Assert.notNull(outputType);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(outputType, RulOutputTypeVO.class);
+    }
+
     public List<BulkActionRunVO> createBulkActionsList(List<ArrBulkActionRun> allBulkActions) {
         return createList(allBulkActions, BulkActionRunVO.class, this::createBulkActionRun);
     }

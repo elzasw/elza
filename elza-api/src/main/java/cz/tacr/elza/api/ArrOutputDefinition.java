@@ -1,6 +1,7 @@
 package cz.tacr.elza.api;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Výstup z archivního souboru.
@@ -8,7 +9,7 @@ import java.io.Serializable;
  * @author Martin Šlapa
  * @since 01.04.2016
  */
-public interface ArrOutputDefinition<F extends ArrFund> extends Serializable {
+public interface ArrOutputDefinition<F extends ArrFund,N extends ArrNodeOutput,O extends ArrOutput,R extends RulOutputType> extends Serializable {
 
     /**
      * @return identifikátor entity
@@ -69,4 +70,16 @@ public interface ArrOutputDefinition<F extends ArrFund> extends Serializable {
      * @param deleted příznak, že byl archivní fond smazán
      */
     void setDeleted(Boolean deleted);
+
+    List<O> getOutputs();
+
+    void setOutputs(List<O> outputs);
+
+    List<N> getOutputNodes();
+
+    void setOutputNodes(List<N> outputNodes);
+
+    R getOutputType();
+
+    void setOutputType(R outputType);
 }

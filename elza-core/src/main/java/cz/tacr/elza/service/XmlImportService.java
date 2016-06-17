@@ -43,7 +43,7 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
@@ -159,7 +159,7 @@ public class XmlImportService {
     private RuleSetRepository ruleSetRepository;
 
     @Autowired
-    private DescItemTypeRepository descItemTypeRepository;
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
@@ -586,7 +586,7 @@ public class XmlImportService {
 
         String descItemTypeCode = descItem.getDescItemTypeCode();
         if (descItemTypeCode !=  null) {
-            RulItemType descItemType = descItemTypeRepository.findOneByCode(descItemTypeCode);
+            RulItemType descItemType = itemTypeRepository.findOneByCode(descItemTypeCode);
             if (descItemType == null) {
                 throw new LevelImportException("Chybí desc item type");
             }

@@ -8,7 +8,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -70,7 +70,7 @@ public class SerialNumberBulkAction extends BulkAction {
     private RulItemSpec descItemEndSpec;
 
     @Autowired
-    private DescItemTypeRepository descItemTypeRepository;
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private DescItemRepository descItemRepository;
@@ -96,12 +96,12 @@ public class SerialNumberBulkAction extends BulkAction {
         String serialIdCode = (String) bulkActionConfig.getProperty("serial_id_code");
         Assert.notNull(serialIdCode);
 
-        descItemType = descItemTypeRepository.getOneByCode(serialIdCode);
+        descItemType = itemTypeRepository.getOneByCode(serialIdCode);
         Assert.notNull(descItemType);
 
         String levelTypeCode = (String) bulkActionConfig.getProperty("level_type_code");
         if (levelTypeCode != null) {
-            descItemEndType = descItemTypeRepository.getOneByCode(levelTypeCode);
+            descItemEndType = itemTypeRepository.getOneByCode(levelTypeCode);
             Assert.notNull(descItemEndType);
 
             String levelTypeEndGenerationForArrType = (String) bulkActionConfig.getProperty(

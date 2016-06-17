@@ -29,9 +29,8 @@ export default function fundOutputDetail(state = initialState, action = {}) {
                     ...state,
                     currentDataKey: '',
                 }
-            } else {
-                return state
             }
+            return state
         case types.FUND_OUTPUT_SELECT_OUTPUT:
             if (state.id !== action.id) {
                 return {
@@ -40,9 +39,8 @@ export default function fundOutputDetail(state = initialState, action = {}) {
                     currentDataKey: '',
                     fetched: false,
                 }
-            } else {
-                return state
             }
+            return state
         case types.FUND_OUTPUT_DETAIL_REQUEST:
             return {
                 ...state,

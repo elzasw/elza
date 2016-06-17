@@ -797,6 +797,10 @@ class WebApi{
         return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/deleteFund/' + fundId);
     }
 
+    getOutputTypes() {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/output/types');
+    }
+
     getOutputs(versionId) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/output/' + versionId);
     }

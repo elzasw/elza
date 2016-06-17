@@ -15,7 +15,7 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 
 /**
  * Class to read description items for the given levels
@@ -31,16 +31,16 @@ public class DescItemReader {
 	
 	private DescItemRepository descItemRepository;
 	
-	private DescItemTypeRepository descItemTypeRepository;
+	private ItemTypeRepository itemTypeRepository;
 
 	private DescItemFactory descItemFactory;
 	
-	public DescItemReader(DescItemRepository descItemRepository, 
-			              DescItemTypeRepository descItemTypeRepository,
-			              DescItemFactory descItemFactory) 
+	public DescItemReader(DescItemRepository descItemRepository,
+						  ItemTypeRepository itemTypeRepository,
+						  DescItemFactory descItemFactory)
 	{
 		this.descItemRepository = descItemRepository;
-		this.descItemTypeRepository = descItemTypeRepository;
+		this.itemTypeRepository = itemTypeRepository;
 		this.descItemFactory = descItemFactory;
 	}
 
@@ -58,8 +58,8 @@ public class DescItemReader {
 	 * @param version Version of the fund
 	 */
 	public void read(ArrFundVersion version) {
-        Set<RulItemType> descItemTypesForPackets = descItemTypeRepository.findDescItemTypesForPackets();
-        Set<RulItemType> descItemTypesForIntegers = descItemTypeRepository.findDescItemTypesForIntegers();
+        Set<RulItemType> descItemTypesForPackets = itemTypeRepository.findDescItemTypesForPackets();
+        Set<RulItemType> descItemTypesForIntegers = itemTypeRepository.findDescItemTypesForIntegers();
 		
 		Collection<ArrNode> nodes = items.values();
 		Set<Level> levels = items.keySet();

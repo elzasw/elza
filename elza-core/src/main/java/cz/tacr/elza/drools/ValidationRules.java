@@ -22,7 +22,7 @@ import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 
 /**
  * Zpracování pravidel pro validaci parametrů uzlu.
@@ -42,7 +42,7 @@ public class ValidationRules extends Rules {
 	private ScriptModelFactory scriptModelFactory;
 
 	@Autowired
-	private DescItemTypeRepository descItemTypeRepository;
+	private ItemTypeRepository itemTypeRepository;
 
 	@Autowired
 	private DescItemRepository descItemRepository;
@@ -125,7 +125,7 @@ public class ValidationRules extends Rules {
 					if (missingTypeCode == null) {
 						throw new IllegalStateException("Neni vyplnen kod chybejiciho typu.");
 					}
-					validationResult.setType(descItemTypeRepository.getOneByCode(missingTypeCode));
+					validationResult.setType(itemTypeRepository.getOneByCode(missingTypeCode));
 					break;
 				case ERROR:
 					Integer descItemId = validationResult.getDescItemId();

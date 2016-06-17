@@ -7,7 +7,7 @@ import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.model.*;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,7 +40,7 @@ public class ScriptModelFactory {
     private DescItemFactory descItemFactory;
 
     @Autowired
-    private DescItemTypeRepository descItemTypeRepository;
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
@@ -86,8 +86,8 @@ public class ScriptModelFactory {
             return Collections.emptyList();
         }
 
-        Set<RulItemType> descItemTypesForPackets = descItemTypeRepository.findDescItemTypesForPackets();
-        Set<RulItemType> descItemTypesForIntegers = descItemTypeRepository.findDescItemTypesForIntegers();
+        Set<RulItemType> descItemTypesForPackets = itemTypeRepository.findDescItemTypesForPackets();
+        Set<RulItemType> descItemTypesForIntegers = itemTypeRepository.findDescItemTypesForIntegers();
 
         return ModelFactory.createDescItems(descItems, descItemTypesForPackets, descItemTypesForIntegers, descItemFactory);
     }
@@ -104,7 +104,7 @@ public class ScriptModelFactory {
         Set<ArrNode> nodes = new HashSet<>();
         nodes.add(level.getNode());
 
-        DescItemReader descItemReader = new DescItemReader(descItemRepository, descItemTypeRepository, descItemFactory);
+        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory);
 
         Level mainLevel = ModelFactory.createLevel(level, version);
         descItemReader.add(mainLevel, level.getNode());
@@ -155,7 +155,7 @@ public class ScriptModelFactory {
 
         List<ArrDescItem> descItems = new ArrayList<>();
         for (DescItem descItemVO : newLevelApproach.getDescItems()) {
-            RulItemType rulDescItemType = descItemTypeRepository.getOneByCode(descItemVO.getType());
+            RulItemType rulDescItemType = itemTypeRepository.getOneByCode(descItemVO.getType());
             Assert.notNull(rulDescItemType);
             ArrDescItem descItem = descItemFactory.createDescItemByType(rulDescItemType.getDataType());
             descItem.setItemType(rulDescItemType);
@@ -195,7 +195,7 @@ public class ScriptModelFactory {
     {
     	Level srcModelLevel = createLevelModel(level, version);
 
-    	DescItemReader descItemReader = new DescItemReader(descItemRepository, descItemTypeRepository, descItemFactory);
+    	DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory);
 
     	// Parent level
         Level parentLevel = null;
@@ -295,7 +295,7 @@ public class ScriptModelFactory {
     public ActiveLevel createActiveLevel(Level modelLevel,
                                          final ArrLevel level,
                                          final ArrFundVersion version) {
-        DescItemReader descItemReader = new DescItemReader(descItemRepository, descItemTypeRepository, descItemFactory);
+        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory);
 
         ActiveLevel activeLevel = new ActiveLevel(modelLevel);
 

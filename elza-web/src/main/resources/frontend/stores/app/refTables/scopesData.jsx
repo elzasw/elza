@@ -7,8 +7,8 @@ const initialState = {
 
 export default function scopesData(state = initialState, action = {}) {
     switch (action.type) {
-        case types.REF_SCOPES_TYPES_DIRTY:
-            var index = indexById(state.scopes, action.versionId, 'versionId');
+        case types.REF_SCOPES_TYPES_DIRTY:{
+            const index = indexById(state.scopes, action.versionId, 'versionId');
             if (index !== null) {
                 return {
                     ...state,
@@ -22,21 +22,21 @@ export default function scopesData(state = initialState, action = {}) {
                         ...state.scopes.slice(index + 1)
                     ]
                 }
-            } else {
-                return {
-                    ...state,
-                    scopes: [
-                        ...state.scopes,
-                        {
-                            isFetching: false,
-                            isDirty: true
-                        }
-                    ]
-                }
             }
-            return state;
+            return {
+                ...state,
+                scopes: [
+                    ...state.scopes,
+                    {
+                        isFetching: false,
+                        isDirty: true
+                    }
+                ]
+            }
+        }
         case types.REF_SCOPES_TYPES_FETCHING:
-            var index = indexById(state.scopes, action.versionId, 'versionId');
+        {
+            const index = indexById(state.scopes, action.versionId, 'versionId');
             if (index !== null) {
                 return {
                     ...state,
@@ -60,9 +60,10 @@ export default function scopesData(state = initialState, action = {}) {
                         isDirty: true
                     }
                 ]
-            };
-        case types.REF_SCOPES_TYPES_RECEIVE:
-            var index = indexById(state.scopes, action.versionId, 'versionId');
+            }
+        }
+        case types.REF_SCOPES_TYPES_RECEIVE:{
+            const index = indexById(state.scopes, action.versionId, 'versionId');
             let scopeToAdd = {
                 versionId: action.versionId,
                 scopes: action.data,
@@ -77,16 +78,16 @@ export default function scopesData(state = initialState, action = {}) {
                         scopeToAdd
                     ]
                 };
-            } else {
-                return {
-                    ...state,
-                    scopes: [
-                        ...state.scopes.slice(0, index),
-                        scopeToAdd,
-                        ...state.scopes.slice(index + 1)
-                    ]
-                }
             }
+            return {
+                ...state,
+                scopes: [
+                    ...state.scopes.slice(0, index),
+                    scopeToAdd,
+                    ...state.scopes.slice(index + 1)
+                ]
+            }
+        }
         default:
             return state;
     }

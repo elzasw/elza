@@ -72,7 +72,7 @@ import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumConditi
 import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
@@ -97,7 +97,7 @@ public class ClientFactoryDO {
     private MapperFactory mapperFactory;
 
     @Autowired
-    private DescItemTypeRepository descItemTypeRepository;
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
@@ -213,7 +213,7 @@ public class ClientFactoryDO {
 
         ArrDescItem descItem = mapper.map(descItemVO, ArrDescItem.class);
 
-        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
         if (descItemType == null) {
             throw new IllegalStateException("Typ s ID=" + descItemVO.getDescItemSpecId() + " neexistuje");
         }
@@ -393,7 +393,7 @@ public class ClientFactoryDO {
 
         Map<Integer, Filter> filtersMap = filters.getFilters();
         Set<Integer> descItemTypeIds = filtersMap.keySet();
-        List<RulItemType> descItemTypes = descItemTypeRepository.findAll(descItemTypeIds);
+        List<RulItemType> descItemTypes = itemTypeRepository.findAll(descItemTypeIds);
 
 
         List<DescItemTypeFilter> descItemTypeFilters = new ArrayList<>(descItemTypes.size());;

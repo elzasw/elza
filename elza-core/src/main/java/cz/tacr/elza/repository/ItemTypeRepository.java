@@ -15,7 +15,7 @@ import java.util.Set;
  * @since 20.8.2015
  */
 @Repository
-public interface DescItemTypeRepository extends ElzaJpaRepository<RulItemType, Integer> {
+public interface ItemTypeRepository extends ElzaJpaRepository<RulItemType, Integer> {
 
     @Query("SELECT DISTINCT t.dataType FROM rul_item_type t WHERE t = ?1")
     List<RulDataType> findRulDataType(RulItemType descItemType);

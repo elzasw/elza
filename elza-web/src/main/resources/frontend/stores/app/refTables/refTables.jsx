@@ -13,116 +13,137 @@ import partyList from './partyList.jsx';
 import scopesData from './scopesData.jsx';
 import descItemTypes from './descItemTypes.jsx';
 import visiblePolicyTypes from './visiblePolicyTypes.jsx';
+import outputTypes from './outputTypes.jsx';
 
 const initialState = {
-    ruleSet: ruleSet(undefined, {type:''}),
+    ruleSet: ruleSet(),
     institutions: institutions(),
-    partyNameFormTypes: partyNameFormTypes(undefined, {type:''}),
-    partyTypes: partyTypes(undefined, {type:''}),
-    recordTypes: recordTypes(undefined, {type:''}),
-    rulDataTypes: rulDataTypes(undefined, {type:''}),
-    calendarTypes: calendarTypes(undefined, {type:''}),
-    packetTypes: packetTypes(undefined, {type:''}),
-    registryRegionList: registryRegionList(undefined, {type:''}),
-    partyList: partyList(undefined, {type:''}),
-    scopesData: scopesData(undefined, {type:''}),
+    partyNameFormTypes: partyNameFormTypes(),
+    partyTypes: partyTypes(),
+    recordTypes: recordTypes(),
+    rulDataTypes: rulDataTypes(),
+    calendarTypes: calendarTypes(),
+    packetTypes: packetTypes(),
+    registryRegionList: registryRegionList(),
+    partyList: partyList(),
+    scopesData: scopesData(),
     descItemTypes: descItemTypes(),
-    visiblePolicyTypes: visiblePolicyTypes()
-}
+    visiblePolicyTypes: visiblePolicyTypes(),
+    outputTypes: outputTypes()
+};
 
-export default function refTables(state = initialState, action) {
+export default function refTables(state = initialState, action = {}) {
     switch (action.type) {
         case types.REF_PARTY_LIST_REQUEST:
-        case types.REF_PARTY_LIST_RECEIVE:
+        case types.REF_PARTY_LIST_RECEIVE:{
             return {
                 ...state,
-                partyList: partyList(state.partyList, action),
+                partyList: partyList(state.partyList, action)
             }
+        }
         case types.REF_REGISTRY_LIST_REQUEST:
-        case types.REF_REGISTRY_LIST_RECEIVE:
+        case types.REF_REGISTRY_LIST_RECEIVE:{
             return {
                 ...state,
-                registryRegionList: registryRegionList(state.registryRegionList, action),
+                registryRegionList: registryRegionList(state.registryRegionList, action)
             }
+        }
         case types.REF_RULE_SET_REQUEST:
-        case types.REF_RULE_SET_RECEIVE:
+        case types.REF_RULE_SET_RECEIVE:{
             return {
                 ...state,
-                ruleSet: ruleSet(state.ruleSet, action),
+                ruleSet: ruleSet(state.ruleSet, action)
             }
+        }
         case types.REF_INSTITUTIONS_REQUEST:
         case types.REF_INSTITUTIONS_RECEIVE:
-        case types.CHANGE_INSTITUTION:
+        case types.CHANGE_INSTITUTION:{
             return {
                 ...state,
-                institutions: institutions(state.institutions, action),
+                institutions: institutions(state.institutions, action)
             }
+        }
         case types.REF_PARTY_NAME_FORM_TYPES_REQUEST:
-        case types.REF_PARTY_NAME_FORM_TYPES_RECEIVE:
+        case types.REF_PARTY_NAME_FORM_TYPES_RECEIVE:{
             return {
                 ...state,
-                partyNameFormTypes: partyNameFormTypes(state.partyNameFormTypes, action),
+                partyNameFormTypes: partyNameFormTypes(state.partyNameFormTypes, action)
             }
+        }
         case types.REF_PARTY_TYPES_REQUEST:
-        case types.REF_PARTY_TYPES_RECEIVE:
+        case types.REF_PARTY_TYPES_RECEIVE:{
             return {
                 ...state,
-                partyTypes: partyTypes(state.partyTypes, action),
+                partyTypes: partyTypes(state.partyTypes, action)
             }
+        }
         case types.REF_RECORD_TYPES_REQUEST:
-        case types.REF_RECORD_TYPES_RECEIVE:
+        case types.REF_RECORD_TYPES_RECEIVE:{
             return {
                 ...state,
-                recordTypes: recordTypes(state.recordTypes, action),
+                recordTypes: recordTypes(state.recordTypes, action)
             }
+        }
         case types.REF_RUL_DATA_TYPES_REQUEST:
-        case types.REF_RUL_DATA_TYPES_RECEIVE:
+        case types.REF_RUL_DATA_TYPES_RECEIVE:{
             return {
                 ...state,
-                rulDataTypes: rulDataTypes(state.rulDataTypes, action),
+                rulDataTypes: rulDataTypes(state.rulDataTypes, action)
             }
+        }
         case types.REF_CALENDAR_TYPES_REQUEST:
-        case types.REF_CALENDAR_TYPES_RECEIVE:
+        case types.REF_CALENDAR_TYPES_RECEIVE:{
             return {
                 ...state,
-                calendarTypes: calendarTypes(state.calendarTypes, action),
+                calendarTypes: calendarTypes(state.calendarTypes, action)
             }
+        }
         case types.REF_PACKET_TYPES_REQUEST:
-        case types.REF_PACKET_TYPES_RECEIVE:
+        case types.REF_PACKET_TYPES_RECEIVE:{
             return {
                 ...state,
-                packetTypes: packetTypes(state.packetTypes, action),
+                packetTypes: packetTypes(state.packetTypes, action)
             }
+        }
         case types.REF_SCOPES_TYPES_DIRTY:
         case types.REF_SCOPES_TYPES_FETCHING:
         case types.REF_SCOPES_TYPES_REQUEST:
-        case types.REF_SCOPES_TYPES_RECEIVE:
+        case types.REF_SCOPES_TYPES_RECEIVE:{
             return {
                 ...state,
-                scopesData: scopesData(state.scopesData, action),
+                scopesData: scopesData(state.scopesData, action)
             }
-
+        }
         case types.REF_DESC_ITEM_TYPES_REQUEST:
-        case types.REF_DESC_ITEM_TYPES_RECEIVE:
+        case types.REF_DESC_ITEM_TYPES_RECEIVE:{
             return {
                 ...state,
-                descItemTypes: descItemTypes(state.descItemTypes, action),
+                descItemTypes: descItemTypes(state.descItemTypes, action)
             }
-
+        }
         case types.REF_VISIBLE_POLICY_TYPES_REQUEST:
-        case types.REF_VISIBLE_POLICY_TYPES_RECEIVE:
+        case types.REF_VISIBLE_POLICY_TYPES_RECEIVE:{
             return {
                 ...state,
-                visiblePolicyTypes: visiblePolicyTypes(state.visiblePolicyTypes, action),
+                visiblePolicyTypes: visiblePolicyTypes(state.visiblePolicyTypes, action)
             }
-
-        case types.CHANGE_PACKAGE:
+        }
+        case types.REF_OUTPUT_TYPES_REQUEST:
+        case types.REF_OUTPUT_TYPES_RECEIVE:{
+            return {
+                ...state,
+                outputTypes: outputTypes(state.outputTypes, action)
+            }
+        }
+        case types.CHANGE_PACKAGE:{
             return {
                 ...state,
                 packetTypes: packetTypes(state.packetTypes, action),
                 ruleSet: ruleSet(state.ruleSet, action),
                 descItemTypes: descItemTypes(state.descItemTypes, action),
+                outputTypes: outputTypes(state.outputTypes, action)
             }
+        }
         default:
             return state
     }

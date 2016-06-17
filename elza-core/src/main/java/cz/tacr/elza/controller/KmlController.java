@@ -47,7 +47,7 @@ public class KmlController {
 
 
     @Autowired
-    private DescItemTypeRepository descItemTypeRepository;
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private DescItemRepository descItemRepository;
@@ -102,7 +102,7 @@ public class KmlController {
         Assert.notNull(nodeId);
         Assert.notNull(nodeVersion);
 
-        RulItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
         if (descItemType == null) {
             throw new IllegalStateException("Typ s ID=" + descItemTypeId + " neexistuje");
         }

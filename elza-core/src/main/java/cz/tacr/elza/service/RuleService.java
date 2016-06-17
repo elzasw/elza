@@ -63,7 +63,7 @@ public class RuleService {
     @Autowired
     private ItemSpecRepository itemSpecRepository;
     @Autowired
-    private DescItemTypeRepository descItemTypeRepository;
+    private ItemTypeRepository itemTypeRepository;
     @Autowired
     private DefaultItemTypeRepository defaultItemTypeRepository;
     @Autowired
@@ -452,7 +452,7 @@ public class RuleService {
      * @return typy hodnot atributů
      */
     public List<RulItemTypeExt> getAllDescriptionItemTypes() {
-        List<RulItemType> itemTypeList = descItemTypeRepository.findAll();
+        List<RulItemType> itemTypeList = itemTypeRepository.findAll();
 
         List<RulItemTypeExt> rulDescItemTypeExtList = createExt(itemTypeList);
 
