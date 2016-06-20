@@ -1,28 +1,23 @@
 package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.*;
 
 
 /**
- * Implementace třídy {@link cz.tacr.elza.api.RulOutputType}
+ * Implementace třídy {@link cz.tacr.elza.api.RulTemplate}
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 16.6.2016
  */
-@Entity(name = "rul_output_type")
+@Entity(name = "rul_template")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulOutputType implements cz.tacr.elza.api.RulOutputType<RulPackage> {
+public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, RulOutputType> {
 
     @Id
     @GeneratedValue
-    private Integer outputTypeId;
+    private Integer templateId;
 
     @Column(length = 50, nullable = false)
     private String code;
@@ -30,19 +25,26 @@ public class RulOutputType implements cz.tacr.elza.api.RulOutputType<RulPackage>
     @Column(length = 250, nullable = false)
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10, nullable = false)
+    private Engine engine;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulOutputType.class)
+    @JoinColumn(name = "outputTypeId", nullable = false)
+    private RulOutputType outputType;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
     @Override
-    public Integer getOutputTypeId() {
-        return outputTypeId;
+    public Integer getTemplateId() {
+        return templateId;
     }
 
     @Override
-    public void setOutputTypeId(Integer outputTypeId) {
-        this.outputTypeId = outputTypeId;
+    public void setTemplateId(Integer templateId) {
+        this.templateId = templateId;
     }
 
     @Override
@@ -66,6 +68,16 @@ public class RulOutputType implements cz.tacr.elza.api.RulOutputType<RulPackage>
     }
 
     @Override
+    public Engine getEngine() {
+        return engine;
+    }
+
+    @Override
+    public void setEngine(Engine engine) {
+        this.engine = engine;
+    }
+
+    @Override
     public RulPackage getPackage() {
         return rulPackage;
     }
@@ -75,4 +87,13 @@ public class RulOutputType implements cz.tacr.elza.api.RulOutputType<RulPackage>
         this.rulPackage = rulPackage;
     }
 
+    @Override
+    public RulOutputType getOutputType() {
+        return outputType;
+    }
+
+    @Override
+    public void setOutputType(RulOutputType outputType) {
+        this.outputType = outputType;
+    }
 }

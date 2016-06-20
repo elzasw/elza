@@ -9,7 +9,7 @@ public interface RulOutputType<P extends RulPackage> {
     Integer getOutputTypeId();
 
 
-    void setOutputTypeId(final Integer dataTypeId);
+    void setOutputTypeId(final Integer outputTypeId);
 
 
     String getCode();

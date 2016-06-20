@@ -9,7 +9,7 @@ import java.util.List;
  * @author Martin Šlapa
  * @since 01.04.2016
  */
-public interface ArrOutputDefinition<F extends ArrFund,N extends ArrNodeOutput,O extends ArrOutput,R extends RulOutputType> extends Serializable {
+public interface ArrOutputDefinition<F extends ArrFund,N extends ArrNodeOutput,O extends ArrOutput,R extends RulOutputType, T extends RulTemplate> extends Serializable {
 
     /**
      * @return identifikátor entity
@@ -82,4 +82,8 @@ public interface ArrOutputDefinition<F extends ArrFund,N extends ArrNodeOutput,O
     R getOutputType();
 
     void setOutputType(R outputType);
+
+    T getTemplate();
+    
+    void setTemplate(T template);
 }

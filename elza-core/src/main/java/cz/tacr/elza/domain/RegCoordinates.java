@@ -10,7 +10,7 @@ import javax.persistence.*;
 
 
 /**
- * Záznamy v rejstříku.
+ * Implementace třídy {@link cz.tacr.elza.api.RegCoordinates}
  *
  * @author Petr Compel
  * @since 18. 4. 2016
@@ -35,13 +35,15 @@ public class RegCoordinates implements cz.tacr.elza.api.RegCoordinates<RegRecord
     private Geometry value;
 
 
-    @Column(nullable = true)
+    @Column
     private String description;
 
+    @Override
     public Integer getCoordinatesId() {
         return coordinatesId;
     }
 
+    @Override
     public void setCoordinatesId(Integer coordinatesId) {
         this.coordinatesId = coordinatesId;
     }

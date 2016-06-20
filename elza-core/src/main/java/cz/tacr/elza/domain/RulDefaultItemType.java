@@ -9,7 +9,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * Implementace RulDefaultItemType.
+ * Implementace třídy {@link cz.tacr.elza.api.RulDefaultItemType}
  *
  * @author Pavel Stánek
  * @since 10.06.2016
@@ -28,6 +28,14 @@ public class RulDefaultItemType implements cz.tacr.elza.api.RulDefaultItemType<R
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
+
+    public Integer getDefaultItemTypeId() {
+        return defaultItemTypeId;
+    }
+
+    public void setDefaultItemTypeId(Integer defaultItemTypeId) {
+        this.defaultItemTypeId = defaultItemTypeId;
+    }
 
     @Override
     public void setRuleSet(final RulRuleSet ruleSet) {

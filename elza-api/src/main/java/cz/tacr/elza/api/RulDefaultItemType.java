@@ -7,6 +7,11 @@ package cz.tacr.elza.api;
  * @since 10.06.2016
  */
 public interface RulDefaultItemType<RS extends RulRuleSet, DIT extends RulItemType> {
+
+    Integer getDefaultItemTypeId();
+
+    void setDefaultItemTypeId(Integer defaultItemTypeId);
+
     void setRuleSet(RS ruleSet);
 
     RS getRuleSet();

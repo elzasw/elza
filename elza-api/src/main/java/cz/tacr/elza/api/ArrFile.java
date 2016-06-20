@@ -6,7 +6,7 @@ package cz.tacr.elza.api;
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 13.3.2016
  */
-public interface ArrFile<F extends ArrFund, D extends DmsFile> {
+public interface ArrFile<F extends ArrFund> extends DmsFile {
 
     F getFund();
 

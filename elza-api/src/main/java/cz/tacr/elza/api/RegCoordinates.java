@@ -11,6 +11,10 @@ import cz.tacr.elza.api.interfaces.IRegScope;
  */
 public interface RegCoordinates<RR extends RegRecord> extends IRegScope {
 
+    Integer getCoordinatesId();
+
+    void setCoordinatesId(Integer coordinatesId);
+
     /**
      *  @return souřadnice
      */

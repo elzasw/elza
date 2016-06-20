@@ -16,7 +16,7 @@ import javax.persistence.*;
  */
 @Entity(name = "arr_file")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFile extends DmsFile implements cz.tacr.elza.api.ArrFile<ArrFund, DmsFile> {
+public class ArrFile extends DmsFile implements cz.tacr.elza.api.ArrFile<ArrFund> {
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)

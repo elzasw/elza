@@ -4,7 +4,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTWriter;
 
 /**
- * Rozšiřuje atribut archivního popisu o jeho hodnotu.
+ * Implementace třídy {@link cz.tacr.elza.api.ArrDescItemCoordinates}
  *
  * @author Martin Šlapa
  * @since 15.9.15

@@ -9,7 +9,7 @@ import javax.persistence.*;
 
 
 /**
- * Data fund soubor
+ * Implementace třídy {@link cz.tacr.elza.api.ArrDataFileRef}
  *
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 17.6.2016
