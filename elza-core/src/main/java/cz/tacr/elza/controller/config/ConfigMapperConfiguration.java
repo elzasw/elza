@@ -9,6 +9,7 @@ import cz.tacr.elza.controller.vo.nodes.*;
 import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.vo.DmsFileVO;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.PacketRepository;
@@ -292,6 +293,7 @@ public class ConfigMapperConfiguration {
                 }
         ).byDefault().register();
         mapperFactory.classMap(ArrBulkActionRun.class, BulkActionRunVO.class).field("bulkActionRunId", "id").field("bulkActionCode", "code").byDefault().register();
+        mapperFactory.classMap(DmsFile.class, DmsFileVO.class).field("fileId", "id").exclude("file").byDefault().register();
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
         mapperFactory.classMap(ParParty.class, ParPartyVO.class)

@@ -9,6 +9,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.vo.DmsFileVO;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
@@ -1357,5 +1358,13 @@ public class ClientFactoryVO {
         result.setUsers(createUserList(users));
 
         return result;
+    }
+
+    public DmsFileVO createFile(DmsFile file) {
+        return mapperFactory.getMapperFacade().map(file, DmsFileVO.class);
+    }
+
+    public List<DmsFileVO> createFilesList(List<DmsFile> filesList) {
+        return createList(filesList, DmsFileVO.class, this::createFile);
     }
 }

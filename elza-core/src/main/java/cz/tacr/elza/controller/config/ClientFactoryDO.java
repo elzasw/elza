@@ -1,18 +1,25 @@
 package cz.tacr.elza.controller.config;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import cz.tacr.elza.FilterTools;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.filter.Condition;
+import cz.tacr.elza.controller.vo.filter.Filter;
+import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.filter.ValuesTypes;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.convertor.CalendarConverter;
+import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.vo.DmsFileVO;
+import cz.tacr.elza.filter.DescItemTypeFilter;
+import cz.tacr.elza.filter.condition.*;
+import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
+import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MapperFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,68 +27,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.FilterTools;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegCoordinatesVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
-import cz.tacr.elza.controller.vo.XmlImportConfigVO;
-import cz.tacr.elza.controller.vo.filter.Condition;
-import cz.tacr.elza.controller.vo.filter.Filter;
-import cz.tacr.elza.controller.vo.filter.Filters;
-import cz.tacr.elza.controller.vo.filter.ValuesTypes;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.filter.condition.BeginDescItemCondition;
-import cz.tacr.elza.filter.condition.ContainDescItemCondition;
-import cz.tacr.elza.filter.condition.DescItemCondition;
-import cz.tacr.elza.filter.condition.EndDescItemCondition;
-import cz.tacr.elza.filter.condition.EqDescItemCondition;
-import cz.tacr.elza.filter.condition.EqIntervalDesCitemCondition;
-import cz.tacr.elza.filter.condition.GeDescItemCondition;
-import cz.tacr.elza.filter.condition.GtDescItemCondition;
-import cz.tacr.elza.filter.condition.IntersectDescItemCondition;
-import cz.tacr.elza.filter.condition.Interval;
-import cz.tacr.elza.filter.condition.IntervalDescItemCondition;
-import cz.tacr.elza.filter.condition.LeDescItemCondition;
-import cz.tacr.elza.filter.condition.LtDescItemCondition;
-import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
-import cz.tacr.elza.filter.condition.NeDescItemCondition;
-import cz.tacr.elza.filter.condition.NoSpecsCondition;
-import cz.tacr.elza.filter.condition.NoValuesCondition;
-import cz.tacr.elza.filter.condition.NotContainDescItemCondition;
-import cz.tacr.elza.filter.condition.NotEmptyDescItemCondition;
-import cz.tacr.elza.filter.condition.NotIntervalDescItemCondition;
-import cz.tacr.elza.filter.condition.SelectedSpecificationsDescItemEnumCondition;
-import cz.tacr.elza.filter.condition.SelectedValuesDescItemEnumCondition;
-import cz.tacr.elza.filter.condition.SelectsNothingCondition;
-import cz.tacr.elza.filter.condition.SubsetDescItemCondition;
-import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
-import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.service.DescriptionItemService;
-import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
-
+import javax.annotation.Nullable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  * Továrna na vytváření DO objektů z VO objektů.
@@ -794,5 +743,16 @@ public class ClientFactoryDO {
                 conditions.add(new NotEmptyDescItemCondition());
             }
         }
+    }
+
+    /**
+     * Převod DMS soubor VO na DO
+     *
+     * @param fileVO soubor VO
+     * @return soubor DO
+     */
+    public DmsFile createDmsFile(DmsFileVO fileVO) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(fileVO, DmsFile.class);
     }
 }
