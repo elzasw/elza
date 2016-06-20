@@ -2,7 +2,20 @@ package cz.tacr.elza.packageimport;
 
 import com.google.common.collect.Maps;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulDefaultItemType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecRegister;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulRule;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.packageimport.xml.*;
 import cz.tacr.elza.repository.*;
@@ -74,9 +87,14 @@ public class PackageService {
     public static final String PACKAGE_RULES_XML = "rul_package_rules.xml";
 
     /**
-     * pravidla v zipu
+     * typy outputů
      */
     public static final String OUTPUT_TYPE_XML = "rul_output_type.xml";
+
+    /**
+     * templaty outputů
+     */
+    public static final String TEMPLATE_XML = "rul_template.xml";
 
     /**
      * typy packet v zipu
@@ -147,6 +165,9 @@ public class PackageService {
     @Autowired
     private OutputTypeRepository outputTypeRepository;
 
+    @Autowired
+    private TemplateRepository templateRepository;
+
     /**
      * Provede import balíčku.
      *
@@ -186,10 +207,12 @@ public class PackageService {
 
             OutputTypes outputTypes = convertXmlStreamToObject(OutputTypes.class, mapEntry.get(OUTPUT_TYPE_XML));
 
+            Templates templates = convertXmlStreamToObject(Templates.class, mapEntry.get(TEMPLATE_XML));
+
             PacketTypes packetTypes = convertXmlStreamToObject(PacketTypes.class, mapEntry.get(PACKET_TYPE_XML));
 
             processPacketTypes(packetTypes, rulPackage);
-            processOutputTypes(outputTypes, rulPackage);
+            processOutputTypes(outputTypes, templates, rulPackage);
 
             List<RulRuleSet> rulRuleSets = processRuleSets(ruleSets, rulPackage);
 
@@ -388,39 +411,6 @@ public class PackageService {
         List<RulPacketType> rulPacketTypesDelete = new ArrayList<>(rulPacketTypesNew);
         rulPacketTypesDelete.removeAll(rulPacketTypesNew);
         packetTypeRepository.delete(rulPacketTypesDelete);
-    }
-
-    /**
-     * Zpracování output types.
-     *
-     * @param outputTypes importovaný seznam output types
-     * @param rulPackage  balíček
-     */
-    private void processOutputTypes(final OutputTypes outputTypes, final RulPackage rulPackage) {
-        List<RulOutputType> rulOutputTypes = outputTypeRepository.findByRulPackage(rulPackage);
-        List<RulOutputType> rulOutputTypesNew = new ArrayList<>();
-
-        if (!CollectionUtils.isEmpty(outputTypes.getOutputTypes())) {
-            for (OutputType outputType : outputTypes.getOutputTypes()) {
-                List<RulOutputType> findItems = rulOutputTypes.stream()
-                        .filter((r) -> r.getCode().equals(outputType.getCode())).collect(Collectors.toList());
-                RulOutputType item;
-                if (findItems.size() > 0) {
-                    item = findItems.get(0);
-                } else {
-                    item = new RulOutputType();
-                }
-
-                convertRulOutputType(rulPackage, outputType, item);
-                rulOutputTypesNew.add(item);
-            }
-        }
-
-        rulOutputTypesNew = outputTypeRepository.save(rulOutputTypesNew);
-
-        List<RulOutputType> rulPacketTypesDelete = new ArrayList<>(rulOutputTypesNew);
-        rulPacketTypesDelete.removeAll(rulOutputTypesNew);
-        outputTypeRepository.delete(rulPacketTypesDelete);
     }
 
     /**
@@ -837,6 +827,118 @@ public class PackageService {
     }
 
     /**
+     * Zpracování typů atributů.
+     *
+     * @param outputTypes       seznam importovaných typů
+     * @param templates       seznam importovaných specifikací
+     * @param rulPackage      balíček
+     * @return                výsledný seznam atributů v db
+     */
+    private List<RulOutputType> processOutputTypes(final OutputTypes outputTypes,
+                                               final Templates templates,
+                                               final RulPackage rulPackage) {
+
+        List<RulOutputType> rulOutputTypes = outputTypeRepository.findByRulPackage(rulPackage);
+        List<RulOutputType> rulOutputTypesNew = new ArrayList<>();
+
+        if (!CollectionUtils.isEmpty(outputTypes.getOutputTypes())) {
+            for (OutputType outputType : outputTypes.getOutputTypes()) {
+                List<RulOutputType> findItems = rulOutputTypes.stream()
+                        .filter((r) -> r.getCode().equals(outputType.getCode())).collect(Collectors.toList());
+                RulOutputType item;
+                if (findItems.size() > 0) {
+                    item = findItems.get(0);
+                } else {
+                    item = new RulOutputType();
+                }
+
+                convertRulOutputType(rulPackage, outputType, item);
+                rulOutputTypesNew.add(item);
+            }
+        }
+
+        rulOutputTypesNew = outputTypeRepository.save(rulOutputTypesNew);
+
+        processTemplates(templates, rulPackage, rulOutputTypesNew);
+
+        List<RulOutputType> rulPacketTypesDelete = new ArrayList<>(rulOutputTypes);
+        rulPacketTypesDelete.removeAll(rulOutputTypesNew);
+        outputTypeRepository.delete(rulPacketTypesDelete);
+
+        return rulOutputTypesNew;
+    }
+
+    /**
+     * Zpracování specifikací atributů.
+     *
+     * @param templates       seznam importovaných specifikací
+     * @param rulPackage          balíček
+     * @param rulOutputTypes    seznam typů atributů
+     */
+    private void processTemplates(
+            final Templates templates,
+            final RulPackage rulPackage,
+            final List<RulOutputType> rulOutputTypes) {
+        List<RulTemplate> rulDescItemSpecs = templateRepository.findByRulPackage(rulPackage);
+        List<RulTemplate> rulDescItemSpecsNew = new ArrayList<>();
+
+        if (!CollectionUtils.isEmpty(templates.getTemplates())) {
+            for (Template template : templates.getTemplates()) {
+                List<RulTemplate> findItems = rulDescItemSpecs.stream()
+                        .filter((r) -> r.getCode().equals(template.getCode())).collect(
+                                Collectors.toList());
+                RulTemplate item;
+                if (findItems.size() > 0) {
+                    item = findItems.get(0);
+                } else {
+                    item = new RulTemplate();
+                }
+
+                convertRulTemplate(rulPackage, template, item, rulOutputTypes);
+                rulDescItemSpecsNew.add(item);
+            }
+        }
+
+        rulDescItemSpecsNew = templateRepository.save(rulDescItemSpecsNew);
+
+        List<RulTemplate> rulDescItemSpecsDelete = new ArrayList<>(rulDescItemSpecs);
+        rulDescItemSpecsDelete.removeAll(rulDescItemSpecsNew);
+        templateRepository.delete(rulDescItemSpecsDelete);
+    }
+
+
+    /**
+     * Převod VO na DAO Templaty outputů
+     *
+     * @param rulPackage       balíček
+     * @param template     VO template
+     * @param rulTemplate  DAO template
+     * @param rulOutputTypes seznam typů outputů
+     */
+    private void convertRulTemplate(RulPackage rulPackage, Template template, RulTemplate rulTemplate, List<RulOutputType> rulOutputTypes) {
+        rulTemplate.setName(template.getName());
+        rulTemplate.setCode(template.getCode());
+        rulTemplate.setEngine(cz.tacr.elza.api.RulTemplate.Engine.valueOf(template.getEngine()));
+        rulTemplate.setPackage(rulPackage);
+        rulTemplate.setDirectory(template.getDirectory());
+
+        List<RulOutputType> findItems = rulOutputTypes.stream()
+                .filter((r) -> r.getCode().equals(template.getOutputType()))
+                .collect(Collectors.toList());
+
+        RulOutputType item;
+
+        if (findItems.size() > 0) {
+            item = findItems.get(0);
+        } else {
+            throw new IllegalStateException("Kód " + template.getOutputType() + " neexistuje v RulOutputType");
+        }
+
+        rulTemplate.setOutputType(item);
+    }
+
+
+    /**
      * Zpracování napojení specifikací na reg.
      *
      * @param itemSpecs    seznam importovaných specifikací
@@ -1181,6 +1283,8 @@ public class PackageService {
             ruleSetRepository.findByRulPackage(rulPackage).forEach(this::deleteRuleSet);
 
             packetTypeRepository.deleteByRulPackage(rulPackage);
+
+            templateRepository.deleteByRulPackage(rulPackage);
 
             outputTypeRepository.deleteByRulPackage(rulPackage);
 

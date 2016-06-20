@@ -29,6 +29,9 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
     @Column(length = 10, nullable = false)
     private Engine engine;
 
+    @Column(length = 250, nullable = false)
+    private String directory;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulOutputType.class)
     @JoinColumn(name = "outputTypeId", nullable = false)
     private RulOutputType outputType;
@@ -75,6 +78,16 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
     @Override
     public void setEngine(Engine engine) {
         this.engine = engine;
+    }
+
+    @Override
+    public String getDirectory() {
+        return directory;
+    }
+
+    @Override
+    public void setDirectory(String directory) {
+        this.directory = directory;
     }
 
     @Override

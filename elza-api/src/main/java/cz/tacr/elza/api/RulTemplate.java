@@ -31,6 +31,10 @@ public interface RulTemplate<P extends RulPackage, O extends RulOutputType> {
 
     void setEngine(Engine engine);
 
+    String getDirectory();
+
+    void setDirectory(String directory);
+
     /**
      * @return balíček
      */

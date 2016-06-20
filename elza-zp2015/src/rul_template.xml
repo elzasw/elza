@@ -1,0 +1,7 @@
+<templates>
+    <template code="AP_INVENTORY_FREEMARKER" output-type="TEST">
+        <name>AP inventář FREEMARKER</name>
+        <engine>FREEMARKER</engine>
+        <directory>FREEMARKER</directory>
+    </template>
+</templates>

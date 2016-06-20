@@ -11,7 +11,7 @@ import javax.persistence.*;
 
 
 /**
- * Implementace třídy {@link cz.tacr.elza.api.RulOutputType}
+ * Implementace třídy {@link cz.tacr.elza.api.RulOut}
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 16.6.2016
  */
