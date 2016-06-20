@@ -585,7 +585,7 @@ public class ArrangementService {
     private void deleteDescItemForce(final ArrDescItem descItem) {
         Assert.notNull(descItem);
 
-        dataRepository.findByDescItem(descItem).forEach(data -> dataRepository.delete(data));
+        dataRepository.findByItem(descItem).forEach(data -> dataRepository.delete(data));
         descItemRepository.delete(descItem);
     }
 

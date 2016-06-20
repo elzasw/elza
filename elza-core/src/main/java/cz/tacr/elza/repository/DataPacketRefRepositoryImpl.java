@@ -19,7 +19,7 @@ public class DataPacketRefRepositoryImpl implements DataPacketRefRepositoryCusto
 
     @Override
     public List<ArrDataPacketRef> findByDataIdsAndVersionFetchPacket(Set<Integer> dataIds, final Set<RulItemType> itemTypes, ArrFundVersion version) {
-        String hql = "SELECT d FROM arr_data_packet_ref d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH d.packet p JOIN FETCH p.packetType pt  WHERE ";
+        String hql = "SELECT d FROM arr_data_packet_ref d JOIN FETCH d.item di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH d.packet p JOIN FETCH p.packetType pt  WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";
         } else {
@@ -51,7 +51,7 @@ public class DataPacketRefRepositoryImpl implements DataPacketRefRepositoryCusto
     @Override
     public int countInFundVersionByPacketIds(final List<Integer> packetIds, final ArrFundVersion version) {
         String hql = "SELECT count(d) FROM arr_data_packet_ref d " +
-                "JOIN d.packet p JOIN d.descItem di JOIN di.node n JOIN n.fund f JOIN f.versions v " +
+                "JOIN d.packet p JOIN d.item di JOIN di.node n JOIN n.fund f JOIN f.versions v " +
                 "WHERE v = :version AND p.packetId IN :packetIds";
 
         Query query = entityManager.createQuery(hql);

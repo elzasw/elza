@@ -154,19 +154,19 @@ public class ConfigMapperConfiguration {
                     e.printStackTrace();
                 }
             }
-        }).field("descItemId", "id").exclude("value").byDefault().register();
+        }).field("itemId", "id").exclude("value").byDefault().register();
         mapperFactory.classMap(ArrDescItemEnum.class, ArrDescItemEnumVO.class).byDefault().field(
-                "descItemId", "id").register();
+                "itemId", "id").register();
         mapperFactory.classMap(ArrDescItemFormattedText.class, ArrDescItemFormattedTextVO.class).byDefault().field(
-                "descItemId", "id").register();
+                "itemId", "id").register();
         mapperFactory.classMap(ArrDescItemInt.class, ArrDescItemIntVO.class).byDefault().field(
-                "descItemId", "id").register();
+                "itemId", "id").register();
         mapperFactory.classMap(ArrDescItemText.class, ArrDescItemTextVO.class).byDefault().field(
-                "descItemId", "id").register();
+                "itemId", "id").register();
         mapperFactory.classMap(ArrDescItemDecimal.class, ArrDescItemDecimalVO.class).byDefault().field(
-                "descItemId", "id").register();
+                "itemId", "id").register();
         mapperFactory.classMap(ArrDescItemUnitid.class, ArrDescItemUnitidVO.class).byDefault().field(
-                "descItemId", "id").register();
+                "itemId", "id").register();
         mapperFactory.classMap(ArrDescItemUnitdate.class, ArrDescItemUnitdateVO.class).customize(
                 new CustomMapper<ArrDescItemUnitdate, ArrDescItemUnitdateVO>() {
                     @Override
@@ -174,7 +174,7 @@ public class ConfigMapperConfiguration {
                                         final ArrDescItemUnitdateVO unitdateVO,
                                         final MappingContext context) {
                         unitdateVO.setCalendarTypeId(unitdate.getCalendarType().getCalendarTypeId());
-                        unitdateVO.setId(unitdate.getDescItemId());
+                        unitdateVO.setId(unitdate.getItemId());
                         unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
                     }
 
@@ -184,7 +184,7 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         unitdate.setCalendarType(
                                 calendarTypeRepository.findOne(arrDescItemUnitdateVO.getCalendarTypeId()));
-                        unitdate.setDescItemId(arrDescItemUnitdateVO.getId());
+                        unitdate.setItemId(arrDescItemUnitdateVO.getId());
                         UnitDateConvertor.convertToUnitDate(arrDescItemUnitdateVO.getValue(), unitdate);
                     }
                 }).byDefault().register();
@@ -207,7 +207,7 @@ public class ConfigMapperConfiguration {
                         descItemPacketRef.setPacket(packetRepository.findOne(descItemPacketVO.getValue()));
                     }
                 }).byDefault().field(
-                "descItemId", "id").register();
+                "itemId", "id").register();
         mapperFactory.classMap(ArrDescItemPartyRef.class, ArrDescItemPartyRefVO.class).customize(
                 new CustomMapper<ArrDescItemPartyRef, ArrDescItemPartyRefVO>() {
                     @Override
@@ -226,7 +226,7 @@ public class ConfigMapperConfiguration {
                         partyRef.setParty(partyRepository.findOne(partyRefVO.getValue()));
                     }
                 }).byDefault().field(
-                "descItemId", "id").register();
+                "itemId", "id").register();
         mapperFactory.classMap(ArrDescItemRecordRef.class, ArrDescItemRecordRefVO.class).customize(
                 new CustomMapper<ArrDescItemRecordRef, ArrDescItemRecordRefVO>() {
                     @Override
@@ -245,9 +245,9 @@ public class ConfigMapperConfiguration {
                         recordRef.setRecord(recordRepository.findOne(recordRefVO.getValue()));
                     }
                 }).byDefault().field(
-                "descItemId", "id").register();
+                "itemId", "id").register();
         mapperFactory.classMap(ArrDescItemString.class, ArrDescItemStringVO.class).byDefault().field(
-                "descItemId", "id").register();
+                "itemId", "id").register();
 
         mapperFactory.classMap(ArrNodeRegister.class, ArrNodeRegisterVO.class).byDefault().field(
                 "nodeRegisterId", "id").register();

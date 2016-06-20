@@ -15,7 +15,7 @@ public class IndexArrDataWhenHasDescItemInterceptor implements EntityIndexingInt
 
     @Override
     public IndexingOverride onAdd(ArrData arrData) {
-        if (arrData.getDescItem() == null) {
+        if (arrData.getItem() == null) {
             return IndexingOverride.SKIP;
         }
 
@@ -24,7 +24,7 @@ public class IndexArrDataWhenHasDescItemInterceptor implements EntityIndexingInt
 
     @Override
     public IndexingOverride onUpdate(ArrData arrData) {
-        if (arrData.getDescItem() == null) {
+        if (arrData.getItem() == null) {
             return IndexingOverride.REMOVE;
         }
 

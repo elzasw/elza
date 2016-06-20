@@ -6,7 +6,7 @@ package cz.tacr.elza.domain;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrDescItemPacketRef extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemPacketRef<ArrChange, RulItemType, RulItemSpec, ArrNode, ArrPacket> {
+public class ArrDescItemPacketRef extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemPacketRef<ArrNode, ArrPacket> {
 
     private ArrPacket packet;
 

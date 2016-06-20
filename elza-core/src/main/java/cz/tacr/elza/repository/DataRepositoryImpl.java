@@ -32,7 +32,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                                                 final ArrFundVersion version) {
 
 
-        String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis JOIN FETCH d.dataType dt WHERE ";
+        String hql = "SELECT d FROM arr_data d JOIN FETCH d.item di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis JOIN FETCH d.dataType dt WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";
         } else {
@@ -70,7 +70,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
     @Override
     public List<ArrData> findByDataIdsAndVersionFetchSpecification(final Set<Integer> dataIds, final Set<RulItemType> itemTypes, final ArrFundVersion version) {
-        String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH di.itemSpec dis JOIN FETCH d.dataType dt WHERE ";
+        String hql = "SELECT d FROM arr_data d JOIN FETCH d.item di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH di.itemSpec dis JOIN FETCH d.dataType dt WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";
         } else {
@@ -131,7 +131,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         }
 
         String hql = "SELECT d FROM " + tableName +" d"
-                + " JOIN FETCH d.descItem di "
+                + " JOIN FETCH d.item di "
                 + " JOIN FETCH di.node n WHERE di.itemType = :itemType";
 
         if(itemType.getUseSpecification()){
@@ -282,8 +282,12 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         Root data = query.from(dataTypeClass);
         AbstractDescItemDataTypeHelper typeHelper = getDataTypeHelper(dataTypeClass, data);
 
-        Join descItem = data.join(ArrData.DESC_ITEM, JoinType.INNER);
-        Join node = descItem.join(ArrDescItem.NODE, JoinType.INNER);
+
+        Join item = data.join(ArrData.ITEM, JoinType.INNER);
+
+        Join descItem = builder.treat(item, ArrDescItem.class);
+
+        //Join node = descItem.join(ArrDescItem.NODE, JoinType.INNER);
 
 
         Predicate versionPredicate;
@@ -303,7 +307,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         //seznam AND podmínek
         List<Predicate> andPredicates = new LinkedList<>();
-        andPredicates.add(builder.equal(node.get(ArrNode.FUND), version.getFund()));
+        andPredicates.add(builder.equal(descItem.get(ArrDescItem.NODE).get(ArrNode.FUND), version.getFund()));
         andPredicates.add(versionPredicate);
         andPredicates.add(builder.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
         if (specificationDataTypeHelper.useSpec()) {

@@ -22,7 +22,7 @@ public class ArrDataNull extends ArrData implements cz.tacr.elza.api.ArrDataNull
 
     @Override
     public String getFulltextValue() {
-        RulItemSpec descItemSpec = getDescItem().getItemSpec();
+        RulItemSpec descItemSpec = getItem().getItemSpec();
 
         return descItemSpec == null ? null : descItemSpec.getName();
     }

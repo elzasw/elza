@@ -792,7 +792,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         for (ArrData arrData : nodesContainingText) {
             ArrDataText data = (ArrDataText) arrData;
             Assert.isTrue(Pattern.compile("^(\\d+valXYZ\\d+)$").matcher(data.getValue()).matches());
-            Assert.isTrue(nodeIds.contains(arrData.getDescItem().getNodeId()));
+            Assert.isTrue(nodeIds.contains(arrData.getItem().getNodeId()));
         }
 
 
@@ -805,7 +805,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
                 .findByNodesAndDeleteChangeIsNull(nodeRepository.findAll(nodeIds));
         Assert.isTrue(byNodesAndDeleteChangeIsNull.size() >= nodeIds.size());
         for (ArrData arrData : byNodesAndDeleteChangeIsNull) {
-            if (arrData.getDescItem().getItemType().getItemTypeId().equals(typeVo.getId())) {
+            if (arrData.getItem().getItemType().getItemTypeId().equals(typeVo.getId())) {
                 ArrDataText text = (ArrDataText) arrData;
                 Assert.isTrue(text.getValue().equals("nova_value"));
             }

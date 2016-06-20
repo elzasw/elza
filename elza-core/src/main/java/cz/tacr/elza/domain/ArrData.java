@@ -40,9 +40,9 @@ filters = {
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType, ArrDescItem> {
+public abstract class ArrData implements cz.tacr.elza.api.ArrData<RulDataType, ArrItem> {
 
-    public static final String DESC_ITEM = "descItem";
+    public static final String ITEM = "item";
 
     public static final String LUCENE_DESC_ITEM_TYPE_ID = "descItemTypeId";
 
@@ -54,9 +54,9 @@ public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType
     @JoinColumn(name = "dataTypeId", nullable = false)
     private RulDataType dataType;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDescItem.class)
-    @JoinColumn(name = "descItemId", nullable = true)
-    private ArrDescItem descItem;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrItem.class)
+    @JoinColumn(name = "itemId", nullable = true)
+    private ArrItem item;
 
     /** @return vrací hodnotu pro fulltextové hledání  */
     @Field
@@ -64,32 +64,32 @@ public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType
     public abstract String getFulltextValue();
 
     @Field(store = Store.YES)
-    public String getDescItemId() {
-        return descItem.getDescItemId().toString();
+    public String getItemId() {
+        return item.getItemId().toString();
     }
 
     @Field(store = Store.YES)
     @FieldBridge(impl = IntegerBridge.class)
     public Integer getNodeId() {
-        return descItem.getNode().getNodeId();
+        return item.getNode().getNodeId();
     }
 
     @Field
     @FieldBridge(impl = IntegerBridge.class)
     public Integer getFundId() {
-        return descItem.getNode().getFund().getFundId();
+        return item.getFundId();
     }
 
     @Field(store = Store.NO)
     @FieldBridge(impl = IntegerBridge.class)
     public Integer getDescItemTypeId() {
-        return descItem.getItemType().getItemTypeId();
+        return item.getItemType().getItemTypeId();
     }
 
     @Field
     @Analyzer(definition = "customanalyzer")
     public Integer getSpecification() {
-        RulItemSpec descItemSpec = descItem.getItemSpec();
+        RulItemSpec descItemSpec = item.getItemSpec();
         if (descItemSpec == null) {
             return null;
         }
@@ -118,13 +118,13 @@ public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType
     }
 
     @Override
-    public ArrDescItem getDescItem() {
-        return descItem;
+    public ArrItem getItem() {
+        return item;
     }
 
     @Override
-    public void setDescItem(final ArrDescItem descItem) {
-        this.descItem = descItem;
+    public void setItem(final ArrItem item) {
+        this.item = item;
     }
 
     @Override

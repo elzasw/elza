@@ -29,7 +29,7 @@ public class ModelFactory {
      */
     static public DescItem createDescItem(final ArrDescItem descItem) {
         DescItem item = new DescItem();
-        item.setDescItemId(descItem.getDescItemId());
+        item.setDescItemId(descItem.getItemId());
         item.setType(descItem.getItemType().getCode());
         item.setSpecCode(descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode());
         item.setDataType(descItem.getItemType().getDataType().getCode());

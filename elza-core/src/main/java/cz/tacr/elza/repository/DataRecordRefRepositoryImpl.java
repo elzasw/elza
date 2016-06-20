@@ -25,7 +25,7 @@ public class DataRecordRefRepositoryImpl implements DataRecordRefRepositoryCusto
 
     @Override
     public List<ArrDataRecordRef> findByDataIdsAndVersionFetchRecord(Set<Integer> dataIds, final Set<RulItemType> itemTypes, ArrFundVersion version) {
-        String hql = "SELECT d FROM arr_data_record_ref d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH d.record r WHERE ";
+        String hql = "SELECT d FROM arr_data_record_ref d JOIN FETCH d.item di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH d.record r WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";
         } else {

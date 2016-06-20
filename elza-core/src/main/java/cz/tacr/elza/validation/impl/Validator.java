@@ -153,7 +153,7 @@ public class Validator {
         Map<Integer, List<ArrDescItem>> descItemsInTypeMap = new HashMap<>();
 
         for (ArrData arrData : levelData) {
-            ArrDescItem descItem = arrData.getDescItem();
+            ArrDescItem descItem = (ArrDescItem) arrData.getItem();
             descItem = descItemFactory.getDescItem(descItem);
             if (!extNodeTypes.containsKey(descItem.getItemType().getItemTypeId())) {
                 validationResults.createError(descItem, "Prvek " + descItem.getItemType().getName()

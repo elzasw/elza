@@ -62,7 +62,7 @@ public class DataValidationResults {
         DataValidationResult result = new DataValidationResult(ValidationResultType.ERROR);
         result.setDescItem(item);
         result.setMessage(errorMsg);
-        result.setDescItemId(item.getDescItemId());
+        result.setDescItemId(item.getItemId());
         result.setPolicyTypeCode(policyTypeCode);
         
         results.add(result);

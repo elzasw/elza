@@ -85,7 +85,6 @@ import cz.tacr.elza.xmlimport.v1.vo.record.VariantRecord;
  * Export dat do xml.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
- * @param <LevelWithChildrenIds>
  * @since 22. 4. 2016
  */
 @Service
@@ -152,7 +151,7 @@ public class XmlExportService {
     /**
      * Převede exportovaná data na výsledný objekt exportu.
      *
-     * @param confignastavení exportu
+     * @param config nastavení exportu
      * @param xmlImport exportovaná data
      *
      * @return výsledek exportu
@@ -596,7 +595,7 @@ public class XmlExportService {
     /**
      * Vytvoření instituce.
      *
-     * @param parInstitutiondo instituce
+     * @param parInstitution instituce
      *
      * @return exportovaná instituce
      */
@@ -1089,7 +1088,7 @@ public class XmlExportService {
 
         List<AbstractDescItem> descItems = new ArrayList<>(dataList.size());
         for (ArrData arrData : dataList) {
-            ArrDescItem arrdescItem = arrData.getDescItem();
+            ArrDescItem arrdescItem = (ArrDescItem) arrData.getItem();
             if (arrdescItem == null) {
                 continue;
             }

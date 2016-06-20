@@ -6,7 +6,7 @@ package cz.tacr.elza.api;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public interface ArrDescItemString<FC extends ArrChange, RT extends RulItemType, RS extends RulItemSpec, N extends ArrNode> extends ArrDescItem<FC, RT, RS, N> {
+public interface ArrDescItemString<N extends ArrNode> extends ArrDescItem<N> {
 
     String getValue();
 

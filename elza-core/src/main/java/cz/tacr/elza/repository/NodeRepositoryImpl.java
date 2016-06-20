@@ -150,7 +150,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         Query fundIdQuery = queryBuilder.keyword().onField("fundId").matching(fundId).createQuery();
         Query query = queryBuilder.bool().must(textQuery).must(fundIdQuery).createQuery();
 
-        List<String> result = (List<String>) createFullTextQuery(query, entityClass).setProjection("descItemId").getResultList().stream().map(row -> {
+        List<String> result = (List<String>) createFullTextQuery(query, entityClass).setProjection("itemId").getResultList().stream().map(row -> {
             return ((Object[]) row)[0];
         }).collect(Collectors.toList());
 

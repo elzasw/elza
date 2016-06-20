@@ -17,6 +17,9 @@ import javax.annotation.Nullable;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
+import cz.tacr.elza.domain.vo.UnitdateTitleValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -30,13 +33,10 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
-import cz.tacr.elza.domain.vo.UnitdateTitleValue;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.repository.DataPacketRefRepository;
@@ -442,7 +442,7 @@ public class DescriptionItemService {
             ArrDescItem descItemNew = new ArrDescItem();
 
             BeanUtils.copyProperties(descItemMove, descItemNew);
-            descItemNew.setDescItemId(null);
+            descItemNew.setItemId(null);
             descItemNew.setDeleteChange(null);
             descItemNew.setCreateChange(change);
             descItemNew.setPosition(descItemMove.getPosition() + 1);
@@ -555,7 +555,7 @@ public class DescriptionItemService {
         ArrDescItem descItemNew = new ArrDescItem();
 
         BeanUtils.copyProperties(descItem, descItemNew);
-        descItemNew.setDescItemId(null);
+        descItemNew.setItemId(null);
         descItemNew.setDeleteChange(null);
         descItemNew.setCreateChange(change);
         descItemNew.setPosition(position);
@@ -579,7 +579,7 @@ public class DescriptionItemService {
 
             BeanUtils.copyProperties(sourceDescItem, descItemNew);
             descItemNew.setNode(node);
-            descItemNew.setDescItemId(null);
+            descItemNew.setItemId(null);
             descItemNew.setDeleteChange(null);
             descItemNew.setCreateChange(createChange);
             descItemNew.setPosition(sourceDescItem.getPosition());
@@ -614,7 +614,7 @@ public class DescriptionItemService {
      * @param descItemTo   do hodnoty atributu
      */
     private void copyDescItemData(final ArrDescItem descItemFrom, final ArrDescItem descItemTo) {
-        List<ArrData> dataList = dataRepository.findByDescItem(descItemFrom);
+        List<ArrData> dataList = dataRepository.findByItem(descItemFrom);
 
         if (dataList.size() != 1) {
             throw new IllegalStateException("Hodnota musí být právě jedna");
@@ -638,7 +638,7 @@ public class DescriptionItemService {
 
             BeanUtils.copyProperties(data, dataNew);
             dataNew.setDataId(null);
-            dataNew.setDescItem(newDescItem);
+            dataNew.setItem(newDescItem);
             return dataNew;
         } catch (Exception e) {
             throw new IllegalStateException(e.getCause());
@@ -881,7 +881,7 @@ public class DescriptionItemService {
                 descItemNew.setItemSpec(descItem.getItemSpec());
 
                 descItemOrig.setDeleteChange(change);
-                descItemNew.setDescItemId(null);
+                descItemNew.setItemId(null);
                 descItemNew.setCreateChange(change);
                 descItemNew.setPosition(positionNew);
 
@@ -931,11 +931,11 @@ public class DescriptionItemService {
         for (ArrData data : dataList) {
 
             TitleValue value = null;
-            String code = data.getDescItem().getItemType().getCode();
-            String specCode = data.getDescItem().getItemSpec() == null ? null : data.getDescItem().getItemSpec()
+            String code = data.getItem().getItemType().getCode();
+            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
                     .getCode();
-            Integer nodeId = data.getDescItem().getNode().getNodeId();
-            Integer position = data.getDescItem().getPosition();
+            Integer nodeId = data.getItem().getNodeId();
+            Integer position = data.getItem().getPosition();
 
             if (data.getDataType().getCode().equals("ENUM")) {
                 enumDataIds.add(data.getDataId());
@@ -986,13 +986,13 @@ public class DescriptionItemService {
 
         List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, version);
         for (ArrData data : enumData) {
-            TitleValue value = new TitleValue(data.getDescItem().getItemSpec().getName());
+            TitleValue value = new TitleValue(data.getItem().getItemSpec().getName());
             String iconValue = getIconValue(data);
-            String code = data.getDescItem().getItemType().getCode();
-            String specCode = data.getDescItem().getItemSpec() == null ? null : data.getDescItem().getItemSpec()
+            String code = data.getItem().getItemType().getCode();
+            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
                     .getCode();
-            Integer nodeId = data.getDescItem().getNode().getNodeId();
-            Integer position = data.getDescItem().getPosition();
+            Integer nodeId = data.getItem().getNodeId();
+            Integer position = data.getItem().getPosition();
 
             addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
         }
@@ -1001,11 +1001,11 @@ public class DescriptionItemService {
         for (ArrDataPartyRef data : partyData) {
             TitleValue value = new TitleValue(data.getParty().getRecord().getRecord());
             String iconValue = getIconValue(data);
-            String code = data.getDescItem().getItemType().getCode();
-            String specCode = data.getDescItem().getItemSpec() == null ? null : data.getDescItem().getItemSpec()
+            String code = data.getItem().getItemType().getCode();
+            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
                     .getCode();
-            Integer nodeId = data.getDescItem().getNode().getNodeId();
-            Integer position = data.getDescItem().getPosition();
+            Integer nodeId = data.getItem().getNodeId();
+            Integer position = data.getItem().getPosition();
 
             addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
         }
@@ -1014,11 +1014,11 @@ public class DescriptionItemService {
         for (ArrDataRecordRef data : recordData) {
             TitleValue value = new TitleValue(data.getRecord().getRecord());
             String iconValue = getIconValue(data);
-            String code = data.getDescItem().getItemType().getCode();
-            String specCode = data.getDescItem().getItemSpec() == null ? null : data.getDescItem().getItemSpec()
+            String code = data.getItem().getItemType().getCode();
+            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
                     .getCode();
-            Integer nodeId = data.getDescItem().getNode().getNodeId();
-            Integer position = data.getDescItem().getPosition();
+            Integer nodeId = data.getItem().getNodeId();
+            Integer position = data.getItem().getPosition();
 
             addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
         }
@@ -1034,11 +1034,11 @@ public class DescriptionItemService {
                 value = new TitleValue(packetType.getName() + ": " + packet.getStorageNumber());
             }
             String iconValue = getIconValue(data);
-            String code = data.getDescItem().getItemType().getCode();
-            String specCode = data.getDescItem().getItemSpec() == null ? null : data.getDescItem().getItemSpec()
+            String code = data.getItem().getItemType().getCode();
+            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
                     .getCode();
-            Integer nodeId = data.getDescItem().getNode().getNodeId();
-            Integer position = data.getDescItem().getPosition();
+            Integer nodeId = data.getItem().getNodeId();
+            Integer position = data.getItem().getPosition();
 
             addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
         }
@@ -1076,8 +1076,8 @@ public class DescriptionItemService {
 
 
     private String getIconValue(ArrData data) {
-        if (data.getDescItem().getItemSpec() != null) {
-            return data.getDescItem().getItemSpec().getCode();
+       if (data.getItem().getItemSpec() != null) {
+            return data.getItem().getItemSpec().getCode();
         }
         return null;
     }
@@ -1112,12 +1112,12 @@ public class DescriptionItemService {
             ArrChange change = arrangementService.createChange();
 
             for (ArrData arrData : dataToReplaceText) {
-                ArrNode clientNode = nodesMap.get(arrData.getDescItem().getNodeId());
-                arrangementService.lockNode(arrData.getDescItem().getNode(), clientNode);
+                ArrNode clientNode = nodesMap.get(arrData.getItem().getNodeId());
+                arrangementService.lockNode(arrData.getItem().getNode(), clientNode);
 
                 replaceDescItemValue(arrData, findText, replaceText, change);
 
-                publishChangeDescItem(version, arrData.getDescItem());
+                publishChangeDescItem(version, (ArrDescItem) arrData.getItem());
             }
         }
     }
@@ -1247,7 +1247,7 @@ public class DescriptionItemService {
 
             publishChangeDescItem(version, newDescItem);
 
-            data.setDescItem(newDescItem);
+            data.setItem(newDescItem);
             data.setDataType(descItemType.getDataType());
             dataRepository.save(data);
         }
@@ -1263,13 +1263,13 @@ public class DescriptionItemService {
     private void replaceDescItemValue(final ArrData data, final String searchString, final String replaceString, final ArrChange change){
 
 
-        ArrDescItem descItem = data.getDescItem();
+        ArrDescItem descItem = (ArrDescItem) data.getItem();
         ArrDescItem newDescItem = copyDescItem(change, descItem, descItem.getPosition());
 
         ArrData newData = createCopyDescItemData(data, newDescItem);
 
 
-        switch (data.getDescItem().getItemType().getDataType().getCode()) {
+        switch (data.getItem().getItemType().getDataType().getCode()) {
             case "STRING":
                 ArrDataString oldStringData = (ArrDataString) data;
 
@@ -1285,7 +1285,7 @@ public class DescriptionItemService {
 
             default:
                 throw new IllegalStateException(
-                        "Zatím není implementováno pro kod " + data.getDescItem().getItemType().getCode());
+                        "Zatím není implementováno pro kod " + data.getItem().getItemType().getCode());
         }
 
         dataRepository.save(newData);

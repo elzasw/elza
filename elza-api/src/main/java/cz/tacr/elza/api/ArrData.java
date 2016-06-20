@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @since 20.8.2015
  */
 
-public interface ArrData<RD extends RulDataType, AI extends ArrDescItem> extends Serializable {
+public interface ArrData<RD extends RulDataType, AI extends ArrItem> extends Serializable {
 
     Integer getDataId();
 
@@ -25,8 +25,8 @@ public interface ArrData<RD extends RulDataType, AI extends ArrDescItem> extends
     void setDataType(final RD dataType);
 
 
-    AI getDescItem();
+    AI getItem();
 
 
-    void setDescItem(final AI descItem);
+    void setItem(final AI descItem);
 }

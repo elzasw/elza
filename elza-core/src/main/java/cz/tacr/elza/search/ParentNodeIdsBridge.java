@@ -45,7 +45,7 @@ public class ParentNodeIdsBridge implements StringBridge, FieldBridge , Applicat
     @Override
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
         ArrData arrData = (ArrData) value;
-        Integer nodeId = arrData.getDescItem().getNode().getNodeId();
+        Integer nodeId = arrData.getItem().getNode().getNodeId();
 
         String fieldValue = nodeId.toString();
         Field field = new StringField(name, fieldValue, luceneOptions.getStore());

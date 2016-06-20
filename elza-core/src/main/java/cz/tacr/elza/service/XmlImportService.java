@@ -420,7 +420,7 @@ public class XmlImportService {
 
                     ArrDataCoordinates arrData = new ArrDataCoordinates();
                     arrData.setDataType(dataType);
-                    arrData.setDescItem(arrDescItem);
+                    arrData.setItem(arrDescItem);
                     try {
                         arrData.setValue(new WKTReader().read(descItemCoordinates.getValue()));
                     } catch (ParseException e) {
@@ -436,7 +436,7 @@ public class XmlImportService {
 
                     ArrDataDecimal arrData = new ArrDataDecimal();
                     arrData.setDataType(dataType);
-                    arrData.setDescItem(arrDescItem);
+                    arrData.setItem(arrDescItem);
                     arrData.setValue(descItemDecimal.getValue());
 
                     dataRepository.save(arrData);
@@ -446,7 +446,7 @@ public class XmlImportService {
 
                     ArrDataText arrData = new ArrDataText();
                     arrData.setDataType(dataType);
-                    arrData.setDescItem(arrDescItem);
+                    arrData.setItem(arrDescItem);
                     arrData.setValue(descItemFormattedText.getValue());
 
                     dataRepository.save(arrData);
@@ -456,7 +456,7 @@ public class XmlImportService {
 
                     ArrDataInteger arrData = new ArrDataInteger();
                     arrData.setDataType(dataType);
-                    arrData.setDescItem(arrDescItem);
+                    arrData.setItem(arrDescItem);
                     arrData.setValue(descItemInteger.getValue());
 
                     dataRepository.save(arrData);
@@ -466,7 +466,7 @@ public class XmlImportService {
 
                     ArrDataPacketRef arrData = new ArrDataPacketRef();
                     arrData.setDataType(dataType);
-                    arrData.setDescItem(arrDescItem);
+                    arrData.setItem(arrDescItem);
 
                     String storageNumber = descItemPacketRef.getPacket().getStorageNumber();
                     arrData.setPacket(xmlIdIntIdPacketMap.get(storageNumber));
@@ -478,7 +478,7 @@ public class XmlImportService {
 
                     ArrDataPartyRef arrData = new ArrDataPartyRef();
                     arrData.setDataType(dataType);
-                    arrData.setDescItem(arrDescItem);
+                    arrData.setItem(arrDescItem);
 
                     String partyId = descItemPartyRef.getParty().getPartyId();
                     arrData.setParty(xmlIdIntIdPartyMap.get(partyId));
@@ -490,7 +490,7 @@ public class XmlImportService {
 
                     ArrDataRecordRef arrData = new ArrDataRecordRef();
                     arrData.setDataType(dataType);
-                    arrData.setDescItem(arrDescItem);
+                    arrData.setItem(arrDescItem);
 
                     String recordId = descItemRecordRef.getRecord().getRecordId();
                     arrData.setRecord(xmlIdIntIdRecordMap.get(recordId));
@@ -502,7 +502,7 @@ public class XmlImportService {
 
                     ArrDataString arrData = new ArrDataString();
                     arrData.setDataType(dataType);
-                    arrData.setDescItem(arrDescItem);
+                    arrData.setItem(arrDescItem);
                     arrData.setValue(XmlImportUtils.trimStringValue(descItemString.getValue(), StringLength.LENGTH_1000, stopOnError));
 
                     dataRepository.save(arrData);
@@ -512,7 +512,7 @@ public class XmlImportService {
 
                     ArrDataText arrData = new ArrDataText();
                     arrData.setDataType(dataType);
-                    arrData.setDescItem(arrDescItem);
+                    arrData.setItem(arrDescItem);
                     arrData.setValue(descItemText.getValue());
 
                     dataRepository.save(arrData);
@@ -522,7 +522,7 @@ public class XmlImportService {
 
                     ArrDataUnitdate arrData = new ArrDataUnitdate();
                     arrData.setDataType(dataType);
-                    arrData.setDescItem(arrDescItem);
+                    arrData.setItem(arrDescItem);
 
                     String calendarTypeCode = descItemUnitDate.getCalendarTypeCode();
                     ArrCalendarType calendarType = calendarTypeRepository.findByCode(calendarTypeCode);
@@ -559,7 +559,7 @@ public class XmlImportService {
 
                     ArrDataUnitid arrData = new ArrDataUnitid();
                     arrData.setDataType(dataType);
-                    arrData.setDescItem(arrDescItem);
+                    arrData.setItem(arrDescItem);
                     arrData.setValue(XmlImportUtils.trimStringValue(descItemUnitId.getValue(), StringLength.LENGTH_250, stopOnError));
 
                     dataRepository.save(arrData);
@@ -568,7 +568,7 @@ public class XmlImportService {
 
                     ArrDataNull arrData = new ArrDataNull();
                     arrData.setDataType(dataType);
-                    arrData.setDescItem(arrDescItem);
+                    arrData.setItem(arrDescItem);
 
                     dataRepository.save(arrData);
                 }
