@@ -32,6 +32,8 @@ elza:
 
   rulesDir: ${elza.workingDir}/rules
 
+  dmsDir: ${elza.workingDir}/dms/
+
   rules:
     ZP2015:
       default:

@@ -25,7 +25,7 @@ public class DmsService {
     /**
      * Složka se soubory DMS
      */
-    @Value("${elza.dms.fileDir}")
+    @Value("${elza.dmsDir}")
     private String dmsFileDirectory;
 
     @Autowired

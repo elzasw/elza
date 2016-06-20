@@ -12,8 +12,7 @@ elza:
   rulesDir: ${elza.workingDir}/rules
   groovy:
     groovyDir: ${elza.workingDir}/groovy
-  dms:
-    fileDir: ${elza.workingDir}/dms/
+  dmsDir: ${elza.workingDir}/dms/
 spring:
   application:
      name: elza
