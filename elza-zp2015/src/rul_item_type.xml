@@ -495,4 +495,54 @@
         <use-specification>false</use-specification>
         <view-order>54</view-order>
     </item-type>
+    <item-type code="ZP2015_STATISTICS" data-type="JSON_TABLE">
+        <name>Statistika</name>
+        <shortcut>Stat.</shortcut>
+        <description>Statistika</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+        <view-order>55</view-order>
+        <columns-definitions>
+            <column code="KEY" data-type="TEXT">
+                <name>Položka</name>
+                <width>50</width>
+            </column>
+            <column code="VALUE" data-type="INTEGER">
+                <name>Počet</name>
+                <width>50</width>
+            </column>
+        </columns-definitions>
+    </item-type>
+    <item-type code="ZP2015_STATISTICS_EXTRA" data-type="JSON_TABLE">
+        <name>Statistika - extra</name>
+        <shortcut>Stat.</shortcut>
+        <description>Statistika</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+        <view-order>56</view-order>
+        <columns-definitions>
+            <column code="NAME" data-type="TEXT">
+                <name>Položka</name>
+                <width>40</width>
+            </column>
+            <column code="VALUE1" data-type="INTEGER">
+                <name>Sklad 1</name>
+                <width>15</width>
+            </column>
+            <column code="VALUE2" data-type="INTEGER">
+                <name>Sklad 2</name>
+                <width>15</width>
+            </column>
+            <column code="VALUE3" data-type="INTEGER">
+                <name>Sklad 3</name>
+                <width>15</width>
+            </column>
+            <column code="VALUE4" data-type="INTEGER">
+                <name>Sklad 4</name>
+                <width>15</width>
+            </column>
+        </columns-definitions>
+    </item-type>
 </item-types>

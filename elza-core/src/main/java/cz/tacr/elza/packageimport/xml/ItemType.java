@@ -4,7 +4,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlType;
+import java.util.List;
 
 
 /**
@@ -43,6 +45,10 @@ public class ItemType {
 
     @XmlElement(name = "view-order", required = true)
     private Integer viewOrder;
+
+    @XmlElement(name = "column")
+    @XmlElementWrapper(name = "columns-definitions")
+    private List<Column> columnsDefinition;
 
     public String getCode() {
         return code;
@@ -114,5 +120,13 @@ public class ItemType {
 
     public void setViewOrder(final Integer viewOrder) {
         this.viewOrder = viewOrder;
+    }
+
+    public List<Column> getColumnsDefinition() {
+        return columnsDefinition;
+    }
+
+    public void setColumnsDefinition(final List<Column> columnsDefinition) {
+        this.columnsDefinition = columnsDefinition;
     }
 }

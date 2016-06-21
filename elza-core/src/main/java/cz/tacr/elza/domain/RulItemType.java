@@ -1,5 +1,18 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.tacr.elza.domain.table.ElzaColumn;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.rest.core.annotation.RestResource;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,14 +24,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.springframework.data.rest.core.annotation.RestResource;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.io.IOException;
+import java.util.List;
 
 
 /**
@@ -32,7 +39,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
         @UniqueConstraint(columnNames = {"viewOrder"})})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulItemType implements cz.tacr.elza.api.RulItemType<RulDataType, RulPackage> {
+public class RulItemType implements cz.tacr.elza.api.RulItemType<RulDataType, RulPackage, ElzaColumn> {
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final Logger logger = LoggerFactory.getLogger(RulItemType.class);
 
     @Id
     @GeneratedValue
@@ -69,6 +80,9 @@ public class RulItemType implements cz.tacr.elza.api.RulItemType<RulDataType, Ru
 
     @Column(nullable = false)
     private Integer viewOrder;
+
+    @Column
+    private String columnsDefinition;
 
     @Transient
     private Type type;
@@ -219,6 +233,27 @@ public class RulItemType implements cz.tacr.elza.api.RulItemType<RulDataType, Ru
     @Override
     public void setPolicyTypeCode(final String policyTypeCode) {
         this.policyTypeCode = policyTypeCode;
+    }
+
+    @Override
+    public List<ElzaColumn> getColumnsDefinition() {
+        if (columnsDefinition == null) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(columnsDefinition, new TypeReference<List<ElzaColumn>>(){});
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Problém při generování JSON", e);
+        }
+    }
+
+    @Override
+    public void setColumnsDefinition(final List<ElzaColumn> columns) {
+        try {
+            columnsDefinition = objectMapper.writeValueAsString(columns);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Problém při parsování JSON", e);
+        }
     }
 
     @Override

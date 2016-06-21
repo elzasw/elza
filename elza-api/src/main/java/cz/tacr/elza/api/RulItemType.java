@@ -1,6 +1,9 @@
 package cz.tacr.elza.api;
 
+import cz.tacr.elza.api.table.ElzaColumn;
+
 import java.io.Serializable;
+import java.util.List;
 
 
 /**
@@ -10,7 +13,7 @@ import java.io.Serializable;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-public interface RulItemType<RT extends RulDataType, P extends RulPackage> extends Serializable {
+public interface RulItemType<RT extends RulDataType, P extends RulPackage, C extends ElzaColumn> extends Serializable {
 
     enum Type {
         /**
@@ -188,5 +191,9 @@ public interface RulItemType<RT extends RulDataType, P extends RulPackage> exten
      * @param policyTypeCode kód typu kontroly
      */
     void setPolicyTypeCode(String policyTypeCode);
+
+    List<C> getColumnsDefinition();
+
+    void setColumnsDefinition(List<C> columns);
 
 }

@@ -505,7 +505,8 @@ public class RuleService {
         List<RulItemTypeExt> result = new LinkedList<>();
         for (RulItemType rulDescItemType : itemTypeList) {
             RulItemTypeExt descItemTypeExt = new RulItemTypeExt();
-            BeanUtils.copyProperties(rulDescItemType, descItemTypeExt);
+            BeanUtils.copyProperties(rulDescItemType, descItemTypeExt, "columnsDefinition");
+            descItemTypeExt.setColumnsDefinition(rulDescItemType.getColumnsDefinition());
             List<RulItemSpec> itemSpecList =
                     itemSpecMap.get(rulDescItemType.getItemTypeId());
             if (itemSpecList != null) {

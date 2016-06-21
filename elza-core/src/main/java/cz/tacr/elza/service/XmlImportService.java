@@ -18,6 +18,7 @@ import javax.transaction.Transactional;
 import javax.xml.bind.JAXBException;
 
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemJsonTable;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -567,6 +568,14 @@ public class XmlImportService {
                     RulDataType dataType = dataTypeRepository.findByCode("ENUM");
 
                     ArrDataNull arrData = new ArrDataNull();
+                    arrData.setDataType(dataType);
+                    arrData.setItem(arrDescItem);
+
+                    dataRepository.save(arrData);
+                } else if (descItem instanceof DescItemJsonTable) {
+                    RulDataType dataType = dataTypeRepository.findByCode("JSON_TABLE");
+
+                    ArrDataJsonTable arrData = new ArrDataJsonTable();
                     arrData.setDataType(dataType);
                     arrData.setItem(arrDescItem);
 

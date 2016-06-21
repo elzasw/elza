@@ -16,6 +16,7 @@ import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.packageimport.xml.*;
 import cz.tacr.elza.repository.*;
@@ -764,6 +765,14 @@ public class PackageService {
                         }
                     }
 
+                    if (item.getColumnsDefinition() != null && !item.getColumnsDefinition().equals(itemType.getColumnsDefinition())) {
+                        Long countDescItems = descItemRepository.getCountByType(item);
+                        if (countDescItems != null && countDescItems > 0) {
+                            throw new IllegalStateException("Nelze změnit definici sloupců (datový typ a kód) u typu " + item.getCode()
+                                    + ", protože existují záznamy, které typ využívají");
+                        }
+                    }
+
                 } else {
                     item = new RulItemType();
                 }
@@ -1094,6 +1103,20 @@ public class PackageService {
         rulDescItemType.setCanBeOrdered(itemType.getCanBeOrdered());
         rulDescItemType.setUseSpecification(itemType.getUseSpecification());
         rulDescItemType.setViewOrder(itemType.getViewOrder());
+
+        if (itemType.getColumnsDefinition() != null) {
+            List<ElzaColumn> elzaColumns = new ArrayList<>(itemType.getColumnsDefinition().size());
+            for (Column column : itemType.getColumnsDefinition()) {
+                ElzaColumn elzaColumn = new ElzaColumn();
+                elzaColumn.setCode(column.getCode());
+                elzaColumn.setName(column.getName());
+                elzaColumn.setDataType(ElzaColumn.DataType.valueOf(column.getDataType()));
+                elzaColumn.setWidth(column.getWidth());
+                elzaColumns.add(elzaColumn);
+            }
+
+            rulDescItemType.setColumnsDefinition(elzaColumns);
+        }
 
         rulDescItemType.setPackage(rulPackage);
     }
@@ -1574,6 +1597,21 @@ public class PackageService {
         itemType.setIsValueUnique(rulDescItemType.getIsValueUnique());
         itemType.setUseSpecification(rulDescItemType.getUseSpecification());
         itemType.setViewOrder(rulDescItemType.getViewOrder());
+
+        List<ElzaColumn> columnsDefinition = rulDescItemType.getColumnsDefinition();
+        if (columnsDefinition != null) {
+            List<Column> columns = new ArrayList<>(columnsDefinition.size());
+            for (ElzaColumn elzaColumn : columnsDefinition) {
+                Column column = new Column();
+                column.setCode(elzaColumn.getCode());
+                column.setName(elzaColumn.getName());
+                column.setDataType(elzaColumn.getDataType().name());
+                column.setWidth(elzaColumn.getWidth());
+                columns.add(column);
+            }
+            itemType.setColumnsDefinition(columns);
+        }
+
     }
 
     /**

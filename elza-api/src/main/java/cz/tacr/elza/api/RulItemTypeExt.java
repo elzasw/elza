@@ -1,5 +1,7 @@
 package cz.tacr.elza.api;
 
+import cz.tacr.elza.api.table.ElzaColumn;
+
 import java.util.List;
 
 /**
@@ -10,7 +12,7 @@ import java.util.List;
  * @param <RT> {@link RulDataType}
  * @param <RS> {@link RulItemSpecExt}
  */
-public interface RulItemTypeExt<RT extends RulDataType, RS extends RulItemSpecExt, P extends RulPackage> extends RulItemType<RT, P> {
+public interface RulItemTypeExt<RT extends RulDataType, RS extends RulItemSpecExt, P extends RulPackage, C extends ElzaColumn> extends RulItemType<RT, P, C> {
 
     /**
      * 

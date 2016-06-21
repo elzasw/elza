@@ -10,7 +10,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDescItemJsonTable;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
+import cz.tacr.elza.repository.DataJsonTableRepository;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MappingContext;
@@ -131,6 +134,9 @@ public class DescItemFactory implements InitializingBean {
     @Autowired
     private DataNullRepository dataNullRepository;
 
+    @Autowired
+    private DataJsonTableRepository dataJsonTableRepository;
+
     public DescItemFactory() {
     }
 
@@ -151,6 +157,7 @@ public class DescItemFactory implements InitializingBean {
         defineMapDecimal();
         defineMapPacketRef();
         defineMapEnum();
+        defineMapJsonTable();
 
         facade = factory.getMapperFacade();
 
@@ -191,6 +198,44 @@ public class DescItemFactory implements InitializingBean {
                         arrDataCoordinatesNew.setDataType(arrDataCoordinates.getDataType());
                         arrDataCoordinatesNew.setItem(arrDataCoordinates.getItem());
                         arrDataCoordinatesNew.setValue(arrDataCoordinates.getValue());
+                    }
+                }).register();
+    }
+
+    /**
+     * Nadefinování pravidel pro převod formátu JsonTable.
+     */
+    private void defineMapJsonTable() {
+        factory.classMap(ArrDescItemJsonTable.class, ArrDataJsonTable.class)
+                .customize(new CustomMapper<ArrDescItemJsonTable, ArrDataJsonTable>() {
+
+                    @Override
+                    public void mapAtoB(ArrDescItemJsonTable arrDescItemJsonTable,
+                                        ArrDataJsonTable arrDataJsonTable,
+                                        MappingContext context) {
+                        arrDataJsonTable.setDataType(arrDescItemJsonTable.getItemType().getDataType());
+                        arrDataJsonTable.setItem(arrDescItemJsonTable);
+                        arrDataJsonTable.setValue(arrDescItemJsonTable.getValue());
+                    }
+
+                    @Override
+                    public void mapBtoA(ArrDataJsonTable arrDataJsonTable,
+                                        ArrDescItemJsonTable arrDescItemJsonTable,
+                                        MappingContext context) {
+                        arrDescItemJsonTable.setValue(arrDataJsonTable.getValue());
+                    }
+
+                }).register();
+
+        factory.classMap(ArrDataJsonTable.class, ArrDataJsonTable.class)
+                .customize(new CustomMapper<ArrDataJsonTable, ArrDataJsonTable>() {
+                    @Override
+                    public void mapAtoB(ArrDataJsonTable arrDataJsonTable,
+                                        ArrDataJsonTable arrDataJsonTableNew,
+                                        MappingContext context) {
+                        arrDataJsonTableNew.setDataType(arrDataJsonTable.getDataType());
+                        arrDataJsonTableNew.setItem(arrDataJsonTable.getItem());
+                        arrDataJsonTableNew.setValue(arrDataJsonTable.getValue());
                     }
                 }).register();
     }
@@ -698,6 +743,7 @@ public class DescItemFactory implements InitializingBean {
         mapRepository.put(ArrDataDecimal.class, dataDecimalRepository);
         mapRepository.put(ArrDataPacketRef.class, dataPacketRefRepository);
         mapRepository.put(ArrDataNull.class, dataNullRepository);
+        mapRepository.put(ArrDataJsonTable.class, dataJsonTableRepository);
     }
 
     /**
@@ -827,6 +873,8 @@ public class DescItemFactory implements InitializingBean {
                 data = facade.map(descItem, ArrDataPacketRef.class);
             } else if (descItem instanceof ArrDescItemEnum) {
                 data = facade.map(descItem, ArrDataNull.class);
+            } else if (descItem instanceof ArrDescItemJsonTable) {
+                data = facade.map(descItem, ArrDataJsonTable.class);
             } else {
                 throw new NotImplementedException("Nebyl namapován datový typ: " + descItem.getClass().getName());
             }
@@ -880,6 +928,8 @@ public class DescItemFactory implements InitializingBean {
                 return new ArrDescItemPacketRef();
             case "ENUM":
                 return new ArrDescItemEnum();
+            case "JSON_TABLE":
+                return new ArrDescItemJsonTable();
             default:
                 throw new NotImplementedException("Nebyl namapován datový typ");
         }

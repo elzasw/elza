@@ -976,6 +976,9 @@ public class DescriptionItemService {
             } else if(data.getDataType().getCode().equals("COORDINATES")){
                 ArrDataCoordinates coordinates = (ArrDataCoordinates) data;
                 value = new CoordinatesTitleValue(coordinates.getValue());
+            } else if(data.getDataType().getCode().equals("JSON_TABLE")){
+                ArrDataJsonTable table = (ArrDataJsonTable) data;
+                value = new TitleValue(table.getFulltextValue());
             }
 
             if (value != null) {

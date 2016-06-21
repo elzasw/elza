@@ -13,6 +13,8 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.table.ElzaRow;
+import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import org.junit.Test;
@@ -338,6 +340,15 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         type = findDescItemTypeByCode("ZP2015_COLL_EXTENT_LENGTH");
         descItem = buildDescItem(type.getCode(), null, BigDecimal.valueOf(20.5), 1, null);
+        descItemResult = createDescItem(descItem, fundVersion, node, type);
+        node = descItemResult.getNode();
+
+        type = findDescItemTypeByCode("ZP2015_STATISTICS");
+        ElzaTable table = new ElzaTable();
+        table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("KEY", "Test 1"), new AbstractMap.SimpleEntry<>("VALUE", "195")));
+        table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("KEY", "Test 2"), new AbstractMap.SimpleEntry<>("VALUE", "200")));
+
+        descItem = buildDescItem(type.getCode(), null, table, 1, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getNode();
 

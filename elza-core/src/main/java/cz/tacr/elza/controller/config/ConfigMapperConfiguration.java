@@ -162,6 +162,8 @@ public class ConfigMapperConfiguration {
                 "itemId", "id").register();
         mapperFactory.classMap(ArrDescItemInt.class, ArrDescItemIntVO.class).byDefault().field(
                 "itemId", "id").register();
+        mapperFactory.classMap(ArrDescItemJsonTable.class, ArrDescItemJsonTableVO.class).byDefault().field(
+                "itemId", "id").register();
         mapperFactory.classMap(ArrDescItemText.class, ArrDescItemTextVO.class).byDefault().field(
                 "itemId", "id").register();
         mapperFactory.classMap(ArrDescItemDecimal.class, ArrDescItemDecimalVO.class).byDefault().field(

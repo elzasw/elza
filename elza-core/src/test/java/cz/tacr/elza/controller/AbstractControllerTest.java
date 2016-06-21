@@ -16,6 +16,7 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -950,6 +951,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
                     throw new IllegalStateException(
                             "Specifikace u typu musí být povinná pro ENUM -> CODE: " + type.getCode());
                 }
+                break;
+            }
+
+            case "JSON_TABLE": {
+                descItem = new ArrDescItemJsonTableVO();
+                ((ArrDescItemJsonTableVO) descItem).setValue(((ElzaTable) value));
                 break;
             }
 

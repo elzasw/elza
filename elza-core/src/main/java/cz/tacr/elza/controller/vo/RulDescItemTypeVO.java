@@ -2,6 +2,9 @@ package cz.tacr.elza.controller.vo;
 
 
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.table.ElzaColumn;
+
+import java.util.List;
 
 
 /**
@@ -73,6 +76,8 @@ public class RulDescItemTypeVO {
      */
     @Deprecated
     private Boolean repeatable;
+
+    private List<ElzaColumn> columnsDefinition;
 
     /**
      * šířka atributu (0 - maximální počet sloupců, 1..N - počet sloupců)
@@ -181,5 +186,13 @@ public class RulDescItemTypeVO {
 
     public void setWidth(final Integer width) {
         this.width = width;
+    }
+
+    public List<ElzaColumn> getColumnsDefinition() {
+        return columnsDefinition;
+    }
+
+    public void setColumnsDefinition(final List<ElzaColumn> columnsDefinition) {
+        this.columnsDefinition = columnsDefinition;
     }
 }

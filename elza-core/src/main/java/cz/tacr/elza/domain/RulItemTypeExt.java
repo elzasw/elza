@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import cz.tacr.elza.domain.table.ElzaColumn;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,7 +12,7 @@ import java.util.List;
  * @since 20.8.2015
  */
 
-public class RulItemTypeExt extends RulItemType implements cz.tacr.elza.api.RulItemTypeExt<RulDataType, RulItemSpecExt, RulPackage> {
+public class RulItemTypeExt extends RulItemType implements cz.tacr.elza.api.RulItemTypeExt<RulDataType, RulItemSpecExt, RulPackage, ElzaColumn> {
 
     private List<RulItemSpecExt> rulItemSpecList = new LinkedList<>();
 

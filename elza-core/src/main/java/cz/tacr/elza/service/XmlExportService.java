@@ -19,6 +19,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemJsonTable;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -1210,6 +1212,16 @@ public class XmlExportService {
 
                 Geometry geometry = arrDataCoordinates.getValue();
                 descItem.setValue(new WKTWriter().write(geometry));
+
+                descItems.add(descItem);
+            } else if(dataTypeCode.equals("JSON_TABLE")) {
+                DescItemJsonTable descItem = new DescItemJsonTable();
+                fillCommonAttributes(descItem, arrdescItem);
+
+                ArrDataJsonTable arrDataJsonTable = (ArrDataJsonTable) arrData;
+
+                ElzaTable table = arrDataJsonTable.getValue();
+                descItem.setValue(table.toJsonString(table));
 
                 descItems.add(descItem);
             }
