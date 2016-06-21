@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Button} from 'react-bootstrap'
+import {Button, Input} from 'react-bootstrap'
 import {Icon, AbstractReactComponent, NoFocusButton, AddRemoveList, i18n, Loading} from 'components/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 import {dateToString} from 'components/Utils.jsx'
@@ -11,12 +11,15 @@ import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {usersUserDetailFetchIfNeeded} from 'actions/admin/user.jsx'
+import * as perms from 'actions/user/Permission.jsx';
 
 require ('./UserDetail.less');
 
 var UserDetail = class UserDetail extends AbstractReactComponent {
     constructor(props) {
         super(props);
+
+        this.bindMethods("renderPermission");
     }
 
     componentDidMount() {
@@ -25,6 +28,42 @@ var UserDetail = class UserDetail extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(usersUserDetailFetchIfNeeded())
+    }
+
+    renderPermission(permission) {
+
+        const permInfo = perms.all[permission.permission]
+
+        const permInput = (
+            <Input type="select" value={permission.permission}>
+                <option />
+                {Object.keys(perms.all).map(perm => {
+                    return <option value={perm}>{i18n("permission." + perm)}</option>
+                })}
+            </Input>
+        )
+
+        var permValue;
+        if (permInfo && (permInfo.fund || permInfo.scope)) {
+            if (permInfo.fund) {
+                permValue = (
+                    <Input type="text" value={permission.fundId} />
+                )
+            } else if (permInfo.scope) {
+                permValue = (
+                    <Input type="text" value={permission.scopeId} />
+                )
+            }
+        } else {
+            permValue = <div className="form-group"></div>
+        }
+
+        return (
+            <div className="permission-container">
+                {permInput}
+                {permValue}
+            </div>
+        )
     }
 
     render() {
@@ -52,6 +91,14 @@ var UserDetail = class UserDetail extends AbstractReactComponent {
                     removeTitle="admin.user.group.action.delete"
                     />
                 <h2>{i18n("admin.user.title.permissions")}</h2>
+                <AddRemoveList
+                    items={userDetail.permissions}
+                    onAdd={this.handleAddPermission}
+                    onRemove={this.handleRemovePermission}
+                    addTitle="admin.user.permission.action.add"
+                    removeTitle="admin.user.permission.action.delete"
+                    renderItem={this.renderPermission}
+                    />
             </div>
         );
     }

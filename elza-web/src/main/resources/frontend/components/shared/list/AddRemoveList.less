@@ -1,4 +1,26 @@
+@import "~variables.less";
+
 .list-add-remove-container {
+    .btn {
+        background: transparent;
+        height: 2em;
+        font-size: 0.9em;
+        border: none;
+        padding: 2px;
+        margin: 0;
+        margin-right: 8px;
+        vertical-align: top;
+        .icon  {
+            color: @node-form-actions-color;
+            height: 1.35em;
+            line-height: 1.35em;
+            width: 1.35em;
+        }
+        &:hover {
+            background-color: @node-form-actions-hover;
+        }
+    }
+
     .item-list-container {
         .item {
             display: flex;

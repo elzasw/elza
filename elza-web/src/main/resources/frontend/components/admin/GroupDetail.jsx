@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap'
-import {Icon, AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
+import {Icon, AbstractReactComponent, i18n, Loading, AddRemoveList} from 'components/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 import {dateToString} from 'components/Utils.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
@@ -40,7 +40,17 @@ var GroupDetail = class GroupDetail extends AbstractReactComponent {
 
         return (
             <div className='group-detail-container'>
-                {groupDetail.name}
+                <h1>{groupDetail.name}</h1>
+                <h2>{i18n("admin.group.title.users")}</h2>
+                <AddRemoveList
+                    items={groupDetail.users}
+                    onAdd={this.handleAddUser}
+                    onRemove={this.handleRemoveUser}
+                    addTitle="admin.group.user.action.add"
+                    removeTitle="admin.group.user.action.delete"
+                    renderItem={item => <div>{item.party.record.record} ({item.username})</div>}
+                />
+                <h2>{i18n("admin.group.title.permissions")}</h2>
             </div>
         );
     }
