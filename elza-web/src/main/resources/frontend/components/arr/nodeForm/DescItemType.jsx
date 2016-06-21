@@ -19,6 +19,7 @@ import DescItemUnitdate from './DescItemUnitdate.jsx'
 import DescItemPacketRef from './DescItemPacketRef.jsx'
 import DescItemPartyRef from './DescItemPartyRef.jsx'
 import DescItemRecordRef from './DescItemRecordRef.jsx'
+import DescItemTable from './DescItemTable.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {descItemNeedStore} from 'actions/arr/subNodeForm.jsx'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
@@ -465,6 +466,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 partsCls += ' desc-item-spec-and-value';
             }
         }
+        partsCls += " dt" + rulDataType.code;
 
         var descItemProps = {
             descItem: descItem,
@@ -486,8 +488,6 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 onDragEnd: this.handleDragEnd,
             }
         }
-
-
 
         var itemComponentKey = 'value_' + key;
         switch (rulDataType.code) {
@@ -534,6 +534,9 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 parts.push(<DescItemString key={itemComponentKey}
                     {...descItemProps}
                     />)
+                // parts.push(<DescItemTable key={itemComponentKey + "XXX"}
+                //     {...descItemProps}
+                //     />)
                 break;
             case 'FORMATTED_TEXT':
             case 'TEXT':
