@@ -485,6 +485,8 @@ export function getDescItemType(dataType) {
             return '.ArrDescItemRecordRefVO';
         case 'PACKET_REF':
             return '.ArrDescItemPacketVO';
+        case 'JSON_TABLE':
+            return '.ArrDescItemJsonTableVO';
         case 'ENUM':
             return '.ArrDescItemEnumVO';
         case 'FORMATTED_TEXT':

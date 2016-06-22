@@ -231,6 +231,7 @@ export function hasDescItemTypeValue(dataType) {
         case 'PARTY_REF':
         case 'RECORD_REF':
         case 'PACKET_REF':
+        case 'JSON_TABLE':
         case 'FORMATTED_TEXT':
         case 'UNITDATE':
         case 'UNITID':

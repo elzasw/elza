@@ -322,13 +322,18 @@ var messages = {
     "subNodeForm.addSubNode": "JP pod",
     "subNodeForm.deleteNode": "Smazat JP",
     "subNodeForm.visiblePolicy": "Způsob kontroly",
-    
+
     "subNodeForm.countOfCoordinates": "Počet bodů: {0}",
     "subNodeForm.errorPointCoordinates": "Chybně zadaný bod. Zadávejte ve tvaru \"15.5154,49.535\"",
     "subNodeForm.formatPointCoordinates": "Zadávejte ve tvaru \"15.5154,49.535\"",
 
     "subNodeForm.descItemTypeAdd": "Přidat prvek",
     "subNodeForm.descItemTypeUnlockAll": "Odemknout vše",
+
+    "subNodeForm.descItem.jsonTable.action.addRow": "Přidat nový řádek",
+    "subNodeForm.descItem.jsonTable.action.removeRow": "Odstranit řádek",
+    "subNodeForm.descItem.jsonTable.action.download": "Stáhnout data",
+    "subNodeForm.descItem.jsonTable.action.upload": "Nahrát data",
 
     "nodePanel.addSubNode": "Přidat JP na konec",
 

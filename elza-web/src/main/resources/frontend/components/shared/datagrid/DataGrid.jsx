@@ -9,7 +9,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Resizer} from 'components/index.jsx';
 const scrollIntoView = require('dom-scroll-into-view')
-import {propsEquals} from 'components/Utils.jsx'
+import {propsEquals, getScrollbarWidth} from 'components/Utils.jsx'
 
 const __emptyColWidth = 8000
 const __minColWidth = 16
@@ -107,7 +107,8 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             'handleCheckboxChange',
             'getExtColumnIndex',
             'handleEdit',
-            'handleContextMenu'
+            'handleContextMenu',
+            'computeColumnsWidth',
         );
 
         var state = this.getStateFromProps(props, {})
@@ -120,7 +121,8 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
         this.setState(this.getStateFromProps(nextProps, this.state),
         () => {
-            this.ensureFocusVisible(this.state.focus)
+            this.ensureFocusVisible(this.state.focus);
+            this.computeColumnsWidth();
         })
     }
 
@@ -136,16 +138,25 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
 
     getStateFromProps(props, currState) {
         var cols = []
+        var colWidths = {}
         if (props.allowRowCheck) {
             cols.push({_rowCheck: true, width: 32, resizeable: false})
+            colWidths[0] = 32;
         }
+        var needComputeColumnsWidth = props.staticColumns;
         props.cols.forEach((col, colIndex) => {
+            var useColIndex = props.allowRowCheck ? colIndex + 1 : colIndex;
+            
+            if (props.staticColumns) {
+                if (currState.colWidths) {
+                    colWidths[useColIndex] = currState.colWidths[useColIndex];
+                } else {
+                    colWidths[useColIndex] = 10;
+                }
+            } else {
+                colWidths[useColIndex] = col.width
+            }
             cols.push(col)
-        })
-
-        var colWidths = {}
-        cols.forEach((col, colIndex) => {
-            colWidths[colIndex] = col.width
         })
 
         var selectedIds = {}
@@ -191,18 +202,52 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             colWidths,
             selectedRowIndexes,
             selectedIds,    // označené řádky podle id - napříč stránkami - jedná se o reálné označení řádku, např. pro akce atp.
+            needComputeColumnsWidth,
         }
     }
 
     componentDidMount() {
         document.addEventListener('mouseup', this.handleMouseUp);
         document.addEventListener('mousemove', this.handleMouseMove);
-        this.ensureFocusVisible(this.state.focus)
+        this.ensureFocusVisible(this.state.focus);
+        this.computeColumnsWidth();
     }
 
     componentWillUnmount() {
         document.removeEventListener('mouseup', this.handleMouseUp);
         document.removeEventListener('mousemove', this.handleMouseMove);
+    }
+
+    computeColumnsWidth() {
+        const {cols, staticColumns} = this.props
+        const {needComputeColumnsWidth} = this.state
+
+        if (staticColumns && needComputeColumnsWidth) {
+            const dataGrid = ReactDOM.findDOMNode(this.refs.dataGrid);
+            const rect = dataGrid.getBoundingClientRect();
+            var width = rect.width - getScrollbarWidth() - 3;   // konstanta 3 - kvůli padding atp.
+            var colWidths = {}
+
+            // Nejdříve sloupce s pevnou šířkou
+            cols.forEach((col, colIndex) => {
+                if (!col.widthPercent) {
+                    colWidths[colIndex] = col.width;
+                    width -= col.width;
+                }
+            })
+
+            // Sloupce s šířkou definovanou v procentech
+            cols.forEach((col, colIndex) => {
+                if (col.widthPercent) {
+                    colWidths[colIndex] = Math.floor(col.width * width / 100);
+                }
+            })
+            // console.log("width", rect.width, "scrollbar", getScrollbarWidth(), "colWidths", colWidths, "cols", cols)
+
+            this.setState({
+                colWidths
+            })
+        }
     }
 
     handleCellClick(rowIndex, colIndex, e) {
@@ -415,8 +460,8 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
     }
 
     renderHeaderCol(col, colIndex, colFocus) {
-        const {colWidths} = this.state
         const {staticColumns} = this.props
+        const {colWidths} = this.state
 
         var content
 
@@ -437,16 +482,11 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         var colCls = colFocus ? 'focus' : ''
 
         var resizer;
-        if (typeof col.resizeable === 'undefined' || col.resizeable !== false) {
+        if (!staticColumns && (typeof col.resizeable === 'undefined' || col.resizeable !== false)) {
             resizer = <Resizer onMouseDown={this.handleResizerMouseDown.bind(this, colIndex)} />
         }
 
-        var style;
-        if (staticColumns) {
-            style = { width: "20%" };
-        } else {
-            style = { width: colWidths[colIndex], maxWidth: colWidths[colIndex] };
-        }
+        var style = { width: colWidths[colIndex], maxWidth: colWidths[colIndex] };
 
         return (
             <th key={colIndex} ref={'col' + colIndex} className={colCls} style={style}>
@@ -476,27 +516,34 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         });
 //var t1 = new Date().getTime()
 
-        var style;
+        var headerStyle;
         if (staticColumns) {
-            style = { width: "100%" };
+            headerStyle = { };
         } else {
-            style = { width: fullWidth + __emptyColWidth };
+            headerStyle = { width: fullWidth + __emptyColWidth };
+        }
+
+        var bodyStyle;
+        if (staticColumns) {
+            bodyStyle = { };
+        } else {
+            bodyStyle = { width: fullWidth };
         }
 
         var ret = (
-            <div className={cls} onKeyDown={this.handleKeyDown} tabIndex={0} onFocus={onFocus} onBlur={onBlur}>
+            <div ref="dataGrid" className={cls} onKeyDown={this.handleKeyDown} tabIndex={0} onFocus={onFocus} onBlur={onBlur}>
                 <div ref='header' className='header-container'>
-                    <table style={style}>
+                    <table className="header-table" style={headerStyle}>
                         <thead>
                             <tr>
                                 {cols.map((col, colIndex) => this.renderHeaderCol(col, colIndex, focus.col === colIndex))}
-                                {!staticColumns && <th key={-1} className='th-empty-scroll' />}
+                                <th key={-1} className='th-empty-scroll' />
                             </tr>
                         </thead>
                     </table>
                 </div>
                 <div ref='body' className='body-container' onScroll={this.handleScroll}>
-                    <table style={{width: fullWidth}}>
+                    <table className="body-table" style={bodyStyle}>
                         <tbody>
                             {rows.map((row, rowIndex) => {
                                 const rowWasFocus = focus.row === rowIndex
@@ -513,6 +560,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
                                 return (
                                     <tr key={rowIndex} className={rowCls}>
                                         {cells}
+                                        {staticColumns && <td key={-1} className='td-empty-scroll' />}
                                     </tr>
                                 )
                             })}
@@ -531,9 +579,23 @@ DataGrid.defaultProps = {
     staticColumns: false,
 }
 
+// Definice sloupečku:
+// Pokud je nastaveno staticColumns, bere se width jako procento
+/*
+{
+    title: "nazev sloupce",
+    desc: "popis sloupce",
+    width: 30,              // pokud je staticColumns==false, je šířka sloupce v bodech, pokud je staticColumns==true, je šířka v bodech nebo procentech podle widthPercent 
+    widthPercent: true,     // pouze pro staticColumns - určuje, zda width je v bodech nebo procentech
+    resizeable: true,   // je možné sloupečku měnit šířku
+    cellRenderer: func,    // renderer na buňky dat
+}
+
+*/
+
 DataGrid.propTypes = {
     rows: React.PropTypes.array.isRequired,
-    cols: React.PropTypes.array.isRequired,
+    cols: React.PropTypes.array.isRequired, // pole objektů definice sloupčeků, viz výše
     allowRowCheck: React.PropTypes.bool.isRequired,
     staticColumns: React.PropTypes.bool.isRequired,
     focusRow: React.PropTypes.object,

@@ -61,6 +61,8 @@ function validate(descItem, refType, valueServerError) {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
             }
             break;
+        case 'JSON_TABLE':
+            break;
         case 'ENUM':
             break;
         case 'UNITDATE':
@@ -393,13 +395,14 @@ export default function subNodeForm(state = initialState, action = {}) {
             // # Inicializace dat
             // ##
 
-            // Doplnění descItemTypes o rulDataType
+            // Doplnění descItemTypes o rulDataType a další data
             var dataTypeMap = getMapFromList(action.rulDataTypes.items)
             var descItemTypes = action.refDescItemTypes.items.map(type => {
                 return {
                     ...type,
                     dataType: dataTypeMap[type.dataTypeId],
-                    descItemSpecsMap: getMapFromList(type.descItemSpecs)
+                    descItemSpecsMap: getMapFromList(type.descItemSpecs),
+                    columnsDefinitionMap: type.columnsDefinition ? getMapFromList(type.columnsDefinition, "code") : null,
                 }
             })
 

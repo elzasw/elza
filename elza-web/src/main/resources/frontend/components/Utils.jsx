@@ -5,6 +5,8 @@ import {normalizeDoubleWithDot} from 'components/validate.jsx'
  * Utility metody.
  */
 
+require ("./Utils.less");
+
 function consolidateState(prevState, newState) {
     var equals = stateEquals(prevState, newState);
     if (!equals) {
@@ -551,10 +553,33 @@ function detectIE() {
     return false;
 }
 
+var _scrollbarWidth = null
+function calculateScrollbarWidth() {
+    if (_scrollbarWidth == null) {
+        // Create the measurement node
+        var scrollDiv = document.createElement("div");
+        scrollDiv.className = "scrollbar-measure";
+        document.body.appendChild(scrollDiv);
+
+        // Get the scrollbar width
+        _scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+        console.warn("DDDDDDDDDDDDDDDDDDDDDDDDDDDDD", _scrollbarWidth);
+
+        // Delete the DIV
+        document.body.removeChild(scrollDiv);
+    }
+}
+calculateScrollbarWidth();
+
+function getScrollbarWidth() {
+    return _scrollbarWidth;
+} 
+
 module.exports = {
     wktType,
     wktFromTypeAndData,
     objectFromWKT,
+    getScrollbarWidth: getScrollbarWidth,
     valuesEquals: valuesEquals,
     dateToString: dateToString,
     dateTimeToString: dateTimeToString,

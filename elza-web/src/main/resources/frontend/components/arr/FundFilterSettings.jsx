@@ -242,6 +242,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
             case 'DECIMAL':
             case 'PARTY_REF':
             case 'PACKET_REF':
+            case 'JSON_TABLE':
             case 'ENUM':
             case 'RECORD_REF':
                 break
@@ -405,7 +406,7 @@ var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent
                 ]
                 break
             case 'PACKET_REF':
-                break
+            case 'JSON_TABLE':
             case 'ENUM':
                 break
         }

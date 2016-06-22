@@ -529,14 +529,16 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                     {...descItemProps}
                     />)
                 break;
-
+            case 'JSON_TABLE':
+                parts.push(<DescItemTable key={itemComponentKey}
+                    {...descItemProps}
+                    refType={refType}
+                    />)
+                break;
             case 'STRING':
                 parts.push(<DescItemString key={itemComponentKey}
                     {...descItemProps}
                     />)
-                // parts.push(<DescItemTable key={itemComponentKey + "XXX"}
-                //     {...descItemProps}
-                //     />)
                 break;
             case 'FORMATTED_TEXT':
             case 'TEXT':

@@ -267,16 +267,22 @@ public class RulItemType implements cz.tacr.elza.api.RulItemType<RulDataType, Ru
 
         cz.tacr.elza.domain.RulItemType other = (cz.tacr.elza.domain.RulItemType) obj;
 
-        return new EqualsBuilder().append(itemTypeId, other.getItemTypeId()).isEquals();
+        return new EqualsBuilder()
+                .append(itemTypeId, other.getItemTypeId())
+                .append(code, other.getCode())
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(itemTypeId).append(name).append(code).toHashCode();
+        return new HashCodeBuilder()
+                .append(itemTypeId)
+                .append(code)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "RulItemType pk=" + itemTypeId;
+        return "RulItemType pk=" + itemTypeId + ", code=" + code;
     }
 }
