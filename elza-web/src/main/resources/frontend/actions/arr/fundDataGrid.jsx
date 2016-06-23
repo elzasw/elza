@@ -62,7 +62,6 @@ export function fundBulkModifications(versionId, descItemTypeId, specsIds, opera
 
 export function fundDataInitIfNeeded(versionId, initData) {
     return (dispatch, getState) => {
-        console.log("######################")
         const fundDataGrid = getFundDataGrid(getState, versionId)
         if (fundDataGrid && !fundDataGrid.initialised) {
             dispatch({

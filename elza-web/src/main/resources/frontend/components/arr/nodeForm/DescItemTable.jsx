@@ -20,7 +20,7 @@ var DescItemTable = class DescItemTable extends AbstractReactComponent {
             "handleCellChange", "cellRenderer",
             "cellRowDeleteRenderer", "handleAddRow", "handleDownload",
             "handleUpload", "handleRemoveRow", "getStateFromProps",
-            "handleBlur");
+            "handleBlur", "handleDelete");
 
         this.blurEnabled = true;
         this.state = this.getStateFromProps(props)
@@ -38,6 +38,7 @@ var DescItemTable = class DescItemTable extends AbstractReactComponent {
         refType.columnsDefinition.forEach(colDef => {
             cols.push({
                 title: colDef.name,
+                desc: colDef.name,
                 width: colDef.width,
                 widthPercent: true,cellRenderer: this.cellRenderer,
                 colDef: colDef,
@@ -45,6 +46,7 @@ var DescItemTable = class DescItemTable extends AbstractReactComponent {
         })
         // Sloupec s akcí pro mazání řádků
         cols.push({
+            actions: true,
             title: "",
             width: 24,
             widthPercent: false,
@@ -71,10 +73,11 @@ var DescItemTable = class DescItemTable extends AbstractReactComponent {
     }
 
     focus() {
-        this.refs.focusEl.focus()
+        this.refs.dataGrid.getWrappedInstance().focus()
     }
 
     handleBlur() {
+        // console.log("BLUR", this.blurEnabled)
         if (this.blurEnabled) {
             const {onBlur} = this.props
             onBlur();
@@ -92,25 +95,49 @@ var DescItemTable = class DescItemTable extends AbstractReactComponent {
         this.props.onChange({ rows: newRows });
     }
 
+    handleDelete(row, rowIndex, col, colIndex) {
+        if (col.actions) {  // u tohoto sloupce není možné nic editovat
+            return;
+        }
+
+        const {rows} = this.state
+
+        var newRows = [...rows];
+        newRows[rowIndex] = {...rows[rowIndex]};
+        newRows[rowIndex].values = {...newRows[rowIndex].values};
+        newRows[rowIndex].values[col.colDef.code] = "";
+
+        this.props.onChange({ rows: newRows });
+    }
+
     handleEdit(row, rowIndex, col, colIndex) {
+        if (col.actions) {  // u tohoto sloupce není možné nic editovat
+            return;
+        }
+
         const dataGridComp = this.refs.dataGrid.getWrappedInstance();
         const cellEl = dataGridComp.getCellElement(rowIndex, colIndex);
         const cellRect = cellEl.getBoundingClientRect();
 
+        const value = row.values[col.colDef.code]
         this.blurEnabled = false;
         this.dispatch(modalDialogShow(this, null,
             <DescItemTableCellForm
                 position={{x: cellRect.left, y: cellRect.top}}
-                value={row.values[col.colDef.code]}
+                value={value}
+                dataType={col.colDef.dataType}
                 onChange={this.handleCellChange.bind(this, row, rowIndex, col, colIndex)}
             />,
-            'desc-item-table-cell-edit', this.handleEditClose));
+            'desc-item-table-cell-edit', this.handleEditClose.bind(this, row, rowIndex, col, colIndex, value)));
     }
 
-    handleEditClose() {
+    handleEditClose(row, rowIndex, col, colIndex, prevValue, closeType) {
+        if (closeType === "DIALOG") {   // zavření dialogu bez potvrzení, vrátíme původní hodnotu
+            this.handleCellChange(row, rowIndex, col, colIndex, prevValue);
+        }
         this.setState({},
             ()=>{
-                ReactDOM.findDOMNode(this.refs.dataGrid).focus();
+                this.focus();
                 this.blurEnabled = true;
             }
         )
@@ -172,6 +199,7 @@ var DescItemTable = class DescItemTable extends AbstractReactComponent {
                     allowRowCheck={false}
                     staticColumns={true}
                     onEdit={this.handleEdit}
+                    onDelete={this.handleDelete}
                     />
                 <div className='desc-item-value-actions'>
                     <NoFocusButton onClick={this.handleAddRow} title={i18n('subNodeForm.descItem.jsonTable.action.addRow')}><Icon glyph="fa-plus" /></NoFocusButton>

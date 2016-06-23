@@ -10,6 +10,7 @@ import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, SubNodeForm} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
+import {validateInt, normalizeInt} from 'components/validate.jsx';
 
 const keyDownHandlers = {
     Enter: function (e) {
@@ -18,7 +19,6 @@ const keyDownHandlers = {
 
         const {onClose} = this.props
         onClose();
-
     },
 }
 
@@ -59,13 +59,23 @@ var DescItemTableCellForm = class DescItemTableCellForm extends AbstractReactCom
 
     handleChange(e) {
         const value = e.target.value;
-        
+
+        const {dataType} = this.props;
+        var normalizedValue = value;
+        switch (dataType) {
+            case "INTEGER":
+                normalizedValue = normalizeInt(normalizedValue);
+                break;
+            case "TEXT":
+                break;
+        }
+
         this.setState({
-            value: value,
+            value: normalizedValue,
         })
         
         const {onChange} = this.props
-        onChange(value);
+        onChange(normalizedValue);
     }
     
     render() {

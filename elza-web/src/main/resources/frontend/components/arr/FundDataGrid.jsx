@@ -150,6 +150,9 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                         case 'UNITDATE':
                             itemValue = this.state.calendarTypesMap[value.calendarTypeId].name.charAt(0) + ": " + value.value
                             break
+                        case 'JSON_TABLE':
+                            itemValue = i18n("arr.fund.jsonTable.cell.title", col.refType.columnsDefinition.length, value.rows);
+                            break
                         default:
                             itemValue = value.value
                             break

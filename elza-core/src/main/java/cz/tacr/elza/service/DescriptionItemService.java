@@ -1,5 +1,67 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.vo.NodeTypeOperation;
+import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
+import cz.tacr.elza.domain.vo.JsonTableTitleValue;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.domain.vo.TitleValue;
+import cz.tacr.elza.domain.vo.TitleValues;
+import cz.tacr.elza.domain.vo.UnitdateTitleValue;
+import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.drools.RulesExecutor;
+import cz.tacr.elza.repository.DataPacketRefRepository;
+import cz.tacr.elza.repository.DataPartyRefRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
 import java.beans.PropertyDescriptor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,47 +73,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
-import cz.tacr.elza.domain.vo.UnitdateTitleValue;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.api.vo.NodeTypeOperation;
-import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import cz.tacr.elza.domain.vo.TitleValue;
-import cz.tacr.elza.domain.vo.TitleValues;
-import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.drools.RulesExecutor;
-import cz.tacr.elza.repository.DataPacketRefRepository;
-import cz.tacr.elza.repository.DataPartyRefRepository;
-import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**
@@ -978,7 +999,7 @@ public class DescriptionItemService {
                 value = new CoordinatesTitleValue(coordinates.getValue());
             } else if(data.getDataType().getCode().equals("JSON_TABLE")){
                 ArrDataJsonTable table = (ArrDataJsonTable) data;
-                value = new TitleValue(table.getFulltextValue());
+                value = new JsonTableTitleValue(table.getFulltextValue(), table.getValue().getRows().size());
             }
 
             if (value != null) {
