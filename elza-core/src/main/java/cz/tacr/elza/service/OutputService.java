@@ -22,9 +22,10 @@ import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -77,6 +78,9 @@ public class OutputService {
 
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private NodeRegisterRepository nodeRegisterRepository;
 
     @Autowired
     private EventNotificationService eventNotificationService;
@@ -814,6 +818,15 @@ public class OutputService {
     public ArrOutputDefinition getOutputDefinition(final Integer outputDefinitionId) {
         return outputDefinitionRepository.findOne(outputDefinitionId);
     }
+
+    // TODO - JavaDoc - Lebeda
+    public List<ArrNode> getNodesByRegister(RegRecord regRecord) {
+        final List<ArrNodeRegister> arrNodeRegisters = nodeRegisterRepository.findByRecordId(regRecord);
+        return arrNodeRegisters.stream()
+                .map(ArrNodeRegister::getNode)
+                .collect(Collectors.toList());
+    }
+
 
     public List<ArrOutputItem> createOutputItems(final List<ArrOutputItem> outputItems,
                                                  final Integer outputDefinitionId,
