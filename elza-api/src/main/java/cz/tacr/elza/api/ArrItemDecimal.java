@@ -9,7 +9,7 @@ import java.math.BigDecimal;
  * @author Martin Šlapa
  * @since 12.10.2015
  */
-public interface ArrDescItemDecimal<N extends ArrNode> extends ArrDescItem<N> {
+public interface ArrItemDecimal extends ArrItemData {
 
     BigDecimal getValue();
 

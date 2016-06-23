@@ -6,11 +6,10 @@ package cz.tacr.elza.domain;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrDescItemEnum extends ArrDescItem
-        implements cz.tacr.elza.api.ArrDescItemEnum<ArrNode> {
+public class ArrItemEnum extends ArrItemData implements cz.tacr.elza.api.ArrItemEnum {
 
     @Override
     public String toString() {
-        return getItemSpec().getName();
+        return spec == null ? null : spec.getName();
     }
 }

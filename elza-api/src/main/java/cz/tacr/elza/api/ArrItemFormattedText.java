@@ -6,7 +6,7 @@ package cz.tacr.elza.api;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public interface ArrDescItemUnitid<N extends ArrNode> extends ArrDescItem<N> {
+public interface ArrItemFormattedText extends ArrItemData {
 
     String getValue();
 

@@ -11,6 +11,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
@@ -37,7 +38,19 @@ import cz.tacr.elza.search.DescItemIndexingInterceptor;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public class ArrDescItem extends ArrItem implements cz.tacr.elza.api.ArrDescItem<ArrNode> {
+public class ArrDescItem<T extends ArrItemData> extends ArrItem<T> implements cz.tacr.elza.api.ArrDescItem<ArrNode> {
+
+    public ArrDescItem() throws IllegalAccessException, InstantiationException {
+        super(null);
+    }
+
+    public ArrDescItem(final Class<T> clazz) throws IllegalAccessException, InstantiationException {
+        super(clazz.newInstance());
+    }
+
+    public ArrDescItem(final T item) {
+        super(item);
+    }
 
     public static final String NODE = "node";
     public static final String CREATE_CHANGE_ID = "createChangeId";
@@ -66,6 +79,10 @@ public class ArrDescItem extends ArrItem implements cz.tacr.elza.api.ArrDescItem
     @Override
     public ArrNode getNode() {
         return node;
+    }
+
+    public ArrOutputDefinition getOutputDefinition() {
+        throw new NotImplementedException();
     }
 
     @Override

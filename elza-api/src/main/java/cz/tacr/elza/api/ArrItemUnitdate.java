@@ -6,10 +6,6 @@ package cz.tacr.elza.api;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public interface ArrDescItemString<N extends ArrNode> extends ArrDescItem<N> {
+public interface ArrItemUnitdate<CT extends ArrCalendarType> extends IUnitdate<CT> {
 
-    String getValue();
-
-
-    void setValue(String value);
 }

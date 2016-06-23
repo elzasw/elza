@@ -125,8 +125,10 @@ public class KmlController {
                 default:
                     continue;
             }
-            ArrDescItemCoordinates descItem = new ArrDescItemCoordinates();
-            descItem.setValue(geometry);
+
+            ArrItemCoordinates item = new ArrItemCoordinates();
+            item.setValue(geometry);
+            ArrDescItem<ArrItemCoordinates> descItem = new ArrDescItem<ArrItemCoordinates>(item);
             descItem.setItemType(descItemType);
             toCreate.add(descItem);
         }
@@ -234,10 +236,13 @@ public class KmlController {
         Assert.notNull(one);
 
         one = descItemFactory.getDescItem(one);
-        if (!(one instanceof ArrDescItemCoordinates)) {
+
+        ArrItemData item = one.getItem();
+
+        if (!(item instanceof ArrItemCoordinates)) {
             throw new UnsupportedOperationException("Pouze typ COORDINATES může být exportován do KML.");
         }
-        ArrDescItemCoordinates cords = (ArrDescItemCoordinates) one;
+        ArrItemCoordinates cords = (ArrItemCoordinates) item;
 
         toKml(response, cords.getValue());
 

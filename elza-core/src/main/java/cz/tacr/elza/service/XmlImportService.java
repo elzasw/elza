@@ -18,6 +18,7 @@ import javax.transaction.Transactional;
 import javax.xml.bind.JAXBException;
 
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemJsonTable;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -213,6 +214,9 @@ public class XmlImportService {
     @Autowired
     private PartyCreatorRepository partyCreatorRepository;
 
+    @Autowired
+    private DescItemFactory descItemFactory;
+
     @Value("${elza.xmlImport.transformationDir}")
     private String transformationsDirectory;
 
@@ -404,9 +408,147 @@ public class XmlImportService {
         List<AbstractDescItem> descItems = level.getDescItems();
         if (descItems != null) {
             for (AbstractDescItem descItem : descItems) {
+
+                ArrData arrData = null;
+
+                if (descItem instanceof DescItemCoordinates) {
+                    DescItemCoordinates descItemCoordinates = (DescItemCoordinates) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("COORDINATES");
+
+                    arrData = new ArrDataCoordinates();
+                    arrData.setDataType(dataType);
+
+                    try {
+                        ((ArrDataCoordinates)arrData).setValue(new WKTReader().read(descItemCoordinates.getValue()));
+                    } catch (ParseException e) {
+                        if (stopOnError) {
+                            throw new InvalidDataException(e.getMessage());
+                        }
+                    }
+                } else if (descItem instanceof DescItemDecimal) {
+                    DescItemDecimal descItemDecimal = (DescItemDecimal) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("DECIMAL");
+
+                    arrData = new ArrDataDecimal();
+                    arrData.setDataType(dataType);
+                    ((ArrDataDecimal)arrData).setValue(descItemDecimal.getValue());
+                } else if (descItem instanceof DescItemFormattedText) {
+                    DescItemFormattedText descItemFormattedText = (DescItemFormattedText) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("FORMATTED_TEXT");
+
+                    arrData = new ArrDataText();
+                    arrData.setDataType(dataType);
+                    ((ArrDataText)arrData).setValue(descItemFormattedText.getValue());
+                } else if (descItem instanceof DescItemInteger) {
+                    DescItemInteger descItemInteger = (DescItemInteger) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("INT");
+
+                    arrData = new ArrDataInteger();
+                    arrData.setDataType(dataType);
+                    ((ArrDataInteger)arrData).setValue(descItemInteger.getValue());
+                } else if (descItem instanceof DescItemPacketRef) {
+                    DescItemPacketRef descItemPacketRef = (DescItemPacketRef) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("PACKET_REF");
+
+                    arrData = new ArrDataPacketRef();
+                    arrData.setDataType(dataType);
+
+                    String storageNumber = descItemPacketRef.getPacket().getStorageNumber();
+                    ((ArrDataPacketRef)arrData).setPacket(xmlIdIntIdPacketMap.get(storageNumber));
+                } else if (descItem instanceof DescItemPartyRef) {
+                    DescItemPartyRef descItemPartyRef = (DescItemPartyRef) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("PARTY_REF");
+
+                    arrData = new ArrDataPartyRef();
+                    arrData.setDataType(dataType);
+
+                    String partyId = descItemPartyRef.getParty().getPartyId();
+                    ((ArrDataPartyRef)arrData).setParty(xmlIdIntIdPartyMap.get(partyId));
+                } else if (descItem instanceof DescItemRecordRef) {
+                    DescItemRecordRef descItemRecordRef = (DescItemRecordRef) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("RECORD_REF");
+
+                    arrData = new ArrDataRecordRef();
+                    arrData.setDataType(dataType);
+
+                    String recordId = descItemRecordRef.getRecord().getRecordId();
+                    ((ArrDataRecordRef)arrData).setRecord(xmlIdIntIdRecordMap.get(recordId));
+                } else if (descItem instanceof DescItemString) {
+                    DescItemString descItemString = (DescItemString) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("STRING");
+
+                    arrData = new ArrDataString();
+                    arrData.setDataType(dataType);
+                    ((ArrDataString)arrData).setValue(XmlImportUtils.trimStringValue(descItemString.getValue(), StringLength.LENGTH_1000, stopOnError));
+                } else if (descItem instanceof DescItemText) {
+                    DescItemText descItemText = (DescItemText) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("TEXT");
+
+                    arrData = new ArrDataText();
+                    arrData.setDataType(dataType);
+                    ((ArrDataText)arrData).setValue(descItemText.getValue());
+                } else if (descItem instanceof DescItemUnitDate) {
+                    DescItemUnitDate descItemUnitDate = (DescItemUnitDate) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("UNITDATE");
+
+                    arrData = new ArrDataUnitdate();
+                    arrData.setDataType(dataType);
+
+                    String calendarTypeCode = descItemUnitDate.getCalendarTypeCode();
+                    ArrCalendarType calendarType = calendarTypeRepository.findByCode(calendarTypeCode);
+
+                    ArrDataUnitdate arrDataUnitDate = ((ArrDataUnitdate)arrData);
+
+                    arrDataUnitDate.setCalendarType(calendarType);
+                    arrDataUnitDate.setFormat(descItemUnitDate.getFormat());
+
+                    arrDataUnitDate.setValueFrom(XmlImportUtils.dateToString(descItemUnitDate.getValueFrom()));
+                    arrDataUnitDate.setValueTo(XmlImportUtils.dateToString(descItemUnitDate.getValueTo()));
+
+                    arrDataUnitDate.setValueFromEstimated(descItemUnitDate.getValueFromEstimated());
+                    arrDataUnitDate.setValueToEstimated(descItemUnitDate.getValueToEstimated());
+
+                    CalendarType converterCalendarType = CalendarType.valueOf(calendarType.getCode());
+
+                    if (arrDataUnitDate.getValueFrom() == null) {
+                        arrDataUnitDate.setNormalizedFrom(Long.MIN_VALUE);
+                    } else {
+                        LocalDateTime fromDateTime = LocalDateTime.parse(arrDataUnitDate.getValueFrom());
+                        long fromSeconds = CalendarConverter.toSeconds(converterCalendarType, fromDateTime);
+                        arrDataUnitDate.setNormalizedFrom(fromSeconds);
+                    }
+
+                    if (arrDataUnitDate.getValueTo() == null) {
+                        arrDataUnitDate.setNormalizedTo(Long.MAX_VALUE);
+                    } else {
+                        LocalDateTime toDateTime = LocalDateTime.parse(arrDataUnitDate.getValueTo());
+                        long toSeconds = CalendarConverter.toSeconds(converterCalendarType, toDateTime);
+                        arrDataUnitDate.setNormalizedTo(toSeconds);
+                    }
+                } else if (descItem instanceof DescItemUnitId) {
+                    DescItemUnitId descItemUnitId = (DescItemUnitId) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("UNITID");
+
+                    arrData = new ArrDataUnitid();
+                    arrData.setDataType(dataType);
+                    ((ArrDataUnitid)arrData).setValue(XmlImportUtils.trimStringValue(descItemUnitId.getValue(), StringLength.LENGTH_250, stopOnError));
+                } else if (descItem instanceof DescItemEnum) {
+                    RulDataType dataType = dataTypeRepository.findByCode("ENUM");
+
+                    arrData = new ArrDataNull();
+                    arrData.setDataType(dataType);
+                } else if (descItem instanceof DescItemJsonTable) {
+                    RulDataType dataType = dataTypeRepository.findByCode("JSON_TABLE");
+                    arrData = new ArrDataJsonTable();
+                    arrData.setDataType(dataType);
+                    // TODO: import tabulky?
+                }
+
+
                 ArrDescItem arrDescItem;
                 try {
                     arrDescItem = createArrDescItem(change, node, descItem);
+                    arrData.setItem(arrDescItem);
                 } catch (NonFatalXmlImportException e) {
                     if (config.isStopOnError()) {
                         throw e;
@@ -414,205 +556,44 @@ public class XmlImportService {
                     continue;
                 }
                 descItemRepository.save(arrDescItem);
+                dataRepository.save(arrData);
 
-                if (descItem instanceof DescItemCoordinates) {
-                    DescItemCoordinates descItemCoordinates = (DescItemCoordinates) descItem;
-                    RulDataType dataType = dataTypeRepository.findByCode("COORDINATES");
-
-                    ArrDataCoordinates arrData = new ArrDataCoordinates();
-                    arrData.setDataType(dataType);
-                    arrData.setItem(arrDescItem);
-                    try {
-                        arrData.setValue(new WKTReader().read(descItemCoordinates.getValue()));
-                    } catch (ParseException e) {
-                        if (stopOnError) {
-                            throw new InvalidDataException(e.getMessage());
-                        }
-                    }
-
-                    dataRepository.save(arrData);
-                } else if (descItem instanceof DescItemDecimal) {
-                    DescItemDecimal descItemDecimal = (DescItemDecimal) descItem;
-                    RulDataType dataType = dataTypeRepository.findByCode("DECIMAL");
-
-                    ArrDataDecimal arrData = new ArrDataDecimal();
-                    arrData.setDataType(dataType);
-                    arrData.setItem(arrDescItem);
-                    arrData.setValue(descItemDecimal.getValue());
-
-                    dataRepository.save(arrData);
-                } else if (descItem instanceof DescItemFormattedText) {
-                    DescItemFormattedText descItemFormattedText = (DescItemFormattedText) descItem;
-                    RulDataType dataType = dataTypeRepository.findByCode("FORMATTED_TEXT");
-
-                    ArrDataText arrData = new ArrDataText();
-                    arrData.setDataType(dataType);
-                    arrData.setItem(arrDescItem);
-                    arrData.setValue(descItemFormattedText.getValue());
-
-                    dataRepository.save(arrData);
-                } else if (descItem instanceof DescItemInteger) {
-                    DescItemInteger descItemInteger = (DescItemInteger) descItem;
-                    RulDataType dataType = dataTypeRepository.findByCode("INT");
-
-                    ArrDataInteger arrData = new ArrDataInteger();
-                    arrData.setDataType(dataType);
-                    arrData.setItem(arrDescItem);
-                    arrData.setValue(descItemInteger.getValue());
-
-                    dataRepository.save(arrData);
-                } else if (descItem instanceof DescItemPacketRef) {
-                    DescItemPacketRef descItemPacketRef = (DescItemPacketRef) descItem;
-                    RulDataType dataType = dataTypeRepository.findByCode("PACKET_REF");
-
-                    ArrDataPacketRef arrData = new ArrDataPacketRef();
-                    arrData.setDataType(dataType);
-                    arrData.setItem(arrDescItem);
-
-                    String storageNumber = descItemPacketRef.getPacket().getStorageNumber();
-                    arrData.setPacket(xmlIdIntIdPacketMap.get(storageNumber));
-
-                    dataRepository.save(arrData);
-                } else if (descItem instanceof DescItemPartyRef) {
-                    DescItemPartyRef descItemPartyRef = (DescItemPartyRef) descItem;
-                    RulDataType dataType = dataTypeRepository.findByCode("PARTY_REF");
-
-                    ArrDataPartyRef arrData = new ArrDataPartyRef();
-                    arrData.setDataType(dataType);
-                    arrData.setItem(arrDescItem);
-
-                    String partyId = descItemPartyRef.getParty().getPartyId();
-                    arrData.setParty(xmlIdIntIdPartyMap.get(partyId));
-
-                    dataRepository.save(arrData);
-                } else if (descItem instanceof DescItemRecordRef) {
-                    DescItemRecordRef descItemRecordRef = (DescItemRecordRef) descItem;
-                    RulDataType dataType = dataTypeRepository.findByCode("RECORD_REF");
-
-                    ArrDataRecordRef arrData = new ArrDataRecordRef();
-                    arrData.setDataType(dataType);
-                    arrData.setItem(arrDescItem);
-
-                    String recordId = descItemRecordRef.getRecord().getRecordId();
-                    arrData.setRecord(xmlIdIntIdRecordMap.get(recordId));
-
-                    dataRepository.save(arrData);
-                } else if (descItem instanceof DescItemString) {
-                    DescItemString descItemString = (DescItemString) descItem;
-                    RulDataType dataType = dataTypeRepository.findByCode("STRING");
-
-                    ArrDataString arrData = new ArrDataString();
-                    arrData.setDataType(dataType);
-                    arrData.setItem(arrDescItem);
-                    arrData.setValue(XmlImportUtils.trimStringValue(descItemString.getValue(), StringLength.LENGTH_1000, stopOnError));
-
-                    dataRepository.save(arrData);
-                } else if (descItem instanceof DescItemText) {
-                    DescItemText descItemText = (DescItemText) descItem;
-                    RulDataType dataType = dataTypeRepository.findByCode("TEXT");
-
-                    ArrDataText arrData = new ArrDataText();
-                    arrData.setDataType(dataType);
-                    arrData.setItem(arrDescItem);
-                    arrData.setValue(descItemText.getValue());
-
-                    dataRepository.save(arrData);
-                } else if (descItem instanceof DescItemUnitDate) {
-                    DescItemUnitDate descItemUnitDate = (DescItemUnitDate) descItem;
-                    RulDataType dataType = dataTypeRepository.findByCode("UNITDATE");
-
-                    ArrDataUnitdate arrData = new ArrDataUnitdate();
-                    arrData.setDataType(dataType);
-                    arrData.setItem(arrDescItem);
-
-                    String calendarTypeCode = descItemUnitDate.getCalendarTypeCode();
-                    ArrCalendarType calendarType = calendarTypeRepository.findByCode(calendarTypeCode);
-                    arrData.setCalendarType(calendarType);
-                    arrData.setFormat(descItemUnitDate.getFormat());
-
-                    arrData.setValueFrom(XmlImportUtils.dateToString(descItemUnitDate.getValueFrom()));
-                    arrData.setValueTo(XmlImportUtils.dateToString(descItemUnitDate.getValueTo()));
-
-                    arrData.setValueFromEstimated(descItemUnitDate.getValueFromEstimated());
-                    arrData.setValueToEstimated(descItemUnitDate.getValueToEstimated());
-
-                    CalendarType converterCalendarType = CalendarType.valueOf(calendarType.getCode());
-
-                    if (arrData.getValueFrom() == null) {
-                        arrData.setNormalizedFrom(Long.MIN_VALUE);
-                    } else {
-                        LocalDateTime fromDateTime = LocalDateTime.parse(arrData.getValueFrom());
-                        long fromSeconds = CalendarConverter.toSeconds(converterCalendarType, fromDateTime);
-                        arrData.setNormalizedFrom(fromSeconds);
-                    }
-
-                    if (arrData.getValueTo() == null) {
-                        arrData.setNormalizedTo(Long.MAX_VALUE);
-                    } else {
-                        LocalDateTime toDateTime = LocalDateTime.parse(arrData.getValueTo());
-                        long toSeconds = CalendarConverter.toSeconds(converterCalendarType, toDateTime);
-                        arrData.setNormalizedTo(toSeconds);
-                    }
-                    dataRepository.save(arrData);
-                } else if (descItem instanceof DescItemUnitId) {
-                    DescItemUnitId descItemUnitId = (DescItemUnitId) descItem;
-                    RulDataType dataType = dataTypeRepository.findByCode("UNITID");
-
-                    ArrDataUnitid arrData = new ArrDataUnitid();
-                    arrData.setDataType(dataType);
-                    arrData.setItem(arrDescItem);
-                    arrData.setValue(XmlImportUtils.trimStringValue(descItemUnitId.getValue(), StringLength.LENGTH_250, stopOnError));
-
-                    dataRepository.save(arrData);
-                } else if (descItem instanceof DescItemEnum) {
-                    RulDataType dataType = dataTypeRepository.findByCode("ENUM");
-
-                    ArrDataNull arrData = new ArrDataNull();
-                    arrData.setDataType(dataType);
-                    arrData.setItem(arrDescItem);
-
-                    dataRepository.save(arrData);
-                } else if (descItem instanceof DescItemJsonTable) {
-                    RulDataType dataType = dataTypeRepository.findByCode("JSON_TABLE");
-
-                    ArrDataJsonTable arrData = new ArrDataJsonTable();
-                    arrData.setDataType(dataType);
-                    arrData.setItem(arrDescItem);
-
-                    dataRepository.save(arrData);
-                }
             }
         }
     }
 
     private ArrDescItem createArrDescItem(final ArrChange change, final ArrNode node, final AbstractDescItem descItem) throws LevelImportException {
-        ArrDescItem arrDescItem = new ArrDescItem();
-
-        arrDescItem.setCreateChange(change);
-        arrDescItem.setNode(node);
-        arrDescItem.setPosition(descItem.getPosition());
-        arrDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
 
         String descItemTypeCode = descItem.getDescItemTypeCode();
+        RulItemType descItemType = null;
         if (descItemTypeCode !=  null) {
-            RulItemType descItemType = itemTypeRepository.findOneByCode(descItemTypeCode);
+            descItemType = itemTypeRepository.findOneByCode(descItemTypeCode);
             if (descItemType == null) {
                 throw new LevelImportException("Chybí desc item type");
             }
-            arrDescItem.setItemType(descItemType);
         } else {
             throw new LevelImportException("Chybí desc item type code");
         }
 
         String descItemSpecCode = descItem.getDescItemSpecCode();
+        RulItemSpec descItemSpec = null;
         if (descItemSpecCode !=  null) {
-            RulItemSpec descItemSpec = itemSpecRepository.findByItemTypeAndCode(arrDescItem.getItemType(), descItemSpecCode);
+            descItemSpec = itemSpecRepository.findByItemTypeAndCode(descItemType, descItemSpecCode);
             if (descItemSpec == null) {
                 throw new LevelImportException("Neexistuje specifikace s kódem " + descItemSpecCode
                         + " pro desc item type s kódem " + descItemTypeCode);
             }
-            arrDescItem.setItemSpec(descItemSpec);
+
         }
+
+        ArrDescItem arrDescItem = new ArrDescItem(descItemFactory.createItemByType(descItemType.getDataType()));
+
+        arrDescItem.setCreateChange(change);
+        arrDescItem.setNode(node);
+        arrDescItem.setPosition(descItem.getPosition());
+        arrDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+        arrDescItem.setItemSpec(descItemSpec);
+        arrDescItem.setItemType(descItemType);
 
         return arrDescItem;
     }

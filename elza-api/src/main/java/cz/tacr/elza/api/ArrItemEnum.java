@@ -6,8 +6,7 @@ package cz.tacr.elza.api;
  * @author Martin Šlapa
  * @since 18.11.15
  */
-public interface ArrDescItemEnum<N extends ArrNode>
-        extends ArrDescItem<N> {
+public interface ArrItemEnum extends ArrItemData {
 
 
 }

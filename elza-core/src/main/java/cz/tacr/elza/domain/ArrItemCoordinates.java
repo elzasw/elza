@@ -4,12 +4,12 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTWriter;
 
 /**
- * Implementace třídy {@link cz.tacr.elza.api.ArrDescItemCoordinates}
+ * Implementace třídy {@link cz.tacr.elza.api.ArrItemCoordinates}
  *
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrDescItemCoordinates extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemCoordinates<ArrNode> {
+public class ArrItemCoordinates extends ArrItemData implements cz.tacr.elza.api.ArrItemCoordinates {
 
     private Geometry value;
 

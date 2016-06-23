@@ -7,7 +7,7 @@ package cz.tacr.elza.domain;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrDescItemUnitdate extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemUnitdate<ArrCalendarType> {
+public class ArrItemUnitdate extends ArrItemData implements cz.tacr.elza.api.ArrItemUnitdate<ArrCalendarType> {
 
     private String valueFrom;
 

@@ -8,9 +8,9 @@ import cz.tacr.elza.api.table.ElzaTable;
  * @author Martin Šlapa
  * @since 21.06.2016
  */
-public interface ArrDescItemJsonTable<N extends ArrNode, T extends ElzaTable> extends ArrDescItem<N> {
+public interface ArrItemJsonTable<ET extends ElzaTable> extends ArrItemData {
 
-    T getValue();
+    ET getValue();
 
-    void setValue(T value);
+    void setValue(ET value);
 }

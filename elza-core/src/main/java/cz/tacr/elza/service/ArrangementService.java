@@ -643,7 +643,12 @@ public class ArrangementService {
         Assert.notNull(descItem);
 
         descItem.setDeleteChange(deleteChange);
-        ArrDescItem descItemTmp = new ArrDescItem();
+        ArrDescItem descItemTmp;
+        try {
+            descItemTmp = new ArrDescItem();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new IllegalStateException(e);
+        }
         BeanUtils.copyProperties(descItem, descItemTmp);
         descItemRepository.save(descItemTmp);
     }

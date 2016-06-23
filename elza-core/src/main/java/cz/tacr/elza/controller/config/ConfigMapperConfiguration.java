@@ -130,10 +130,10 @@ public class ConfigMapperConfiguration {
                 }).byDefault().register();
 
 
-        mapperFactory.classMap(ArrDescItemCoordinates.class, ArrDescItemCoordinatesVO.class).customize(
-                new CustomMapper<ArrDescItemCoordinates, ArrDescItemCoordinatesVO>() {
+       mapperFactory.classMap(ArrItemCoordinates.class, ArrDescItemCoordinatesVO.class).customize(
+                new CustomMapper<ArrItemCoordinates, ArrDescItemCoordinatesVO>() {
             @Override
-            public void mapAtoB(final ArrDescItemCoordinates coordinates,
+            public void mapAtoB(final ArrItemCoordinates coordinates,
                                 final ArrDescItemCoordinatesVO coordinatesVO,
                                 final MappingContext context) {
                 String type = coordinates.getValue().getGeometryType().toUpperCase();
@@ -146,7 +146,7 @@ public class ConfigMapperConfiguration {
 
             @Override
             public void mapBtoA(final ArrDescItemCoordinatesVO coordinatesVO,
-                                final ArrDescItemCoordinates coordinates,
+                                final ArrItemCoordinates coordinates,
                                 final MappingContext context) {
                 WKTReader reader = new WKTReader();
                 try {
@@ -155,47 +155,38 @@ public class ConfigMapperConfiguration {
                     e.printStackTrace();
                 }
             }
-        }).field("itemId", "id").exclude("value").byDefault().register();
-        mapperFactory.classMap(ArrDescItemEnum.class, ArrDescItemEnumVO.class).byDefault().field(
-                "itemId", "id").register();
-        mapperFactory.classMap(ArrDescItemFormattedText.class, ArrDescItemFormattedTextVO.class).byDefault().field(
-                "itemId", "id").register();
-        mapperFactory.classMap(ArrDescItemInt.class, ArrDescItemIntVO.class).byDefault().field(
-                "itemId", "id").register();
-        mapperFactory.classMap(ArrDescItemJsonTable.class, ArrDescItemJsonTableVO.class).byDefault().field(
-                "itemId", "id").register();
-        mapperFactory.classMap(ArrDescItemText.class, ArrDescItemTextVO.class).byDefault().field(
-                "itemId", "id").register();
-        mapperFactory.classMap(ArrDescItemDecimal.class, ArrDescItemDecimalVO.class).byDefault().field(
-                "itemId", "id").register();
-        mapperFactory.classMap(ArrDescItemUnitid.class, ArrDescItemUnitidVO.class).byDefault().field(
-                "itemId", "id").register();
-        mapperFactory.classMap(ArrDescItemUnitdate.class, ArrDescItemUnitdateVO.class).customize(
-                new CustomMapper<ArrDescItemUnitdate, ArrDescItemUnitdateVO>() {
+        }).exclude("value").byDefault().register();
+        mapperFactory.classMap(ArrItemEnum.class, ArrDescItemEnumVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemFormattedText.class, ArrDescItemFormattedTextVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemInt.class, ArrDescItemIntVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemJsonTable.class, ArrDescItemJsonTableVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemText.class, ArrDescItemTextVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemDecimal.class, ArrDescItemDecimalVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemUnitid.class, ArrDescItemUnitidVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemUnitdate.class, ArrDescItemUnitdateVO.class).customize(
+                new CustomMapper<ArrItemUnitdate, ArrDescItemUnitdateVO>() {
                     @Override
-                    public void mapAtoB(final ArrDescItemUnitdate unitdate,
+                    public void mapAtoB(final ArrItemUnitdate unitdate,
                                         final ArrDescItemUnitdateVO unitdateVO,
                                         final MappingContext context) {
                         unitdateVO.setCalendarTypeId(unitdate.getCalendarType().getCalendarTypeId());
-                        unitdateVO.setId(unitdate.getItemId());
                         unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
                     }
 
                     @Override
                     public void mapBtoA(final ArrDescItemUnitdateVO arrDescItemUnitdateVO,
-                                        final ArrDescItemUnitdate unitdate,
+                                        final ArrItemUnitdate unitdate,
                                         final MappingContext context) {
                         unitdate.setCalendarType(
                                 calendarTypeRepository.findOne(arrDescItemUnitdateVO.getCalendarTypeId()));
-                        unitdate.setItemId(arrDescItemUnitdateVO.getId());
                         UnitDateConvertor.convertToUnitDate(arrDescItemUnitdateVO.getValue(), unitdate);
                     }
                 }).byDefault().register();
 
-        mapperFactory.classMap(ArrDescItemPacketRef.class, ArrDescItemPacketVO.class).customize(
-                new CustomMapper<ArrDescItemPacketRef, ArrDescItemPacketVO>() {
+        mapperFactory.classMap(ArrItemPacketRef.class, ArrDescItemPacketVO.class).customize(
+                new CustomMapper<ArrItemPacketRef, ArrDescItemPacketVO>() {
                     @Override
-                    public void mapAtoB(final ArrDescItemPacketRef descItemPacketRef,
+                    public void mapAtoB(final ArrItemPacketRef descItemPacketRef,
                                         final ArrDescItemPacketVO descItemPacketVO,
                                         final MappingContext context) {
                         super.mapAtoB(descItemPacketRef, descItemPacketVO, context);
@@ -204,17 +195,16 @@ public class ConfigMapperConfiguration {
 
                     @Override
                     public void mapBtoA(final ArrDescItemPacketVO descItemPacketVO,
-                                        final ArrDescItemPacketRef descItemPacketRef,
+                                        final ArrItemPacketRef descItemPacketRef,
                                         final MappingContext context) {
                         super.mapBtoA(descItemPacketVO, descItemPacketRef, context);
                         descItemPacketRef.setPacket(packetRepository.findOne(descItemPacketVO.getValue()));
                     }
-                }).byDefault().field(
-                "itemId", "id").register();
-        mapperFactory.classMap(ArrDescItemPartyRef.class, ArrDescItemPartyRefVO.class).customize(
-                new CustomMapper<ArrDescItemPartyRef, ArrDescItemPartyRefVO>() {
+                }).byDefault().register();
+        mapperFactory.classMap(ArrItemPartyRef.class, ArrDescItemPartyRefVO.class).customize(
+                new CustomMapper<ArrItemPartyRef, ArrDescItemPartyRefVO>() {
                     @Override
-                    public void mapAtoB(final ArrDescItemPartyRef partyRef,
+                    public void mapAtoB(final ArrItemPartyRef partyRef,
                                         final ArrDescItemPartyRefVO patryRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(partyRef, patryRefVO, context);
@@ -223,17 +213,16 @@ public class ConfigMapperConfiguration {
 
                     @Override
                     public void mapBtoA(final ArrDescItemPartyRefVO partyRefVO,
-                                        final ArrDescItemPartyRef partyRef,
+                                        final ArrItemPartyRef partyRef,
                                         final MappingContext context) {
                         super.mapBtoA(partyRefVO, partyRef, context);
                         partyRef.setParty(partyRepository.findOne(partyRefVO.getValue()));
                     }
-                }).byDefault().field(
-                "itemId", "id").register();
-        mapperFactory.classMap(ArrDescItemRecordRef.class, ArrDescItemRecordRefVO.class).customize(
-                new CustomMapper<ArrDescItemRecordRef, ArrDescItemRecordRefVO>() {
+                }).byDefault().register();
+        mapperFactory.classMap(ArrItemRecordRef.class, ArrDescItemRecordRefVO.class).customize(
+                new CustomMapper<ArrItemRecordRef, ArrDescItemRecordRefVO>() {
                     @Override
-                    public void mapAtoB(final ArrDescItemRecordRef recordRef,
+                    public void mapAtoB(final ArrItemRecordRef recordRef,
                                         final ArrDescItemRecordRefVO recordRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(recordRef, recordRefVO, context);
@@ -242,15 +231,13 @@ public class ConfigMapperConfiguration {
 
                     @Override
                     public void mapBtoA(final ArrDescItemRecordRefVO recordRefVO,
-                                        final ArrDescItemRecordRef recordRef,
+                                        final ArrItemRecordRef recordRef,
                                         final MappingContext context) {
                         super.mapBtoA(recordRefVO, recordRef, context);
                         recordRef.setRecord(recordRepository.findOne(recordRefVO.getValue()));
                     }
-                }).byDefault().field(
-                "itemId", "id").register();
-        mapperFactory.classMap(ArrDescItemString.class, ArrDescItemStringVO.class).byDefault().field(
-                "itemId", "id").register();
+                }).byDefault().register();
+        mapperFactory.classMap(ArrItemString.class, ArrDescItemStringVO.class).byDefault().register();
 
         mapperFactory.classMap(ArrNodeRegister.class, ArrNodeRegisterVO.class).byDefault().field(
                 "nodeRegisterId", "id").register();

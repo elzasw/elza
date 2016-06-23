@@ -19,6 +19,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 
 /**
@@ -33,10 +34,25 @@ import javax.persistence.Table;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public abstract class ArrItem implements cz.tacr.elza.api.ArrItem<ArrChange, RulItemType, RulItemSpec> {
+public abstract class ArrItem<T extends ArrItemData> implements cz.tacr.elza.api.ArrItem<T, ArrChange, RulItemType, RulItemSpec> {
 
     public static final String ITEM_SPEC = "itemSpec";
     public static final String ITEM_TYPE = "itemType";
+
+    public ArrItem() {
+
+    }
+
+    public ArrItem(final T item) {
+        this.item = item;
+    }
+
+    @Transient
+    protected T item;
+
+    public void setItem(final T item) {
+        this.item = item;
+    }
 
     @Id
     @GeneratedValue
@@ -183,4 +199,11 @@ public abstract class ArrItem implements cz.tacr.elza.api.ArrItem<ArrChange, Rul
     public abstract Integer getFundId();
 
     public abstract ArrNode getNode();
+
+    public abstract ArrOutputDefinition getOutputDefinition();
+
+    @Override
+    public T getItem() {
+        return item;
+    }
 }

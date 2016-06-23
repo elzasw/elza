@@ -6,8 +6,7 @@ package cz.tacr.elza.api;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public interface ArrDescItemPartyRef<N extends ArrNode, P extends ParParty>
-        extends ArrDescItem<N> {
+public interface ArrItemPartyRef<P extends ParParty> extends ArrItemData {
 
     P getParty();
 

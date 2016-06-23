@@ -6,10 +6,10 @@ package cz.tacr.elza.api;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public interface ArrDescItemInt<N extends ArrNode> extends ArrDescItem<N> {
+public interface ArrItemUnitid extends ArrItemData {
 
-    Integer getValue();
+    String getValue();
 
 
-    void setValue(Integer value);
+    void setValue(String value);
 }

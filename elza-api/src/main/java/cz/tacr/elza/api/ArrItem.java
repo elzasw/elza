@@ -8,9 +8,9 @@ import java.io.Serializable;
  * @author Martin Šlapa
  * @since 17.06.2016
  */
-public interface ArrItem<C extends ArrChange, RT extends RulItemType,
-        RS extends RulItemSpec> extends Serializable {
+public interface ArrItem<D extends ArrItemData, C extends ArrChange, RT extends RulItemType, RS extends RulItemSpec> extends Serializable {
 
+    D getItem();
 
     Integer getItemId();
 

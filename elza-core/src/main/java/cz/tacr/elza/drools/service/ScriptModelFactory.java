@@ -157,16 +157,16 @@ public class ScriptModelFactory {
         for (DescItem descItemVO : newLevelApproach.getDescItems()) {
             RulItemType rulDescItemType = itemTypeRepository.getOneByCode(descItemVO.getType());
             Assert.notNull(rulDescItemType);
-            ArrDescItem descItem = descItemFactory.createDescItemByType(rulDescItemType.getDataType());
+            ArrDescItem descItem = new ArrDescItem(descItemFactory.createItemByType(rulDescItemType.getDataType()));
             descItem.setItemType(rulDescItemType);
-
+            ArrItemData item = descItem.getItem();
             if (descItemVO.getSpecCode() != null) {
                 RulItemSpec rulDescItemSpec = itemSpecRepository.getOneByCode(descItemVO.getSpecCode());
                 Assert.notNull(rulDescItemSpec);
                 descItem.setItemSpec(rulDescItemSpec);
-            } else if (descItemVO.getInteger() != null && descItem instanceof ArrDescItemInt) {
-                ((ArrDescItemInt) descItem).setValue(descItemVO.getInteger());
-            } else if (descItem instanceof ArrDescItemEnum) {
+            } else if (descItemVO.getInteger() != null && item instanceof ArrItemInt) {
+                ((ArrItemInt) item).setValue(descItemVO.getInteger());
+            } else if (item instanceof ArrItemEnum) {
                 // ok
             } else {
                 throw new IllegalStateException("Není definována konverze " + descItemVO + " a " + descItem.getClass().toString());

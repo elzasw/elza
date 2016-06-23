@@ -6,22 +6,22 @@ package cz.tacr.elza.domain;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrDescItemString extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemString<ArrNode> {
+public class ArrItemInt extends ArrItemData implements cz.tacr.elza.api.ArrItemInt {
 
-    private String value;
+    private Integer value;
 
     @Override
-    public String getValue() {
+    public Integer getValue() {
         return value;
     }
 
     @Override
-    public void setValue(String value) {
+    public void setValue(Integer value) {
         this.value = value;
     }
 
     @Override
     public String toString() {
-        return value;
+        return value == null ? null : value.toString();
     }
 }

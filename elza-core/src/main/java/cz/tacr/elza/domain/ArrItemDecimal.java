@@ -9,7 +9,7 @@ import java.math.BigDecimal;
  * @author Martin Šlapa
  * @since 12.10.2015
  */
-public class ArrDescItemDecimal extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemDecimal<ArrNode> {
+public class ArrItemDecimal extends ArrItemData implements cz.tacr.elza.api.ArrItemDecimal {
 
     private BigDecimal value;
 

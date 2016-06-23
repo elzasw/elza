@@ -125,23 +125,25 @@ public class SerialNumberBulkAction extends BulkAction {
         }
 
         if (!level.getNode().equals(rootNode)) {
-            ArrDescItem descItem = loadDescItem(level);
+            ArrDescItem<ArrItemInt> descItem = loadDescItem(level);
             int sn = serialNumber.getNext();
 
             // vytvoření nového atributu
             if (descItem == null) {
-                descItem = new ArrDescItemInt();
+                descItem = new ArrDescItem(new ArrItemInt());
                 descItem.setItemType(descItemType);
                 descItem.setNode(level.getNode());
             }
 
-            if (!(descItem instanceof ArrDescItemInt)) {
+            if (!(descItem.getItem() instanceof ArrItemInt)) {
                 throw new IllegalStateException(descItemType.getCode() + " není typu ArrDescItemInt");
             }
 
+            ArrItemInt item = descItem.getItem();
+
             // uložit pouze při rozdílu
-            if (((ArrDescItemInt) descItem).getValue() == null || sn != ((ArrDescItemInt) descItem).getValue()) {
-                ((ArrDescItemInt) descItem).setValue(sn);
+            if (item.getValue() == null || sn != item.getValue()) {
+                item.setValue(sn);
                 ArrDescItem ret = saveDescItem(descItem, version, change);
                 level.setNode(ret.getNode());
             }

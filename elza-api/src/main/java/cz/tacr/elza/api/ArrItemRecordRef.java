@@ -6,8 +6,7 @@ package cz.tacr.elza.api;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public interface ArrDescItemRecordRef<N extends ArrNode, R extends RegRecord>
-        extends ArrDescItem<N> {
+public interface ArrItemRecordRef<R extends RegRecord> extends ArrItemData {
 
     R getRecord();
 

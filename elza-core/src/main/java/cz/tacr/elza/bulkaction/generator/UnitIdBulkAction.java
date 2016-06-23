@@ -178,31 +178,34 @@ public class UnitIdBulkAction extends BulkAction {
 
                 // vytvoření nového atributu
                 if (descItem == null) {
-                    descItem = new ArrDescItemUnitid();
+                    descItem = new ArrDescItem(new ArrItemUnitid());
                     descItem.setItemType(descItemType);
                     descItem.setNode(level.getNode());
                 }
 
-                if (!(descItem instanceof ArrDescItemUnitid)) {
+                ArrItemData item = descItem.getItem();
+
+                if (!(item instanceof ArrItemUnitid)) {
                     throw new IllegalStateException(descItemType.getCode() + " neni typu ArrDescItemUnitid");
                 }
 
                 // uložit pouze při rozdílu
-                if (((ArrDescItemUnitid) descItem).getValue() == null || !unitId.getData()
-                        .equals(((ArrDescItemUnitid) descItem).getValue())) {
+                if (((ArrItemUnitid) item).getValue() == null || !unitId.getData()
+                        .equals(((ArrItemUnitid) item).getValue())) {
 
                     ArrDescItem ret;
 
                     // uložit původní hodnotu pouze při první změně z předchozí verze
                     if (descItem.getDescItemObjectId() != null && descItem.getCreateChange().getChangeId() < version
                             .getCreateChange().getChangeId()) {
-                        ArrDescItem descItemPrev = descItemFactory.createDescItemByType(descItemPreviousType.getDataType());
+                        ArrDescItem descItemPrev = new ArrDescItem(descItemFactory.createItemByType(descItemPreviousType.getDataType()));
+                        ArrItemData itemPrev = descItemPrev.getItem();
                         descItemPrev.setItemType(descItemPreviousType);
                         descItemPrev.setItemSpec(descItemPreviousSpec);
                         descItemPrev.setNode(level.getNode());
 
-                        if (descItemPrev instanceof ArrDescItemString) {
-                            ((ArrDescItemString) descItemPrev).setValue(((ArrDescItemUnitid) descItem).getValue());
+                        if (itemPrev instanceof ArrItemString) {
+                            ((ArrItemString) itemPrev).setValue(((ArrItemUnitid) itemPrev).getValue());
                         } else {
                             throw new IllegalStateException(
                                     descItemPrev.getClass().getName() + " nema definovany prevod hodnoty");
@@ -213,7 +216,7 @@ public class UnitIdBulkAction extends BulkAction {
 
                     }
 
-                    ((ArrDescItemUnitid) descItem).setValue(unitId.getData());
+                    ((ArrItemUnitid) item).setValue(unitId.getData());
                     ret = saveDescItem(descItem, version, change);
                     level.setNode(ret.getNode());
 
@@ -304,13 +307,15 @@ public class UnitIdBulkAction extends BulkAction {
             ArrDescItem descItem = loadDescItem(level);
             ArrDescItem descItemLevel = loadDescItemLevel(level);
             if (descItem != null) {
-                if (!(descItem instanceof ArrDescItemUnitid)) {
+                ArrItemData item = descItem.getItem();
+
+                if (!(item instanceof ArrItemUnitid)) {
                     throw new IllegalStateException(descItemType.getCode() + " neni typu ArrDescItemUnitid");
                 }
 
                 List<ArrLevel> childLevels = getChildren(level);
 
-                String value = ((ArrDescItemUnitid) descItem).getValue();
+                String value = ((ArrItemUnitid) item).getValue();
                 UnitId unitId = new UnitId(value);
                 unitId.setSeparator("");
 

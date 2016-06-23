@@ -22,6 +22,7 @@ import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
 import cz.tacr.elza.domain.vo.UnitdateTitleValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.IllegalClassException;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -439,7 +440,12 @@ public class DescriptionItemService {
             descItemMove.setDeleteChange(change);
             descItemRepository.save(descItemMove);
 
-            ArrDescItem descItemNew = new ArrDescItem();
+            ArrDescItem descItemNew = null;
+            try {
+                descItemNew = new ArrDescItem(descItemMove.getItem().getClass());
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new IllegalStateException(e);
+            }
 
             BeanUtils.copyProperties(descItemMove, descItemNew);
             descItemNew.setItemId(null);
@@ -548,11 +554,16 @@ public class DescriptionItemService {
      * @param position pozice atributu
      * @return kopie atributu4
      */
-    private ArrDescItem copyDescItem(final ArrChange change, final ArrDescItem descItem, final int position){
+    private ArrDescItem copyDescItem(final ArrChange change, final ArrDescItem descItem, final int position) {
         descItem.setDeleteChange(change);
         descItemRepository.save(descItem);
 
-        ArrDescItem descItemNew = new ArrDescItem();
+        ArrDescItem descItemNew;
+        try {
+            descItemNew = new ArrDescItem();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new IllegalStateException(e);
+        }
 
         BeanUtils.copyProperties(descItem, descItemNew);
         descItemNew.setItemId(null);
@@ -575,7 +586,12 @@ public class DescriptionItemService {
                                            final ArrChange createChange,
                                            final ArrFundVersion version) {
         for (ArrDescItem sourceDescItem : sourceDescItems) {
-            ArrDescItem descItemNew = new ArrDescItem();
+            ArrDescItem descItemNew;
+            try {
+                descItemNew = new ArrDescItem();
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new IllegalStateException(e);
+            }
 
             BeanUtils.copyProperties(sourceDescItem, descItemNew);
             descItemNew.setNode(node);
@@ -875,7 +891,7 @@ public class DescriptionItemService {
             }
 
             try {
-                ArrDescItem descItemNew = descItemOrig.getClass().newInstance();
+                ArrDescItem descItemNew = new ArrDescItem();
                 BeanUtils.copyProperties(descItemOrig, descItemNew);
                 copyPropertiesSubclass(descItem, descItemNew, ArrDescItem.class);
                 descItemNew.setItemSpec(descItem.getItemSpec());
@@ -884,6 +900,7 @@ public class DescriptionItemService {
                 descItemNew.setItemId(null);
                 descItemNew.setCreateChange(change);
                 descItemNew.setPosition(positionNew);
+                descItemNew.setItem(descItem.getItem());
 
                 descItemFactory.saveDescItem(descItemOrig);
                 descItemUpdated = descItemFactory.saveDescItemWithData(descItemNew, true);
@@ -1222,22 +1239,21 @@ public class DescriptionItemService {
 
             arrangementService.lockNode(dbNode, nodesMap.get(dbNode.getNodeId()));
 
-            ArrDescItem newDescItem = new ArrDescItem();
-            newDescItem.setNode(dbNode);
-            newDescItem.setItemType(descItemType);
-            newDescItem.setItemSpec(newItemSpecification);
-            newDescItem.setCreateChange(change);
-            newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
-            newDescItem.setPosition(1);
-
             ArrData data = createDataByType(descItemType);
+
+            Class clazz = null;
             switch (descItemType.getDataType().getCode()) {
                 case "TEXT":
+                    clazz = ArrItemText.class;
                 case "FORMATTED_TEXT":
+                    if (clazz == null) {
+                        clazz = ArrItemFormattedText.class;
+                    }
                     ArrDataText textData = (ArrDataText) data;
                     textData.setValue(text);
                     break;
                 case "STRING":
+                    clazz = ArrItemString.class;
                     ArrDataString stringData = (ArrDataString) data;
                     stringData.setValue(text);
                     break;
@@ -1245,6 +1261,20 @@ public class DescriptionItemService {
                     throw new IllegalStateException("Neplatný typ atributu " + descItemType.getDataType().getCode()
                             + ". Pouze textové hodnoty jdou nahradit.");
             }
+
+            ArrDescItem newDescItem = null;
+            try {
+                newDescItem = new ArrDescItem(clazz);
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new IllegalStateException(e);
+            }
+
+            newDescItem.setNode(dbNode);
+            newDescItem.setItemType(descItemType);
+            newDescItem.setItemSpec(newItemSpecification);
+            newDescItem.setCreateChange(change);
+            newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+            newDescItem.setPosition(1);
 
             newDescItem = descItemRepository.save(newDescItem);
 
@@ -1263,7 +1293,7 @@ public class DescriptionItemService {
      * @param replaceString text, který nahradíme
      * @param change změna (odverzování)
      */
-    private void replaceDescItemValue(final ArrData data, final String searchString, final String replaceString, final ArrChange change){
+    private void replaceDescItemValue(final ArrData data, final String searchString, final String replaceString, final ArrChange change) {
 
 
         ArrDescItem descItem = (ArrDescItem) data.getItem();

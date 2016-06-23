@@ -22,6 +22,7 @@ import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -160,7 +161,8 @@ public class ClientFactoryDO {
     public ArrDescItem createDescItem(final ArrDescItemVO descItemVO, final Integer descItemTypeId) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        ArrDescItem descItem = mapper.map(descItemVO, ArrDescItem.class);
+        ArrItemData item = mapper.map(descItemVO, ArrItemData.class);
+        ArrDescItem descItem = new ArrDescItem(item);
 
         RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
         if (descItemType == null) {
@@ -216,7 +218,10 @@ public class ClientFactoryDO {
 
     public ArrDescItem createDescItem(final ArrDescItemVO descItemVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrDescItem descItem = mapper.map(descItemVO, ArrDescItem.class);
+        ArrItemData item = mapper.map(descItemVO, ArrItemData.class);
+        ArrDescItem descItem = new ArrDescItem(item);
+        BeanUtils.copyProperties(descItemVO, descItem);
+        descItem.setItemId(descItemVO.getId());
 
         if (descItemVO.getDescItemSpecId() != null) {
             RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());

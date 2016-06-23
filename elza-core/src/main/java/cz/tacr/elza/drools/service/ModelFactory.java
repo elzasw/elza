@@ -73,14 +73,14 @@ public class ModelFactory {
             result.add(voDescItem);
 
             if (descItemTypesForPackets.contains(descItem.getItemType())) {
-                ArrDescItemPacketRef packetRef = (ArrDescItemPacketRef) descItemFactory.getDescItem(descItem);
+                ArrItemPacketRef packetRef = (ArrItemPacketRef) descItemFactory.getDescItem(descItem).getItem();
 
                 ArrPacket packet = packetRef.getPacket();
                 if (packet != null) {
                     voDescItem.setPacket(createPacket(packet));
                 }
             } else if (descItemTypesForIntegers.contains(descItem.getItemType())) {
-                ArrDescItemInt integer = (ArrDescItemInt) descItemFactory.getDescItem(descItem);
+                ArrItemInt integer = (ArrItemInt) descItemFactory.getDescItem(descItem).getItem();
                 voDescItem.setInteger(integer.getValue());
             }
         }

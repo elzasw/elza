@@ -6,7 +6,7 @@ package cz.tacr.elza.domain;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrDescItemUnitid extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemUnitid<ArrNode> {
+public class ArrItemString extends ArrItemData implements cz.tacr.elza.api.ArrItemString {
 
     private String value;
 

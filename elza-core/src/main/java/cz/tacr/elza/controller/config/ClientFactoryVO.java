@@ -20,6 +20,7 @@ import ma.glasnost.orika.MapperFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -790,7 +791,10 @@ public class ClientFactoryVO {
     public ArrDescItemVO createDescItem(final ArrDescItem descItem) {
         Assert.notNull(descItem);
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrDescItemVO descItemVO = mapper.map(descItem, ArrDescItemVO.class);
+        ArrDescItemVO descItemVO = mapper.map(descItem.getItem(), ArrDescItemVO.class);
+        BeanUtils.copyProperties(descItem, descItemVO);
+        descItemVO.setId(descItem.getItemId());
+
         Integer specId = (descItem.getItemSpec() == null) ? null : descItem.getItemSpec().getItemSpecId();
         descItemVO.setDescItemSpecId(specId);
         return descItemVO;

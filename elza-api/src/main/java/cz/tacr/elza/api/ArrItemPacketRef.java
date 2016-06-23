@@ -6,8 +6,7 @@ package cz.tacr.elza.api;
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public interface ArrDescItemPacketRef<N extends ArrNode, P extends ArrPacket>
-        extends ArrDescItem<N> {
+public interface ArrItemPacketRef<P extends ArrPacket> extends ArrItemData {
 
     P getPacket();
 

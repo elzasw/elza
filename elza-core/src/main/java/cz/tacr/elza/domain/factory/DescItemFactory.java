@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDescItemJsonTable;
+import cz.tacr.elza.domain.ArrItemData;
+import cz.tacr.elza.domain.ArrItemJsonTable;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.repository.DataJsonTableRepository;
 import ma.glasnost.orika.CustomMapper;
@@ -42,18 +43,18 @@ import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDescItemCoordinates;
-import cz.tacr.elza.domain.ArrDescItemDecimal;
-import cz.tacr.elza.domain.ArrDescItemEnum;
-import cz.tacr.elza.domain.ArrDescItemFormattedText;
-import cz.tacr.elza.domain.ArrDescItemInt;
-import cz.tacr.elza.domain.ArrDescItemPacketRef;
-import cz.tacr.elza.domain.ArrDescItemPartyRef;
-import cz.tacr.elza.domain.ArrDescItemRecordRef;
-import cz.tacr.elza.domain.ArrDescItemString;
-import cz.tacr.elza.domain.ArrDescItemText;
-import cz.tacr.elza.domain.ArrDescItemUnitdate;
-import cz.tacr.elza.domain.ArrDescItemUnitid;
+import cz.tacr.elza.domain.ArrItemCoordinates;
+import cz.tacr.elza.domain.ArrItemDecimal;
+import cz.tacr.elza.domain.ArrItemEnum;
+import cz.tacr.elza.domain.ArrItemFormattedText;
+import cz.tacr.elza.domain.ArrItemInt;
+import cz.tacr.elza.domain.ArrItemPacketRef;
+import cz.tacr.elza.domain.ArrItemPartyRef;
+import cz.tacr.elza.domain.ArrItemRecordRef;
+import cz.tacr.elza.domain.ArrItemString;
+import cz.tacr.elza.domain.ArrItemText;
+import cz.tacr.elza.domain.ArrItemUnitdate;
+import cz.tacr.elza.domain.ArrItemUnitid;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.DataDecimalRepository;
@@ -168,21 +169,19 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu Coordinates.
      */
     private void defineMapCoordinates() {
-        factory.classMap(ArrDescItemCoordinates.class, ArrDataCoordinates.class)
-                .customize(new CustomMapper<ArrDescItemCoordinates, ArrDataCoordinates>() {
+        factory.classMap(ArrItemCoordinates.class, ArrDataCoordinates.class)
+                .customize(new CustomMapper<ArrItemCoordinates, ArrDataCoordinates>() {
 
                     @Override
-                    public void mapAtoB(ArrDescItemCoordinates arrDescItemCoordinates,
+                    public void mapAtoB(ArrItemCoordinates arrDescItemCoordinates,
                                         ArrDataCoordinates arrDataCoordinates,
                                         MappingContext context) {
-                        arrDataCoordinates.setDataType(arrDescItemCoordinates.getItemType().getDataType());
-                        arrDataCoordinates.setItem(arrDescItemCoordinates);
                         arrDataCoordinates.setValue(arrDescItemCoordinates.getValue());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataCoordinates arrDataCoordinates,
-                                        ArrDescItemCoordinates arrDescItemExtCoordinates,
+                                        ArrItemCoordinates arrDescItemExtCoordinates,
                                         MappingContext context) {
                         arrDescItemExtCoordinates.setValue(arrDataCoordinates.getValue());
                     }
@@ -206,23 +205,21 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu JsonTable.
      */
     private void defineMapJsonTable() {
-        factory.classMap(ArrDescItemJsonTable.class, ArrDataJsonTable.class)
-                .customize(new CustomMapper<ArrDescItemJsonTable, ArrDataJsonTable>() {
+        factory.classMap(ArrItemJsonTable.class, ArrDataJsonTable.class)
+                .customize(new CustomMapper<ArrItemJsonTable, ArrDataJsonTable>() {
 
                     @Override
-                    public void mapAtoB(ArrDescItemJsonTable arrDescItemJsonTable,
+                    public void mapAtoB(ArrItemJsonTable arrItemJsonTable,
                                         ArrDataJsonTable arrDataJsonTable,
                                         MappingContext context) {
-                        arrDataJsonTable.setDataType(arrDescItemJsonTable.getItemType().getDataType());
-                        arrDataJsonTable.setItem(arrDescItemJsonTable);
-                        arrDataJsonTable.setValue(arrDescItemJsonTable.getValue());
+                        arrDataJsonTable.setValue(arrItemJsonTable.getValue());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataJsonTable arrDataJsonTable,
-                                        ArrDescItemJsonTable arrDescItemJsonTable,
+                                        ArrItemJsonTable arrItemJsonTable,
                                         MappingContext context) {
-                        arrDescItemJsonTable.setValue(arrDataJsonTable.getValue());
+                        arrItemJsonTable.setValue(arrDataJsonTable.getValue());
                     }
 
                 }).register();
@@ -244,24 +241,22 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu FormattedText.
      */
     private void defineMapFormattedText() {
-        factory.classMap(ArrDescItemFormattedText.class, ArrDataText.class)
-                .customize(new CustomMapper<ArrDescItemFormattedText, ArrDataText>() {
+        factory.classMap(ArrItemFormattedText.class, ArrDataText.class)
+                .customize(new CustomMapper<ArrItemFormattedText, ArrDataText>() {
 
                     @Override
-                    public void mapAtoB(ArrDescItemFormattedText arrDescItemFormattedText,
+                    public void mapAtoB(ArrItemFormattedText arrItemFormattedText,
                                         ArrDataText arrDataText,
                                         MappingContext context) {
-                        arrDataText.setDataType(arrDescItemFormattedText.getItemType().getDataType());
-                        arrDataText.setItem(arrDescItemFormattedText);
-                        arrDataText.setValue(arrDescItemFormattedText.getValue());
+                        arrDataText.setValue(arrItemFormattedText.getValue());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataText arrDataText,
-                                        ArrDescItemFormattedText arrDescItemFormattedText,
+                                        ArrItemFormattedText arrItemFormattedText,
                                         MappingContext context) {
                         String formattedValue = formatString(context, arrDataText.getValue());
-                        arrDescItemFormattedText.setValue(formattedValue);
+                        arrItemFormattedText.setValue(formattedValue);
                     }
                 }).register();
 
@@ -279,23 +274,21 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu Int.
      */
     private void defineMapInt() {
-        factory.classMap(ArrDescItemInt.class, ArrDataInteger.class)
-                .customize(new CustomMapper<ArrDescItemInt, ArrDataInteger>() {
+        factory.classMap(ArrItemInt.class, ArrDataInteger.class)
+                .customize(new CustomMapper<ArrItemInt, ArrDataInteger>() {
 
                     @Override
-                    public void mapAtoB(ArrDescItemInt arrDescItemInt,
+                    public void mapAtoB(ArrItemInt arrItemInt,
                                         ArrDataInteger arrDataInteger,
                                         MappingContext context) {
-                        arrDataInteger.setDataType(arrDescItemInt.getItemType().getDataType());
-                        arrDataInteger.setItem(arrDescItemInt);
-                        arrDataInteger.setValue(arrDescItemInt.getValue());
+                        arrDataInteger.setValue(arrItemInt.getValue());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataInteger arrDataInteger,
-                                        ArrDescItemInt arrDescItemInt,
+                                        ArrItemInt arrItemInt,
                                         MappingContext context) {
-                        arrDescItemInt.setValue(arrDataInteger.getValue());
+                        arrItemInt.setValue(arrDataInteger.getValue());
                     }
 
                 }).register();
@@ -317,23 +310,21 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu PartyRef.
      */
     private void defineMapPartyRef() {
-        factory.classMap(ArrDescItemPartyRef.class, ArrDataPartyRef.class)
-                .customize(new CustomMapper<ArrDescItemPartyRef, ArrDataPartyRef>() {
+        factory.classMap(ArrItemPartyRef.class, ArrDataPartyRef.class)
+                .customize(new CustomMapper<ArrItemPartyRef, ArrDataPartyRef>() {
 
                     @Override
-                    public void mapAtoB(ArrDescItemPartyRef arrDescItemPartyRef,
+                    public void mapAtoB(ArrItemPartyRef arrItemPartyRef,
                                         ArrDataPartyRef arrDataPartyRef,
                                         MappingContext context) {
-                        arrDataPartyRef.setDataType(arrDescItemPartyRef.getItemType().getDataType());
-                        arrDataPartyRef.setItem(arrDescItemPartyRef);
-                        arrDataPartyRef.setParty(arrDescItemPartyRef.getParty());
+                        arrDataPartyRef.setParty(arrItemPartyRef.getParty());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataPartyRef arrDataPartyRef,
-                                        ArrDescItemPartyRef arrDescItemPartyRef,
+                                        ArrItemPartyRef arrItemPartyRef,
                                         MappingContext context) {
-                        arrDescItemPartyRef.setParty(arrDataPartyRef.getParty());
+                        arrItemPartyRef.setParty(arrDataPartyRef.getParty());
                     }
 
                 }).register();
@@ -355,21 +346,19 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu PacketRef.
      */
     private void defineMapPacketRef() {
-        factory.classMap(ArrDescItemPacketRef.class, ArrDataPacketRef.class)
-                .customize(new CustomMapper<ArrDescItemPacketRef, ArrDataPacketRef>() {
+        factory.classMap(ArrItemPacketRef.class, ArrDataPacketRef.class)
+                .customize(new CustomMapper<ArrItemPacketRef, ArrDataPacketRef>() {
 
                     @Override
-                    public void mapAtoB(ArrDescItemPacketRef arrDescItemPartyRef,
+                    public void mapAtoB(ArrItemPacketRef arrDescItemPartyRef,
                                         ArrDataPacketRef arrDataPartyRef,
                                         MappingContext context) {
-                        arrDataPartyRef.setDataType(arrDescItemPartyRef.getItemType().getDataType());
-                        arrDataPartyRef.setItem(arrDescItemPartyRef);
                         arrDataPartyRef.setPacket(arrDescItemPartyRef.getPacket());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataPacketRef arrDataPartyRef,
-                                        ArrDescItemPacketRef arrDescItemPartyRef,
+                                        ArrItemPacketRef arrDescItemPartyRef,
                                         MappingContext context) {
                         arrDescItemPartyRef.setPacket(arrDataPartyRef.getPacket());
                     }
@@ -393,23 +382,21 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu RecordRef.
      */
     private void defineMapRecordRef() {
-        factory.classMap(ArrDescItemRecordRef.class, ArrDataRecordRef.class)
-                .customize(new CustomMapper<ArrDescItemRecordRef, ArrDataRecordRef>() {
+        factory.classMap(ArrItemRecordRef.class, ArrDataRecordRef.class)
+                .customize(new CustomMapper<ArrItemRecordRef, ArrDataRecordRef>() {
 
                     @Override
-                    public void mapAtoB(ArrDescItemRecordRef arrDescItemRecordRef,
+                    public void mapAtoB(ArrItemRecordRef arrItemRecordRef,
                                         ArrDataRecordRef arrDataRecordRef,
                                         MappingContext context) {
-                        arrDataRecordRef.setDataType(arrDescItemRecordRef.getItemType().getDataType());
-                        arrDataRecordRef.setItem(arrDescItemRecordRef);
-                        arrDataRecordRef.setRecord(arrDescItemRecordRef.getRecord());
+                        arrDataRecordRef.setRecord(arrItemRecordRef.getRecord());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataRecordRef arrDataRecordRef,
-                                        ArrDescItemRecordRef arrDescItemRecordRef,
+                                        ArrItemRecordRef arrItemRecordRef,
                                         MappingContext context) {
-                        arrDescItemRecordRef.setRecord(arrDataRecordRef.getRecord());
+                        arrItemRecordRef.setRecord(arrDataRecordRef.getRecord());
                     }
 
                 }).register();
@@ -431,24 +418,22 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu String.
      */
     private void defineMapString() {
-        factory.classMap(ArrDescItemString.class, ArrDataString.class).customize(
-                new CustomMapper<ArrDescItemString, ArrDataString>() {
+        factory.classMap(ArrItemString.class, ArrDataString.class).customize(
+                new CustomMapper<ArrItemString, ArrDataString>() {
 
                     @Override
-                    public void mapAtoB(ArrDescItemString arrDescItemString,
+                    public void mapAtoB(ArrItemString arrItemString,
                                         ArrDataString arrDataString,
                                         MappingContext context) {
-                        arrDataString.setDataType(arrDescItemString.getItemType().getDataType());
-                        arrDataString.setItem(arrDescItemString);
-                        arrDataString.setValue(arrDescItemString.getValue());
+                        arrDataString.setValue(arrItemString.getValue());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataString arrDataString,
-                                        ArrDescItemString arrDescItemString,
+                                        ArrItemString arrItemString,
                                         MappingContext context) {
                         String formattedValue = formatString(context, arrDataString.getValue());
-                        arrDescItemString.setValue(formattedValue);
+                        arrItemString.setValue(formattedValue);
                     }
                 }).register();
 
@@ -469,24 +454,22 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu Text.
      */
     private void defineMapText() {
-        factory.classMap(ArrDescItemText.class, ArrDataText.class)
-                .customize(new CustomMapper<ArrDescItemText, ArrDataText>() {
+        factory.classMap(ArrItemText.class, ArrDataText.class)
+                .customize(new CustomMapper<ArrItemText, ArrDataText>() {
 
                     @Override
-                    public void mapAtoB(ArrDescItemText arrDescItemText,
+                    public void mapAtoB(ArrItemText arrItemText,
                                         ArrDataText arrDataText,
                                         MappingContext context) {
-                        arrDataText.setDataType(arrDescItemText.getItemType().getDataType());
-                        arrDataText.setItem(arrDescItemText);
-                        arrDataText.setValue(arrDescItemText.getValue());
+                        arrDataText.setValue(arrItemText.getValue());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataText arrDataText,
-                                        ArrDescItemText arrDescItemText,
+                                        ArrItemText arrItemText,
                                         MappingContext context) {
                         String formattedValue = formatString(context, arrDataText.getValue());
-                        arrDescItemText.setValue(formattedValue);
+                        arrItemText.setValue(formattedValue);
                     }
                 }).register();
 
@@ -504,35 +487,33 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu Unitdate.
      */
     private void defineMapUnitdate() {
-        factory.classMap(ArrDescItemUnitdate.class, ArrDataUnitdate.class)
-                .customize(new CustomMapper<ArrDescItemUnitdate, ArrDataUnitdate>() {
+        factory.classMap(ArrItemUnitdate.class, ArrDataUnitdate.class)
+                .customize(new CustomMapper<ArrItemUnitdate, ArrDataUnitdate>() {
 
                     @Override
-                    public void mapAtoB(ArrDescItemUnitdate arrDescItemUnitdate,
+                    public void mapAtoB(ArrItemUnitdate arrItemUnitdate,
                                         ArrDataUnitdate arrDataUnitdate,
                                         MappingContext context) {
-                        arrDataUnitdate.setDataType(arrDescItemUnitdate.getItemType().getDataType());
-                        arrDataUnitdate.setItem(arrDescItemUnitdate);
 
-                        if (arrDescItemUnitdate.getFormat() == null) {
+                        if (arrItemUnitdate.getFormat() == null) {
                             throw new IllegalArgumentException("Nebyl odeslán formát dat");
                         } else {
-                            String format = arrDescItemUnitdate.getFormat();
+                            String format = arrItemUnitdate.getFormat();
                             if (!format.matches(
                                     "(" + PATTERN_UNIT_DATA + ")|(" + PATTERN_UNIT_DATA + INTERVAL_DELIMITER_UNIT_DATA
                                             + PATTERN_UNIT_DATA + ")")) {
                                 throw new IllegalArgumentException("Neplatný formát dat");
                             }
                         }
-                        arrDataUnitdate.setFormat(arrDescItemUnitdate.getFormat());
+                        arrDataUnitdate.setFormat(arrItemUnitdate.getFormat());
 
-                        if (arrDescItemUnitdate.getCalendarType() == null) {
+                        if (arrItemUnitdate.getCalendarType() == null) {
                             throw new IllegalArgumentException("Nebyl zvolen kalendar");
                         }
-                        arrDataUnitdate.setCalendarType(arrDescItemUnitdate.getCalendarType());
+                        arrDataUnitdate.setCalendarType(arrItemUnitdate.getCalendarType());
 
                         try {
-                            String value = arrDescItemUnitdate.getValueFrom();
+                            String value = arrItemUnitdate.getValueFrom();
                             if (value != null) {
                                 value = DateTimeFormatter.ISO_LOCAL_DATE_TIME
                                         .format(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
@@ -542,10 +523,10 @@ public class DescItemFactory implements InitializingBean {
                             throw new IllegalArgumentException("Nebyl zadan platny format datumu 'od'", e);
                         }
 
-                        arrDataUnitdate.setValueFromEstimated(arrDescItemUnitdate.getValueFromEstimated());
+                        arrDataUnitdate.setValueFromEstimated(arrItemUnitdate.getValueFromEstimated());
 
                         try {
-                            String value = arrDescItemUnitdate.getValueTo();
+                            String value = arrItemUnitdate.getValueTo();
                             if (value != null) {
                                 value = DateTimeFormatter.ISO_LOCAL_DATE_TIME
                                         .format(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
@@ -555,51 +536,51 @@ public class DescItemFactory implements InitializingBean {
                             throw new IllegalArgumentException("Nebyl zadan platny format datumu 'do'", e);
                         }
 
-                        if (arrDescItemUnitdate.getValueFrom() != null && arrDescItemUnitdate.getValueTo() != null) {
+                        if (arrItemUnitdate.getValueFrom() != null && arrItemUnitdate.getValueTo() != null) {
                             LocalDateTime from = LocalDateTime
-                                    .parse(arrDescItemUnitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                                    .parse(arrItemUnitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                             LocalDateTime to = LocalDateTime
-                                    .parse(arrDescItemUnitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                                    .parse(arrItemUnitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                             if (from.isAfter(to)) {
                                 throw new IllegalArgumentException("Neplatný interval ISO datumů: od > do");
                             }
-                        } else if (arrDescItemUnitdate.getValueFrom() == null
-                                && arrDescItemUnitdate.getValueTo() == null) {
+                        } else if (arrItemUnitdate.getValueFrom() == null
+                                && arrItemUnitdate.getValueTo() == null) {
                             throw new IllegalArgumentException("Nebyl zadán interval ISO datumů");
                         }
 
-                        String codeCalendar = arrDescItemUnitdate.getCalendarType().getCode();
+                        String codeCalendar = arrItemUnitdate.getCalendarType().getCode();
                         CalendarConverter.CalendarType calendarType = CalendarConverter.CalendarType.valueOf(codeCalendar);
 
                         String value;
 
-                        value = arrDescItemUnitdate.getValueFrom();
+                        value = arrItemUnitdate.getValueFrom();
                         if (value != null) {
                             arrDataUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
                         } else {
                             arrDataUnitdate.setNormalizedFrom(Long.MIN_VALUE);
                         }
 
-                        value = arrDescItemUnitdate.getValueTo();
+                        value = arrItemUnitdate.getValueTo();
                         if (value != null) {
                             arrDataUnitdate.setNormalizedTo(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
                         } else {
                             arrDataUnitdate.setNormalizedTo(Long.MAX_VALUE);
                         }
 
-                        arrDataUnitdate.setValueToEstimated(arrDescItemUnitdate.getValueToEstimated());
+                        arrDataUnitdate.setValueToEstimated(arrItemUnitdate.getValueToEstimated());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataUnitdate arrDataUnitdate,
-                                        ArrDescItemUnitdate arrDescItemUnitdate,
+                                        ArrItemUnitdate arrItemUnitdate,
                                         MappingContext context) {
-                        arrDescItemUnitdate.setCalendarType(arrDataUnitdate.getCalendarType());
-                        arrDescItemUnitdate.setValueFrom(arrDataUnitdate.getValueFrom());
-                        arrDescItemUnitdate.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
-                        arrDescItemUnitdate.setValueTo(arrDataUnitdate.getValueTo());
-                        arrDescItemUnitdate.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
-                        arrDescItemUnitdate.setFormat(arrDataUnitdate.getFormat());
+                        arrItemUnitdate.setCalendarType(arrDataUnitdate.getCalendarType());
+                        arrItemUnitdate.setValueFrom(arrDataUnitdate.getValueFrom());
+                        arrItemUnitdate.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
+                        arrItemUnitdate.setValueTo(arrDataUnitdate.getValueTo());
+                        arrItemUnitdate.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
+                        arrItemUnitdate.setFormat(arrDataUnitdate.getFormat());
                     }
                 }).register();
 
@@ -625,23 +606,21 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu Unitid.
      */
     private void defineMapUnitid() {
-        factory.classMap(ArrDescItemUnitid.class, ArrDataUnitid.class)
-                .customize(new CustomMapper<ArrDescItemUnitid, ArrDataUnitid>() {
+        factory.classMap(ArrItemUnitid.class, ArrDataUnitid.class)
+                .customize(new CustomMapper<ArrItemUnitid, ArrDataUnitid>() {
 
                     @Override
-                    public void mapAtoB(ArrDescItemUnitid arrDescItemUnitid,
+                    public void mapAtoB(ArrItemUnitid arrItemUnitid,
                                         ArrDataUnitid arrDataUnitid,
                                         MappingContext context) {
-                        arrDataUnitid.setDataType(arrDescItemUnitid.getItemType().getDataType());
-                        arrDataUnitid.setItem(arrDescItemUnitid);
-                        arrDataUnitid.setValue(arrDescItemUnitid.getValue());
+                        arrDataUnitid.setValue(arrItemUnitid.getValue());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataUnitid arrDataUnitid,
-                                        ArrDescItemUnitid arrDescItemUnitid,
+                                        ArrItemUnitid arrItemUnitid,
                                         MappingContext context) {
-                        arrDescItemUnitid.setValue(arrDataUnitid.getValue());
+                        arrItemUnitid.setValue(arrDataUnitid.getValue());
                     }
                 }).register();
 
@@ -662,23 +641,21 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu Decimal.
      */
     private void defineMapDecimal() {
-        factory.classMap(ArrDescItemDecimal.class, ArrDataDecimal.class)
-                .customize(new CustomMapper<ArrDescItemDecimal, ArrDataDecimal>() {
+        factory.classMap(ArrItemDecimal.class, ArrDataDecimal.class)
+                .customize(new CustomMapper<ArrItemDecimal, ArrDataDecimal>() {
 
                     @Override
-                    public void mapAtoB(ArrDescItemDecimal arrDescItemDecimal,
+                    public void mapAtoB(ArrItemDecimal arrItemDecimal,
                                         ArrDataDecimal arrDataDecimal,
                                         MappingContext context) {
-                        arrDataDecimal.setDataType(arrDescItemDecimal.getItemType().getDataType());
-                        arrDataDecimal.setItem(arrDescItemDecimal);
-                        arrDataDecimal.setValue(arrDescItemDecimal.getValue());
+                        arrDataDecimal.setValue(arrItemDecimal.getValue());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataDecimal arrDataDecimal,
-                                        ArrDescItemDecimal arrDescItemDecimal,
+                                        ArrItemDecimal arrItemDecimal,
                                         MappingContext context) {
-                        arrDescItemDecimal.setValue(arrDataDecimal.getValue());
+                        arrItemDecimal.setValue(arrDataDecimal.getValue());
                     }
                 }).register();
 
@@ -699,20 +676,18 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu Enum.
      */
     private void defineMapEnum() {
-        factory.classMap(ArrDescItemEnum.class, ArrDataNull.class)
-                .customize(new CustomMapper<ArrDescItemEnum, ArrDataNull>() {
+        factory.classMap(ArrItemEnum.class, ArrDataNull.class)
+                .customize(new CustomMapper<ArrItemEnum, ArrDataNull>() {
 
                     @Override
-                    public void mapAtoB(ArrDescItemEnum arrDescItemEnum,
+                    public void mapAtoB(ArrItemEnum arrItemEnum,
                                         ArrDataNull arrDataNull,
                                         MappingContext context) {
-                        arrDataNull.setDataType(arrDescItemEnum.getItemType().getDataType());
-                        arrDataNull.setItem(arrDescItemEnum);
                     }
 
                     @Override
                     public void mapBtoA(ArrDataNull arrDataNull,
-                                        ArrDescItemEnum arrDescItemEnum,
+                                        ArrItemEnum arrItemEnum,
                                         MappingContext context) {
 
                     }
@@ -754,10 +729,10 @@ public class DescItemFactory implements InitializingBean {
      */
     public ArrDescItem getDescItem(ArrDescItem descItem) {
         ArrData data = getDataByDescItem(descItem);
-        ArrDescItem descItemTmp = createDescItemByType(descItem.getItemType().getDataType());
-        BeanUtils.copyProperties(descItem, descItemTmp);
-        facade.map(data, descItemTmp);
-        return descItemTmp;
+        ArrItemData item = createItemByType(descItem.getItemType().getDataType());
+        BeanUtils.copyProperties(data, item);
+        descItem.setItem(item);
+        return descItem;
     }
 
     /**
@@ -787,19 +762,21 @@ public class DescItemFactory implements InitializingBean {
      */
     public ArrDescItem getDescItem(ArrDescItem descItem, String formatData) {
         ArrData data = getDataByDescItem(descItem);
-        ArrDescItem descItemTmp = createDescItemByType(data.getDataType());
-        BeanUtils.copyProperties(descItem, descItemTmp);
 
         if (formatData != null) {
             Map<Object, Object> map = new HashMap<>();
             map.put(PROPERTY_FORMAT, formatData);
             MappingContext mappingContext = new MappingContext(map);
-            facade.map(data, descItemTmp, mappingContext);
+            facade.map(data, descItem, mappingContext);
         } else {
-            facade.map(data, descItemTmp);
+            ArrItemData item = createItemByType(descItem.getItemType().getDataType());
+            BeanUtils.copyProperties(data, item);
+            descItem.setItem(item);
+            item.setSpec(descItem.getItemSpec());
         }
 
-        return descItemTmp;
+
+        return descItem;
     }
 
     /**
@@ -823,11 +800,7 @@ public class DescItemFactory implements InitializingBean {
      * @return nova hodnota atributu
      */
     public ArrDescItem saveDescItem(ArrDescItem descItem) {
-        ArrDescItem descItemRaw = new ArrDescItem();
-        BeanUtils.copyProperties(descItem, descItemRaw);
-        descItemRaw = descItemRepository.save(descItemRaw);
-        BeanUtils.copyProperties(descItemRaw, descItem);
-        return descItem;
+        return descItemRepository.save(descItem);
     }
 
     /**
@@ -841,44 +814,43 @@ public class DescItemFactory implements InitializingBean {
      */
     public ArrDescItem saveDescItemWithData(ArrDescItem descItem, Boolean createNewVersion) {
 
-        ArrDescItem descItemRaw = new ArrDescItem();
-        BeanUtils.copyProperties(descItem, descItemRaw);
-        descItemRaw = descItemRepository.save(descItemRaw);
-        BeanUtils.copyProperties(descItemRaw, descItem);
+        descItemRepository.save(descItem);
 
+        ArrItemData item = descItem.getItem();
         ArrData data;
 
         if (createNewVersion) {
-            if (descItem instanceof ArrDescItemCoordinates) {
-                data = facade.map(descItem, ArrDataCoordinates.class);
-            } else if (descItem instanceof ArrDescItemFormattedText) {
-                data = facade.map(descItem, ArrDataText.class);
-            } else if (descItem instanceof ArrDescItemInt) {
-                data = facade.map(descItem, ArrDataInteger.class);
-            } else if (descItem instanceof ArrDescItemPartyRef) {
-                data = facade.map(descItem, ArrDataPartyRef.class);
-            } else if (descItem instanceof ArrDescItemRecordRef) {
-                data = facade.map(descItem, ArrDataRecordRef.class);
-            } else if (descItem instanceof ArrDescItemString) {
-                data = facade.map(descItem, ArrDataString.class);
-            } else if (descItem instanceof ArrDescItemText) {
-                data = facade.map(descItem, ArrDataText.class);
-            } else if (descItem instanceof ArrDescItemUnitdate) {
-                data = facade.map(descItem, ArrDataUnitdate.class);
-            } else if (descItem instanceof ArrDescItemUnitid) {
-                data = facade.map(descItem, ArrDataUnitid.class);
-            } else if (descItem instanceof ArrDescItemDecimal) {
-                data = facade.map(descItem, ArrDataDecimal.class);
-            } else if (descItem instanceof ArrDescItemPacketRef) {
-                data = facade.map(descItem, ArrDataPacketRef.class);
-            } else if (descItem instanceof ArrDescItemEnum) {
-                data = facade.map(descItem, ArrDataNull.class);
-            } else if (descItem instanceof ArrDescItemJsonTable) {
-                data = facade.map(descItem, ArrDataJsonTable.class);
+            if (item instanceof ArrItemCoordinates) {
+                data = facade.map(item, ArrDataCoordinates.class);
+            } else if (item instanceof ArrItemFormattedText) {
+                data = facade.map(item, ArrDataText.class);
+            } else if (item instanceof ArrItemInt) {
+                data = facade.map(item, ArrDataInteger.class);
+            } else if (item instanceof ArrItemPartyRef) {
+                data = facade.map(item, ArrDataPartyRef.class);
+            } else if (item instanceof ArrItemRecordRef) {
+                data = facade.map(item, ArrDataRecordRef.class);
+            } else if (item instanceof ArrItemString) {
+                data = facade.map(item, ArrDataString.class);
+            } else if (item instanceof ArrItemText) {
+                data = facade.map(item, ArrDataText.class);
+            } else if (item instanceof ArrItemUnitdate) {
+                data = facade.map(item, ArrDataUnitdate.class);
+            } else if (item instanceof ArrItemUnitid) {
+                data = facade.map(item, ArrDataUnitid.class);
+            } else if (item instanceof ArrItemDecimal) {
+                data = facade.map(item, ArrDataDecimal.class);
+            } else if (item instanceof ArrItemPacketRef) {
+                data = facade.map(item, ArrDataPacketRef.class);
+            } else if (item instanceof ArrItemEnum) {
+                data = facade.map(item, ArrDataNull.class);
+            } else if (item instanceof ArrItemJsonTable) {
+                data = facade.map(item, ArrDataJsonTable.class);
             } else {
-                throw new NotImplementedException("Nebyl namapován datový typ: " + descItem.getClass().getName());
+                throw new NotImplementedException("Nebyl namapován datový typ: " + descItem.getClass().getName() + ", item: " + item);
             }
-            data.setItem(descItemRaw);
+            data.setItem(descItem);
+            data.setDataType(descItem.getItemType().getDataType());
         } else {
             data = getDataByDescItem(descItem);
             facade.map(descItem, data);
@@ -900,36 +872,36 @@ public class DescItemFactory implements InitializingBean {
      * @param dataType zvolený datový typ
      * @return nový objekt
      */
-    public ArrDescItem createDescItemByType(RulDataType dataType) {
+    public ArrItemData createItemByType(RulDataType dataType) {
         Assert.notNull(dataType);
 
         switch (dataType.getCode()) {
             case "INT":
-                return new ArrDescItemInt();
+                return new ArrItemInt();
             case "STRING":
-                return new ArrDescItemString();
+                return new ArrItemString();
             case "TEXT":
-                return new ArrDescItemText();
+                return new ArrItemText();
             case "UNITDATE":
-                return new ArrDescItemUnitdate();
+                return new ArrItemUnitdate();
             case "UNITID":
-                return new ArrDescItemUnitid();
+                return new ArrItemUnitid();
             case "FORMATTED_TEXT":
-                return new ArrDescItemFormattedText();
+                return new ArrItemFormattedText();
             case "COORDINATES":
-                return new ArrDescItemCoordinates();
+                return new ArrItemCoordinates();
             case "PARTY_REF":
-                return new ArrDescItemPartyRef();
+                return new ArrItemPartyRef();
             case "RECORD_REF":
-                return new ArrDescItemRecordRef();
+                return new ArrItemRecordRef();
             case "DECIMAL":
-                return new ArrDescItemDecimal();
+                return new ArrItemDecimal();
             case "PACKET_REF":
-                return new ArrDescItemPacketRef();
+                return new ArrItemPacketRef();
             case "ENUM":
-                return new ArrDescItemEnum();
+                return new ArrItemEnum();
             case "JSON_TABLE":
-                return new ArrDescItemJsonTable();
+                return new ArrItemJsonTable();
             default:
                 throw new NotImplementedException("Nebyl namapován datový typ");
         }
