@@ -10,6 +10,9 @@ public class JsonTableTitleValue extends TitleValue {
     /** Počet řádek v tabulce. */
     private int rows;
 
+    public JsonTableTitleValue() {
+    }
+
     public JsonTableTitleValue(final String value, final int rows) {
         super(value);
         this.rows = rows;
