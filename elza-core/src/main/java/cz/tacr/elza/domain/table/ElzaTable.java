@@ -26,6 +26,9 @@ public class ElzaTable implements cz.tacr.elza.api.table.ElzaTable<ElzaRow> {
 
     @Override
     public List<ElzaRow> getRows() {
+        if (rows == null) {
+            rows = new ArrayList<>();
+        }
         return rows;
     }
 
@@ -50,10 +53,7 @@ public class ElzaTable implements cz.tacr.elza.api.table.ElzaTable<ElzaRow> {
 
     @Override
     public void addRow(final ElzaRow row) {
-        if (rows == null) {
-            rows = new ArrayList<>();
-        }
-        rows.add(row);
+        getRows().add(row);
     }
 
     public static String toJsonString(final ElzaTable table) {

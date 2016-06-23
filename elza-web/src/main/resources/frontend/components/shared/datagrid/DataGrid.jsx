@@ -30,6 +30,14 @@ const keyDownHandlers = {
 
         this.handleEdit(focus.row, focus.col)
     },
+    Delete: function(e) {
+        const {focus} = this.state
+
+        e.stopPropagation();
+        e.preventDefault();
+
+        this.handleDelete(focus.row, focus.col)
+    },
     'F2': function(e) {
         const {focus} = this.state
 
@@ -107,8 +115,10 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             'handleCheckboxChange',
             'getExtColumnIndex',
             'handleEdit',
+            'handleDelete',
             'handleContextMenu',
             'computeColumnsWidth',
+            "focus",
         );
 
         var state = this.getStateFromProps(props, {})
@@ -134,6 +144,10 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         var eqProps = ['rows', 'cols', 'selectedIds', 'onColumnResize', 'onSelectedIdsChange']
         //var eqProps = ['rows', 'cols', 'selectedIds']
         return !propsEquals(this.props, nextProps, eqProps)
+    }
+
+    focus() {
+        this.refs.dataGrid.focus()
     }
 
     getStateFromProps(props, currState) {
@@ -225,7 +239,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         if (staticColumns && needComputeColumnsWidth) {
             const dataGrid = ReactDOM.findDOMNode(this.refs.dataGrid);
             const rect = dataGrid.getBoundingClientRect();
-            var width = rect.width - getScrollbarWidth() - 3;   // konstanta 3 - kvůli padding atp.
+            var width = rect.width - getScrollbarWidth() - 4;   // konstanta 3 - kvůli padding atp.
             var colWidths = {}
 
             // Nejdříve sloupce s pevnou šířkou
@@ -459,6 +473,12 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         onEdit(rows[rowIndex], rowIndex, cols[colIndex], colIndex)
     }
 
+    handleDelete(rowIndex, colIndex) {
+        const {rows, onDelete} = this.props;
+        const {cols} = this.state;
+        onDelete && onDelete(rows[rowIndex], rowIndex, cols[colIndex], colIndex)
+    }
+
     renderHeaderCol(col, colIndex, colFocus) {
         const {staticColumns} = this.props
         const {colWidths} = this.state
@@ -537,7 +557,8 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
                         <thead>
                             <tr>
                                 {cols.map((col, colIndex) => this.renderHeaderCol(col, colIndex, focus.col === colIndex))}
-                                <th key={-1} className='th-empty-scroll' />
+                                {!staticColumns && <th key={-1} className='th-empty-scroll' />}
+                                {staticColumns && <th key={-1}/>}
                             </tr>
                         </thead>
                     </table>
@@ -560,7 +581,8 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
                                 return (
                                     <tr key={rowIndex} className={rowCls}>
                                         {cells}
-                                        {staticColumns && <td key={-1} className='td-empty-scroll' />}
+                                        {false && staticColumns && <td key={-1} className='td-empty-scroll' />}
+                                        {staticColumns && <td key={-1} />}
                                     </tr>
                                 )
                             })}
@@ -608,6 +630,7 @@ DataGrid.propTypes = {
     onSelectedIdsChange: React.PropTypes.func,
     onContextMenu: React.PropTypes.func,
     onEdit: React.PropTypes.func,
+    onDelete: React.PropTypes.func,
     onFocus: React.PropTypes.func,
     onBlur: React.PropTypes.func,
 };

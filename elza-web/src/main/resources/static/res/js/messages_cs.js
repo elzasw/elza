@@ -234,6 +234,8 @@ var messages = {
     "arr.fund.filterSettings.condition.coordinates.near.50000": "50 km",
     "arr.fund.filterSettings.condition.coordinates.near.100000": "100 km",
 
+    "arr.fund.jsonTable.cell.title": "Tabulka {0}x{1}",
+
     "arr.fund.nodes.title.select": "Výběr jednotek popisu",
     "arr.fund.nodes.deleteNode": "Opravdu chcete smazat tuto položku?",
     "arr.fund.title.add": "Vytvoření nového AS",

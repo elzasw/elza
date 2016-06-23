@@ -54,6 +54,14 @@ function setInputFocus(el, selectContent = false) {
     var button = $('button:visible:enabled', el).get(0);
     elem = chooseInputEl(elem, button);
 
+    // Vlastní prvky podle definovaného tab indexu
+    var custom = $('div,shortcut', el)
+        .filter(function() {
+            return $(this).attr("tabIndex") >= 0;
+        })
+        .get(0);
+    elem = chooseInputEl(elem, custom);
+
     if (elem) {
         elem.focus();
         if (selectContent) {

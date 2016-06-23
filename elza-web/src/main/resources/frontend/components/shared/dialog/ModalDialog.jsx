@@ -28,11 +28,15 @@ var ModalDialog = class extends AbstractReactComponent {
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
-    handleClose() {
+    // closeType:
+    // DIALOG_CONTENT - vyvolal nějaký prvek uvnitř dialogu, např. tlačítko zavřít atp.
+    // DIALOG - vyvolal escape nebo kliknutí na zavírací křížek
+    handleClose(closeType) {
+        // console.log("_closeType", closeType);
         this.dispatch(modalDialogHide());
 
         const {onClose} = this.props
-        onClose && onClose()
+        onClose && onClose(closeType)
     }
 
     render() {
@@ -43,12 +47,12 @@ var ModalDialog = class extends AbstractReactComponent {
 
         var children = React.Children.map(this.props.content, (el) => {
             return React.cloneElement(el, {
-                onClose: this.handleClose
+                onClose: this.handleClose.bind(this, "DIALOG_CONTENT")
             })
         });
 
         return (
-            <ModalDialogWrapper className={this.props.dialogClassName} ref='wrapper' title={this.props.title} onHide={this.handleClose}>
+            <ModalDialogWrapper className={this.props.dialogClassName} ref='wrapper' title={this.props.title} onHide={this.handleClose.bind(this, "DIALOG")}>
                 {children}
             </ModalDialogWrapper>
         )
