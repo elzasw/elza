@@ -12,4 +12,6 @@ public interface ElzaRow {
     Map<String, String> getValues();
 
     void setValues(Map<String, String> values);
+
+    void setValue(final String key, final String value);
 }

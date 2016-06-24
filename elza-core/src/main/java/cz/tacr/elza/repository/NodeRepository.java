@@ -4,7 +4,6 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -19,7 +18,7 @@ import java.util.Set;
  * @since 4. 9. 2015
  */
 @Repository
-public interface NodeRepository extends JpaRepository<ArrNode, Integer>, NodeRepositoryCustom {
+public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, NodeRepositoryCustom {
 
     @Query("SELECT distinct n.nodeId FROM arr_node n JOIN n.policies p JOIN n.levels l WHERE l.deleteChange IS NULL AND n.fund = ?1")
     Set<Integer> findNodeIdsForFondWithPolicy(ArrFund fund);

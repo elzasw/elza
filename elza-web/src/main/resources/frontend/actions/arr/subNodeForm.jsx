@@ -92,6 +92,26 @@ export function fundSubNodeFormValueUploadCoordinates(versionId, nodeKey, descIt
 }
 
 /**
+ * Akce přidání csv jako DescItem - Probíhá uploadem.
+ * @param {int} versionId verze AS
+ * @param {int} nodeKey klíč záložky
+ * @param {int} descItemTypeId Konkrétní typ desc item
+ * @param {File} file Soubor k uploadu
+ */
+export function fundSubNodeFormValueUploadCsv(versionId, nodeKey, descItemTypeId, file) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var subNodeForm = getSubNodeFormStore(state, versionId, nodeKey);
+
+        WebApi.descItemCsvImport(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, descItemTypeId, file).then(() => {
+            dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successJsonTable')));
+        }).catch(() => {
+            dispatch(addToastrDanger(i18n('import.toast.error'), i18n('import.toast.errorJsonTable')));
+        });
+    }
+}
+
+/**
  * Akce validace hodnoty na serveru - týká se jen hodnot datace.
  * @param {int} versionId verze AS
  * @param {int} nodeKey Klíč záložky

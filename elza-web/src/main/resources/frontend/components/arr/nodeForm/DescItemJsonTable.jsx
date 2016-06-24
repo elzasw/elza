@@ -6,20 +6,21 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent, NoFocusButton, DataGrid, Icon, i18n} from 'components/index.jsx';
 import {connect} from 'react-redux'
+import {Input} from 'react-bootstrap'
 import {decorateValue} from './DescItemUtils.jsx'
-import DescItemTableCellForm from './DescItemTableCellForm.jsx'
+import DescItemJsonTableCellForm from './DescItemJsonTableCellForm.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 
-require ("./DescItemTable.less")
+require ("./DescItemJsonTable.less")
 
-var DescItemTable = class DescItemTable extends AbstractReactComponent {
+var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods('focus', "handleEdit", "handleEditClose",
             "handleCellChange", "cellRenderer",
-            "cellRowDeleteRenderer", "handleAddRow", "handleDownload",
-            "handleUpload", "handleRemoveRow", "getStateFromProps",
+            "cellRowDeleteRenderer", "handleAddRow",
+            "handleRemoveRow", "getStateFromProps",
             "handleBlur", "handleDelete");
 
         this.blurEnabled = true;
@@ -122,7 +123,7 @@ var DescItemTable = class DescItemTable extends AbstractReactComponent {
         const value = row.values[col.colDef.code]
         this.blurEnabled = false;
         this.dispatch(modalDialogShow(this, null,
-            <DescItemTableCellForm
+            <DescItemJsonTableCellForm
                 position={{x: cellRect.left, y: cellRect.top}}
                 value={value}
                 dataType={col.colDef.dataType}
@@ -155,14 +156,6 @@ var DescItemTable = class DescItemTable extends AbstractReactComponent {
         this.props.onChange({ rows: newRows });
     }
 
-    handleDownload() {
-
-    }
-
-    handleUpload() {
-
-    }
-
     handleRemoveRow(row, rowIndex) {
         const {rows} = this.state
         var newRows = [
@@ -184,7 +177,7 @@ var DescItemTable = class DescItemTable extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked, onFocus} = this.props;
+        const {descItem, locked, onFocus, onDownload} = this.props;
         const {rows, cols} = this.state;
 
         return (
@@ -203,12 +196,11 @@ var DescItemTable = class DescItemTable extends AbstractReactComponent {
                     />
                 <div className='desc-item-value-actions'>
                     <NoFocusButton onClick={this.handleAddRow} title={i18n('subNodeForm.descItem.jsonTable.action.addRow')}><Icon glyph="fa-plus" /></NoFocusButton>
-                    <NoFocusButton onClick={this.handleDownload} title={i18n('subNodeForm.descItem.jsonTable.action.download')}><Icon glyph="fa-download" /></NoFocusButton>
-                    <NoFocusButton onClick={this.handleUpload} title={i18n('subNodeForm.descItem.jsonTable.action.upload')}><Icon glyph="fa-upload" /></NoFocusButton>
+                    <NoFocusButton onClick={onDownload} title={i18n('subNodeForm.descItem.jsonTable.action.download')}><Icon glyph="fa-download" /></NoFocusButton>
                 </div>
             </div>
         )
     }
 }
 
-module.exports = connect(null, null, null, { withRef: true })(DescItemTable);
+module.exports = connect(null, null, null, { withRef: true })(DescItemJsonTable);

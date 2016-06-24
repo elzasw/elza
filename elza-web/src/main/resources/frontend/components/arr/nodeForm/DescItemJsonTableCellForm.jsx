@@ -2,7 +2,7 @@
  * Formulář editace hodnoty v tabulce pro desc item typu tabulka.
  */
 
-require ('./DescItemTableCellForm.less')
+require ('./DescItemJsonTableCellForm.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -22,7 +22,7 @@ const keyDownHandlers = {
     },
 }
 
-var DescItemTableCellForm = class DescItemTableCellForm extends AbstractReactComponent {
+var DescItemJsonTableCellForm = class DescItemJsonTableCellForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
         
@@ -100,4 +100,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(DescItemTableCellForm)
+module.exports = connect(mapStateToProps)(DescItemJsonTableCellForm)

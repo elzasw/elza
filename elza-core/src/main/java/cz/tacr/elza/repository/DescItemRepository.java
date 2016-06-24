@@ -1,7 +1,10 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.*;
-import org.springframework.data.jpa.repository.JpaRepository;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +18,7 @@ import java.util.Set;
  * @since 20.8.2015
  */
 @Repository
-public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer>, DescItemRepositoryCustom {
+public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integer>, DescItemRepositoryCustom {
 
     @Query("SELECT i FROM arr_desc_item i WHERE i.node in (?1) AND i.deleteChange IS NULL")
     List<ArrDescItem> findByNodesAndDeleteChangeIsNull(Collection<ArrNode> nodes);
@@ -64,6 +67,15 @@ public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer>,
      */
     @Query("SELECT i FROM arr_desc_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
     List<ArrDescItem> findOpenDescItems(Integer descItemObjectId);
+
+    /**
+     * Vyhledá otevřenou (nesmazenou) hodnotu atributů podle objectId.
+     *
+     * @param descItemObjectId identifikátor hodnoty atributu
+     * @return desc item
+     */
+    @Query("SELECT i FROM arr_desc_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
+    ArrDescItem findOpenDescItem(Integer descItemObjectId);
 
 
     /**

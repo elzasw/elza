@@ -1,15 +1,21 @@
 package cz.tacr.elza.controller;
 
 import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
-import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
@@ -113,11 +119,5 @@ public class KmlControllerTest extends AbstractControllerTest {
 
     private void importFile(File xmlFile, String scopeName, XmlImportType type, Integer scopeId) {
         importXmlFile(null, null, type, scopeName, scopeId, xmlFile, null);
-    }
-
-    public static File getFile(String resourcePath) {
-        URL url = Thread.currentThread().getContextClassLoader().getResource(resourcePath);
-        Assert.assertNotNull(url);
-        return new File(url.getPath());
     }
 }

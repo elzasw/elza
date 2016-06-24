@@ -9,17 +9,67 @@ import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.api.ArrPacket;
 import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
+import cz.tacr.elza.controller.vo.ArrOutputExtVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FundListCountResult;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.ParInstitutionVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPartyWithCount;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RegCoordinatesVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRecordWithCount;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
+import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.*;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemDecimalVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemEnumVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemJsonTableVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPacketVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPartyRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemRecordRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitdateVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitidVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,8 +83,16 @@ import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import static com.jayway.restassured.RestAssured.given;
@@ -85,6 +143,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String MOVE_LEVEL_UNDER = ARRANGEMENT_CONTROLLER_URL + "/moveLevelUnder";
     protected static final String CREATE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
             + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create";
+    protected static final String DESC_ITEM_CSV_IMPORT = ARRANGEMENT_CONTROLLER_URL
+            + "/descItems/{fundVersionId}/csv/import";
+    protected static final String DESC_ITEM_CSV_EXPORT = ARRANGEMENT_CONTROLLER_URL
+            + "/descItems/{fundVersionId}/csv/export";
     protected static final String UPDATE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
             + "/descItems/{fundVersionId}/{nodeVersion}/update/{createNewVersion}";
     protected static final String DELETE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
@@ -772,6 +834,41 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParameter("descItemTypeId", descItemTypeId)
                 .pathParameter("nodeId", nodeId)
                 .pathParameter("nodeVersion", nodeVersion), CREATE_DESC_ITEM);
+        return response.getBody().as(ArrangementController.DescItemResult.class);
+    }
+
+    protected InputStream descItemCsvExport(
+            final Integer fundVersionId,
+            final Integer descItemObjectId) {
+
+        Response response = get(spec ->
+                spec
+                .pathParameter("fundVersionId", fundVersionId)
+                .param("descItemObjectId", descItemObjectId)
+                ,DESC_ITEM_CSV_EXPORT);
+
+        return response.getBody().asInputStream();
+    }
+
+    protected ArrangementController.DescItemResult descItemCsvImport(
+            final Integer fundVersionId,
+            final Integer nodeVersion,
+            final Integer nodeId,
+            final Integer descItemTypeId,
+            final File importFile) {
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("nodeVersion", nodeVersion);
+        params.put("nodeId", nodeId);
+        params.put("descItemTypeId", descItemTypeId);
+
+        Response response = multipart(spec ->
+                spec
+                        .pathParameter("fundVersionId", fundVersionId)
+                        .multiPart("file", importFile)
+                        .params(params)
+                , DESC_ITEM_CSV_IMPORT
+        );
         return response.getBody().as(ArrangementController.DescItemResult.class);
     }
 
@@ -2390,4 +2487,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParameter("includeParents", includeParents), POLICY_GET).as(RuleController.VisiblePolicyTypes.class);
     }
 
+    /**
+     * Načtení souboru na základě cesty, např. coordinates/all.kml odkazuje do test resources.
+     * @param resourcePath cesta
+     * @return soubor
+     */
+    public static File getFile(String resourcePath) {
+        URL url = Thread.currentThread().getContextClassLoader().getResource(resourcePath);
+        Assert.assertNotNull(url);
+        return new File(url.getPath());
+    }
 }

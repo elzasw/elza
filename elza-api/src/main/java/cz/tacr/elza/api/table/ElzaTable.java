@@ -16,4 +16,9 @@ public interface ElzaTable<R extends ElzaRow> {
     void setRows(List<R> rows);
 
     void addRow(R row);
+
+    /**
+     * Smaže všechny řádky v tabulce.
+     */
+    void clear();
 }

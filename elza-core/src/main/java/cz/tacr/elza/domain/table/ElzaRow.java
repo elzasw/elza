@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain.table;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,5 +33,18 @@ public class ElzaRow implements cz.tacr.elza.api.table.ElzaRow {
     @Override
     public void setValues(final Map<String, String> values) {
         this.values = values;
+    }
+
+    @Override
+    public void setValue(final String key, final String value) {
+        if (values == null) {
+            values = new HashMap<>();
+        }
+
+        if (StringUtils.isEmpty(value)) {
+            values.remove(key);
+        } else {
+            values.put(key, value);
+        }
     }
 }
