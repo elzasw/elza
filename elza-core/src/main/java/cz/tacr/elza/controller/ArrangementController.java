@@ -28,9 +28,9 @@ import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDescItemJsonTable;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemJsonTable;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
@@ -426,7 +426,7 @@ public class ArrangementController {
 
         ArrDescItem arrDescItem = descItemFactory.getDescItem(descItem);
         OutputStream os = response.getOutputStream();
-        descriptionItemService.csvExport((ArrDescItemJsonTable) arrDescItem, os);
+        descriptionItemService.csvExport(arrDescItem, os);
         os.close();
     }
 
@@ -454,7 +454,7 @@ public class ArrangementController {
         Assert.notNull(descItemTypeId);
 
         InputStream is = importFile.getInputStream();
-        ArrDescItemJsonTable descItemCreated = descriptionItemService.csvImport(fundVersionId, nodeId, nodeVersion, descItemTypeId, is);
+        ArrDescItem<ArrItemJsonTable> descItemCreated = descriptionItemService.csvImport(fundVersionId, nodeId, nodeVersion, descItemTypeId, is);
         is.close();
 
         DescItemResult descItemResult = new DescItemResult();

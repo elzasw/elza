@@ -20,9 +20,10 @@ import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDescItemJsonTable;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.ArrItemFormattedText;
+import cz.tacr.elza.domain.ArrItemJsonTable;
 import cz.tacr.elza.domain.ArrItemString;
 import cz.tacr.elza.domain.ArrItemText;
 import cz.tacr.elza.domain.ArrLevel;
@@ -1473,7 +1474,7 @@ public class DescriptionItemService {
      * @param is stream s csv souborem
      * @return vytvořená položka
      */
-    public ArrDescItemJsonTable csvImport(final Integer fundVersionId, final Integer nodeId,
+    public ArrDescItem csvImport(final Integer fundVersionId, final Integer nodeId,
                           final Integer nodeVersion, Integer descItemTypeId, final InputStream is) throws IOException {
 
         try (
@@ -1482,10 +1483,11 @@ public class DescriptionItemService {
             // Vytvoření instance nové položky
             RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
 
-            final ArrDescItemJsonTable descItem = (ArrDescItemJsonTable) descItemFactory.createDescItemByType(dataTypeRepository.findByCode("JSON_TABLE"));
+            ArrItemJsonTable jsonTable = (ArrItemJsonTable) descItemFactory.createItemByType(dataTypeRepository.findByCode("JSON_TABLE"));
+            final ArrDescItem<ArrItemJsonTable> descItem = new ArrDescItem<>(jsonTable);
             descItem.setItemType(descItemType);
             ElzaTable table = new ElzaTable();
-            descItem.setValue(table);
+            descItem.getItem().setValue(table);
 
             // Načtení CSV a naplnění tabulky
             Iterable<CSVRecord> records = CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
@@ -1498,7 +1500,7 @@ public class DescriptionItemService {
             }
 
             // Vyvoření nové s naimportovanými daty
-            ArrDescItemJsonTable result = (ArrDescItemJsonTable) beanFactory.getBean(DescriptionItemService.class)
+            ArrDescItem result = beanFactory.getBean(DescriptionItemService.class)
                     .createDescriptionItem(descItem, nodeId, nodeVersion, fundVersionId);
 
             return result;
@@ -1510,7 +1512,7 @@ public class DescriptionItemService {
      * @param descItem desc item
      * @param os výstupní stream
      */
-    public void csvExport(final ArrDescItemJsonTable descItem, final OutputStream os) throws IOException {
+    public void csvExport(final ArrDescItem descItem, final OutputStream os) throws IOException {
         RulItemType descItemType = descItem.getItemType();
         List<String> columNames = descItemType.getColumnsDefinition()
                 .stream()
@@ -1521,7 +1523,7 @@ public class DescriptionItemService {
                 OutputStreamWriter out = new OutputStreamWriter(os, CSV_EXCEL_ENCODING);
                 CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out);
         ) {
-            ElzaTable table = descItem.getValue();
+            ElzaTable table = ((ArrItemJsonTable) descItem.getItem()).getValue();
 
             for (ElzaRow elzaRow : table.getRows()) {
                 Map<String, String> values = elzaRow.getValues();
