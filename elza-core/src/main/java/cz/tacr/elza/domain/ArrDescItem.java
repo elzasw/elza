@@ -24,6 +24,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import cz.tacr.elza.search.DescItemIndexingInterceptor;
 
+import java.lang.reflect.InvocationTargetException;
+
 
 /**
  * Atribut archivního popisu evidovaný k jednotce archivního popisu. Odkaz na uzel stromu AP je
@@ -40,18 +42,6 @@ import cz.tacr.elza.search.DescItemIndexingInterceptor;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public class ArrDescItem<T extends ArrItemData> extends ArrItem<T> implements cz.tacr.elza.api.ArrDescItem<ArrNode> {
 
-    public ArrDescItem() throws IllegalAccessException, InstantiationException {
-        super(null);
-    }
-
-    public ArrDescItem(final Class<T> clazz) throws IllegalAccessException, InstantiationException {
-        super(clazz.newInstance());
-    }
-
-    public ArrDescItem(final T item) {
-        super(item);
-    }
-
     public static final String NODE = "node";
     public static final String CREATE_CHANGE_ID = "createChangeId";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
@@ -60,6 +50,18 @@ public class ArrDescItem<T extends ArrItemData> extends ArrItem<T> implements cz
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
+
+    public ArrDescItem() {
+
+    }
+
+    public ArrDescItem(final Class<T> clazz) throws IllegalAccessException, InstantiationException {
+        super(clazz);
+    }
+
+    public ArrDescItem(final T item) {
+        this.item = item;
+    }
 
     @Field(store = Store.YES)
     public String getDescItemIdString() {

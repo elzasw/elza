@@ -130,6 +130,9 @@ public class DescriptionItemService {
     @Autowired
     private DataPacketRefRepository dataPacketRefRepository;
 
+    @Autowired
+    private ItemService itemService;
+
     /**
      * Kontrola otevřené verze.
      *
@@ -582,11 +585,11 @@ public class DescriptionItemService {
         descItemRepository.save(descItem);
 
         ArrDescItem descItemNew;
-        try {
+        //try {
             descItemNew = new ArrDescItem();
-        } catch (InstantiationException | IllegalAccessException e) {
+        /*} catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException(e);
-        }
+        }*/
 
         BeanUtils.copyProperties(descItem, descItemNew);
         descItemNew.setItemId(null);
@@ -609,12 +612,7 @@ public class DescriptionItemService {
                                            final ArrChange createChange,
                                            final ArrFundVersion version) {
         for (ArrDescItem sourceDescItem : sourceDescItems) {
-            ArrDescItem descItemNew;
-            try {
-                descItemNew = new ArrDescItem();
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new IllegalStateException(e);
-            }
+            ArrDescItem descItemNew = new ArrDescItem();
 
             BeanUtils.copyProperties(sourceDescItem, descItemNew);
             descItemNew.setNode(node);
@@ -916,7 +914,7 @@ public class DescriptionItemService {
             try {
                 ArrDescItem descItemNew = new ArrDescItem();
                 BeanUtils.copyProperties(descItemOrig, descItemNew);
-                copyPropertiesSubclass(descItem, descItemNew, ArrDescItem.class);
+                itemService.copyPropertiesSubclass(descItem, descItemNew, ArrDescItem.class);
                 descItemNew.setItemSpec(descItem.getItemSpec());
 
                 descItemOrig.setDeleteChange(change);
@@ -931,7 +929,7 @@ public class DescriptionItemService {
                 throw new IllegalStateException(e);
             }
         } else {
-            copyPropertiesSubclass(descItem, descItemOrig, ArrDescItem.class);
+            itemService.copyPropertiesSubclass(descItem, descItemOrig, ArrDescItem.class);
             descItemOrig.setItemSpec(descItem.getItemSpec());
             descItemUpdated = descItemFactory.saveDescItemWithData(descItemOrig, false);
         }
@@ -1436,23 +1434,4 @@ public class DescriptionItemService {
         return descItems;
     }
 
-    /**
-     * Kopíruje všechny property krom propert, které má zadaná třída.
-     *
-     * @param from z objektu
-     * @param to   do objektu
-     * @param aClass ignorovaná třída (subclass)
-     * @param <T>    ignorovaná třída (subclass)
-     * @param <TYPE> kopírovaná třída
-     */
-    private <T, TYPE extends T> void copyPropertiesSubclass(final TYPE from, final TYPE to, final Class<T> aClass) {
-        String[] ignoreProperties;
-        PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(aClass);
-        ignoreProperties = new String[descriptors.length];
-        for (int i = 0; i < descriptors.length; i++) {
-            ignoreProperties[i] = descriptors[i].getName();
-        }
-
-        BeanUtils.copyProperties(from, to, ignoreProperties);
-    }
 }

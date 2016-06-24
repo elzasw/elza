@@ -28,15 +28,22 @@ import javax.persistence.Table;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public class ArrOutputItem extends ArrItem implements cz.tacr.elza.api.ArrOutputItem<ArrOutputDefinition> {
+public class ArrOutputItem<T extends ArrItemData> extends ArrItem<T> implements cz.tacr.elza.api.ArrOutputItem<ArrOutputDefinition> {
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutput.class)
     @JoinColumn(name = "outputDefinitionId", nullable = false)
     private ArrOutputDefinition outputDefinition;
 
-    public ArrOutputItem(final ArrItemData item) {
+    public ArrOutputItem() {
+    }
+
+    public ArrOutputItem(final T item) {
         super(item);
+    }
+
+    public ArrOutputItem(final Class<T> clazz) throws IllegalAccessException, InstantiationException {
+        super(clazz.newInstance());
     }
 
     public ArrOutputDefinition getOutputDefinition() {

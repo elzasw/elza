@@ -644,11 +644,11 @@ public class ArrangementService {
 
         descItem.setDeleteChange(deleteChange);
         ArrDescItem descItemTmp;
-        try {
+        //try {
             descItemTmp = new ArrDescItem();
-        } catch (InstantiationException | IllegalAccessException e) {
+        /*} catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException(e);
-        }
+        }*/
         BeanUtils.copyProperties(descItem, descItemTmp);
         descItemRepository.save(descItemTmp);
     }

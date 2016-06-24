@@ -1,6 +1,7 @@
 package cz.tacr.elza.api;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -20,6 +21,10 @@ public interface ArrOutputDefinition<F extends ArrFund,N extends ArrNodeOutput,O
      * @param outputDefinitionId identifikátor entity
      */
     void setOutputDefinitionId(Integer outputDefinitionId);
+
+    LocalDateTime getLastUpdate();
+
+    void setLastUpdate(LocalDateTime lastUpdate);
 
     /**
      * @return archivní soubor

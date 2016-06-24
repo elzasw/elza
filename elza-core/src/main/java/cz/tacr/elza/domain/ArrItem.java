@@ -43,6 +43,10 @@ public abstract class ArrItem<T extends ArrItemData> implements cz.tacr.elza.api
 
     }
 
+    public ArrItem(final Class<T> clazz) throws IllegalAccessException, InstantiationException {
+        this.item = clazz.newInstance();
+    }
+
     public ArrItem(final T item) {
         this.item = item;
     }

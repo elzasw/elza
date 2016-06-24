@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -14,11 +15,14 @@ import javax.persistence.*;
  */
 @Entity(name = "arr_output_definition")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrOutputDefinition implements cz.tacr.elza.api.ArrOutputDefinition<ArrFund, ArrNodeOutput, ArrOutput, RulOutputType, RulTemplate> {
+public class ArrOutputDefinition extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrOutputDefinition<ArrFund, ArrNodeOutput, ArrOutput, RulOutputType, RulTemplate> {
 
     @Id
     @GeneratedValue
     private Integer outputDefinitionId;
+
+    @Column(nullable = true)
+    private LocalDateTime lastUpdate;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
     @JoinColumn(name = "fundId", nullable = false)
@@ -58,6 +62,16 @@ public class ArrOutputDefinition implements cz.tacr.elza.api.ArrOutputDefinition
     @Override
     public void setOutputDefinitionId(final Integer outputDefinitionId) {
         this.outputDefinitionId = outputDefinitionId;
+    }
+
+    @Override
+    public LocalDateTime getLastUpdate() {
+        return lastUpdate;
+    }
+
+    @Override
+    public void setLastUpdate(final LocalDateTime lastUpdate) {
+        this.lastUpdate = lastUpdate;
     }
 
     @Override
