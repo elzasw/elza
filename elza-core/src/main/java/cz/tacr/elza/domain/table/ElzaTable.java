@@ -71,4 +71,9 @@ public class ElzaTable implements cz.tacr.elza.api.table.ElzaTable<ElzaRow> {
             throw new IllegalArgumentException("Problém při generování JSON", e);
         }
     }
+
+    @Override
+    public void clear() {
+        this.rows = null;
+    }
 }

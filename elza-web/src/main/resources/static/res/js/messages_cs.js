@@ -527,9 +527,11 @@ var messages = {
     "import.toast.successParty": "Import osob byl úspěšně dokončen.",
     "import.toast.successRecord": "Import rejstříkových hesel byl úspěšně dokončen.",
     "import.toast.successCoordinates": "Import souřadnic byl úspěšně dokončen.",
+    "import.toast.successJsonTable": "Import CSV byl úspěšně dokončen.",
 
     "import.toast.error": "Nastala chyba",
     "import.toast.errorCoordinates": "Při importu souřadnic nastala chyba",
+    "import.toast.errorJsonTable": "Při importu CSV nastala chyba",
 
     "import.transformationName": "Šablona transformace",
     "import.registryScope": "Třída rejstříku",

@@ -20,6 +20,7 @@ import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemJsonTable;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -31,6 +32,9 @@ import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.domain.table.ElzaRow;
+import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
 import cz.tacr.elza.domain.vo.JsonTableTitleValue;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -43,6 +47,7 @@ import cz.tacr.elza.repository.DataPacketRefRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -53,16 +58,26 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,10 +103,16 @@ public class DescriptionItemService {
     private NodeRepository nodeRepository;
 
     @Autowired
+    private BeanFactory beanFactory;
+
+    @Autowired
     private ArrangementService arrangementService;
 
     @Autowired
     private DescItemRepository descItemRepository;
+
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -126,6 +147,16 @@ public class DescriptionItemService {
     private DataRecordRefRepository dataRecordRefRepository;
     @Autowired
     private DataPacketRefRepository dataPacketRefRepository;
+
+    /**
+     * CSV konfigurace pro CZ Excel.
+     */
+    private static final CSVFormat CSV_EXCEL_FORMAT = CSVFormat.DEFAULT
+            .withIgnoreEmptyLines(false)
+            .withAllowMissingColumnNames()
+            .withDelimiter(';')
+            .withQuote('"');
+    private static final String CSV_EXCEL_ENCODING = "cp1250";
 
     /**
      * Kontrola otevřené verze.
@@ -1422,5 +1453,75 @@ public class DescriptionItemService {
         }
 
         BeanUtils.copyProperties(from, to, ignoreProperties);
+    }
+
+    /**
+     * Import csv ze stremu do konkrétní hodnoty desc item, která bude nahrazena.
+     * @param fundVersionId verze souboru
+     * @param nodeId id uzlu
+     * @param nodeVersion verze uzlu
+     * @param descItemTypeId id typu atributu
+     * @param is stream s csv souborem
+     * @return vytvořená položka
+     */
+    public ArrDescItemJsonTable csvImport(final Integer fundVersionId, final Integer nodeId,
+                          final Integer nodeVersion, Integer descItemTypeId, final InputStream is) throws IOException {
+
+        try (
+                Reader in = new InputStreamReader(is, CSV_EXCEL_ENCODING);
+        ) {
+            // Vytvoření instance nové položky
+            RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
+
+            final ArrDescItemJsonTable descItem = (ArrDescItemJsonTable) descItemFactory.createDescItemByType(dataTypeRepository.findByCode("JSON_TABLE"));
+            descItem.setItemType(descItemType);
+            ElzaTable table = new ElzaTable();
+            descItem.setValue(table);
+
+            // Načtení CSV a naplnění tabulky
+            Iterable<CSVRecord> records = CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
+            for (CSVRecord record : records) {
+                ElzaRow row = new ElzaRow();
+                for (ElzaColumn elzaColumn : descItemType.getColumnsDefinition()) {
+                    row.setValue(elzaColumn.getCode(), record.get(elzaColumn.getCode()));
+                }
+                table.addRow(row);
+            }
+
+            // Vyvoření nové s naimportovanými daty
+            ArrDescItemJsonTable result = (ArrDescItemJsonTable) beanFactory.getBean(DescriptionItemService.class)
+                    .createDescriptionItem(descItem, nodeId, nodeVersion, fundVersionId);
+
+            return result;
+        }
+    }
+
+    /**
+     * Export dat tabulky do csv formátu, který bude zapsán do streamu.
+     * @param descItem desc item
+     * @param os výstupní stream
+     */
+    public void csvExport(final ArrDescItemJsonTable descItem, final OutputStream os) throws IOException {
+        RulItemType descItemType = descItem.getItemType();
+        List<String> columNames = descItemType.getColumnsDefinition()
+                .stream()
+                .map(ElzaColumn::getCode)
+                .collect(Collectors.toList());
+
+        try (
+                OutputStreamWriter out = new OutputStreamWriter(os, CSV_EXCEL_ENCODING);
+                CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out);
+        ) {
+            ElzaTable table = descItem.getValue();
+
+            for (ElzaRow elzaRow : table.getRows()) {
+                Map<String, String> values = elzaRow.getValues();
+                List<Object> rowValues = descItemType.getColumnsDefinition()
+                        .stream()
+                        .map(elzaColumn -> values.get(elzaColumn.getCode()))
+                        .collect(Collectors.toList());
+                csvp.printRecord(rowValues);
+            }
+        }
     }
 }

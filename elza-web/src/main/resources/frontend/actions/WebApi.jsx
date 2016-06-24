@@ -714,6 +714,16 @@ class WebApi{
         return AjaxUtils.ajaxCallRaw('/api/kmlManagerV1/import/regCoordinates', {}, "POST", data);
     }
 
+    descItemCsvImport(versionId, nodeId, nodeVersionId, descItemTypeId, file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('nodeId', nodeId);
+        formData.append('nodeVersion', nodeVersionId);
+        formData.append('descItemTypeId', descItemTypeId);
+console.log(111111, formData)
+        return AjaxUtils.ajaxCallRaw("/api/arrangementManagerV2/descItems/" + versionId + "/csv/import", { }, "POST", formData);
+    }
+    
     getInstitutions() {
         return AjaxUtils.ajaxGet('/api/partyManagerV2/institutions');
     }

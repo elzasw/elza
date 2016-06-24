@@ -13,7 +13,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {fundSubNodeFormDescItemTypeAdd, fundSubNodeFormValueChange, fundSubNodeFormDescItemTypeDelete,
         fundSubNodeFormValueChangeSpec,fundSubNodeFormValueBlur, fundSubNodeFormValueFocus, fundSubNodeFormValueAdd,
         fundSubNodeFormValueDelete, fundSubNodeFormValuesCopyFromPrev, fundSubNodeFormValueChangePosition,
-        fundSubNodeFormValueUploadCoordinates} from 'actions/arr/subNodeForm.jsx'
+        fundSubNodeFormValueUploadCoordinates, fundSubNodeFormValueUploadCsv} from 'actions/arr/subNodeForm.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import DescItemString from './nodeForm/DescItemString.jsx'
 import DescItemType from './nodeForm/DescItemType.jsx'
@@ -42,7 +42,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'handleAddChildNode', 'handleCreateParty',
             'handleCreatedParty', 'handleCreateRecord', 'handleCreatedRecord', 'handleDeleteNode',
             'handleDescItemTypeCopyFromPrev', 'trySetFocus', 'initFocus', 'getFlatDescItemTypes', 'getNodeSetting',
-            'addNodeAfterClick', 'addNodeBeforeClick', 'addNodeChildClick'
+            'addNodeAfterClick', 'addNodeBeforeClick', 'addNodeChildClick', 'handleJsonTableDownload'
         );
     }
 
@@ -347,6 +347,14 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     handleCoordinatesUpload(descItemTypeId, file) {
         this.dispatch(fundSubNodeFormValueUploadCoordinates(this.props.versionId, this.props.nodeKey, descItemTypeId, file));
     }
+    
+    /**
+     * Přidání nové hodnoty jsonTable pomocí uploadu.
+     * @param file {File} soubor
+     */
+    handleJsonTableUpload(descItemTypeId, file) {
+        this.dispatch(fundSubNodeFormValueUploadCsv(this.props.versionId, this.props.nodeKey, descItemTypeId, file));
+    }
 
     /**
      * Vytvoření nového hesla.
@@ -582,6 +590,14 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         window.open(window.location.origin + '/api/kmlManagerV1/export/arrCoordinates/' + objectId + '/' + this.props.fund.versionId);
     }
 
+    handleJsonTableDownload(objectId) {
+        const {versionId} = this.props
+        
+        window.open(window.location.origin +
+            "/api/arrangementManagerV2/descItems/" + versionId + "/csv/export?descItemObjectId=" +objectId
+        );
+    }
+
     /**
      * Renderování atributu.
      * @param descItemType {Object} atribut
@@ -631,8 +647,10 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onDetailRecord={this.handleDetailRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onCoordinatesUpload={this.handleCoordinatesUpload.bind(this, descItemType.id)}
+                onJsonTableUpload={this.handleJsonTableUpload.bind(this, descItemType.id)}
                 onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onCoordinatesDownload={this.handleCoordinatesDownload.bind(this)}
+                onJsonTableDownload={this.handleJsonTableDownload.bind(this)}
                 onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChangePosition={this.handleChangePosition.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChangeSpec={this.handleChangeSpec.bind(this, descItemGroupIndex, descItemTypeIndex)}

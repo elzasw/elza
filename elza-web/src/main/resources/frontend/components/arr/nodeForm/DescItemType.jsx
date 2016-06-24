@@ -19,7 +19,7 @@ import DescItemUnitdate from './DescItemUnitdate.jsx'
 import DescItemPacketRef from './DescItemPacketRef.jsx'
 import DescItemPartyRef from './DescItemPartyRef.jsx'
 import DescItemRecordRef from './DescItemRecordRef.jsx'
-import DescItemTable from './DescItemTable.jsx'
+import DescItemJsonTable from './DescItemJsonTable.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {descItemNeedStore} from 'actions/arr/subNodeForm.jsx'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
@@ -56,7 +56,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
                 'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver',
                 'handleDragLeave', 'getShowDeleteDescItemType', 'getShowDeleteDescItem', 'focus', 'handleDescItemTypeShortcuts',
-                'handleDescItemShortcuts', 'handleCoordinatesUploadButtonClick', 'handleCoordinatesUpload', 'removePlaceholder');
+                'handleDescItemShortcuts', 'handleCoordinatesUploadButtonClick', 'handleJsonTableUploadButtonClick', 'handleCoordinatesUpload', 'handleJsonTableUploadUpload', 'removePlaceholder');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -420,6 +420,10 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         this.refs.uploadInput.getInputDOMNode().click();
     }
 
+    handleJsonTableUploadButtonClick() {
+        this.refs.uploadInput.getInputDOMNode().click();
+    }
+
     handleCoordinatesUpload(e) {
         const fileList = e.target.files;
 
@@ -429,6 +433,18 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         const file = fileList[0];
 
         this.props.onCoordinatesUpload(file);
+        e.target.value = null;
+    }
+    
+    handleJsonTableUploadUpload(e) {
+        const fileList = e.target.files;
+
+        if (fileList.length != 1) {
+            return;
+        }
+        const file = fileList[0];
+
+        this.props.onJsonTableUpload(file);
         e.target.value = null;
     }
 
@@ -530,9 +546,11 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                     />)
                 break;
             case 'JSON_TABLE':
-                parts.push(<DescItemTable key={itemComponentKey}
+                parts.push(<DescItemJsonTable key={itemComponentKey}
                     {...descItemProps}
-                    refType={refType}
+                    refType={refType} 
+                    onDownload={this.props.onJsonTableDownload.bind(this, descItem.descItemObjectId)}
+                    onUpload={this.handleJsonTableUploadUpload}  
                     />)
                 break;
             case 'STRING':
@@ -751,9 +769,15 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             if (infoType.rep === 1 && !(locked || closed)) {
                 if (this.props.rulDataType.code === "COORDINATES") {
                     addAction = <div className='desc-item-type-actions'>
+                        <NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus"/></NoFocusButton>
+                        <NoFocusButton onClick={this.handleCoordinatesUploadButtonClick} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-upload"/></NoFocusButton>
+                        <Input className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload}/>
+                    </div>
+                } else if (this.props.rulDataType.code === "JSON_TABLE") {
+                    addAction = <div className='desc-item-type-actions'>
                         <NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton>
-                        <NoFocusButton onClick={this.handleCoordinatesUploadButtonClick} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-upload" /></NoFocusButton>
-                        <Input className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload} />
+                        <NoFocusButton onClick={this.handleJsonTableUploadButtonClick} title={i18n('subNodeForm.descItem.jsonTable.action.upload')}><Icon glyph="fa-upload" /></NoFocusButton>
+                        <Input className="hidden" accept="text/csv" type="file" ref='uploadInput' onChange={this.handleJsonTableUploadUpload} />
                     </div>
                 } else {
                     addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton></div>
@@ -822,6 +846,7 @@ DescItemType.propTypes = {
     onFocus: React.PropTypes.func.isRequired,
     onCreateParty: React.PropTypes.func.isRequired,
     onCoordinatesDownload: React.PropTypes.func.isRequired,
+    onJsonTableDownload: React.PropTypes.func.isRequired,
     onCoordinatesUpload: React.PropTypes.func.isRequired,
     onDetailParty: React.PropTypes.func.isRequired,
     onCreateRecord: React.PropTypes.func.isRequired,
