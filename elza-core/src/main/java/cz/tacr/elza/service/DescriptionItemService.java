@@ -148,15 +148,14 @@ public class DescriptionItemService {
     @Autowired
     private DataPacketRefRepository dataPacketRefRepository;
 
-    /**
-     * CSV konfigurace pro CZ Excel.
-     */
-    private static final CSVFormat CSV_EXCEL_FORMAT = CSVFormat.DEFAULT
+    /** CSV konfigurace pro CZ Excel. */
+    public static final CSVFormat CSV_EXCEL_FORMAT = CSVFormat.DEFAULT
             .withIgnoreEmptyLines(false)
             .withAllowMissingColumnNames()
             .withDelimiter(';')
             .withQuote('"');
-    private static final String CSV_EXCEL_ENCODING = "cp1250";
+    /** Kódování pro CSV soubory. */
+    public static final String CSV_EXCEL_ENCODING = "cp1250";
 
     /**
      * Kontrola otevřené verze.

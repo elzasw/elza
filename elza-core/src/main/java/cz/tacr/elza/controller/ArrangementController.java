@@ -443,7 +443,7 @@ public class ArrangementController {
     @RequestMapping(value = "/descItems/{fundVersionId}/csv/import",
             method = RequestMethod.POST,
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void descItemCsvImport(
+    public DescItemResult descItemCsvImport(
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(value = "nodeVersion") final Integer nodeVersion,
             @RequestParam(value = "nodeId", required = false) final Integer nodeId,
@@ -454,8 +454,13 @@ public class ArrangementController {
         Assert.notNull(descItemTypeId);
 
         InputStream is = importFile.getInputStream();
-        descriptionItemService.csvImport(fundVersionId, nodeId, nodeVersion, descItemTypeId, is);
+        ArrDescItemJsonTable descItemCreated = descriptionItemService.csvImport(fundVersionId, nodeId, nodeVersion, descItemTypeId, is);
         is.close();
+
+        DescItemResult descItemResult = new DescItemResult();
+        descItemResult.setDescItem(factoryVo.createDescItem(descItemCreated));
+        descItemResult.setNode(factoryVo.createArrNode(descItemCreated.getNode()));
+        return descItemResult;
     }
 
     /**

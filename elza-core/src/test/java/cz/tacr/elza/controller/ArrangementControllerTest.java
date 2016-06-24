@@ -1,7 +1,23 @@
 package cz.tacr.elza.controller;
 
 import cz.tacr.elza.api.ArrPacket;
-import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
+import cz.tacr.elza.controller.vo.ArrOutputExtVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
@@ -17,13 +33,25 @@ import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.DescriptionItemService;
+import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -41,12 +69,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     public static final String STORAGE_NUMBER_NOT_FOUND = "Sf";
     public static final String STORAGE_NUMBER_CHANGE = "Test 321";
 
+    private static final String JSON_TABLE_CSV = "jsontable/jsontable.csv";
+
     public static final String NAME_AP = "UseCase ščřžý";
     public static final String RENAME_AP = "Renamed UseCase";
     public static final Integer LIMIT = 100;
 
     @Test
-    public void arrangementTest() {
+    public void arrangementTest() throws IOException {
 
         // vytvoření
         ArrFundVO fund = createdFund();
@@ -240,7 +270,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      *
      * @param fundVersion verze archivní pomůcky
      */
-    private void attributeValues(final ArrFundVersionVO fundVersion) {
+    private void attributeValues(final ArrFundVersionVO fundVersion) throws IOException {
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
         TreeData treeData = getFundTree(input);
@@ -352,7 +382,39 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getNode();
 
-}
+        // Import a export CSV pro atribut JSON_TABLE
+        {
+            // Import
+            type = findDescItemTypeByCode("ZP2015_STATISTICS");
+            descItemResult = descItemCsvImport(fundVersion.getId(), node.getVersion(), node.getId(), type.getId(), getFile(JSON_TABLE_CSV));
+
+            // Export a kontrola
+            InputStream is = descItemCsvExport(fundVersion.getId(), descItemResult.getDescItem().getDescItemObjectId());
+            Reader in = new InputStreamReader(is, DescriptionItemService.CSV_EXCEL_ENCODING);
+            Iterable<CSVRecord> records = DescriptionItemService.CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
+            List<CSVRecord> recordsList = new ArrayList<>();
+            records.forEach(recordsList::add);
+            Assert.isTrue(recordsList.size() == 6); // šest řádků bez hlavičky
+
+            Assert.isTrue(recordsList.get(0).get("KEY").equals("klic1"));
+            Assert.isTrue(recordsList.get(0).get("VALUE").equals("1"));
+
+            Assert.isTrue(recordsList.get(1).get("KEY").equals("klic2"));
+            Assert.isTrue(recordsList.get(1).get("VALUE").equals("2"));
+
+            Assert.isTrue(recordsList.get(2).get("KEY").equals("klic3"));
+            Assert.isTrue(recordsList.get(2).get("VALUE").equals(""));
+
+            Assert.isTrue(recordsList.get(3).get("KEY").equals(""));
+            Assert.isTrue(recordsList.get(3).get("VALUE").equals("4"));
+
+            Assert.isTrue(recordsList.get(4).get("KEY").equals(""));
+            Assert.isTrue(recordsList.get(4).get("VALUE").equals(""));
+
+            Assert.isTrue(recordsList.get(5).get("KEY").equals("kk"));
+            Assert.isTrue(recordsList.get(5).get("VALUE").equals("11"));
+        }
+    }
 
     /**
      * Přesunutí a smazání levelů
