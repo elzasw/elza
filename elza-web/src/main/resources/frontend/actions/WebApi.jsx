@@ -720,7 +720,7 @@ class WebApi{
         formData.append('nodeId', nodeId);
         formData.append('nodeVersion', nodeVersionId);
         formData.append('descItemTypeId', descItemTypeId);
-console.log(111111, formData)
+
         return AjaxUtils.ajaxCallRaw("/api/arrangementManagerV2/descItems/" + versionId + "/csv/import", { }, "POST", formData);
     }
     
