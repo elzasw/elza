@@ -26,6 +26,14 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
                                                          @Param("outputDefinition") ArrOutputDefinition outputDefinition,
                                                          @Param("position") Integer position);
 
+    /**
+     * Vyhledá otevřenou (nesmazenou) hodnotu atributů podle objectId.
+     *
+     * @param descItemObjectId identifikátor hodnoty atributu
+     * @return output item
+     */
+    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
+    ArrOutputItem findOpenOutputItem(Integer descItemObjectId);
 
     @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = :itemObjectId")
     List<ArrOutputItem> findOpenOutputItems(@Param("itemObjectId") Integer descItemObjectId);
