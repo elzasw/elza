@@ -15,7 +15,7 @@ import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
-import {fundSubNodeFormFetchIfNeeded, fundSubNodeFormDescItemTypeAdd} from 'actions/arr/subNodeForm.jsx'
+import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {setInputFocus} from 'components/Utils.jsx'
@@ -79,7 +79,7 @@ var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactCompo
         const nodeKey = 'DATA_GRID'
 
         this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(fundSubNodeFormFetchIfNeeded(versionId, nodeKey));
+        this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, nodeKey));
         this.dispatch(refRulDataTypesFetchIfNeeded());
         this.dispatch(calendarTypesFetchIfNeeded());
 
@@ -89,7 +89,7 @@ var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactCompo
             const formData = subNodeForm.formData
 
             if (!this.containsDescItem(formData, validFundDataGrid.descItemTypeId)) {
-                this.dispatch(fundSubNodeFormDescItemTypeAdd(versionId, nodeKey, validFundDataGrid.descItemTypeId));
+                this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, nodeKey, validFundDataGrid.descItemTypeId));
             }
         }
     }

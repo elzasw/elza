@@ -11,7 +11,7 @@ import {connect} from 'react-redux'
 import {Icon, ListBox, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown,
         Search, GoToPositionForm, VisiblePolicyForm} from 'components';
 import {Button, Tooltip, OverlayTrigger, Input} from 'react-bootstrap';
-import {fundSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm.jsx'
+import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
 import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo.jsx'
 import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo.jsx'
@@ -33,7 +33,6 @@ const scrollIntoView = require('dom-scroll-into-view')
 var classNames = require('classnames');
 import {setFocus, canSetFocus, focusWasSet, isFocusFor, isFocusExactFor} from 'actions/global/focus.jsx'
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm.jsx'
-import {fundSubNodeFormDescItemTypeAdd} from 'actions/arr/subNodeForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {visiblePolicyTypesFetchIfNeeded} from 'actions/refTables/visiblePolicyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
@@ -314,7 +313,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
         var submit = (data) => {
             this.dispatch(modalDialogHide());
-            this.dispatch(fundSubNodeFormDescItemTypeAdd(versionId, nodeKey, data.descItemTypeId));
+            this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, nodeKey, data.descItemTypeId));
         };
         // Modální dialog
         var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
@@ -365,7 +364,7 @@ return true
     requestData(versionId, node, showRegisterJp) {
         if (node.selectedSubNodeId != null) {
             this.dispatch(descItemTypesFetchIfNeeded());
-            this.dispatch(fundSubNodeFormFetchIfNeeded(versionId, node.nodeKey));
+            this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.nodeKey));
             this.dispatch(fundSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
             this.dispatch(refRulDataTypesFetchIfNeeded());
 

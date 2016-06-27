@@ -12,7 +12,7 @@ import fundAction from './fundAction.jsx'
 import {consolidateState} from 'components/Utils.jsx'
 import {isBulkAction} from 'actions/arr/bulkActions.jsx'
 import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
-import {isSubNodeFormAction, isSubNodeFormCacheAction} from 'actions/arr/subNodeForm.jsx'
+import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
 import {isNodeInfoAction} from 'actions/arr/nodeInfo.jsx'
 import {isVersionValidation} from 'actions/arr/versionValidation.jsx'
@@ -122,7 +122,7 @@ export function fund(state, action) {
         return consolidateState(state, result)
     }
 
-    if (isSubNodeFormAction(action)) {
+    if (nodeFormActions.isSubNodeFormAction(action)) {
         const type = getNodeKeyType(action.nodeKey)
         switch (type) {
             case 'NODE':
@@ -138,7 +138,7 @@ export function fund(state, action) {
     }
 
     if (false
-        || isSubNodeFormCacheAction(action)
+        || nodeFormActions.isSubNodeFormCacheAction(action)
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)
         || isNodeAction(action)

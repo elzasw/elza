@@ -5,7 +5,7 @@ import subNodeFormCache from './subNodeFormCache.jsx'
 import subNodeRegister from './subNodeRegister.jsx'
 import subNodeInfo from './subNodeInfo.jsx'
 import {consolidateState} from 'components/Utils.jsx'
-import {isSubNodeFormAction, isSubNodeFormCacheAction} from 'actions/arr/subNodeForm.jsx'
+import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
 
@@ -126,7 +126,7 @@ const nodeInitialState = {
     //nodeInfo: nodeInfo(undefined, {type:''}),
 
 export function node(state = nodeInitialState, action) {
-    if (isSubNodeFormAction(action)) {
+    if (nodeFormActions.isSubNodeFormAction(action)) {
         var result = {
             ...state, 
             subNodeForm: subNodeForm(state.subNodeForm, action),
@@ -134,7 +134,7 @@ export function node(state = nodeInitialState, action) {
         return consolidateState(state, result);
     }
 
-    if (isSubNodeFormCacheAction(action)) {
+    if (nodeFormActions.isSubNodeFormCacheAction(action)) {
         return {
             ...state, 
             subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),

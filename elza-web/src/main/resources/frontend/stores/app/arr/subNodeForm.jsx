@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {i18n} from 'components/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {fundSubNodeFormValueValidate} from 'actions/arr/subNodeForm.jsx'
+import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {createDescItemFromDb, getItemType, updateFormData, createDescItem, consolidateDescItems} from './subNodeFormUtils.jsx'
 var subNodeFormUtils = require('./subNodeFormUtils.jsx')
 import {validateInt, validateDouble, validateCoordinatePoint} from 'components/validate.jsx'
@@ -186,7 +186,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     if (loc.descItem.validateTimer) {
                         clearTimeout(loc.descItem.validateTimer);
                     }
-                    var fc = () => action.dispatch(fundSubNodeFormValueValidate(action.versionId, action.nodeKey, action.valueLocation));
+                    var fc = () => action.dispatch(nodeFormActions.fundSubNodeFormValueValidate(action.versionId, action.nodeKey, action.valueLocation));
                     loc.descItem.validateTimer = setTimeout(fc, 250);
                     break;
                 default:

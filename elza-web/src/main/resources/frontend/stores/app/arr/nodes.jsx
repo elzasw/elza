@@ -2,7 +2,7 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, findByNodeKeyInNodes, selectedAfterClose} from 'stores/app/utils.jsx'
 import {node, nodeInitState} from './node.jsx'
 import {consolidateState} from 'components/Utils.jsx'
-import {isSubNodeFormAction, isSubNodeFormCacheAction} from 'actions/arr/subNodeForm.jsx'
+import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
 import {isNodeInfoAction} from 'actions/arr/nodeInfo.jsx'
 import {isNodeAction} from 'actions/arr/node.jsx'
@@ -38,13 +38,13 @@ function processNode(state, action, index) {
 
 export default function nodes(state = nodesInitialState, action) {
     if (false
-        || isSubNodeFormAction(action)
+        || nodeFormActions.isSubNodeFormAction(action)
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)
         || isNodeAction(action)
         || isSubNodeRegisterAction(action)
         || isDeveloperScenariosAction(action)
-        || isSubNodeFormCacheAction(action)
+        || nodeFormActions.isSubNodeFormCacheAction(action)
     ) {
         var r = findByNodeKeyInNodes(state, action.versionId, action.nodeKey);
         if (r) {

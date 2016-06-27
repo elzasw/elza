@@ -46,7 +46,7 @@ import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
-import {fundSubNodeFormHandleClose} from 'actions/arr/subNodeForm.jsx'
+import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {getSpecsIds, hasDescItemTypeValue, createFundRoot} from 'components/arr/ArrUtils.jsx'
@@ -474,7 +474,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     handleEditClose() {
         const {versionId} = this.props;
 
-        this.dispatch(fundSubNodeFormHandleClose(versionId, 'DATA_GRID'))
+        this.dispatch(nodeFormActions.fundSubNodeFormHandleClose(versionId, 'DATA_GRID'))
 
         this.setState({},
             ()=>{ ReactDOM.findDOMNode(this.refs.dataGrid).focus() }

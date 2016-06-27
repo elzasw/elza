@@ -21,7 +21,7 @@ import DescItemPartyRef from './DescItemPartyRef.jsx'
 import DescItemRecordRef from './DescItemRecordRef.jsx'
 import DescItemJsonTable from './DescItemJsonTable.jsx'
 import {propsEquals} from 'components/Utils.jsx'
-import {descItemNeedStore} from 'actions/arr/subNodeForm.jsx'
+import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 var classNames = require('classnames');
@@ -615,7 +615,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         // ##
         // # Má se zobrazovat ikona mazání z hlediska hodnoty desc item?
         // ##
-        if (descItemNeedStore(descItem, refType)) {
+        if (nodeFormActions.descItemNeedStore(descItem, refType)) {
             return false
         }
 
@@ -673,7 +673,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         for (var a = 0; a < descItemType.descItems.length; a++) {
             let descItem = descItemType.descItems[a]
 
-            if (descItemNeedStore(descItem, refType)) {
+            if (nodeFormActions.descItemNeedStore(descItem, refType)) {
                 return false
             }
 

@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {consolidateState} from 'components/Utils.jsx'
 import subNodeForm from './subNodeForm.jsx'
-import {isSubNodeFormAction} from 'actions/arr/subNodeForm.jsx'
+import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 
 const initialState = {
     initialised: false, // jestli byl prvotně inicializován, např. seznam zobrazovaných sloupců atp.
@@ -65,7 +65,7 @@ function changeSearchedIndex(state, newIndex) {
 }
 
 export default function fundDataGrid(state = initialState, action = {}) {
-    if (isSubNodeFormAction(action)) {
+    if (nodeFormActions.isSubNodeFormAction(action)) {
         var result = {
             ...state, 
             subNodeForm: subNodeForm(state.subNodeForm, action),

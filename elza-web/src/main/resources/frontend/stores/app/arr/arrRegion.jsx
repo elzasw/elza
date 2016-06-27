@@ -10,7 +10,7 @@ import {consolidateState} from 'components/Utils.jsx'
 import {Toastr, i18n} from 'components/index.jsx';
 import {isBulkAction} from 'actions/arr/bulkActions.jsx'
 import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
-import {isSubNodeFormAction, isSubNodeFormCacheAction} from 'actions/arr/subNodeForm.jsx'
+import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
 import {isNodeInfoAction} from 'actions/arr/nodeInfo.jsx'
@@ -81,8 +81,8 @@ export default function arrRegion(state = initialState, action) {
     if (false
         || isBulkAction(action)
         || isFundTreeAction(action)
-        || isSubNodeFormAction(action)
-        || isSubNodeFormCacheAction(action)
+        || nodeFormActions.isSubNodeFormAction(action)
+        || nodeFormActions.isSubNodeFormCacheAction(action)
         || isSubNodeRegisterAction(action)
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)
