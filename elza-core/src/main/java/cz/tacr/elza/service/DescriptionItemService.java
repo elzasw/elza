@@ -21,9 +21,7 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.ArrItemFormattedText;
-import cz.tacr.elza.domain.ArrItemJsonTable;
 import cz.tacr.elza.domain.ArrItemString;
 import cz.tacr.elza.domain.ArrItemText;
 import cz.tacr.elza.domain.ArrLevel;
@@ -36,9 +34,6 @@ import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.domain.table.ElzaColumn;
-import cz.tacr.elza.domain.table.ElzaRow;
-import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
 import cz.tacr.elza.domain.vo.JsonTableTitleValue;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -62,9 +57,6 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -75,13 +67,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
-import java.beans.PropertyDescriptor;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,9 +90,6 @@ public class DescriptionItemService {
 
     @Autowired
     private NodeRepository nodeRepository;
-
-    @Autowired
-    private BeanFactory beanFactory;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -152,15 +134,6 @@ public class DescriptionItemService {
     @Autowired
     private DataPacketRefRepository dataPacketRefRepository;
 
-    /** CSV konfigurace pro CZ Excel. */
-    public static final CSVFormat CSV_EXCEL_FORMAT = CSVFormat.DEFAULT
-            .withIgnoreEmptyLines(false)
-            .withAllowMissingColumnNames()
-            .withDelimiter(';')
-            .withQuote('"');
-    /** Kódování pro CSV soubory. */
-    public static final String CSV_EXCEL_ENCODING = "cp1250";
-
     @Autowired
     private ItemService itemService;
 
@@ -193,9 +166,9 @@ public class DescriptionItemService {
      * - s kontrolou verze uzlu
      * - se spuštěním validace uzlu
      *
-     * @param descItemObjectId    identifikátor hodnoty atributu
-     * @param nodeVersion         verze uzlu (optimistické zámky)
-     * @param fundVersionId identifikátor verze archivní pomůcky
+     * @param descItemObjectId identifikátor hodnoty atributu
+     * @param nodeVersion      verze uzlu (optimistické zámky)
+     * @param fundVersionId    identifikátor verze archivní pomůcky
      * @return smazaná hodnota atributu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
@@ -237,11 +210,11 @@ public class DescriptionItemService {
      * - s kontrolou verze uzlu
      * - se spuštěním validace uzlu
      *
-     * @param fundVersionId   identifikátor verze archivní pomůcky
-     * @param nodeId                identifikátor uzlu
-     * @param nodeVersion           verze uzlu (optimistické zámky)
-     * @param descItemTypeId        identifikátor typu hodnoty atributu
-     * @return  upravený uzel
+     * @param fundVersionId  identifikátor verze archivní pomůcky
+     * @param nodeId         identifikátor uzlu
+     * @param nodeVersion    verze uzlu (optimistické zámky)
+     * @param descItemTypeId identifikátor typu hodnoty atributu
+     * @return upravený uzel
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrNode deleteDescriptionItemsByType(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
@@ -278,16 +251,18 @@ public class DescriptionItemService {
                 NodeTypeOperation.SAVE_DESC_ITEM, null, null, descItemsDeleted);
 
         return node;
-    }/**
+    }
+
+    /**
      * Smaže hodnoty atributu podle typu.
      * - s kontrolou verze uzlu
      * - se spuštěním validace uzlu
      *
-     * @param fundVersionId   identifikátor verze archivní pomůcky
-     * @param nodeId                identifikátor uzlu
-     * @param nodeVersion           verze uzlu (optimistické zámky)
-     * @param descItemTypeId        identifikátor typu hodnoty atributu
-     * @return  upravený uzel
+     * @param fundVersionId  identifikátor verze archivní pomůcky
+     * @param nodeId         identifikátor uzlu
+     * @param nodeVersion    verze uzlu (optimistické zámky)
+     * @param descItemTypeId identifikátor typu hodnoty atributu
+     * @return upravený uzel
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrNode deleteDescriptionItemsByTypeWithoutVersion(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
@@ -327,10 +302,10 @@ public class DescriptionItemService {
      * - s kontrolou verze uzlu
      * - se spuštěním validace uzlu
      *
-     * @param descItem              hodnota atributu
-     * @param nodeId                identifikátor uzlu
-     * @param nodeVersion           verze uzlu (optimistické zámky)
-     * @param fundVersionId   identifikátor verze archivní pomůcky
+     * @param descItem      hodnota atributu
+     * @param nodeId        identifikátor uzlu
+     * @param nodeVersion   verze uzlu (optimistické zámky)
+     * @param fundVersionId identifikátor verze archivní pomůcky
      * @return vytvořená hodnota atributu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
@@ -360,10 +335,10 @@ public class DescriptionItemService {
      * - s kontrolou verze uzlu
      * - se spuštěním validace uzlu
      *
-     * @param descItems              hodnota atributu
-     * @param nodeId                identifikátor uzlu
-     * @param nodeVersion           verze uzlu (optimistické zámky)
-     * @param fundVersionId   identifikátor verze archivní pomůcky
+     * @param descItems     hodnota atributu
+     * @param nodeId        identifikátor uzlu
+     * @param nodeVersion   verze uzlu (optimistické zámky)
+     * @param fundVersionId identifikátor verze archivní pomůcky
      * @return vytvořená hodnota atributu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
@@ -427,14 +402,14 @@ public class DescriptionItemService {
      * - se spuštěním validace uzlu
      *
      * @param descItems hodnota atributu
-     * @param node     uzel, kterému přidáme hodnotu
-     * @param version  verze stromu
+     * @param node      uzel, kterému přidáme hodnotu
+     * @param version   verze stromu
      * @return vytvořená hodnota atributu
      */
     public List<ArrDescItem> createDescriptionItems(final List<ArrDescItem> descItems,
-                                             final ArrNode node,
-                                             final ArrFundVersion version,
-                                             @Nullable final ArrChange createChange) {
+                                                    final ArrNode node,
+                                                    final ArrFundVersion version,
+                                                    @Nullable final ArrChange createChange) {
 
         ArrChange change = createChange == null ? arrangementService.createChange() : createChange;
         List<ArrDescItem> createdItems = new ArrayList<>();
@@ -548,9 +523,9 @@ public class DescriptionItemService {
     /**
      * Smaže hodnotu atributu.
      *
-     * @param descItem hodnota atributu
-     * @param version  verze archivní pomůcky
-     * @param change   změna operace
+     * @param descItem  hodnota atributu
+     * @param version   verze archivní pomůcky
+     * @param change    změna operace
      * @param moveAfter posunout hodnoty po?
      * @return smazaná hodnota atributu
      */
@@ -594,7 +569,7 @@ public class DescriptionItemService {
                                        final ArrFundVersion version) {
         for (ArrDescItem descItemMove : descItems) {
 
-            ArrDescItem descItemNew  = copyDescItem(change, descItemMove, descItemMove.getPosition() + diff);
+            ArrDescItem descItemNew = copyDescItem(change, descItemMove, descItemMove.getPosition() + diff);
 
             // sockety
             publishChangeDescItem(version, descItemNew);
@@ -606,7 +581,8 @@ public class DescriptionItemService {
 
     /**
      * Vytvoří kopii descItem. Původní hodnotu uzavře a vytvoří novou se stejnými daty (odverzování)
-     * @param change změna, se kterou dojde k uzamčení a vytvoření kopie
+     *
+     * @param change   změna, se kterou dojde k uzamčení a vytvoření kopie
      * @param descItem hodnota ke zkopírování
      * @param position pozice atributu
      * @return kopie atributu4
@@ -617,7 +593,7 @@ public class DescriptionItemService {
 
         ArrDescItem descItemNew;
         //try {
-            descItemNew = new ArrDescItem();
+        descItemNew = new ArrDescItem();
         /*} catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException(e);
         }*/
@@ -666,8 +642,8 @@ public class DescriptionItemService {
     /**
      * Vypropagovani zmeny hodnoty atributu - sockety.
      *
-     * @param version   verze archivní pomůcky
-     * @param descItem  hodnota atributu
+     * @param version  verze archivní pomůcky
+     * @param descItem hodnota atributu
      */
     private void publishChangeDescItem(final ArrFundVersion version, final ArrDescItem descItem) {
         notificationService.publishEvent(
@@ -696,7 +672,8 @@ public class DescriptionItemService {
 
     /**
      * Vytvoří kopii dat atributu.
-     * @param data data atributu
+     *
+     * @param data        data atributu
      * @param newDescItem atribut, do kterého patří data
      * @return vytvořená kopie dat atributu (neuložená)
      */
@@ -716,11 +693,11 @@ public class DescriptionItemService {
     /**
      * Upravení hodnoty atributu.
      *
-     * @param descItem              hodnota atributu (změny)
-     * @param nodeVersion           verze uzlu (optimistické zámky)
-     * @param fundVersionId   identifikátor verze archivní pomůcky
-     * @param createNewVersion      vytvořit novou verzi?
-     * @return  upravená výsledná hodnota atributu
+     * @param descItem         hodnota atributu (změny)
+     * @param nodeVersion      verze uzlu (optimistické zámky)
+     * @param fundVersionId    identifikátor verze archivní pomůcky
+     * @param createNewVersion vytvořit novou verzi?
+     * @return upravená výsledná hodnota atributu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrDescItem updateDescriptionItem(final ArrDescItem descItem,
@@ -818,9 +795,10 @@ public class DescriptionItemService {
 
     /**
      * Informace o možných scénářích založení nového uzlu
-     * @param nodeId            id uzlu
-     * @param directionLevel    typ vladani
-     * @param fundVersionId       id verze
+     *
+     * @param nodeId         id uzlu
+     * @param directionLevel typ vladani
+     * @param fundVersionId  id verze
      * @return seznam možných scénařů
      */
     public List<ScenarioOfNewLevel> getDescriptionItemTypesForNewLevel(final Integer nodeId, final DirectionLevel directionLevel, final Integer fundVersionId) {
@@ -835,13 +813,13 @@ public class DescriptionItemService {
 
     /**
      * Upravení hodnoty atributu.
-     *  - se spuštěním validace uzlu
+     * - se spuštěním validace uzlu
      *
-     * @param descItem              hodnota atributu (změny)
-     * @param fundVersion     verze archivní pomůcky
-     * @param change                změna
-     * @param createNewVersion      vytvořit novou verzi?
-     * @return  upravená výsledná hodnota atributu
+     * @param descItem         hodnota atributu (změny)
+     * @param fundVersion      verze archivní pomůcky
+     * @param change           změna
+     * @param createNewVersion vytvořit novou verzi?
+     * @return upravená výsledná hodnota atributu
      */
     public ArrDescItem updateDescriptionItem(final ArrDescItem descItem,
                                              final ArrFundVersion fundVersion,
@@ -874,18 +852,18 @@ public class DescriptionItemService {
     /**
      * Upravení hodnoty atributu s daty.
      *
-     * @param descItem          hodnota atributu (změny)
-     * @param descItemDB        hodnota atributu - původní (pokud je null, donačte se)
-     * @param version           verze archivní pomůcky
-     * @param change            změna operace
-     * @param createNewVersion  vytvořit novou verzi?
-     * @return  upravená výsledná hodnota atributu
+     * @param descItem         hodnota atributu (změny)
+     * @param descItemDB       hodnota atributu - původní (pokud je null, donačte se)
+     * @param version          verze archivní pomůcky
+     * @param change           změna operace
+     * @param createNewVersion vytvořit novou verzi?
+     * @return upravená výsledná hodnota atributu
      */
     public ArrDescItem updateDescriptionItemWithData(final ArrDescItem descItem,
-                                                      final ArrDescItem descItemDB,
-                                                      final ArrFundVersion version,
-                                                      final ArrChange change,
-                                                      final Boolean createNewVersion) {
+                                                     final ArrDescItem descItemDB,
+                                                     final ArrFundVersion version,
+                                                     final ArrChange change,
+                                                     final Boolean createNewVersion) {
 
         if (createNewVersion ^ change != null) {
             throw new IllegalArgumentException("Pokud vytvářím novou verzi, musí být předaná reference změny. Pokud verzi nevytvářím, musí být reference změny null.");
@@ -973,9 +951,9 @@ public class DescriptionItemService {
 
 
     public Map<Integer, Map<String, TitleValues>> createNodeValuesMap(final Set<Integer> subtreeNodeIds,
-                                                                     @Nullable final TreeNode subtreeRoot,
-                                                                     Set<RulItemType> descItemTypes,
-                                                                     ArrFundVersion version) {
+                                                                      @Nullable final TreeNode subtreeRoot,
+                                                                      Set<RulItemType> descItemTypes,
+                                                                      ArrFundVersion version) {
         Map<Integer, Map<String, TitleValues>> valueMap = new HashMap<>();
 
         if (descItemTypes.isEmpty()) {
@@ -985,7 +963,7 @@ public class DescriptionItemService {
         //chceme nalézt atributy i pro rodiče podstromu
         Set<Integer> nodeIds = new HashSet<>(subtreeNodeIds);
         TreeNode rootParent = subtreeRoot;
-        while(rootParent != null){
+        while (rootParent != null) {
             nodeIds.add(rootParent.getId());
             rootParent = rootParent.getParent();
         }
@@ -1042,10 +1020,10 @@ public class DescriptionItemService {
             } else if (data.getDataType().getCode().equals("DECIMAL")) {
                 ArrDataDecimal decimalData = (ArrDataDecimal) data;
                 value = new TitleValue(decimalData.getValue().toPlainString());
-            } else if(data.getDataType().getCode().equals("COORDINATES")){
+            } else if (data.getDataType().getCode().equals("COORDINATES")) {
                 ArrDataCoordinates coordinates = (ArrDataCoordinates) data;
                 value = new CoordinatesTitleValue(coordinates.getValue());
-            } else if(data.getDataType().getCode().equals("JSON_TABLE")){
+            } else if (data.getDataType().getCode().equals("JSON_TABLE")) {
                 ArrDataJsonTable table = (ArrDataJsonTable) data;
                 value = new JsonTableTitleValue(table.getFulltextValue(), table.getValue().getRows().size());
             }
@@ -1121,7 +1099,7 @@ public class DescriptionItemService {
     private void addValuesToMap(Map<Integer, Map<String, TitleValues>> valueMap, final TitleValue titleValue, String code,
                                 String specCode, Integer nodeId, String iconValue, final Integer position) {
 
-        if (titleValue== null && iconValue == null) {
+        if (titleValue == null && iconValue == null) {
             return;
         }
 
@@ -1146,9 +1124,8 @@ public class DescriptionItemService {
     }
 
 
-
     private String getIconValue(ArrData data) {
-       if (data.getItem().getItemSpec() != null) {
+        if (data.getItem().getItemSpec() != null) {
             return data.getItem().getItemSpec().getCode();
         }
         return null;
@@ -1157,12 +1134,13 @@ public class DescriptionItemService {
 
     /**
      * Nahrazení textu v hodnotách textových atributů.
-     * @param version  verze stromu
-     * @param descItemType typ atributu
-     * @param nodes seznam uzlů, ve kterých hledáme
+     *
+     * @param version        verze stromu
+     * @param descItemType   typ atributu
+     * @param nodes          seznam uzlů, ve kterých hledáme
      * @param specifications seznam specifikací (pokud se jedná o typ atributu se specifikací)
-     * @param findText hledaný text v atributu
-     * @param replaceText text, který nahradí hledaný text v celém textu
+     * @param findText       hledaný text v atributu
+     * @param replaceText    text, který nahradí hledaný text v celém textu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void replaceDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
@@ -1177,8 +1155,8 @@ public class DescriptionItemService {
 
         Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, n -> n.getNodeId());
 
-        List<ArrData> dataToReplaceText = dataRepository.findByNodesContainingText(nodes, descItemType,specifications, findText);
-        if(!dataToReplaceText.isEmpty()){
+        List<ArrData> dataToReplaceText = dataRepository.findByNodesContainingText(nodes, descItemType, specifications, findText);
+        if (!dataToReplaceText.isEmpty()) {
 
 
             ArrChange change = arrangementService.createChange();
@@ -1265,9 +1243,9 @@ public class DescriptionItemService {
         List<ArrNode> dbNodes = nodeRepository.findAll(nodesMap.keySet());
 
         List<ArrDescItem> descItems = descItemType.getUseSpecification() ?
-                                      descItemRepository
-                                              .findOpenByNodesAndTypeAndSpec(nodes, descItemType, specifications) :
-                                      descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+                descItemRepository
+                        .findOpenByNodesAndTypeAndSpec(nodes, descItemType, specifications) :
+                descItemRepository.findOpenByNodesAndType(nodes, descItemType);
 
         ArrChange change = arrangementService.createChange();
 
@@ -1279,13 +1257,13 @@ public class DescriptionItemService {
         //jestli nemá již nějakou hodnotu specifikace nastavenou (jinou než přišla v parametru seznamu specifikací)
         //takovým nodům nenastavujeme novou hodnotu se specifikací
         Set<ArrNode> ignoreNodes = new HashSet<>();
-        if(descItemType.getUseSpecification() && BooleanUtils.isNotTrue(descItemType.getRepeatable())){
+        if (descItemType.getUseSpecification() && BooleanUtils.isNotTrue(descItemType.getRepeatable())) {
             List<ArrDescItem> remainSpecItems = descItemRepository.findOpenByNodesAndType(nodes, descItemType);
             ignoreNodes = remainSpecItems.stream().map(n -> n.getNode()).collect(Collectors.toSet());
         }
 
         for (ArrNode dbNode : dbNodes) {
-            if(ignoreNodes.contains(dbNode)){
+            if (ignoreNodes.contains(dbNode)) {
                 continue;
             }
 
@@ -1340,10 +1318,11 @@ public class DescriptionItemService {
 
     /**
      * Provede nahrazení textu v hodnotě atributu.
-     * @param data data atributu
-     * @param searchString text, který hledáme
+     *
+     * @param data          data atributu
+     * @param searchString  text, který hledáme
      * @param replaceString text, který nahradíme
-     * @param change změna (odverzování)
+     * @param change        změna (odverzování)
      */
     private void replaceDescItemValue(final ArrData data, final String searchString, final String replaceString, final ArrChange change) {
 
@@ -1398,9 +1377,9 @@ public class DescriptionItemService {
 
 
         List<ArrDescItem> descItems = descItemType.getUseSpecification() ?
-                                      descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, descItemType,
-                                              specifications) :
-                                      descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+                descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, descItemType,
+                        specifications) :
+                descItemRepository.findOpenByNodesAndType(nodes, descItemType);
         if (!descItems.isEmpty()) {
             ArrChange change = arrangementService.createChange();
 
@@ -1426,12 +1405,11 @@ public class DescriptionItemService {
     }
 
 
-
     /**
      * Vyhledá maximální pozici v hodnotách atributu podle typu.
      *
-     * @param descItem  hodnota atributu
-     * @return  maximální pozice (počet položek)
+     * @param descItem hodnota atributu
+     * @return maximální pozice (počet položek)
      */
     private int getMaxPosition(final ArrDescItem descItem) {
         int maxPosition = 0;
@@ -1450,10 +1428,10 @@ public class DescriptionItemService {
     /**
      * Vyhledá všechny hodnoty atributu mezi pozicemi.
      *
-     * @param descItem      hodnota atributu
-     * @param positionFrom  od pozice (včetně)
-     * @param positionTo    do pozice (včetně)
-     * @return  seznam nalezených hodnot atributů
+     * @param descItem     hodnota atributu
+     * @param positionFrom od pozice (včetně)
+     * @param positionTo   do pozice (včetně)
+     * @return seznam nalezených hodnot atributů
      */
     private List<ArrDescItem> findDescItemsBetweenPosition(final ArrDescItem descItem,
                                                            final Integer positionFrom,
@@ -1465,74 +1443,4 @@ public class DescriptionItemService {
         return descItems;
     }
 
-    /**
-     * Import csv ze stremu do konkrétní hodnoty desc item, která bude nahrazena.
-     * @param fundVersionId verze souboru
-     * @param nodeId id uzlu
-     * @param nodeVersion verze uzlu
-     * @param descItemTypeId id typu atributu
-     * @param is stream s csv souborem
-     * @return vytvořená položka
-     */
-    public ArrDescItem csvImport(final Integer fundVersionId, final Integer nodeId,
-                          final Integer nodeVersion, Integer descItemTypeId, final InputStream is) throws IOException {
-
-        try (
-                Reader in = new InputStreamReader(is, CSV_EXCEL_ENCODING);
-        ) {
-            // Vytvoření instance nové položky
-            RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
-
-            ArrItemJsonTable jsonTable = (ArrItemJsonTable) descItemFactory.createItemByType(dataTypeRepository.findByCode("JSON_TABLE"));
-            final ArrDescItem<ArrItemJsonTable> descItem = new ArrDescItem<>(jsonTable);
-            descItem.setItemType(descItemType);
-            ElzaTable table = new ElzaTable();
-            descItem.getItem().setValue(table);
-
-            // Načtení CSV a naplnění tabulky
-            Iterable<CSVRecord> records = CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
-            for (CSVRecord record : records) {
-                ElzaRow row = new ElzaRow();
-                for (ElzaColumn elzaColumn : descItemType.getColumnsDefinition()) {
-                    row.setValue(elzaColumn.getCode(), record.get(elzaColumn.getCode()));
-                }
-                table.addRow(row);
-            }
-
-            // Vyvoření nové s naimportovanými daty
-            ArrDescItem result = beanFactory.getBean(DescriptionItemService.class)
-                    .createDescriptionItem(descItem, nodeId, nodeVersion, fundVersionId);
-
-            return result;
-        }
-    }
-
-    /**
-     * Export dat tabulky do csv formátu, který bude zapsán do streamu.
-     * @param descItem desc item
-     * @param os výstupní stream
-     */
-    public void csvExport(final ArrDescItem descItem, final OutputStream os) throws IOException {
-        RulItemType descItemType = descItem.getItemType();
-        List<String> columNames = descItemType.getColumnsDefinition()
-                .stream()
-                .map(ElzaColumn::getCode)
-                .collect(Collectors.toList());
-
-        try (
-                OutputStreamWriter out = new OutputStreamWriter(os, CSV_EXCEL_ENCODING);
-                CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out);
-        ) {
-            ElzaTable table = ((ArrItemJsonTable) descItem.getItem()).getValue();
-
-            for (ElzaRow elzaRow : table.getRows()) {
-                Map<String, String> values = elzaRow.getValues();
-                List<Object> rowValues = descItemType.getColumnsDefinition()
-                        .stream()
-                        .map(elzaColumn -> values.get(elzaColumn.getCode()))
-                        .collect(Collectors.toList());
-                csvp.printRecord(rowValues);
-            }
-        }
-    }
 }
