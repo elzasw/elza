@@ -20,13 +20,13 @@ import java.util.List;
 
 /**
  * @author Petr Compel
- * @since 23.2.2016
+ * @since 23.2.2016k
  */
 public class KmlControllerTest extends AbstractControllerTest {
 
     protected final static String IMPORT_ARR_COORDINATES = KML_CONTROLLER_URL + "/import/arrCoordinates";
     protected final static String IMPORT_REG_COORDINATES = KML_CONTROLLER_URL + "/import/regCoordinates";
-    protected final static String EXPORT_ARR_COORDINATES = KML_CONTROLLER_URL + "/export/arrCoordinates/{descItemObjectId}/{fundVersionId}";
+    protected final static String EXPORT_ARR_COORDINATES = KML_CONTROLLER_URL + "/export/arrCoordinates/{fundVersionId}/{descItemObjectId}";
     protected final static String EXPORT_REG_COORDINATES = KML_CONTROLLER_URL + "/export/regCoordinates/{regCoordinatesId}";
 
     protected final static String ALL = "coordinates/all.kml";
