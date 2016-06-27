@@ -5,16 +5,16 @@ import java.util.List;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import cz.tacr.elza.controller.vo.nodes.DescItemTypeLiteVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 
 
 /**
- * Skupina zapouzdrující typy hodnot atributů pro UI.
+ * Skupina zapouzdrující hodnoty atributů pro UI.
  *
  * @author Martin Šlapa
  * @since 11.2.2016
  */
-public class DescItemTypeGroupVO {
+public class ItemGroupVO {
 
     /**
      * kód skupiny
@@ -22,19 +22,14 @@ public class DescItemTypeGroupVO {
     private String code;
 
     /**
-     * název skupiny
-     */
-    private String name;
-
-    /**
      * seznam typů ve skupině
      */
-    private List<DescItemTypeLiteVO> types;
+    private List<ItemTypeDescItemsLiteVO> types;
 
-    public DescItemTypeGroupVO() {
+    public ItemGroupVO() {
     }
 
-    public DescItemTypeGroupVO(final String code) {
+    public ItemGroupVO(final String code) {
         this.code = code;
     }
 
@@ -46,19 +41,11 @@ public class DescItemTypeGroupVO {
         this.code = code;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-    public List<DescItemTypeLiteVO> getTypes() {
+    public List<ItemTypeDescItemsLiteVO> getTypes() {
         return types;
     }
 
-    public void setTypes(final List<DescItemTypeLiteVO> types) {
+    public void setTypes(final List<ItemTypeDescItemsLiteVO> types) {
         this.types = types;
     }
 
@@ -72,11 +59,10 @@ public class DescItemTypeGroupVO {
             return false;
         }
 
-        DescItemTypeGroupVO that = (DescItemTypeGroupVO) o;
+        ItemGroupVO that = (ItemGroupVO) o;
 
         return new EqualsBuilder()
                 .append(code, that.code)
-                .append(name, that.name)
                 .isEquals();
     }
 
@@ -84,7 +70,6 @@ public class DescItemTypeGroupVO {
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
                 .append(code)
-                .append(name)
                 .toHashCode();
     }
 }

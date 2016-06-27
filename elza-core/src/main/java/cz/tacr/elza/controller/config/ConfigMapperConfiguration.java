@@ -559,23 +559,23 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(RulItemType.class, RulDescItemTypeDescItemsVO.class).byDefault().field(
                 "itemTypeId",
                 "id").register();
-        mapperFactory.classMap(RulItemType.class, DescItemTypeDescItemsLiteVO.class).byDefault()
+        mapperFactory.classMap(RulItemType.class, ItemTypeDescItemsLiteVO.class).byDefault()
                 .field("itemTypeId", "id")
                 .register();
         mapperFactory.classMap(RulItemTypeExt.class, RulDescItemTypeExtVO.class).byDefault()
                 .field("itemTypeId", "id")
                 .field("rulItemSpecList", "descItemSpecs")
                 .register();
-        mapperFactory.classMap(RulItemTypeExt.class, DescItemTypeLiteVO.class).byDefault()
+        mapperFactory.classMap(RulItemTypeExt.class, ItemTypeLiteVO.class).byDefault()
                 .field("itemTypeId", "id")
                 .field("rulItemSpecList", "specs")
-                .customize(new CustomMapper<RulItemTypeExt, DescItemTypeLiteVO>() {
+                .customize(new CustomMapper<RulItemTypeExt, ItemTypeLiteVO>() {
                     @Override
                     public void mapAtoB(final RulItemTypeExt rulDescItemTypeExt,
-                                        final DescItemTypeLiteVO descItemTypeLiteVO,
+                                        final ItemTypeLiteVO itemTypeLiteVO,
                                         final MappingContext context) {
-                        super.mapAtoB(rulDescItemTypeExt, descItemTypeLiteVO, context);
-                        descItemTypeLiteVO.setRep(rulDescItemTypeExt.getRepeatable() ? 1 : 0);
+                        super.mapAtoB(rulDescItemTypeExt, itemTypeLiteVO, context);
+                        itemTypeLiteVO.setRep(rulDescItemTypeExt.getRepeatable() ? 1 : 0);
                     }
                 })
                 .register();

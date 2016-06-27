@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulItemType;
@@ -43,4 +44,11 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
                                                           @Param("positionTo") Integer positionTo);
 
     void deleteByOutputDefinition(ArrOutputDefinition outputDefinition);
+
+    @Query("SELECT i FROM arr_output_item i WHERE i.outputDefinition = :outputDefinition AND i.deleteChange IS NULL")
+    List<ArrOutputItem> findByOutputAndDeleteChangeIsNull(@Param("outputDefinition") ArrOutputDefinition outputDefinition);
+
+    @Query("SELECT i FROM arr_output_item i WHERE i.outputDefinition = :outputDefinition AND i.createChange < :lockChange AND (i.deleteChange > :lockChange OR i.deleteChange IS NULL)")
+    List<ArrOutputItem> findByOutputAndChange(@Param("outputDefinition") ArrOutputDefinition outputDefinition,
+                                              @Param("lockChange") ArrChange lockChange);
 }

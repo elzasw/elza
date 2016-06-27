@@ -24,8 +24,8 @@ import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -614,6 +614,44 @@ public class ArrangementController {
     }
 
     /**
+     * Získání dat pro formulář.
+     *
+     * @param outputDefinitionId    identfikátor outputu
+     * @param fundVersionId id verze stromu
+     * @return formulář
+     */
+    @RequestMapping(value = "/output/{outputDefinitionId}/{fundVersionId}/form", method = RequestMethod.GET)
+    public OutputFormDataNewVO getOutputFormData(@PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
+                                                 @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+        Assert.notNull(fundVersionId, "Identifikátor verze musí být vyplněn");
+        Assert.notNull(outputDefinitionId, "Identifikátor výstupu musí být vyplněn");
+
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
+
+        Assert.notNull(version, "Verze AP neexistuje");
+        Assert.notNull(outputDefinition, "Výstup neexistuje");
+
+        List<ArrOutputItem> outputItems = outputService.getOutputItems(version, outputDefinition);
+
+        List<RulItemTypeExt> itemTypes = new ArrayList<>();
+        try {
+            // TODO: dopsat pravidla
+            //itemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
+        } catch (Exception e) {
+            itemTypes = new ArrayList<>();
+        }
+
+        Integer fundId = version.getFund().getFundId();
+        String ruleCode = version.getRuleSet().getCode();
+
+        ArrOutputDefinitionVO outputDefinitionVO = factoryVo.createArrOutputDefinition(outputDefinition);
+        List<ItemGroupVO> itemGroupsVO = factoryVo.createItemGroupsNew(ruleCode, fundId, outputItems);
+        List<ItemTypeGroupVO> itemTypeGroupsVO = factoryVo.createItemTypeGroupsNew(ruleCode, fundId, itemTypes);
+        return new OutputFormDataNewVO(outputDefinitionVO, itemGroupsVO, itemTypeGroupsVO);
+    }
+
+    /**
      * Seznam AP.
      *
      * @param fulltext     fulltext podle názvu a interního čísla AS
@@ -793,9 +831,9 @@ public class ArrangementController {
         String ruleCode = version.getRuleSet().getCode();
 
         ArrNodeVO nodeVO = factoryVo.createArrNode(node);
-        List<DescItemGroupVO> descItemGroupsVO = factoryVo.createDescItemGroupsNew(ruleCode, fundId, descItems);
-        List<DescItemTypeGroupVO> descItemTypeGroupsVO = factoryVo
-                .createDescItemTypeGroupsNew(ruleCode, fundId, itemTypes);
+        List<ItemGroupVO> descItemGroupsVO = factoryVo.createItemGroupsNew(ruleCode, fundId, descItems);
+        List<ItemTypeGroupVO> descItemTypeGroupsVO = factoryVo
+                .createItemTypeGroupsNew(ruleCode, fundId, itemTypes);
         return new NodeFormDataNewVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
     }
 
@@ -1760,33 +1798,22 @@ public class ArrangementController {
     /**
      * Výstupní objekt pro získaná data pro formulář detailu uzlu.
      */
-    public static class NodeFormDataNewVO {
+    public static class NodeFormDataNewVO extends FormDataNewVO {
 
         /**
          * Uzel
          */
         private ArrNodeVO node;
 
-        /**
-         * Seznam skupin
-         */
-        private List<DescItemGroupVO> groups;
-
-        /**
-         * Seznam skupin typů hodnot archivní pomůcky
-         */
-        private List<DescItemTypeGroupVO> typeGroups;
-
         public NodeFormDataNewVO() {
 
         }
 
         public NodeFormDataNewVO(final ArrNodeVO node,
-                              final List<DescItemGroupVO> groups,
-                              final List<DescItemTypeGroupVO> typeGroups) {
+                              final List<ItemGroupVO> groups,
+                              final List<ItemTypeGroupVO> typeGroups) {
+            super(groups, typeGroups);
             this.node = node;
-            this.groups = groups;
-            this.typeGroups = typeGroups;
         }
 
         public ArrNodeVO getNode() {
@@ -1796,20 +1823,76 @@ public class ArrangementController {
         public void setNode(final ArrNodeVO node) {
             this.node = node;
         }
+    }
 
-        public List<DescItemGroupVO> getGroups() {
+    /**
+     * Výstupní objekt pro získaná data pro formulář detailu výstupu.
+     */
+    public static class OutputFormDataNewVO extends FormDataNewVO {
+
+        /**
+         * Uzel
+         */
+        private ArrOutputDefinitionVO outputDefinition;
+
+        public OutputFormDataNewVO() {
+
+        }
+
+        public OutputFormDataNewVO(final ArrOutputDefinitionVO outputDefinition,
+                                 final List<ItemGroupVO> groups,
+                                 final List<ItemTypeGroupVO> typeGroups) {
+            super(groups, typeGroups);
+            this.outputDefinition = outputDefinition;
+        }
+
+        public ArrOutputDefinitionVO getOutputDefinition() {
+            return outputDefinition;
+        }
+
+        public void setOutputDefinition(final ArrOutputDefinitionVO outputDefinition) {
+            this.outputDefinition = outputDefinition;
+        }
+    }
+
+    /**
+     * Výstupní objekt pro získaná data pro formulář detailu.
+     */
+    public static class FormDataNewVO {
+
+        /**
+         * Seznam skupin
+         */
+        private List<ItemGroupVO> groups;
+
+        /**
+         * Seznam skupin typů hodnot archivní pomůcky
+         */
+        private List<ItemTypeGroupVO> typeGroups;
+
+        public FormDataNewVO() {
+
+        }
+
+        public FormDataNewVO(final List<ItemGroupVO> groups,
+                             final List<ItemTypeGroupVO> typeGroups) {
+            this.groups = groups;
+            this.typeGroups = typeGroups;
+        }
+
+        public List<ItemGroupVO> getGroups() {
             return groups;
         }
 
-        public void setGroups(final List<DescItemGroupVO> groups) {
+        public void setGroups(final List<ItemGroupVO> groups) {
             this.groups = groups;
         }
 
-        public List<DescItemTypeGroupVO> getTypeGroups() {
+        public List<ItemTypeGroupVO> getTypeGroups() {
             return typeGroups;
         }
 
-        public void setTypeGroups(final List<DescItemTypeGroupVO> typeGroups) {
+        public void setTypeGroups(final List<ItemTypeGroupVO> typeGroups) {
             this.typeGroups = typeGroups;
         }
     }

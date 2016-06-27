@@ -774,4 +774,21 @@ public class OutputService {
                 outputItem.getOutputDefinition(), positionFrom, positionTo);
         return descItems;
     }
+
+    public ArrOutputDefinition findOutputDefinition(final Integer outputDefinitionId) {
+        return outputDefinitionRepository.findOne(outputDefinitionId);
+    }
+
+    public List<ArrOutputItem> getOutputItems(final ArrFundVersion version,
+                                              final ArrOutputDefinition outputDefinition) {
+        List<ArrOutputItem> itemList;
+
+        if (version.getLockChange() == null) {
+            itemList = outputItemRepository.findByOutputAndDeleteChangeIsNull(outputDefinition);
+        } else {
+            itemList = outputItemRepository.findByOutputAndChange(outputDefinition, version.getLockChange());
+        }
+
+        return itemService.loadData(itemList);
+    }
 }

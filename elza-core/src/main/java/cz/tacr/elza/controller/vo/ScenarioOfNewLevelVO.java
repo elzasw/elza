@@ -2,7 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 
 
 /**
@@ -15,7 +15,7 @@ public class ScenarioOfNewLevelVO {
 
     private String name;
 
-    List<DescItemGroupVO> groups;
+    List<ItemGroupVO> groups;
 
     public String getName() {
         return name;
@@ -25,11 +25,11 @@ public class ScenarioOfNewLevelVO {
         this.name = name;
     }
 
-    public List<DescItemGroupVO> getGroups() {
+    public List<ItemGroupVO> getGroups() {
         return groups;
     }
 
-    public void setGroups(final List<DescItemGroupVO> groups) {
+    public void setGroups(final List<ItemGroupVO> groups) {
         this.groups = groups;
     }
 }

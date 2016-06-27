@@ -176,6 +176,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FA_TREE_NODES = ARRANGEMENT_CONTROLLER_URL + "/fundTree/nodes";
     protected static final String NODE_PARENTS = ARRANGEMENT_CONTROLLER_URL + "/nodeParents";
     protected static final String NODE_FORM_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodes/{nodeId}/{versionId}/form";
+    protected static final String OUTPUT_FORM_DATA = ARRANGEMENT_CONTROLLER_URL + "/output/{outputDefinitionId}/{versionId}/form";
     protected static final String NODE_FORMS_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodes/{versionId}/forms";
     protected static final String NODE_FORMS_DATA_AROUND = ARRANGEMENT_CONTROLLER_URL + "/nodes/{versionId}/{nodeId}/{around}/forms";
     protected static final String NODES = ARRANGEMENT_CONTROLLER_URL + "/nodes";
@@ -1602,6 +1603,21 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParameter("nodeId", nodeId)
                 .pathParameter("versionId", versionId),
                 NODE_FORM_DATA).getBody().as(ArrangementController.NodeFormDataNewVO.class);
+    }
+
+    /**
+     * Získání dat pro formulář.
+     *
+     * @param outputDefinitionId identfikátor outputu
+     * @param versionId          id verze stromu
+     * @return formulář
+     */
+    protected ArrangementController.OutputFormDataNewVO getOutputFormData(final Integer outputDefinitionId,
+                                                                          final Integer versionId) {
+        return get(spec -> spec
+                        .pathParameter("outputDefinitionId", outputDefinitionId)
+                        .pathParameter("versionId", versionId),
+                OUTPUT_FORM_DATA).getBody().as(ArrangementController.OutputFormDataNewVO.class);
     }
 
     /**

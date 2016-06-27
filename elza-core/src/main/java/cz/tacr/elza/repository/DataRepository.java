@@ -51,6 +51,8 @@ public interface DataRepository extends JpaRepository<ArrData, Integer>, DataRep
 
     List<ArrData> findByItem(ArrItem item);
 
+    <T extends ArrItem> List<ArrData> findByItem(List<T> items);
+
     ArrData findOneByItem(ArrItem item);
 
     @Modifying

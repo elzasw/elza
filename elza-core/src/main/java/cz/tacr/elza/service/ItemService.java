@@ -147,6 +147,11 @@ public class ItemService implements InitializingBean {
         return dataList.get(0);
     }
 
+    public <T extends ArrItem> List<ArrData> getDataByItems(final List<T> items) {
+        List<ArrData> dataList = dataRepository.findByItem(items);
+        return dataList;
+    }
+
     public <T extends ArrItem> T save(final T item,
                                       final boolean createNewVersion) {
         itemRepository.save(item);
@@ -177,6 +182,20 @@ public class ItemService implements InitializingBean {
         ArrItemData itemData = facade.map(data, ArrItemData.class);
         item.setItem(itemData);
         return item;
+    }
+
+    public <T extends ArrItem> List<T> loadData(final List<T> items) {
+        List<ArrData> dataList = getDataByItems(items);
+        for (ArrData data : dataList) {
+            for (T item : items) {
+                if (item.getItemId().equals(data.getItem().getItemId())) {
+                    ArrItemData itemData = facade.map(data, ArrItemData.class);
+                    item.setItem(itemData);
+                    break;
+                }
+            }
+        }
+        return items;
     }
 
     public <T extends ArrItem> void moveDown(final List<T> items, final ArrChange change) {

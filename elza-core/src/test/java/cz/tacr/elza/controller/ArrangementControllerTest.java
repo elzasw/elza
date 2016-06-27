@@ -231,6 +231,11 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Assert.isTrue(itemUpdated instanceof ArrItemStringVO);
         Assert.isTrue(((ArrItemStringVO) itemUpdated).getValue().equals(((ArrItemStringVO) itemCreated).getValue()));
 
+        ArrangementController.OutputFormDataNewVO outputFormData = getOutputFormData(outputItem.getOutputDefinition().getId(), fundVersion.getId());
+
+        Assert.notNull(outputFormData.getOutputDefinition());
+        Assert.isTrue(outputFormData.getGroups().size() == 1);
+
         outputItem = deleteOutputItem(itemCreated, fundVersion.getId(), outputItem.getOutputDefinition().getVersion());
 
         ArrItemVO itemDeleted = outputItem.getItem();

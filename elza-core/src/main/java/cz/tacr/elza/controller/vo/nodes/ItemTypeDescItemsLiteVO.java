@@ -11,7 +11,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
  * @author Martin Šlapa
  * @since 11.2.2016
  */
-public class DescItemTypeDescItemsLiteVO {
+public class ItemTypeDescItemsLiteVO {
 
     /**
      * identifikátor
