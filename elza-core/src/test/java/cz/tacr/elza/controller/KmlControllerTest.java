@@ -24,9 +24,9 @@ import java.util.List;
  */
 public class KmlControllerTest extends AbstractControllerTest {
 
-    protected final static String IMPORT_ARR_COORDINATES = KML_CONTROLLER_URL + "/import/arrCoordinates";
+    protected final static String IMPORT_ARR_COORDINATES = KML_CONTROLLER_URL + "/import/descCoordinates";
     protected final static String IMPORT_REG_COORDINATES = KML_CONTROLLER_URL + "/import/regCoordinates";
-    protected final static String EXPORT_ARR_COORDINATES = KML_CONTROLLER_URL + "/export/arrCoordinates/{fundVersionId}/{descItemObjectId}";
+    protected final static String EXPORT_ARR_COORDINATES = KML_CONTROLLER_URL + "/export/descCoordinates/{fundVersionId}/{descItemObjectId}";
     protected final static String EXPORT_REG_COORDINATES = KML_CONTROLLER_URL + "/export/regCoordinates/{regCoordinatesId}";
 
     protected final static String ALL = "coordinates/all.kml";

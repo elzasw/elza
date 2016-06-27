@@ -27,7 +27,7 @@ class UrlFactory {
     }
 
     static exportArrCoordinate(objectId, versionId) {
-        return window.location.origin + '/api/kmlManagerV1/export/arrCoordinates/' + versionId + '/' + objectId;
+        return window.location.origin + '/api/kmlManagerV1/export/descCoordinates/' + versionId + '/' + objectId;
     }
 
     static exportArrDescItemCsvExport(objectId, versionId) {
@@ -720,7 +720,7 @@ class WebApi{
     }
 
     arrCoordinatesImport(data) {
-        return AjaxUtils.ajaxCallRaw('/api/kmlManagerV1/import/arrCoordinates', {}, "POST", data);
+        return AjaxUtils.ajaxCallRaw('/api/kmlManagerV1/import/descCoordinates', {}, "POST", data);
     }
     regCoordinatesImport(data) {
         return AjaxUtils.ajaxCallRaw('/api/kmlManagerV1/import/regCoordinates', {}, "POST", data);

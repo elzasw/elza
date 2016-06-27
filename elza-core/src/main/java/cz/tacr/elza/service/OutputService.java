@@ -11,9 +11,11 @@ import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
@@ -34,6 +36,8 @@ import org.springframework.util.Assert;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -76,6 +80,9 @@ public class OutputService {
 
     @Autowired
     private EventNotificationService eventNotificationService;
+
+    @Autowired
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
@@ -806,5 +813,78 @@ public class OutputService {
 
     public ArrOutputDefinition getOutputDefinition(final Integer outputDefinitionId) {
         return outputDefinitionRepository.findOne(outputDefinitionId);
+    }
+
+    public List<ArrOutputItem> createOutputItems(final List<ArrOutputItem> outputItems,
+                                                 final Integer outputDefinitionId,
+                                                 final Integer outputDefinitionVersion,
+                                                 final Integer fundVersionId) {
+        Assert.notNull(outputItems);
+        Assert.notEmpty(outputItems);
+        Assert.notNull(outputDefinitionId);
+        Assert.notNull(outputDefinitionVersion);
+        Assert.notNull(fundVersionId);
+
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+
+        ArrOutputDefinition outputDefinition = findOutputDefinition(outputDefinitionId);
+        Assert.notNull(outputDefinition);
+
+        // uložení uzlu (kontrola optimistických zámků)
+        outputDefinition.setVersion(outputDefinitionVersion);
+        saveOutputDefinition(outputDefinition);
+
+        return createOutputItems(outputItems, outputDefinition, version, null);
+    }
+
+    public List<ArrOutputItem> createOutputItems(final List<ArrOutputItem> outputItems,
+                                                    final ArrOutputDefinition outputDefinition,
+                                                    final ArrFundVersion version,
+                                                    @Nullable final ArrChange createChange) {
+
+        ArrChange change = createChange == null ? arrangementService.createChange() : createChange;
+        List<ArrOutputItem> createdItems = new ArrayList<>();
+        for (ArrOutputItem outputItem :
+                outputItems) {
+            outputItem.setOutputDefinition(outputDefinition);
+            outputItem.setCreateChange(change);
+            outputItem.setDeleteChange(null);
+            outputItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+
+            ArrOutputItem created = createOutputItem(outputItem, version, change);
+            createdItems.add(created);
+
+            // sockety
+            publishChangeOutputItem(version, created);
+        }
+
+        return createdItems;
+    }
+
+    public ArrOutputDefinition deleteOutputItemsByTypeWithoutVersion(final Integer fundVersionId,
+                                                                     final Integer outputDefinitionId,
+                                                                     final Integer outputDefinitionVersion,
+                                                                     final Integer descItemTypeId) {
+        ArrChange change = arrangementService.createChange();
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
+
+        Assert.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
+        Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");
+
+        ArrOutputDefinition outputDefinition = findOutputDefinition(outputDefinitionId);
+
+        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(descItemType, outputDefinition);
+
+        if (outputItems.size() == 0) {
+            throw new IllegalStateException("Nebyla nalezena žádná hodnota atributu ke smazání");
+        }
+
+        List<ArrOutputItem> outputItemsDeleted = new ArrayList<>(outputItems.size());
+        for (ArrOutputItem outputItem : outputItems) {
+            outputItemsDeleted.add(deleteOutputItem(outputItem, fundVersion, change, false));
+        }
+
+        return outputDefinition;
     }
 }

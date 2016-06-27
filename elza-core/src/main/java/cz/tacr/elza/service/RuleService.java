@@ -6,11 +6,33 @@ import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.repository.DefaultItemTypeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.utils.ObjectListIterator;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 import org.apache.commons.collections4.CollectionUtils;
@@ -22,7 +44,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.persistence.EntityManager;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -523,6 +555,34 @@ public class RuleService {
         }
 
         return result;
+    }
+
+    /**
+     * Získání rozšířených typů hodnot atributů se specifikacemi.
+     * Používá výchozí strategie
+     *
+     * @param fundVersionId      identifikátor verze archivní pomůcky
+     * @param outputDefinitionId identifikátor výstupu
+     * @return seznam typů hodnot atributů se specifikacemi
+     */
+    public List<RulItemTypeExt> getOutputItemTypes(final Integer fundVersionId,
+                                                   final Integer outputDefinitionId) {
+        Assert.notNull(fundVersionId);
+        Assert.notNull(outputDefinitionId);
+
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+
+        if (version == null) {
+            throw new IllegalArgumentException("Verze archivni pomucky neexistuje");
+        }
+
+        ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
+
+        if (outputDefinition == null) {
+            throw new IllegalArgumentException("Výstup neexistuje");
+        }
+
+        return getOutputItemTypes(outputDefinition, version);
     }
 
     public List<RulItemTypeExt> getOutputItemTypes(final ArrOutputDefinition outputDefinition, final ArrFundVersion fundVersion) {
