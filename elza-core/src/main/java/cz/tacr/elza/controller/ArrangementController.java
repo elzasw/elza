@@ -634,10 +634,9 @@ public class ArrangementController {
 
         List<ArrOutputItem> outputItems = outputService.getOutputItems(version, outputDefinition);
 
-        List<RulItemTypeExt> itemTypes = new ArrayList<>();
+        List<RulItemTypeExt> itemTypes;
         try {
-            // TODO: dopsat pravidla
-            //itemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
+            itemTypes = ruleService.getOutputItemTypes(outputDefinition, version);
         } catch (Exception e) {
             itemTypes = new ArrayList<>();
         }

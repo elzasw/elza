@@ -803,4 +803,8 @@ public class OutputService {
                 new EventChangeOutputItem(EventType.OUTPUT_ITEM_CHANGE, version.getFundVersionId(),
                         outputItem.getDescItemObjectId(), outputItem.getOutputDefinition().getOutputDefinitionId(), outputItem.getOutputDefinition().getVersion()));
     }
+
+    public ArrOutputDefinition getOutputDefinition(final Integer outputDefinitionId) {
+        return outputDefinitionRepository.findOne(outputDefinitionId);
+    }
 }

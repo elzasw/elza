@@ -9,6 +9,8 @@ import java.util.Set;
 
 import cz.tacr.elza.domain.ArrFundVersion;
 
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +46,9 @@ public class RulesExecutor implements InitializingBean {
     private DescItemTypesRules descItemTypesRules;
 
     @Autowired
+    private OutputItemTypesRules outputItemTypesRules;
+
+    @Autowired
     private ChangeImpactRules impactOfChangesLevelStateRules;
 
     @Autowired
@@ -76,6 +81,27 @@ public class RulesExecutor implements InitializingBean {
         try {
             return descItemTypesRules
                     .execute(level, version, rulDescItemTypeExtList);
+        } catch (NoSuchFileException e) {
+            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
+            return rulDescItemTypeExtList;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Spustí pravidla nad typy atributů a jejich specifikacema.
+     *
+     * @param outputDefinition       definice výstupu
+     * @param rulDescItemTypeExtList seznam všech atributů
+     * @param version                verze AP
+     * @return seznam typů atributů odpovídající pravidlům
+     */
+    public List<RulItemTypeExt> executeOutputItemTypesRules(final ArrOutputDefinition outputDefinition,
+                                                          final List<RulItemTypeExt> rulDescItemTypeExtList,
+                                                          final ArrFundVersion version) {
+        try {
+            return outputItemTypesRules.execute(outputDefinition, version, rulDescItemTypeExtList);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return rulDescItemTypeExtList;

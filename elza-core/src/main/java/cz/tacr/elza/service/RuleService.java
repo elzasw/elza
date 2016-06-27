@@ -72,6 +72,9 @@ public class RuleService {
     @Autowired
     private PolicyService policyService;
 
+    @Autowired
+    private OutputService outputService;
+
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
     /**
@@ -522,4 +525,8 @@ public class RuleService {
         return result;
     }
 
+    public List<RulItemTypeExt> getOutputItemTypes(final ArrOutputDefinition outputDefinition, final ArrFundVersion fundVersion) {
+        List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes();
+        return rulesExecutor.executeOutputItemTypesRules(outputDefinition, rulDescItemTypeExtList, fundVersion);
+    }
 }
