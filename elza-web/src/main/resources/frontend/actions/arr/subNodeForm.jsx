@@ -111,8 +111,7 @@ class ItemFormActions {
     }
 
     /**
-     * Načtení server dat pro formulář node pro aktuálně předané parametry s využitím cache - pokud jsou data v cache, použije je, jinak si vyžádá nová data a zajistí i nakešování okolí.
-     * Odpovídá volání WebApi.getFundNodeForm, jen dále zajišťuje cache.
+     * Načtení server dat pro formulář pro aktuálně předané parametry.
      * @param {Object} getState odkaz na funkci pro načtení store
      * @param {Object} dispatch odkaz na funkci dispatch
      * @param {int} versionId verze AS
@@ -120,74 +119,8 @@ class ItemFormActions {
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @return {Object} promise pro vrácení nových dat
      */
-    _getNodeForm(getState, dispatch, versionId, nodeId, routingKey) {
-        const type = getRoutingKeyType(routingKey)
-        switch (type) {
-            case 'NODE':    // podpora kešování
-                var state = getState()
-                var node = this._getNodeStore(state, versionId, routingKey);
-                if (node === null) return   // nemělo by nastat
-
-                const subNodeFormCache = node.subNodeFormCache
-
-                var data = subNodeFormCache.dataCache[nodeId]
-                if (!data) {    // není v cache, načteme ji včetně okolí
-                    // ##
-                    // # Data pro cache, jen pokud již cache nenačítá
-                    // ##
-                    if (!subNodeFormCache.isFetching) {
-                        if (node.isNodeInfoFetching || !node.nodeInfoFetched || node.nodeInfoDirty) {   // nemáme platné okolí (okolní NODE) pro daný NODE, raději je načteme ze serveru; nemáme vlastně okolní NODE pro získání seznamu ID pro načtení formulářů pro cache
-                            //console.log('### READ_CACHE', 'around')
-
-                            dispatch(this._fundSubNodeFormCacheRequest(versionId, routingKey))
-                            WebApi.getFundNodeFormsWithAround(versionId, nodeId, CACHE_SIZE2)
-                                .then(json => {
-                                    dispatch(this._fundSubNodeFormCacheResponse(versionId, routingKey, json.forms))
-                                })
-                        } else {    // pro získání id okolí můžeme použít store
-                            // Načtení okolí položky
-                            var index = indexById(node.childNodes, nodeId)
-                            var left = node.childNodes.slice(Math.max(index - CACHE_SIZE2, 0), index)
-                            var right = node.childNodes.slice(index, index + CACHE_SIZE2)
-
-                            var idsForFetch = []
-                            left.forEach(n => {
-                                if (!subNodeFormCache.dataCache[n.id]) {
-                                    idsForFetch.push(n.id)
-                                }
-                            })
-                            right.forEach(n => {
-                                if (!subNodeFormCache.dataCache[n.id]) {
-                                    idsForFetch.push(n.id)
-                                }
-                            })
-
-                            //console.log('### READ_CACHE', idsForFetch, node.childNodes, left, right)
-
-                            if (idsForFetch.length > 0) {   // máme něco pro načtení
-                                dispatch(this._fundSubNodeFormCacheRequest(versionId, routingKey))
-                                WebApi.getFundNodeForms(versionId, idsForFetch)
-                                    .then(json => {
-                                        dispatch(this._fundSubNodeFormCacheResponse(versionId, routingKey, json.forms))
-                                    })
-                            }
-                        }
-                    }
-
-                    // ##
-                    // # Data požadovaného formuláře
-                    // ##
-                    return WebApi.getFundNodeForm(versionId, nodeId)
-                } else {    // je v cache, vrátíme ji
-                    //console.log('### USE_CACHE')
-                    return new Promise(function (resolve, reject) {
-                        resolve(data)
-                    })
-                }
-            case 'DATA_GRID':   // není podpora kešování
-                return WebApi.getFundNodeForm(versionId, nodeId)
-        }
-    }
+    // @Abstract
+    _getItemFormData(getState, dispatch, versionId, nodeId, routingKey) {}
 
     /**
      * Bylo zahájeno nové načítání dat.
@@ -220,49 +153,24 @@ class ItemFormActions {
     }
 
     /**
-     * Načtení subNodeForm store.
+     * Načtení itemForm store podle předaných parametrů.
      * @param {Object} state globální store
      * @param {int} versionId verze AS
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @return subNodeForm store
      */
-    _getSubNodeFormStore(state, versionId, routingKey) {
-        const type = getRoutingKeyType(routingKey)
-        switch (type) {
-            case 'NODE':
-                var node = this._getNodeStore(state, versionId, routingKey)
-                if (node !== null) {
-                    return node.subNodeForm
-                } else {
-                    return null
-                }
-            case 'DATA_GRID':
-                var fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
-                if (fundIndex !== null) {
-                    return state.arrRegion.funds[fundIndex].fundDataGrid.subNodeForm
-                } else {
-                    return null
-                }
-        }
-
-        return null;
-    }
+    // @Abstract
+    _getItemFormStore(state, versionId, routingKey) {}
 
     /**
-     * Načtení node store pro předaná data.
+     * Načtení store nadřazeného objektu, např. NODE v pořádání nebo OUTPUT.
      * @param {Object} state globální store
      * @param {int} versionId verze AS
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
-     * @return node store
+     * @return store
      */
-    _getNodeStore(state, versionId, routingKey) {
-        var r = findByRoutingKeyInGlobalState(state, versionId, routingKey);
-        if (r != null) {
-            return r.node;
-        }
-
-        return null;
-    }
+    // @Abstract
+    _getParentObjStore(state, versionId, routingKey) {}
 
     /**
      * Nové načtení dat.
@@ -273,16 +181,24 @@ class ItemFormActions {
     _fundSubNodeFormFetch(versionId, nodeId, routingKey) {
         return (dispatch, getState) => {
             dispatch(this.fundSubNodeFormRequest(versionId, nodeId, routingKey))
-            this._getNodeForm(getState, dispatch, versionId, nodeId, routingKey)
+            this._getItemFormData(getState, dispatch, versionId, nodeId, routingKey)
                 .then(json => {
                     var state = getState()
-                    var subNodeForm = this._getSubNodeFormStore(state, versionId, routingKey);
+                    var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
                     if (subNodeForm.fetchingId == nodeId) {
                         dispatch(this.fundSubNodeFormReceive(versionId, nodeId, routingKey, json, state.refTables.rulDataTypes, state.refTables.descItemTypes))
                     }
                 })
         }
     }
+
+    /** Metoda pro volání API. */
+    // @Abstract
+    _callUpdateDescItem(versionId, parentVersionId, descItem) {}
+
+    /** Metoda pro volání API. */
+    // @Abstract
+    _callCreateDescItem(versionId, parentId, parentVersionId, descItemTypeId, descItem) {}
 
     /**
      * Odeslání hodnoty atributu na server - buď vytvoření nebo aktualizace.
@@ -294,19 +210,19 @@ class ItemFormActions {
      */
     _formValueStore(dispatch, getState, versionId, routingKey, valueLocation) {
         var state = getState();
-        var subNodeForm = this._getSubNodeFormStore(state, versionId, routingKey);
+        var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
         var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
         var refType = subNodeForm.refTypesMap[loc.descItemType.id]
 
         if (this.descItemNeedStore(loc.descItem, refType)) {
             if (typeof loc.descItem.id !== 'undefined') {
-                WebApi.updateDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
+                this._callUpdateDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
                     })
             } else {
-                WebApi.createDescItem(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, loc.descItemType.id, loc.descItem)
+                this._callCreateDescItem(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, loc.descItemType.id, loc.descItem)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'));
                     })
@@ -330,6 +246,10 @@ class ItemFormActions {
         }
     }
 
+    /** Metoda pro volání API. */
+    // @Abstract
+    _callArrCoordinatesImport(versionId, parentId, parentVersionId, descItemTypeId, file) {}
+    
     /**
      * Akce přidání coordinates jako DescItem - Probíhá uploadem - doplnění hodnot pomocí WS
      * @param {int} versionId verze AS
@@ -340,21 +260,19 @@ class ItemFormActions {
     fundSubNodeFormValueUploadCoordinates(versionId, routingKey, descItemTypeId, file) {
         return (dispatch, getState) => {
             var state = getState();
-            var subNodeForm = this._getSubNodeFormStore(state, versionId, routingKey);
-
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('fundVersionId', versionId);
-            formData.append('descItemTypeId', descItemTypeId);
-            formData.append('nodeId', subNodeForm.data.node.id);
-            formData.append('nodeVersion', subNodeForm.data.node.version);
-            WebApi.arrCoordinatesImport(formData).then(() => {
-                dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successCoordinates')));
-            }).catch(() => {
-                dispatch(addToastrDanger(i18n('import.toast.error'), i18n('import.toast.errorCoordinates')));
-            });
+            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+            this._callArrCoordinatesImport(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, descItemTypeId, file)
+                .then(() => {
+                    dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successCoordinates')));
+                }).catch(() => {
+                    dispatch(addToastrDanger(i18n('import.toast.error'), i18n('import.toast.errorCoordinates')));
+                });
         }
     }
+
+    /** Metoda pro volání API. */
+    // @Abstract
+    _callDescItemCsvImport(versionId, parentId, parentVersionId, descItemTypeId, file) {}
 
     /**
      * Akce přidání csv jako DescItem - Probíhá uploadem.
@@ -366,9 +284,9 @@ class ItemFormActions {
     fundSubNodeFormValueUploadCsv(versionId, routingKey, descItemTypeId, file) {
         return (dispatch, getState) => {
             var state = getState();
-            var subNodeForm = this._getSubNodeFormStore(state, versionId, routingKey);
+            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
 
-            WebApi.descItemCsvImport(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, descItemTypeId, file).then(() => {
+            this._callDescItemCsvImport(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, descItemTypeId, file).then(() => {
                 dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successJsonTable')));
             }).catch(() => {
                 dispatch(addToastrDanger(i18n('import.toast.error'), i18n('import.toast.errorJsonTable')));
@@ -385,7 +303,7 @@ class ItemFormActions {
     fundSubNodeFormValueValidate(versionId, routingKey, valueLocation) {
         return (dispatch, getState) => {
             var state = getState();
-            var subNodeForm = this._getSubNodeFormStore(state, versionId, routingKey);
+            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
             var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
             WebApi.validateUnitdate(loc.descItem.value)
@@ -431,7 +349,7 @@ class ItemFormActions {
     fundSubNodeFormValueChangePosition(versionId, routingKey, valueLocation, index) {
         return (dispatch, getState) => {
             var state = getState();
-            var subNodeForm = this._getSubNodeFormStore(state, versionId, routingKey);
+            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
             var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
             if (!loc.descItem.error.hasError && typeof loc.descItem.id !== 'undefined') {
@@ -446,31 +364,12 @@ class ItemFormActions {
 
                 var descItem = {...loc.descItem, position: index + 1}
 
-                WebApi.updateDescItem(versionId, subNodeForm.data.node.version, descItem)
+                this._callUpdateDescItem(versionId, subNodeForm.data.node.version, descItem)
                     .then(json => {
                         let newValueLocation = {...valueLocation, descItemIndex: index}
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, newValueLocation, json, 'UPDATE'));
                     })
             }
-        }
-    }
-
-    /**
-     * Akce kopírování hodnot konkrétního atributu z předcházející JP.
-     * @param {int} versionId verze AS
-     * @param {int} nodeId id node záložky, které se to týká
-     * @param {int} nodeVersionId verze node
-     * @param {int} descItemTypeId id atribtu
-     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
-     * @param {Object} valueLocation konkrétní umístění
-     */
-    fundSubNodeFormValuesCopyFromPrev(versionId, nodeId, nodeVersionId, descItemTypeId, routingKey, valueLocation) {
-        return (dispatch, getState) => {
-            dispatch(this._fundSubNodeFormDescItemTypeDeleteInStore(versionId, routingKey, valueLocation, true));
-            WebApi.copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId)
-                .then(json => {
-                    dispatch(this.fundSubNodeFormDescItemTypeCopyFromPrevResponse(versionId, routingKey, valueLocation, json));
-                })
         }
     }
 
@@ -589,6 +488,10 @@ class ItemFormActions {
         }
     }
 
+    /** Metoda pro volání API. */
+    // @Abstract
+    _callDeleteDescItem(versionId, parentVersionId, descItem) {}
+
     /**
      * Smazání hodnoty atributu.
      * @param {int} versionId verze AS
@@ -598,7 +501,7 @@ class ItemFormActions {
     fundSubNodeFormValueDelete(versionId, routingKey, valueLocation) {
         return (dispatch, getState) => {
             var state = getState();
-            var subNodeForm = this._getSubNodeFormStore(state, versionId, routingKey);
+            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
             var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
             dispatch({
@@ -610,7 +513,7 @@ class ItemFormActions {
             })
 
             if (typeof loc.descItem.id !== 'undefined') {
-                WebApi.deleteDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
+                this._callDeleteDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE'));
                     })
@@ -621,7 +524,7 @@ class ItemFormActions {
     fundSubNodeFormHandleClose(versionId, routingKey) {
         return (dispatch, getState) => {
             var state = getState()
-            var subNodeForm = this._getSubNodeFormStore(state, versionId, routingKey);
+            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
             const valueLocation = getFocusDescItemLocation(subNodeForm)
             if (valueLocation !== null) {
                 dispatch(this.fundSubNodeFormValueBlur(versionId, routingKey, valueLocation))
@@ -646,10 +549,14 @@ class ItemFormActions {
             })
 
             var state = getState()
-            var subNodeForm = this._getSubNodeFormStore(state, versionId, routingKey);
+            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
             dispatch(setFocus('arr', 2, 'subNodeForm', {descItemTypeId: descItemTypeId, descItemObjectId: null}))
         }
     }
+
+    /** Metoda pro volání API. */
+    // @Abstract
+    _callDeleteDescItemType(versionId, parentId, parentVersionId, descItemTypeId) {}
 
     /**
      * Smazání atributu.
@@ -660,7 +567,7 @@ class ItemFormActions {
     fundSubNodeFormDescItemTypeDelete(versionId, routingKey, valueLocation) {
         return (dispatch, getState) => {
             var state = getState();
-            var subNodeForm = this._getSubNodeFormStore(state, versionId, routingKey);
+            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
             var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
             var hasDescItemsForDelete = false;
@@ -673,7 +580,7 @@ class ItemFormActions {
             dispatch(this._fundSubNodeFormDescItemTypeDeleteInStore(versionId, routingKey, valueLocation, false));
 
             if (hasDescItemsForDelete) {
-                WebApi.deleteDescItemType(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, loc.descItemType.id)
+                this._callDeleteDescItemType(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, loc.descItemType.id)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
                     })
@@ -715,6 +622,9 @@ class ItemFormActions {
         }
     }
 
+    // @Abstract
+    _getParentObjIdInfo(parentObjStore, routingKey) {}
+
     /**
      * Vyžádání dat - aby byla ve store k dispozici.
      * @param {int} versionId verze AS
@@ -724,29 +634,12 @@ class ItemFormActions {
         return (dispatch, getState) => {
             var state = getState();
 
-            const type = getRoutingKeyType(routingKey)
-            switch (type) {
-                case 'NODE':
-                    var node = this._getNodeStore(state, versionId, routingKey)
-                    if (node !== null) {
-                        const subNodeForm = node.subNodeForm
-                        if ((!subNodeForm.fetched || subNodeForm.dirty) && !subNodeForm.isFetching) {
-                            dispatch(this._fundSubNodeFormFetch(versionId, node.selectedSubNodeId, routingKey));
-                        }
-                    }
-                    break
-                case 'DATA_GRID':
-                    var fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
-                    if (fundIndex !== null) {
-                        const fundDataGrid = state.arrRegion.funds[fundIndex].fundDataGrid
-                        const subNodeForm = fundDataGrid.subNodeForm
-                        if ((!subNodeForm.fetched || subNodeForm.dirty) && !subNodeForm.isFetching) {
-                            dispatch(this._fundSubNodeFormFetch(versionId, fundDataGrid.nodeId, routingKey));
-                        }
-                    }
-                    break
+            const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+            const parentObjStore = this._getParentObjStore(state, versionId, routingKey);
+            if ((!subNodeForm.fetched || subNodeForm.dirty) && !subNodeForm.isFetching) {
+                const parentObjIdInfo = this._getParentObjIdInfo(parentObjStore, routingKey);
+                dispatch(this._fundSubNodeFormFetch(versionId, parentObjIdInfo.parentId, routingKey));
             }
-
         }
     }
 
@@ -795,12 +688,253 @@ class NodeFormActions extends ItemFormActions {
         super("NODE");
     }
 
+    /**
+     * Akce kopírování hodnot konkrétního atributu z předcházející JP.
+     * @param {int} versionId verze AS
+     * @param {int} nodeId id node záložky, které se to týká
+     * @param {int} nodeVersionId verze node
+     * @param {int} descItemTypeId id atribtu
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
+     * @param {Object} valueLocation konkrétní umístění
+     */
+    fundSubNodeFormValuesCopyFromPrev(versionId, nodeId, nodeVersionId, descItemTypeId, routingKey, valueLocation) {
+        return (dispatch, getState) => {
+            dispatch(this._fundSubNodeFormDescItemTypeDeleteInStore(versionId, routingKey, valueLocation, true));
+            WebApi.copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId)
+                .then(json => {
+                    dispatch(this.fundSubNodeFormDescItemTypeCopyFromPrevResponse(versionId, routingKey, valueLocation, json));
+                })
+        }
+    }
+
+    /**
+     * Načtení server dat pro formulář pro aktuálně předané parametry s využitím cache - pokud jsou data v cache, použije je, jinak si vyžádá nová data a zajistí i nakešování okolí.
+     * Odpovídá volání WebApi.getFundNodeForm, jen dále zajišťuje cache.
+     */
+    //@Override
+    _getItemFormData(getState, dispatch, versionId, nodeId, routingKey) {
+        const type = getRoutingKeyType(routingKey)
+        switch (type) {
+            case 'NODE':    // podpora kešování
+                var state = getState()
+                var node = this._getParentObjStore(state, versionId, routingKey);
+                if (node === null) return   // nemělo by nastat
+
+                const subNodeFormCache = node.subNodeFormCache
+
+                var data = subNodeFormCache.dataCache[nodeId]
+                if (!data) {    // není v cache, načteme ji včetně okolí
+                    // ##
+                    // # Data pro cache, jen pokud již cache nenačítá
+                    // ##
+                    if (!subNodeFormCache.isFetching) {
+                        if (node.isNodeInfoFetching || !node.nodeInfoFetched || node.nodeInfoDirty) {   // nemáme platné okolí (okolní NODE) pro daný NODE, raději je načteme ze serveru; nemáme vlastně okolní NODE pro získání seznamu ID pro načtení formulářů pro cache
+                            //console.log('### READ_CACHE', 'around')
+
+                            dispatch(this._fundSubNodeFormCacheRequest(versionId, routingKey))
+                            WebApi.getFundNodeFormsWithAround(versionId, nodeId, CACHE_SIZE2)
+                                .then(json => {
+                                    dispatch(this._fundSubNodeFormCacheResponse(versionId, routingKey, json.forms))
+                                })
+                        } else {    // pro získání id okolí můžeme použít store
+                            // Načtení okolí položky
+                            var index = indexById(node.childNodes, nodeId)
+                            var left = node.childNodes.slice(Math.max(index - CACHE_SIZE2, 0), index)
+                            var right = node.childNodes.slice(index, index + CACHE_SIZE2)
+
+                            var idsForFetch = []
+                            left.forEach(n => {
+                                if (!subNodeFormCache.dataCache[n.id]) {
+                                    idsForFetch.push(n.id)
+                                }
+                            })
+                            right.forEach(n => {
+                                if (!subNodeFormCache.dataCache[n.id]) {
+                                    idsForFetch.push(n.id)
+                                }
+                            })
+
+                            //console.log('### READ_CACHE', idsForFetch, node.childNodes, left, right)
+
+                            if (idsForFetch.length > 0) {   // máme něco pro načtení
+                                dispatch(this._fundSubNodeFormCacheRequest(versionId, routingKey))
+                                WebApi.getFundNodeForms(versionId, idsForFetch)
+                                    .then(json => {
+                                        dispatch(this._fundSubNodeFormCacheResponse(versionId, routingKey, json.forms))
+                                    })
+                            }
+                        }
+                    }
+
+                    // ##
+                    // # Data požadovaného formuláře
+                    // ##
+                    return WebApi.getFundNodeForm(versionId, nodeId)
+                } else {    // je v cache, vrátíme ji
+                    //console.log('### USE_CACHE')
+                    return new Promise(function (resolve, reject) {
+                        resolve(data)
+                    })
+                }
+            case 'DATA_GRID':   // není podpora kešování
+                return WebApi.getFundNodeForm(versionId, nodeId)
+        }
+    }
+
+    // @Override
+    _getItemFormStore(state, versionId, routingKey) {
+        const type = getRoutingKeyType(routingKey)
+        switch (type) {
+            case 'NODE':
+                var node = this._getParentObjStore(state, versionId, routingKey)
+                if (node !== null) {
+                    return node.subNodeForm
+                } else {
+                    return null
+                }
+            case 'DATA_GRID':
+                var fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+                if (fundIndex !== null) {
+                    return state.arrRegion.funds[fundIndex].fundDataGrid.subNodeForm
+                } else {
+                    return null
+                }
+        }
+
+        return null;
+    }
+
+    // @Override
+    _getParentObjStore(state, versionId, routingKey) {
+        const type = getRoutingKeyType(routingKey)
+        switch (type) {
+            case 'NODE':
+                var r = findByRoutingKeyInGlobalState(state, versionId, routingKey);
+                if (r != null) {
+                    return r.node;
+                }
+                break
+            case 'DATA_GRID':
+                var fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+                if (fundIndex !== null) {
+                    const fundDataGrid = state.arrRegion.funds[fundIndex].fundDataGrid
+                    return fundDataGrid;
+                }
+                break
+        }
+
+        return null;
+    }
+
+    // @Override
+    _callUpdateDescItem(versionId, parentVersionId, descItem) {
+        return WebApi.updateDescItem(versionId, parentVersionId, descItem);
+    }
+
+    // @Override
+    _callDeleteDescItem(versionId, parentVersionId, descItem) {
+        return WebApi.deleteDescItem(versionId, parentVersionId, descItem);
+    }
+
+    // @Override
+    _callCreateDescItem(versionId, parentId, parentVersionId, descItemTypeId, descItem) {
+        return WebApi.createDescItem(versionId, parentId, parentVersionId, descItemTypeId, descItem);
+    }
+
+    // @Override
+    _callArrCoordinatesImport(versionId, parentId, parentVersionId, descItemTypeId, file) {
+        return WebApi.arrCoordinatesImport(versionId, parentId, parentVersionId, descItemTypeId, file);
+    }
+
+    // @Override
+    _callDescItemCsvImport(versionId, parentId, parentVersionId, descItemTypeId, file) {
+        return WebApi.descItemCsvImport(versionId, parentId, parentVersionId, descItemTypeId, file);
+    }
+
+    // @Override
+    _callDeleteDescItemType(versionId, parentId, parentVersionId, descItemTypeId) {
+        return WebApi.deleteDescItemType(versionId, parentId, parentVersionId, descItemTypeId);
+    }
+
+    // @Override
+    _getParentObjIdInfo(parentObjStore, routingKey) {
+        const type = getRoutingKeyType(routingKey)
+        switch (type) {
+            case 'NODE':
+                return { parentId: parentObjStore.selectedSubNodeId, parentVersion: parentObjStore.subNodeForm.versionId };
+            case 'DATA_GRID':
+                return { parentId: parentObjStore.nodeId, parentVersion: parentObjStore.subNodeForm.versionId };
+        }
+    }
 }
+
 class OutputFormActions extends ItemFormActions {
     constructor() {
         super("OUTPUT");
     }
 
+    /** Načtení server dat pro formulář pro aktuálně předané parametry BEZ využití cache. */
+    //@Override
+    _getItemFormData(getState, dispatch, versionId, nodeId, routingKey) {
+        // není podpora kešování
+        return WebApi.getOutputNodeForm(versionId, nodeId)
+    }
+
+    // @Override
+    _getItemFormStore(state, versionId, routingKey) {
+        var fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+        if (fundIndex !== null) {
+            return state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm
+        } else {
+            return null
+        }
+    }
+
+    // @Override
+    _getParentObjStore(state, versionId, routingKey) {
+        var fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+        if (fundIndex != null) {
+            const fund = state.arrRegion.funds[fundIndex];
+            return fund.fundOutput.fundOutputDetail;
+        } else {
+            return null;
+        }
+    }
+
+    // @Override
+    _callUpdateDescItem(versionId, parentVersionId, descItem) {
+        return WebApi.updateOutputItem(versionId, parentVersionId, descItem);
+    }
+
+    // @Override
+    _callDeleteDescItem(versionId, parentVersionId, descItem) {
+        return WebApi.deleteOutputItem(versionId, parentVersionId, descItem);
+    }
+
+    // @Override
+    _callCreateDescItem(versionId, parentId, nodeVersionId, descItemTypeId, descItem) {
+        return WebApi.createOutputItem(versionId, parentId, nodeVersionId, descItemTypeId, descItem);
+    }
+
+    // @Override
+    _callArrCoordinatesImport(versionId, parentId, parentVersionId, descItemTypeId, file) {
+        return WebApi.arrOutputCoordinatesImport(versionId, parentId, parentVersionId, descItemTypeId, file);
+    }
+
+    // @Override
+    _callDescItemCsvImport(versionId, parentId, parentVersionId, descItemTypeId, file) {
+        return WebApi.descOutputItemCsvImport(versionId, parentId, parentVersionId, descItemTypeId, file);
+    }
+
+    // @Override
+    _callDeleteDescItemType(versionId, parentId, parentVersionId, descItemTypeId) {
+        return WebApi.deleteOutputItemType(versionId, parentId, parentVersionId, descItemTypeId);
+    }
+
+// @Override
+    _getParentObjIdInfo(parentObjStore, routingKey) {
+        return { parentId: parentObjStore.outputDefinition.id, parentVersion: parentObjStore.outputDefinition.version };
+    }
 }
 
 module.exports = {

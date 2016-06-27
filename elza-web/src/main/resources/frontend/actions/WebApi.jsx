@@ -192,17 +192,33 @@ class WebApi{
     createDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem) {
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeId + "/" + nodeVersionId + "/" + descItemTypeId + "/create", null,  descItem);
     }
+    
+    createOutputItem(versionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, descItem) {
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/outputItems/' + versionId + "/" + outputDefinitionId + "/" + outputDefinitionVersion + "/" + descItemTypeId + "/create", null,  descItem);
+    }
 
     updateDescItem(versionId, nodeVersionId, descItem) {
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeVersionId + "/update/true", null,  descItem);
+    }
+
+    updateOutputItem(versionId, outputDefinitionVersion, descItem) {
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/outputItems/' + versionId + "/" + outputDefinitionVersion + "/update/true", null,  descItem);
     }
     
     deleteDescItem(versionId, nodeVersionId, descItem) {
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeVersionId + "/delete", null,  descItem);
     }
 
+    deleteOutputItem(versionId, outputDefinitionVersion, descItem) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/outputItems/' + versionId + "/" + outputDefinitionVersion + "/delete", null,  descItem);
+    }
+
     deleteDescItemType(versionId, nodeId, nodeVersionId, descItemTypeId) {
         return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeId + "/" + nodeVersionId + "/" + descItemTypeId, null, null);
+    }
+    
+    deleteOutputItemType(versionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId) {
+        return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/outputItems/' + versionId + "/" + outputDefinitionId + "/" + outputDefinitionVersion + "/" + descItemTypeId, null, null);
     }
 
     addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName) {
@@ -707,9 +723,28 @@ class WebApi{
         return AjaxUtils.ajaxCallRaw('/api/xmlImportManagerV2/import', {}, "POST", data);
     }
 
-    arrCoordinatesImport(data) {
-        return AjaxUtils.ajaxCallRaw('/api/kmlManagerV1/import/arrCoordinates', {}, "POST", data);
+    arrCoordinatesImport(versionId, nodeId, nodeVersionId, descItemTypeId, file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('fundVersionId', versionId);
+        formData.append('descItemTypeId', descItemTypeId);
+        formData.append('nodeId', nodeId);
+        formData.append('nodeVersion', nodeVersionId);
+
+        return AjaxUtils.ajaxCallRaw('/api/kmlManagerV1/import/arrCoordinates', {}, "POST", formData);
     }
+
+    arrOutputCoordinatesImport(versionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('fundVersionId', versionId);
+        formData.append('descItemTypeId', descItemTypeId);
+        formData.append('outputDefinitionId', outputDefinitionId);
+        formData.append('outputDefinitionVersion', outputDefinitionVersion);
+
+        return AjaxUtils.ajaxCallRaw('/api/kmlManagerV1/import/arrOutputCoordinates', {}, "POST", formData);
+    }
+
     regCoordinatesImport(data) {
         return AjaxUtils.ajaxCallRaw('/api/kmlManagerV1/import/regCoordinates', {}, "POST", data);
     }
@@ -722,6 +757,16 @@ class WebApi{
         formData.append('descItemTypeId', descItemTypeId);
 
         return AjaxUtils.ajaxCallRaw("/api/arrangementManagerV2/descItems/" + versionId + "/csv/import", { }, "POST", formData);
+    }
+    
+    descOutputItemCsvImport(versionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('outputDefinitionId', outputDefinitionId);
+        formData.append('outputDefinitionVersion', outputDefinitionVersion);
+        formData.append('descItemTypeId', descItemTypeId);
+
+        return AjaxUtils.ajaxCallRaw("/api/arrangementManagerV2/outputItems/" + versionId + "/csv/import", { }, "POST", formData);
     }
     
     getInstitutions() {
