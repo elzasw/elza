@@ -45,29 +45,29 @@ export function developerNodeScenariosRequest(node, versionId) {
     }
 }
 
-export function developerNodeScenariosReceived(data, nodeId, nodeKey, versionId) {
+export function developerNodeScenariosReceived(data, nodeId, routingKey, versionId) {
     return {
         type: types.DEVELOPER_SCENARIOS_RECEIVED,
         data,
         nodeId,
-        nodeKey,
+        routingKey,
         versionId
     }
 }
 
-export function developerNodeScenariosFetching(nodeId, nodeKey, versionId) {
+export function developerNodeScenariosFetching(nodeId, routingKey, versionId) {
     return {
         type: types.DEVELOPER_SCENARIOS_FETCHING,
         nodeId,
-        nodeKey,
+        routingKey,
         versionId
     }
 }
-export function developerNodeScenariosDirty(nodeId, nodeKey, versionId) {
+export function developerNodeScenariosDirty(nodeId, routingKey, versionId) {
     return {
         type: types.DEVELOPER_SCENARIOS_DIRTY,
         nodeId,
-        nodeKey,
+        routingKey,
         versionId
     }
 }

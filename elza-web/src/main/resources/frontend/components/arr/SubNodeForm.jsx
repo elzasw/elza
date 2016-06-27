@@ -167,7 +167,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         }
 
         // Smazání hodnoty
-        this.dispatch(nodeFormActions.fundSubNodeFormValueDelete(this.props.versionId, this.props.nodeKey, valueLocation));
+        this.dispatch(nodeFormActions.fundSubNodeFormValueDelete(this.props.versionId, this.props.routingKey, valueLocation));
 
         // Nyní pošleme focus
         this.dispatch(setFocusFunc())
@@ -202,7 +202,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         }
 
         // Smazání hodnoty
-        this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeDelete(this.props.versionId, this.props.nodeKey, valueLocation));
+        this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeDelete(this.props.versionId, this.props.routingKey, valueLocation));
 
         // Nyní pošleme focus
         this.dispatch(setFocusFunc())
@@ -330,7 +330,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         var setFocusFunc = () => setFocus('arr', 2, 'subNodeForm', {descItemTypeId: descItemType.id, descItemObjectId: null, descItemIndex: index})
 
         // Smazání hodnoty
-        this.dispatch(nodeFormActions.fundSubNodeFormValueAdd(this.props.versionId, this.props.nodeKey, valueLocation));
+        this.dispatch(nodeFormActions.fundSubNodeFormValueAdd(this.props.versionId, this.props.routingKey, valueLocation));
 
         // Nyní pošleme focus
         this.dispatch(setFocusFunc())
@@ -342,7 +342,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param file {File} soubor
      */
     handleCoordinatesUpload(descItemTypeId, file) {
-        this.dispatch(nodeFormActions.fundSubNodeFormValueUploadCoordinates(this.props.versionId, this.props.nodeKey, descItemTypeId, file));
+        this.dispatch(nodeFormActions.fundSubNodeFormValueUploadCoordinates(this.props.versionId, this.props.routingKey, descItemTypeId, file));
     }
     
     /**
@@ -350,7 +350,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param file {File} soubor
      */
     handleJsonTableUpload(descItemTypeId, file) {
-        this.dispatch(nodeFormActions.fundSubNodeFormValueUploadCsv(this.props.versionId, this.props.nodeKey, descItemTypeId, file));
+        this.dispatch(nodeFormActions.fundSubNodeFormValueUploadCsv(this.props.versionId, this.props.routingKey, descItemTypeId, file));
     }
 
     /**
@@ -377,10 +377,10 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param form {Object} data z formuláře
      */
     handleCreatedRecord(valueLocation, data, submitType) {
-        const {versionId, selectedSubNodeId, nodeKey, fund, subNodeForm} = this.props;
+        const {versionId, selectedSubNodeId, routingKey, fund, subNodeForm} = this.props;
 
         // Uložení hodnoty
-        this.dispatch(nodeFormActions.fundSubNodeFormValueChange(versionId, nodeKey, valueLocation, data, true));
+        this.dispatch(nodeFormActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true));
 
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
@@ -433,10 +433,10 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param form {Object} data z formuláře
      */
     handleCreatedParty(valueLocation, data, submitType) {
-        const {versionId, selectedSubNodeId, nodeKey, fund, subNodeForm} = this.props;
+        const {versionId, selectedSubNodeId, routingKey, fund, subNodeForm} = this.props;
 
         // Uložení hodnoty
-        this.dispatch(nodeFormActions.fundSubNodeFormValueChange(versionId, nodeKey, valueLocation, data, true));
+        this.dispatch(nodeFormActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true));
 
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
@@ -477,7 +477,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
 
-        this.dispatch(nodeFormActions.fundSubNodeFormValueBlur(this.props.versionId, this.props.nodeKey, valueLocation));
+        this.dispatch(nodeFormActions.fundSubNodeFormValueBlur(this.props.versionId, this.props.routingKey, valueLocation));
     }
 
     /**
@@ -493,7 +493,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
 
-        this.dispatch(nodeFormActions.fundSubNodeFormValueFocus(this.props.versionId, this.props.nodeKey, valueLocation));
+        this.dispatch(nodeFormActions.fundSubNodeFormValueFocus(this.props.versionId, this.props.routingKey, valueLocation));
     }
 
     /**
@@ -510,7 +510,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
 
-        this.dispatch(nodeFormActions.fundSubNodeFormValueChange(this.props.versionId, this.props.nodeKey, valueLocation, value, false));
+        this.dispatch(nodeFormActions.fundSubNodeFormValueChange(this.props.versionId, this.props.routingKey, valueLocation, value, false));
     }
 
     /**
@@ -528,7 +528,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
 
-        this.dispatch(nodeFormActions.fundSubNodeFormValueChangePosition(this.props.versionId, this.props.nodeKey, valueLocation, newDescItemIndex));
+        this.dispatch(nodeFormActions.fundSubNodeFormValueChangePosition(this.props.versionId, this.props.routingKey, valueLocation, newDescItemIndex));
     }
 
     /**
@@ -545,7 +545,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
 
-        this.dispatch(nodeFormActions.fundSubNodeFormValueChangeSpec(this.props.versionId, this.props.nodeKey, valueLocation, value));
+        this.dispatch(nodeFormActions.fundSubNodeFormValueChangeSpec(this.props.versionId, this.props.routingKey, valueLocation, value));
     }
 
     /**
@@ -555,13 +555,13 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param descItemTypeId {Integer} id desc item type
      */
     handleDescItemTypeCopyFromPrev(descItemGroupIndex, descItemTypeIndex, descItemTypeId) {
-        const {nodeKey} = this.props
+        const {routingKey} = this.props
 
         var valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
         }
-        this.dispatch(nodeFormActions.fundSubNodeFormValuesCopyFromPrev(this.props.versionId, this.props.selectedSubNode.id, this.props.selectedSubNode.version, descItemTypeId, nodeKey, valueLocation));
+        this.dispatch(nodeFormActions.fundSubNodeFormValuesCopyFromPrev(this.props.versionId, this.props.selectedSubNode.id, this.props.selectedSubNode.version, descItemTypeId, routingKey, valueLocation));
     }
 
     handleDeleteNode() {
@@ -804,7 +804,7 @@ SubNodeForm.propTypes = {
     parentNode: React.PropTypes.object.isRequired,
     selectedSubNode: React.PropTypes.object.isRequired,
     selectedSubNodeId: React.PropTypes.number.isRequired,
-    nodeKey: React.PropTypes.string.isRequired,
+    routingKey: React.PropTypes.string.isRequired,
     nodeId: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
     nodeSettings: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,

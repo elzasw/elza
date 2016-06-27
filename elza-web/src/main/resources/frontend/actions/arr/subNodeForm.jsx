@@ -7,11 +7,11 @@ const CACHE_SIZE = 20
 const CACHE_SIZE2 = CACHE_SIZE/2
 
 import {WebApi} from 'actions/index.jsx';
-import {getMapFromList, indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
+import {getMapFromList, indexById, findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
 import {getFocusDescItemLocation} from 'stores/app/arr/subNodeFormUtils.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
-import {getNodeKeyType} from 'stores/app/utils.jsx'
+import {getRoutingKeyType} from 'stores/app/utils.jsx'
 import * as types from 'actions/constants/ActionTypes.js';
 import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {i18n} from 'components/index.jsx';
@@ -19,15 +19,15 @@ import {i18n} from 'components/index.jsx';
 /**
  * Akce propagace výsledku validace hodnoty ze serveru do store.
  * @param {int} versionId verze AS
- * @param {int} nodeKey Klíč záložky
+ * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  * @param {Object} valueLocation konkrétní umístění hodnoty
  * @param {Object} result výsledek validace
  */
-function fundSubNodeFormValueValidateResult(versionId, nodeKey, valueLocation, result) {
+function fundSubNodeFormValueValidateResult(versionId, routingKey, valueLocation, result) {
     return {
         type: types.FUND_SUB_NODE_FORM_VALUE_VALIDATE_RESULT,
         versionId,
-        nodeKey,
+        routingKey,
         valueLocation,
         result
     }
@@ -36,15 +36,15 @@ function fundSubNodeFormValueValidateResult(versionId, nodeKey, valueLocation, r
 /**
  * Smazání atributu POUZE z formuláře, nikoli na serveru!
  * @param {int} versionId verze AS
- * @param {int} nodeKey klíč záložky
+ * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  * @param {Object} valueLocation konkrétní umístění atributu
  * @param {bool} onlyDescItems pokud je true, pouze se odeberou hodnoty atributu, ale daný atribut na formuláři zůstane, pokud je false, odebere se i atribut
  */
-function fundSubNodeFormDescItemTypeDeleteInStore(versionId, nodeKey, valueLocation, onlyDescItems) {
+function fundSubNodeFormDescItemTypeDeleteInStore(versionId, routingKey, valueLocation, onlyDescItems) {
     return {
         type: types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE,
         versionId,
-        nodeKey,
+        routingKey,
         valueLocation,
         onlyDescItems
     }
@@ -53,15 +53,15 @@ function fundSubNodeFormDescItemTypeDeleteInStore(versionId, nodeKey, valueLocat
 /**
  * Informační akce o provedené operaci na serveru.
  * @param {int} versionId verze AS
- * @param {int} nodeKey klíč záložky
+ * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  * @param {Object} valueLocation konkrétní umístění atributu nebo hodnoty
  * @param {string} operationType typ operace, jedna z hodnot: hodnota atributu['UPDATE', 'CREATE', 'DELETE'], atribut['DELETE_DESC_ITEM_TYPE']
  */
-function fundSubNodeFormDescItemResponse(versionId, nodeKey, valueLocation, descItemResult, operationType) {
+function fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, descItemResult, operationType) {
     return {
         type: types.FUND_SUB_NODE_FORM_VALUE_RESPONSE,
         versionId,
-        nodeKey,
+        routingKey,
         valueLocation,
         operationType,
         descItemResult: descItemResult
@@ -75,15 +75,15 @@ function fundSubNodeFormDescItemResponse(versionId, nodeKey, valueLocation, desc
  * @param {Object} dispatch odkaz na funkci dispatch
  * @param {int} versionId verze AS
  * @param {int} nodeId id node záložky, které se to týká
- * @param {int} nodeKey klíč záložky
+ * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  * @return {Object} promise pro vrácení nových dat
  */
-function getNodeForm(getState, dispatch, versionId, nodeId, nodeKey) {
-    const type = getNodeKeyType(nodeKey)
+function getNodeForm(getState, dispatch, versionId, nodeId, routingKey) {
+    const type = getRoutingKeyType(routingKey)
     switch (type) {
         case 'NODE':    // podpora kešování
             var state = getState()
-            var node = getNodeStore(state, versionId, nodeKey);
+            var node = getNodeStore(state, versionId, routingKey);
             if (node === null) return   // nemělo by nastat
 
             const subNodeFormCache = node.subNodeFormCache
@@ -97,10 +97,10 @@ function getNodeForm(getState, dispatch, versionId, nodeId, nodeKey) {
                     if (node.isNodeInfoFetching || !node.nodeInfoFetched || node.nodeInfoDirty) {   // nemáme platné okolí (okolní NODE) pro daný NODE, raději je načteme ze serveru; nemáme vlastně okolní NODE pro získání seznamu ID pro načtení formulářů pro cache
                         //console.log('### READ_CACHE', 'around')
 
-                        dispatch(fundSubNodeFormCacheRequest(versionId, nodeKey))
+                        dispatch(fundSubNodeFormCacheRequest(versionId, routingKey))
                         WebApi.getFundNodeFormsWithAround(versionId, nodeId, CACHE_SIZE2)
                             .then(json => {
-                                dispatch(fundSubNodeFormCacheResponse(versionId, nodeKey, json.forms))
+                                dispatch(fundSubNodeFormCacheResponse(versionId, routingKey, json.forms))
                             })
                     } else {    // pro získání id okolí můžeme použít store
                         // Načtení okolí položky
@@ -123,10 +123,10 @@ function getNodeForm(getState, dispatch, versionId, nodeId, nodeKey) {
                         //console.log('### READ_CACHE', idsForFetch, node.childNodes, left, right)
 
                         if (idsForFetch.length > 0) {   // máme něco pro načtení
-                            dispatch(fundSubNodeFormCacheRequest(versionId, nodeKey))
+                            dispatch(fundSubNodeFormCacheRequest(versionId, routingKey))
                             WebApi.getFundNodeForms(versionId, idsForFetch)
                                 .then(json => {
-                                    dispatch(fundSubNodeFormCacheResponse(versionId, nodeKey, json.forms))
+                                    dispatch(fundSubNodeFormCacheResponse(versionId, routingKey, json.forms))
                                 })
                         }
                     }
@@ -150,27 +150,27 @@ function getNodeForm(getState, dispatch, versionId, nodeId, nodeKey) {
 /**
  * Bylo zahájeno nové načítání dat.
  * @param {int} versionId verze AS
- * @param {int} nodeKey klíč záložky
+ * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  */
-function fundSubNodeFormCacheRequest(versionId, nodeKey) {
+function fundSubNodeFormCacheRequest(versionId, routingKey) {
     return {
         type: types.FUND_SUB_NODE_FORM_CACHE_REQUEST,
         versionId,
-        nodeKey,
+        routingKey,
     }
 }
 
 /**
  * Nová data byla načtena.
  * @param {int} versionId verze AS
- * @param {int} nodeKey klíč záložky
+ * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  * @param {Object} formsMap objekt s daty
  */
-function fundSubNodeFormCacheResponse(versionId, nodeKey, formsMap) {
+function fundSubNodeFormCacheResponse(versionId, routingKey, formsMap) {
     return {
         type: types.FUND_SUB_NODE_FORM_CACHE_RESPONSE,
         versionId,
-        nodeKey,
+        routingKey,
         formsMap
     }
 }
@@ -179,14 +179,14 @@ function fundSubNodeFormCacheResponse(versionId, nodeKey, formsMap) {
  * Načtení subNodeForm store.
  * @param {Object} state globální store
  * @param {int} versionId verze AS
- * @param {int} nodeKey klíč záložky
+ * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  * @return subNodeForm store
  */
-function getSubNodeFormStore(state, versionId, nodeKey) {
-    const type = getNodeKeyType(nodeKey)
+function getSubNodeFormStore(state, versionId, routingKey) {
+    const type = getRoutingKeyType(routingKey)
     switch (type) {
         case 'NODE':
-            var node = getNodeStore(state, versionId, nodeKey)
+            var node = getNodeStore(state, versionId, routingKey)
             if (node !== null) {
                 return node.subNodeForm
             } else {
@@ -208,11 +208,11 @@ function getSubNodeFormStore(state, versionId, nodeKey) {
  * Načtení node store pro předaná data.
  * @param {Object} state globální store
  * @param {int} versionId verze AS
- * @param {int} nodeKey klíč záložky
+ * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  * @return node store
  */
-function getNodeStore(state, versionId, nodeKey) {
-    var r = findByNodeKeyInGlobalState(state, versionId, nodeKey);
+function getNodeStore(state, versionId, routingKey) {
+    var r = findByRoutingKeyInGlobalState(state, versionId, routingKey);
     if (r != null) {
         return r.node;
     }
@@ -262,17 +262,17 @@ class ItemFormActions {
      * Nové načtení dat.
      * @param {int} versionId verze AS
      * @param {int} nodeId id node záložky, které se to týká
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      */
-    _fundSubNodeFormFetch(versionId, nodeId, nodeKey) {
+    _fundSubNodeFormFetch(versionId, nodeId, routingKey) {
         return (dispatch, getState) => {
-            dispatch(this.fundSubNodeFormRequest(versionId, nodeId, nodeKey))
-            getNodeForm(getState, dispatch, versionId, nodeId, nodeKey)
+            dispatch(this.fundSubNodeFormRequest(versionId, nodeId, routingKey))
+            getNodeForm(getState, dispatch, versionId, nodeId, routingKey)
                 .then(json => {
                     var state = getState()
-                    var subNodeForm = getSubNodeFormStore(state, versionId, nodeKey);
+                    var subNodeForm = getSubNodeFormStore(state, versionId, routingKey);
                     if (subNodeForm.fetchingId == nodeId) {
-                        dispatch(this.fundSubNodeFormReceive(versionId, nodeId, nodeKey, json, state.refTables.rulDataTypes, state.refTables.descItemTypes))
+                        dispatch(this.fundSubNodeFormReceive(versionId, nodeId, routingKey, json, state.refTables.rulDataTypes, state.refTables.descItemTypes))
                     }
                 })
         }
@@ -283,12 +283,12 @@ class ItemFormActions {
      * @param {Object} dispatch odkaz na funkci dispatch
      * @param {Object} getState odkaz na funkci pro načtení store
      * @param {int} versionId verze AS
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
      */
-    _formValueStore(dispatch, getState, versionId, nodeKey, valueLocation) {
+    _formValueStore(dispatch, getState, versionId, routingKey, valueLocation) {
         var state = getState();
-        var subNodeForm = getSubNodeFormStore(state, versionId, nodeKey);
+        var subNodeForm = getSubNodeFormStore(state, versionId, routingKey);
         var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
         var refType = subNodeForm.refTypesMap[loc.descItemType.id]
@@ -297,12 +297,12 @@ class ItemFormActions {
             if (typeof loc.descItem.id !== 'undefined') {
                 WebApi.updateDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
                     .then(json => {
-                        dispatch(fundSubNodeFormDescItemResponse(versionId, nodeKey, valueLocation, json, 'UPDATE'));
+                        dispatch(fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
                     })
             } else {
                 WebApi.createDescItem(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, loc.descItemType.id, loc.descItem)
                     .then(json => {
-                        dispatch(fundSubNodeFormDescItemResponse(versionId, nodeKey, valueLocation, json, 'CREATE'));
+                        dispatch(fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'));
                     })
             }
         }
@@ -311,14 +311,14 @@ class ItemFormActions {
     /**
      * Akce přidání nové prázdné hodnoty descItem vícehodnotového atributu descItemType.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění nové hodnoty
      */
-    fundSubNodeFormValueAdd(versionId, nodeKey, valueLocation) {
+    fundSubNodeFormValueAdd(versionId, routingKey, valueLocation) {
         return {
             type: types.FUND_SUB_NODE_FORM_VALUE_ADD,
             versionId,
-            nodeKey,
+            routingKey,
             valueLocation,
         }
     }
@@ -326,14 +326,14 @@ class ItemFormActions {
     /**
      * Akce přidání coordinates jako DescItem - Probíhá uploadem - doplnění hodnot pomocí WS
      * @param {int} versionId verze AS
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {int} descItemTypeId Konkrétní typ desc item
      * @param {File} file Soubor k uploadu
      */
-    fundSubNodeFormValueUploadCoordinates(versionId, nodeKey, descItemTypeId, file) {
+    fundSubNodeFormValueUploadCoordinates(versionId, routingKey, descItemTypeId, file) {
         return (dispatch, getState) => {
             var state = getState();
-            var subNodeForm = getSubNodeFormStore(state, versionId, nodeKey);
+            var subNodeForm = getSubNodeFormStore(state, versionId, routingKey);
 
             const formData = new FormData();
             formData.append('file', file);
@@ -352,14 +352,14 @@ class ItemFormActions {
     /**
      * Akce přidání csv jako DescItem - Probíhá uploadem.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {int} descItemTypeId Konkrétní typ desc item
      * @param {File} file Soubor k uploadu
      */
-    fundSubNodeFormValueUploadCsv(versionId, nodeKey, descItemTypeId, file) {
+    fundSubNodeFormValueUploadCsv(versionId, routingKey, descItemTypeId, file) {
         return (dispatch, getState) => {
             var state = getState();
-            var subNodeForm = getSubNodeFormStore(state, versionId, nodeKey);
+            var subNodeForm = getSubNodeFormStore(state, versionId, routingKey);
 
             WebApi.descItemCsvImport(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, descItemTypeId, file).then(() => {
                 dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successJsonTable')));
@@ -372,18 +372,18 @@ class ItemFormActions {
     /**
      * Akce validace hodnoty na serveru - týká se jen hodnot datace.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey Klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty pro validaci
      */
-    fundSubNodeFormValueValidate(versionId, nodeKey, valueLocation) {
+    fundSubNodeFormValueValidate(versionId, routingKey, valueLocation) {
         return (dispatch, getState) => {
             var state = getState();
-            var subNodeForm = getSubNodeFormStore(state, versionId, nodeKey);
+            var subNodeForm = getSubNodeFormStore(state, versionId, routingKey);
             var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
             WebApi.validateUnitdate(loc.descItem.value)
                 .then(json => {
-                    dispatch(fundSubNodeFormValueValidateResult(versionId, nodeKey, valueLocation, json));
+                    dispatch(fundSubNodeFormValueValidateResult(versionId, routingKey, valueLocation, json));
                 })
         }
     }
@@ -391,24 +391,24 @@ class ItemFormActions {
     /**
      * Akce změny hodnoty a její promítnutí do store, případné uložení na server, pokud je toto vynuceno parametrem forceStore.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey Klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
      * @param {Object} value nová hodnota
      * @param {boolean} forceStore pokud je true, je hodnota i odeslána na server pro uložení
      */
-    fundSubNodeFormValueChange(versionId, nodeKey, valueLocation, value, forceStore) {
+    fundSubNodeFormValueChange(versionId, routingKey, valueLocation, value, forceStore) {
         return (dispatch, getState) => {
             dispatch({
                 type: types.FUND_SUB_NODE_FORM_VALUE_CHANGE,
                 versionId,
-                nodeKey,
+                routingKey,
                 valueLocation,
                 value,
                 dispatch
             })
 
             if (forceStore) {
-                this._formValueStore(dispatch, getState, versionId, nodeKey, valueLocation)
+                this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation)
             }
         }
     }
@@ -416,21 +416,21 @@ class ItemFormActions {
     /**
      * Akce změna pozice hodnoty vícehodnotového atributu - změna pořadí hodnot.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey Klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
      * @param {boolean} index nový index hodnoty v rámci atributu
      */
-    fundSubNodeFormValueChangePosition(versionId, nodeKey, valueLocation, index) {
+    fundSubNodeFormValueChangePosition(versionId, routingKey, valueLocation, index) {
         return (dispatch, getState) => {
             var state = getState();
-            var subNodeForm = getSubNodeFormStore(state, versionId, nodeKey);
+            var subNodeForm = getSubNodeFormStore(state, versionId, routingKey);
             var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
             if (!loc.descItem.error.hasError && typeof loc.descItem.id !== 'undefined') {
                 dispatch({
                     type: types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION,
                     versionId,
-                    nodeKey,
+                    routingKey,
                     valueLocation,
                     index,
                 })
@@ -440,7 +440,7 @@ class ItemFormActions {
                 WebApi.updateDescItem(versionId, subNodeForm.data.node.version, descItem)
                     .then(json => {
                         let newValueLocation = {...valueLocation, descItemIndex: index}
-                        dispatch(fundSubNodeFormDescItemResponse(versionId, nodeKey, newValueLocation, json, 'UPDATE'));
+                        dispatch(fundSubNodeFormDescItemResponse(versionId, routingKey, newValueLocation, json, 'UPDATE'));
                     })
             }
         }
@@ -452,15 +452,15 @@ class ItemFormActions {
      * @param {int} nodeId id node záložky, které se to týká
      * @param {int} nodeVersionId verze node
      * @param {int} descItemTypeId id atribtu
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění
      */
-    fundSubNodeFormValuesCopyFromPrev(versionId, nodeId, nodeVersionId, descItemTypeId, nodeKey, valueLocation) {
+    fundSubNodeFormValuesCopyFromPrev(versionId, nodeId, nodeVersionId, descItemTypeId, routingKey, valueLocation) {
         return (dispatch, getState) => {
-            dispatch(fundSubNodeFormDescItemTypeDeleteInStore(versionId, nodeKey, valueLocation, true));
+            dispatch(fundSubNodeFormDescItemTypeDeleteInStore(versionId, routingKey, valueLocation, true));
             WebApi.copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId)
                 .then(json => {
-                    dispatch(this.fundSubNodeFormDescItemTypeCopyFromPrevResponse(versionId, nodeKey, valueLocation, json));
+                    dispatch(this.fundSubNodeFormDescItemTypeCopyFromPrevResponse(versionId, routingKey, valueLocation, json));
                 })
         }
     }
@@ -468,16 +468,16 @@ class ItemFormActions {
     /**
      * Akce změna hodnoty atributu - odkaz na osoby.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
      * @param {Object} value hodnota
      */
-    fundSubNodeFormValueChangeParty(versionId, nodeKey, valueLocation, value) {
+    fundSubNodeFormValueChangeParty(versionId, routingKey, valueLocation, value) {
         return (dispatch, getState) => {
             dispatch({
                 type: types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY,
                 versionId,
-                nodeKey,
+                routingKey,
                 valueLocation,
                 value,
                 dispatch
@@ -488,16 +488,16 @@ class ItemFormActions {
     /**
      * Akce změna hodnoty atributu - odkaz na rejstřík.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
      * @param {Object} value hodnota
      */
-    fundSubNodeFormValueChangeRecord(versionId, nodeKey, valueLocation, value) {
+    fundSubNodeFormValueChangeRecord(versionId, routingKey, valueLocation, value) {
         return (dispatch, getState) => {
             dispatch({
                 type: types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD,
                 versionId,
-                nodeKey,
+                routingKey,
                 valueLocation,
                 value,
                 dispatch
@@ -508,23 +508,23 @@ class ItemFormActions {
     /**
      * Akce změna hodnoty specifikace atributu.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
      * @param {Object} value hodnota
      */
-    fundSubNodeFormValueChangeSpec(versionId, nodeKey, valueLocation, value) {
+    fundSubNodeFormValueChangeSpec(versionId, routingKey, valueLocation, value) {
         return (dispatch, getState) => {
             // Dispatch zmněny specifikace
             dispatch({
                 type: types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC,
                 versionId,
-                nodeKey,
+                routingKey,
                 valueLocation,
                 value,
             })
 
             // Vynucení uložení na server, pokud je validní jako celek
-            this._formValueStore(dispatch, getState, versionId, nodeKey, valueLocation)
+            this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation)
         }
     }
 
@@ -559,58 +559,58 @@ class ItemFormActions {
     /**
      * Blur na hodnotě atributu.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
      */
-    fundSubNodeFormValueBlur(versionId, nodeKey, valueLocation) {
+    fundSubNodeFormValueBlur(versionId, routingKey, valueLocation) {
         return (dispatch, getState) => {
             dispatch({
                 type: types.FUND_SUB_NODE_FORM_VALUE_BLUR,
                 versionId,
-                nodeKey,
+                routingKey,
                 valueLocation,
                 receivedAt: Date.now()
             });
 
-            this._formValueStore(dispatch, getState, versionId, nodeKey, valueLocation)
+            this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation)
         }
     }
 
     /**
      * Smazání hodnoty atributu.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
      */
-    fundSubNodeFormValueDelete(versionId, nodeKey, valueLocation) {
+    fundSubNodeFormValueDelete(versionId, routingKey, valueLocation) {
         return (dispatch, getState) => {
             var state = getState();
-            var subNodeForm = getSubNodeFormStore(state, versionId, nodeKey);
+            var subNodeForm = getSubNodeFormStore(state, versionId, routingKey);
             var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
             dispatch({
                 type: types.FUND_SUB_NODE_FORM_VALUE_DELETE,
                 versionId,
-                nodeKey,
+                routingKey,
                 valueLocation,
             })
 
             if (typeof loc.descItem.id !== 'undefined') {
                 WebApi.deleteDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
                     .then(json => {
-                        dispatch(fundSubNodeFormDescItemResponse(versionId, nodeKey, valueLocation, json, 'DELETE'));
+                        dispatch(fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE'));
                     })
             }
         }
     }
 
-    fundSubNodeFormHandleClose(versionId, nodeKey) {
+    fundSubNodeFormHandleClose(versionId, routingKey) {
         return (dispatch, getState) => {
             var state = getState()
-            var subNodeForm = getSubNodeFormStore(state, versionId, nodeKey);
+            var subNodeForm = getSubNodeFormStore(state, versionId, routingKey);
             const valueLocation = getFocusDescItemLocation(subNodeForm)
             if (valueLocation !== null) {
-                dispatch(this.fundSubNodeFormValueBlur(versionId, nodeKey, valueLocation))
+                dispatch(this.fundSubNodeFormValueBlur(versionId, routingKey, valueLocation))
             }
         }
     }
@@ -618,20 +618,20 @@ class ItemFormActions {
     /**
      * Přidání atributu na formulář.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {int} descItemTypeId id atributu
      */
-    fundSubNodeFormDescItemTypeAdd(versionId, nodeKey, descItemTypeId) {
+    fundSubNodeFormDescItemTypeAdd(versionId, routingKey, descItemTypeId) {
         return (dispatch, getState) => {
             dispatch({
                 type: types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD,
                 versionId,
-                nodeKey,
+                routingKey,
                 descItemTypeId
             })
 
             var state = getState()
-            var subNodeForm = getSubNodeFormStore(state, versionId, nodeKey);
+            var subNodeForm = getSubNodeFormStore(state, versionId, routingKey);
             dispatch(setFocus('arr', 2, 'subNodeForm', {descItemTypeId: descItemTypeId, descItemObjectId: null}))
         }
     }
@@ -639,13 +639,13 @@ class ItemFormActions {
     /**
      * Smazání atributu.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění atributu
      */
-    fundSubNodeFormDescItemTypeDelete(versionId, nodeKey, valueLocation) {
+    fundSubNodeFormDescItemTypeDelete(versionId, routingKey, valueLocation) {
         return (dispatch, getState) => {
             var state = getState();
-            var subNodeForm = getSubNodeFormStore(state, versionId, nodeKey);
+            var subNodeForm = getSubNodeFormStore(state, versionId, routingKey);
             var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
             var hasDescItemsForDelete = false;
@@ -655,12 +655,12 @@ class ItemFormActions {
                 }
             });
 
-            dispatch(fundSubNodeFormDescItemTypeDeleteInStore(versionId, nodeKey, valueLocation, false));
+            dispatch(fundSubNodeFormDescItemTypeDeleteInStore(versionId, routingKey, valueLocation, false));
 
             if (hasDescItemsForDelete) {
                 WebApi.deleteDescItemType(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, loc.descItemType.id)
                     .then(json => {
-                        dispatch(fundSubNodeFormDescItemResponse(versionId, nodeKey, valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
+                        dispatch(fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
                     })
             }
         }
@@ -669,15 +669,15 @@ class ItemFormActions {
     /**
      * Informační akce o provedené operaci kopírování hodnot atributu z předchozí JP.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění atributu
      * @param {Object} copySiblingResult nová nakopírovaná data - objekt ze serveru
      */
-    fundSubNodeFormDescItemTypeCopyFromPrevResponse(versionId, nodeKey, valueLocation, copySiblingResult) {
+    fundSubNodeFormDescItemTypeCopyFromPrevResponse(versionId, routingKey, valueLocation, copySiblingResult) {
         return {
             type: types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE,
             versionId,
-            nodeKey,
+            routingKey,
             valueLocation,
             copySiblingResult
         }
@@ -686,14 +686,14 @@ class ItemFormActions {
     /**
      * Focus na hodnotě atributu.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
      */
-    fundSubNodeFormValueFocus(versionId, nodeKey, valueLocation) {
+    fundSubNodeFormValueFocus(versionId, routingKey, valueLocation) {
         return {
             type: types.FUND_SUB_NODE_FORM_VALUE_FOCUS,
             versionId,
-            nodeKey,
+            routingKey,
             valueLocation,
         }
     }
@@ -701,20 +701,20 @@ class ItemFormActions {
     /**
      * Vyžádání dat - aby byla ve store k dispozici.
      * @param {int} versionId verze AS
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      */
-    fundSubNodeFormFetchIfNeeded(versionId, nodeKey) {
+    fundSubNodeFormFetchIfNeeded(versionId, routingKey) {
         return (dispatch, getState) => {
             var state = getState();
 
-            const type = getNodeKeyType(nodeKey)
+            const type = getRoutingKeyType(routingKey)
             switch (type) {
                 case 'NODE':
-                    var node = getNodeStore(state, versionId, nodeKey)
+                    var node = getNodeStore(state, versionId, routingKey)
                     if (node !== null) {
                         const subNodeForm = node.subNodeForm
                         if ((!subNodeForm.fetched || subNodeForm.dirty) && !subNodeForm.isFetching) {
-                            dispatch(this._fundSubNodeFormFetch(versionId, node.selectedSubNodeId, nodeKey));
+                            dispatch(this._fundSubNodeFormFetch(versionId, node.selectedSubNodeId, routingKey));
                         }
                     }
                     break
@@ -724,7 +724,7 @@ class ItemFormActions {
                         const fundDataGrid = state.arrRegion.funds[fundIndex].fundDataGrid
                         const subNodeForm = fundDataGrid.subNodeForm
                         if ((!subNodeForm.fetched || subNodeForm.dirty) && !subNodeForm.isFetching) {
-                            dispatch(this._fundSubNodeFormFetch(versionId, fundDataGrid.nodeId, nodeKey));
+                            dispatch(this._fundSubNodeFormFetch(versionId, fundDataGrid.nodeId, routingKey));
                         }
                     }
                     break
@@ -737,17 +737,17 @@ class ItemFormActions {
      * Nová data byla načtena.
      * @param {int} versionId verze AS
      * @param {int} nodeId id node záložky, které se to týká
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} json objekt s daty
      * @param {Object} rulDataTypes store - datové typy pro atributy
      * @param {Object} descItemTypes store - obecný předpis atributů - ref
      */
-    fundSubNodeFormReceive(versionId, nodeId, nodeKey, json, rulDataTypes, descItemTypes) {
+    fundSubNodeFormReceive(versionId, nodeId, routingKey, json, rulDataTypes, descItemTypes) {
         return {
             type: types.FUND_SUB_NODE_FORM_RECEIVE,
             versionId,
             nodeId,
-            nodeKey,
+            routingKey,
             data: json,
             rulDataTypes,
             refDescItemTypes: descItemTypes,
@@ -759,14 +759,14 @@ class ItemFormActions {
      * Bylo zahájeno nové načítání dat.
      * @param {int} versionId verze AS
      * @param {int} nodeId id node záložky, které se to týká
-     * @param {int} nodeKey klíč záložky
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      */
-    fundSubNodeFormRequest(versionId, nodeId, nodeKey) {
+    fundSubNodeFormRequest(versionId, nodeId, routingKey) {
         return {
             type: types.FUND_SUB_NODE_FORM_REQUEST,
             versionId,
             nodeId,
-            nodeKey,
+            routingKey,
         }
     }
 }

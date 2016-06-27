@@ -7,7 +7,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {fundExtendedView} from './fund.jsx'
 import * as types from 'actions/constants/ActionTypes.js';
 import {developerNodeScenariosDirty} from 'actions/global/developer.jsx';
-import {findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
+import {findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
 
 export function isNodesAction(action) {
     switch (action.type) {
@@ -24,10 +24,10 @@ export function isNodesAction(action) {
  * Pokud má daná záložka vybraný podřízený JP, je poslána nová akce s vybrání podřízené JP {@link fundSelectSubNode}.
  * {int} versionId verze AS
  * {int} nodeId id node dané záložky NODE
- * {string} nodeKey klíč dané záložky
+ * {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  * @param {int} index index vybrané záložky
  */
-export function fundSelectNodeTab(versionId, nodeId, nodeKey, index) {
+export function fundSelectNodeTab(versionId, nodeId, routingKey, index) {
     return (dispatch, getState) => {
         var state = getState();
         var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
@@ -36,7 +36,7 @@ export function fundSelectNodeTab(versionId, nodeId, nodeKey, index) {
             type: types.FUND_FUND_SELECT_NODE_TAB,
             versionId,
             nodeId,
-            nodeKey,
+            routingKey,
             index,
         });
         if (nodeTab.selectedSubNodeId != null) {    // musíme poslat akci vybrání subnode (aby se řádek vybral např. ve stromu)
@@ -49,15 +49,15 @@ export function fundSelectNodeTab(versionId, nodeId, nodeKey, index) {
  * Zavření záložky JP.
  * {int} versionId verze AS
  * {int} nodeId id node dané záložky NODE
- * {string} nodeKey klíč dané záložky
+ * {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  * @param index {int} index záložky
  */
-function _fundCloseNodeTab(versionId, nodeId, nodeKey, index) {
+function _fundCloseNodeTab(versionId, nodeId, routingKey, index) {
     return {
         type: types.FUND_FUND_CLOSE_NODE_TAB,
         versionId,
         nodeId,
-        nodeKey,
+        routingKey,
         index,
     }
 }
@@ -66,10 +66,10 @@ function _fundCloseNodeTab(versionId, nodeId, nodeKey, index) {
  * Zavření záložky JP.
  * {int} versionId verze AS
  * {int} nodeId id node dané záložky NODE
- * {string} nodeKey klíč dané záložky
+ * {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  * @param index {int} index záložky
  */
-export function fundCloseNodeTab(versionId, nodeId, nodeKey, index) {
+export function fundCloseNodeTab(versionId, nodeId, routingKey, index) {
     return (dispatch, getState) => {
         var state = getState();
         var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
@@ -77,13 +77,13 @@ export function fundCloseNodeTab(versionId, nodeId, nodeKey, index) {
         if (activeFund.nodes.activeIndex == index) {  // zavíráme aktuálně vybranou
             wasSelected = true;
         }
-        dispatch(_fundCloseNodeTab(versionId, nodeId, nodeKey, index));
+        dispatch(_fundCloseNodeTab(versionId, nodeId, routingKey, index));
         var newState = getState();
         var newActiveFund = newState.arrRegion.funds[newState.arrRegion.activeIndex];
         if (wasSelected) { 
             if (newActiveFund.nodes.nodes.length > 0) {    // bude vybraná nějaká jiná, protože ještě nějaké záložky existují
                 const node = newActiveFund.nodes.nodes[newActiveFund.nodes.activeIndex]
-                dispatch(fundSelectNodeTab(versionId, node.id, node.nodeKey, newActiveFund.nodes.activeIndex));
+                dispatch(fundSelectNodeTab(versionId, node.id, node.routingKey, newActiveFund.nodes.activeIndex));
             } else {    // není žádná záložka
                 dispatch(fundSelectSubNodeInt(newActiveFund.versionId, null, null, false, null, false));
             }
@@ -126,7 +126,7 @@ export function fundSelectSubNode(versionId, subNodeId, subNodeParentNode, openN
         dispatch(fundExtendedView(false));
         dispatch(fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible));
         let state = getState();
-        dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.nodeKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
+        dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.routingKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
     }
 }
 

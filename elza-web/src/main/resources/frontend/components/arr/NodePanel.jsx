@@ -275,7 +275,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
      * Zobrazení dialogu pro přidání atributu.
      */
     handleAddDescItemType() {
-        const {node: {subNodeForm, selectedSubNodeId, nodeKey}, versionId} = this.props;
+        const {node: {subNodeForm, selectedSubNodeId, routingKey}, versionId} = this.props;
 
         const formData = subNodeForm.formData
 
@@ -313,7 +313,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
         var submit = (data) => {
             this.dispatch(modalDialogHide());
-            this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, nodeKey, data.descItemTypeId));
+            this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, data.descItemTypeId));
         };
         // Modální dialog
         var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
@@ -364,17 +364,17 @@ return true
     requestData(versionId, node, showRegisterJp) {
         if (node.selectedSubNodeId != null) {
             this.dispatch(descItemTypesFetchIfNeeded());
-            this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.nodeKey));
-            this.dispatch(fundSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
+            this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.routingKey));
+            this.dispatch(fundSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
             this.dispatch(refRulDataTypesFetchIfNeeded());
 
             if (showRegisterJp) {
-                this.dispatch(fundSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
+                this.dispatch(fundSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
             }
 
         }
         this.dispatch(visiblePolicyTypesFetchIfNeeded());
-        this.dispatch(fundNodeInfoFetchIfNeeded(versionId, node.id, node.nodeKey));
+        this.dispatch(fundNodeInfoFetchIfNeeded(versionId, node.id, node.routingKey));
         this.dispatch(calendarTypesFetchIfNeeded());
     }
 
@@ -631,7 +631,7 @@ return true
 
         if (node.viewStartIndex > 0) {
             rows.push(
-                <Button key="prev" onClick={()=>this.dispatch(fundSubNodesPrev(versionId, node.id, node.nodeKey))}><Icon glyph="fa-chevron-left" />{i18n('arr.fund.prev')}</Button>
+                <Button key="prev" onClick={()=>this.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))}><Icon glyph="fa-chevron-left" />{i18n('arr.fund.prev')}</Button>
             )
         }
 
@@ -686,7 +686,7 @@ return true
 
         if (node.childNodes.length > node.pageSize && node.viewStartIndex + node.pageSize/2 < node.childNodes.length && node.childNodes.length - node.viewStartIndex > node.pageSize) {
             rows.push(
-                <Button key="next" onClick={()=>this.dispatch(fundSubNodesNext(versionId, node.id, node.nodeKey))}><Icon glyph="fa-chevron-right" />{i18n('arr.fund.next')}</Button>
+                <Button key="next" onClick={()=>this.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))}><Icon glyph="fa-chevron-right" />{i18n('arr.fund.next')}</Button>
             )
         }
 
@@ -770,8 +770,8 @@ return true
             <div key='actions' className='actions-container'>
                 <div key='actions' className='actions'>
                     {actions}
-                    <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.nodeKey))}><Icon glyph="fa-backward" />{i18n('arr.fund.subNodes.prevPage')}</div>
-                    <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(fundSubNodesNextPage(versionId, node.id, node.nodeKey))}><Icon glyph="fa-forward" />{i18n('arr.fund.subNodes.nextPage')}</div>
+                    <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey))}><Icon glyph="fa-backward" />{i18n('arr.fund.subNodes.prevPage')}</div>
+                    <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey))}><Icon glyph="fa-forward" />{i18n('arr.fund.subNodes.nextPage')}</div>
 
                     <div className='btn btn-default' onClick={this.handleFindPosition} title={i18n('arr.fund.subNodes.findPosition')} ><Icon glyph="fa-hand-o-down" /></div>
 
@@ -809,7 +809,7 @@ return true
                 nodeId={node.id}
                 versionId={versionId}
                 selectedSubNodeId={node.selectedSubNodeId}
-                nodeKey={node.nodeKey}
+                routingKey={node.routingKey}
                 subNodeForm={node.subNodeForm}
                 descItemTypeInfos={node.subNodeForm.descItemTypeInfos}
                 rulDataTypes={rulDataTypes}
@@ -837,7 +837,7 @@ return true
                         nodeId={node.id}
                         versionId={versionId}
                         selectedSubNodeId={node.selectedSubNodeId}
-                        nodeKey={node.nodeKey}
+                        routingKey={node.routingKey}
                         register={node.subNodeRegister}
                         closed={closed}/>
         }

@@ -40,12 +40,12 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
      * @param form {Object} data z formuláře
      */
     handleCreatedRecord(index, data, submitType) {
-        const {versionId, selectedSubNodeId, nodeKey, fund} = this.props;
+        const {versionId, selectedSubNodeId, routingKey, fund} = this.props;
 
         // TODO: sjednoceni od Pavla - ELZA-591
-        this.dispatch(fundSubNodeRegisterValueFocus(versionId, selectedSubNodeId, nodeKey, index));
-        this.dispatch(fundSubNodeRegisterValueChange(versionId, selectedSubNodeId, nodeKey, index, data.recordId));
-        this.dispatch(fundSubNodeRegisterValueBlur(versionId, selectedSubNodeId, nodeKey, index));
+        this.dispatch(fundSubNodeRegisterValueFocus(versionId, selectedSubNodeId, routingKey, index));
+        this.dispatch(fundSubNodeRegisterValueChange(versionId, selectedSubNodeId, routingKey, index, data.recordId));
+        this.dispatch(fundSubNodeRegisterValueBlur(versionId, selectedSubNodeId, routingKey, index));
 
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
@@ -56,11 +56,11 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     }
 
     handleAddClick() {
-        this.dispatch(fundSubNodeRegisterValueAdd(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey));
+        this.dispatch(fundSubNodeRegisterValueAdd(this.props.versionId, this.props.selectedSubNodeId, this.props.routingKey));
     }
 
     handleChange(index, recordId) {
-        this.dispatch(fundSubNodeRegisterValueChange(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, index, recordId));
+        this.dispatch(fundSubNodeRegisterValueChange(this.props.versionId, this.props.selectedSubNodeId, this.props.routingKey, index, recordId));
     }
 
     handleDetail(index, recordId) {
@@ -70,15 +70,15 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     }
 
     handleFocus(index) {
-        this.dispatch(fundSubNodeRegisterValueFocus(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, index));
+        this.dispatch(fundSubNodeRegisterValueFocus(this.props.versionId, this.props.selectedSubNodeId, this.props.routingKey, index));
     }
 
     handleBlur(index) {
-        this.dispatch(fundSubNodeRegisterValueBlur(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, index));
+        this.dispatch(fundSubNodeRegisterValueBlur(this.props.versionId, this.props.selectedSubNodeId, this.props.routingKey, index));
     }
 
     handleRemove(index) {
-        this.dispatch(fundSubNodeRegisterValueDelete(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, index));
+        this.dispatch(fundSubNodeRegisterValueDelete(this.props.versionId, this.props.selectedSubNodeId, this.props.routingKey, index));
     }
 
     renderLink(link, index) {
@@ -149,7 +149,7 @@ function mapStateToProps(state) {
 SubNodeRegister.propTypes = {
     register: React.PropTypes.object.isRequired,
     selectedSubNodeId: React.PropTypes.number.isRequired,
-    nodeKey: React.PropTypes.number.isRequired,
+    routingKey: React.PropTypes.number.isRequired,
     closed: React.PropTypes.bool.isRequired,
     nodeId: React.PropTypes.oneOfType(React.PropTypes.number, React.PropTypes.string),
 }

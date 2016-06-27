@@ -76,10 +76,10 @@ var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactCompo
      * @param versionId {String} verze AS
      */
     requestData(versionId, validFundDataGrid) {
-        const nodeKey = 'DATA_GRID'
+        const routingKey = 'DATA_GRID'
 
         this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, nodeKey));
+        this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, routingKey));
         this.dispatch(refRulDataTypesFetchIfNeeded());
         this.dispatch(calendarTypesFetchIfNeeded());
 
@@ -89,7 +89,7 @@ var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactCompo
             const formData = subNodeForm.formData
 
             if (!this.containsDescItem(formData, validFundDataGrid.descItemTypeId)) {
-                this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, nodeKey, validFundDataGrid.descItemTypeId));
+                this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, validFundDataGrid.descItemTypeId));
             }
         }
     }
@@ -137,7 +137,7 @@ var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactCompo
                     nodeId={fundDataGrid.parentNodeId}
                     versionId={versionId}
                     selectedSubNodeId={fundDataGrid.nodeId}
-                    nodeKey='DATA_GRID'
+                    routingKey='DATA_GRID'
                     subNodeForm={fundDataGrid.subNodeForm}
                     descItemTypeInfos={fundDataGrid.subNodeForm.descItemTypeInfos}
                     rulDataTypes={rulDataTypes}

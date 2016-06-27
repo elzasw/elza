@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {indexById, findByNodeKeyInNodes, selectedAfterClose} from 'stores/app/utils.jsx'
+import {indexById, findByRoutingKeyInNodes, selectedAfterClose} from 'stores/app/utils.jsx'
 import {node, nodeInitState} from './node.jsx'
 import {consolidateState} from 'components/Utils.jsx'
 

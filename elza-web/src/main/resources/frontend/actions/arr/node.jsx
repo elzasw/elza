@@ -5,7 +5,7 @@
 import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
-import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
+import {indexById, findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
 import {createFundRoot, isFundRootId} from 'components/arr/ArrUtils.jsx'
 
 export function isNodeAction(action) {
@@ -96,15 +96,15 @@ export function nodesReceive(versionId, nodes) {
  * Výsledek hledání v seznamu sourozenců - Accordion.
  * {int} versionId verze AS
  * {int} nodeId id node dané záložky NODE
- * {string} nodeKey klíč dané záložky
+ * {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  * {Array} nodeIds seznam vyfiltrovaných node
  */
-export function fundNodeSubNodeFulltextResult(versionId, nodeId, nodeKey, nodeIds) {
+export function fundNodeSubNodeFulltextResult(versionId, nodeId, routingKey, nodeIds) {
     return {
         type: types.FUND_FUND_SUBNODES_FULLTEXT_RESULT,
         versionId,
         nodeId,
-        nodeKey,
+        routingKey,
         nodeIds
     }
 }
@@ -123,13 +123,13 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
             type: types.FUND_FUND_SUBNODES_FULLTEXT_SEARCH,
             versionId: activeFund.versionId,
             nodeId: activeNode.id,
-            nodeKey: activeNode.nodeKey,
+            routingKey: activeNode.routingKey,
             filterText
         })
         if (filterText !== '') {
             WebApi.findInFundTree(activeFund.versionId, activeNode.id, filterText, 'ONE_LEVEL')
                 .then(json => {
-                    dispatch(fundNodeSubNodeFulltextResult(activeFund.versionId, activeNode.id, activeNode.nodeKey, json));
+                    dispatch(fundNodeSubNodeFulltextResult(activeFund.versionId, activeNode.id, activeNode.routingKey, json));
                     console.log(999, json)
                     if (json.length > 0) {
                         var subNodeParentNode = json[0].parent
@@ -141,7 +141,7 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
                     }
                 })
         } else {
-            dispatch(fundNodeSubNodeFulltextResult(activeFund.versionId, activeNode.id, activeNode.nodeKey, []));
+            dispatch(fundNodeSubNodeFulltextResult(activeFund.versionId, activeNode.id, activeNode.routingKey, []));
         }
     }
 }
@@ -238,14 +238,14 @@ function fundNodeChangeDelete(versionId, node, parentNode) {
  * Stránkování v Accordion - další část.
  * {int} versionId verze AS
  * {int} nodeId id node dané záložky NODE
- * {string} nodeKey klíč dané záložky
+ * {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  */
-export function fundSubNodesNext(versionId, nodeId, nodeKey) {
+export function fundSubNodesNext(versionId, nodeId, routingKey) {
     return {
         type: types.FUND_FUND_SUBNODES_NEXT,
         versionId,
         nodeId,
-        nodeKey,
+        routingKey,
     }
 }
 
@@ -253,14 +253,14 @@ export function fundSubNodesNext(versionId, nodeId, nodeKey) {
  * Stránkování v Accordion - předchozí část.
  * {int} versionId verze AS
  * {int} nodeId id node dané záložky NODE
- * {string} nodeKey klíč dané záložky
+ * {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  */
-export function fundSubNodesPrev(versionId, nodeId, nodeKey) {
+export function fundSubNodesPrev(versionId, nodeId, routingKey) {
     return {
         type: types.FUND_FUND_SUBNODES_PREV,
         versionId,
         nodeId,
-        nodeKey,
+        routingKey,
     }
 }
 
@@ -268,20 +268,20 @@ export function fundSubNodesPrev(versionId, nodeId, nodeKey) {
  * Stránkování v Accordion - další stránka.
  * {int} versionId verze AS
  * {int} nodeId id node dané záložky NODE
- * {string} nodeKey klíč dané záložky
+ * {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  */
-export function fundSubNodesNextPage(versionId, nodeId, nodeKey) {
+export function fundSubNodesNextPage(versionId, nodeId, routingKey) {
     return (dispatch, getState) => {
-        const r = findByNodeKeyInGlobalState(getState(), versionId, nodeKey)
+        const r = findByRoutingKeyInGlobalState(getState(), versionId, routingKey)
         if (r) {
             let activeFund = r.fund
             let node = r.node
             let viewIndex = node.viewStartIndex;
             let index = indexById(node.childNodes, node.selectedSubNodeId);
-            dispatch(_fundSubNodesNextPage(versionId, nodeId, nodeKey));
+            dispatch(_fundSubNodesNextPage(versionId, nodeId, routingKey));
 
             if (index != null) {
-                const rnew = findByNodeKeyInGlobalState(getState(), versionId, nodeKey)
+                const rnew = findByRoutingKeyInGlobalState(getState(), versionId, routingKey)
                 let newActiveFund = rnew.fund
                 let newNode = rnew.node
                 let newViewIndex = newNode.viewStartIndex;
@@ -299,14 +299,14 @@ export function fundSubNodesNextPage(versionId, nodeId, nodeKey) {
  * Stránkování v Accordion - předchozí stránka.
  * {int} versionId verze AS
  * {int} nodeId id node dané záložky NODE
- * {string} nodeKey klíč dané záložky
+ * {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  */
-export function _fundSubNodesNextPage(versionId, nodeId, nodeKey) {
+export function _fundSubNodesNextPage(versionId, nodeId, routingKey) {
     return {
         type: types.FUND_FUND_SUBNODES_NEXT_PAGE,
         versionId,
         nodeId,
-        nodeKey,
+        routingKey,
     }
 }
 
@@ -314,19 +314,19 @@ export function _fundSubNodesNextPage(versionId, nodeId, nodeKey) {
  * Stránkování v Accordion - předchozí stránka.
  * {int} versionId verze AS
  * {int} nodeId id node dané záložky NODE
- * {string} nodeKey klíč dané záložky
+ * {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  */
-export function fundSubNodesPrevPage(versionId, nodeId, nodeKey) {
+export function fundSubNodesPrevPage(versionId, nodeId, routingKey) {
     return (dispatch, getState) => {
-        const r = findByNodeKeyInGlobalState(getState(), versionId, nodeKey)
+        const r = findByRoutingKeyInGlobalState(getState(), versionId, routingKey)
         let activeFund = r.fund
         let node = r.node
         let viewIndex = node.viewStartIndex;
         let index = indexById(node.childNodes, node.selectedSubNodeId);
-        dispatch(_fundSubNodesPrevPage(versionId, nodeId, nodeKey));
+        dispatch(_fundSubNodesPrevPage(versionId, nodeId, routingKey));
 
         if (index != null) {
-            const rnew = findByNodeKeyInGlobalState(getState(), versionId, nodeKey)
+            const rnew = findByRoutingKeyInGlobalState(getState(), versionId, routingKey)
             let newActiveFund = rnew.fund
             let newNode = rnew.node
             let newViewIndex = newNode.viewStartIndex;
@@ -342,13 +342,13 @@ export function fundSubNodesPrevPage(versionId, nodeId, nodeKey) {
  * Stránkování v Accordion - předchozí stránka.
  * {int} versionId verze AS
  * {int} nodeId id node dané záložky NODE
- * {string} nodeKey klíč dané záložky
+ * {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  */
-function _fundSubNodesPrevPage(versionId, nodeId, nodeKey) {
+function _fundSubNodesPrevPage(versionId, nodeId, routingKey) {
     return {
         type: types.FUND_FUND_SUBNODES_PREV_PAGE,
         versionId,
         nodeId,
-        nodeKey,
+        routingKey,
     }
 }

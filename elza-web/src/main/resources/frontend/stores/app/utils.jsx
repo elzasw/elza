@@ -1,35 +1,35 @@
 
-function findByNodeKeyInNodes(nodesState, versionId, nodeKey) {
+function findByRoutingKeyInNodes(nodesState, versionId, routingKey) {
     var nodes = nodesState.nodes;
     for (var a=0; a<nodes.length; a++) {
-        if (nodes[a].nodeKey == nodeKey) {
+        if (nodes[a].routingKey == routingKey) {
             return {node: nodes[a], nodeIndex: a};
         }
     }
     return null;
 }
-exports.findByNodeKeyInNodes = findByNodeKeyInNodes
+exports.findByRoutingKeyInNodes = findByRoutingKeyInNodes
 
-function getNodeKeyType(nodeKey) {
-    const i = nodeKey.indexOf('|')
-    return i === -1 ? nodeKey : nodeKey.substring(0, i)
+function getRoutingKeyType(routingKey) {
+    const i = routingKey.indexOf('|')
+    return i === -1 ? routingKey : routingKey.substring(0, i)
 }
-exports.getNodeKeyType = getNodeKeyType
+exports.getRoutingKeyType = getRoutingKeyType
 
-function findByNodeKeyInGlobalState(globalState, versionId, nodeKey) {
+function findByRoutingKeyInGlobalState(globalState, versionId, routingKey) {
     var fundIndex = indexById(globalState.arrRegion.funds, versionId, "versionId");
     if (fundIndex != null) {
         const fund = globalState.arrRegion.funds[fundIndex]
         var nodes = fund.nodes.nodes
         for (var a=0; a<nodes.length; a++) {
-            if (nodes[a].nodeKey == nodeKey) {
+            if (nodes[a].routingKey == routingKey) {
                 return {fundIndex: fundIndex, fund: fund, node: nodes[a], nodeIndex: a};
             }
         }
     }
     return null;
 }
-exports.findByNodeKeyInGlobalState = findByNodeKeyInGlobalState
+exports.findByRoutingKeyInGlobalState = findByRoutingKeyInGlobalState
 
 function getMapFromList(list, attrName = 'id') {
     var map = {}

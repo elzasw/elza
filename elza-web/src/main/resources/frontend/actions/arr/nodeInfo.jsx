@@ -3,7 +3,7 @@
  */
 
 import {WebApi} from 'actions/index.jsx';
-import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
+import {indexById, findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
 import {barrier} from 'components/Utils.jsx'
 import {isFundRootId} from 'components/arr/ArrUtils.jsx'
 import * as types from 'actions/constants/ActionTypes.js';
@@ -22,10 +22,10 @@ export function isNodeInfoAction(action) {
  * Dohledání store node pro předané parametry.
  * @param {state} kořenový store
  * @param {int} versionId verze AS
- * @param {string} nodeKey klíč záložky NODE
+ * @param {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  */
-function getNode(state, versionId, nodeKey) {
-    var r = findByNodeKeyInGlobalState(state, versionId, nodeKey);
+function getNode(state, versionId, routingKey) {
+    var r = findByRoutingKeyInGlobalState(state, versionId, routingKey);
     if (r != null) {
         return r.node;
     }
@@ -36,12 +36,12 @@ function getNode(state, versionId, nodeKey) {
 /**
  * Vyžádání dat - aby byla ve store k dispozici.
  */
-export function fundNodeInfoFetchIfNeeded(versionId, nodeId, nodeKey) {
+export function fundNodeInfoFetchIfNeeded(versionId, nodeId, routingKey) {
     return (dispatch, getState) => {
         var state = getState();
-        var node = getNode(state, versionId, nodeKey);
+        var node = getNode(state, versionId, routingKey);
         if (node != null && (!node.nodeInfoFetched || node.nodeInfoDirty ) && !node.isNodeInfoFetching) {
-            return dispatch(fundNodeInfoFetch(versionId, nodeId, nodeKey));
+            return dispatch(fundNodeInfoFetch(versionId, nodeId, routingKey));
         }
     }
 }
@@ -49,9 +49,9 @@ export function fundNodeInfoFetchIfNeeded(versionId, nodeId, nodeKey) {
 /**
  * Nové načtení dat.
  */
-export function fundNodeInfoFetch(versionId, nodeId, nodeKey) {
+export function fundNodeInfoFetch(versionId, nodeId, routingKey) {
     return dispatch => {
-        dispatch(fundNodeInfoRequest(versionId, nodeId, nodeKey))
+        dispatch(fundNodeInfoRequest(versionId, nodeId, routingKey))
 
         var isRoot = isFundRootId(nodeId);
 
@@ -79,7 +79,7 @@ export function fundNodeInfoFetch(versionId, nodeId, nodeKey) {
                 parentNodes: data[1].data
             }
         })
-        .then(json => dispatch(fundNodeInfoReceive(versionId, nodeId, nodeKey, json)));
+        .then(json => dispatch(fundNodeInfoReceive(versionId, nodeId, routingKey, json)));
     }
 }
 
@@ -87,12 +87,12 @@ export function fundNodeInfoFetch(versionId, nodeId, nodeKey) {
  * Nová data byla načtena.
  * @param {Object} json objekt s daty
  */
-export function fundNodeInfoReceive(versionId, nodeId, nodeKey, json) {
+export function fundNodeInfoReceive(versionId, nodeId, routingKey, json) {
     return {
         type: types.FUND_NODE_INFO_RECEIVE,
         versionId,
         nodeId,
-        nodeKey,
+        routingKey,
         childNodes: json.childNodes,
         parentNodes: json.parentNodes,
         receivedAt: Date.now()
@@ -102,11 +102,11 @@ export function fundNodeInfoReceive(versionId, nodeId, nodeKey, json) {
 /**
  * Bylo zahájeno nové načítání dat.
  */
-export function fundNodeInfoRequest(versionId, nodeId, nodeKey) {
+export function fundNodeInfoRequest(versionId, nodeId, routingKey) {
     return {
         versionId,
         nodeId,
-        nodeKey,
+        routingKey,
         type: types.FUND_NODE_INFO_REQUEST
     }
 }

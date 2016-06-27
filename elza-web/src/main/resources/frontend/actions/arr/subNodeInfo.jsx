@@ -3,7 +3,7 @@
  */
 
 import {WebApi} from 'actions/index.jsx';
-import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
+import {indexById, findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
 
 import * as types from 'actions/constants/ActionTypes.js';
 
@@ -21,11 +21,11 @@ export function isSubNodeInfoAction(action) {
  * Načtení subNodeInfo store pro předaná data.
  * @param {Object} state globální store
  * @param {int} versionId verze AS
- * @param {int} nodeKey klíč záložky
+ * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  * @return subNodeInfo store
  */
-function getSubNodeInfoStore(state, versionId, nodeKey) {
-    var r = findByNodeKeyInGlobalState(state, versionId, nodeKey);
+function getSubNodeInfoStore(state, versionId, routingKey) {
+    var r = findByRoutingKeyInGlobalState(state, versionId, routingKey);
     if (r != null) {
         return r.node.subNodeInfo;
     }
@@ -37,16 +37,16 @@ function getSubNodeInfoStore(state, versionId, nodeKey) {
  * Vyžádání dat - aby byla ve store k dispozici.
  * @param {int} versionId verze AS
  * @param {int} nodeId id node záložky, které se to týká
- * @param {int} nodeKey klíč záložky
+ * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  */
-export function fundSubNodeInfoFetchIfNeeded(versionId, nodeId, nodeKey) {
+export function fundSubNodeInfoFetchIfNeeded(versionId, nodeId, routingKey) {
     return (dispatch, getState) => {
         var state = getState();
-        var subNodeInfo = getSubNodeInfoStore(state, versionId, nodeKey);
+        var subNodeInfo = getSubNodeInfoStore(state, versionId, routingKey);
 
         if (subNodeInfo != null) {
             if (!subNodeInfo.fetched && !subNodeInfo.isFetching) {
-                return dispatch(fundSubNodeInfoFetch(versionId, nodeId, nodeKey));
+                return dispatch(fundSubNodeInfoFetch(versionId, nodeId, routingKey));
             }
         }
     }
@@ -56,13 +56,13 @@ export function fundSubNodeInfoFetchIfNeeded(versionId, nodeId, nodeKey) {
  * Nové načtení dat.
  * @param {int} versionId verze AS
  * @param {int} nodeId id node záložky, které se to týká
- * @param {int} nodeKey klíč záložky
+ * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  */
-export function fundSubNodeInfoFetch(versionId, nodeId, nodeKey) {
+export function fundSubNodeInfoFetch(versionId, nodeId, routingKey) {
     return dispatch => {
-        dispatch(fundSubNodeInfoRequest(versionId, nodeId, nodeKey))
+        dispatch(fundSubNodeInfoRequest(versionId, nodeId, routingKey))
         return WebApi.getFundTree(versionId, nodeId)
-            .then(json => dispatch(fundSubNodeInfoReceive(versionId, nodeId, nodeKey, json)))
+            .then(json => dispatch(fundSubNodeInfoReceive(versionId, nodeId, routingKey, json)))
     };
 }
 
@@ -70,15 +70,15 @@ export function fundSubNodeInfoFetch(versionId, nodeId, nodeKey) {
  * Nová data byla načtena.
  * @param {int} versionId verze AS
  * @param {int} nodeId id node záložky, které se to týká
- * @param {int} nodeKey klíč záložky
+ * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  * @param {Object} json objekt s daty
  */
-export function fundSubNodeInfoReceive(versionId, nodeId, nodeKey, json) {
+export function fundSubNodeInfoReceive(versionId, nodeId, routingKey, json) {
     return {
         type: types.FUND_SUB_NODE_INFO_RECEIVE,
         versionId,
         nodeId,
-        nodeKey,
+        routingKey,
         childNodes: json.nodes,
         receivedAt: Date.now()
     }
@@ -88,13 +88,13 @@ export function fundSubNodeInfoReceive(versionId, nodeId, nodeKey, json) {
  * Bylo zahájeno nové načítání dat.
  * @param {int} versionId verze AS
  * @param {int} nodeId id node záložky, které se to týká
- * @param {int} nodeKey klíč záložky
+ * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  */
-export function fundSubNodeInfoRequest(versionId, nodeId, nodeKey) {
+export function fundSubNodeInfoRequest(versionId, nodeId, routingKey) {
     return {
         type: types.FUND_SUB_NODE_INFO_REQUEST,
         versionId,
         nodeId,
-        nodeKey,
+        routingKey,
     }
 }

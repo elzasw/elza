@@ -9,8 +9,8 @@ import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
 
-var _nextNodeKey = 1;
-var _nodeKeyAreaPrefix = 'NODE|';
+var _nextRoutingKey = 1;
+var _routingKeyAreaPrefix = 'NODE|';
 var _pageSize = 50;
 
 export function nodeInitState(node, prevNodesNode) {
@@ -40,13 +40,13 @@ export function nodeInitState(node, prevNodesNode) {
     };
 
     if (prevNodesNode) {
-        result.nodeKey = prevNodesNode.nodeKey;
+        result.routingKey = prevNodesNode.routingKey;
         result.subNodeForm = prevNodesNode.subNodeForm;
         result.subNodeFormCache = prevNodesNode.subNodeFormCache;
         result.subNodeInfo = prevNodesNode.subNodeInfo;
         result.subNodeRegister = prevNodesNode.subNodeRegister;
     } else {
-        result.nodeKey = _nodeKeyAreaPrefix + _nextNodeKey++;
+        result.routingKey = _routingKeyAreaPrefix + _nextRoutingKey++;
         result.subNodeForm = subNodeForm(undefined, {type:''});
         result.subNodeFormCache = subNodeFormCache(undefined, {type:''});
         result.subNodeInfo = subNodeInfo(undefined, {type:''});
@@ -101,7 +101,7 @@ function getViewStartIndex(state, selectedId) {
 const nodeInitialState = {
     id: null,
     name: null,
-    nodeKey: _nodeKeyAreaPrefix + _nextNodeKey++,
+    routingKey: _routingKeyAreaPrefix + _nextRoutingKey++,
     selectedSubNodeId: null,
     subNodeForm: subNodeForm(undefined, {type:''}),
     subNodeFormCache: subNodeFormCache(undefined, {type:''}),
@@ -174,7 +174,7 @@ export function node(state = nodeInitialState, action) {
                 subNodeFormCache: subNodeFormCache(undefined, {type:''}),
                 subNodeRegister: subNodeRegister(undefined, {type:''}),
                 subNodeInfo: subNodeInfo(undefined, {type:''}),
-                nodeKey: _nodeKeyAreaPrefix + _nextNodeKey++,
+                routingKey: _routingKeyAreaPrefix + _nextRoutingKey++,
                 developerScenarios: {
                     isFetching: false,
                     isDirty: true,

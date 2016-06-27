@@ -24,7 +24,7 @@ import {isFundDataGridAction} from 'actions/arr/fundDataGrid.jsx'
 import {isFundChangeAction} from 'actions/global/change.jsx'
 import {isFundPacketsAction} from 'actions/arr/fundPackets.jsx'
 import {isFundActionAction} from 'actions/arr/fundAction.jsx'
-import {getNodeKeyType} from 'stores/app/utils.jsx'
+import {getRoutingKeyType} from 'stores/app/utils.jsx'
 import {isFundOutput} from 'actions/arr/fundOutput.jsx'
 
 export function fundInitState(fundWithVersion) {
@@ -123,7 +123,7 @@ export function fund(state, action) {
     }
 
     if (nodeFormActions.isSubNodeFormAction(action)) {
-        const type = getNodeKeyType(action.nodeKey)
+        const type = getRoutingKeyType(action.routingKey)
         switch (type) {
             case 'NODE':
                 var result = {...state,

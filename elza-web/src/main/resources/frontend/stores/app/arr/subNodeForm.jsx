@@ -186,7 +186,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     if (loc.descItem.validateTimer) {
                         clearTimeout(loc.descItem.validateTimer);
                     }
-                    var fc = () => action.dispatch(nodeFormActions.fundSubNodeFormValueValidate(action.versionId, action.nodeKey, action.valueLocation));
+                    var fc = () => action.dispatch(nodeFormActions.fundSubNodeFormValueValidate(action.versionId, action.routingKey, action.valueLocation));
                     loc.descItem.validateTimer = setTimeout(fc, 250);
                     break;
                 default:

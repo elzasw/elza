@@ -464,7 +464,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             <FundDataGridCellForm
                 versionId={versionId}
                 fundId={fundId}
-                nodeKey='DATA_GRID'
+                routingKey='DATA_GRID'
                 closed={closed}
                 position={{x: cellRect.left, y: cellRect.top}}
             />,
