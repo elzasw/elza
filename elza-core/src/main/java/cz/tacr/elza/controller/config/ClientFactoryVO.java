@@ -9,7 +9,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.vo.DmsFileVO;
+import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
@@ -1363,12 +1363,58 @@ public class ClientFactoryVO {
         return result;
     }
 
-    public DmsFileVO createFile(DmsFile file) {
+    /**
+     * Vytvoří VO DMS File
+     * @param file DO
+     * @return VO
+     */
+    public DmsFileVO createDmsFile(DmsFile file) {
         return mapperFactory.getMapperFacade().map(file, DmsFileVO.class);
     }
 
-    public List<DmsFileVO> createFilesList(List<DmsFile> filesList) {
-        return createList(filesList, DmsFileVO.class, this::createFile);
+    /**
+     * Vytvoří List VO DMS File
+     * @param filesList List DO
+     * @return List VO
+     */
+    public List<DmsFileVO> createDmsFilesList(List<DmsFile> filesList) {
+        return createList(filesList, DmsFileVO.class, this::createDmsFile);
+    }
+
+    /**
+     * Vytvoří VO Arr File
+     * @param file DO
+     * @return VO
+     */
+    public ArrFileVO createArrFile(ArrFile file) {
+        return mapperFactory.getMapperFacade().map(file, ArrFileVO.class);
+    }
+
+    /**
+     * Vytvoří List VO Arr File
+     * @param filesList List DO
+     * @return List VO
+     */
+    public List<ArrFileVO> createArrFilesList(List<ArrFile> filesList) {
+        return createList(filesList, ArrFileVO.class, this::createArrFile);
+    }
+
+    /**
+     * Vytvoří VO Arr Output
+     * @param file DO
+     * @return VO
+     */
+    public ArrOutputFileVO createArrOutputFile(ArrOutputFile file) {
+        return mapperFactory.getMapperFacade().map(file, ArrOutputFileVO.class);
+    }
+
+    /**
+     * Vytvoří List VO Arr Output
+     * @param filesList List DO
+     * @return List VO
+     */
+    public List<ArrOutputFileVO> createArrOutputFilesList(List<ArrOutputFile> filesList) {
+        return createList(filesList, ArrOutputFileVO.class, this::createArrOutputFile);
     }
 
     public ArrOutputDefinitionVO createArrOutputDefinition(final ArrOutputDefinition outputDefinition) {

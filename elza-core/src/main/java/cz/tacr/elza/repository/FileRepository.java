@@ -1,7 +1,6 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.DmsFile;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 
@@ -12,5 +11,5 @@ import org.springframework.stereotype.Repository;
  * @since 20.6.2016
  */
 @Repository
-public interface FileRepository extends JpaRepository<DmsFile, Integer>, FileRepositoryCustom {
+public interface FileRepository extends ElzaJpaRepository<DmsFile, Integer>, FileRepositoryCustom {
 }

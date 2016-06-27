@@ -19,6 +19,8 @@ import javax.persistence.ManyToOne;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrOutputFile extends DmsFile implements cz.tacr.elza.api.ArrOutputFile<ArrOutputResult> {
 
+    public static final String OUTPUT_RESULT = "outputResult";
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputResult.class)
     @JoinColumn(name = "outputResultId", nullable = false)

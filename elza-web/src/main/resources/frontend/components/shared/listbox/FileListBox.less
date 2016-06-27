@@ -1,0 +1,68 @@
+@import "~variables.less";
+
+@registry-panel-actions-height: 26px;
+
+.file-listbox-container {
+  padding: 5px;
+  background: @fa-file-tree-bg;
+  border: 1px solid @fa-file-tree-border;
+  border-top: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .list-container {
+    flex-grow: 1;
+    overflow: hidden;
+    overflow-y: auto;
+    height: 100%;
+    background: @fa-file-tree-bg-list;
+    border: 1px solid transparent;
+
+    .search-result-row {
+      padding: 5px;
+      display: flex;
+
+      .details {
+        flex-grow: 1;
+        width: 100%;
+
+        div {
+          display: inline-block;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          vertical-align: middle;
+        }
+
+        .title {
+          padding-left: 5px;
+          width: calc(~'100% - 15px');
+        }
+        .path {
+          font-size: 0.8em;
+          color: @color-link;
+          width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+      .actions {
+        visibility: hidden;
+        display: flex;
+
+        .icon {
+          padding: 5px;
+          display: inline-block;
+          align-self: center;
+        }
+      }
+      &:hover {
+        .actions {
+          visibility: visible;
+
+        }
+      }
+    }
+  }
+}

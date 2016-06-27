@@ -7,6 +7,7 @@ import bulkActions from './bulkActions.jsx'
 import versionValidation from './versionValidation.jsx'
 import fundNodesPolicy from './fundNodesPolicy.jsx'
 import fundPackets from './fundPackets.jsx'
+import fundFiles from './fundFiles.jsx'
 import fundOutput from './fundOutput.jsx'
 import fundAction from './fundAction.jsx'
 import {consolidateState} from 'components/Utils.jsx'
@@ -23,12 +24,13 @@ import {isDeveloperScenariosAction} from 'actions/global/developer.jsx'
 import {isFundDataGridAction} from 'actions/arr/fundDataGrid.jsx'
 import {isFundChangeAction} from 'actions/global/change.jsx'
 import {isFundPacketsAction} from 'actions/arr/fundPackets.jsx'
+import {isFundFilesAction} from 'actions/arr/fundFiles.jsx'
 import {isFundActionAction} from 'actions/arr/fundAction.jsx'
 import {getNodeKeyType} from 'stores/app/utils.jsx'
 import {isFundOutput} from 'actions/arr/fundOutput.jsx'
 
 export function fundInitState(fundWithVersion) {
-    var result = {
+    const result = {
         ...fundWithVersion,
         id: fundWithVersion.id,
         closed: fundWithVersion.closed,
@@ -40,6 +42,7 @@ export function fundInitState(fundWithVersion) {
         fundOutput: fundOutput(),
         fundDataGrid: fundDataGrid(),
         fundPackets: fundPackets(),
+        fundFiles: fundFiles(),
         fundTree: fundTree(undefined, {type: ''}),
         fundTreeMovementsLeft: fundTree(undefined, {type: ''}),
         fundTreeMovementsRight: fundTree(undefined, {type: ''}),
@@ -103,6 +106,11 @@ export function fund(state, action) {
 
     if (isFundPacketsAction(action)) {
         var result = {...state, fundPackets: fundPackets(state.fundPackets, action)}
+        return consolidateState(state, result);
+    }
+
+    if (isFundFilesAction(action)) {
+        var result = {...state, fundFiles: fundFiles(state.fundFiles, action)}
         return consolidateState(state, result);
     }
 
@@ -178,6 +186,7 @@ export function fund(state, action) {
                 fundOutput: fundOutput(state.fundOutput, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
                 fundPackets: fundPackets(state.fundPackets, action),
+                fundFiles: fundFiles(state.fundFiles, action),
                 fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
                 bulkActions: bulkActions(undefined, {type: ''}),
                 fundAction: fundAction(undefined, {type: ''}),
@@ -198,6 +207,7 @@ export function fund(state, action) {
                 fundOutput: fundOutput(state.fundOutput, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
                 fundPackets: fundPackets(state.fundPackets, action),
+                fundFiles: fundFiles(state.fundFiles, action),
             }
         case types.OUTPUT_CHANGES:
         case types.OUTPUT_CHANGES_DETAIL:
@@ -211,6 +221,13 @@ export function fund(state, action) {
                 ...state,
                 fundPackets: fundPackets(state.fundPackets, action)
             }
+        case types.CHANGE_FILES:{
+            console.log('hereFund');
+            return {
+                ...state,
+                fundFiles: fundFiles(state.fundFiles, action)
+            }
+        }
         case types.FUND_FUNDS_REQUEST:
             if (action.fundMap[state.versionId]) {
                 return {

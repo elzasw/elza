@@ -28,6 +28,7 @@ import {routerNavigate} from 'actions/router.jsx'
 import {setInputFocus} from 'components/Utils.jsx'
 import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+import {UrlFactory} from 'actions/index.jsx';
 var classNames = require('classnames');
 var Shortcuts = require('react-shortcuts/component')
 
@@ -587,15 +588,15 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     handleCoordinatesDownload(objectId) {
-        window.open(window.location.origin + '/api/kmlManagerV1/export/arrCoordinates/' + objectId + '/' + this.props.fund.versionId);
+        const {versionId} = this.props;
+
+        window.open(UrlFactory.exportArrCoordinate(objectId, versionId));
     }
 
     handleJsonTableDownload(objectId) {
-        const {versionId} = this.props
+        const {versionId} = this.props;
         
-        window.open(window.location.origin +
-            "/api/arrangementManagerV2/descItems/" + versionId + "/csv/export?descItemObjectId=" +objectId
-        );
+        window.open(UrlFactory.exportArrDescItemCsvExport(objectId, versionId));
     }
 
     /**

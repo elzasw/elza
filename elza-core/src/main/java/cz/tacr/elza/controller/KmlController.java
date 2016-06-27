@@ -209,7 +209,7 @@ public class KmlController {
     }
 
 
-    @RequestMapping(value = "/api/kmlManagerV1/export/arrCoordinates/{descItemObjectId}/{fundVersionId}",
+    @RequestMapping(value = "/api/kmlManagerV1/export/arrCoordinates/{fundVersionId}/{descItemObjectId}",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_XML_VALUE)
     public void exportArrCoordinates(HttpServletResponse response,

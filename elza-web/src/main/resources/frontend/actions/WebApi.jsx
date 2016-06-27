@@ -25,6 +25,18 @@ class UrlFactory {
     static exportRegCoordinate(objectId) {
         return '/api/kmlManagerV1/export/regCoordinates/' + objectId;
     }
+
+    static exportArrCoordinate(objectId, versionId) {
+        return window.location.origin + '/api/kmlManagerV1/export/arrCoordinates/' + versionId + '/' + objectId;
+    }
+
+    static exportArrDescItemCsvExport(objectId, versionId) {
+        return window.location.origin + '/api/arrangementManagerV2/descItems/' + versionId + '/csv/export?descItemObjectId=' + objectId
+    }
+
+    static downloadDmsFile(id) {
+        return window.location.origin + '/api/dms/' + id
+    }
 }
 
 /**
@@ -841,6 +853,22 @@ class WebApi{
 
     outputDelete(versionId, outputId) {
         return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/output/' + versionId + '/' + outputId);
+    }
+    
+    createFundFile(formData) {
+        return AjaxUtils.ajaxCallRaw('/api/dms/fund/', {}, "POST", formData);
+    }
+    
+    findFundFiles(fundId, searchText, count = 20) {
+        return AjaxUtils.ajaxGet('/api/dms/fund/' + fundId, {'count': count, 'search': searchText});
+    }
+
+    updateFundFile(fileId, formData) {
+        return AjaxUtils.ajaxCallRaw('/api/dms/fund/' + fileId, {}, "POST", formData);
+    }
+
+    deleteArrFile(fileId) {
+        return AjaxUtils.ajaxDelete('/api/dms/fund/' + fileId, null, null);
     }
 }
 

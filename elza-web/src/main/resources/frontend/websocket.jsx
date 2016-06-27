@@ -5,10 +5,29 @@ import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.js
 import {buklActionStateChange} from 'actions/arr/bulkActions.jsx';
 import {store} from 'stores/app/AppStore.jsx';
 
-import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
-        changeNodes, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty, changePartyDelete,
-    changeMoveLevel, changeRegistryRecord, changeFund, deleteFund, changeFundRecord, changeInstitution,
-    changeVisiblePolicy, fundOutputChanges, fundOutputChangesDetail, changeFundAction} from 'actions/global/change.jsx';
+import {
+    changeConformityInfo,
+    changeIndexingFinished,
+    changePackage,
+    changeFiles,
+    changePackets,
+    changeNodes,
+    changeDeleteLevel,
+    changeAddLevel,
+    changeApproveVersion,
+    changeParty,
+    changePartyDelete,
+    changeMoveLevel,
+    changeRegistryRecord,
+    changeFund,
+    deleteFund,
+    changeFundRecord,
+    changeInstitution,
+    changeVisiblePolicy,
+    fundOutputChanges,
+    fundOutputChangesDetail,
+    changeFundAction
+} from 'actions/global/change.jsx';
 
 
 var SockJS = require('sockjs-client');
@@ -114,6 +133,10 @@ function processEvents(values) {
 
             case 'PACKETS_CHANGE':
                 packetsChangeEvent(value);
+                break;
+
+            case 'FILES_CHANGE':
+                filesChangeEvent(value);
                 break;
 
             case 'BULK_ACTION_STATE_CHANGE':
@@ -279,6 +302,10 @@ function institutionChange() {
  */
 function packetsChangeEvent(value) {
     store.dispatch(changePackets(value.ids[0]));
+}
+
+function filesChangeEvent(value) {
+    store.dispatch(changeFiles(value.versionId, value.entityId));
 }
 
 function nodesChange(value) {

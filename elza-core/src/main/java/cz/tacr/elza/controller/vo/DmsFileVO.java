@@ -1,11 +1,13 @@
-package cz.tacr.elza.domain.vo;
+package cz.tacr.elza.controller.vo;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 13.3.2016
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@type")
 public class DmsFileVO {
     private Integer id;
 

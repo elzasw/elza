@@ -443,6 +443,21 @@ var ListBox = class ListBox extends AbstractReactComponent {
         );
     }
 }
+ListBox.propsTypes = {
+    items: React.PropTypes.array.isRequired,
+    onSelect: React.PropTypes.func,
+    onCheck: React.PropTypes.func,
+    onDelete: React.PropTypes.func,
+    canSelectItem: React.PropTypes.bool,
+    multiselect: React.PropTypes.bool,
+    onFocus: React.PropTypes.func,
+    onChangeSelection: React.PropTypes.func,
+    activeIndexes: React.PropTypes.array,
+    onChangeOrder: React.PropTypes.func,
+    className: React.PropTypes.string,
+    renderItemContent: React.PropTypes.func.isRequired,
+    sortable: React.PropTypes.bool
+};
 
 ListBox.defaultProps = {
     renderItemContent: (item, isActive, index) => {
@@ -453,6 +468,6 @@ ListBox.defaultProps = {
     canSelectItem: (item, index) => {
         return true
     }
-}
+};
 
-module.exports = ListBox
+module.exports = ListBox;

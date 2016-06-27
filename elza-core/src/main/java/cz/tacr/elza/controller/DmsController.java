@@ -2,13 +2,18 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.VOWithCount;
+import cz.tacr.elza.controller.vo.ArrFileVO;
+import cz.tacr.elza.controller.vo.ArrOutputFileVO;
+import cz.tacr.elza.controller.vo.DmsFileVO;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.DmsFile;
-import cz.tacr.elza.domain.vo.DmsFileVO;
+import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.service.DmsService;
 import org.apache.commons.io.IOUtils;
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Nullable;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
+import java.io.InputStream;
+import java.util.function.Function;
 
 /**
  * @author Petr Compel <petr.compel@marbes.cz>
@@ -43,22 +45,125 @@ public class DmsController {
 
     /**
      * Vytvoření souboru
-     * @param fileVO objekt souboru
+     * @param object objekt souboru
      * @throws IOException
      */
     @Transactional
-    @RequestMapping(value = "/api/dms/dmsFiles", method = RequestMethod.POST)
-    public void createFile(@RequestBody DmsFileVO fileVO) throws IOException {
-        Assert.notNull(fileVO);
-        MultipartFile file = fileVO.getFile();
-        Assert.notNull(file);
-        DmsFile dmsFile = factoryDO.createDmsFile(fileVO);
-        dmsFile.setFileName(file.getName());
-        dmsFile.setMimeType(file.getContentType());
-        dmsFile.setFileSize((int) file.getSize());
-        dmsService.storeFile(dmsFile);
-        storeFile(fileVO.getFile(), dmsFile);
-        dmsService.storeFile(dmsFile);
+    @RequestMapping(value = "/api/dms/common", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void createFile(final DmsFileVO object) throws IOException {
+        create(object, factoryDO::createDmsFile);
+    }
+
+    /**
+     * Vytvoření souboru
+     * @param object objekt souboru
+     * @throws IOException
+     */
+    @Transactional
+    @RequestMapping(value = "/api/dms/fund", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void createFile(final ArrFileVO object) throws IOException {
+        create(object, (fileVO) -> factoryDO.createArrFile((ArrFileVO) fileVO));
+    }
+
+    /**
+     * Vytvoření souboru
+     * @param object objekt souboru
+     * @throws IOException
+     */
+    @Transactional
+    @RequestMapping(value = "/api/dms/output", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void createFile(final ArrOutputFileVO object) throws IOException {
+        create(object, (fileVO) -> factoryDO.createArrOutputFile((ArrOutputFileVO) fileVO));
+    }
+
+    /**
+     * Pomocná metoda pro vytvoření DMS souboru
+     * @param objVO VO
+     * @param factory továrna pro změnu VO na DO
+     * @return DO pro vrácení klientovi
+     * @throws IOException
+     */
+    private DmsFile create(final DmsFileVO objVO, final Function<DmsFileVO, DmsFile> factory) throws IOException {
+        Assert.notNull(objVO);
+        MultipartFile multipartFile = objVO.getFile();
+        Assert.notNull(multipartFile);
+
+        objVO.setFileName(multipartFile.getOriginalFilename());
+        objVO.setMimeType(multipartFile.getContentType());
+        objVO.setFileSize((int) multipartFile.getSize());
+
+        DmsFile objDO = factory.apply(objVO);
+        dmsService.createFile(objDO, multipartFile.getInputStream());
+        return objDO;
+    }
+
+    /**
+     * Update souboru
+     *
+     * @param fileId id souboru
+     * @param object objekt souboru
+     * @throws IOException
+     */
+    @Transactional
+    // kvůli IE nelze použít PUT protože nemůžeme uploadovat soubor
+    @RequestMapping(value = "/api/dms/common/{fileId}", method = RequestMethod.POST)
+    public void updateFile(@PathVariable(value = "fileId") Integer fileId, final DmsFileVO object) throws IOException {
+        update(fileId, object, factoryDO::createDmsFile);
+    }
+
+    /**
+     * Update souboru
+     *
+     * @param fileId id souboru
+     * @param object objekt souboru
+     * @throws IOException
+     */
+    @Transactional
+    // kvůli IE nelze použít PUT protože nemůžeme uploadovat soubor
+    @RequestMapping(value = "/api/dms/fund/{fileId}", method = RequestMethod.POST)
+    public void updateFile(@PathVariable(value = "fileId") Integer fileId, final ArrFileVO object) throws IOException {
+        update(fileId, object, (fileVO) -> factoryDO.createArrFile((ArrFileVO) fileVO));
+    }
+
+    /**
+     * Update souboru
+     *
+     * @param fileId id souboru
+     * @param object objekt souboru
+     * @throws IOException
+     */
+    @Transactional
+    // kvůli IE nelze použít PUT protože nemůžeme uploadovat soubor
+    @RequestMapping(value = "/api/dms/output/{fileId}", method = RequestMethod.POST)
+    public void updateFile(@PathVariable(value = "fileId") Integer fileId, final ArrOutputFileVO object) throws IOException {
+        update(fileId, object, (fileVO) -> factoryDO.createArrOutputFile((ArrOutputFileVO) fileVO));
+    }
+
+
+    /**
+     * Pomocná metoda pro úpravu DMS souboru
+     * @param objVO VO
+     * @param factory továrna pro změnu VO na DO
+     * @return DO pro vrácení klientovi
+     * @throws IOException
+     */
+    private DmsFile update(final Integer fileId, final DmsFileVO objVO, final Function<DmsFileVO, DmsFile> factory) throws IOException {
+        Assert.notNull(fileId);
+        Assert.notNull(objVO);
+        Assert.isTrue(fileId.equals(objVO.getId()), "Id v URL neodpovídá ID objektu");
+
+        DmsFile objDO = factory.apply(objVO);
+
+        MultipartFile multipartFile = objVO.getFile();
+        boolean hasInputFile = multipartFile != null;
+        if (hasInputFile) {
+            objDO.setFileName(multipartFile.getOriginalFilename());
+            objDO.setMimeType(multipartFile.getContentType());
+            objDO.setFileSize((int) multipartFile.getSize());
+        }
+
+        dmsService.updateFile(objDO, hasInputFile ? multipartFile.getInputStream() : null);
+        return objDO;
     }
 
     /**
@@ -67,73 +172,18 @@ public class DmsController {
      * @param fileId id souboru
      * @throws IOException
      */
-    @RequestMapping(value = "/api/dms/dmsFiles/{fileId}", method = RequestMethod.GET)
-    public void getFile(HttpServletResponse response,  @PathVariable(value = "fileId") Integer fileId) throws IOException {
+    @RequestMapping(value = "/api/dms/{fileId}", method = RequestMethod.GET)
+    public void getFile(HttpServletResponse response, @PathVariable(value = "fileId") Integer fileId) throws IOException {
         Assert.notNull(fileId);
         DmsFile file = dmsService.getFile(fileId);
+        Assert.notNull(file, "Soubor s fileId " + fileId + " neexistuje!");
         response.setHeader("Content-Disposition", "attachment;filename="+file.getFileName());
 
         ServletOutputStream out = response.getOutputStream();
-        FileInputStream na = new FileInputStream(dmsService.getFilePath(file));
-        IOUtils.copy(na, out);
+        InputStream in = dmsService.downloadFile(file);
+        IOUtils.copy(in, out);
+        IOUtils.closeQuietly(in);
         IOUtils.closeQuietly(out);
-    }
-
-    /**
-     * Smazání souboru
-     *
-     * @param fileId id souboru
-     */
-    @RequestMapping(value = "/api/dms/dmsFiles/{fileId}", method = RequestMethod.DELETE)
-    public void deleteFile(@PathVariable(value = "fileId") Integer fileId) {
-        dmsService.deleteFile(fileId);
-    }
-
-    /**
-     * Update souboru
-     *
-     * @param fileId id souboru
-     * @param fileVO objekt souboru
-     * @throws IOException
-     */
-    @Transactional
-    // kvůli IE nelze použít PUT protože nemůžeme uploadovat soubor
-    @RequestMapping(value = "/api/dms/dmsFiles/{fileId}", method = RequestMethod.POST)
-    public void updateFile(@PathVariable(value = "fileId") Integer fileId, @RequestBody DmsFileVO fileVO) throws IOException {
-        Assert.notNull(fileId);
-        Assert.notNull(fileVO);
-        dmsService.getFile(fileId);
-        DmsFile dmsFile = factoryDO.createDmsFile(fileVO);
-        if (fileVO.getFile() != null) {
-            MultipartFile file = fileVO.getFile();
-            dmsFile.setFileName(file.getName());
-            dmsFile.setMimeType(file.getContentType());
-            dmsFile.setFileSize((int) file.getSize());
-            storeFile(file, dmsFile);
-        }
-        dmsService.storeFile(dmsFile);
-    }
-
-    /**
-     * Uložení souboru a získání počtu stran pokud je to PDF
-     *
-     * @param file soubor
-     * @param dmsFile soubor v DB
-     * @throws IOException
-     */
-    private void storeFile(final MultipartFile file, final DmsFile dmsFile) throws IOException {
-        String filePath = dmsService.getFilePath(dmsFile);
-        FileOutputStream out = new FileOutputStream(filePath);
-        IOUtils.copy(file.getInputStream(), out);
-        IOUtils.closeQuietly(out);
-
-        if (file.getName().endsWith(".pdf")) {
-            PDDocument reader = PDDocument.load(new File(filePath));
-            dmsFile.setPagesCount(reader.getNumberOfPages());
-            reader.close();
-        } else {
-            dmsFile.setPagesCount(null);
-        }
     }
 
     /**
@@ -143,17 +193,75 @@ public class DmsController {
      * @param count  počet záznamů
      * @return list záznamů
      */
-    @RequestMapping(value = "/api/dms/dmsFiles", method = RequestMethod.GET)
-    public VOWithCount<DmsFileVO> findFiles(@RequestParam(required = false) @Nullable final String search,
-                                 @RequestParam final Integer from,
-                                 @RequestParam final Integer count) {
-        final long foundCount = dmsService.findFileByTextCount(search);
+    @RequestMapping(value = "/api/dms/common", method = RequestMethod.GET)
+    public FilteredResultVO<DmsFileVO> findFiles(@RequestParam(required = false) @Nullable final String search,
+                                                    @RequestParam(required = false, defaultValue = "0") final Integer from,
+                                                    @RequestParam(required = false, defaultValue = "20") final Integer count) {
+        FilteredResult<DmsFile> files = dmsService.findDmsFiles(search, from, count);
+        return new FilteredResultVO<>(factoryVO.createDmsFilesList(files.getList()), files.getTotalCount());
+    }
 
-        if (foundCount == 0) {
-            return new VOWithCount<>(Collections.EMPTY_LIST, foundCount);
-        }
+    /**
+     * Vyhledávání
+     * @param search vyhledávaný text
+     * @param from od záznamu
+     * @param count  počet záznamů
+     * @return list záznamů
+     */
+    @RequestMapping(value = "/api/dms/fund/{fundId}", method = RequestMethod.GET)
+    public FilteredResultVO<ArrFileVO> findFundFiles(@PathVariable final Integer fundId,
+                                                     @RequestParam(required = false) @Nullable final String search,
+                                                    @RequestParam(required = false, defaultValue = "0") final Integer from,
+                                                    @RequestParam(required = false, defaultValue = "20") final Integer count) {
+        FilteredResult<ArrFile> files = dmsService.findArrFiles(search, fundId, from, count);
+        return new FilteredResultVO<>(factoryVO.createArrFilesList(files.getList()), files.getTotalCount());
+    }
 
-        List<DmsFile> foundFiles = dmsService.findFileByText(search, from, count);
-        return new VOWithCount<>(factoryVO.createFilesList(foundFiles), foundCount);
+    /**
+     * Vyhledávání
+     * @param search vyhledávaný text
+     * @param from od záznamu
+     * @param count  počet záznamů
+     * @return list záznamů
+     */
+    @RequestMapping(value = "/api/dms/output/{outputResultId}", method = RequestMethod.GET)
+    public FilteredResultVO<ArrOutputFileVO> findOutputFiles(@PathVariable final Integer outputResultId,
+                                                     @RequestParam(required = false) @Nullable final String search,
+                                                    @RequestParam(required = false, defaultValue = "0") final Integer from,
+                                                    @RequestParam(required = false, defaultValue = "20") final Integer count) {
+        FilteredResult<ArrOutputFile> files = dmsService.findOutputFiles(search, outputResultId, from, count);
+        return new FilteredResultVO<>(factoryVO.createArrOutputFilesList(files.getList()), files.getTotalCount());
+    }
+
+    /**
+     * Smazání souboru
+     *
+     * @param fileId id souboru
+     */
+    @Transactional
+    @RequestMapping(value = "/api/dms/common/{fileId}", method = RequestMethod.DELETE)
+    public void deleteFile(@PathVariable(value = "fileId") Integer fileId) throws IOException {
+        dmsService.deleteFile(fileId);
+    }
+
+    /**
+     * Smazání souboru
+     *
+     * @param fileId id souboru
+     */
+    @Transactional
+    @RequestMapping(value = "/api/dms/fund/{fileId}", method = RequestMethod.DELETE)
+    public void deleteArrFile(@PathVariable(value = "fileId") Integer fileId) throws IOException {
+        dmsService.deleteArrFile(fileId);
+    }
+    /**
+     * Smazání souboru
+     *
+     * @param fileId id souboru
+     */
+    @Transactional
+    @RequestMapping(value = "/api/dms/output/{fileId}", method = RequestMethod.DELETE)
+    public void deleteOutputFile(@PathVariable(value = "fileId") Integer fileId) throws IOException {
+        dmsService.deleteOutputFile(fileId);
     }
 }
