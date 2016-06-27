@@ -1,54 +1,9 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.elza.api.controller.ArrangementManager;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPacketRef;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemCoordinates;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemDecimal;
-import cz.tacr.elza.domain.ArrItemEnum;
-import cz.tacr.elza.domain.ArrItemFormattedText;
-import cz.tacr.elza.domain.ArrItemInt;
-import cz.tacr.elza.domain.ArrItemJsonTable;
-import cz.tacr.elza.domain.ArrItemPacketRef;
-import cz.tacr.elza.domain.ArrItemPartyRef;
-import cz.tacr.elza.domain.ArrItemRecordRef;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemText;
-import cz.tacr.elza.domain.ArrItemUnitdate;
-import cz.tacr.elza.domain.ArrItemUnitid;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.repository.DataCoordinatesRepository;
-import cz.tacr.elza.repository.DataDecimalRepository;
-import cz.tacr.elza.repository.DataIntegerRepository;
-import cz.tacr.elza.repository.DataJsonTableRepository;
-import cz.tacr.elza.repository.DataNullRepository;
-import cz.tacr.elza.repository.DataPacketRefRepository;
-import cz.tacr.elza.repository.DataPartyRefRepository;
-import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DataStringRepository;
-import cz.tacr.elza.repository.DataTextRepository;
-import cz.tacr.elza.repository.DataUnitdateRepository;
-import cz.tacr.elza.repository.DataUnitidRepository;
-import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.*;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MappingContext;
@@ -129,6 +84,9 @@ public class ItemService implements InitializingBean {
 
     @Autowired
     private DataPacketRefRepository dataPacketRefRepository;
+
+    @Autowired
+    private DataFileRefRepository dataFileRefRepository;
 
     @Autowired
     private DataNullRepository dataNullRepository;
@@ -237,6 +195,7 @@ public class ItemService implements InitializingBean {
         defineMapUnitid();
         defineMapDecimal();
         defineMapPacketRef();
+        defineMapFileRef();
         defineMapEnum();
         defineMapJsonTable();
 
@@ -454,6 +413,42 @@ public class ItemService implements InitializingBean {
                         arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
                         arrDataPartyRefNew.setItem(arrDataPartyRef.getItem());
                         arrDataPartyRefNew.setPacket(arrDataPartyRef.getPacket());
+                    }
+                }).register();
+    }
+
+    /**
+     * Nadefinování pravidel pro převod formátu FileRef.
+     */
+    private void defineMapFileRef() {
+        factory.classMap(ArrItemFileRef.class, ArrDataFileRef.class)
+                .customize(new CustomMapper<ArrItemFileRef, ArrDataFileRef>() {
+
+                    @Override
+                    public void mapAtoB(ArrItemFileRef arrDescItemPartyRef,
+                                        ArrDataFileRef arrDataPartyRef,
+                                        MappingContext context) {
+                        arrDataPartyRef.setFile(arrDescItemPartyRef.getFile());
+                    }
+
+                    @Override
+                    public void mapBtoA(ArrDataFileRef arrDataPartyRef,
+                                        ArrItemFileRef arrDescItemPartyRef,
+                                        MappingContext context) {
+                        arrDescItemPartyRef.setFile(arrDataPartyRef.getFile());
+                    }
+
+                }).register();
+
+        factory.classMap(ArrDataFileRef.class, ArrDataFileRef.class)
+                .customize(new CustomMapper<ArrDataFileRef, ArrDataFileRef>() {
+                    @Override
+                    public void mapAtoB(ArrDataFileRef arrDataPartyRef,
+                                        ArrDataFileRef arrDataPartyRefNew,
+                                        MappingContext context) {
+                        arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
+                        arrDataPartyRefNew.setItem(arrDataPartyRef.getItem());
+                        arrDataPartyRefNew.setFile(arrDataPartyRef.getFile());
                     }
                 }).register();
     }
@@ -797,6 +792,7 @@ public class ItemService implements InitializingBean {
         mapRepository.put(ArrDataUnitid.class, dataUnitidRepository);
         mapRepository.put(ArrDataDecimal.class, dataDecimalRepository);
         mapRepository.put(ArrDataPacketRef.class, dataPacketRefRepository);
+        mapRepository.put(ArrDataFileRef.class, dataFileRefRepository);
         mapRepository.put(ArrDataNull.class, dataNullRepository);
         mapRepository.put(ArrDataJsonTable.class, dataJsonTableRepository);
     }

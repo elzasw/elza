@@ -49,6 +49,8 @@ public class ConfigMapperConfiguration {
     @Autowired
     private FundRepository fundRepository;
     @Autowired
+    private FundFileRepository fundFileRepository;
+    @Autowired
     private OutputResultRepository outputResultRepository;
     @Autowired
     private PacketRepository packetRepository;
@@ -199,6 +201,24 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         super.mapBtoA(descItemPacketVO, descItemPacketRef, context);
                         descItemPacketRef.setPacket(packetRepository.findOne(descItemPacketVO.getValue()));
+                    }
+                }).byDefault().register();
+        mapperFactory.classMap(ArrItemFileRef.class, ArrItemFileRefVO.class).customize(
+                new CustomMapper<ArrItemFileRef, ArrItemFileRefVO>() {
+                    @Override
+                    public void mapAtoB(final ArrItemFileRef arrItemFileRef,
+                                        final ArrItemFileRefVO arrItemFileRefVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(arrItemFileRef, arrItemFileRefVO, context);
+                        arrItemFileRefVO.setValue(arrItemFileRef.getFile().getFileId());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrItemFileRefVO arrItemFileRefVO,
+                                        final ArrItemFileRef arrItemFileRef,
+                                        final MappingContext context) {
+                        super.mapBtoA(arrItemFileRefVO, arrItemFileRef, context);
+                        arrItemFileRef.setFile(fundFileRepository.findOne(arrItemFileRefVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemPartyRef.class, ArrItemPartyRefVO.class).customize(

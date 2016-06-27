@@ -487,6 +487,8 @@ export function getItemType(dataType) {
             return '.ArrItemDecimalVO';
         case 'PARTY_REF':
             return '.ArrItemPartyRefVO';
+        case 'FILE_REF':
+            return '.ArrItemFileRefVO';
         case 'RECORD_REF':
             return '.ArrItemRecordRefVO';
         case 'PACKET_REF':
