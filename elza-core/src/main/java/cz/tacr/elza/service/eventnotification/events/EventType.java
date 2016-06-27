@@ -39,6 +39,7 @@ public enum EventType {
     NODES_CHANGE(EventIdsInVersion.class),
 
     DESC_ITEM_CHANGE(EventChangeDescItem.class),
+    OUTPUT_ITEM_CHANGE(EventChangeOutputItem.class),
     FUND_RECORD_CHANGE(EventNodeIdVersionInVersion.class),
 
     INDEXING_FINISHED(ActionEvent.class),

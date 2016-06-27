@@ -4,6 +4,7 @@ import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeOutput;
@@ -21,6 +22,8 @@ import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
+import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.springframework.beans.BeanUtils;
@@ -79,6 +82,9 @@ public class OutputService {
 
     @Autowired
     private ItemService itemService;
+
+    @Autowired
+    private EventNotificationService notificationService;
 
     /**
      * Vyhledá platné nody k výstupu.
@@ -515,7 +521,7 @@ public class OutputService {
         ArrOutputItem outputItemCreated = createOutputItem(outputItem, version, change);
 
         // sockety
-        // TODO: publishChangeOutputItem(version, descItemCreated);
+        publishChangeOutputItem(version, outputItemCreated);
 
         return outputItemCreated;
     }
@@ -599,11 +605,11 @@ public class OutputService {
         return outputItemDeleted;
     }
 
-    public ArrOutputItem deleteOutputItem(final ArrOutputItem descItem,
+    public ArrOutputItem deleteOutputItem(final ArrOutputItem outputItem,
                                           final ArrFundVersion version,
                                           final ArrChange change,
                                           final boolean moveAfter) {
-        Assert.notNull(descItem);
+        Assert.notNull(outputItem);
         Assert.notNull(version);
         Assert.notNull(change);
 
@@ -612,20 +618,20 @@ public class OutputService {
 
         if (moveAfter) {
             // načtení hodnot, které je potřeba přesunout výš
-            List<ArrOutputItem> descItems = outputItemRepository.findOpenOutputItemsAfterPosition(
-                    descItem.getItemType(),
-                    descItem.getOutputDefinition(),
-                    descItem.getPosition());
+            List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItemsAfterPosition(
+                    outputItem.getItemType(),
+                    outputItem.getOutputDefinition(),
+                    outputItem.getPosition());
 
-            itemService.copyItems(change, descItems, -1, version);
+            itemService.copyItems(change, outputItems, -1, version);
         }
 
-        descItem.setDeleteChange(change);
+        outputItem.setDeleteChange(change);
 
         // sockety
-        // TODO: publishChangeDescItem(version, descItem);
+        publishChangeOutputItem(version, outputItem);
 
-        return outputItemRepository.save(descItem);
+        return outputItemRepository.save(outputItem);
     }
 
     public ArrOutputItem updateOutputItem(final ArrOutputItem outputItemItem,
@@ -753,7 +759,7 @@ public class OutputService {
         }
 
         // sockety
-        // TODO: publishChangeDescItem(version, outputItemUpdated);
+        publishChangeOutputItem(version, outputItemUpdated);
 
         return outputItemUpdated;
     }
@@ -790,5 +796,11 @@ public class OutputService {
         }
 
         return itemService.loadData(itemList);
+    }
+
+    private void publishChangeOutputItem(final ArrFundVersion version, final ArrOutputItem outputItem) {
+        notificationService.publishEvent(
+                new EventChangeOutputItem(EventType.OUTPUT_ITEM_CHANGE, version.getFundVersionId(),
+                        outputItem.getDescItemObjectId(), outputItem.getOutputDefinition().getOutputDefinitionId(), outputItem.getNode().getVersion()));
     }
 }
