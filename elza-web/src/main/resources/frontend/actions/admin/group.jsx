@@ -4,6 +4,7 @@
 
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
+import {permissionReceive} from "./permission.jsx"
 
 export function isGroupAction(action) {
     if (isGroupDetailAction(action)) {
@@ -128,8 +129,14 @@ function groupsGroupDetailRequest(dataKey) {
 }
 
 function groupsGroupDetailReceive(data) {
-    return {
-        type: types.GROUPS_GROUP_DETAIL_RECEIVE,
-        data,
-    }
+    return (dispatch, getState) => {
+        // Detail
+        dispatch({
+            type: types.GROUPS_GROUP_DETAIL_RECEIVE,
+            data,
+        })
+
+        // Oprávnění z detailu
+        dispatch(permissionReceive("GROUP", data.permissions));
+    }    
 }

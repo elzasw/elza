@@ -1,13 +1,23 @@
 import * as types from 'actions/constants/ActionTypes.js';
+import {isPermissionAction} from 'actions/admin/permission.jsx'
+import permission from "./permission.jsx"
 
 const initialState = {
     id: null,
     fetched: false,
     fetching: false,
     currentDataKey: '',
+    permission: permission(),
 }
 
 export default function groupDetail(state = initialState, action = {}) {
+    if (isPermissionAction(action)) {
+        return {
+            ...state,
+            permission: permission(state.permission, action)
+        }
+    }
+    
     switch (action.type) {
         case types.STORE_SAVE:
             const {id} = state
@@ -20,6 +30,7 @@ export default function groupDetail(state = initialState, action = {}) {
                 fetched: false,
                 fetching: false,
                 currentDataKey: '',
+                permission: permission(),
             }
         case types.GROUPS_SELECT_GROUP:
             if (state.id !== action.id) {
@@ -39,9 +50,10 @@ export default function groupDetail(state = initialState, action = {}) {
                 currentDataKey: action.dataKey,
             }
         case types.GROUPS_GROUP_DETAIL_RECEIVE:
+            var {permissions, ...mainData} = action.data;
             return {
                 ...state,
-                ...action.data,
+                ...mainData,
                 fetching: false,
                 fetched: true,
             }

@@ -1,6 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import groupDetail from './groupDetail.jsx'
 import {isGroupDetailAction} from 'actions/admin/group.jsx'
+import {isPermissionAction} from 'actions/admin/permission.jsx'
 
 const initialState = {
     fetched: false,
@@ -13,7 +14,7 @@ const initialState = {
 }
 
 export default function group(state = initialState, action = {}) {
-    if (isGroupDetailAction(action)) {
+    if (isGroupDetailAction(action) || isPermissionAction(action)) {
         return {
             ...state,
             groupDetail: groupDetail(state.groupDetail, action)

@@ -1,6 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import userDetail from './userDetail.jsx'
 import {isUserDetailAction} from 'actions/admin/user.jsx'
+import {isPermissionAction} from 'actions/admin/permission.jsx'
 
 const initialState = {
     fetched: false,
@@ -14,7 +15,7 @@ const initialState = {
 }
 
 export default function user(state = initialState, action = {}) {
-    if (isUserDetailAction(action)) {
+    if (isUserDetailAction(action) || isPermissionAction(action)) {
         return {
             ...state,
             userDetail: userDetail(state.userDetail, action)

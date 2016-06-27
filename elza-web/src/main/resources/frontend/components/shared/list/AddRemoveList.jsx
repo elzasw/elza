@@ -17,6 +17,8 @@ require ('./AddRemoveList.less');
 var AddRemoveList = class AddRemoveList extends AbstractReactComponent {
     constructor(props) {
         super(props);
+
+        this.bindMethods("handleRemove");
     }
 
     componentDidMount() {
@@ -25,14 +27,20 @@ var AddRemoveList = class AddRemoveList extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
     }
 
-    render() {
-        const {items, onRemove, onAdd, renderItem, addTitle, removeTitle} = this.props;
+    handleRemove(item, index) {
+        const {onRemove} = this.props;
+        onRemove(item, index);
+    }
 
-        const groups = items.map(item => {
+    render() {
+        const {items, className, onRemove, onAdd, renderItem, addTitle, removeTitle} = this.props;
+
+
+        const groups = items.map((item, index) => {
             return (
                 <div className="item">
-                    {renderItem(item)}
-                    <NoFocusButton className="remove" onClick={this.props.onRemove} title={i18n(removeTitle)}>
+                    {renderItem(item, index)}
+                    <NoFocusButton className="remove" onClick={this.handleRemove.bind(this, item, index)} title={i18n(removeTitle)}>
                         <Icon glyph="fa-remove"/>
                     </NoFocusButton>
                 </div>
@@ -40,7 +48,7 @@ var AddRemoveList = class AddRemoveList extends AbstractReactComponent {
         })
 
         return (
-            <div className="list-add-remove-container">
+            <div className={className ? "list-add-remove-container " + className : "list-add-remove-container"}>
                 <div className="item-list-container">
                     {groups}
                 </div>

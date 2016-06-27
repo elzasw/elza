@@ -10,8 +10,9 @@ import {selectFundTab} from 'actions/arr/fund.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {routerNavigate} from 'actions/router.jsx'
+import Permissions from "./Permissions.jsx"
 
-// require ('./UserDetail.less');
+require ('./GroupDetail.less');
 
 var GroupDetail = class GroupDetail extends AbstractReactComponent {
     constructor(props) {
@@ -51,6 +52,12 @@ var GroupDetail = class GroupDetail extends AbstractReactComponent {
                     renderItem={item => <div>{item.party.record.record} ({item.username})</div>}
                 />
                 <h2>{i18n("admin.group.title.permissions")}</h2>
+                <Permissions
+                    area="GROUP"
+                    permissions={groupDetail.permission.permissions}
+                    addTitle="admin.group.permission.action.add"
+                    removeTitle="admin.group.permission.action.delete"
+                />
             </div>
         );
     }

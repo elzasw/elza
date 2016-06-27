@@ -11,6 +11,7 @@ import group from './group.jsx'
 import fulltext from './fulltext.jsx'
 import {isUserAction} from 'actions/admin/user.jsx'
 import {isGroupAction} from 'actions/admin/group.jsx'
+import {isPermissionAction} from 'actions/admin/permission.jsx'
 
 /**
  * Výchozí stav store
@@ -25,7 +26,13 @@ const initialState = {
 };
 
 export default function adminRegion(state = initialState, action = {}) {
-    if (isUserAction(action)) {
+    if (isPermissionAction(action)) {
+        return {
+            ...state,
+            user: action.area === "USER" ? user(state.user, action) : state.user,
+            group: action.area === "GROUP" ? group(state.group, action) : state.group,
+        }
+    } else if (isUserAction(action)) {
         return {
             ...state,
             user: user(state.user, action)

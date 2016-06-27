@@ -4,6 +4,7 @@
 
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
+import {permissionReceive} from "./permission.jsx"
 
 export function isUserAction(action) {
     if (isUserDetailAction(action)) {
@@ -132,8 +133,14 @@ function usersUserDetailRequest(dataKey) {
 }
 
 function usersUserDetailReceive(data) {
-    return {
-        type: types.USERS_USER_DETAIL_RECEIVE,
-        data,
+    return (dispatch, getState) => {
+        // Detail
+        dispatch({
+            type: types.USERS_USER_DETAIL_RECEIVE,
+            data,
+        })
+        
+        // Oprávnění z detailu
+        dispatch(permissionReceive("USER", data.permissions));
     }
 }
