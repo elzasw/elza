@@ -801,6 +801,6 @@ public class OutputService {
     private void publishChangeOutputItem(final ArrFundVersion version, final ArrOutputItem outputItem) {
         notificationService.publishEvent(
                 new EventChangeOutputItem(EventType.OUTPUT_ITEM_CHANGE, version.getFundVersionId(),
-                        outputItem.getDescItemObjectId(), outputItem.getOutputDefinition().getOutputDefinitionId(), outputItem.getNode().getVersion()));
+                        outputItem.getDescItemObjectId(), outputItem.getOutputDefinition().getOutputDefinitionId(), outputItem.getOutputDefinition().getVersion()));
     }
 }
