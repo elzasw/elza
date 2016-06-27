@@ -2,7 +2,7 @@ package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import cz.tacr.elza.search.DescItemIndexingInterceptor;
+import cz.tacr.elza.search.ItemIndexingInterceptor;
 import org.apache.commons.lang.NotImplementedException;
 import org.hibernate.search.annotations.Indexed;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -22,7 +22,7 @@ import javax.persistence.Table;
  * @author Martin Šlapa
  * @since 20.06.2016
  */
-@Indexed(interceptor = DescItemIndexingInterceptor.class)
+@Indexed(interceptor = ItemIndexingInterceptor.class)
 @Entity(name = "arr_output_item")
 @Table
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -31,7 +31,7 @@ import javax.persistence.Table;
 public class ArrOutputItem<T extends ArrItemData> extends ArrItem<T> implements cz.tacr.elza.api.ArrOutputItem<ArrOutputDefinition> {
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutput.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputDefinition.class)
     @JoinColumn(name = "outputDefinitionId", nullable = false)
     private ArrOutputDefinition outputDefinition;
 
@@ -61,16 +61,16 @@ public class ArrOutputItem<T extends ArrItemData> extends ArrItem<T> implements 
 
     @Override
     public Integer getNodeId() {
-        throw new NotImplementedException();
+        return null; //throw new NotImplementedException();
     }
 
     @Override
     public Integer getFundId() {
-        throw new NotImplementedException();
+        return null; //throw new NotImplementedException();
     }
 
     @Override
     public ArrNode getNode() {
-        throw new NotImplementedException();
+        return null; //throw new NotImplementedException();
     }
 }

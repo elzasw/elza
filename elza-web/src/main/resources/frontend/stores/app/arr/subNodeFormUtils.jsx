@@ -444,7 +444,7 @@ export function updateFormData(state, data, refTypesMap) {
 
 export function createDescItem(descItemType, refType, addedByUser) {
     var result = {
-        '@type': getDescItemType(refType.dataType),
+        '@type': getItemType(refType.dataType),
         prevValue: null,
         hasFocus: false,
         touched: false,
@@ -473,34 +473,34 @@ export function createDescItem(descItemType, refType, addedByUser) {
     return result;
 }
 
-export function getDescItemType(dataType) {
+export function getItemType(dataType) {
     switch (dataType.code) {
         case 'TEXT':
-            return '.ArrDescItemTextVO';
+            return '.ArrItemTextVO';
         case 'STRING':
-            return '.ArrDescItemStringVO';
+            return '.ArrItemStringVO';
         case 'INT':
-            return '.ArrDescItemIntVO';
+            return '.ArrItemIntVO';
         case 'COORDINATES':
-            return '.ArrDescItemCoordinatesVO';
+            return '.ArrItemCoordinatesVO';
         case 'DECIMAL':
-            return '.ArrDescItemDecimalVO';
+            return '.ArrItemDecimalVO';
         case 'PARTY_REF':
-            return '.ArrDescItemPartyRefVO';
+            return '.ArrItemPartyRefVO';
         case 'RECORD_REF':
-            return '.ArrDescItemRecordRefVO';
+            return '.ArrItemRecordRefVO';
         case 'PACKET_REF':
-            return '.ArrDescItemPacketVO';
+            return '.ArrItemPacketVO';
         case 'JSON_TABLE':
-            return '.ArrDescItemJsonTableVO';
+            return '.ArrItemJsonTableVO';
         case 'ENUM':
-            return '.ArrDescItemEnumVO';
+            return '.ArrItemEnumVO';
         case 'FORMATTED_TEXT':
-            return '.ArrDescItemFormattedTextVO';
+            return '.ArrItemFormattedTextVO';
         case 'UNITDATE':
-            return '.ArrDescItemUnitdateVO';
+            return '.ArrItemUnitdateVO';
         case 'UNITID':
-            return '.ArrDescItemUnitidVO';
+            return '.ArrItemUnitidVO';
         default:
             console.error("Unsupported data type", dataType);
             return null;

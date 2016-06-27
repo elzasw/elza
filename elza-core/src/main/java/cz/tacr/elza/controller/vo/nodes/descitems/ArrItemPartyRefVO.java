@@ -10,7 +10,7 @@ import cz.tacr.elza.controller.vo.ParPartyVO;
  * @author Martin Šlapa
  * @since 8.1.2016
  */
-public class ArrDescItemPartyRefVO extends ArrDescItemVO {
+public class ArrItemPartyRefVO extends ArrItemVO {
 
     /**
      * osoba

@@ -9,7 +9,7 @@ import java.math.BigDecimal;
  * @author Martin Šlapa
  * @since 8.1.2016
  */
-public class ArrDescItemDecimalVO extends ArrDescItemVO {
+public class ArrItemDecimalVO extends ArrItemVO {
 
     /**
      * desetinné číslo

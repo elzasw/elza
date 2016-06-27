@@ -1,30 +1,22 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import cz.tacr.elza.search.ItemIndexingInterceptor;
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.builder.EqualsBuilder;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.Store;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import cz.tacr.elza.search.DescItemIndexingInterceptor;
-
-import java.lang.reflect.InvocationTargetException;
 
 
 /**
@@ -34,7 +26,7 @@ import java.lang.reflect.InvocationTargetException;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-@Indexed(interceptor = DescItemIndexingInterceptor.class)
+@Indexed(interceptor = ItemIndexingInterceptor.class)
 @Entity(name = "arr_desc_item")
 @Table
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -84,7 +76,7 @@ public class ArrDescItem<T extends ArrItemData> extends ArrItem<T> implements cz
     }
 
     public ArrOutputDefinition getOutputDefinition() {
-        throw new NotImplementedException();
+        return null; //throw new NotImplementedException();
     }
 
     @Override

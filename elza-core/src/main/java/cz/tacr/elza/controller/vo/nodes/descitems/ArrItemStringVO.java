@@ -1,15 +1,15 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
 /**
- * VO hodnoty atributu - coordinates.
+ * VO hodnoty atributu - string.
  *
  * @author Martin Šlapa
  * @since 8.1.2016
  */
-public class ArrDescItemCoordinatesVO extends ArrDescItemVO {
+public class ArrItemStringVO extends ArrItemVO {
 
     /**
-     * souřadnice
+     * textový řetězec
      */
     private String value;
 

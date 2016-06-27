@@ -71,7 +71,7 @@ public abstract class ArrData implements cz.tacr.elza.api.ArrData<RulDataType, A
     @Field(store = Store.YES)
     @FieldBridge(impl = IntegerBridge.class)
     public Integer getNodeId() {
-        return item.getNode().getNodeId();
+        return item.getNode() != null ? item.getNode().getNodeId() : null;
     }
 
     @Field

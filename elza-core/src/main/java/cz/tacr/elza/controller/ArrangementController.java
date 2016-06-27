@@ -23,7 +23,7 @@ import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrCalendarType;
@@ -37,6 +37,7 @@ import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -385,7 +386,7 @@ public class ArrangementController {
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public DescItemResult deleteDescItem(@RequestBody final ArrDescItemVO descItemVO,
+    public DescItemResult deleteDescItem(@RequestBody final ArrItemVO descItemVO,
                                          @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
         Assert.notNull(descItemVO);
@@ -458,7 +459,7 @@ public class ArrangementController {
         is.close();
 
         DescItemResult descItemResult = new DescItemResult();
-        descItemResult.setDescItem(factoryVo.createDescItem(descItemCreated));
+        descItemResult.setDescItem(factoryVo.createItem(descItemCreated));
         descItemResult.setNode(factoryVo.createArrNode(descItemCreated.getNode()));
         return descItemResult;
     }
@@ -476,7 +477,7 @@ public class ArrangementController {
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public DescItemResult updateDescItem(@RequestBody final ArrDescItemVO descItemVO,
+    public DescItemResult updateDescItem(@RequestBody final ArrItemVO descItemVO,
                                          @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "nodeVersion") final Integer nodeVersion,
                                          @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
@@ -512,7 +513,7 @@ public class ArrangementController {
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public DescItemResult createDescItem(@RequestBody final ArrDescItemVO descItemVO,
+    public DescItemResult createDescItem(@RequestBody final ArrItemVO descItemVO,
                                          @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "descItemTypeId") final Integer descItemTypeId,
                                          @PathVariable(value = "nodeId") final Integer nodeId,
@@ -533,6 +534,83 @@ public class ArrangementController {
         descItemResult.setNode(factoryVo.createArrNode(descItemCreated.getNode()));
 
         return descItemResult;
+    }
+
+
+    @Transactional
+    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionVersion}/delete",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public OutputItemResult deleteOutputItem(@RequestBody final ArrItemVO outputItemVO,
+                                             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                             @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion) {
+        Assert.notNull(outputItemVO);
+        Assert.notNull(fundVersionId);
+        Assert.notNull(outputDefinitionVersion);
+
+        ArrOutputItem outputItemDeleted = outputService
+                .deleteOutputItem(outputItemVO.getDescItemObjectId(), outputDefinitionVersion, fundVersionId);
+
+        OutputItemResult outputItemResult = new OutputItemResult();
+        outputItemResult.setItem(null);
+        outputItemResult.setOutputDefinition(factoryVo.createOutputDefinition(outputItemDeleted.getOutputDefinition()));
+
+        return outputItemResult;
+    }
+
+    @Transactional
+    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/{itemTypeId}/create",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public OutputItemResult createOutputItem(@RequestBody final ArrItemVO outputItemVO,
+                                             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                             @PathVariable(value = "itemTypeId") final Integer itemTypeId,
+                                             @PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
+                                             @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion) {
+        Assert.notNull(outputItemVO);
+        Assert.notNull(fundVersionId);
+        Assert.notNull(itemTypeId);
+        Assert.notNull(outputDefinitionId);
+        Assert.notNull(outputDefinitionVersion);
+
+        ArrOutputItem outputItem = factoryDO.createOutputItem(outputItemVO, itemTypeId);
+
+        ArrOutputItem outputItemCreated = outputService.createOutputItem(outputItem, outputDefinitionId,
+                outputDefinitionVersion, fundVersionId);
+
+        OutputItemResult outputItemResult = new OutputItemResult();
+        outputItemResult.setItem(factoryVo.createItem(outputItemCreated));
+        outputItemResult.setOutputDefinition(factoryVo.createArrOutputDefinition(outputItemCreated.getOutputDefinition()));
+
+        return outputItemResult;
+    }
+
+    @Transactional
+    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionVersion}/update/{createNewVersion}",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public OutputItemResult updateOutputItem(@RequestBody final ArrItemVO outputItemVO,
+                                             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                             @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
+                                             @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
+        Assert.notNull(outputItemVO);
+        Assert.notNull(fundVersionId);
+        Assert.notNull(outputDefinitionVersion);
+        Assert.notNull(createNewVersion);
+
+        ArrOutputItem outputItem = factoryDO.createOutputItem(outputItemVO);
+
+        ArrOutputItem outputItemUpdated = outputService
+                .updateOutputItem(outputItem, outputDefinitionVersion, fundVersionId, createNewVersion);
+
+        OutputItemResult outputItemResult = new OutputItemResult();
+        outputItemResult.setItem(factoryVo.createItem(outputItemUpdated));
+        outputItemResult.setOutputDefinition(factoryVo.createOutputDefinition(outputItemUpdated.getOutputDefinition()));
+
+        return outputItemResult;
     }
 
     /**
@@ -2023,7 +2101,7 @@ public class ArrangementController {
         /**
          * hodnota atributu
          */
-        private ArrDescItemVO descItem;
+        private ArrItemVO descItem;
 
         public ArrNodeVO getNode() {
             return node;
@@ -2033,12 +2111,41 @@ public class ArrangementController {
             this.node = node;
         }
 
-        public ArrDescItemVO getDescItem() {
+        public ArrItemVO getDescItem() {
             return descItem;
         }
 
-        public void setDescItem(final ArrDescItemVO descItem) {
+        public void setDescItem(final ArrItemVO descItem) {
             this.descItem = descItem;
+        }
+    }
+
+    public static class OutputItemResult {
+
+        /**
+         * uzel
+         */
+        private ArrOutputDefinitionVO outputDefinition;
+
+        /**
+         * hodnota atributu
+         */
+        private ArrItemVO item;
+
+        public ArrOutputDefinitionVO getOutputDefinition() {
+            return outputDefinition;
+        }
+
+        public void setOutputDefinition(final ArrOutputDefinitionVO outputDefinition) {
+            this.outputDefinition = outputDefinition;
+        }
+
+        public ArrItemVO getItem() {
+            return item;
+        }
+
+        public void setItem(final ArrItemVO item) {
+            this.item = item;
         }
     }
 

@@ -10,7 +10,7 @@ import cz.tacr.elza.controller.vo.ArrPacketVO;
  * @author Martin Šlapa
  * @since 8.1.2016
  */
-public class ArrDescItemPacketVO extends ArrDescItemVO {
+public class ArrItemPacketVO extends ArrItemVO {
 
     /**
      * obal

@@ -10,7 +10,7 @@ import cz.tacr.elza.controller.vo.RegRecordVO;
  * @author Martin Šlapa
  * @since 8.1.2016
  */
-public class ArrDescItemRecordRefVO extends ArrDescItemVO {
+public class ArrItemRecordRefVO extends ArrItemVO {
 
     /**
      * rejstřík

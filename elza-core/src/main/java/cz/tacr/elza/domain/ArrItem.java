@@ -2,7 +2,7 @@ package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import cz.tacr.elza.search.DescItemIndexingInterceptor;
+import cz.tacr.elza.search.ItemIndexingInterceptor;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
@@ -28,7 +28,7 @@ import javax.persistence.Transient;
  * @author Martin Šlapa
  * @since 19.06.2016
  */
-@Indexed(interceptor = DescItemIndexingInterceptor.class)
+@Indexed(interceptor = ItemIndexingInterceptor.class)
 @Entity(name = "arr_item")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

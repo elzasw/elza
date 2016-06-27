@@ -2,8 +2,7 @@ package cz.tacr.elza.controller.vo.nodes;
 
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 
 
 /**
@@ -42,7 +41,7 @@ public class RulDescItemTypeDescItemsVO {
     /**
      * seznam hodnot atributu
      */
-    private List<ArrDescItemVO> descItems;
+    private List<ArrItemVO> descItems;
 
     public String getId() {
         return id;
@@ -76,11 +75,11 @@ public class RulDescItemTypeDescItemsVO {
         this.dataTypeId = dataTypeId;
     }
 
-    public List<ArrDescItemVO> getDescItems() {
+    public List<ArrItemVO> getDescItems() {
         return descItems;
     }
 
-    public void setDescItems(final List<ArrDescItemVO> descItems) {
+    public void setDescItems(final List<ArrItemVO> descItems) {
         this.descItems = descItems;
     }
 

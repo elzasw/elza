@@ -1,15 +1,15 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
 /**
- * VO hodnoty atributu - string.
+ * VO hodnoty atributu - formatted text.
  *
  * @author Martin Šlapa
  * @since 8.1.2016
  */
-public class ArrDescItemStringVO extends ArrDescItemVO {
+public class ArrItemFormattedTextVO extends ArrItemVO {
 
     /**
-     * textový řetězec
+     * formátovaných text
      */
     private String value;
 

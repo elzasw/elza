@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * @since 8.1.2016
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@type")
-public abstract class ArrDescItemVO {
+public abstract class ArrItemVO {
 
     /**
      * identifikátor

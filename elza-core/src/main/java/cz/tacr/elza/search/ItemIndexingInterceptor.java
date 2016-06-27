@@ -1,5 +1,6 @@
 package cz.tacr.elza.search;
 
+import cz.tacr.elza.domain.ArrItem;
 import org.hibernate.search.indexes.interceptor.EntityIndexingInterceptor;
 import org.hibernate.search.indexes.interceptor.IndexingOverride;
 
@@ -12,25 +13,25 @@ import cz.tacr.elza.domain.ArrDescItem;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 9. 2. 2016
  */
-public class DescItemIndexingInterceptor implements EntityIndexingInterceptor<ArrDescItem> {
+public class ItemIndexingInterceptor implements EntityIndexingInterceptor<ArrItem> {
 
     @Override
-    public IndexingOverride onAdd(ArrDescItem arrDescItem) {
+    public IndexingOverride onAdd(ArrItem arrDescItem) {
         return IndexingOverride.APPLY_DEFAULT;
     }
 
     @Override
-    public IndexingOverride onUpdate(ArrDescItem arrDescItem) {
+    public IndexingOverride onUpdate(ArrItem arrDescItem) {
         return IndexingOverride.APPLY_DEFAULT;
     }
 
     @Override
-    public IndexingOverride onDelete(ArrDescItem arrDescItem) {
+    public IndexingOverride onDelete(ArrItem arrDescItem) {
         return IndexingOverride.APPLY_DEFAULT;
     }
 
     @Override
-    public IndexingOverride onCollectionUpdate(ArrDescItem arrDescItem) {
+    public IndexingOverride onCollectionUpdate(ArrItem arrDescItem) {
         return onUpdate(arrDescItem);
     }
 }

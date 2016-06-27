@@ -27,6 +27,8 @@ public class ArrOutputDefinitionVO {
 
     private Integer outputTypeId;
 
+    private Integer version;
+
     public Integer getId() {
         return id;
     }
@@ -89,5 +91,13 @@ public class ArrOutputDefinitionVO {
 
     public void setOutputTypeId(Integer outputTypeId) {
         this.outputTypeId = outputTypeId;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(final Integer version) {
+        this.version = version;
     }
 }

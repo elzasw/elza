@@ -7,7 +7,7 @@ import cz.tacr.elza.controller.vo.filter.Filter;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.ValuesTypes;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
@@ -158,7 +158,7 @@ public class ClientFactoryDO {
      * @param descItemTypeId identiifkátor typu hodnoty atributu
      * @return
      */
-    public ArrDescItem createDescItem(final ArrDescItemVO descItemVO, final Integer descItemTypeId) {
+    public ArrDescItem createDescItem(final ArrItemVO descItemVO, final Integer descItemTypeId) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
         ArrItemData item = mapper.map(descItemVO, ArrItemData.class);
@@ -216,7 +216,7 @@ public class ClientFactoryDO {
         return result;
     }
 
-    public ArrDescItem createDescItem(final ArrDescItemVO descItemVO) {
+    public ArrDescItem createDescItem(final ArrItemVO descItemVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrItemData item = mapper.map(descItemVO, ArrItemData.class);
         ArrDescItem descItem = new ArrDescItem(item);
@@ -760,4 +760,46 @@ public class ClientFactoryDO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(fileVO, DmsFile.class);
     }
+
+    public ArrOutputItem createOutputItem(final ArrItemVO outputItemVO, final Integer itemTypeId) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        ArrItemData item = mapper.map(outputItemVO, ArrItemData.class);
+        ArrOutputItem outputItem = new ArrOutputItem(item);
+
+        RulItemType descItemType = itemTypeRepository.findOne(itemTypeId);
+        if (descItemType == null) {
+            throw new IllegalStateException("Typ s ID=" + outputItemVO.getDescItemSpecId() + " neexistuje");
+        }
+        outputItem.setItemType(descItemType);
+
+        if (outputItemVO.getDescItemSpecId() != null) {
+            RulItemSpec descItemSpec = itemSpecRepository.findOne(outputItemVO.getDescItemSpecId());
+            if (descItemSpec == null) {
+                throw new IllegalStateException("Specifikace s ID=" + outputItemVO.getDescItemSpecId() + " neexistuje");
+            }
+            outputItem.setItemSpec(descItemSpec);
+        }
+
+        return outputItem;
+    }
+
+    public ArrOutputItem createOutputItem(final ArrItemVO descItemVO) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrItemData item = mapper.map(descItemVO, ArrItemData.class);
+        ArrOutputItem outputItem = new ArrOutputItem(item);
+        BeanUtils.copyProperties(descItemVO, outputItem);
+        outputItem.setItemId(descItemVO.getId());
+
+        if (descItemVO.getDescItemSpecId() != null) {
+            RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());
+            if (descItemSpec == null) {
+                throw new IllegalStateException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje");
+            }
+            outputItem.setItemSpec(descItemSpec);
+        }
+
+        return outputItem;
+    }
+
 }

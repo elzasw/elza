@@ -6,7 +6,7 @@ package cz.tacr.elza.controller.vo.nodes.descitems;
  * @author Martin Šlapa
  * @since 8.1.2016
  */
-public class ArrDescItemTextVO extends ArrDescItemVO {
+public class ArrItemTextVO extends ArrItemVO {
 
     /**
      * text

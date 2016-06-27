@@ -49,27 +49,25 @@ import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemCoordinatesVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemDecimalVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemEnumVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemIntVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemJsonTableVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPacketVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPartyRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemRecordRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitdateVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitidVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPacketVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -153,6 +151,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
             + "/descItems/{fundVersionId}/{nodeVersion}/delete";
     protected static final String DELETE_DESC_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL
             + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}";
+    protected static final String CREATE_OUTPUT_ITEM = ARRANGEMENT_CONTROLLER_URL
+            + "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/{itemTypeId}/create";
+    protected static final String UPDATE_OUTPUT_ITEM = ARRANGEMENT_CONTROLLER_URL
+            + "/outputItems/{fundVersionId}/{outputDefinitionVersion}/update/{createNewVersion}";
+    protected static final String DELETE_OUTPUT_ITEM = ARRANGEMENT_CONTROLLER_URL
+            + "/outputItems/{fundVersionId}/{outputDefinitionVersion}/delete";
     protected static final String PACKET_TYPES = ARRANGEMENT_CONTROLLER_URL + "/packets/types";
     protected static final String FIND_FORM_PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}/find/form";
     protected static final String FIND_PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}/find";
@@ -805,7 +809,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param descItemType      typ atributu
      * @return vytvořená hodnota atributu
      */
-    protected ArrangementController.DescItemResult createDescItem(final ArrDescItemVO descItem,
+    protected ArrangementController.DescItemResult createDescItem(final ArrItemVO descItem,
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node,
                                                                   final RulDescItemTypeVO descItemType) {
@@ -823,7 +827,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param nodeVersion         verze uzlu
      * @return vytvořená hodnota atributu
      */
-    protected ArrangementController.DescItemResult createDescItem(final ArrDescItemVO descItem,
+    protected ArrangementController.DescItemResult createDescItem(final ArrItemVO descItem,
                                                                   final Integer fundVersionId,
                                                                   final Integer descItemTypeId,
                                                                   final Integer nodeId,
@@ -835,6 +839,42 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParameter("nodeId", nodeId)
                 .pathParameter("nodeVersion", nodeVersion), CREATE_DESC_ITEM);
         return response.getBody().as(ArrangementController.DescItemResult.class);
+    }
+
+    protected ArrangementController.OutputItemResult createOutputItem(ArrItemVO outputItemVO,
+                                                                   final Integer fundVersionId,
+                                                                   final Integer itemTypeId,
+                                                                   final Integer outputDefinitionId,
+                                                                   final Integer outputDefinitionVersion) {
+        Response response = put(spec -> spec
+                .body(outputItemVO)
+                .pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("itemTypeId", itemTypeId)
+                .pathParameter("outputDefinitionId", outputDefinitionId)
+                .pathParameter("outputDefinitionVersion", outputDefinitionVersion), CREATE_OUTPUT_ITEM);
+        return response.getBody().as(ArrangementController.OutputItemResult.class);
+    }
+
+    protected ArrangementController.OutputItemResult updateOutputItem(final ArrItemVO outputItemVO,
+                                                                      final Integer fundVersionId,
+                                                                      final Integer outputDefinitionVersion,
+                                                                      final Boolean createNewVersion) {
+        Response response = put(spec -> spec
+                .body(outputItemVO)
+                .pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("createNewVersion", createNewVersion)
+                .pathParameter("outputDefinitionVersion", outputDefinitionVersion), UPDATE_OUTPUT_ITEM);
+        return response.getBody().as(ArrangementController.OutputItemResult.class);
+    }
+
+    public ArrangementController.OutputItemResult deleteOutputItem(final ArrItemVO outputItemVO,
+                                                                   final Integer fundVersionId,
+                                                                   final Integer outputDefinitionVersion) {
+        Response response = post(spec -> spec
+                .body(outputItemVO)
+                .pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("outputDefinitionVersion", outputDefinitionVersion), DELETE_OUTPUT_ITEM);
+        return response.getBody().as(ArrangementController.OutputItemResult.class);
     }
 
     protected InputStream descItemCsvExport(
@@ -881,7 +921,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param createNewVersion  vytvořit novou verzi?
      * @return upravená hodnota atributu
      */
-    protected ArrangementController.DescItemResult updateDescItem(final ArrDescItemVO descItem,
+    protected ArrangementController.DescItemResult updateDescItem(final ArrItemVO descItem,
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node,
                                                                   final Boolean createNewVersion) {
@@ -897,7 +937,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param createNewVersion    vytvořit novou verzi?
      * @return upravená hodnota atributu
      */
-    protected ArrangementController.DescItemResult updateDescItem(final ArrDescItemVO descItem,
+    protected ArrangementController.DescItemResult updateDescItem(final ArrItemVO descItem,
                                                                   final Integer fundVersionId,
                                                                   final Integer nodeVersion,
                                                                   final Boolean createNewVersion) {
@@ -917,7 +957,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param node              uzel
      * @return smazaná hodnota atributu
      */
-    protected ArrangementController.DescItemResult deleteDescItem(final ArrDescItemVO descItem,
+    protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem,
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node) {
         return deleteDescItem(descItem, fundVersion.getId(), node.getVersion());
@@ -931,7 +971,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param nodeVersion         verze uzlu
      * @return smazaná hodnota atributu
      */
-    protected ArrangementController.DescItemResult deleteDescItem(final ArrDescItemVO descItem,
+    protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem,
                                                                   final Integer fundVersionId,
                                                                   final Integer nodeVersion) {
         Response response = post(spec -> spec
@@ -952,11 +992,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param descItemObjectId identifikátor hodnoty atributu
      * @return vytvořený object hodnoty atributu
      */
-    protected ArrDescItemVO buildDescItem(final String typeCode,
-                                          final String specCode,
-                                          final Object value,
-                                          final Integer position,
-                                          final Integer descItemObjectId) {
+    protected ArrItemVO buildDescItem(final String typeCode,
+                                      final String specCode,
+                                      final Object value,
+                                      final Integer position,
+                                      final Integer descItemObjectId) {
         org.springframework.util.Assert.notNull(typeCode, "Musí být vyplněn kód typu atributu");
 
         RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
@@ -971,79 +1011,79 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         RulDataTypeVO dataType = findDataType(type.getDataTypeId());
 
-        ArrDescItemVO descItem;
+        ArrItemVO descItem;
 
         switch (dataType.getCode()) {
 
             case "INT": {
-                descItem = new ArrDescItemIntVO();
-                ((ArrDescItemIntVO) descItem).setValue((Integer) value);
+                descItem = new ArrItemIntVO();
+                ((ArrItemIntVO) descItem).setValue((Integer) value);
                 break;
             }
 
             case "STRING": {
-                descItem = new ArrDescItemStringVO();
-                ((ArrDescItemStringVO) descItem).setValue((String) value);
+                descItem = new ArrItemStringVO();
+                ((ArrItemStringVO) descItem).setValue((String) value);
                 break;
             }
 
             case "TEXT": {
-                descItem = new ArrDescItemTextVO();
-                ((ArrDescItemTextVO) descItem).setValue((String) value);
+                descItem = new ArrItemTextVO();
+                ((ArrItemTextVO) descItem).setValue((String) value);
                 break;
             }
 
             case "UNITDATE": {
-                descItem = new ArrDescItemUnitdateVO();
-                ((ArrDescItemUnitdateVO) descItem).setValue((String) value);
-                ((ArrDescItemUnitdateVO) descItem).setCalendarTypeId(getCalendarTypes().get(0).getId());
+                descItem = new ArrItemUnitdateVO();
+                ((ArrItemUnitdateVO) descItem).setValue((String) value);
+                ((ArrItemUnitdateVO) descItem).setCalendarTypeId(getCalendarTypes().get(0).getId());
                 break;
             }
 
             case "UNITID": {
-                descItem = new ArrDescItemUnitidVO();
-                ((ArrDescItemUnitidVO) descItem).setValue((String) value);
+                descItem = new ArrItemUnitidVO();
+                ((ArrItemUnitidVO) descItem).setValue((String) value);
                 break;
             }
 
             case "FORMATTED_TEXT": {
-                descItem = new ArrDescItemFormattedTextVO();
-                ((ArrDescItemFormattedTextVO) descItem).setValue((String) value);
+                descItem = new ArrItemFormattedTextVO();
+                ((ArrItemFormattedTextVO) descItem).setValue((String) value);
                 break;
             }
 
             case "COORDINATES": {
-                descItem = new ArrDescItemCoordinatesVO();
-                ((ArrDescItemCoordinatesVO) descItem).setValue((String) value);
+                descItem = new ArrItemCoordinatesVO();
+                ((ArrItemCoordinatesVO) descItem).setValue((String) value);
                 break;
             }
 
             case "PARTY_REF": {
-                descItem = new ArrDescItemPartyRefVO();
-                ((ArrDescItemPartyRefVO) descItem).setValue(((ParPartyVO) value).getPartyId());
+                descItem = new ArrItemPartyRefVO();
+                ((ArrItemPartyRefVO) descItem).setValue(((ParPartyVO) value).getPartyId());
                 break;
             }
 
             case "RECORD_REF": {
-                descItem = new ArrDescItemRecordRefVO();
-                ((ArrDescItemRecordRefVO) descItem).setValue(((RegRecordVO) value).getRecordId());
+                descItem = new ArrItemRecordRefVO();
+                ((ArrItemRecordRefVO) descItem).setValue(((RegRecordVO) value).getRecordId());
                 break;
             }
 
             case "DECIMAL": {
-                descItem = new ArrDescItemDecimalVO();
-                ((ArrDescItemDecimalVO) descItem).setValue((BigDecimal) value);
+                descItem = new ArrItemDecimalVO();
+                ((ArrItemDecimalVO) descItem).setValue((BigDecimal) value);
                 break;
             }
 
             case "PACKET_REF": {
-                descItem = new ArrDescItemPacketVO();
-                ((ArrDescItemPacketVO) descItem).setValue(((ArrPacketVO) value).getId());
+                descItem = new ArrItemPacketVO();
+                ((ArrItemPacketVO) descItem).setValue(((ArrPacketVO) value).getId());
                 break;
             }
 
             case "ENUM": {
-                descItem = new ArrDescItemEnumVO();
+                descItem = new ArrItemEnumVO();
                 if (BooleanUtils.isNotTrue(type.getUseSpecification())) {
                     throw new IllegalStateException(
                             "Specifikace u typu musí být povinná pro ENUM -> CODE: " + type.getCode());
@@ -1052,8 +1092,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
             }
 
             case "JSON_TABLE": {
-                descItem = new ArrDescItemJsonTableVO();
-                ((ArrDescItemJsonTableVO) descItem).setValue(((ElzaTable) value));
+                descItem = new ArrItemJsonTableVO();
+                ((ArrItemJsonTableVO) descItem).setValue(((ElzaTable) value));
                 break;
             }
 

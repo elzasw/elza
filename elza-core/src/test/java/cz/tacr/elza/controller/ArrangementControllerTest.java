@@ -7,6 +7,7 @@ import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
@@ -22,12 +23,17 @@ import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrItemInt;
+import cz.tacr.elza.domain.ArrItemString;
+import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -200,6 +206,36 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         outputDetail = getOutput(fundVersion.getId(), output.getId());
         Assert.isTrue(outputDetail.getLockDate() != null);
 
+
+        outputs = getOutputs(fundVersion.getId());
+        outputDefinition = outputs.get(0).getOutputDefinition();
+
+        ArrItemStringVO item = new ArrItemStringVO();
+        item.setValue("test1");
+        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("ZP2015_TITLE");
+        ArrangementController.OutputItemResult outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), outputDefinition.getId(), outputDefinition.getVersion());
+        ArrItemVO itemCreated = outputItem.getItem();
+        Assert.notNull(itemCreated);
+        Assert.notNull(itemCreated.getDescItemObjectId());
+        Assert.notNull(itemCreated.getPosition());
+        Assert.isTrue(itemCreated instanceof ArrItemStringVO);
+        Assert.isTrue(((ArrItemStringVO) itemCreated).getValue().equals(item.getValue()));
+
+        ((ArrItemStringVO) itemCreated).setValue("xxx");
+        outputItem = updateOutputItem(itemCreated, fundVersion.getId(), outputItem.getOutputDefinition().getVersion(), true);
+
+        ArrItemVO itemUpdated = outputItem.getItem();
+        Assert.notNull(itemUpdated);
+        Assert.notNull(itemUpdated.getDescItemObjectId());
+        Assert.notNull(itemUpdated.getPosition());
+        Assert.isTrue(itemUpdated instanceof ArrItemStringVO);
+        Assert.isTrue(((ArrItemStringVO) itemUpdated).getValue().equals(((ArrItemStringVO) itemCreated).getValue()));
+
+        outputItem = deleteOutputItem(itemCreated, fundVersion.getId(), outputItem.getOutputDefinition().getVersion());
+
+        ArrItemVO itemDeleted = outputItem.getItem();
+        Assert.isNull(itemDeleted);
+
         deleteNamedOutput(fundVersion.getId(), output.getId());
 
         outputs = getOutputs(fundVersion.getId());
@@ -280,28 +316,28 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // vytvoření hodnoty
         RulDescItemTypeExtVO type = findDescItemTypeByCode("ZP2015_TITLE");
-        ArrDescItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null);
+        ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null);
         ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, rootNode,
                 type);
         rootNode = descItemResult.getNode();
-        ArrDescItemVO descItemCreated = descItemResult.getDescItem();
+        ArrItemVO descItemCreated = descItemResult.getDescItem();
 
-        Assert.notNull(((ArrDescItemTextVO) descItem).getValue()
-                .equals(((ArrDescItemTextVO) descItemCreated).getValue()));
+        Assert.notNull(((ArrItemTextVO) descItem).getValue()
+                .equals(((ArrItemTextVO) descItemCreated).getValue()));
         Assert.notNull(descItemCreated.getPosition());
         Assert.notNull(descItemCreated.getDescItemObjectId());
 
         // aktualizace hodnoty
-        ((ArrDescItemTextVO) descItemCreated).setValue("update value");
+        ((ArrItemTextVO) descItemCreated).setValue("update value");
         descItemResult = updateDescItem(descItemCreated, fundVersion, rootNode, true);
         rootNode = descItemResult.getNode();
-        ArrDescItemVO descItemUpdated = descItemResult.getDescItem();
+        ArrItemVO descItemUpdated = descItemResult.getDescItem();
 
         Assert.isTrue(descItemUpdated.getDescItemObjectId().equals(descItemCreated.getDescItemObjectId()));
         Assert.isTrue(descItemUpdated.getPosition().equals(descItemCreated.getPosition()));
         Assert.isTrue(!descItemUpdated.getId().equals(descItemCreated.getId()));
-        Assert.isTrue(((ArrDescItemTextVO) descItemUpdated).getValue()
-                .equals(((ArrDescItemTextVO) descItemCreated).getValue()));
+        Assert.isTrue(((ArrItemTextVO) descItemUpdated).getValue()
+                .equals(((ArrItemTextVO) descItemCreated).getValue()));
 
         // odstranění hodnoty
         descItemResult = deleteDescItem(descItemUpdated, fundVersion, rootNode);
@@ -345,7 +381,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         node = descItemResult.getNode();
         descItemCreated = descItemResult.getDescItem();
 
-        ((ArrDescItemStringVO) descItemCreated).setValue("3x");
+        ((ArrItemStringVO) descItemCreated).setValue("3x");
         descItemCreated.setPosition(5);
         descItemResult = updateDescItem(descItemCreated, fundVersion, node, true);
         node = descItemResult.getNode();
@@ -842,7 +878,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("ZP2015_TITLE");
         int index = 0;
         for (ArrNodeVO node : nodes) {
-            ArrDescItemVO descItem = buildDescItem(typeVo.getCode(), null, index + "value" + index, null, null);
+            ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, index + "value" + index, null, null);
             ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node,
                     typeVo);
             index++;
@@ -912,7 +948,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         int index = 1;
         String value = "value";
         for (ArrNodeVO node : nodes) {
-            ArrDescItemVO descItem = buildDescItem(typeVo.getCode(), null, value + index, null, null);
+            ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, value + index, null, null);
             ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node,
                     typeVo);
             index = -index;

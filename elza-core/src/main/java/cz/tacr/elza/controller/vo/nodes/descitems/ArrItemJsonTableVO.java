@@ -8,7 +8,7 @@ import cz.tacr.elza.domain.table.ElzaTable;
  * @author Martin Šlapa
  * @since 21.06.2016
  */
-public class ArrDescItemJsonTableVO extends ArrDescItemVO {
+public class ArrItemJsonTableVO extends ArrItemVO {
 
     /**
      * celé číslo

@@ -133,6 +133,9 @@ public class ArrangementService {
     @Autowired
     private ScopeRepository scopeRepository;
 
+    @Autowired
+    private OutputItemRepository outputItemRepository;
+
     //TODO smazat závislost až bude DescItemService
     @Autowired
     protected FundRegisterScopeRepository fundRegisterScopeRepository;
@@ -425,10 +428,13 @@ public class ArrangementService {
         ArrFund fund = version.getFund();
 
         List<ArrOutputDefinition> outputDefinitions = outputDefinitionRepository.findByFund(fund);
+
         if(!outputDefinitions.isEmpty()){
             for (ArrOutputDefinition outputDefinition : outputDefinitions) {
                 outputRepository.delete(outputDefinition.getOutputs());
                 nodeOutputRepository.delete(outputDefinition.getOutputNodes());
+                dataRepository.deleteByOutputDefinition(outputDefinition);
+                outputItemRepository.deleteByOutputDefinition(outputDefinition);
                 outputDefinitionRepository.delete(outputDefinition);
             }
         }

@@ -8,7 +8,7 @@ package cz.tacr.elza.controller.vo.nodes.descitems;
  * @author Martin Šlapa
  * @since 8.1.2016
  */
-public class ArrDescItemEnumVO extends ArrDescItemVO {
+public class ArrItemEnumVO extends ArrItemVO {
 
 
 }

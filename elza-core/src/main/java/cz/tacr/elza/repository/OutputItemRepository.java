@@ -1,7 +1,5 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulItemType;
@@ -43,4 +41,6 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
                                                           @Param("outputDefinition") ArrOutputDefinition outputDefinition,
                                                           @Param("positionFrom") Integer positionFrom,
                                                           @Param("positionTo") Integer positionTo);
+
+    void deleteByOutputDefinition(ArrOutputDefinition outputDefinition);
 }

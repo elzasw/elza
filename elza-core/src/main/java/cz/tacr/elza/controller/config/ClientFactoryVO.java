@@ -5,7 +5,7 @@ import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.*;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
 import cz.tacr.elza.domain.*;
@@ -788,10 +788,10 @@ public class ClientFactoryVO {
      * @param descItem hodnota atributu
      * @return VO hodnota atributu
      */
-    public ArrDescItemVO createDescItem(final ArrDescItem descItem) {
+    public ArrItemVO createDescItem(final ArrDescItem descItem) {
         Assert.notNull(descItem);
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrDescItemVO descItemVO = mapper.map(descItem.getItem(), ArrDescItemVO.class);
+        ArrItemVO descItemVO = mapper.map(descItem.getItem(), ArrItemVO.class);
         BeanUtils.copyProperties(descItem, descItemVO);
         descItemVO.setId(descItem.getItemId());
 
@@ -806,8 +806,8 @@ public class ClientFactoryVO {
      * @param descItems seznam DO atributů
      * @return seznam VO atributů
      */
-    public List<ArrDescItemVO> createDescItems(final List<ArrDescItem> descItems) {
-        List<ArrDescItemVO> result = new ArrayList<>(descItems.size());
+    public List<ArrItemVO> createDescItems(final List<ArrDescItem> descItems) {
+        List<ArrItemVO> result = new ArrayList<>(descItems.size());
         for (ArrDescItem descItem : descItems) {
             result.add(createDescItem(descItem));
         }
@@ -822,12 +822,12 @@ public class ClientFactoryVO {
      */
     public List<DescItemGroupVO> createDescItemGroupsNew(final String ruleCode, final Integer fundId, final List<ArrDescItem> descItems) {
         Map<String, DescItemGroupVO> descItemGroupVOMap = new HashMap<>();
-        Map<RulItemType, List<ArrDescItemVO>> descItemByType = new HashMap<>();
+        Map<RulItemType, List<ArrItemVO>> descItemByType = new HashMap<>();
         List<DescItemTypeDescItemsLiteVO> descItemTypeVOList = new ArrayList<>();
 
         // vytvoření VO hodnot atributů
         for (ArrDescItem descItem : descItems) {
-            List<ArrDescItemVO> descItemList = descItemByType.get(descItem.getItemType());
+            List<ArrItemVO> descItemList = descItemByType.get(descItem.getItemType());
 
             if (descItemList == null) {
                 descItemList = new ArrayList<>();
@@ -1370,5 +1370,26 @@ public class ClientFactoryVO {
 
     public List<DmsFileVO> createFilesList(List<DmsFile> filesList) {
         return createList(filesList, DmsFileVO.class, this::createFile);
+    }
+
+    public ArrOutputDefinitionVO createArrOutputDefinition(final ArrOutputDefinition outputDefinition) {
+        Assert.notNull(outputDefinition);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrOutputDefinitionVO result = mapper.map(outputDefinition, ArrOutputDefinitionVO.class);
+        return result;
+    }
+
+    public <T extends ArrItem> ArrItemVO createItem(final T item) {
+
+        Assert.notNull(item);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrItemVO descItemVO = mapper.map(item.getItem(), ArrItemVO.class);
+        BeanUtils.copyProperties(item, descItemVO);
+        descItemVO.setId(item.getItemId());
+
+        Integer specId = (item.getItemSpec() == null) ? null : item.getItemSpec().getItemSpecId();
+        descItemVO.setDescItemSpecId(specId);
+        return descItemVO;
+
     }
 }

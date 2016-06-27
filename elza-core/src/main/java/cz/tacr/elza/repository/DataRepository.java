@@ -4,8 +4,11 @@ import java.util.Collection;
 import java.util.List;
 
 import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrChange;
@@ -49,4 +52,8 @@ public interface DataRepository extends JpaRepository<ArrData, Integer>, DataRep
     List<ArrData> findByItem(ArrItem item);
 
     ArrData findOneByItem(ArrItem item);
+
+    @Modifying
+    @Query("DELETE FROM arr_data d WHERE d.item IN (SELECT o FROM arr_output_item o WHERE o.outputDefinition = :outputDefinition)")
+    void deleteByOutputDefinition(@Param("outputDefinition") ArrOutputDefinition outputDefinition);
 }

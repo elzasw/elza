@@ -742,7 +742,7 @@ public class OutputService {
                 descItemNew.setItem(outputItem.getItem());
 
                 itemService.save(outputItemOrig, true);
-                outputItemUpdated = itemService.save(descItemNew, false);
+                outputItemUpdated = itemService.save(descItemNew, true);
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }

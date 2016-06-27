@@ -130,11 +130,11 @@ public class ConfigMapperConfiguration {
                 }).byDefault().register();
 
 
-       mapperFactory.classMap(ArrItemCoordinates.class, ArrDescItemCoordinatesVO.class).customize(
-                new CustomMapper<ArrItemCoordinates, ArrDescItemCoordinatesVO>() {
+       mapperFactory.classMap(ArrItemCoordinates.class, ArrItemCoordinatesVO.class).customize(
+                new CustomMapper<ArrItemCoordinates, ArrItemCoordinatesVO>() {
             @Override
             public void mapAtoB(final ArrItemCoordinates coordinates,
-                                final ArrDescItemCoordinatesVO coordinatesVO,
+                                final ArrItemCoordinatesVO coordinatesVO,
                                 final MappingContext context) {
                 String type = coordinates.getValue().getGeometryType().toUpperCase();
                 if (type.equals("POINT")) {
@@ -145,7 +145,7 @@ public class ConfigMapperConfiguration {
             }
 
             @Override
-            public void mapBtoA(final ArrDescItemCoordinatesVO coordinatesVO,
+            public void mapBtoA(final ArrItemCoordinatesVO coordinatesVO,
                                 final ArrItemCoordinates coordinates,
                                 final MappingContext context) {
                 WKTReader reader = new WKTReader();
@@ -156,88 +156,88 @@ public class ConfigMapperConfiguration {
                 }
             }
         }).exclude("value").byDefault().register();
-        mapperFactory.classMap(ArrItemEnum.class, ArrDescItemEnumVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemFormattedText.class, ArrDescItemFormattedTextVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemInt.class, ArrDescItemIntVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemJsonTable.class, ArrDescItemJsonTableVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemText.class, ArrDescItemTextVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemDecimal.class, ArrDescItemDecimalVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemUnitid.class, ArrDescItemUnitidVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemUnitdate.class, ArrDescItemUnitdateVO.class).customize(
-                new CustomMapper<ArrItemUnitdate, ArrDescItemUnitdateVO>() {
+        mapperFactory.classMap(ArrItemEnum.class, ArrItemEnumVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemFormattedText.class, ArrItemFormattedTextVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemInt.class, ArrItemIntVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemJsonTable.class, ArrItemJsonTableVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemText.class, ArrItemTextVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemDecimal.class, ArrItemDecimalVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemUnitid.class, ArrItemUnitidVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemUnitdate.class, ArrItemUnitdateVO.class).customize(
+                new CustomMapper<ArrItemUnitdate, ArrItemUnitdateVO>() {
                     @Override
                     public void mapAtoB(final ArrItemUnitdate unitdate,
-                                        final ArrDescItemUnitdateVO unitdateVO,
+                                        final ArrItemUnitdateVO unitdateVO,
                                         final MappingContext context) {
                         unitdateVO.setCalendarTypeId(unitdate.getCalendarType().getCalendarTypeId());
                         unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
                     }
 
                     @Override
-                    public void mapBtoA(final ArrDescItemUnitdateVO arrDescItemUnitdateVO,
+                    public void mapBtoA(final ArrItemUnitdateVO arrItemUnitdateVO,
                                         final ArrItemUnitdate unitdate,
                                         final MappingContext context) {
                         unitdate.setCalendarType(
-                                calendarTypeRepository.findOne(arrDescItemUnitdateVO.getCalendarTypeId()));
-                        UnitDateConvertor.convertToUnitDate(arrDescItemUnitdateVO.getValue(), unitdate);
+                                calendarTypeRepository.findOne(arrItemUnitdateVO.getCalendarTypeId()));
+                        UnitDateConvertor.convertToUnitDate(arrItemUnitdateVO.getValue(), unitdate);
                     }
                 }).byDefault().register();
 
-        mapperFactory.classMap(ArrItemPacketRef.class, ArrDescItemPacketVO.class).customize(
-                new CustomMapper<ArrItemPacketRef, ArrDescItemPacketVO>() {
+        mapperFactory.classMap(ArrItemPacketRef.class, ArrItemPacketVO.class).customize(
+                new CustomMapper<ArrItemPacketRef, ArrItemPacketVO>() {
                     @Override
                     public void mapAtoB(final ArrItemPacketRef descItemPacketRef,
-                                        final ArrDescItemPacketVO descItemPacketVO,
+                                        final ArrItemPacketVO descItemPacketVO,
                                         final MappingContext context) {
                         super.mapAtoB(descItemPacketRef, descItemPacketVO, context);
                         descItemPacketVO.setValue(descItemPacketRef.getPacket().getPacketId());
                     }
 
                     @Override
-                    public void mapBtoA(final ArrDescItemPacketVO descItemPacketVO,
+                    public void mapBtoA(final ArrItemPacketVO descItemPacketVO,
                                         final ArrItemPacketRef descItemPacketRef,
                                         final MappingContext context) {
                         super.mapBtoA(descItemPacketVO, descItemPacketRef, context);
                         descItemPacketRef.setPacket(packetRepository.findOne(descItemPacketVO.getValue()));
                     }
                 }).byDefault().register();
-        mapperFactory.classMap(ArrItemPartyRef.class, ArrDescItemPartyRefVO.class).customize(
-                new CustomMapper<ArrItemPartyRef, ArrDescItemPartyRefVO>() {
+        mapperFactory.classMap(ArrItemPartyRef.class, ArrItemPartyRefVO.class).customize(
+                new CustomMapper<ArrItemPartyRef, ArrItemPartyRefVO>() {
                     @Override
                     public void mapAtoB(final ArrItemPartyRef partyRef,
-                                        final ArrDescItemPartyRefVO patryRefVO,
+                                        final ArrItemPartyRefVO patryRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(partyRef, patryRefVO, context);
                         patryRefVO.setValue(partyRef.getParty().getPartyId());
                     }
 
                     @Override
-                    public void mapBtoA(final ArrDescItemPartyRefVO partyRefVO,
+                    public void mapBtoA(final ArrItemPartyRefVO partyRefVO,
                                         final ArrItemPartyRef partyRef,
                                         final MappingContext context) {
                         super.mapBtoA(partyRefVO, partyRef, context);
                         partyRef.setParty(partyRepository.findOne(partyRefVO.getValue()));
                     }
                 }).byDefault().register();
-        mapperFactory.classMap(ArrItemRecordRef.class, ArrDescItemRecordRefVO.class).customize(
-                new CustomMapper<ArrItemRecordRef, ArrDescItemRecordRefVO>() {
+        mapperFactory.classMap(ArrItemRecordRef.class, ArrItemRecordRefVO.class).customize(
+                new CustomMapper<ArrItemRecordRef, ArrItemRecordRefVO>() {
                     @Override
                     public void mapAtoB(final ArrItemRecordRef recordRef,
-                                        final ArrDescItemRecordRefVO recordRefVO,
+                                        final ArrItemRecordRefVO recordRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(recordRef, recordRefVO, context);
                         recordRefVO.setValue(recordRef.getRecord().getRecordId());
                     }
 
                     @Override
-                    public void mapBtoA(final ArrDescItemRecordRefVO recordRefVO,
+                    public void mapBtoA(final ArrItemRecordRefVO recordRefVO,
                                         final ArrItemRecordRef recordRef,
                                         final MappingContext context) {
                         super.mapBtoA(recordRefVO, recordRef, context);
                         recordRef.setRecord(recordRepository.findOne(recordRefVO.getValue()));
                     }
                 }).byDefault().register();
-        mapperFactory.classMap(ArrItemString.class, ArrDescItemStringVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemString.class, ArrItemStringVO.class).byDefault().register();
 
         mapperFactory.classMap(ArrNodeRegister.class, ArrNodeRegisterVO.class).byDefault().field(
                 "nodeRegisterId", "id").register();
