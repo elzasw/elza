@@ -17,6 +17,7 @@ import DescItemDecimal from './DescItemDecimal.jsx'
 import DescItemCoordinates from './DescItemCoordinates.jsx'
 import DescItemUnitdate from './DescItemUnitdate.jsx'
 import DescItemPacketRef from './DescItemPacketRef.jsx'
+import DescItemFileRef from './DescItemFileRef.jsx'
 import DescItemPartyRef from './DescItemPartyRef.jsx'
 import DescItemRecordRef from './DescItemRecordRef.jsx'
 import DescItemJsonTable from './DescItemJsonTable.jsx'
@@ -532,6 +533,12 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                     packets={packets}
                     fundId={fundId}
                     packetTypes={packetTypes}
+                    />)
+                break;
+            case 'FILE_REF':
+                parts.push(<DescItemFileRef key={itemComponentKey}
+                    {...descItemProps}
+                    fundId={fundId}
                     />)
                 break;
             case 'UNITDATE':

@@ -144,6 +144,7 @@ var messages = {
     "arr.panel.title.errors": "Chyby",
     "arr.panel.title.visiblePolicies": "Způsob kontroly",
     "arr.panel.title.packets": "Správa obalů",
+    "arr.panel.title.files": "Správa souborů",
     "arr.fund.packets.state": "Stav",
     "arr.fund.packets.state.open": "Otevřený",
     "arr.fund.packets.state.closed": "Uzavřený",
@@ -157,6 +158,9 @@ var messages = {
     "arr.fund.packets.action.changeState.toCanceled": "Změnit stav na: Zrušený",
     "arr.fund.packets.action.changeNumbers": "Přečíslovat",
     "arr.fund.packets.action.delete": "Odstranit",
+
+    "arr.fund.files.action.add": "Nový soubor",
+    "arr.fund.files.action.delete": "Odebrat soubor",
 
     "arr.fund.version": "Verze {0}",
     "arr.fund.outputDefinition.active": "Přehled platných AP",
@@ -296,6 +300,10 @@ var messages = {
     "arr.node.status.err": "Err",
     "arr.node.status.undefined": "Nezvalidovaný",
 
+    "dms.file.title.add": "Přidání nového souboru",
+    "dms.file.name": "Název souboru",
+    
+    
     "arr.packet.title.add": "Přidání nového obalu",
     "arr.packet.packetType": "Typ",
     "arr.packet.storageNumber": "Ukládací číslo",
@@ -318,8 +326,10 @@ var messages = {
     "subNodeForm.descItemType.copy": "Nastavení opakovaného kopírování hodnot PP",
     "subNodeForm.descItemType.lock": "Nastavení zamknutí úprav hodnot PP",
     "subNodeForm.descItemType.copyFromPrev": "Kopírovat hodnoty PP z předchozí JP",
-
     "subNodeForm.addNodeAfter": "JP za",
+
+    "subNodeForm.descItem.coordinates.action.add": "Nahrát souřadnice",
+    
     "subNodeForm.addNodeBefore": "JP před",
     "subNodeForm.addSubNode": "JP pod",
     "subNodeForm.deleteNode": "Smazat JP",

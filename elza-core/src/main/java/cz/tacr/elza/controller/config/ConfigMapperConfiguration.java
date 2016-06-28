@@ -9,19 +9,14 @@ import cz.tacr.elza.controller.vo.nodes.*;
 import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.domain.vo.DmsFileVO;
+import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
-import ma.glasnost.orika.CustomMapper;
-import ma.glasnost.orika.MapperFactory;
-import ma.glasnost.orika.MappingContext;
+import ma.glasnost.orika.*;
 import ma.glasnost.orika.converter.BidirectionalConverter;
 import ma.glasnost.orika.converter.builtin.PassThroughConverter;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
@@ -31,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -50,6 +46,12 @@ import java.util.List;
 @Configuration
 public class ConfigMapperConfiguration {
 
+    @Autowired
+    private FundRepository fundRepository;
+    @Autowired
+    private FundFileRepository fundFileRepository;
+    @Autowired
+    private OutputResultRepository outputResultRepository;
     @Autowired
     private PacketRepository packetRepository;
     @Autowired
@@ -201,6 +203,24 @@ public class ConfigMapperConfiguration {
                         descItemPacketRef.setPacket(packetRepository.findOne(descItemPacketVO.getValue()));
                     }
                 }).byDefault().register();
+        mapperFactory.classMap(ArrItemFileRef.class, ArrItemFileRefVO.class).customize(
+                new CustomMapper<ArrItemFileRef, ArrItemFileRefVO>() {
+                    @Override
+                    public void mapAtoB(final ArrItemFileRef arrItemFileRef,
+                                        final ArrItemFileRefVO arrItemFileRefVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(arrItemFileRef, arrItemFileRefVO, context);
+                        arrItemFileRefVO.setValue(arrItemFileRef.getFile().getFileId());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrItemFileRefVO arrItemFileRefVO,
+                                        final ArrItemFileRef arrItemFileRef,
+                                        final MappingContext context) {
+                        super.mapBtoA(arrItemFileRefVO, arrItemFileRef, context);
+                        arrItemFileRef.setFile(fundFileRepository.findOne(arrItemFileRefVO.getValue()));
+                    }
+                }).byDefault().register();
         mapperFactory.classMap(ArrItemPartyRef.class, ArrItemPartyRefVO.class).customize(
                 new CustomMapper<ArrItemPartyRef, ArrItemPartyRefVO>() {
                     @Override
@@ -282,6 +302,34 @@ public class ConfigMapperConfiguration {
                 }
         ).byDefault().register();
         mapperFactory.classMap(ArrBulkActionRun.class, BulkActionRunVO.class).field("bulkActionRunId", "id").field("bulkActionCode", "code").byDefault().register();
+        mapperFactory.classMap(ArrFile.class, ArrFileVO.class).field("fileId", "id").exclude("file").byDefault().customize(new CustomMapper<ArrFile, ArrFileVO>() {
+            @Override
+            public void mapAtoB(ArrFile arrFile, ArrFileVO arrFileVO, MappingContext mappingContext) {
+                arrFileVO.setFundId(arrFile.getFund().getFundId());
+            }
+
+            @Override
+            public void mapBtoA(ArrFileVO arrFileVO, ArrFile arrFile, MappingContext mappingContext) {
+                if (arrFileVO.getFundId() != null) {
+                    ArrFund fund = fundRepository.findOne(arrFileVO.getFundId());
+                    Assert.notNull(fund, "Archivní pomůcka neexistuje (ID=" + arrFileVO.getFundId() + ")");
+                    arrFile.setFund(fund);
+                }
+            }
+        }).register();
+        mapperFactory.classMap(ArrOutputFile.class, ArrOutputFileVO.class).field("fileId", "id").exclude("file").byDefault().customize(new CustomMapper<ArrOutputFile, ArrOutputFileVO>() {
+            @Override
+            public void mapAtoB(ArrOutputFile arrOutputFile, ArrOutputFileVO arrOutputFileVO, MappingContext mappingContext) {
+                arrOutputFileVO.setOutputResultId(arrOutputFile.getOutputResult().getOutputResultId());
+            }
+
+            @Override
+            public void mapBtoA(ArrOutputFileVO arrOutputFileVO, ArrOutputFile arrOutputFile, MappingContext mappingContext) {
+                ArrOutputResult result = outputResultRepository.findOne(arrOutputFileVO.getOutputResultId());
+                Assert.notNull(result, "Archivní pomůcka neexistuje (ID=" + arrOutputFileVO.getOutputResultId() + ")");
+                arrOutputFile.setOutputResult(result);
+            }
+        }).register();
         mapperFactory.classMap(DmsFile.class, DmsFileVO.class).field("fileId", "id").exclude("file").byDefault().register();
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();

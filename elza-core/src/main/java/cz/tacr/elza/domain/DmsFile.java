@@ -11,13 +11,16 @@ import java.io.File;
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 17.6.2016
  */
+@Table
 @Entity(name = "dms_file")
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class DmsFile implements cz.tacr.elza.api.DmsFile {
 
     public static final String NAME = "name";
-    public static final String FILE_NAME = "file_name";
+
+    public static final String FILE_NAME = "fileName";
+
     @Id
     @GeneratedValue
     private Integer fileId;

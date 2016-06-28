@@ -11,9 +11,20 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Tabs, Icon, Ribbon, i18n} from 'components/index.jsx';
-import {FundExtendedView, BulkActionsDialog, RibbonGroup,
-    AbstractReactComponent, NodeTabs, FundTreeTabs, ListBox2, LazyListBox,
-    VisiblePolicyForm, Loading, FundPackets} from 'components/index.jsx';
+import {
+    FundExtendedView,
+    BulkActionsDialog,
+    RibbonGroup,
+    AbstractReactComponent,
+    NodeTabs,
+    FundTreeTabs,
+    ListBox2,
+    LazyListBox,
+    VisiblePolicyForm,
+    Loading,
+    FundPackets,
+    FundFiles
+} from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {WebApi} from 'actions/index.jsx';
@@ -586,6 +597,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             if (_selectedTab === tabIndex) tabContent = this.renderFundPackets(activeFund)
             tabIndex++;
         }
+        items.push({id: tabIndex, title: i18n('arr.panel.title.files')});
+        if (_selectedTab === tabIndex) tabContent = this.renderFundFiles(activeFund)
+        tabIndex++;
 
         // pouze v developer modu
         if (developer.enabled && node) {
@@ -615,7 +629,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
     renderFundPackets() {
         const {arrRegion, packetTypes} = this.props;
-        var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+        const activeFund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : null;
 
         return (
             <FundPackets
@@ -624,7 +638,21 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 fundId={activeFund.id}
                 packetTypes={packetTypes}
                 {...activeFund.fundPackets}
-                />
+            />
+        )
+    }
+
+    renderFundFiles() {
+        const {arrRegion} = this.props;
+        const activeFund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : null;
+
+        return (
+            <FundFiles
+                ref="fundFiles"
+                versionId={activeFund.versionId}
+                fundId={activeFund.id}
+                {...activeFund.fundFiles}
+            />
         )
     }
 

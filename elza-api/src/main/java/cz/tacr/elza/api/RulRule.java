@@ -12,6 +12,7 @@ public interface RulRule<P extends RulPackage, RS extends RulRuleSet> extends Se
         CONFORMITY_INFO,
         CONFORMITY_IMPACT,
         ATTRIBUTE_TYPES,
+        OUTPUT_ATTRIBUTE_TYPES,
         NEW_LEVEL
     }
 

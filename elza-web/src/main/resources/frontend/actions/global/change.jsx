@@ -51,6 +51,13 @@ export function changePackets(fundId) {
     }
 }
 
+export function changeFiles(fundId, name) {
+    return {
+        type: types.CHANGE_FILES,
+        fundId: fundId
+    }
+}
+
 export function changeNodes(versionId, nodeIds) {
 
     return {

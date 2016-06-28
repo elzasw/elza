@@ -3,6 +3,7 @@ package cz.tacr.elza.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.*;
@@ -18,6 +19,8 @@ import javax.persistence.*;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrFile extends DmsFile implements cz.tacr.elza.api.ArrFile<ArrFund> {
 
+    public static final String FUND = "fund";
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
     @JoinColumn(name = "fundId", nullable = false)
@@ -32,6 +35,5 @@ public class ArrFile extends DmsFile implements cz.tacr.elza.api.ArrFile<ArrFund
     public void setFund(final ArrFund fund) {
         this.fund = fund;
     }
-
 
 }

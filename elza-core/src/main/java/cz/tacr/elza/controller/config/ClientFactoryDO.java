@@ -12,7 +12,7 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.domain.vo.DmsFileVO;
+import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.filter.condition.*;
 import cz.tacr.elza.repository.*;
@@ -802,4 +802,27 @@ public class ClientFactoryDO {
         return outputItem;
     }
 
+
+    /**
+     * Převod ArrFile soubor VO na DO
+     *
+     * @param fileVO soubor VO
+     * @return soubor DO
+     */
+    public ArrFile createArrFile(ArrFileVO fileVO) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(fileVO, ArrFile.class);
+    }
+
+
+    /**
+     * Převod ArrOutputFile soubor VO na DO
+     *
+     * @param fileVO soubor VO
+     * @return soubor DO
+     */
+    public ArrOutputFile createArrOutputFile(ArrOutputFileVO fileVO) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(fileVO, ArrOutputFile.class);
+    }
 }

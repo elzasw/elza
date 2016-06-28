@@ -22,6 +22,7 @@ import {isNodeSettingsAction} from 'actions/arr/nodeSetting.jsx'
 import {isFundDataGridAction} from 'actions/arr/fundDataGrid.jsx'
 import {isFundChangeAction} from 'actions/global/change.jsx'
 import {isFundPacketsAction} from 'actions/arr/fundPackets.jsx'
+import {isFundFilesAction} from 'actions/arr/fundFiles.jsx'
 import {isFundActionAction} from 'actions/arr/fundAction.jsx'
 import {isFundOutput} from 'actions/arr/fundOutput.jsx'
 
@@ -93,6 +94,7 @@ export default function arrRegion(state = initialState, action) {
         || isFundDataGridAction(action)
         || isFundChangeAction(action)
         || isFundPacketsAction(action)
+        || isFundFilesAction(action)
         || isFundActionAction(action)
         || isFundOutput(action)
     ) {
@@ -269,7 +271,7 @@ export default function arrRegion(state = initialState, action) {
                 ...state,
                 packets
             }
-        case types.CHANGE_PACKETS:
+        case types.CHANGE_PACKETS:{
             var packets = state.packets;
             var fundPackets = packets[action.fundId];
 
@@ -300,6 +302,27 @@ export default function arrRegion(state = initialState, action) {
             }
 
             return result
+        }
+        case types.CHANGE_FILES:{
+            const result = {
+                ...state
+            };
+
+            var someFundChanged = false;
+            const funds = state.funds.map(fundObj => {
+                if (fundObj.id === action.fundId) {
+                    someFundChanged = true;
+                    return fund(fundObj, action)
+                } else {
+                    return fundObj
+                }
+            });
+            if (someFundChanged) {
+                result.funds = funds
+            }
+
+            return result;
+        }
         case types.PACKETS_RECEIVE:
             var packets = state.packets;
             var fundPackets = packets[action.fundId];

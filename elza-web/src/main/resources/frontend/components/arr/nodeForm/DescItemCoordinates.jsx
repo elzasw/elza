@@ -75,7 +75,7 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
                 </div>
                 {
                     !repeatable && <div className='desc-item-coordinates-action' key='cord-actions'>
-                        <NoFocusButton onClick={this.handleUploadClick} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-upload" /></NoFocusButton>
+                        <NoFocusButton onClick={this.handleUploadClick} title={i18n('subNodeForm.descItem.coordinates.action.add')}><Icon glyph="fa-upload" /></NoFocusButton>
                         <Input className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={onUpload} />
                     </div>
                 }

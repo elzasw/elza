@@ -1,6 +1,8 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulItemType;
@@ -26,9 +28,27 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
                                                          @Param("outputDefinition") ArrOutputDefinition outputDefinition,
                                                          @Param("position") Integer position);
 
+    /**
+     * Vyhledá otevřenou (nesmazenou) hodnotu atributů podle objectId.
+     *
+     * @param descItemObjectId identifikátor hodnoty atributu
+     * @return output item
+     */
+    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
+    ArrOutputItem findOpenOutputItem(Integer descItemObjectId);
 
     @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = :itemObjectId")
     List<ArrOutputItem> findOpenOutputItems(@Param("itemObjectId") Integer descItemObjectId);
+
+    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.outputDefinition = :outputDefinition")
+    List<ArrOutputItem> findOpenOutputItems(@Param("itemType") RulItemType itemType,
+                                            @Param("outputDefinition") ArrOutputDefinition outputDefinition);
+
+    @Query("SELECT i FROM arr_output_item i WHERE i.descItemObjectId = ?1 AND i.createChange >= ?2 AND (i.deleteChange >= ?2 OR i.deleteChange IS NULL)")
+    List<ArrOutputItem> findByDescItemObjectIdAndBetweenVersionChangeId(Integer descItemObjectId, ArrChange change);
+
+    @Query("SELECT i FROM arr_output_item i WHERE i.descItemObjectId = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
+    List<ArrOutputItem> findByDescItemObjectIdAndLockChangeId(Integer descItemObjectId, ArrChange change);
 
     /**
      * Vyhledá všechny otevřené (nesmazené) hodnoty atributů podle typu a uzlu mezi pozicemi. (pro vícehodnotový atribut)

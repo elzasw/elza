@@ -32,6 +32,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.DescriptionItemService;
 import org.apache.commons.csv.CSVRecord;
@@ -425,8 +426,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
             // Export a kontrola
             InputStream is = descItemCsvExport(fundVersion.getId(), descItemResult.getItem().getDescItemObjectId());
-            Reader in = new InputStreamReader(is, DescriptionItemService.CSV_EXCEL_ENCODING);
-            Iterable<CSVRecord> records = DescriptionItemService.CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
+            Reader in = new InputStreamReader(is, ArrIOService.CSV_EXCEL_ENCODING);
+            Iterable<CSVRecord> records = ArrIOService.CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
             List<CSVRecord> recordsList = new ArrayList<>();
             records.forEach(recordsList::add);
             Assert.isTrue(recordsList.size() == 6); // šest řádků bez hlavičky

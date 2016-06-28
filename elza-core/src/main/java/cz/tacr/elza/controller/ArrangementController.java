@@ -60,12 +60,15 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.FilterTreeService;
+import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PacketService;
@@ -134,6 +137,9 @@ public class ArrangementController {
     private DescItemRepository descItemRepository;
 
     @Autowired
+    private OutputItemRepository outputItemRepository;
+
+    @Autowired
     private CalendarTypeRepository calendarTypeRepository;
 
     @Autowired
@@ -189,6 +195,12 @@ public class ArrangementController {
 
     @Autowired
     private OutputService outputService;
+
+    @Autowired
+    private ArrIOService arrIOService;
+
+    @Autowired
+    private ItemService itemService;
 
     /**
      * Seznam typů obalů.
@@ -427,7 +439,35 @@ public class ArrangementController {
 
         ArrDescItem arrDescItem = descItemFactory.getDescItem(descItem);
         OutputStream os = response.getOutputStream();
-        descriptionItemService.csvExport(arrDescItem, os);
+        arrIOService.csvExport(arrDescItem, os);
+        os.close();
+    }
+
+    /**
+     * Stažení CSV souboru z hodnoty atributu.
+     * @param response response
+     * @param fundVersionId verze souboru
+     * @param descItemObjectId object id atributu
+     * @throws IOException
+     */
+    @RequestMapping(value = "/outputItems/{fundVersionId}/csv/export",
+            method = RequestMethod.GET,
+            produces = "text/csv")
+    public void outputItemCsvExport(
+            HttpServletResponse response,
+            @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+            @RequestParam(value = "descItemObjectId") final Integer descItemObjectId) throws IOException {
+        Assert.notNull(fundVersionId);
+        Assert.notNull(descItemObjectId);
+
+        ArrOutputItem outputItem = outputItemRepository.findOpenOutputItem(descItemObjectId);
+        if (!"JSON_TABLE".equals(outputItem.getItemType().getDataType().getCode())) {
+            throw new UnsupportedOperationException("Pouze typ JSON_TABLE může být exportován pomocí CSV.");
+        }
+
+        outputItem = itemService.loadData(outputItem);
+        OutputStream os = response.getOutputStream();
+        arrIOService.csvExport(outputItem, os);
         os.close();
     }
 
@@ -455,13 +495,46 @@ public class ArrangementController {
         Assert.notNull(descItemTypeId);
 
         InputStream is = importFile.getInputStream();
-        ArrDescItem<ArrItemJsonTable> descItemCreated = descriptionItemService.csvImport(fundVersionId, nodeId, nodeVersion, descItemTypeId, is);
+        ArrDescItem<ArrItemJsonTable> descItemCreated = arrIOService.csvDescImport(fundVersionId, nodeId, nodeVersion, descItemTypeId, is);
         is.close();
 
         ItemResult<ArrNodeVO> descItemResult = new ItemResult<>();
         descItemResult.setItem(factoryVo.createItem(descItemCreated));
         descItemResult.setParent(factoryVo.createArrNode(descItemCreated.getNode()));
         return descItemResult;
+    }
+
+    /**
+     * Import CSV souboru, založí se nová hodnota s obsahem souboru.
+     * @param fundVersionId verze souboru
+     * @param outputDefinitionVersion verze výstupu
+     * @param outputDefinitionId id výstupu
+     * @param descItemTypeId id typu atributu
+     * @param importFile soubor soubor pro import
+     * @throws IOException chyba
+     */
+    @Transactional
+    @RequestMapping(value = "/outputItems/{fundVersionId}/csv/import",
+            method = RequestMethod.POST,
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public OutputItemResult outputItemCsvImport(
+            @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+            @RequestParam(value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
+            @RequestParam(value = "outputDefinitionId", required = false) final Integer outputDefinitionId,
+            @RequestParam(value = "descItemTypeId", required = false) final Integer descItemTypeId,
+            @RequestParam(value = "file") final MultipartFile importFile) throws IOException {
+        Assert.notNull(fundVersionId);
+        Assert.notNull(outputDefinitionVersion);
+        Assert.notNull(descItemTypeId);
+
+        InputStream is = importFile.getInputStream();
+        ArrOutputItem<ArrItemJsonTable> outputItemCreated = arrIOService.csvOutputImport(fundVersionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, is);
+        is.close();
+
+        OutputItemResult outputItemResult = new OutputItemResult();
+        outputItemResult.setItem(factoryVo.createItem(outputItemCreated));
+        outputItemResult.setOutputDefinition(factoryVo.createArrOutputDefinition(outputItemCreated.getOutputDefinition()));
+        return outputItemResult;
     }
 
     /**
@@ -634,10 +707,9 @@ public class ArrangementController {
 
         List<ArrOutputItem> outputItems = outputService.getOutputItems(version, outputDefinition);
 
-        List<RulItemTypeExt> itemTypes = new ArrayList<>();
+        List<RulItemTypeExt> itemTypes;
         try {
-            // TODO: dopsat pravidla
-            //itemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
+            itemTypes = ruleService.getOutputItemTypes(outputDefinition, version);
         } catch (Exception e) {
             itemTypes = new ArrayList<>();
         }

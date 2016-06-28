@@ -210,6 +210,19 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
             </div>
         )
     }
-}
+};
 
-module.exports = FilterableListBox
+FilterableListBox.propsTypes = {
+    supportInverseSelection: React.PropTypes.bool,
+    selectedIds: React.PropTypes.array.isRequired,
+    label:React.PropTypes.string,
+    className:React.PropTypes.string,
+    items: React.PropTypes.array.isRequired,
+    searchable: React.PropTypes.bool,
+    altSearch: React.PropTypes.object,
+    onSearch: React.PropTypes.func,
+    onChange: React.PropTypes.func,
+    selectionType: React.PropTypes.string
+};
+
+module.exports = FilterableListBox;

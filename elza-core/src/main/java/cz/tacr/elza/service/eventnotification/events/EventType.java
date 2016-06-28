@@ -48,6 +48,8 @@ public enum EventType {
 
     PACKETS_CHANGE(EventId.class),
 
+    FILES_CHANGE(EventStringInVersion.class),
+
     INSTITUTION_CHANGE(ActionEvent.class),
 
     VISIBLE_POLICY_CHANGE(EventIdsInVersion.class),

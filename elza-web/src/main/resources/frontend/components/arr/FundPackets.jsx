@@ -201,7 +201,7 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
             </div>
         )
     }
-}
+};
 
 FundPackets.propTypes = {
     fundId: React.PropTypes.number.isRequired,
