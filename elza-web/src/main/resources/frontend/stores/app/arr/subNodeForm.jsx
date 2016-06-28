@@ -234,7 +234,7 @@ export default function subNodeForm(state = initialState, action = {}) {
         case types.CHANGE_NODES:
             return {...state, dirty: true}
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
-            state.data.node = action.copySiblingResult.node;
+            state.data.parent = action.copySiblingResult.parent;
 
             var currentDescItemMap = {}
             loc.descItemType.descItems.forEach(descItem => {currentDescItemMap[descItem.descItemObjectId] = descItem})
@@ -256,11 +256,11 @@ export default function subNodeForm(state = initialState, action = {}) {
             state.formData = {...state.formData};
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
-            if (state.data.node.id !== action.descItemResult.node.id) {
+            if (state.data.parent.id !== action.descItemResult.parent.id) {
                 return state;
             }
             const newState = {...state};
-            newState.data.node = action.descItemResult.node;
+            newState.data.parent = action.descItemResult.parent;
 
             switch (action.operationType) {
                 case 'DELETE':
@@ -268,27 +268,27 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
                     break;
                 case 'UPDATE':
-                    loc.descItem.descItemObjectId = action.descItemResult.descItem.descItemObjectId;
-                    loc.descItem.prevValue = action.descItemResult.descItem.value;
+                    loc.descItem.descItemObjectId = action.descItemResult.item.descItemObjectId;
+                    loc.descItem.prevValue = action.descItemResult.item.value;
                     if (loc.descItemType.useSpecification) {
-                        loc.descItem.prevDescItemSpecId = action.descItemResult.descItem.descItemSpecId;
+                        loc.descItem.prevDescItemSpecId = action.descItemResult.item.descItemSpecId;
                     }
-                    if (action.descItemResult.descItem.calendarTypeId) {
-                        loc.descItem.prevCalendarTypeId = action.descItemResult.descItem.calendarTypeId;
+                    if (action.descItemResult.item.calendarTypeId) {
+                        loc.descItem.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
                     }
                     loc.descItem.touched = false
                     break;
                 case 'CREATE':
-                    loc.descItem.descItemObjectId = action.descItemResult.descItem.descItemObjectId;
-                    loc.descItem.id = action.descItemResult.descItem.id;
-                    loc.descItem.prevValue = action.descItemResult.descItem.value;
-                    loc.descItem.party = action.descItemResult.descItem.party;
-                    loc.descItem.record = action.descItemResult.descItem.record;
+                    loc.descItem.descItemObjectId = action.descItemResult.item.descItemObjectId;
+                    loc.descItem.id = action.descItemResult.item.id;
+                    loc.descItem.prevValue = action.descItemResult.item.value;
+                    loc.descItem.party = action.descItemResult.item.party;
+                    loc.descItem.record = action.descItemResult.item.record;
                     if (loc.descItemType.useSpecification) {
-                        loc.descItem.prevDescItemSpecId = action.descItemResult.descItem.descItemSpecId;
+                        loc.descItem.prevDescItemSpecId = action.descItemResult.item.descItemSpecId;
                     }
-                    if (action.descItemResult.descItem.calendarTypeId) {
-                        loc.descItem.prevCalendarTypeId = action.descItemResult.descItem.calendarTypeId;
+                    if (action.descItemResult.item.calendarTypeId) {
+                        loc.descItem.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
                     }
                     // Aktualizace position - pokud by create byl na první hodnotě a za ní již nějaké uživatel uložil, musí se vše aktualizovat
                     loc.descItemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
@@ -430,7 +430,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 data: {
                     ...state.data,
                     node: {
-                        ...state.data.node,
+                        ...state.data.parent,
                         version: action.version
                     }
                 }

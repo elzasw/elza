@@ -81,8 +81,8 @@ export default function arrRegion(state = initialState, action) {
     if (false
         || isBulkAction(action)
         || isFundTreeAction(action)
-        || nodeFormActions.isSubNodeFormAction(action)
-        || nodeFormActions.isSubNodeFormCacheAction(action)
+        || nodeFormActions.isSubNodeFormAction(action, "NODE") || nodeFormActions.isSubNodeFormAction(action, "OUTPUT")
+        || nodeFormActions.isSubNodeFormCacheAction(action, "NODE") || nodeFormActions.isSubNodeFormCacheAction(action, "OUTPUT")
         || isSubNodeRegisterAction(action)
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)

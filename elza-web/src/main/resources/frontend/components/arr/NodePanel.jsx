@@ -820,7 +820,7 @@ return true
                 packets={packets}
                 parentNode={node}
                 fundId={fundId}
-                selectedSubNode={node.subNodeForm.data.node}
+                selectedSubNode={node.subNodeForm.data.parent}
                 descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
                 closed={closed}
                 onAddDescItemType={this.handleAddDescItemType}

@@ -109,7 +109,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     this.dispatch(developerNodeScenariosRequest({
                         id: node.selectedSubNodeId,
                         key: node.routingKey,
-                        version: node.subNodeForm.data.node.version
+                        version: node.subNodeForm.data.parent.version
                     }, activeFund.versionId));
                 }
             }

@@ -21,37 +21,45 @@ class ItemFormActions {
         this.area = area;
     }
 
-    isSubNodeFormCacheAction(action) {
-        switch (action.type) {
-            case types.FUND_SUB_NODE_FORM_CACHE_RESPONSE:
-            case types.FUND_SUB_NODE_FORM_CACHE_REQUEST:
-                return true
-            default:
-                return false
+    isSubNodeFormCacheAction(action, area) {
+        if (action.area === area) {
+            switch (action.type) {
+                case types.FUND_SUB_NODE_FORM_CACHE_RESPONSE:
+                case types.FUND_SUB_NODE_FORM_CACHE_REQUEST:
+                    return true
+                default:
+                    return false
+            }
+        } else {
+            return false;
         }
     }
 
-    isSubNodeFormAction(action) {
-        switch (action.type) {
-            case types.FUND_SUB_NODE_FORM_REQUEST:
-            case types.FUND_SUB_NODE_FORM_RECEIVE:
-            case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
-            case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
-            case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
-            case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
-            case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
-            case types.FUND_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
-            case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
-            case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
-            case types.FUND_SUB_NODE_FORM_VALUE_ADD:
-            case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
-            case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
-            case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
-            case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
-            case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
-                return true
-            default:
-                return false
+    isSubNodeFormAction(action, area) {
+        if (action.area === area) {
+            switch (action.type) {
+                case types.FUND_SUB_NODE_FORM_REQUEST:
+                case types.FUND_SUB_NODE_FORM_RECEIVE:
+                case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
+                case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
+                case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
+                case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
+                case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
+                case types.FUND_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
+                case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
+                case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
+                case types.FUND_SUB_NODE_FORM_VALUE_ADD:
+                case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
+                case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
+                case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
+                case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
+                case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
+                    return true
+                default:
+                    return false
+            }
+        } else {
+            return false;
         }
     }
 
@@ -217,12 +225,12 @@ class ItemFormActions {
 
         if (this.descItemNeedStore(loc.descItem, refType)) {
             if (typeof loc.descItem.id !== 'undefined') {
-                this._callUpdateDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
+                this._callUpdateDescItem(versionId, subNodeForm.data.parent.version, loc.descItem)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
                     })
             } else {
-                this._callCreateDescItem(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, loc.descItemType.id, loc.descItem)
+                this._callCreateDescItem(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItemType.id, loc.descItem)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'));
                     })
@@ -261,7 +269,7 @@ class ItemFormActions {
         return (dispatch, getState) => {
             var state = getState();
             var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
-            this._callArrCoordinatesImport(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, descItemTypeId, file)
+            this._callArrCoordinatesImport(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, descItemTypeId, file)
                 .then(() => {
                     dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successCoordinates')));
                 }).catch(() => {
@@ -286,7 +294,7 @@ class ItemFormActions {
             var state = getState();
             var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
 
-            this._callDescItemCsvImport(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, descItemTypeId, file).then(() => {
+            this._callDescItemCsvImport(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, descItemTypeId, file).then(() => {
                 dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successJsonTable')));
             }).catch(() => {
                 dispatch(addToastrDanger(i18n('import.toast.error'), i18n('import.toast.errorJsonTable')));
@@ -364,7 +372,7 @@ class ItemFormActions {
 
                 var descItem = {...loc.descItem, position: index + 1}
 
-                this._callUpdateDescItem(versionId, subNodeForm.data.node.version, descItem)
+                this._callUpdateDescItem(versionId, subNodeForm.data.parent.version, descItem)
                     .then(json => {
                         let newValueLocation = {...valueLocation, descItemIndex: index}
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, newValueLocation, json, 'UPDATE'));
@@ -513,7 +521,7 @@ class ItemFormActions {
             })
 
             if (typeof loc.descItem.id !== 'undefined') {
-                this._callDeleteDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
+                this._callDeleteDescItem(versionId, subNodeForm.data.parent.version, loc.descItem)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE'));
                     })
@@ -580,7 +588,7 @@ class ItemFormActions {
             dispatch(this._fundSubNodeFormDescItemTypeDeleteInStore(versionId, routingKey, valueLocation, false));
 
             if (hasDescItemsForDelete) {
-                this._callDeleteDescItemType(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, loc.descItemType.id)
+                this._callDeleteDescItemType(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItemType.id)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
                     })

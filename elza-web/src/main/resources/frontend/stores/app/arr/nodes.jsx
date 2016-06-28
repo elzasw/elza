@@ -38,13 +38,13 @@ function processNode(state, action, index) {
 
 export default function nodes(state = nodesInitialState, action) {
     if (false
-        || nodeFormActions.isSubNodeFormAction(action)
+        || nodeFormActions.isSubNodeFormAction(action, "NODE")
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)
         || isNodeAction(action)
         || isSubNodeRegisterAction(action)
         || isDeveloperScenariosAction(action)
-        || nodeFormActions.isSubNodeFormCacheAction(action)
+        || nodeFormActions.isSubNodeFormCacheAction(action, "NODE")
     ) {
         var r = findByRoutingKeyInNodes(state, action.versionId, action.routingKey);
         if (r) {

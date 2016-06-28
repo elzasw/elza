@@ -384,8 +384,8 @@ typesNumToStrMap[0] = 'IMPOSSIBLE'
 // refTypesMap - mapa id info typu na typ, je doplněné o dataType objekt - obecný číselník
 export function updateFormData(state, data, refTypesMap) {
     // Přechozí a nová verze node
-    var currentNodeVersionId = state.data ? state.data.node.version : -1;
-    var newNodeVersionId = data.node.version;
+    var currentNodeVersionId = state.data ? state.data.parent.version : -1;
+    var newNodeVersionId = data.parent.version;
 
     // ##
     // # Vytvoření formuláře se všemi povinnými a doporučenými položkami, které jsou doplněné reálnými daty ze serveru

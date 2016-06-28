@@ -810,7 +810,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param descItemType      typ atributu
      * @return vytvořená hodnota atributu
      */
-    protected ArrangementController.DescItemResult createDescItem(final ArrItemVO descItem,
+    protected ArrangementController.ItemResult createDescItem(final ArrItemVO descItem,
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node,
                                                                   final RulDescItemTypeVO descItemType) {
@@ -828,7 +828,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param nodeVersion         verze uzlu
      * @return vytvořená hodnota atributu
      */
-    protected ArrangementController.DescItemResult createDescItem(final ArrItemVO descItem,
+    protected ArrangementController.ItemResult<ArrNodeVO> createDescItem(final ArrItemVO descItem,
                                                                   final Integer fundVersionId,
                                                                   final Integer descItemTypeId,
                                                                   final Integer nodeId,
@@ -839,10 +839,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParameter("descItemTypeId", descItemTypeId)
                 .pathParameter("nodeId", nodeId)
                 .pathParameter("nodeVersion", nodeVersion), CREATE_DESC_ITEM);
-        return response.getBody().as(ArrangementController.DescItemResult.class);
+        return response.getBody().as(ArrangementController.ItemResult.class);
     }
 
-    protected ArrangementController.OutputItemResult createOutputItem(ArrItemVO outputItemVO,
+    protected ArrangementController.ItemResult<ArrOutputDefinitionVO> createOutputItem(ArrItemVO outputItemVO,
                                                                    final Integer fundVersionId,
                                                                    final Integer itemTypeId,
                                                                    final Integer outputDefinitionId,
@@ -853,10 +853,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParameter("itemTypeId", itemTypeId)
                 .pathParameter("outputDefinitionId", outputDefinitionId)
                 .pathParameter("outputDefinitionVersion", outputDefinitionVersion), CREATE_OUTPUT_ITEM);
-        return response.getBody().as(ArrangementController.OutputItemResult.class);
+        return response.getBody().as(ArrangementController.ItemResult.class);
     }
 
-    protected ArrangementController.OutputItemResult updateOutputItem(final ArrItemVO outputItemVO,
+    protected ArrangementController.ItemResult<ArrOutputDefinitionVO> updateOutputItem(final ArrItemVO outputItemVO,
                                                                       final Integer fundVersionId,
                                                                       final Integer outputDefinitionVersion,
                                                                       final Boolean createNewVersion) {
@@ -865,17 +865,17 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("createNewVersion", createNewVersion)
                 .pathParameter("outputDefinitionVersion", outputDefinitionVersion), UPDATE_OUTPUT_ITEM);
-        return response.getBody().as(ArrangementController.OutputItemResult.class);
+        return response.getBody().as(ArrangementController.ItemResult.class);
     }
 
-    public ArrangementController.OutputItemResult deleteOutputItem(final ArrItemVO outputItemVO,
+    public ArrangementController.ItemResult<ArrOutputDefinitionVO> deleteOutputItem(final ArrItemVO outputItemVO,
                                                                    final Integer fundVersionId,
                                                                    final Integer outputDefinitionVersion) {
         Response response = post(spec -> spec
                 .body(outputItemVO)
                 .pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("outputDefinitionVersion", outputDefinitionVersion), DELETE_OUTPUT_ITEM);
-        return response.getBody().as(ArrangementController.OutputItemResult.class);
+        return response.getBody().as(ArrangementController.ItemResult.class);
     }
 
     protected InputStream descItemCsvExport(
@@ -891,7 +891,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return response.getBody().asInputStream();
     }
 
-    protected ArrangementController.DescItemResult descItemCsvImport(
+    protected ArrangementController.ItemResult<ArrNodeVO> descItemCsvImport(
             final Integer fundVersionId,
             final Integer nodeVersion,
             final Integer nodeId,
@@ -910,7 +910,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                         .params(params)
                 , DESC_ITEM_CSV_IMPORT
         );
-        return response.getBody().as(ArrangementController.DescItemResult.class);
+        return response.getBody().as(ArrangementController.ItemResult.class);
     }
 
     /**
@@ -922,7 +922,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param createNewVersion  vytvořit novou verzi?
      * @return upravená hodnota atributu
      */
-    protected ArrangementController.DescItemResult updateDescItem(final ArrItemVO descItem,
+    protected ArrangementController.ItemResult<ArrNodeVO> updateDescItem(final ArrItemVO descItem,
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node,
                                                                   final Boolean createNewVersion) {
@@ -938,7 +938,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param createNewVersion    vytvořit novou verzi?
      * @return upravená hodnota atributu
      */
-    protected ArrangementController.DescItemResult updateDescItem(final ArrItemVO descItem,
+    protected ArrangementController.ItemResult<ArrNodeVO> updateDescItem(final ArrItemVO descItem,
                                                                   final Integer fundVersionId,
                                                                   final Integer nodeVersion,
                                                                   final Boolean createNewVersion) {
@@ -947,7 +947,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("nodeVersion", nodeVersion)
                 .pathParameter("createNewVersion", createNewVersion), UPDATE_DESC_ITEM);
-        return response.getBody().as(ArrangementController.DescItemResult.class);
+        return response.getBody().as(ArrangementController.ItemResult.class);
     }
 
     /**
@@ -958,7 +958,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param node              uzel
      * @return smazaná hodnota atributu
      */
-    protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem,
+    protected ArrangementController.ItemResult<ArrNodeVO> deleteDescItem(final ArrItemVO descItem,
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node) {
         return deleteDescItem(descItem, fundVersion.getId(), node.getVersion());
@@ -972,14 +972,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param nodeVersion         verze uzlu
      * @return smazaná hodnota atributu
      */
-    protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem,
+    protected ArrangementController.ItemResult<ArrNodeVO> deleteDescItem(final ArrItemVO descItem,
                                                                   final Integer fundVersionId,
                                                                   final Integer nodeVersion) {
         Response response = post(spec -> spec
                 .body(descItem)
                 .pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("nodeVersion", nodeVersion), DELETE_DESC_ITEM);
-        return response.getBody().as(ArrangementController.DescItemResult.class);
+        return response.getBody().as(ArrangementController.ItemResult.class);
     }
 
 
@@ -1597,12 +1597,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param versionId id verze stromu
      * @return formulář
      */
-    protected ArrangementController.NodeFormDataNewVO getNodeFormData(final Integer nodeId,
+    protected ArrangementController.FormDataNewVO<ArrNodeVO> getNodeFormData(final Integer nodeId,
                                                                       final Integer versionId) {
         return get(spec -> spec
                 .pathParameter("nodeId", nodeId)
                 .pathParameter("versionId", versionId),
-                NODE_FORM_DATA).getBody().as(ArrangementController.NodeFormDataNewVO.class);
+                NODE_FORM_DATA).getBody().as(ArrangementController.FormDataNewVO.class);
     }
 
     /**
@@ -1612,12 +1612,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param versionId          id verze stromu
      * @return formulář
      */
-    protected ArrangementController.OutputFormDataNewVO getOutputFormData(final Integer outputDefinitionId,
+    protected ArrangementController.FormDataNewVO<ArrOutputDefinitionVO> getOutputFormData(final Integer outputDefinitionId,
                                                                           final Integer versionId) {
         return get(spec -> spec
                         .pathParameter("outputDefinitionId", outputDefinitionId)
                         .pathParameter("versionId", versionId),
-                OUTPUT_FORM_DATA).getBody().as(ArrangementController.OutputFormDataNewVO.class);
+                OUTPUT_FORM_DATA).getBody().as(ArrangementController.FormDataNewVO.class);
     }
 
     /**
@@ -1679,7 +1679,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param nodeVersion           verze JP
      * @param descItemTypeId        identfikátor typu hodnoty atributu
      */
-    protected ArrangementController.DescItemResult deleteDescItemsByType(final Integer fundVersionId,
+    protected ArrangementController.ItemResult<ArrNodeVO> deleteDescItemsByType(final Integer fundVersionId,
                                                 final Integer nodeId,
                                                 final Integer nodeVersion,
                                                 final Integer descItemTypeId) {
@@ -1688,7 +1688,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                         .pathParameter("nodeId", nodeId)
                         .pathParameter("nodeVersion", nodeVersion)
                         .pathParameter("descItemTypeId", descItemTypeId),
-                        DELETE_DESC_ITEM_BY_TYPE).getBody().as(ArrangementController.DescItemResult.class);
+                        DELETE_DESC_ITEM_BY_TYPE).getBody().as(ArrangementController.ItemResult.class);
     }
 
     /**

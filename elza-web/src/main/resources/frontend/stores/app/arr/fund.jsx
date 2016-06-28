@@ -122,7 +122,7 @@ export function fund(state, action) {
         return consolidateState(state, result)
     }
 
-    if (nodeFormActions.isSubNodeFormAction(action)) {
+    if (nodeFormActions.isSubNodeFormAction(action, "NODE")) {
         const type = getRoutingKeyType(action.routingKey)
         switch (type) {
             case 'NODE':
@@ -135,10 +135,12 @@ export function fund(state, action) {
                 var result = {...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action)};
                 return consolidateState(state, result)
         }
+    } else if (nodeFormActions.isSubNodeFormAction(action, "OUTPUT")) {
+        
     }
 
     if (false
-        || nodeFormActions.isSubNodeFormCacheAction(action)
+        || nodeFormActions.isSubNodeFormCacheAction(action, "NODE")
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)
         || isNodeAction(action)

@@ -148,7 +148,7 @@ var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactCompo
                     packets={fundPackets}
                     parentNode={{}}
                     fundId={fundId}
-                    selectedSubNode={fundDataGrid.subNodeForm.data.node}
+                    selectedSubNode={fundDataGrid.subNodeForm.data.parent}
                     descItemCopyFromPrevEnabled={false}
                     closed={closed}
                     onAddDescItemType={()=>{}}

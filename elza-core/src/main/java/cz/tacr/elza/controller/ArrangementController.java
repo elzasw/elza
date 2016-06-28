@@ -354,7 +354,7 @@ public class ArrangementController {
             method = RequestMethod.DELETE,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public DescItemResult deleteDescItemsByType(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+    public ItemResult<ArrNodeVO> deleteDescItemsByType(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                 @PathVariable(value = "nodeId") final Integer nodeId,
                                                 @PathVariable(value = "nodeVersion") final Integer nodeVersion,
                                                 @PathVariable(value = "descItemTypeId") final Integer descItemTypeId) {
@@ -367,9 +367,9 @@ public class ArrangementController {
         ArrNode node = descriptionItemService
                 .deleteDescriptionItemsByType(fundVersionId, nodeId, nodeVersion, descItemTypeId);
 
-        DescItemResult descItemResult = new DescItemResult();
-        descItemResult.setDescItem(null);
-        descItemResult.setNode(factoryVo.createArrNode(node));
+        ItemResult<ArrNodeVO> descItemResult = new ItemResult<>();
+        descItemResult.setItem(null);
+        descItemResult.setParent(factoryVo.createArrNode(node));
 
         return descItemResult;
     }
@@ -386,7 +386,7 @@ public class ArrangementController {
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public DescItemResult deleteDescItem(@RequestBody final ArrItemVO descItemVO,
+    public ItemResult<ArrNodeVO> deleteDescItem(@RequestBody final ArrItemVO descItemVO,
                                          @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
         Assert.notNull(descItemVO);
@@ -396,9 +396,9 @@ public class ArrangementController {
         ArrDescItem descItemDeleted = descriptionItemService
                 .deleteDescriptionItem(descItemVO.getDescItemObjectId(), nodeVersion, fundVersionId);
 
-        DescItemResult descItemResult = new DescItemResult();
-        descItemResult.setDescItem(null);
-        descItemResult.setNode(factoryVo.createArrNode(descItemDeleted.getNode()));
+        ItemResult<ArrNodeVO> descItemResult = new ItemResult<>();
+        descItemResult.setItem(null);
+        descItemResult.setParent(factoryVo.createArrNode(descItemDeleted.getNode()));
 
         return descItemResult;
     }
@@ -444,7 +444,7 @@ public class ArrangementController {
     @RequestMapping(value = "/descItems/{fundVersionId}/csv/import",
             method = RequestMethod.POST,
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public DescItemResult descItemCsvImport(
+    public ItemResult<ArrNodeVO> descItemCsvImport(
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(value = "nodeVersion") final Integer nodeVersion,
             @RequestParam(value = "nodeId", required = false) final Integer nodeId,
@@ -458,9 +458,9 @@ public class ArrangementController {
         ArrDescItem<ArrItemJsonTable> descItemCreated = descriptionItemService.csvImport(fundVersionId, nodeId, nodeVersion, descItemTypeId, is);
         is.close();
 
-        DescItemResult descItemResult = new DescItemResult();
-        descItemResult.setDescItem(factoryVo.createItem(descItemCreated));
-        descItemResult.setNode(factoryVo.createArrNode(descItemCreated.getNode()));
+        ItemResult<ArrNodeVO> descItemResult = new ItemResult<>();
+        descItemResult.setItem(factoryVo.createItem(descItemCreated));
+        descItemResult.setParent(factoryVo.createArrNode(descItemCreated.getNode()));
         return descItemResult;
     }
 
@@ -477,7 +477,7 @@ public class ArrangementController {
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public DescItemResult updateDescItem(@RequestBody final ArrItemVO descItemVO,
+    public ItemResult<ArrNodeVO> updateDescItem(@RequestBody final ArrItemVO descItemVO,
                                          @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "nodeVersion") final Integer nodeVersion,
                                          @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
@@ -491,9 +491,9 @@ public class ArrangementController {
         ArrDescItem descItemUpdated = descriptionItemService
                 .updateDescriptionItem(descItem, nodeVersion, fundVersionId, createNewVersion);
 
-        DescItemResult descItemResult = new DescItemResult();
-        descItemResult.setDescItem(factoryVo.createDescItem(descItemUpdated));
-        descItemResult.setNode(factoryVo.createArrNode(descItemUpdated.getNode()));
+        ItemResult<ArrNodeVO> descItemResult = new ItemResult<>();
+        descItemResult.setItem(factoryVo.createDescItem(descItemUpdated));
+        descItemResult.setParent(factoryVo.createArrNode(descItemUpdated.getNode()));
 
         return descItemResult;
     }
@@ -513,7 +513,7 @@ public class ArrangementController {
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public DescItemResult createDescItem(@RequestBody final ArrItemVO descItemVO,
+    public ItemResult<ArrNodeVO> createDescItem(@RequestBody final ArrItemVO descItemVO,
                                          @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "descItemTypeId") final Integer descItemTypeId,
                                          @PathVariable(value = "nodeId") final Integer nodeId,
@@ -529,9 +529,9 @@ public class ArrangementController {
         ArrDescItem descItemCreated = descriptionItemService.createDescriptionItem(descItem, nodeId, nodeVersion,
                 fundVersionId);
 
-        DescItemResult descItemResult = new DescItemResult();
-        descItemResult.setDescItem(factoryVo.createDescItem(descItemCreated));
-        descItemResult.setNode(factoryVo.createArrNode(descItemCreated.getNode()));
+        ItemResult<ArrNodeVO> descItemResult = new ItemResult<>();
+        descItemResult.setItem(factoryVo.createDescItem(descItemCreated));
+        descItemResult.setParent(factoryVo.createArrNode(descItemCreated.getNode()));
 
         return descItemResult;
     }
@@ -542,7 +542,7 @@ public class ArrangementController {
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public OutputItemResult deleteOutputItem(@RequestBody final ArrItemVO outputItemVO,
+    public ItemResult<ArrOutputDefinitionVO> deleteOutputItem(@RequestBody final ArrItemVO outputItemVO,
                                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                              @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion) {
         Assert.notNull(outputItemVO);
@@ -552,9 +552,9 @@ public class ArrangementController {
         ArrOutputItem outputItemDeleted = outputService
                 .deleteOutputItem(outputItemVO.getDescItemObjectId(), outputDefinitionVersion, fundVersionId);
 
-        OutputItemResult outputItemResult = new OutputItemResult();
+        ItemResult<ArrOutputDefinitionVO> outputItemResult = new ItemResult();
         outputItemResult.setItem(null);
-        outputItemResult.setOutputDefinition(factoryVo.createOutputDefinition(outputItemDeleted.getOutputDefinition()));
+        outputItemResult.setParent(factoryVo.createOutputDefinition(outputItemDeleted.getOutputDefinition()));
 
         return outputItemResult;
     }
@@ -564,7 +564,7 @@ public class ArrangementController {
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public OutputItemResult createOutputItem(@RequestBody final ArrItemVO outputItemVO,
+    public ItemResult<ArrOutputDefinitionVO> createOutputItem(@RequestBody final ArrItemVO outputItemVO,
                                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                              @PathVariable(value = "itemTypeId") final Integer itemTypeId,
                                              @PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
@@ -580,9 +580,9 @@ public class ArrangementController {
         ArrOutputItem outputItemCreated = outputService.createOutputItem(outputItem, outputDefinitionId,
                 outputDefinitionVersion, fundVersionId);
 
-        OutputItemResult outputItemResult = new OutputItemResult();
+        ItemResult<ArrOutputDefinitionVO> outputItemResult = new ItemResult();
         outputItemResult.setItem(factoryVo.createItem(outputItemCreated));
-        outputItemResult.setOutputDefinition(factoryVo.createArrOutputDefinition(outputItemCreated.getOutputDefinition()));
+        outputItemResult.setParent(factoryVo.createArrOutputDefinition(outputItemCreated.getOutputDefinition()));
 
         return outputItemResult;
     }
@@ -592,7 +592,7 @@ public class ArrangementController {
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public OutputItemResult updateOutputItem(@RequestBody final ArrItemVO outputItemVO,
+    public ItemResult<ArrOutputDefinitionVO> updateOutputItem(@RequestBody final ArrItemVO outputItemVO,
                                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                              @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
                                              @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
@@ -606,9 +606,9 @@ public class ArrangementController {
         ArrOutputItem outputItemUpdated = outputService
                 .updateOutputItem(outputItem, outputDefinitionVersion, fundVersionId, createNewVersion);
 
-        OutputItemResult outputItemResult = new OutputItemResult();
+        ItemResult<ArrOutputDefinitionVO> outputItemResult = new ItemResult();
         outputItemResult.setItem(factoryVo.createItem(outputItemUpdated));
-        outputItemResult.setOutputDefinition(factoryVo.createOutputDefinition(outputItemUpdated.getOutputDefinition()));
+        outputItemResult.setParent(factoryVo.createOutputDefinition(outputItemUpdated.getOutputDefinition()));
 
         return outputItemResult;
     }
@@ -621,7 +621,7 @@ public class ArrangementController {
      * @return formulář
      */
     @RequestMapping(value = "/output/{outputDefinitionId}/{fundVersionId}/form", method = RequestMethod.GET)
-    public OutputFormDataNewVO getOutputFormData(@PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
+    public FormDataNewVO<ArrOutputDefinitionVO> getOutputFormData(@PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
                                                  @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
         Assert.notNull(fundVersionId, "Identifikátor verze musí být vyplněn");
         Assert.notNull(outputDefinitionId, "Identifikátor výstupu musí být vyplněn");
@@ -648,7 +648,7 @@ public class ArrangementController {
         ArrOutputDefinitionVO outputDefinitionVO = factoryVo.createArrOutputDefinition(outputDefinition);
         List<ItemGroupVO> itemGroupsVO = factoryVo.createItemGroupsNew(ruleCode, fundId, outputItems);
         List<ItemTypeGroupVO> itemTypeGroupsVO = factoryVo.createItemTypeGroupsNew(ruleCode, fundId, itemTypes);
-        return new OutputFormDataNewVO(outputDefinitionVO, itemGroupsVO, itemTypeGroupsVO);
+        return new FormDataNewVO(outputDefinitionVO, itemGroupsVO, itemTypeGroupsVO);
     }
 
     /**
@@ -808,7 +808,7 @@ public class ArrangementController {
      * @return formulář
      */
     @RequestMapping(value = "/nodes/{nodeId}/{versionId}/form", method = RequestMethod.GET)
-    public NodeFormDataNewVO getNodeFormData(@PathVariable(value = "nodeId") final Integer nodeId,
+    public FormDataNewVO<ArrNodeVO> getNodeFormData(@PathVariable(value = "nodeId") final Integer nodeId,
                                              @PathVariable(value = "versionId") final Integer versionId) {
         Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
         Assert.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
@@ -834,7 +834,7 @@ public class ArrangementController {
         List<ItemGroupVO> descItemGroupsVO = factoryVo.createItemGroupsNew(ruleCode, fundId, descItems);
         List<ItemTypeGroupVO> descItemTypeGroupsVO = factoryVo
                 .createItemTypeGroupsNew(ruleCode, fundId, itemTypes);
-        return new NodeFormDataNewVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
+        return new FormDataNewVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
     }
 
     /**
@@ -849,7 +849,7 @@ public class ArrangementController {
         Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
         Assert.notNull(nodeIds, "Identifikátory uzlů musí být vyplněny");
 
-        Map<Integer, NodeFormDataNewVO> forms = new HashMap<>();
+        Map<Integer, FormDataNewVO<ArrNodeVO>> forms = new HashMap<>();
 
         for (int i = 0; i < nodeIds.length; i++) {
             forms.put(nodeIds[i], getNodeFormData(nodeIds[i], versionId));
@@ -882,7 +882,7 @@ public class ArrangementController {
 
         List<ArrNode> nodes = arrangementService.findSiblingsAroundOfNode(version, node, around);
 
-        Map<Integer, NodeFormDataNewVO> forms = new HashMap<>();
+        Map<Integer, FormDataNewVO<ArrNodeVO>> forms = new HashMap<>();
 
         for (ArrNode arrNode : nodes) {
             forms.put(arrNode.getNodeId(), getNodeFormData(arrNode.getNodeId(), versionId));
@@ -1371,9 +1371,7 @@ public class ArrangementController {
      * @param fulltext  fulltext
      * @param luceneQuery v hodnotě fulltext je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext
      * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
-     * @throws FilterExpiredException není nastaven filtr, nejprve zavolat {@link FilterTreeService#filterData(ArrFundVersion,
-     *                                Object)
-     * @throws InvalidQueryException
+     * @throws FilterExpiredException není nastaven filtr, nejprve zavolat {@link FilterTreeService#filterData(ArrFundVersion, List)}
      */
     @RequestMapping(value = "/getFilteredFulltext/{versionId}", method = RequestMethod.GET)
     public List<FilterNodePosition> getFilteredFulltextNodes(@PathVariable("versionId") final Integer versionId,
@@ -1777,88 +1775,34 @@ public class ArrangementController {
         /**
          * Formuláře
          */
-        private Map<Integer, NodeFormDataNewVO> forms;
+        private Map<Integer, FormDataNewVO<ArrNodeVO>> forms;
 
         public NodeFormsDataVO() {
         }
 
-        public NodeFormsDataVO(final Map<Integer, NodeFormDataNewVO> forms) {
+        public NodeFormsDataVO(final Map<Integer, FormDataNewVO<ArrNodeVO>> forms) {
             this.forms = forms;
         }
 
-        public Map<Integer, NodeFormDataNewVO> getForms() {
+        public Map<Integer, FormDataNewVO<ArrNodeVO>> getForms() {
             return forms;
         }
 
-        public void setForms(final Map<Integer, NodeFormDataNewVO> forms) {
+        public void setForms(final Map<Integer, FormDataNewVO<ArrNodeVO>> forms) {
             this.forms = forms;
-        }
-    }
-
-    /**
-     * Výstupní objekt pro získaná data pro formulář detailu uzlu.
-     */
-    public static class NodeFormDataNewVO extends FormDataNewVO {
-
-        /**
-         * Uzel
-         */
-        private ArrNodeVO node;
-
-        public NodeFormDataNewVO() {
-
-        }
-
-        public NodeFormDataNewVO(final ArrNodeVO node,
-                              final List<ItemGroupVO> groups,
-                              final List<ItemTypeGroupVO> typeGroups) {
-            super(groups, typeGroups);
-            this.node = node;
-        }
-
-        public ArrNodeVO getNode() {
-            return node;
-        }
-
-        public void setNode(final ArrNodeVO node) {
-            this.node = node;
-        }
-    }
-
-    /**
-     * Výstupní objekt pro získaná data pro formulář detailu výstupu.
-     */
-    public static class OutputFormDataNewVO extends FormDataNewVO {
-
-        /**
-         * Uzel
-         */
-        private ArrOutputDefinitionVO outputDefinition;
-
-        public OutputFormDataNewVO() {
-
-        }
-
-        public OutputFormDataNewVO(final ArrOutputDefinitionVO outputDefinition,
-                                 final List<ItemGroupVO> groups,
-                                 final List<ItemTypeGroupVO> typeGroups) {
-            super(groups, typeGroups);
-            this.outputDefinition = outputDefinition;
-        }
-
-        public ArrOutputDefinitionVO getOutputDefinition() {
-            return outputDefinition;
-        }
-
-        public void setOutputDefinition(final ArrOutputDefinitionVO outputDefinition) {
-            this.outputDefinition = outputDefinition;
         }
     }
 
     /**
      * Výstupní objekt pro získaná data pro formulář detailu.
+     * @param <T> typ nadřazené entity, např. ArrNodeVO nebo output atp.
      */
-    public static class FormDataNewVO {
+    public static class FormDataNewVO<T> {
+
+        /**
+         * parent
+         */
+        private T parent;
 
         /**
          * Seznam skupin
@@ -1874,8 +1818,9 @@ public class ArrangementController {
 
         }
 
-        public FormDataNewVO(final List<ItemGroupVO> groups,
+        public FormDataNewVO(final T parent, final List<ItemGroupVO> groups,
                              final List<ItemTypeGroupVO> typeGroups) {
+            this.parent = parent;
             this.groups = groups;
             this.typeGroups = typeGroups;
         }
@@ -1894,6 +1839,14 @@ public class ArrangementController {
 
         public void setTypeGroups(final List<ItemTypeGroupVO> typeGroups) {
             this.typeGroups = typeGroups;
+        }
+
+        public T getParent() {
+            return parent;
+        }
+
+        public void setParent(T parent) {
+            this.parent = parent;
         }
     }
 
@@ -2171,67 +2124,38 @@ public class ArrangementController {
     }
 
     /**
-     * Výstupní objekt pro hodnotu atributu a uzel.
+     * Výstupní objekt pro hodnotu atributu a nadřazenou entitu.
      * - pro create / delete / update
+     * @param <T> typ nadřazené entity, např. ArrNodeVO nebo output atp.
      */
-    public static class DescItemResult {
+    public static class ItemResult<T> {
 
         /**
-         * uzel
+         * parent
          */
-        private ArrNodeVO node;
+        private T parent;
 
         /**
          * hodnota atributu
          */
         private ArrItemVO descItem;
 
-        public ArrNodeVO getNode() {
-            return node;
+        public T getParent() {
+            return parent;
         }
 
-        public void setNode(final ArrNodeVO node) {
-            this.node = node;
-        }
-
-        public ArrItemVO getDescItem() {
-            return descItem;
-        }
-
-        public void setDescItem(final ArrItemVO descItem) {
-            this.descItem = descItem;
-        }
-    }
-
-    public static class OutputItemResult {
-
-        /**
-         * uzel
-         */
-        private ArrOutputDefinitionVO outputDefinition;
-
-        /**
-         * hodnota atributu
-         */
-        private ArrItemVO item;
-
-        public ArrOutputDefinitionVO getOutputDefinition() {
-            return outputDefinition;
-        }
-
-        public void setOutputDefinition(final ArrOutputDefinitionVO outputDefinition) {
-            this.outputDefinition = outputDefinition;
+        public void setParent(final T parent) {
+            this.parent = parent;
         }
 
         public ArrItemVO getItem() {
-            return item;
+            return descItem;
         }
 
-        public void setItem(final ArrItemVO item) {
-            this.item = item;
+        public void setItem(final ArrItemVO descItem) {
+            this.descItem = descItem;
         }
     }
-
 
     /**
      * Vstupní parametry pro přesuny uzlů.
