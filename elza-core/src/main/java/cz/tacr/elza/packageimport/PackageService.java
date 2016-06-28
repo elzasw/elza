@@ -768,8 +768,8 @@ public class PackageService {
                     if (item.getColumnsDefinition() != null && !item.getColumnsDefinition().equals(itemType.getColumnsDefinition())) {
                         Long countDescItems = descItemRepository.getCountByType(item);
                         if (countDescItems != null && countDescItems > 0) {
-                            throw new IllegalStateException("Nelze změnit definici sloupců (datový typ a kód) u typu " + item.getCode()
-                                    + ", protože existují záznamy, které typ využívají");
+//                            throw new IllegalStateException("Nelze změnit definici sloupců (datový typ a kód) u typu " + item.getCode()
+//                                    + ", protože existují záznamy, které typ využívají");
                         }
                     }
 

@@ -34,7 +34,6 @@ import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrMoveLevelService;
-import cz.tacr.elza.service.DescriptionItemService;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -208,7 +207,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrItemStringVO item = new ArrItemStringVO();
         item.setValue("test1");
         RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("ZP2015_TITLE");
-        ArrangementController.ItemResult<ArrOutputDefinitionVO> outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), outputDefinition.getId(), outputDefinition.getVersion());
+        ArrangementController.OutputItemResult outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), outputDefinition.getId(), outputDefinition.getVersion());
         ArrItemVO itemCreated = outputItem.getItem();
         Assert.notNull(itemCreated);
         Assert.notNull(itemCreated.getDescItemObjectId());
@@ -317,7 +316,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // vytvoření hodnoty
         RulDescItemTypeExtVO type = findDescItemTypeByCode("ZP2015_TITLE");
         ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null);
-        ArrangementController.ItemResult<ArrNodeVO> descItemResult = createDescItem(descItem, fundVersion, rootNode,
+        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, rootNode,
                 type);
         rootNode = descItemResult.getParent();
         ArrItemVO descItemCreated = descItemResult.getItem();
@@ -879,7 +878,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         int index = 0;
         for (ArrNodeVO node : nodes) {
             ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, index + "value" + index, null, null);
-            ArrangementController.ItemResult<ArrNodeVO> descItemResult = createDescItem(descItem, fundVersion, node,
+            ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node,
                     typeVo);
             index++;
         }
@@ -949,7 +948,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         String value = "value";
         for (ArrNodeVO node : nodes) {
             ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, value + index, null, null);
-            ArrangementController.ItemResult<ArrNodeVO> descItemResult = createDescItem(descItem, fundVersion, node,
+            ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node,
                     typeVo);
             index = -index;
         }
