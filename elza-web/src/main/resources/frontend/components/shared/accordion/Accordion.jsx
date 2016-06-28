@@ -49,7 +49,6 @@ var Accordion = class AccordionWrapper extends AbstractReactComponent {
                         <div className='accordion-body-content'>
                             {this.props.renderItemContent(item)}
                         </div>
-                        {false && <SubNodeForm/>}
                     </div>
                 </div>
             )

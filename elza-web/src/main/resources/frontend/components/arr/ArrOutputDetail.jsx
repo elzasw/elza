@@ -83,8 +83,8 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
         }
 
         return (
-            <Shortcuts name='ArrOutputDetail' handler={this.handleShortcuts}>
-                <div ref='arr-output-detail-container' className={"partyDetail"}>
+            <Shortcuts name='ArrOutputDetail' handler={this.handleShortcuts}>1111111
+                <div className={"arr-output-detail-container"}>
                     <Input type="text" label={i18n('arr.output.name')} disabled value={fundOutputDetail.outputDefinition.name}/>
                     <Input type="text" label={i18n('arr.output.internalCode')} disabled value={fundOutputDetail.outputDefinition.internalCode}/>
                     {outputType && <Input type="text" label={i18n('arr.output.outputType')} disabled value={outputType}/>}

@@ -1,14 +1,24 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {indexById} from 'stores/app/utils.jsx'
+import subNodeForm from './subNodeForm.jsx'
+import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 
 const initialState = {
     id: null,
     fetched: false,
     fetching: false,
     currentDataKey: '',
+    subNodeForm: subNodeForm(),
 }
 
 export default function fundOutputDetail(state = initialState, action = {}) {
+    if (outputFormActions.isSubNodeFormAction(action, "OUTPUT")) {
+        var result = {
+            ...state,
+            subNodeForm: subNodeForm(state.subNodeForm, action),
+        };
+        return consolidateState(state, result);
+    }    
+    
     switch (action.type) {
         case types.STORE_SAVE:
             const {id} = state
@@ -21,6 +31,7 @@ export default function fundOutputDetail(state = initialState, action = {}) {
                 fetched: false,
                 fetching: false,
                 currentDataKey: '',
+                subNodeForm: subNodeForm(),
             }
         case types.OUTPUT_CHANGES:
         case types.OUTPUT_CHANGES_DETAIL:
