@@ -14,7 +14,7 @@ import java.util.List;
  * @author Martin Šlapa
  * @since 10.11.2015
  */
-public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFundVersion, ABAN extends ArrBulkActionNode> extends Serializable {
+public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFundVersion, ABAN extends ArrBulkActionNode, OD extends ArrOutputDefinition> extends Serializable {
 
     /**
      * Stav hromadné akce
@@ -43,7 +43,11 @@ public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFundVersi
         /**
          * Zrušená
          */
-        INTERRUPTED;
+        INTERRUPTED,
+        /**
+         * Neplatný
+         */
+        OUTDATED;
     }
 
     /**
@@ -211,4 +215,25 @@ public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFundVersi
      * @return množina, může být prázdná.
      */
     List<ABAN> getArrBulkActionNodes();
+
+    /**
+     * @return výsledek hromadné akce
+     */
+    String getResult();
+
+    /**
+     * @param result výsledek hromadné akce
+     */
+    void setResult(String result);
+
+    /**
+     * @return vazba na výstup
+     */
+    OD getOutputDefinition();
+
+    /**
+     * @param outputDefinition vazba na výstup
+     */
+    void setOutputDefinition(OD outputDefinition);
+
 }
