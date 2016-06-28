@@ -517,7 +517,7 @@ public class ArrangementController {
     @RequestMapping(value = "/outputItems/{fundVersionId}/csv/import",
             method = RequestMethod.POST,
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public OutputItemResult outputItemCsvImport(
+    public ItemResult<ArrOutputDefinitionVO> outputItemCsvImport(
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
             @RequestParam(value = "outputDefinitionId", required = false) final Integer outputDefinitionId,
@@ -531,9 +531,9 @@ public class ArrangementController {
         ArrOutputItem<ArrItemJsonTable> outputItemCreated = arrIOService.csvOutputImport(fundVersionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, is);
         is.close();
 
-        OutputItemResult outputItemResult = new OutputItemResult();
+        ItemResult<ArrOutputDefinitionVO> outputItemResult = new ItemResult();
         outputItemResult.setItem(factoryVo.createItem(outputItemCreated));
-        outputItemResult.setOutputDefinition(factoryVo.createArrOutputDefinition(outputItemCreated.getOutputDefinition()));
+        outputItemResult.setParent(factoryVo.createArrOutputDefinition(outputItemCreated.getOutputDefinition()));
         return outputItemResult;
     }
 
