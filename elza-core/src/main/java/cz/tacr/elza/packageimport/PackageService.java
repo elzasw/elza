@@ -843,7 +843,7 @@ public class PackageService {
                         }
                     }
 
-                    if (item.getColumnsDefinition() != null && !item.getColumnsDefinition().equals(itemType.getColumnsDefinition())) {
+                    if (item.getColumnsDefinition() != null && !equalsColumns(item.getColumnsDefinition(), itemType.getColumnsDefinition())) {
                         Long countDescItems = descItemRepository.getCountByType(item);
                         if (countDescItems != null && countDescItems > 0) {
                             throw new IllegalStateException("Nelze změnit definici sloupců (datový typ a kód) u typu " + item.getCode()
@@ -870,6 +870,31 @@ public class PackageService {
 
         return rulItemTypesNew;
     }
+
+    /**
+     * Porovnávání typů sloupců.
+     *
+     * @param elzaColumnList porovnávaný list ElzaColumn
+     * @param columnList     porovnávaný list Column
+     * @return jsou změněný neměnitelný položky?
+     */
+    private boolean equalsColumns(final List<ElzaColumn> elzaColumnList, final List<Column> columnList) {
+        if (elzaColumnList.size() != columnList.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < elzaColumnList.size(); i++) {
+            ElzaColumn elzaColumn = elzaColumnList.get(i);
+            Column column = columnList.get(i);
+            if (!elzaColumn.getCode().equals(column.getCode())
+                    || !elzaColumn.getDataType().toString().equals(column.getDataType())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 
     /**
      * Zpracování specifikací atributů.
