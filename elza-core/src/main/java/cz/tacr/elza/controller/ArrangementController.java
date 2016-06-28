@@ -27,6 +27,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -1221,10 +1222,13 @@ public class ArrangementController {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
         RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
-        ArrNode node = factoryDO.createNode(nodeVO);
-        ArrLevel level = arrangementService.lockNode(node, version);
 
-        List<ArrDescItem> newDescItems = arrangementService.copyOlderSiblingAttribute(version, descItemType, level);
+        ArrChange change = arrangementService.createChange();
+
+        ArrNode node = factoryDO.createNode(nodeVO);
+        ArrLevel level = arrangementService.lockNode(node, version, change);
+
+        List<ArrDescItem> newDescItems = arrangementService.copyOlderSiblingAttribute(version, descItemType, level, change);
         newDescItems = descItemFactory.getDescItems(newDescItems);
 
         RulDescItemTypeDescItemsVO descItemTypeVO = factoryVo.createDescItemTypeVO(descItemType);

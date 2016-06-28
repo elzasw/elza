@@ -571,10 +571,11 @@ public class RegistryService {
      * Uložení uzlu - optimistické zámky
      *
      * @param node uzel
+     * @param change
      * @return uložený uzel
      */
-    private ArrNode saveNode(final ArrNode node) {
-        node.setLastUpdate(LocalDateTime.now());
+    private ArrNode saveNode(final ArrNode node, final ArrChange change) {
+        node.setLastUpdate(change.getChangeDate());
         nodeRepository.save(node);
         nodeRepository.flush();
         return node;
@@ -597,10 +598,10 @@ public class RegistryService {
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        node.setVersion(nodeRegister.getNode().getVersion());
-        saveNode(node);
-
         ArrChange change = arrangementService.createChange();
+
+        node.setVersion(nodeRegister.getNode().getVersion());
+        saveNode(node, change);
 
         validateNodeRegisterLink(nodeRegister);
 
@@ -629,10 +630,10 @@ public class RegistryService {
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        node.setVersion(nodeRegister.getNode().getVersion());
-        saveNode(node);
-
         ArrChange change = arrangementService.createChange();
+
+        node.setVersion(nodeRegister.getNode().getVersion());
+        saveNode(node, change);
 
         validateNodeRegisterLink(nodeRegister);
         validateNodeRegisterLink(nodeRegisterDB);
@@ -668,10 +669,10 @@ public class RegistryService {
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        node.setVersion(nodeRegister.getNode().getVersion());
-        saveNode(node);
-
         ArrChange change = arrangementService.createChange();
+
+        node.setVersion(nodeRegister.getNode().getVersion());
+        saveNode(node, change);
 
         validateNodeRegisterLink(nodeRegisterDB);
 

@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -348,7 +349,7 @@ public class ArrangementService {
         level.setPosition(1);
         level.setCreateChange(createChange);
         level.setNodeParent(parentNode);
-        level.setNode(createNode(uuid, fund));
+        level.setNode(createNode(uuid, fund, createChange));
         return levelRepository.save(level);
     }
 
@@ -362,7 +363,7 @@ public class ArrangementService {
         level.setPosition(position);
         level.setCreateChange(createChange);
         level.setNodeParent(parentNode);
-        level.setNode(createNode(fund));
+        level.setNode(createNode(fund, createChange));
         return levelRepository.save(level);
     }
 
@@ -377,21 +378,22 @@ public class ArrangementService {
         return levelRepository.save(level);
     }
 
-    public ArrNode createNode(final ArrFund fund) {
+    public ArrNode createNode(final ArrFund fund, final ArrChange createChange) {
         ArrNode node = new ArrNode();
-        node.setLastUpdate(LocalDateTime.now());
+        node.setLastUpdate(createChange.getChangeDate());
         node.setUuid(UUID.randomUUID().toString());
         node.setFund(fund);
         return nodeRepository.save(node);
     }
 
     public ArrNode createNode(final String uuid,
-                              final ArrFund fund) {
+                              final ArrFund fund,
+                              final ArrChange change) {
         if (StringUtils.isBlank(uuid)) {
-            return createNode(fund);
+            return createNode(fund, change);
         }
         ArrNode node = new ArrNode();
-        node.setLastUpdate(LocalDateTime.now());
+        node.setLastUpdate(change.getChangeDate());
         node.setUuid(uuid);
         node.setFund(fund);
         return nodeRepository.save(node);
@@ -638,7 +640,7 @@ public class ArrangementService {
         Assert.notNull(level);
 
         ArrNode node = level.getNode();
-        node.setLastUpdate(LocalDateTime.now());
+        node.setLastUpdate(deleteChange.getChangeDate());
         nodeRepository.save(node);
 
         level.setDeleteChange(deleteChange);
@@ -711,7 +713,8 @@ public class ArrangementService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrDescItem> copyOlderSiblingAttribute(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                                        final RulItemType descItemType,
-                                                       final ArrLevel level) {
+                                                       final ArrLevel level,
+                                                       final ArrChange change) {
         Assert.notNull(version);
         Assert.notNull(descItemType);
         Assert.notNull(level);
@@ -723,8 +726,6 @@ public class ArrangementService {
 
         ArrLevel olderSibling = levelRepository.findOlderSibling(level, version.getLockChange());
         if (olderSibling != null) {
-
-            ArrChange change = createChange();
 
             List<ArrDescItem> siblingDescItems = descItemRepository.findOpenByNodeAndTypes(olderSibling.getNode(),
                     typeSet);
@@ -841,14 +842,15 @@ public class ArrangementService {
      *
      * @param lockNode uzamykaný node
      * @param version  verze stromu, do které patří uzel
+     * @param change   změna
      * @return level nodu
      */
-    public ArrLevel lockNode(final ArrNode lockNode, final ArrFundVersion version) {
+    public ArrLevel lockNode(final ArrNode lockNode, final ArrFundVersion version, final ArrChange change) {
         ArrLevel lockLevel = levelRepository
                 .findNodeInRootTreeByNodeId(lockNode, version.getRootNode(), version.getLockChange());
         Assert.notNull(lockLevel);
         ArrNode staticNodeDb = lockLevel.getNode();
-        lockNode(staticNodeDb, lockNode);
+        lockNode(staticNodeDb, lockNode, change);
 
         return lockLevel;
     }
@@ -858,14 +860,15 @@ public class ArrangementService {
      *
      * @param dbNode   odpovídající uzel načtený z db
      * @param lockNode uzamykaný node
+     * @param change
      * @return level nodu
      */
-    public ArrNode lockNode(final ArrNode dbNode, final ArrNode lockNode) {
+    public ArrNode lockNode(final ArrNode dbNode, final ArrNode lockNode, final ArrChange change) {
         Assert.notNull(dbNode);
         Assert.notNull(lockNode);
 
         lockNode.setUuid(dbNode.getUuid());
-        lockNode.setLastUpdate(LocalDateTime.now());
+        lockNode.setLastUpdate(change.getChangeDate());
         lockNode.setFund(dbNode.getFund());
 
         return nodeRepository.save(lockNode);
@@ -1277,6 +1280,48 @@ public class ArrangementService {
                 recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap, foundNode);
             }
         }
+    }
+
+    /**
+     * Detekuje, zdali nad předanými uzly byly provedené změny po předaných změnách.
+     *
+     * @param nodes             seznam nodů od kterých prohledáváme
+     * @param changes           seznam změn vůči kterým porovnáváme
+     * @param includeParents    zahrnout rodiče k root?
+     * @param includeChildren   zahrnout podstrom?
+     * @return mapa, zdali bylo něco upraveno podle změn
+     */
+    public Map<ArrChange, Boolean> detectChangeNodes(final Set<ArrNode> nodes,
+                                                     final Set<ArrChange> changes,
+                                                     final boolean includeParents,
+                                                     final boolean includeChildren) {
+
+        Map<ArrChange, Boolean> result = new HashMap<>();
+
+        for (ArrChange change : changes) {
+            for (ArrNode node : nodes) {
+
+                if (includeChildren) {
+                    List<Integer> nodeIdsSubtree = levelRepository.findNodeIdsSubtree(node, change);
+                    if (nodeIdsSubtree.size() > 0) {
+                        result.put(change, true);
+                        break;
+                    }
+                }
+
+                if (includeParents) {
+                    List<Integer> nodeIdsParent = levelRepository.findNodeIdsParent(node, change);
+                    if (nodeIdsParent.size() > 0) {
+                        result.put(change, true);
+                        break;
+                    }
+                }
+
+                result.put(change, false);
+            }
+        }
+
+        return result;
     }
 
     /**

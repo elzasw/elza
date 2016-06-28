@@ -375,7 +375,7 @@ public class XmlImportService {
                              final Map<String, ArrPacket> xmlIdIntIdPacketMap, final ArrFund arrFund)
             throws LevelImportException, InvalidDataException {
         ArrNode arrNode = arrangementService.createNode(XmlImportUtils.trimStringValue(level.getUuid(), StringLength.LENGTH_36,
-                config.isStopOnError()), arrFund);
+                config.isStopOnError()), arrFund, change);
         ArrLevel arrLevel = arrangementService.createLevel(change, arrNode, parent, position);
 
         try {
