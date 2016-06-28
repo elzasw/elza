@@ -1597,12 +1597,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param versionId id verze stromu
      * @return formulář
      */
-    protected ArrangementController.FormDataNewVO<ArrNodeVO> getNodeFormData(final Integer nodeId,
+    protected ArrangementController.DescFormDataNewVO getNodeFormData(final Integer nodeId,
                                                                       final Integer versionId) {
         return get(spec -> spec
                 .pathParameter("nodeId", nodeId)
                 .pathParameter("versionId", versionId),
-                NODE_FORM_DATA).getBody().as(ArrangementController.FormDataNewVO.class);
+                NODE_FORM_DATA).getBody().as(ArrangementController.DescFormDataNewVO.class);
     }
 
     /**
@@ -1612,12 +1612,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param versionId          id verze stromu
      * @return formulář
      */
-    protected ArrangementController.FormDataNewVO<ArrOutputDefinitionVO> getOutputFormData(final Integer outputDefinitionId,
+    protected ArrangementController.OutputFormDataNewVO getOutputFormData(final Integer outputDefinitionId,
                                                                           final Integer versionId) {
         return get(spec -> spec
                         .pathParameter("outputDefinitionId", outputDefinitionId)
                         .pathParameter("versionId", versionId),
-                OUTPUT_FORM_DATA).getBody().as(ArrangementController.FormDataNewVO.class);
+                OUTPUT_FORM_DATA).getBody().as(ArrangementController.OutputFormDataNewVO.class);
     }
 
     /**

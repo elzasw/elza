@@ -9,7 +9,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, SubNodeForm} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, NodeSubNodeForm} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {indexById} from 'stores/app/utils.jsx'
@@ -130,7 +130,7 @@ var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactCompo
             }
 
             form = (
-                <SubNodeForm
+                <NodeSubNodeForm
                     singleDescItemTypeEdit
                     singleDescItemTypeId={fundDataGrid.descItemTypeId}
                     ref='subNodeForm'
@@ -147,6 +147,7 @@ var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactCompo
                     conformityInfo={conformityInfo}
                     packets={fundPackets}
                     parentNode={{}}
+                    onVisiblePolicy={()=>{}}
                     fundId={fundId}
                     selectedSubNode={fundDataGrid.subNodeForm.data.parent}
                     descItemCopyFromPrevEnabled={false}

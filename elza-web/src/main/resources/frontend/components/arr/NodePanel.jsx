@@ -8,7 +8,7 @@ const PARENT_CHILD_MAX_LENGTH = 250
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Icon, ListBox, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown,
+import {Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown,
         Search, GoToPositionForm, VisiblePolicyForm} from 'components';
 import {Button, Tooltip, OverlayTrigger, Input} from 'react-bootstrap';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
@@ -802,7 +802,8 @@ return true
 
             // Formulář editace JP
             var conformityInfo = this.transformConformityInfo(node);
-            form = <SubNodeForm
+                // descItemTypeInfos={node.subNodeForm.descItemTypeInfos}
+            form = <NodeSubNodeForm
                 key={'sub-node-form-' + node.selectedSubNodeId}
                 ref='subNodeForm'
                 singleDescItemTypeEdit={false}
@@ -811,7 +812,6 @@ return true
                 selectedSubNodeId={node.selectedSubNodeId}
                 routingKey={node.routingKey}
                 subNodeForm={node.subNodeForm}
-                descItemTypeInfos={node.subNodeForm.descItemTypeInfos}
                 rulDataTypes={rulDataTypes}
                 calendarTypes={calendarTypes}
                 packetTypes={packetTypes}

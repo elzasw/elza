@@ -225,7 +225,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Assert.isTrue(itemUpdated instanceof ArrItemStringVO);
         Assert.isTrue(((ArrItemStringVO) itemUpdated).getValue().equals(((ArrItemStringVO) itemCreated).getValue()));
 
-        ArrangementController.FormDataNewVO<ArrOutputDefinitionVO> outputFormData = getOutputFormData(outputItem.getParent().getId(), fundVersion.getId());
+        ArrangementController.OutputFormDataNewVO outputFormData = getOutputFormData(outputItem.getParent().getId(), fundVersion.getId());
 
         Assert.notNull(outputFormData.getParent());
         Assert.isTrue(outputFormData.getGroups().size() == 1);
@@ -264,7 +264,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<TreeNodeClient> nodeParents = getNodeParents(rootNode.getId(), fundVersion.getId());
         Assert.notNull(nodeParents);
 
-        ArrangementController.FormDataNewVO<ArrNodeVO> nodeFormData = getNodeFormData(rootNode.getId(),
+        ArrangementController.DescFormDataNewVO nodeFormData = getNodeFormData(rootNode.getId(),
                 fundVersion.getId());
         Assert.notNull(nodeFormData.getParent());
         Assert.notEmpty(nodeFormData.getGroups());

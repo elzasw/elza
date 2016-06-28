@@ -694,7 +694,7 @@ public class ArrangementController {
      * @return formulář
      */
     @RequestMapping(value = "/output/{outputDefinitionId}/{fundVersionId}/form", method = RequestMethod.GET)
-    public FormDataNewVO<ArrOutputDefinitionVO> getOutputFormData(@PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
+    public OutputFormDataNewVO getOutputFormData(@PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
                                                  @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
         Assert.notNull(fundVersionId, "Identifikátor verze musí být vyplněn");
         Assert.notNull(outputDefinitionId, "Identifikátor výstupu musí být vyplněn");
@@ -720,7 +720,7 @@ public class ArrangementController {
         ArrOutputDefinitionVO outputDefinitionVO = factoryVo.createArrOutputDefinition(outputDefinition);
         List<ItemGroupVO> itemGroupsVO = factoryVo.createItemGroupsNew(ruleCode, fundId, outputItems);
         List<ItemTypeGroupVO> itemTypeGroupsVO = factoryVo.createItemTypeGroupsNew(ruleCode, fundId, itemTypes);
-        return new FormDataNewVO(outputDefinitionVO, itemGroupsVO, itemTypeGroupsVO);
+        return new OutputFormDataNewVO(outputDefinitionVO, itemGroupsVO, itemTypeGroupsVO);
     }
 
     /**
@@ -880,7 +880,7 @@ public class ArrangementController {
      * @return formulář
      */
     @RequestMapping(value = "/nodes/{nodeId}/{versionId}/form", method = RequestMethod.GET)
-    public FormDataNewVO<ArrNodeVO> getNodeFormData(@PathVariable(value = "nodeId") final Integer nodeId,
+    public DescFormDataNewVO getNodeFormData(@PathVariable(value = "nodeId") final Integer nodeId,
                                              @PathVariable(value = "versionId") final Integer versionId) {
         Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
         Assert.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
@@ -906,7 +906,7 @@ public class ArrangementController {
         List<ItemGroupVO> descItemGroupsVO = factoryVo.createItemGroupsNew(ruleCode, fundId, descItems);
         List<ItemTypeGroupVO> descItemTypeGroupsVO = factoryVo
                 .createItemTypeGroupsNew(ruleCode, fundId, itemTypes);
-        return new FormDataNewVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
+        return new DescFormDataNewVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
     }
 
     /**
@@ -921,7 +921,7 @@ public class ArrangementController {
         Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
         Assert.notNull(nodeIds, "Identifikátory uzlů musí být vyplněny");
 
-        Map<Integer, FormDataNewVO<ArrNodeVO>> forms = new HashMap<>();
+        Map<Integer, DescFormDataNewVO> forms = new HashMap<>();
 
         for (int i = 0; i < nodeIds.length; i++) {
             forms.put(nodeIds[i], getNodeFormData(nodeIds[i], versionId));
@@ -954,7 +954,7 @@ public class ArrangementController {
 
         List<ArrNode> nodes = arrangementService.findSiblingsAroundOfNode(version, node, around);
 
-        Map<Integer, FormDataNewVO<ArrNodeVO>> forms = new HashMap<>();
+        Map<Integer, DescFormDataNewVO> forms = new HashMap<>();
 
         for (ArrNode arrNode : nodes) {
             forms.put(arrNode.getNodeId(), getNodeFormData(arrNode.getNodeId(), versionId));
@@ -1847,20 +1847,20 @@ public class ArrangementController {
         /**
          * Formuláře
          */
-        private Map<Integer, FormDataNewVO<ArrNodeVO>> forms;
+        private Map<Integer, DescFormDataNewVO> forms;
 
         public NodeFormsDataVO() {
         }
 
-        public NodeFormsDataVO(final Map<Integer, FormDataNewVO<ArrNodeVO>> forms) {
+        public NodeFormsDataVO(final Map<Integer, DescFormDataNewVO> forms) {
             this.forms = forms;
         }
 
-        public Map<Integer, FormDataNewVO<ArrNodeVO>> getForms() {
+        public Map<Integer, DescFormDataNewVO> getForms() {
             return forms;
         }
 
-        public void setForms(final Map<Integer, FormDataNewVO<ArrNodeVO>> forms) {
+        public void setForms(final Map<Integer, DescFormDataNewVO> forms) {
             this.forms = forms;
         }
     }
@@ -1869,7 +1869,7 @@ public class ArrangementController {
      * Výstupní objekt pro získaná data pro formulář detailu.
      * @param <T> typ nadřazené entity, např. ArrNodeVO nebo output atp.
      */
-    public static class FormDataNewVO<T> {
+    public static abstract class FormDataNewVO<T> {
 
         /**
          * parent
@@ -1885,6 +1885,10 @@ public class ArrangementController {
          * Seznam skupin typů hodnot archivní pomůcky
          */
         private List<ItemTypeGroupVO> typeGroups;
+
+        public abstract T getParent();
+
+        public abstract void setParent(T parent);
 
         public FormDataNewVO() {
 
@@ -1912,12 +1916,48 @@ public class ArrangementController {
         public void setTypeGroups(final List<ItemTypeGroupVO> typeGroups) {
             this.typeGroups = typeGroups;
         }
+    }
 
-        public T getParent() {
+    public static class DescFormDataNewVO extends FormDataNewVO<ArrNodeVO> {
+        private ArrNodeVO parent;
+
+        public DescFormDataNewVO() {
+        }
+
+        public DescFormDataNewVO(final ArrNodeVO parent, final List<ItemGroupVO> groups, final List<ItemTypeGroupVO> typeGroups) {
+            super(parent, groups, typeGroups);
+            this.parent = parent;
+        }
+
+        @Override
+        public ArrNodeVO getParent() {
             return parent;
         }
 
-        public void setParent(T parent) {
+        @Override
+        public void setParent(final ArrNodeVO parent) {
+            this.parent = parent;
+        }
+    }
+
+    public static class OutputFormDataNewVO extends FormDataNewVO<ArrOutputDefinitionVO> {
+        private ArrOutputDefinitionVO parent;
+
+        public OutputFormDataNewVO() {
+        }
+
+        public OutputFormDataNewVO(final ArrOutputDefinitionVO parent, final List<ItemGroupVO> groups, final List<ItemTypeGroupVO> typeGroups) {
+            super(parent, groups, typeGroups);
+            this.parent = parent;
+        }
+
+        @Override
+        public ArrOutputDefinitionVO getParent() {
+            return parent;
+        }
+
+        @Override
+        public void setParent(final ArrOutputDefinitionVO parent) {
             this.parent = parent;
         }
     }
