@@ -50,6 +50,7 @@ var messages = {
     "ribbon.action.arr.output.add": "Nový výstup",
     "ribbon.action.arr.output.edit": "Upravit výstup",
     "ribbon.action.arr.output.nodes.add": "Přidat JP",
+    "ribbon.action.arr.output.item.add": "Přidat volitelný prvek",
     "ribbon.action.arr.output.usageEnd": "Ukončit používání",
     "ribbon.action.arr.output.delete": "Smazat",
     "ribbon.action.arr.output.bulkActions": "Hrom. akce pro výstup",

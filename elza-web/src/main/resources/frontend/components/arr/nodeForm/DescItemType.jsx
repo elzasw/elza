@@ -698,13 +698,13 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
      * @return {Object} view
      */
     renderLabel() {
-        const {fundId, userDetail, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, copy, locked, descItemType, infoType, refType, conformityInfo, closed} = this.props;
+        const {fundId, showNodeAddons, userDetail, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, copy, locked, descItemType, infoType, refType, conformityInfo, closed} = this.props;
 
         var actions = [];
 
         // Sestavení akcí
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
-            if (!closed && !singleDescItemTypeEdit) {
+            if (showNodeAddons && !closed && !singleDescItemTypeEdit) {
                 actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.copy')} key="copy" onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
                 actions.push(<NoFocusButton disabled={!descItemCopyFromPrevEnabled} title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book" onClick={this.handleDescItemTypeCopyFromPrev}><Icon glyph="fa-book" /></NoFocusButton>);
                 actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.lock')} key="lock" onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>);
@@ -878,6 +878,7 @@ DescItemType.propTypes = {
     versionId: React.PropTypes.number.isRequired,
     fundId: React.PropTypes.number.isRequired,
     userDetail: React.PropTypes.object.isRequired,
+    showNodeAddons: React.PropTypes.bool.isRequired,
 }
 
 DescItemType.childContextTypes = {

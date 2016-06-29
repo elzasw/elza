@@ -524,7 +524,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) {
         const {fundId, subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, rulDataTypes, calendarTypes, closed,
-                packetTypes, packets, conformityInfo, versionId} = this.props;
+                packetTypes, packets, showNodeAddons, conformityInfo, versionId} = this.props;
 
         var refType = subNodeForm.refTypesMap[descItemType.id]
         var infoType = subNodeForm.infoTypesMap[descItemType.id]
@@ -576,6 +576,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onDescItemTypeLock={this.handleDescItemTypeLock.bind(this, descItemType.id)}
                 onDescItemTypeCopy={this.handleDescItemTypeCopy.bind(this, descItemType.id)}
                 onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev.bind(this, descItemGroupIndex, descItemTypeIndex, descItemType.id)}
+                showNodeAddons={showNodeAddons}
                 locked={singleDescItemTypeEdit ? false : locked}
                 closed={closed}
                 copy={copy}
@@ -642,6 +643,7 @@ SubNodeForm.propTypes = {
     descItemCopyFromPrevEnabled: React.PropTypes.bool.isRequired,
     focus: React.PropTypes.object,
     formActions: React.PropTypes.object.isRequired,
+    showNodeAddons: React.PropTypes.bool.isRequired,
 }
 
 module.exports = connect(mapStateToProps, null, null, { withRef: true })(SubNodeForm);

@@ -252,6 +252,7 @@ var NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
                     onDescItemTypeLock={this.handleDescItemTypeLock}
                     onDescItemTypeCopy={this.handleDescItemTypeCopy}
                     formActions={nodeFormActions}
+                    showNodeAddons={true}
                     />
             </div>
         )

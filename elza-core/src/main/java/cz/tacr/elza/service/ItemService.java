@@ -21,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -106,8 +107,7 @@ public class ItemService implements InitializingBean {
     }
 
     public <T extends ArrItem> List<ArrData> getDataByItems(final List<T> items) {
-        List<ArrData> dataList = dataRepository.findByItem(items);
-        return dataList;
+        return items.isEmpty() ? Collections.EMPTY_LIST : dataRepository.findByItem(items);
     }
 
     public <T extends ArrItem> T save(final T item,
