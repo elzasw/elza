@@ -2,7 +2,11 @@ package cz.tacr.elza.service.output;
 
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.print.Output;
+import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import net.sf.jasperreports.engine.*;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -12,7 +16,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Date;
@@ -35,6 +42,13 @@ public class OutputGeneratorService {
     private static final String JASPER_TEMPLATE_SUFFIX = ".jrxml";
     private static final String JASPER_MAIN_TEMPLATE = JASPER_MAIN_TEMPLATE_BASE_NAME + JASPER_TEMPLATE_SUFFIX;
     private static final String OUTFILE_SUFFIX_PDF = ".pdf";
+
+
+    @Autowired
+    private EventNotificationService eventNotificationService;
+
+    @Autowired
+    private ArrangementService arrangementService;
 
     @Autowired
     private OutputFactoryService outputFactoryService;
@@ -62,6 +76,8 @@ public class OutputGeneratorService {
         } else if (RulTemplate.Engine.JASPER.equals(rulTemplate.getEngine())) {
             // TODO Lebeda - implementovat podporu pro FreeMarker
         }
+
+        eventNotificationService.publishEvent(EventFactory.createIdInVersionEvent(EventType.OUTPUT_GENERATED, arrangementService.getOpenVersionByFundId(arrOutput.getOutputDefinition().getFund().getFundId()), arrOutput.getOutputId()));
 
         return new Date().toString();
     }

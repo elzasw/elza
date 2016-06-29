@@ -26,7 +26,8 @@ import {
     changeVisiblePolicy,
     fundOutputChanges,
     fundOutputChangesDetail,
-    changeFundAction
+    changeFundAction,
+    fundOutputGenerated
 } from 'actions/global/change.jsx';
 
 
@@ -195,6 +196,10 @@ function processEvents(values) {
                 fundDelete(value);
                 break;
             
+            case 'GENERATED_OUTPUT':
+                outputGenerated(value);
+                break;
+
             case 'OUTPUT_CHANGES':
                 outputChanges(value);
                 break;
@@ -249,6 +254,10 @@ function fundChange(value) {
 
 function fundDelete(value) {
     store.dispatch(deleteFund(value.ids[0]));
+}
+
+function outputGenerated(value) {
+    store.dispatch(fundOutputGenerated(value.versionId, value.entityIds));
 }
 
 function outputChanges(value) {

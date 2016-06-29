@@ -63,6 +63,7 @@ exports.ArrOutputDetail = require('components/arr/ArrOutputDetail.jsx');
 exports.FundDataGridCellForm = require('components/arr/FundDataGridCellForm.jsx');
 exports.AddFileForm = require('components/arr/AddFileForm.jsx');
 exports.FundFiles = require('components/arr/FundFiles.jsx');
+exports.FundOutputFiles = require('components/arr/FundOutputFiles.jsx');
 exports.FundPackets = require('components/arr/FundPackets.jsx');
 exports.NodePanel = require('components/arr/NodePanel.jsx');
 exports.NodeTabs = require('components/arr/NodeTabs.jsx');

@@ -14,7 +14,7 @@ import {UrlFactory} from 'actions/index.jsx';
 
 var _ReplaceId = null;
 
-var FundFiles = class FundFiles extends AbstractReactComponent {
+const FundFiles = class FundFiles extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -96,7 +96,7 @@ var FundFiles = class FundFiles extends AbstractReactComponent {
         }
 
         return (
-            <div className='fund-packets'>
+            <div className='fund-files'>
                 <div className="actions-container">
                     <div className="actions">
                         <Button onClick={this.handleCreate} eventKey='add'><Icon glyph='fa-plus' /> {i18n('arr.fund.files.action.add')}</Button>

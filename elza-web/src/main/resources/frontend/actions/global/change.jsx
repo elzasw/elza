@@ -185,3 +185,11 @@ export function changeVisiblePolicy(versionId, nodeId, invalidateNodes) {
         invalidateNodes
     }
 }
+
+export function fundOutputGenerated(versionId, outputId) {
+    return {
+        type: types.GENERATED_OUTPUT,
+        versionId,
+        outputId
+    }
+}

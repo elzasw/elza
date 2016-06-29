@@ -11,12 +11,36 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {ListBox, Ribbon, Loading, RibbonGroup, FundNodesAddForm, Icon, FundNodesList, i18n, ArrOutputDetail, AddOutputForm, AbstractReactComponent} from 'components/index.jsx';
+import {
+    ListBox,
+    Ribbon,
+    Loading,
+    RibbonGroup,
+    FundNodesAddForm,
+    Icon,
+    FundNodesList,
+    i18n,
+    ArrOutputDetail,
+    AddOutputForm,
+    AbstractReactComponent,
+    Tabs,
+    FundOutputFiles
+} from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {fundOutputFetchIfNeeded, fundOutputRemoveNodes, fundOutputSelectOutput, fundOutputCreate, fundOutputEdit, fundOutputUsageEnd, fundOutputDelete, fundOutputAddNodes } from 'actions/arr/fundOutput.jsx'
+import {
+    fundOutputFetchIfNeeded,
+    fundOutputRemoveNodes,
+    fundOutputSelectOutput,
+    fundOutputCreate,
+    fundOutputEdit,
+    fundOutputUsageEnd,
+    fundOutputDelete,
+    fundOutputAddNodes,
+    fundOutputGenerate
+} from 'actions/arr/fundOutput.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
 import {routerNavigate} from 'actions/router.jsx'
@@ -42,13 +66,33 @@ var keymap = {
 }
 var shortcutManager = new ShortcutsManager(keymap)
 
-var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
+let _selectedTab = 0
+
+const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('getActiveFund', 'renderListItem', 'handleSelect', 'trySetFocus', 'handleShortcuts',
-            'handleAddOutput', 'handleAddNodes', 'handleUsageEnd', 'handleDelete', 'handleRemoveNode',
-            'handleBulkActions', 'handleEditOutput', "handleAddDescItemType");
+        this.bindMethods(
+            'getActiveFund',
+            'renderListItem',
+            'handleSelect',
+            'trySetFocus',
+            'handleShortcuts',
+            'handleAddOutput',
+            'handleAddNodes',
+            'handleUsageEnd',
+            'handleDelete',
+            'handleRemoveNode',
+            'handleBulkActions',
+            'handleEditOutput',
+            'renderRightPanel',
+            'renderFunctionsPanel',
+            'renderTemplatesPanel',
+            'renderOutputPanel',
+            'handleTabSelect',
+            'handleGenerateOutput',
+            'handleAddDescItemType'
+        );
     }
 
     componentDidMount() {
@@ -89,16 +133,15 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 })
                 focusWasSet()
             }
-        }
-    }
+        }    }
 
-    getActiveFund(props) {
-        var arrRegion = props.arrRegion;
-        var activeFund = null;
+    getActiveFund(props = this.props) {
+        const arrRegion = props.arrRegion;
+        
         if (arrRegion.activeIndex != null) {
-            activeFund = arrRegion.funds[arrRegion.activeIndex];
+            return arrRegion.funds[arrRegion.activeIndex];
         }
-        return activeFund
+        return null;
     }
 
     requestValidationData(isDirty, isFetching, versionId) {
@@ -121,11 +164,11 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     getChildContext() {
-        return { shortcuts: shortcutManager };
+        return {shortcuts: shortcutManager};
     }
 
     handleAddOutput() {
-        const fund = this.getActiveFund(this.props)
+        const fund = this.getActiveFund()
 
         this.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
             <AddOutputForm
@@ -134,7 +177,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleEditOutput() {
-        const fund = this.getActiveFund(this.props)
+        const fund = this.getActiveFund()
         const fundOutput = fund.fundOutput
         const fundOutputDetail = fundOutput.fundOutputDetail
 
@@ -145,7 +188,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleAddNodes() {
-        const fund = this.getActiveFund(this.props)
+        const fund = this.getActiveFund()
         const fundOutputDetail = fund.fundOutput.fundOutputDetail
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
@@ -153,19 +196,19 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 onSubmitForm={(ids, nodes) => {
                     this.dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids))
                 }}
-                />))
+            />))
     }
 
     handleRemoveNode(node) {
         if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
-            const fund = this.getActiveFund(this.props)
+            const fund = this.getActiveFund()
             const fundOutputDetail = fund.fundOutput.fundOutputDetail
             this.dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]))
         }
     }
 
     handleBulkActions() {
-        const fund = this.getActiveFund(this.props)
+        const fund = this.getActiveFund()
         const fundOutputDetail = fund.fundOutput.fundOutputDetail
 
         this.dispatch(fundActionFormChange(fund.versionId, {nodes: fundOutputDetail.outputDefinition.nodes}));
@@ -231,27 +274,43 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     buildRibbon() {
         const {userDetail} = this.props
 
-        const fund = this.getActiveFund(this.props)
-
+        const fund = this.getActiveFund()
+        var itemActions = [];
         var altActions = [];
         if (fund) {
-            if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId: fund.id})) {
+            const outputDetail = fund.fundOutput.fundOutputDetail;
+            const isDetailIdNotNull = outputDetail.id !== null;
+            const isDetailLoaded = outputDetail.fetched && !outputDetail.isFetching;
+
+            const hasPersmission = userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_OUTPUT_WR_ALL, {
+                type: perms.FUND_OUTPUT_WR,
+                fundId: fund.id
+            });
+
+            if (hasPersmission) {
                 altActions.push(
-                    <Button key="add-output" onClick={this.handleAddOutput}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.add')}</span></div></Button>
+                    <Button key="add-output" onClick={this.handleAddOutput}><Icon glyph="fa-plus-circle"/>
+                        <div><span className="btnText">{i18n('ribbon.action.arr.output.add')}</span></div>
+                    </Button>
                 )
+                if (isDetailIdNotNull) {
+                    altActions.push(
+                        <Button key="generate-output" onClick={() => {this.handleGenerateOutput(outputDetail.id)}} disabled={!isDetailLoaded && this.isOutputGeneratingAllowed(outputDetail)}><Icon glyph="fa-youtube-play" />
+                            <div><span className="btnText">{i18n('ribbon.action.arr.output.generate')}</span></div>
+                        </Button>
+                    )
+                }
             }
-        }
 
-        var itemActions = [];
-        if (fund) {
-            const fundOutputDetail = fund.fundOutput.fundOutputDetail
 
-            if (fundOutputDetail.id !== null && fundOutputDetail.fetched && !fundOutputDetail.isFetching) {
-                if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId: fund.id})) {
-                    if (!fundOutputDetail.lockDate) {
+            if (isDetailIdNotNull && isDetailLoaded) {
+                if (hasPersmission) {
+                    if (!outputDetail.lockDate) {
                         itemActions.push(
-                            <Button key="edit-output" onClick={this.handleEditOutput}><Icon glyph="fa-edit" /><div><span className="btnText">{i18n('ribbon.action.arr.output.edit')}</span></div></Button>
-                        )
+                            <Button key="edit-output" onClick={this.handleEditOutput}><Icon glyph="fa-edit"/>
+                                <div><span className="btnText">{i18n('ribbon.action.arr.output.edit')}</span></div>
+                            </Button>
+                        );
                         itemActions.push(
                             <Button key="add-fund-nodes" onClick={this.handleAddNodes}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.nodes.add')}</span></div></Button>
                         )
@@ -259,8 +318,10 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                             <Button key="add-item" onClick={this.handleAddDescItemType}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.item.add')}</span></div></Button>
                         )
                         itemActions.push(
-                            <Button key="fund-output-usage-end" onClick={this.handleUsageEnd}><Icon glyph="fa-clock-o" /><div><span className="btnText">{i18n('ribbon.action.arr.output.usageEnd')}</span></div></Button>
-                        )
+                            <Button key="fund-output-usage-end" onClick={this.handleUsageEnd}><Icon glyph="fa-clock-o"/>
+                                <div><span className="btnText">{i18n('ribbon.action.arr.output.usageEnd')}</span></div>
+                            </Button>
+                        );
                     }
                     itemActions.push(
                         <Button key="fund-output-delete" onClick={this.handleDelete}><Icon glyph="fa-trash"/>
@@ -269,10 +330,14 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                     )
                 }
 
-                if (fundOutputDetail.outputDefinition.nodes.length > 0) {
+                if (outputDetail.outputDefinition.nodes.length > 0) {
                     if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) { // právo na hromadné akce
                         itemActions.push(
-                            <Button key="fund-output-bulk-actions" onClick={this.handleBulkActions}><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span></div></Button>
+                            <Button key="fund-output-bulk-actions" onClick={this.handleBulkActions}><Icon
+                                glyph="fa-cog"/>
+                                <div><span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span>
+                                </div>
+                            </Button>
                         )
                     }
                 }
@@ -294,8 +359,12 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         )
     }
 
+    isOutputGeneratingAllowed(outputDetail) {
+        return outputDetail.outputDefinition && outputDetail.outputDefinition.outputResultId == null;
+    }
+
     handleUsageEnd() {
-        const fund = this.getActiveFund(this.props)
+        const fund = this.getActiveFund()
         const fundOutputDetail = fund.fundOutput.fundOutputDetail
         if (confirm(i18n('arr.output.usageEnd.confirm'))) {
             this.dispatch(fundOutputUsageEnd(fund.versionId, fundOutputDetail.id))
@@ -303,7 +372,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleDelete() {
-        const fund = this.getActiveFund(this.props)
+        const fund = this.getActiveFund()
         const fundOutputDetail = fund.fundOutput.fundOutputDetail
         if (confirm(i18n('arr.output.delete.confirm'))) {
             this.dispatch(fundOutputDelete(fund.versionId, fundOutputDetail.id))
@@ -311,7 +380,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     renderListItem(item, isActive, index) {
-        const fund = this.getActiveFund(this.props)
+        const fund = this.getActiveFund()
         const fundOutput = fund.fundOutput
 
         var temporaryChanged = false
@@ -333,16 +402,49 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleSelect(item) {
-        const fund = this.getActiveFund(this.props)
+        const fund = this.getActiveFund()
         this.dispatch(fundOutputSelectOutput(fund.versionId, item.id))
+    }
+
+    renderRightPanel() {
+
+        // Záložky a obsah aktuálně vybrané založky
+        var items = [];
+        var tabContent
+        var tabIndex = 0
+
+        items.push({id: tabIndex, title: i18n('arr.output.panel.title.function')});
+        if (_selectedTab === tabIndex) tabContent = this.renderFunctionsPanel();
+        tabIndex++;
+
+        items.push({id: tabIndex, title: i18n('arr.output.panel.title.template')});
+        if (_selectedTab === tabIndex) tabContent = this.renderTemplatesPanel();
+        tabIndex++;
+
+        items.push({id: tabIndex, title: i18n('arr.output.panel.title.output')});
+        if (_selectedTab === tabIndex) tabContent = this.renderOutputPanel();
+        tabIndex++;
+
+        return (
+            <Tabs.Container>
+
+                <Tabs.Tabs items={items}
+                           activeItem={{id: _selectedTab}}
+                           onSelect={this.handleTabSelect}
+                />
+                <Tabs.Content>
+                    {tabContent}
+                </Tabs.Content>
+            </Tabs.Container>
+        )
     }
 
     render() {
         const {focus, arrRegion, splitter, templates, userDetail, rulDataTypes, packetTypes, descItemTypes, calendarTypes} = this.props;
 
-        const fund = this.getActiveFund(this.props)
-        var leftPanel, rightPanel
-        let centerPanel
+        const fund = this.getActiveFund();
+        var leftPanel, rightPanel;
+        let centerPanel;
 
         var packets = [];
         if (fund && arrRegion.packets[fund.id]) {
@@ -351,9 +453,9 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
         if (userDetail.hasArrOutputPage(fund ? fund.id : null)) { // má právo na tuto stránku
             if (fund) {
-                const fundOutput = fund.fundOutput
+                const fundOutput = fund.fundOutput;
 
-                var activeIndex
+                var activeIndex;
                 if (fundOutput.fundOutputDetail.id !== null) {
                     activeIndex = indexById(fundOutput.outputs, fundOutput.fundOutputDetail.id)
                 }
@@ -369,7 +471,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                             onSelect={this.handleSelect}
                         />
                     </div>
-                )
+                );
 
                 centerPanel = <ArrOutputDetail
                     versionId={fund.versionId}
@@ -382,18 +484,22 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                     rulDataTypes={rulDataTypes}
                     userDetail={userDetail}
                     fundOutputDetail={fundOutput.fundOutputDetail}
-                    />
+                />;
+                /*
 
-                const fundOutputDetail = fund.fundOutput.fundOutputDetail
+                 <div className="fund-nodes-container">
+                 <FundNodesList
+                 nodes={fundOutputDetail.outputDefinition.nodes}
+                 onDeleteNode={this.handleRemoveNode}
+                 readOnly={fundOutputDetail.lockDate ? true : false}
+                 />
+                 </div>
+
+                 */
+                const fundOutputDetail = fund.fundOutput.fundOutputDetail;
                 if (fundOutputDetail.id !== null && fundOutputDetail.fetched) {
                     rightPanel = (
-                        <div className="fund-nodes-container">
-                            <FundNodesList
-                                nodes={fundOutputDetail.outputDefinition.nodes}
-                                onDeleteNode={this.handleRemoveNode}
-                                readOnly={fundOutputDetail.lockDate ? true : false}
-                                />
-                        </div>
+                        <div className="fund-nodes-container">{this.renderRightPanel()}</div>
                     )
                 }
             } else {
@@ -416,7 +522,42 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             </Shortcuts>
         )
     }
-}
+
+    renderFunctionsPanel() {
+
+    }
+
+    renderTemplatesPanel() {
+        return <div>{i18n('arr.output.panel.template.noSettings')}</div>
+    }
+
+    renderOutputPanel() {
+        const activeFund = this.getActiveFund();
+        const {fundOutputDetail} = activeFund.fundOutput;
+        if (fundOutputDetail.outputDefinition.outputResultId === null) {
+            return <div>{i18n('arr.output.panel.files.notGenerated')}</div>
+        }
+        if (fundOutputDetail.fetched) {
+            return <FundOutputFiles
+                ref="fundOutputFiles"
+                versionId={activeFund.versionId}
+                outputResultId={fundOutputDetail.outputDefinition.outputResultId}
+                
+            />
+        }
+        return <Loading />
+    }
+
+
+    handleTabSelect(item) {
+        _selectedTab = item.id;
+        this.setState({});
+    }
+
+    handleGenerateOutput(outputId) {
+        this.dispatch(fundOutputGenerate(outputId));
+    }
+};
 
 function mapStateToProps(state) {
     const {splitter, arrRegion, refTables, focus, userDetail} = state
@@ -438,11 +579,11 @@ ArrOutputPage.propTypes = {
     splitter: React.PropTypes.object.isRequired,
     arrRegion: React.PropTypes.object.isRequired,
     focus: React.PropTypes.object.isRequired,
-    userDetail: React.PropTypes.object.isRequired,
-}
+    userDetail: React.PropTypes.object.isRequired
+};
 
 ArrOutputPage.childContextTypes = {
     shortcuts: React.PropTypes.object.isRequired
-}
+};
 
 module.exports = connect(mapStateToProps)(ArrOutputPage);

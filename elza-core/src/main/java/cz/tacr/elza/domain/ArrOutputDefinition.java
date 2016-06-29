@@ -15,7 +15,7 @@ import javax.persistence.*;
  */
 @Entity(name = "arr_output_definition")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrOutputDefinition extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrOutputDefinition<ArrFund, ArrNodeOutput, ArrOutput, RulOutputType, RulTemplate> {
+public class ArrOutputDefinition extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrOutputDefinition<ArrFund, ArrNodeOutput, ArrOutput, RulOutputType, RulTemplate, ArrOutputResult> {
 
     @Id
     @GeneratedValue
@@ -53,6 +53,9 @@ public class ArrOutputDefinition extends AbstractVersionableEntity implements cz
 
     @OneToMany(mappedBy = "outputDefinition", fetch = FetchType.LAZY)
     private List<ArrNodeOutput> outputNodes;
+
+    @OneToOne(mappedBy = "outputDefinition", fetch = FetchType.LAZY)
+    private ArrOutputResult outputResult;
 
     @Override
     public Integer getOutputDefinitionId() {
@@ -162,5 +165,15 @@ public class ArrOutputDefinition extends AbstractVersionableEntity implements cz
     @Override
     public void setTemplate(RulTemplate template) {
         this.template = template;
+    }
+
+    @Override
+    public ArrOutputResult getOutputResult() {
+        return outputResult;
+    }
+
+    @Override
+    public void setOutputResult(ArrOutputResult outputResult) {
+        this.outputResult = outputResult;
     }
 }

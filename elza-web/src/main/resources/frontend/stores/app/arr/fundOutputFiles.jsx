@@ -8,7 +8,7 @@ const initialState = {
     currentDataKey: ''
 };
 
-export default function fundFiles(state = initialState, action = {}) {
+export default function fundOutputFiles(state = initialState, action = {}) {
     switch (action.type) {
         case types.STORE_LOAD:{
             return {
@@ -26,20 +26,20 @@ export default function fundFiles(state = initialState, action = {}) {
                 filterText
             }
         }
-        case types.CHANGE_FILES:{
+        case types.GENERATED_OUTPUT:{
             return {
                 ...state,
                 currentDataKey: ''
             }
         }
-        case types.FUND_FILES_REQUEST:{
+        case types.FUND_OUTPUT_FILES_REQUEST:{
             return {
                 ...state,
                 isFetching: true,
                 currentDataKey: action.dataKey
             }
         }
-        case types.FUND_FILES_RECEIVE:{
+        case types.FUND_OUTPUT_FILES_RECEIVE:{
             return {
                 ...state,
                 isFetching: false,
@@ -47,7 +47,7 @@ export default function fundFiles(state = initialState, action = {}) {
                 data: action.data
             }
         }
-        case types.FUND_FILES_FILTER:{
+        case types.FUND_OUTPUT_FILES_FILTER:{
             return {
                 ...state,
                 filterText: action.filterText,

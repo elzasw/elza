@@ -29,6 +29,8 @@ public class ArrOutputDefinitionVO {
 
     private Integer templateId;
 
+    private Integer outputResultId;
+
     private Integer version;
 
     public Integer getId() {
@@ -109,5 +111,13 @@ public class ArrOutputDefinitionVO {
 
     public void setTemplateId(Integer templateId) {
         this.templateId = templateId;
+    }
+
+    public Integer getOutputResultId() {
+        return outputResultId;
+    }
+
+    public void setOutputResultId(Integer outputResultId) {
+        this.outputResultId = outputResultId;
     }
 }

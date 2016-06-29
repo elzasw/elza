@@ -8,7 +8,7 @@ const initialState = {
     fetched: false,
     fetching: false,
     currentDataKey: '',
-    subNodeForm: subNodeForm(),
+    subNodeForm: subNodeForm()
 }
 
 export default function fundOutputDetail(state = initialState, action = {}) {
@@ -21,52 +21,58 @@ export default function fundOutputDetail(state = initialState, action = {}) {
     }    
     
     switch (action.type) {
-        case types.STORE_SAVE:
-            const {id} = state
+        case types.STORE_SAVE:{
+            const {id} = state;
             return {
-                id,
+                id
             }
-        case types.STORE_LOAD:
+        }
+        case types.STORE_LOAD:{
             return {
                 ...state,
                 fetched: false,
                 fetching: false,
                 currentDataKey: '',
-                subNodeForm: subNodeForm(),
+                subNodeForm: subNodeForm()
             }
+        }
         case types.OUTPUT_CHANGES:
-        case types.OUTPUT_CHANGES_DETAIL:
+        case types.OUTPUT_CHANGES_DETAIL:{
             if (action.outputIds.indexOf(state.id) !== -1) {
                 return {
                     ...state,
-                    currentDataKey: '',
+                    currentDataKey: ''
                 }
             }
             return state
-        case types.FUND_OUTPUT_SELECT_OUTPUT:
+        }
+        case types.FUND_OUTPUT_SELECT_OUTPUT:{
             if (state.id !== action.id) {
                 return {
                     ...state,
                     id: action.id,
                     currentDataKey: '',
                     fetched: false,
-                    subNodeForm: subNodeForm(),
+                    subNodeForm: subNodeForm()
                 }
             }
             return state
-        case types.FUND_OUTPUT_DETAIL_REQUEST:
+        }
+        case types.FUND_OUTPUT_DETAIL_REQUEST:{
             return {
                 ...state,
                 fetching: true,
-                currentDataKey: action.dataKey,
+                currentDataKey: action.dataKey
             }
-        case types.FUND_OUTPUT_DETAIL_RECEIVE:
+        }
+        case types.FUND_OUTPUT_DETAIL_RECEIVE:{
             return {
                 ...state,
                 ...action.data,
                 fetching: false,
-                fetched: true,
+                fetched: true
             }
+        }
         case types.FUND_OUTPUT_DETAIL_CLEAR:
             return initialState;
         default:

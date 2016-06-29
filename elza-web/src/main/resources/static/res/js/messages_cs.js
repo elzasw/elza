@@ -48,6 +48,7 @@ var messages = {
     "ribbon.action.arr.output": "Výstupy",
     "ribbon.action.arr.arr": "Archivní popis",
     "ribbon.action.arr.output.add": "Nový výstup",
+    "ribbon.action.arr.output.generate": "Generovat výstup",
     "ribbon.action.arr.output.edit": "Upravit výstup",
     "ribbon.action.arr.output.nodes.add": "Přidat JP",
     "ribbon.action.arr.output.item.add": "Přidat volitelný prvek",
@@ -128,6 +129,12 @@ var messages = {
     "arr.output.temporary": "Dočasný výstup",
     "arr.output.outputType": "Typ výstup",
     "arr.output.template": "Šablona",
+    
+    "arr.output.panel.title.function": "Funkce",
+    "arr.output.panel.title.template": "Šablony",
+    "arr.output.panel.title.output": "Výstupy",
+    "arr.output.panel.template.noSettings": "Vybraná šablona nemá žádné nastavení",
+    "arr.output.panel.files.notGenerated" : "Výstup nebyl vygenerován",
 
     "arr.fundAction.noFa" : "Není vybrán žádný archivní soubor",
     "arr.fundAction.form.newAction" : "Nová akce",

@@ -923,6 +923,14 @@ class WebApi{
     deleteArrFile(fileId) {
         return AjaxUtils.ajaxDelete('/api/dms/fund/' + fileId, null, null);
     }
+
+    findFundOutputFiles(fundId, searchText, count = 20) {
+        return AjaxUtils.ajaxGet('/api/dms/output/' + fundId, {'count': count, 'search': searchText});
+    }
+
+    outputGenerate(outputId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/output/generate/' + outputId);
+    }
 }
 
 module.exports = {

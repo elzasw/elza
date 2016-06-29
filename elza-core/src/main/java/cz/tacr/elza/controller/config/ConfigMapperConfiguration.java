@@ -678,6 +678,9 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         outputDefinitionVO.setOutputTypeId(outputDefinition.getOutputType().getOutputTypeId());
                         outputDefinitionVO.setTemplateId(outputDefinition.getTemplate() != null ? outputDefinition.getTemplate().getTemplateId() : null);
+                        if (outputDefinition.getOutputResult() != null) {
+                            outputDefinitionVO.setOutputResultId(outputDefinition.getOutputResult().getOutputResultId());
+                        }
                     }
 
                     @Override
@@ -687,6 +690,12 @@ public class ConfigMapperConfiguration {
                         RulOutputType rulOutputType = new RulOutputType();
                         rulOutputType.setOutputTypeId(outputDefinitionVO.getOutputTypeId());
                         outputDefinition.setOutputType(rulOutputType);
+
+                        if (outputDefinitionVO.getOutputResultId() != null) {
+                            ArrOutputResult outputResult = new ArrOutputResult();
+                            outputResult.setOutputResultId(outputDefinitionVO.getOutputResultId());
+                            outputDefinition.setOutputResult(outputResult);
+                        }
                     }
                 }).register();
         mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class).byDefault().field("outputId", "id").register();

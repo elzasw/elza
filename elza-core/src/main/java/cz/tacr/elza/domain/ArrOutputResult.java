@@ -18,7 +18,7 @@ public class ArrOutputResult implements cz.tacr.elza.api.ArrOutputResult<ArrOutp
     @GeneratedValue
     private Integer outputResultId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputDefinition.class)
+    @OneToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputDefinition.class)
     @JoinColumn(name = "outputDefinitionId", nullable = false)
     private ArrOutputDefinition outputDefinition;
 
