@@ -60,7 +60,6 @@ public class OutputGeneratorService {
     private String templatesDir;
 
     // TODO - JavaDoc - Lebeda
-    // TODO Lebeda - spustit asynchronně pomocí BulkActionService
     public String generateOutput(ArrOutput arrOutput) {
         final ArrOutputDefinition arrOutputDefinition = arrOutput.getOutputDefinition();
 //        final ArrOutputDefinition outputDefinition = arrOutput.getOutputDefinition();
@@ -70,8 +69,8 @@ public class OutputGeneratorService {
         // sestavení outputu
         final Output output = outputFactoryService.createOutput(arrOutput);
 
+        // skutečné vytvoření výstupného souboru na základě definice
         if (RulTemplate.Engine.JASPER.equals(rulTemplate.getEngine())) {
-
             generatePdfByJasper(arrOutputDefinition, rulTemplate, output);
         } else if (RulTemplate.Engine.JASPER.equals(rulTemplate.getEngine())) {
             // TODO Lebeda - implementovat podporu pro FreeMarker
@@ -113,7 +112,12 @@ public class OutputGeneratorService {
             JRDataSource dataSource = new JREmptyDataSource();
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
 
-            // Export to PDF.
+                // TODO Lebeda - smazat - jen pro ladění
+                OutputStream fileOutputStream = new FileOutputStream("/tmp/testPage.pdf"); // TODO Lebeda - jen pro ladění
+                JasperExportManager.exportReportToPdfStream(jasperPrint, fileOutputStream);
+                fileOutputStream.close();
+
+            // Export to PDF - pouze příprava procesu pro renderování - reálně proběhne až při čtení z in v dms
             PipedInputStream in = new PipedInputStream();
             PipedOutputStream out = new PipedOutputStream(in);
             new Thread(
@@ -139,10 +143,12 @@ public class OutputGeneratorService {
             dmsFile.setFileName(arrOutputDefinition.getName() + OUTFILE_SUFFIX_PDF);
             dmsFile.setName(arrOutputDefinition.getName());
             dmsFile.setMimeType(DmsService.MIME_TYPE_APPLICATION_PDF);
-            dmsFile.setFileSize(0); // 0 - zajistí refresh po skutečném uložení
+            dmsFile.setFileSize(0); // 0 - zajistí refresh po skutečném uložení do souboru na disk
 
-            dmsService.createFile(dmsFile, in); // zajistí prezentaci výstupu na klienta
-
+            // TODO Lebeda - odkomentovat  - jen pro ladění
+//            dmsService.createFile(dmsFile, in); // zajistí prezentaci výstupu na klienta
+            // TODO Lebeda - smazat  - jen pro ladění
+            in.close();
 
         } catch (JRException e) {
             throw new IllegalStateException("Nepodařilo se vytisknout report.", e);

@@ -1,14 +1,69 @@
 package cz.tacr.elza.service.output;
 
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrItemCoordinates;
+import cz.tacr.elza.domain.ArrItemData;
+import cz.tacr.elza.domain.ArrItemDecimal;
+import cz.tacr.elza.domain.ArrItemEnum;
+import cz.tacr.elza.domain.ArrItemFormattedText;
+import cz.tacr.elza.domain.ArrItemInt;
+import cz.tacr.elza.domain.ArrItemJsonTable;
+import cz.tacr.elza.domain.ArrItemPacketRef;
+import cz.tacr.elza.domain.ArrItemPartyRef;
+import cz.tacr.elza.domain.ArrItemRecordRef;
+import cz.tacr.elza.domain.ArrItemString;
+import cz.tacr.elza.domain.ArrItemText;
+import cz.tacr.elza.domain.ArrItemUnitdate;
+import cz.tacr.elza.domain.ArrItemUnitid;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroup;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.print.*;
-import cz.tacr.elza.print.item.*;
+import cz.tacr.elza.print.Fund;
+import cz.tacr.elza.print.ItemSpec;
+import cz.tacr.elza.print.ItemType;
+import cz.tacr.elza.print.Node;
+import cz.tacr.elza.print.Output;
+import cz.tacr.elza.print.Packet;
+import cz.tacr.elza.print.Record;
+import cz.tacr.elza.print.UnitDate;
+import cz.tacr.elza.print.UnitDateText;
+import cz.tacr.elza.print.item.AbstractItem;
+import cz.tacr.elza.print.item.ItemCoordinates;
+import cz.tacr.elza.print.item.ItemDecimal;
+import cz.tacr.elza.print.item.ItemEnum;
+import cz.tacr.elza.print.item.ItemInteger;
+import cz.tacr.elza.print.item.ItemJsonTable;
+import cz.tacr.elza.print.item.ItemPacketRef;
+import cz.tacr.elza.print.item.ItemPartyRef;
+import cz.tacr.elza.print.item.ItemRecordRef;
+import cz.tacr.elza.print.item.ItemString;
+import cz.tacr.elza.print.item.ItemText;
+import cz.tacr.elza.print.item.ItemUnitId;
+import cz.tacr.elza.print.item.ItemUnitdate;
 import cz.tacr.elza.print.party.Institution;
 import cz.tacr.elza.print.party.Party;
 import cz.tacr.elza.print.party.PartyGroup;
 import cz.tacr.elza.print.party.PartyName;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.PartyGroupRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.OutputService;
 import org.apache.commons.lang.StringUtils;
@@ -16,12 +71,18 @@ import org.apache.commons.lang.builder.CompareToBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.validation.constraints.NotNull;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -58,38 +119,12 @@ public class OutputFactoryService {
     private OutputService outputService;
 
     // TODO - JavaDoc - Lebeda
-    private PartyName createPartyName(ParPartyName parPartyPreferredName) {
-        PartyName preferredName = new PartyName();
-        preferredName.setMainPart(parPartyPreferredName.getMainPart());
-        preferredName.setOtherPart(parPartyPreferredName.getOtherPart());
-        preferredName.setNote(parPartyPreferredName.getNote());
-        preferredName.setDegreeBefore(parPartyPreferredName.getDegreeBefore());
-        preferredName.setDegreeAfter(parPartyPreferredName.getDegreeAfter());
-        preferredName.setValidFrom(createUnitDateText(parPartyPreferredName.getValidFrom()));
-        preferredName.setValidTo(createUnitDateText(parPartyPreferredName.getValidTo()));
-        return preferredName;
-    }
-
-    // TODO - JavaDoc - Lebeda
-    private UnitDateText createUnitDateText(ParUnitdate from) {
-        UnitDateText dateFrom = null;
-        if (StringUtils.isNotBlank(from.getFormat())) { // musí být nastaven formát
-            try {
-                dateFrom = new UnitDateText();
-                dateFrom.setValueText(UnitDateConvertor.convertToString(from));
-            } catch (Exception e) {
-                // TODO Lebeda - ošetřit exception
-                logger.error("Nepodařilo se datum "+ from.toString() +" převést na textovou reprezentaci.", e);
-            }
-        }
-        return dateFrom;
-    }
-
-    // TODO - JavaDoc - Lebeda
     // Factory metoda pro vytvoření logické struktury Output struktury
+    @Bean
+    @Scope("prototype")
     public Output createOutput(final ArrOutput arrOutput) {
         // naplnit output
-        final Output output = new Output(arrOutput, outputService);// přiřadí id + callback
+        final Output output = new Output(arrOutput);
         output.setName(arrOutput.getOutputDefinition().getName());
         output.setInternal_code(arrOutput.getOutputDefinition().getInternalCode());
         output.setTypeCode(arrOutput.getOutputDefinition().getOutputType().getCode());
@@ -178,6 +213,34 @@ public class OutputFactoryService {
         output.getNodes().addAll(nodes);
 
         return output;
+    }
+
+    // TODO - JavaDoc - Lebeda
+    private PartyName createPartyName(ParPartyName parPartyPreferredName) {
+        PartyName preferredName = new PartyName();
+        preferredName.setMainPart(parPartyPreferredName.getMainPart());
+        preferredName.setOtherPart(parPartyPreferredName.getOtherPart());
+        preferredName.setNote(parPartyPreferredName.getNote());
+        preferredName.setDegreeBefore(parPartyPreferredName.getDegreeBefore());
+        preferredName.setDegreeAfter(parPartyPreferredName.getDegreeAfter());
+        preferredName.setValidFrom(createUnitDateText(parPartyPreferredName.getValidFrom()));
+        preferredName.setValidTo(createUnitDateText(parPartyPreferredName.getValidTo()));
+        return preferredName;
+    }
+
+    // TODO - JavaDoc - Lebeda
+    private UnitDateText createUnitDateText(ParUnitdate from) {
+        UnitDateText dateFrom = null;
+        if (StringUtils.isNotBlank(from.getFormat())) { // musí být nastaven formát
+            try {
+                dateFrom = new UnitDateText();
+                dateFrom.setValueText(UnitDateConvertor.convertToString(from));
+            } catch (Exception e) {
+                // TODO Lebeda - ošetřit exception
+                logger.error("Nepodařilo se datum " + from.toString() + " převést na textovou reprezentaci.", e);
+            }
+        }
+        return dateFrom;
     }
 
     // TODO - JavaDoc - Lebeda
@@ -331,6 +394,8 @@ public class OutputFactoryService {
         return new ItemRecordRef(arrItem, output, node, getRecord(output, node, itemData));
     }
 
+    @Bean
+    @Scope("prototype")
     private Record getRecord(Output output, Node node, ArrItemRecordRef itemData) {
         Record record = new Record(output, node, itemData.getRecord());
 //        RecordType recordType = new RecordType();

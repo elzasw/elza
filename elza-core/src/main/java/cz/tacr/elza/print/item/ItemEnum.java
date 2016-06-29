@@ -10,7 +10,6 @@ import cz.tacr.elza.print.Output;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-// TODO Lebeda - Jak na enumy??
 public class ItemEnum extends AbstractItem<String> {
 
     public ItemEnum(ArrItem arrItem, Output output, Node node, String value) {

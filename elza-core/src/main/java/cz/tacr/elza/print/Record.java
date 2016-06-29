@@ -2,11 +2,14 @@ package cz.tacr.elza.print;
 
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.service.OutputService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -19,11 +22,15 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
+@Scope("prototype")
 public class Record {
     private final Output output; // vazba na nadřazený output
     private final Node node; // vazba na node, může být null, v takovém případě patří přímo k output
 
     private final RegRecord regRecord;
+
+    @Autowired
+    private OutputService outputService; // interní vazba na service
 
     private RecordType type;
     private String record;
@@ -38,7 +45,7 @@ public class Record {
 
     // vrací seznam Node přiřazených přes vazbu arr_node_register
     List<Node> getNodes() {
-        final List<ArrNode> nodesByRegister = output.getOutputService().getNodesByRegister(regRecord);
+        final List<ArrNode> nodesByRegister = outputService.getNodesByRegister(regRecord);
         return output.getNodes().stream()
                 .filter(node -> nodesByRegister.contains(node.getArrNode()))
                 .collect(Collectors.toList());

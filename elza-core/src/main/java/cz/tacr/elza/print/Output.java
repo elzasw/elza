@@ -9,6 +9,8 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.util.Assert;
 
 import javax.validation.constraints.NotNull;
@@ -23,8 +25,11 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 21.6.16
  */
+@Scope("prototype")
 public class Output implements RecordProvider {
-    private final OutputService outputService; // interní vazba na service
+
+    @Autowired
+    private OutputService outputService; // interní vazba na service
 
     // review Lebeda - není lepší držet jen objekt místo ID???
     private final ArrOutput arrOutput; //
@@ -49,11 +54,9 @@ public class Output implements RecordProvider {
      * Vytvoření instance s povinnými údaji
      *
      * @param output        arr_output s definicí zpracovávaného výstupu
-     * @param outputService service pro interní použití při "lazy" donačítání dat z okolních vazeb (např. z DB)
      */
-    public Output(ArrOutput output, OutputService outputService) {
+    public Output(ArrOutput output) {
         this.outputId = output.getOutputId();
-        this.outputService = outputService;
         this.arrOutput = output;
     }
 
@@ -141,10 +144,6 @@ public class Output implements RecordProvider {
     // vstupem je seznam kódu typů atributů a vrací se seznam unikátních hodnot těchto atributů řazených dle ???
     public List<Item> getNodeItemsDistinct(Collection<String> codes) {
         return null;  // TODO Lebeda - ?? implementovat
-    }
-
-    public OutputService getOutputService() {
-        return outputService;
     }
 
     /**
