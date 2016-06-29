@@ -144,7 +144,8 @@ export function fund(state, action) {
                 return consolidateState(state, result)
         }
     } else if (nodeFormActions.isSubNodeFormAction(action, "OUTPUT")) {
-        
+        var result = {...state, fundOutput: fundOutput(state.fundOutput, action)};
+        return consolidateState(state, result)
     }
 
     if (false

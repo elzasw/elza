@@ -3,6 +3,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import fundOutputDetail from './fundOutputDetail.jsx'
 import {isFundOutputDetail} from 'actions/arr/fundOutput.jsx'
 import {consolidateState} from 'components/Utils.jsx'
+import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 
 const initialState = {
     fetched: false,
@@ -13,7 +14,7 @@ const initialState = {
 }
 
 export default function fundPackets(state = initialState, action = {}) {
-    if (isFundOutputDetail(action)) {
+    if (isFundOutputDetail(action) || outputFormActions.isSubNodeFormAction(action, "OUTPUT")) {
         return {
             ...state,
             fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),

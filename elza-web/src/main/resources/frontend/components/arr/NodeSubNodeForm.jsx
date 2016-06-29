@@ -10,25 +10,13 @@ import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPar
     AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm, AddNodeDropdown} from 'components';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
-import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import DescItemString from './nodeForm/DescItemString.jsx'
-import DescItemType from './nodeForm/DescItemType.jsx'
-import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm.jsx'
 import {lockDescItemType, unlockDescItemType, unlockAllDescItemType,
     copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting.jsx'
 import {addNode,deleteNode} from '../../actions/arr/node.jsx'
 import {isFundRootId} from './ArrUtils.jsx'
-import {partySelect, partyAdd} from 'actions/party/party.jsx'
-import {registrySelect, registryAdd} from 'actions/registry/registryRegionList.jsx'
-import {routerNavigate} from 'actions/router.jsx'
-import {setInputFocus} from 'components/Utils.jsx'
-import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-import {UrlFactory} from 'actions/index.jsx';
-var classNames = require('classnames');
-var Shortcuts = require('react-shortcuts/component')
-import {SubNodeForm} from "components/index.jsx"; 
+import {SubNodeForm} from "components/index.jsx";
+import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 
 var NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -240,7 +228,7 @@ var NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
         var nodeSetting = this.getNodeSetting();
 
         return (
-            <div className="item-form-container">
+            <div className="node-item-form-container">
                 {formActions}
                 <SubNodeForm
                     ref="subNodeForm"
@@ -263,6 +251,7 @@ var NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
                     onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev}
                     onDescItemTypeLock={this.handleDescItemTypeLock}
                     onDescItemTypeCopy={this.handleDescItemTypeCopy}
+                    formActions={nodeFormActions}
                     />
             </div>
         )

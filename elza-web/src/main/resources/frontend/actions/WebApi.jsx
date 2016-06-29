@@ -451,6 +451,10 @@ class WebApi{
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/form');
     }
 
+    getOutputNodeForm(versionId, outputDefinitionId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/output/' + outputDefinitionId + '/' + versionId + '/form');
+    }
+
     getFundNodeForms(versionId, nodeIds) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + versionId + '/forms', {nodeIds: nodeIds})
     }

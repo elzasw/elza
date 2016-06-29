@@ -1,6 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import subNodeForm from './subNodeForm.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
+import {consolidateState} from 'components/Utils.jsx'
 
 const initialState = {
     id: null,
@@ -49,6 +50,7 @@ export default function fundOutputDetail(state = initialState, action = {}) {
                     id: action.id,
                     currentDataKey: '',
                     fetched: false,
+                    subNodeForm: subNodeForm(),
                 }
             }
             return state

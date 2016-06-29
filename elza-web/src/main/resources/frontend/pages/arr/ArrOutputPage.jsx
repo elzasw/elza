@@ -20,6 +20,12 @@ import {fundOutputFetchIfNeeded, fundOutputRemoveNodes, fundOutputSelectOutput, 
 import * as perms from 'actions/user/Permission.jsx';
 import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
 import {routerNavigate} from 'actions/router.jsx'
+import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
+import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
+import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
+import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm.jsx'
+import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 var classNames = require('classnames');
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
@@ -41,21 +47,31 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
         this.bindMethods('getActiveFund', 'renderListItem', 'handleSelect', 'trySetFocus', 'handleShortcuts',
             'handleAddOutput', 'handleAddNodes', 'handleUsageEnd', 'handleDelete', 'handleRemoveNode',
-            'handleBulkActions', 'handleEditOutput');
+            'handleBulkActions', 'handleEditOutput', "handleAddDescItemType");
     }
 
     componentDidMount() {
+        this.dispatch(descItemTypesFetchIfNeeded());
+        this.dispatch(packetTypesFetchIfNeeded());
+        this.dispatch(calendarTypesFetchIfNeeded());
+
         const fund = this.getActiveFund(this.props)
         if (fund) {
             this.dispatch(fundOutputFetchIfNeeded(fund.versionId));
+            this.dispatch(packetsFetchIfNeeded(fund.id));
         }
         this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
+        this.dispatch(descItemTypesFetchIfNeeded());
+        this.dispatch(packetTypesFetchIfNeeded());
+        this.dispatch(calendarTypesFetchIfNeeded());
+
         const fund = this.getActiveFund(nextProps)
         if (fund) {
             this.dispatch(fundOutputFetchIfNeeded(fund.versionId));
+            this.dispatch(packetsFetchIfNeeded(fund.id));
         }
         this.trySetFocus(nextProps)
     }
@@ -155,6 +171,57 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     /**
+     * Zobrazení dialogu pro přidání atributu.
+     */
+    handleAddDescItemType() {
+        const fund = this.getActiveFund(this.props)
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail;
+        const subNodeForm = fundOutputDetail.subNodeForm;
+
+        const formData = subNodeForm.formData
+
+        // Pro přidání chceme jen ty, které zatím ještě nemáme
+        var infoTypesMap = {...subNodeForm.infoTypesMap};
+        formData.descItemGroups.forEach(group => {
+            group.descItemTypes.forEach(descItemType => {
+                delete infoTypesMap[descItemType.id];
+            })
+        })
+        var descItemTypes = [];
+        Object.keys(infoTypesMap).forEach(function (key) {
+            descItemTypes.push({
+                ...subNodeForm.refTypesMap[key],
+                ...infoTypesMap[key],
+            });
+        });
+
+        function typeId(type) {
+            switch (type) {
+                case "REQUIRED":
+                    return 0;
+                case "RECOMMENDED":
+                    return 1;
+                case "POSSIBLE":
+                    return 2;
+                case "IMPOSSIBLE":
+                    return 99;
+                default:
+                    return 3;
+            }
+        }
+
+        // Seřazení podle position
+        descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
+        var submit = (data) => {
+            this.dispatch(modalDialogHide());
+            this.dispatch(outputFormActions.fundSubNodeFormDescItemTypeAdd(fund.versionId, null, data.descItemTypeId));
+        };
+        // Modální dialog
+        var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
+        this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
+    }
+
+    /**
      * Sestavení Ribbonu.
      * @return {Object} view
      */
@@ -184,6 +251,9 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                         )
                         itemActions.push(
                             <Button key="add-fund-nodes" onClick={this.handleAddNodes}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.nodes.add')}</span></div></Button>
+                        )
+                        itemActions.push(
+                            <Button key="add-item" onClick={this.handleAddDescItemType}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('xxxxxxxxxxx')}</span></div></Button>
                         )
                         itemActions.push(
                             <Button key="fund-output-usage-end" onClick={this.handleUsageEnd}><Icon glyph="fa-clock-o" /><div><span className="btnText">{i18n('ribbon.action.arr.output.usageEnd')}</span></div></Button>
@@ -265,11 +335,16 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     render() {
-        const {focus, splitter, userDetail} = this.props;
+        const {focus, arrRegion, splitter, userDetail, rulDataTypes, packetTypes, descItemTypes, calendarTypes} = this.props;
 
         const fund = this.getActiveFund(this.props)
         var leftPanel, rightPanel
         let centerPanel
+
+        var packets = [];
+        if (fund && arrRegion.packets[fund.id]) {
+            packets = arrRegion.packets[fund.id].items;
+        }
 
         if (userDetail.hasArrOutputPage(fund ? fund.id : null)) { // má právo na tuto stránku
             if (fund) {
@@ -295,6 +370,13 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
                 centerPanel = <ArrOutputDetail
                     versionId={fund.versionId}
+                    fund={fund}
+                    calendarTypes={calendarTypes}
+                    descItemTypes={descItemTypes}
+                    packetTypes={packetTypes}
+                    packets={packets}
+                    rulDataTypes={rulDataTypes}
+                    userDetail={userDetail}
                     fundOutputDetail={fundOutput.fundOutputDetail}
                     />
 
@@ -333,12 +415,17 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, focus, userDetail} = state
+    const {splitter, arrRegion, refTables, focus, userDetail} = state
     return {
         splitter,
         arrRegion,
         focus,
         userDetail,
+        rulDataTypes: refTables.rulDataTypes,
+        calendarTypes: refTables.calendarTypes,
+        descItemTypes: refTables.descItemTypes,
+        packetTypes: refTables.packetTypes,
+        ruleSet: refTables.ruleSet,
     }
 }
 

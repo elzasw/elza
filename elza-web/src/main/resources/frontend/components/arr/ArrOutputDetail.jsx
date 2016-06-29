@@ -9,9 +9,13 @@ import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
 import Utils from "components/Utils.jsx";
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
-import {Loading, i18n, AbstractReactComponent} from 'components/index.jsx';
+import {Loading, i18n, OutputSubNodeForm, AbstractReactComponent} from 'components/index.jsx';
 import {Input} from 'react-bootstrap';
 import {fundOutputDetailFetchIfNeeded} from 'actions/arr/fundOutput.jsx'
+import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
+import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
+import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 var keyModifier = Utils.getKeyModifier()
@@ -34,6 +38,9 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
         const {versionId, fundOutputDetail} = this.props;
         fundOutputDetail.id !== null && this.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
         this.dispatch(outputTypesFetchIfNeeded());
+
+        this.requestData(this.props.versionId, this.props.fundOutputDetail);
+        
         this.trySetFocus(this.props)
     }
 
@@ -41,8 +48,24 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
         const {versionId, fundOutputDetail} = nextProps;
         fundOutputDetail.id !== null && this.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
         this.dispatch(outputTypesFetchIfNeeded());
+        
+        this.requestData(nextProps.versionId, nextProps.fundOutputDetail);
+        
         this.trySetFocus(nextProps)
     }
+
+    /**
+     * Načtení dat, pokud je potřeba.
+     * @param versionId {String} verze AS
+     */
+    requestData(versionId, fundOutputDetail) {
+        this.dispatch(descItemTypesFetchIfNeeded());
+        if (fundOutputDetail.fetched && !fundOutputDetail.isFetching) {
+            this.dispatch(outputFormActions.fundSubNodeFormFetchIfNeeded(versionId, null));
+        }
+        this.dispatch(refRulDataTypesFetchIfNeeded());
+        this.dispatch(calendarTypesFetchIfNeeded());
+    }    
 
     trySetFocus(props) {
         var {focus} = props;
@@ -66,7 +89,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
     }
 
     render() {
-        const {fundOutputDetail, outputTypes} = this.props;
+        const {fundOutputDetail, outputTypes, fund, versionId, packets, packetTypes, descItemTypes, calendarTypes, rulDataTypes} = this.props;
         
         if (fundOutputDetail.id === null) {
             return <div className='arr-output-detail-container'></div>
@@ -82,12 +105,35 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
             outputType = index !== null ? outputTypes[index].name : false;
         }
 
+        var form
+        if (fundOutputDetail.subNodeForm.fetched && calendarTypes.fetched && descItemTypes.fetched) {
+            form = (
+                <OutputSubNodeForm
+                    versionId={versionId}
+                    fundId={fund.id}
+                    selectedSubNodeId={fundOutputDetail.outputDefinition.id}
+                    rulDataTypes={rulDataTypes}
+                    calendarTypes={calendarTypes}
+                    descItemTypes={descItemTypes}
+                    packetTypes={packetTypes}
+                    packets={packets}
+                    subNodeForm={fundOutputDetail.subNodeForm}
+                    closed={fundOutputDetail.lockDate ? true : false}
+                    focus={focus}
+                />
+            )
+        } else {
+            form = <Loading value={i18n('global.data.loading.form')}/>
+        }
+
         return (
-            <Shortcuts name='ArrOutputDetail' handler={this.handleShortcuts}>1111111
+            <Shortcuts name='ArrOutputDetail' handler={this.handleShortcuts}>
                 <div className={"arr-output-detail-container"}>
                     <Input type="text" label={i18n('arr.output.name')} disabled value={fundOutputDetail.outputDefinition.name}/>
                     <Input type="text" label={i18n('arr.output.internalCode')} disabled value={fundOutputDetail.outputDefinition.internalCode}/>
                     {outputType && <Input type="text" label={i18n('arr.output.outputType')} disabled value={outputType}/>}
+
+                    {form}
                 </div>
             </Shortcuts>
         )
@@ -95,13 +141,23 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
 };
 
 function mapStateToProps(state) {
-    // const {splitter, arrRegion, focus, userDetail} = state
+    const {focus, userDetail} = state
     return {
-        outputTypes: state.refTables.outputTypes.items
-    }
+        outputTypes: state.refTables.outputTypes.items,
+        focus,
+        userDetail,
+    }    
 }
 
 ArrOutputDetail.propTypes = {
+    versionId: React.PropTypes.number.isRequired,
+    fund: React.PropTypes.object.isRequired,
+    calendarTypes: React.PropTypes.object.isRequired,
+    descItemTypes: React.PropTypes.object.isRequired,
+    packetTypes: React.PropTypes.object.isRequired,
+    packets: React.PropTypes.array.isRequired,
+    rulDataTypes: React.PropTypes.object.isRequired,
+    userDetail: React.PropTypes.object.isRequired,
     fundOutputDetail: React.PropTypes.object.isRequired,
 };
 

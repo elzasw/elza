@@ -10,24 +10,15 @@ import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPar
     AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm, AddNodeDropdown} from 'components';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
-import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import DescItemString from './nodeForm/DescItemString.jsx'
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import DescItemType from './nodeForm/DescItemType.jsx'
-import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm.jsx'
-import {lockDescItemType, unlockDescItemType, unlockAllDescItemType,
-        copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting.jsx'
-import {addNode,deleteNode} from '../../actions/arr/node.jsx'
-import {isFundRootId} from './ArrUtils.jsx'
 import {partySelect, partyAdd} from 'actions/party/party.jsx'
 import {registrySelect, registryAdd} from 'actions/registry/registryRegionList.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {setInputFocus} from 'components/Utils.jsx'
 import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import * as perms from 'actions/user/Permission.jsx';
 import {UrlFactory} from 'actions/index.jsx';
 var classNames = require('classnames');
-var Shortcuts = require('react-shortcuts/component')
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -152,7 +143,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         }
 
         // Focus na následující hodnotu, pokud existuje, jinak na předchozí hodnotu, pokud existuje, jinak obecně na descItemType (reálně se nastaví na první hodnotu daného atributu)
-        // Focus musíme zjišťovat před DISPATCH nodeFormActions.fundSubNodeFormValueDelete, jinak bychom neměli ve formData správná data, protože ty nejsou immutable!
+        // Focus musíme zjišťovat před DISPATCH formActions.fundSubNodeFormValueDelete, jinak bychom neměli ve formData správná data, protože ty nejsou immutable!
         var setFocusFunc
         const {subNodeForm: {formData}} = this.props
         var descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex]
@@ -168,7 +159,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         }
 
         // Smazání hodnoty
-        this.dispatch(nodeFormActions.fundSubNodeFormValueDelete(this.props.versionId, this.props.routingKey, valueLocation));
+        this.dispatch(this.props.formActions.fundSubNodeFormValueDelete(this.props.versionId, this.props.routingKey, valueLocation));
 
         // Nyní pošleme focus
         this.dispatch(setFocusFunc())
@@ -186,7 +177,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         }
 
         // Focus na následující prvek, pokud existuje, jinak na předchozí, pokud existuje, jinak na accordion
-        // Focus musíme zjišťovat před DISPATCH nodeFormActions.fundSubNodeFormDescItemTypeDelete, jinak bychom neměli ve formData správná data, protože ty nejsou immutable!
+        // Focus musíme zjišťovat před DISPATCH formActions.fundSubNodeFormDescItemTypeDelete, jinak bychom neměli ve formData správná data, protože ty nejsou immutable!
         var setFocusFunc
         const {subNodeForm: {formData}} = this.props
         var descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex]
@@ -203,7 +194,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         }
 
         // Smazání hodnoty
-        this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeDelete(this.props.versionId, this.props.routingKey, valueLocation));
+        this.dispatch(this.props.formActions.fundSubNodeFormDescItemTypeDelete(this.props.versionId, this.props.routingKey, valueLocation));
 
         // Nyní pošleme focus
         this.dispatch(setFocusFunc())
@@ -252,7 +243,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         var setFocusFunc = () => setFocus('arr', 2, 'subNodeForm', {descItemTypeId: descItemType.id, descItemObjectId: null, descItemIndex: index})
 
         // Smazání hodnoty
-        this.dispatch(nodeFormActions.fundSubNodeFormValueAdd(this.props.versionId, this.props.routingKey, valueLocation));
+        this.dispatch(this.props.formActions.fundSubNodeFormValueAdd(this.props.versionId, this.props.routingKey, valueLocation));
 
         // Nyní pošleme focus
         this.dispatch(setFocusFunc())
@@ -264,7 +255,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param file {File} soubor
      */
     handleCoordinatesUpload(descItemTypeId, file) {
-        this.dispatch(nodeFormActions.fundSubNodeFormValueUploadCoordinates(this.props.versionId, this.props.routingKey, descItemTypeId, file));
+        this.dispatch(this.props.formActions.fundSubNodeFormValueUploadCoordinates(this.props.versionId, this.props.routingKey, descItemTypeId, file));
     }
     
     /**
@@ -272,7 +263,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param file {File} soubor
      */
     handleJsonTableUpload(descItemTypeId, file) {
-        this.dispatch(nodeFormActions.fundSubNodeFormValueUploadCsv(this.props.versionId, this.props.routingKey, descItemTypeId, file));
+        this.dispatch(this.props.formActions.fundSubNodeFormValueUploadCsv(this.props.versionId, this.props.routingKey, descItemTypeId, file));
     }
 
     /**
@@ -302,7 +293,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         const {versionId, routingKey, fund, subNodeForm} = this.props;
 
         // Uložení hodnoty
-        this.dispatch(nodeFormActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true));
+        this.dispatch(this.props.formActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true));
 
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
@@ -358,7 +349,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         const {versionId, routingKey, fund, subNodeForm} = this.props;
 
         // Uložení hodnoty
-        this.dispatch(nodeFormActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true));
+        this.dispatch(this.props.formActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true));
 
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
@@ -399,7 +390,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
 
-        this.dispatch(nodeFormActions.fundSubNodeFormValueBlur(this.props.versionId, this.props.routingKey, valueLocation));
+        this.dispatch(this.props.formActions.fundSubNodeFormValueBlur(this.props.versionId, this.props.routingKey, valueLocation));
     }
 
     /**
@@ -415,7 +406,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
 
-        this.dispatch(nodeFormActions.fundSubNodeFormValueFocus(this.props.versionId, this.props.routingKey, valueLocation));
+        this.dispatch(this.props.formActions.fundSubNodeFormValueFocus(this.props.versionId, this.props.routingKey, valueLocation));
     }
 
     /**
@@ -432,7 +423,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
 
-        this.dispatch(nodeFormActions.fundSubNodeFormValueChange(this.props.versionId, this.props.routingKey, valueLocation, value, false));
+        this.dispatch(this.props.formActions.fundSubNodeFormValueChange(this.props.versionId, this.props.routingKey, valueLocation, value, false));
     }
 
     /**
@@ -450,7 +441,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
 
-        this.dispatch(nodeFormActions.fundSubNodeFormValueChangePosition(this.props.versionId, this.props.routingKey, valueLocation, newDescItemIndex));
+        this.dispatch(this.props.formActions.fundSubNodeFormValueChangePosition(this.props.versionId, this.props.routingKey, valueLocation, newDescItemIndex));
     }
 
     /**
@@ -467,7 +458,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
 
-        this.dispatch(nodeFormActions.fundSubNodeFormValueChangeSpec(this.props.versionId, this.props.routingKey, valueLocation, value));
+        this.dispatch(this.props.formActions.fundSubNodeFormValueChangeSpec(this.props.versionId, this.props.routingKey, valueLocation, value));
     }
 
     isDescItemLocked(nodeSetting, descItemTypeId) {
@@ -638,7 +629,7 @@ function mapStateToProps(state) {
 SubNodeForm.propTypes = {
     versionId: React.PropTypes.number.isRequired,
     fundId: React.PropTypes.number.isRequired,
-    routingKey: React.PropTypes.string.isRequired,
+    routingKey: React.PropTypes.string,
     nodeSetting: React.PropTypes.object,
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
@@ -650,6 +641,7 @@ SubNodeForm.propTypes = {
     conformityInfo: React.PropTypes.object.isRequired,
     descItemCopyFromPrevEnabled: React.PropTypes.bool.isRequired,
     focus: React.PropTypes.object,
+    formActions: React.PropTypes.object.isRequired,
 }
 
 module.exports = connect(mapStateToProps, null, null, { withRef: true })(SubNodeForm);
