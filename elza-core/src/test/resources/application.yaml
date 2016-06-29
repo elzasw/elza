@@ -21,6 +21,9 @@ elza:
 
   workingDir: ./work
 
+  templates:
+      templatesDir: ${elza.workingDir}/templates
+
   xmlImport:
     transformationDir: ${elza.workingDir}/transformations/
 

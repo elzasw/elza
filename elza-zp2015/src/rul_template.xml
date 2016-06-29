@@ -2,6 +2,11 @@
     <template code="AP_INVENTORY_FREEMARKER" output-type="AP_INVENTORY">
         <name>AP inventář FREEMARKER</name>
         <engine>FREEMARKER</engine>
-        <directory>FREEMARKER</directory>
+        <directory>freemarker</directory>
+    </template>
+    <template code="AP_INVENTORY_JASPER" output-type="AP_INVENTORY">
+        <name>AP inventář JASPER</name>
+        <engine>JASPER</engine>
+        <directory>tstJasper</directory>
     </template>
 </templates>
