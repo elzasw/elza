@@ -180,10 +180,12 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
         return (
             <Shortcuts name='ArrOutputDetail' handler={this.handleShortcuts}>
                 <div className={"arr-output-detail-container"}>
-                    <Input type="text" label={i18n('arr.output.name')} disabled value={fundOutputDetail.outputDefinition.name}/>
-                    <Input type="text" label={i18n('arr.output.internalCode')} disabled value={fundOutputDetail.outputDefinition.internalCode}/>
-                    {template && <Input type="text" label={i18n('arr.output.template')} disabled value={template}/>}
-                    {outputType && <Input type="text" label={i18n('arr.output.outputType')} disabled value={outputType}/>}
+                    <div className="output-definition-commons">
+                        <Input type="text" label={i18n('arr.output.name')} disabled value={fundOutputDetail.outputDefinition.name}/>
+                        <Input type="text" label={i18n('arr.output.internalCode')} disabled value={fundOutputDetail.outputDefinition.internalCode}/>
+                        {template && <Input type="text" label={i18n('arr.output.template')} disabled value={template}/>}
+                        {outputType && <Input type="text" label={i18n('arr.output.outputType')} disabled value={outputType}/>}
+                    </div>
 
                     <div className="fund-nodes-container">
                         <h2>{i18n("arr.output.title.nodes")}</h2>
