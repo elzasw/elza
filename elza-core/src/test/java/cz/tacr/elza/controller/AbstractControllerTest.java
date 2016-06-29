@@ -40,6 +40,7 @@ import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
@@ -249,6 +250,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
     protected static final String DATA_TYPES = RULE_CONTROLLER_URL + "/dataTypes";
     protected static final String DESC_ITEM_TYPES = RULE_CONTROLLER_URL + "/descItemTypes";
+    protected static final String TEMPLATES = RULE_CONTROLLER_URL + "/templates";
     protected static final String PACKAGES = RULE_CONTROLLER_URL + "/getPackages";
     protected static final String POLICY = RULE_CONTROLLER_URL + "/policy";
     protected static final String POLICY_TYPES = POLICY + "/types/{fundVersionId}";
@@ -766,6 +768,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected List<RulDescItemTypeExtVO> getDescItemTypes() {
         return Arrays.asList(get(DESC_ITEM_TYPES).getBody().as(RulDescItemTypeExtVO[].class));
+    }
+
+    /**
+     * Získání listu RulTemplateVO
+     *
+     * @return list RulTemplateVO
+     */
+    protected List<RulTemplateVO> getTemplates() {
+        return Arrays.asList(get(TEMPLATES).getBody().as(RulTemplateVO[].class));
     }
 
     /**

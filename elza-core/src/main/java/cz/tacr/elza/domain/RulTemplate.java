@@ -40,6 +40,9 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
+    /* Konstanty pro vazby a fieldy. */
+    public static final String NAME = "name";
+
     @Override
     public Integer getTemplateId() {
         return templateId;

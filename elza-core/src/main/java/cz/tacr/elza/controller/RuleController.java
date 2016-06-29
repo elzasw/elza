@@ -4,6 +4,7 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
@@ -11,6 +12,7 @@ import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -88,6 +90,12 @@ public class RuleController {
     public List<RulDescItemTypeExtVO> getDescItemTypes() {
         List<RulItemTypeExt> descItemTypes = ruleService.getAllDescriptionItemTypes();
         return factoryVo.createDescItemTypeExtList(descItemTypes);
+    }
+
+    @RequestMapping(value = "/templates", method = RequestMethod.GET)
+    public List<RulTemplateVO> getTemplates() {
+        List<RulTemplate> templates = ruleService.getTemplates();
+        return factoryVo.createTemplates(templates);
     }
 
     // zatím totožná s getDescItemTypes(), časem se možná změní

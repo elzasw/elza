@@ -36,6 +36,11 @@ public class RuleControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    public void getTemplatesTest() {
+        getTemplates();
+    }
+
+    @Test
     public void getPackagesTest() {
         getPackages();
     }

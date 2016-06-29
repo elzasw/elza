@@ -666,24 +666,29 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrFundVersion.class, ArrFundVersionVO.class).byDefault().field(
                 "fundVersionId", "id").
                 exclude("arrangementType").register();
-        mapperFactory.classMap(ArrOutputDefinition.class, ArrOutputDefinitionVO.class).exclude("outputs").exclude("nodes").byDefault()
-                .field("outputDefinitionId", "id").customize(new CustomMapper<ArrOutputDefinition, ArrOutputDefinitionVO>() {
-            @Override
-            public void mapAtoB(final ArrOutputDefinition outputDefinition,
-                                final ArrOutputDefinitionVO outputDefinitionVO,
-                                final MappingContext context) {
-                outputDefinitionVO.setOutputTypeId(outputDefinition.getOutputType().getOutputTypeId());
-            }
+        mapperFactory.classMap(ArrOutputDefinition.class, ArrOutputDefinitionVO.class)
+                .exclude("outputs")
+                .exclude("nodes")
+                .byDefault()
+                .field("outputDefinitionId", "id")
+                .customize(new CustomMapper<ArrOutputDefinition, ArrOutputDefinitionVO>() {
+                    @Override
+                    public void mapAtoB(final ArrOutputDefinition outputDefinition,
+                                        final ArrOutputDefinitionVO outputDefinitionVO,
+                                        final MappingContext context) {
+                        outputDefinitionVO.setOutputTypeId(outputDefinition.getOutputType().getOutputTypeId());
+                        outputDefinitionVO.setTemplateId(outputDefinition.getTemplate() != null ? outputDefinition.getTemplate().getTemplateId() : null);
+                    }
 
-            @Override
-            public void mapBtoA(final ArrOutputDefinitionVO outputDefinitionVO,
-                                final ArrOutputDefinition outputDefinition,
-                                final MappingContext context) {
-                RulOutputType rulOutputType = new RulOutputType();
-                rulOutputType.setOutputTypeId(outputDefinitionVO.getOutputTypeId());
-                outputDefinition.setOutputType(rulOutputType);
-            }
-        }).register();
+                    @Override
+                    public void mapBtoA(final ArrOutputDefinitionVO outputDefinitionVO,
+                                        final ArrOutputDefinition outputDefinition,
+                                        final MappingContext context) {
+                        RulOutputType rulOutputType = new RulOutputType();
+                        rulOutputType.setOutputTypeId(outputDefinitionVO.getOutputTypeId());
+                        outputDefinition.setOutputType(rulOutputType);
+                    }
+                }).register();
         mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class).byDefault().field("outputId", "id").register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
 
@@ -758,6 +763,10 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(UsrPermission.class, UsrPermissionVO.class)
                 .byDefault()
                 .field("permissionId", "id")
+                .register();
+
+        mapperFactory.classMap(RulTemplate.class, RulTemplateVO.class)
+                .byDefault()
                 .register();
     }
 

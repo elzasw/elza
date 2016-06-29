@@ -27,6 +27,8 @@ public class ArrOutputDefinitionVO {
 
     private Integer outputTypeId;
 
+    private Integer templateId;
+
     private Integer version;
 
     public Integer getId() {
@@ -99,5 +101,13 @@ public class ArrOutputDefinitionVO {
 
     public void setVersion(final Integer version) {
         this.version = version;
+    }
+
+    public Integer getTemplateId() {
+        return templateId;
+    }
+
+    public void setTemplateId(Integer templateId) {
+        this.templateId = templateId;
     }
 }

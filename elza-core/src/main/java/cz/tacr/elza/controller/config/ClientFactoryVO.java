@@ -122,6 +122,32 @@ public class ClientFactoryVO {
     }
 
     /**
+     * Vytvoření kolekce VO z kolekce DO.
+     * @param templates vstup
+     * @return seznam VO
+     */
+    public List<RulTemplateVO> createTemplates(final Collection<RulTemplate> templates){
+        Assert.notNull(templates);
+
+        List<RulTemplateVO> result = new ArrayList<>();
+        for (RulTemplate template : templates) {
+            result.add(createTemplate(template));
+        }
+        return result;
+    }
+
+    /**
+     * Vytvoření VO z DO.
+     * @param template DO
+     * @return VO
+     */
+    public RulTemplateVO createTemplate(final RulTemplate template){
+        Assert.notNull(template);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(template, RulTemplateVO.class);
+    }
+
+    /**
      * Vytvoří detailní objekt osoby. Načte všechna navázaná data.
      *
      * @param party osoba

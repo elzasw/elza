@@ -21,6 +21,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
@@ -33,6 +34,7 @@ import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.utils.ObjectListIterator;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 import org.apache.commons.collections4.CollectionUtils;
@@ -40,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -82,6 +85,8 @@ public class RuleService {
     private LevelRepository levelRepository;
     @Autowired
     private NodeRepository nodeRepository;
+    @Autowired
+    private TemplateRepository templateRepository;
     @Autowired
     private FundVersionRepository fundVersionRepository;
     @Autowired
@@ -157,6 +162,14 @@ public class RuleService {
         }
 
         return result;
+    }
+
+    /**
+     * Načtení seznamu všech šablon, seřazeného podle názvu.
+     * @return seznam šablon
+     */
+    public List<RulTemplate> getTemplates() {
+        return templateRepository.findAll(new Sort(Sort.Direction.ASC, RulTemplate.NAME));
     }
 
 
