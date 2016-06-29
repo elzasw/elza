@@ -1,5 +1,24 @@
 <package-actions>
     <package-action filename="FUND_VALIDATION_ZP2015.yaml" />
-    <package-action filename="GENERATOR_SERIAL_NUMBER_ZP2015.yaml" />
-    <package-action filename="GENERATOR_UNIT_ID_ZP2015.yaml" />
+
+    <package-action filename="GENERATOR_SERIAL_NUMBER_ZP2015.yaml">
+        <action-recommendeds>
+            <action-recommended output-type="AP_INVENTORY" />
+            <action-recommended output-type="AP_CATALOG" />
+            <action-recommended output-type="LABELS" />
+            <action-recommended output-type="INVENTORY" />
+        </action-recommendeds>
+    </package-action>
+
+    <package-action filename="GENERATOR_UNIT_ID_ZP2015.yaml">
+        <action-recommendeds>
+            <action-recommended output-type="AP_INVENTORY" />
+            <action-recommended output-type="INVENTORY" />
+        </action-recommendeds>
+
+        <action-item-types>
+            <action-item-type item-type="ZP2015_STATISTICS" />
+            <action-item-type item-type="ZP2015_IMPRINT_COUNT" />
+        </action-item-types>
+    </package-action>
 </package-actions>

@@ -108,6 +108,23 @@ public interface LevelRepositoryCustom {
      */
     ArrLevel findNodeInRootTreeByNodeId(ArrNode node, ArrNode rootNode, @Nullable ArrChange lockChange);
 
+    /**
+     * Vyhledá potomky, které mají vyšší datum poslední změny, než je v ArrChange.
+     *
+     * @param node   uzel od kterého prohledáváme
+     * @param change změna podle které filtrujeme uzly
+     * @return identifikátory uzlů, které byly změněny
+     */
+    List<Integer> findNodeIdsSubtree(ArrNode node, ArrChange change);
+
+    /**
+     * Vyhledá rodiče, které mají vyšší datum poslední změny, než je v ArrChange.
+     *
+     * @param node   uzel od kterého prohledáváme
+     * @param change změna podle které filtrujeme uzly
+     * @return identifikátory uzlů, které byly změněny
+     */
+    List<Integer> findNodeIdsParent(ArrNode node, ArrChange change);
 
     /**
      * Provede načtení všech uzlů ve stromu dané verze.

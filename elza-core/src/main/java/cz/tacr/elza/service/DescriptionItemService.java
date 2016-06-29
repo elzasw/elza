@@ -61,7 +61,6 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -152,10 +151,11 @@ public class DescriptionItemService {
      * Uložení uzlu - optimistické zámky
      *
      * @param node uzel
+     * @param change
      * @return uložený uzel
      */
-    private ArrNode saveNode(final ArrNode node) {
-        node.setLastUpdate(LocalDateTime.now());
+    private ArrNode saveNode(final ArrNode node, final ArrChange change) {
+        node.setLastUpdate(change.getChangeDate());
         nodeRepository.save(node);
         nodeRepository.flush();
         return node;
@@ -193,7 +193,7 @@ public class DescriptionItemService {
         descItem.getNode().setVersion(nodeVersion);
 
         // uložení uzlu (kontrola optimistických zámků)
-        saveNode(descItem.getNode());
+        saveNode(descItem.getNode(), change);
 
         ArrDescItem descItemDeleted = deleteDescriptionItem(descItem, fundVersion, change, true);
 
@@ -233,7 +233,7 @@ public class DescriptionItemService {
         node.setVersion(nodeVersion);
 
         // uložení uzlu (kontrola optimistických zámků)
-        saveNode(node);
+        saveNode(node, change);
 
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemType, node);
 
@@ -323,11 +323,13 @@ public class DescriptionItemService {
         ArrNode node = nodeRepository.findOne(nodeId);
         Assert.notNull(node);
 
+        ArrChange change = arrangementService.createChange();
+
         // uložení uzlu (kontrola optimistických zámků)
         node.setVersion(nodeVersion);
-        saveNode(node);
+        saveNode(node, change);
 
-        return createDescriptionItem(descItem, node, version, null);
+        return createDescriptionItem(descItem, node, version, change);
     }
 
     /**
@@ -357,11 +359,13 @@ public class DescriptionItemService {
         ArrNode node = nodeRepository.findOne(nodeId);
         Assert.notNull(node);
 
+        ArrChange change = arrangementService.createChange();
+
         // uložení uzlu (kontrola optimistických zámků)
         node.setVersion(nodeVersion);
-        saveNode(node);
+        saveNode(node, change);
 
-        return createDescriptionItems(descItems, node, version, null);
+        return createDescriptionItems(descItems, node, version, change);
     }
 
     /**
@@ -729,11 +733,11 @@ public class DescriptionItemService {
         if (createNewVersion) {
             node.setVersion(nodeVersion);
 
-            // uložení uzlu (kontrola optimistických zámků)
-            saveNode(node);
-
             // vytvoření změny
             change = arrangementService.createChange();
+
+            // uložení uzlu (kontrola optimistických zámků)
+            saveNode(node, change);
         }
 
         ArrDescItem descItemUpdated = updateDescriptionItemWithData(descItem, descItemDB, fundVersion, change, createNewVersion);
@@ -1163,7 +1167,7 @@ public class DescriptionItemService {
 
             for (ArrData arrData : dataToReplaceText) {
                 ArrNode clientNode = nodesMap.get(arrData.getItem().getNodeId());
-                arrangementService.lockNode(arrData.getItem().getNode(), clientNode);
+                arrangementService.lockNode(arrData.getItem().getNode(), clientNode, change);
 
                 replaceDescItemValue(arrData, findText, replaceText, change);
 
@@ -1267,7 +1271,7 @@ public class DescriptionItemService {
                 continue;
             }
 
-            arrangementService.lockNode(dbNode, nodesMap.get(dbNode.getNodeId()));
+            arrangementService.lockNode(dbNode, nodesMap.get(dbNode.getNodeId()), change);
 
             ArrData data = createDataByType(descItemType);
 

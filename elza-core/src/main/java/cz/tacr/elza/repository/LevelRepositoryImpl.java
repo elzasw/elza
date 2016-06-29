@@ -1,17 +1,21 @@
 package cz.tacr.elza.repository;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TemporalType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
@@ -22,6 +26,7 @@ import javax.persistence.criteria.Root;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -405,6 +410,32 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         }
 
         return result;
+    }
+
+    @Override
+    public List<Integer> findNodeIdsSubtree(final ArrNode node, final ArrChange change) {
+
+        String sql = "WITH RECURSIVE treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) " +
+                "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL AND n.last_update > :date";
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("nodeId", node.getNodeId());
+        query.setParameter("date", Timestamp.valueOf(change.getChangeDate()));
+
+        return (List<Integer>) query.getResultList();
+    }
+
+    @Override
+    public List<Integer> findNodeIdsParent(final ArrNode node, final ArrChange change) {
+
+        String sql = "WITH RECURSIVE treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId UNION ALL SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id) " +
+                "SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id WHERE t.delete_change_id IS NULL AND n.last_update > :date";
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("nodeId", node.getNodeId());
+        query.setParameter("date", Timestamp.valueOf(change.getChangeDate()));
+
+        return (List<Integer>) query.getResultList();
     }
 
 }

@@ -3,6 +3,7 @@ package cz.tacr.elza.domain;
 import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.rest.core.annotation.RestResource;
 
@@ -19,7 +20,7 @@ import java.util.List;
  */
 @Entity(name = "arr_bulk_action_run")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrChange, ArrFundVersion, ArrBulkActionNode> {
+public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrChange, ArrFundVersion, ArrBulkActionNode, ArrOutputDefinition> {
 
     @Id
     @GeneratedValue
@@ -75,6 +76,15 @@ public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrCh
     @RestResource(exported = false)
     @OneToMany(mappedBy = "bulkActionRun", fetch = FetchType.LAZY, targetEntity = ArrBulkActionNode.class)
     private List<ArrBulkActionNode> arrBulkActionNodes = new ArrayList<>(0);
+
+    @Lob
+    @Type(type = "org.hibernate.type.TextType")
+    @Column
+    private String result;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputDefinition.class)
+    @JoinColumn(name = "outputDefinitionId")
+    private ArrOutputDefinition outputDefinition;
 
     @Override
     public Integer getBulkActionRunId() {
@@ -185,5 +195,25 @@ public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrCh
 
     public void setInterrupted(boolean interrupted) {
         this.interrupted = interrupted;
+    }
+
+    @Override
+    public String getResult() {
+        return result;
+    }
+
+    @Override
+    public void setResult(final String result) {
+        this.result = result;
+    }
+
+    @Override
+    public ArrOutputDefinition getOutputDefinition() {
+        return outputDefinition;
+    }
+
+    @Override
+    public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
+        this.outputDefinition = outputDefinition;
     }
 }

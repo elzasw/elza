@@ -4,11 +4,13 @@ import com.google.common.collect.Maps;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDefaultItemType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemSpecRegister;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPacketType;
@@ -169,6 +171,12 @@ public class PackageService {
     @Autowired
     private TemplateRepository templateRepository;
 
+    @Autowired
+    private ActionRecommendedRepository actionRecommendedRepository;
+
+    @Autowired
+    private ItemTypeActionRepository itemTypeActionRepository;
+
     /**
      * Provede import balíčku.
      *
@@ -213,14 +221,14 @@ public class PackageService {
             PacketTypes packetTypes = convertXmlStreamToObject(PacketTypes.class, mapEntry.get(PACKET_TYPE_XML));
 
             processPacketTypes(packetTypes, rulPackage);
-            processOutputTypes(outputTypes, templates, rulPackage);
+            List<RulOutputType> rulOutputTypes = processOutputTypes(outputTypes, templates, rulPackage);
 
             List<RulRuleSet> rulRuleSets = processRuleSets(ruleSets, rulPackage);
 
             processPolicyTypes(policyTypes, rulPackage, rulRuleSets);
 
             List<RulItemType> rulDescItemTypes = processItemTypes(itemTypes, itemSpecs, rulPackage);
-            rulPackageActions = processPackageActions(packageActions, rulPackage, mapEntry, dirActions);
+            rulPackageActions = processPackageActions(packageActions, rulPackage, mapEntry, rulOutputTypes, rulDescItemTypes, dirActions);
 
             // Zde se může importovat vazba mezi pravidlem a atributem
             processDefaultItemTypes(rulRuleSets, ruleSets, rulDescItemTypes);
@@ -542,16 +550,19 @@ public class PackageService {
     /**
      * Zpracování hromadných akcí.
      *
-     * @param packageActions importovaných seznam hromadných akcí
-     * @param rulPackage     balíček
-     * @param mapEntry       mapa streamů souborů v ZIP
-     * @param dir            adresář hromadných akcí
-     * @return seznam hromadných akcí
+     * @param packageActions   importovaných seznam hromadných akcí
+     * @param rulPackage       balíček
+     * @param mapEntry         mapa streamů souborů v ZIP
+     * @param rulOutputTypes   seznam výstupů
+     * @param rulDescItemTypes seznam typů atributů
+     * @param dir              adresář hromadných akcí  @return seznam hromadných akcí
      */
     private List<RulAction> processPackageActions(final PackageActions packageActions,
-                                                          final RulPackage rulPackage,
-                                                          final Map<String, ByteArrayInputStream> mapEntry,
-                                                          final File dir) {
+                                                  final RulPackage rulPackage,
+                                                  final Map<String, ByteArrayInputStream> mapEntry,
+                                                  final List<RulOutputType> rulOutputTypes,
+                                                  final List<RulItemType> rulDescItemTypes,
+                                                  final File dir) {
 
         List<RulAction> rulPackageActions = packageActionsRepository.findByRulPackage(rulPackage);
         List<RulAction> rulPackageActionsNew = new ArrayList<>();
@@ -562,13 +573,74 @@ public class PackageService {
                         (r) -> r.getFilename().equals(packageAction.getFilename())).collect(
                         Collectors.toList());
                 RulAction item;
+                List<RulItemTypeAction> rulTypeActions;
+                List<RulActionRecommended> rulActionRecommendeds;
+
                 if (findItems.size() > 0) {
                     item = findItems.get(0);
+                    rulTypeActions = itemTypeActionRepository.findByAction(item);
+                    rulActionRecommendeds = actionRecommendedRepository.findByAction(item);
                 } else {
                     item = new RulAction();
+                    rulTypeActions = new ArrayList<>();
+                    rulActionRecommendeds = new ArrayList<>();
                 }
 
                 convertRulPackageAction(rulPackage, packageAction, item);
+                packageActionsRepository.save(item);
+
+                if (!CollectionUtils.isEmpty(packageAction.getActionItemTypes())) {
+                    List<RulItemTypeAction> rulTypeActionsNew = new ArrayList<>();
+                    for (ActionItemType actionItemType : packageAction.getActionItemTypes()) {
+                        RulItemTypeAction rulItemTypeAction = itemTypeActionRepository.findOneByItemTypeCode(actionItemType.getItemType());
+                        RulItemType rulItemType = itemTypeRepository.findOneByCode(actionItemType.getItemType());
+
+                        if (rulItemType == null) {
+                            throw new IllegalArgumentException("Neexistující typ atributu: " + actionItemType.getItemType());
+                        }
+
+                        if (rulItemTypeAction == null) {
+                            rulItemTypeAction = new RulItemTypeAction();
+                        }
+
+                        rulItemTypeAction.setItemType(rulItemType);
+                        rulItemTypeAction.setAction(item);
+                        rulTypeActionsNew.add(rulItemTypeAction);
+                    }
+
+                    itemTypeActionRepository.save(rulTypeActionsNew);
+
+                    List<RulItemTypeAction> rulTypeActionsDelete = new ArrayList<>(rulTypeActions);
+                    rulTypeActionsDelete.removeAll(rulTypeActionsNew);
+                    itemTypeActionRepository.delete(rulTypeActionsDelete);
+                }
+
+                if (!CollectionUtils.isEmpty(packageAction.getActionRecommendeds())) {
+                    List<RulActionRecommended> rulActionRecomendedsNew = new ArrayList<>();
+                    for (ActionRecommended actionRecommended : packageAction.getActionRecommendeds()) {
+                        RulActionRecommended rulActionRecommended = actionRecommendedRepository.findOneByOutputTypeCode(actionRecommended.getOutputType());
+                        RulOutputType rulOutputType = outputTypeRepository.findOneByCode(actionRecommended.getOutputType());
+
+                        if (rulOutputType == null) {
+                            throw new IllegalArgumentException("Neexistující typ outputu: " + actionRecommended.getOutputType());
+                        }
+
+                        if (rulActionRecommended == null) {
+                            rulActionRecommended = new RulActionRecommended();
+                        }
+
+                        rulActionRecommended.setOutputType(rulOutputType);
+                        rulActionRecommended.setAction(item);
+                        rulActionRecomendedsNew.add(rulActionRecommended);
+                    }
+
+                    actionRecommendedRepository.save(rulActionRecomendedsNew);
+
+                    List<RulActionRecommended> rulActionRecommendedsDelete = new ArrayList<>(rulActionRecommendeds);
+                    rulActionRecommendedsDelete.removeAll(rulActionRecomendedsNew);
+                    actionRecommendedRepository.delete(rulActionRecommendedsDelete);
+                }
+
                 rulPackageActionsNew.add(item);
             }
         }
@@ -577,6 +649,12 @@ public class PackageService {
 
         List<RulAction> rulPackageActionsDelete = new ArrayList<>(rulPackageActions);
         rulPackageActionsDelete.removeAll(rulPackageActionsNew);
+
+        for (RulAction rulAction : rulPackageActionsDelete) {
+            itemTypeActionRepository.deleteByAction(rulAction);
+            actionRecommendedRepository.deleteByAction(rulAction);
+        }
+
         packageActionsRepository.delete(rulPackageActionsDelete);
 
 
@@ -765,7 +843,7 @@ public class PackageService {
                         }
                     }
 
-                    if (item.getColumnsDefinition() != null && !item.getColumnsDefinition().equals(itemType.getColumnsDefinition())) {
+                    if (item.getColumnsDefinition() != null && !equalsColumns(item.getColumnsDefinition(), itemType.getColumnsDefinition())) {
                         Long countDescItems = descItemRepository.getCountByType(item);
                         if (countDescItems != null && countDescItems > 0) {
 //                            throw new IllegalStateException("Nelze změnit definici sloupců (datový typ a kód) u typu " + item.getCode()
@@ -792,6 +870,31 @@ public class PackageService {
 
         return rulItemTypesNew;
     }
+
+    /**
+     * Porovnávání typů sloupců.
+     *
+     * @param elzaColumnList porovnávaný list ElzaColumn
+     * @param columnList     porovnávaný list Column
+     * @return jsou změněný neměnitelný položky?
+     */
+    private boolean equalsColumns(final List<ElzaColumn> elzaColumnList, final List<Column> columnList) {
+        if (elzaColumnList.size() != columnList.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < elzaColumnList.size(); i++) {
+            ElzaColumn elzaColumn = elzaColumnList.get(i);
+            Column column = columnList.get(i);
+            if (!elzaColumn.getCode().equals(column.getCode())
+                    || !elzaColumn.getDataType().toString().equals(column.getDataType())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 
     /**
      * Zpracování specifikací atributů.
@@ -1280,8 +1383,6 @@ public class PackageService {
         }
         itemSpecRepository.delete(rulDescItemSpecs);
 
-        itemTypeRepository.deleteByRulPackage(rulPackage);
-
         File dirActions = new File(bulkActionConfigManager.getPath());
         File dirRules = new File(rulesExecutor.getRootPath());
 
@@ -1296,6 +1397,10 @@ public class PackageService {
             for (RulAction rulPackageAction : packageActionsRepository.findByRulPackage(rulPackage)) {
                 deleteFile(dirActions, rulPackageAction.getFilename());
             }
+
+            packageActionsRepository.findByRulPackage(rulPackage).forEach(this::deleteActionLink);
+
+            itemTypeRepository.deleteByRulPackage(rulPackage);
 
             packageActionsRepository.deleteByRulPackage(rulPackage);
 
@@ -1334,6 +1439,15 @@ public class PackageService {
             }
         }
 
+    }
+
+    /**
+     * Smazání návazných entit.
+     * @param action hromadná akce
+     */
+    private void deleteActionLink(final RulAction action) {
+        itemTypeActionRepository.deleteByAction(action);
+        actionRecommendedRepository.deleteByAction(action);
     }
 
     /**
@@ -1674,6 +1788,24 @@ public class PackageService {
      */
     private void convertPackageAction(final RulAction rulPackageAction, final PackageAction packageAction) {
         packageAction.setFilename(rulPackageAction.getFilename());
+
+        List<ActionItemType> actionItemTypeList = new ArrayList<>();
+        packageAction.setActionItemTypes(actionItemTypeList);
+
+        for (RulItemTypeAction rulItemTypeAction : itemTypeActionRepository.findByAction(rulPackageAction)) {
+            ActionItemType actionItemType = new ActionItemType();
+            actionItemType.setItemType(rulItemTypeAction.getItemType().getCode());
+            actionItemTypeList.add(actionItemType);
+        }
+
+        List<ActionRecommended> actionRecommendedList = new ArrayList<>();
+        packageAction.setActionRecommendeds(actionRecommendedList);
+
+        for (RulActionRecommended rulActionRecommended : actionRecommendedRepository.findByAction(rulPackageAction)) {
+            ActionRecommended actionRecommended = new ActionRecommended();
+            actionRecommended.setOutputType(rulActionRecommended.getOutputType().getCode());
+            actionRecommendedList.add(actionRecommended);
+        }
     }
 
     /**

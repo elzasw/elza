@@ -19,4 +19,5 @@ public interface OutputTypeRepository extends ElzaJpaRepository<RulOutputType, I
 
     RulOutputType findByCode(String packetTypeCode);
 
+    RulOutputType findOneByCode(String outputType);
 }
