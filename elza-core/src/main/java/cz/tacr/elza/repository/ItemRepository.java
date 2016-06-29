@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrItem;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 
@@ -11,6 +12,9 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface ItemRepository extends JpaRepository<ArrItem, Integer> {
+
+    @Query(value = "SELECT max(i.descItemObjectId) FROM arr_item i")
+    Integer findMaxItemObjectId();
 
 
 }
