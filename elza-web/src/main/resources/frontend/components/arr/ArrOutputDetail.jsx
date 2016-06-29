@@ -175,7 +175,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
             )
         } else {
             form = <Loading value={i18n('global.data.loading.form')}/>
-        }
+        }console.log(888, this.props)
 
         return (
             <Shortcuts name='ArrOutputDetail' handler={this.handleShortcuts}>

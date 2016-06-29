@@ -213,6 +213,8 @@ public class OutputService {
      * @param name         název výstupu
      * @param internalCode kód výstupu
      * @param temporary    dočasný výstup?
+     * @param outputTypeId
+     * @param templateId id šablony
      * @return vytvořený výstup
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
@@ -221,7 +223,8 @@ public class OutputService {
                                                       final String name,
                                                       final String internalCode,
                                                       final Boolean temporary,
-                                                      final Integer outputTypeId) {
+                                                      final Integer outputTypeId,
+                                                      final Integer templateId) {
         Assert.notNull(fundVersion);
         Assert.notNull(name);
         Assert.notNull(temporary);
@@ -240,8 +243,13 @@ public class OutputService {
 
         RulOutputType type = outputTypeRepository.findOne(outputTypeId);
         Assert.notNull(type);
-
         outputDefinition.setOutputType(type);
+
+        if (templateId != null) {
+            outputDefinition.setTemplate(templateRepository.findOne(templateId));
+        } else {
+            outputDefinition.setTemplate(null);
+        }
 
         outputDefinitionRepository.save(outputDefinition);
 

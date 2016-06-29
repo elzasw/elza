@@ -1581,7 +1581,8 @@ public class ArrangementController {
                                                    @RequestBody OutputNameParam param) {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrOutputDefinition outputDefinition = outputService.createOutputDefinition(fundVersion, param.getName(), param.getInternalCode(), param.getTemporary(), param.getOutputTypeId());
+        ArrOutputDefinition outputDefinition = outputService.createOutputDefinition(fundVersion, param.getName(), param.getInternalCode(),
+                param.getTemporary(), param.getOutputTypeId(), param.getTemplateId());
         return factoryVo.createOutputDefinition(outputDefinition);
     }
 
