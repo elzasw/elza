@@ -11,15 +11,12 @@ import cz.tacr.elza.print.Output;
  *         Date: 22.6.16
  */
 public interface Item<T> {
-    // TODO Lebeda - OK?
     // TODO - JavaDoc - Lebeda
     ArrItem getArrItem();
 
-    // TODO Lebeda - OK?
     // TODO - JavaDoc - Lebeda
     Node getNode();
 
-    // TODO Lebeda - OK?
     // TODO - JavaDoc - Lebeda
     Output getOutput();
 
@@ -40,7 +37,13 @@ public interface Item<T> {
     String serializeValue();
 
     // TODO - JavaDoc - Lebeda
+    String getSerializedValue();
+
+    // TODO - JavaDoc - Lebeda
     String serialize();
+
+    // TODO - JavaDoc - Lebeda
+    String getSerialized();
 
     // TODO - JavaDoc - Lebeda
     T getValue();

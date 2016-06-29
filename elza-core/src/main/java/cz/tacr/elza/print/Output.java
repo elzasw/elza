@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class Output implements RecordProvider {
     private final OutputService outputService; // interní vazba na service
 
-    // TODO Lebeda - není lepší držet objekt než pouhé ID???
+    // review Lebeda - není lepší držet jen objekt místo ID???
     private final ArrOutput arrOutput; //
     private final Integer outputId; // ID pro vazbu do DB na entitu arr_output
 
@@ -48,13 +48,29 @@ public class Output implements RecordProvider {
     /**
      * Vytvoření instance s povinnými údaji
      *
-     * @param outputId      ID s vazbou na DB entitu arr_output
+     * @param output        arr_output s definicí zpracovávaného výstupu
      * @param outputService service pro interní použití při "lazy" donačítání dat z okolních vazeb (např. z DB)
      */
-    public Output(Integer outputId, OutputService outputService) {
-        this.outputId = outputId;
+    public Output(ArrOutput output, OutputService outputService) {
+        this.outputId = output.getOutputId();
         this.outputService = outputService;
-        this.arrOutput = outputService.getOutput(outputId); // TODO Lebeda - lepší rovnou dostat objekt???
+        this.arrOutput = output;
+    }
+
+    // TODO - JavaDoc - Lebeda
+    private static List<Record> getRecordsInternal(final RecordProvider recordProvider, final String code) {
+        // za samotný output
+        final List<Record> records = recordProvider.getRecords().stream()
+                .filter(record -> (!StringUtils.isNotBlank(code) || code.equals(record.getType().getCode()))) // pokud je vyplněno code, pak filtrovat
+                .collect(Collectors.toList());
+
+        // rekurzivně za jednotlivé podřízené node
+        for (RecordProvider provider : recordProvider.getRecordProviderChildern()) {
+            records.addAll(getRecordsInternal(provider, code));
+        }
+
+        // seřadit podle názvu (record)
+        return records.stream().sorted((o1, o2) -> o1.getRecord().compareTo(o1.getRecord())).collect(Collectors.toList());
     }
 
     /**
@@ -96,8 +112,6 @@ public class Output implements RecordProvider {
                 .collect(Collectors.toList());
     }
 
-
-
     // TODO - JavaDoc - Lebeda
     // vrací seznam typů rejstříku, pro každý počet záznamů v něm přímo zařazených a počet záznamů včetně podřízených typů;
     // řazeno dle pořadí ve stromu typů rejstříku (zjevně dle názvu typu)
@@ -118,22 +132,6 @@ public class Output implements RecordProvider {
     }
 
     // TODO - JavaDoc - Lebeda
-    private static List<Record> getRecordsInternal(final RecordProvider recordProvider, final String code) {
-        // za samotný output
-        final List<Record> records = recordProvider.getRecords().stream()
-                .filter(record -> (!StringUtils.isNotBlank(code) || code.equals(record.getType().getCode()))) // pokud je vyplněno code, pak filtrovat
-                .collect(Collectors.toList());
-
-        // rekurzivně za jednotlivé podřízené node
-        for (RecordProvider provider : recordProvider.getRecordProviderChildern()) {
-            records.addAll(getRecordsInternal(provider, code));
-        }
-
-        // seřadit podle názvu (record)
-        return records.stream().sorted((o1, o2) -> o1.getRecord().compareTo(o1.getRecord())).collect(Collectors.toList());
-    }
-
-    // TODO - JavaDoc - Lebeda
     // vstupem je seznam kódu typů atributů a vrací se seznam hodnot těchto atributů řazených dle ???
     public List<Item> getNodeItems(Collection<String> codes) {
         return null;  // TODO Lebeda - ?? implementovat
@@ -151,6 +149,7 @@ public class Output implements RecordProvider {
 
     /**
      * Getter položky items
+     *
      * @return seznam items
      */
     public List<Item> getItems() {

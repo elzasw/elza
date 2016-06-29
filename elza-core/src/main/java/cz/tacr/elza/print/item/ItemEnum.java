@@ -23,4 +23,9 @@ public class ItemEnum extends AbstractItem<String> {
         return getValue();
     }
 
+    @Override
+    public String serialize() {
+        return getSpecification().getName();
+    }
+
 }

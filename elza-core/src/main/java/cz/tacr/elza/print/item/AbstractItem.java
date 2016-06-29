@@ -92,7 +92,17 @@ public abstract class AbstractItem<T> implements Item<T> {
 
     @Override
     public String serialize() {
-        return getSpecification() + ": " + serializeValue();
+        return getSpecification().getName() + ": " + serializeValue();
+    }
+
+    @Override
+    public String getSerialized() {
+        return serialize();
+    }
+
+    @Override
+    public String getSerializedValue() {
+        return serializeValue();
     }
 
     @Override

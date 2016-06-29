@@ -30,8 +30,9 @@ import java.util.stream.Collectors;
  * @author Martin Lebeda
  * @since 03.05.2016
  */
+
 @Service
-public class OutputFactory {
+public class OutputFactoryService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -86,12 +87,9 @@ public class OutputFactory {
 
     // TODO - JavaDoc - Lebeda
     // Factory metoda pro vytvoření logické struktury Output struktury
-    // TODO Lebeda - jak na práva???
-    public Output createOutput(int idOutput) {
-        final ArrOutput arrOutput = outputRepository.getOne(idOutput);
-
+    public Output createOutput(final ArrOutput arrOutput) {
         // naplnit output
-        final Output output = new Output(idOutput, outputService);// přiřadí id + callback
+        final Output output = new Output(arrOutput, outputService);// přiřadí id + callback
         output.setName(arrOutput.getOutputDefinition().getName());
         output.setInternal_code(arrOutput.getOutputDefinition().getInternalCode());
         output.setTypeCode(arrOutput.getOutputDefinition().getOutputType().getCode());
@@ -124,7 +122,7 @@ public class OutputFactory {
         // partyGroup k instituci
         final PartyGroup partyGroup = new PartyGroup();
         final ParParty parParty = arrFundInstitution.getParty();
-        final ParPartyGroup parPartyGroup = partyGroupRepository.getOne(parParty.getPartyId());
+        final ParPartyGroup parPartyGroup = partyGroupRepository.findOne(parParty.getPartyId());
         partyGroup.setScope(parPartyGroup.getScope());
         partyGroup.setFoundingNorm(parPartyGroup.getFoundingNorm());
         partyGroup.setOrganization(parPartyGroup.getOrganization());
@@ -163,7 +161,7 @@ public class OutputFactory {
         // zařadit items přímo přiřazené na output
         final List<ArrOutputItem> outputItems = outputService.getOutputItems(arrFundVersion, arrOutput.getOutputDefinition());
         outputItems.stream().forEach(arrOutputItem -> {
-            final ArrItem arrItem = itemRepository.getOne(arrOutputItem.getItemId());
+            final ArrItem arrItem = itemRepository.findOne(arrOutputItem.getItemId());
             final AbstractItem item = getItem(arrItem, output, null);
 //            item.setPosition(arrDescItem.getPosition()); TODO Lebeda - Kde vzít pozici itemu?
             output.getItems().add(item);
@@ -176,6 +174,7 @@ public class OutputFactory {
                         .append(o1.getNodeId(), o2.getNodeId())
                         .toComparison())
                 .forEach(arrNode -> nodes.addAll(getParentNodeByNode(arrNode, output)));
+        output.getNodes().clear(); // nahradit novou kolekcí
         output.getNodes().addAll(nodes);
 
         return output;
@@ -230,15 +229,18 @@ public class OutputFactory {
         final ArrLevel arrLevel = levelRepository.findNodeInRootTreeByNodeId(arrNode, rootArrNode, arrChange);
         final Node node = new Node(output, arrNode, arrLevel);
         node.setPosition(arrLevel.getPosition());
-//        node.setDepth(); TODO Lebeda - jak získám depth a to vůbec je
-        node.getRecords(); // TODO Lebeda - plnit návazné records
+
+        final List<ArrLevel> levelList = levelRepository.findAllParentsByNodeAndVersion(arrNode, arrFundVersion);
+        node.setDepth(levelList.size()+1);
+
+//        node.getRecords().add(); // TODO Lebeda - plnit návazné records
 
         // items navázané k node
         final List<ArrDescItem> descItems = arrangementService.getDescItems(arrFundVersion, arrNode);
         descItems.stream()
                 .sorted((o1, o2) -> o1.getPosition().compareTo(o2.getPosition()))
                 .forEach(arrDescItem -> {
-                    final ArrItem arrItem = itemRepository.getOne(arrDescItem.getItemId());
+                    final ArrItem arrItem = itemRepository.findOne(arrDescItem.getItemId());
 
                     final AbstractItem item = getItem(arrItem, output, node);
                     item.setPosition(arrDescItem.getPosition());

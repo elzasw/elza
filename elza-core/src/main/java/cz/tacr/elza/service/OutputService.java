@@ -3,25 +3,6 @@ package cz.tacr.elza.service;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputItem;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.NodeOutputRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
-import cz.tacr.elza.repository.OutputItemRepository;
-import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -29,6 +10,7 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,7 +20,6 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -806,7 +787,11 @@ public class OutputService {
             itemList = outputItemRepository.findByOutputAndChange(outputDefinition, version.getLockChange());
         }
 
-        return itemService.loadData(itemList);
+        final List<ArrOutputItem> arrOutputItems = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(itemList)) {
+            arrOutputItems.addAll(itemService.loadData(itemList));
+        }
+        return arrOutputItems;
     }
 
     private void publishChangeOutputItem(final ArrFundVersion version, final ArrOutputItem outputItem) {

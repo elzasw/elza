@@ -27,6 +27,7 @@ import java.io.*;
 @Service
 public class DmsService {
 
+    public static final String MIME_TYPE_APPLICATION_PDF = "application/pdf";
     /**
      * Složka se soubory DMS
      */
@@ -168,7 +169,7 @@ public class DmsService {
         IOUtils.closeQuietly(fileStream);
         IOUtils.closeQuietly(outputStream);
 
-        if (dmsFile.getMimeType().toLowerCase().equals("application/pdf")) {
+        if (dmsFile.getMimeType().toLowerCase().equals(MIME_TYPE_APPLICATION_PDF)) {
             PDDocument reader = PDDocument.load(outputFile);
             dmsFile.setPagesCount(reader.getNumberOfPages());
             reader.close();

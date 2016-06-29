@@ -1,9 +1,12 @@
 package cz.tacr.elza.print;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+
+import java.util.StringJoiner;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -16,10 +19,25 @@ public class Packet {
     private String storageNumber;
     private String state;
 
-    // TODO Lebeda -
     // TODO - JavaDoc - Lebeda
     public String serialize() {
-        return null;  // TODO Lebeda - Jak implementovat ???
+        StringJoiner sj = new StringJoiner(", ");
+        if (StringUtils.isNotBlank(type)) {
+            sj.add(type);
+        }
+        if (StringUtils.isNotBlank(typeCode)) {
+            sj.add(typeCode);
+        }
+        if (StringUtils.isNotBlank(typeShortcut)) {
+            sj.add(typeShortcut);
+        }
+        if (StringUtils.isNotBlank(storageNumber)) {
+            sj.add(storageNumber);
+        }
+        if (StringUtils.isNotBlank(state)) {
+            sj.add(state);
+        }
+        return sj.toString();
     }
 
     // TODO Lebeda - implementovat ???
