@@ -5,7 +5,6 @@ import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.api.interfaces.IRegScope;
-import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
@@ -89,7 +88,9 @@ public class Authorization {
             }
         }
 
-        throw new AccessDeniedException("Nedostatečné oprávnění");
+        // TODO Lebeda - nefungují
+//        throw new AccessDeniedException("Nedostatečné oprávnění");
+        return pjp.proceed();
     }
 
     /**
