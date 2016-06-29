@@ -41,8 +41,10 @@ var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {name, internalCode, temporary, outputTypeId}, create, handleSubmit, onClose, outputTypes} = this.props;
+        const {fields: {name, internalCode, temporary, templateId, outputTypeId}, create, handleSubmit, onClose, outputTypes, templates} = this.props;
         var submitForm = submitReduxForm.bind(this, validate)
+
+        console.log(111, templateId)
 
         return (
             <div className="add-output-form-container">
@@ -54,6 +56,10 @@ var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
                             <option key='-outputTypeId'/>
                             {outputTypes.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
                         </Input>}
+                        <Input type="select" label={i18n('arr.output.template')} {...templateId} {...decorateFormField(templateId)}>
+                            <option key='-templateId'/>
+                            {templates.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
+                        </Input>
                         {create && <Input type="checkbox" label={i18n('arr.output.temporary')} {...temporary} {...decorateFormField(temporary)} />}
                     </form>
                 </Modal.Body>
@@ -69,16 +75,18 @@ var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
 AddOutputForm.propTypes = {
     create: React.PropTypes.bool,
     initData: React.PropTypes.object,
-    onSubmitForm: React.PropTypes.func.isRequired
+    onSubmitForm: React.PropTypes.func.isRequired,
+    templates: React.PropTypes.array.isRequired
 };
 
 module.exports = reduxForm({
         form: 'addOutputForm',
-        fields: ['name', 'internalCode', 'temporary', 'outputTypeId'],
+        fields: ['name', 'internalCode', 'temporary', 'outputTypeId', "templateId"],
     },(state, props) => {
         return {
             initialValues: props.create ? {temporary: false} : props.initData,
-            outputTypes: state.refTables.outputTypes.items
+            outputTypes: state.refTables.outputTypes.items,
+            templates: state.refTables.templates.items,
         }
     },
     {/*load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addPacketForm', data})*/}

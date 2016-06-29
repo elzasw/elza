@@ -1727,7 +1727,7 @@ public class ArrangementController {
         Assert.notNull(param);
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode());
+        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId());
     }
 
     /**
@@ -2672,6 +2672,11 @@ public class ArrangementController {
          */
         private Integer outputTypeId;
 
+        /**
+         * Template id.
+         */
+        private Integer templateId;
+
         public String getName() {
             return name;
         }
@@ -2702,6 +2707,14 @@ public class ArrangementController {
 
         public void setOutputTypeId(Integer outputTypeId) {
             this.outputTypeId = outputTypeId;
+        }
+
+        public Integer getTemplateId() {
+            return templateId;
+        }
+
+        public void setTemplateId(Integer templateId) {
+            this.templateId = templateId;
         }
     }
 }

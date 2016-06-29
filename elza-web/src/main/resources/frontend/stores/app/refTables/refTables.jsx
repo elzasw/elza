@@ -14,6 +14,7 @@ import scopesData from './scopesData.jsx';
 import descItemTypes from './descItemTypes.jsx';
 import visiblePolicyTypes from './visiblePolicyTypes.jsx';
 import outputTypes from './outputTypes.jsx';
+import templates from './templates.jsx';
 
 const initialState = {
     ruleSet: ruleSet(),
@@ -29,7 +30,8 @@ const initialState = {
     scopesData: scopesData(),
     descItemTypes: descItemTypes(),
     visiblePolicyTypes: visiblePolicyTypes(),
-    outputTypes: outputTypes()
+    outputTypes: outputTypes(),
+    templates: templates(),
 };
 
 export default function refTables(state = initialState, action = {}) {
@@ -39,6 +41,13 @@ export default function refTables(state = initialState, action = {}) {
             return {
                 ...state,
                 partyList: partyList(state.partyList, action)
+            }
+        }
+        case types.REF_TEMPLATES_REQUEST:
+        case types.REF_TEMPLATES_RECEIVE:{
+            return {
+                ...state,
+                templates: templates(state.templates, action)
             }
         }
         case types.REF_REGISTRY_LIST_REQUEST:

@@ -24,6 +24,7 @@ import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
+import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 var classNames = require('classnames');
@@ -54,6 +55,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         this.dispatch(descItemTypesFetchIfNeeded());
         this.dispatch(packetTypesFetchIfNeeded());
         this.dispatch(calendarTypesFetchIfNeeded());
+        this.dispatch(templatesFetchIfNeeded());
 
         const fund = this.getActiveFund(this.props)
         if (fund) {
@@ -67,6 +69,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         this.dispatch(descItemTypesFetchIfNeeded());
         this.dispatch(packetTypesFetchIfNeeded());
         this.dispatch(calendarTypesFetchIfNeeded());
+        this.dispatch(templatesFetchIfNeeded());
 
         const fund = this.getActiveFund(nextProps)
         if (fund) {
@@ -137,7 +140,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
         this.dispatch(modalDialogShow(this, i18n('arr.output.title.edit'),
             <AddOutputForm
-                initData={{name: fundOutputDetail.outputDefinition.name, internalCode: fundOutputDetail.outputDefinition.internalCode}}
+                initData={{name: fundOutputDetail.outputDefinition.name, internalCode: fundOutputDetail.outputDefinition.internalCode, templateId: fundOutputDetail.outputDefinition.templateId}}
                 onSubmitForm={(data) => {this.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data))}}/>));
     }
 
@@ -335,7 +338,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     render() {
-        const {focus, arrRegion, splitter, userDetail, rulDataTypes, packetTypes, descItemTypes, calendarTypes} = this.props;
+        const {focus, arrRegion, splitter, templates, userDetail, rulDataTypes, packetTypes, descItemTypes, calendarTypes} = this.props;
 
         const fund = this.getActiveFund(this.props)
         var leftPanel, rightPanel
@@ -374,6 +377,7 @@ var ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                     calendarTypes={calendarTypes}
                     descItemTypes={descItemTypes}
                     packetTypes={packetTypes}
+                    templates={templates}
                     packets={packets}
                     rulDataTypes={rulDataTypes}
                     userDetail={userDetail}
@@ -426,6 +430,7 @@ function mapStateToProps(state) {
         descItemTypes: refTables.descItemTypes,
         packetTypes: refTables.packetTypes,
         ruleSet: refTables.ruleSet,
+        templates: refTables.templates,
     }
 }
 

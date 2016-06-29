@@ -5,6 +5,8 @@ package cz.tacr.elza.controller.vo;
  * @since 29.06.2016
  */
 public class RulTemplateVO {
+    /** Id. */
+    private Integer id;
     /** Kód. */
     private String code;
     /** N8yev. */
@@ -44,5 +46,13 @@ public class RulTemplateVO {
 
     public void setDirectory(final String directory) {
         this.directory = directory;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(final Integer id) {
+        this.id = id;
     }
 }

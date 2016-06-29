@@ -509,6 +509,10 @@ class WebApi{
                 });
     }
 
+    getTemplates() {
+        return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/templates');
+    }
+
     getRegisterTypes(partyTypeId) {
         return AjaxUtils.ajaxGet('/api/registryManagerV2/recordTypes', {partyTypeId: partyTypeId})
                 .then(json=>{

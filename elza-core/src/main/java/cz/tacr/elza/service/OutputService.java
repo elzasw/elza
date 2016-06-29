@@ -4,7 +4,6 @@ import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeOutput;
@@ -22,9 +21,9 @@ import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
+import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -37,7 +36,6 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,6 +57,9 @@ public class OutputService {
 
     @Autowired
     private OutputItemRepository outputItemRepository;
+
+    @Autowired
+    private TemplateRepository templateRepository;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -332,6 +333,7 @@ public class OutputService {
      * @param output       pojmenovaný výstup
      * @param name         název výstupu
      * @param internalCode kód výstupu
+     * @param templateId   id šablony
      * @return upravený výstup
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
@@ -339,7 +341,8 @@ public class OutputService {
     public ArrOutputDefinition updateNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                                  final ArrOutput output,
                                                  final String name,
-                                                 final String internalCode) {
+                                                 final String internalCode,
+                                                 final Integer templateId) {
         Assert.notNull(fundVersion);
         Assert.notNull(output);
         Assert.notNull(name);
@@ -356,6 +359,11 @@ public class OutputService {
 
         outputDefinition.setName(name);
         outputDefinition.setInternalCode(internalCode);
+        if (templateId != null) {
+            outputDefinition.setTemplate(templateRepository.findOne(templateId));
+        } else {
+            outputDefinition.setTemplate(null);
+        }
 
         outputDefinitionRepository.save(outputDefinition);
 

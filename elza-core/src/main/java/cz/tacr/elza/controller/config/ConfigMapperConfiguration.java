@@ -767,6 +767,7 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(RulTemplate.class, RulTemplateVO.class)
                 .byDefault()
+                .field("templateId", "id")
                 .register();
     }
 

@@ -89,7 +89,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
     }
 
     render() {
-        const {fundOutputDetail, outputTypes, fund, versionId, packets, packetTypes, descItemTypes, calendarTypes, rulDataTypes} = this.props;
+        const {fundOutputDetail, outputTypes, templates, fund, versionId, packets, packetTypes, descItemTypes, calendarTypes, rulDataTypes} = this.props;
         
         if (fundOutputDetail.id === null) {
             return <div className='arr-output-detail-container'></div>
@@ -101,8 +101,13 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
 
         var outputType = false;
         if (outputTypes) {
-            const index = indexById(outputTypes,fundOutputDetail.outputDefinition.outputTypeId);
+            const index = indexById(outputTypes, fundOutputDetail.outputDefinition.outputTypeId);
             outputType = index !== null ? outputTypes[index].name : false;
+        }
+        var template = false;
+        if (outputTypes) {
+            const index = indexById(templates.items, fundOutputDetail.outputDefinition.templateId);
+            template = index !== null ? templates.items[index].name : false;
         }
 
         var form
@@ -131,6 +136,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
                 <div className={"arr-output-detail-container"}>
                     <Input type="text" label={i18n('arr.output.name')} disabled value={fundOutputDetail.outputDefinition.name}/>
                     <Input type="text" label={i18n('arr.output.internalCode')} disabled value={fundOutputDetail.outputDefinition.internalCode}/>
+                    {template && <Input type="text" label={i18n('arr.output.template')} disabled value={template}/>}
                     {outputType && <Input type="text" label={i18n('arr.output.outputType')} disabled value={outputType}/>}
 
                     {form}
@@ -155,6 +161,7 @@ ArrOutputDetail.propTypes = {
     calendarTypes: React.PropTypes.object.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
+    templates: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     userDetail: React.PropTypes.object.isRequired,
