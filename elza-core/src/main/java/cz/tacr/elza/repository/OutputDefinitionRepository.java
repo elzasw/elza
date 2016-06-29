@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -39,4 +40,7 @@ public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefin
 
 
     List<ArrOutputDefinition> findByFund(ArrFund fund);
+
+    @Query("SELECT no FROM arr_output_definition no JOIN no.outputs o WHERE o.outputId=?1")
+    ArrOutputDefinition findByOutputId(Integer outputId);
 }

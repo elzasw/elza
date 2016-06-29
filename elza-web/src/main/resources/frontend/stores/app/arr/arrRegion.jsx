@@ -25,6 +25,7 @@ import {isFundPacketsAction} from 'actions/arr/fundPackets.jsx'
 import {isFundFilesAction} from 'actions/arr/fundFiles.jsx'
 import {isFundActionAction} from 'actions/arr/fundAction.jsx'
 import {isFundOutput} from 'actions/arr/fundOutput.jsx'
+import {isFundOutputFilesAction} from 'actions/arr/fundOutputFiles.jsx'
 
 const initialState = {
     activeIndex: null,
@@ -97,6 +98,7 @@ export default function arrRegion(state = initialState, action) {
         || isFundFilesAction(action)
         || isFundActionAction(action)
         || isFundOutput(action)
+        || isFundOutputFilesAction(action)
     ) {
         var index = indexById(state.funds, action.versionId, "versionId")
         if (index !== null) {
@@ -196,6 +198,8 @@ export default function arrRegion(state = initialState, action) {
         case types.FUND_FUND_SELECT_SUBNODE:
         case types.OUTPUT_CHANGES:
         case types.OUTPUT_CHANGES_DETAIL:
+        case types.GENERATED_OUTPUT:
+            console.log('arr');
             var index = indexById(state.funds, action.versionId, "versionId");
             return processFund(state, action, index);
         case types.FUND_FUNDS_RECEIVE:

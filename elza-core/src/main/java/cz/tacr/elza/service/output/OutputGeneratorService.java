@@ -1,11 +1,17 @@
 package cz.tacr.elza.service.output;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +49,12 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     private OutputRepository outputRepository;
 
     @Autowired
+    private OutputDefinitionRepository outputDefinitionRepository;
+
+    @Autowired
+    private FundRepository fundRepository;
+
+    @Autowired
     private OutputResultRepository outputResultRepository;
 
     @Autowired
@@ -73,10 +85,6 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         Assert.isNull(outputResult, "Tento výstup byl již vygenerován.");
         outputQueue.add(getWorker(arrOutput));
         runNextOutput(); // zkusí sputit frontu
-
-
-        // TODO Lebeda - zapracovat po novu
-        // eventNotificationService.publishEvent(EventFactory.createIdInVersionEvent(EventType.OUTPUT_GENERATED, arrangementService.getOpenVersionByFundId(arrOutput.getOutputDefinition().getFund().getFundId()), arrOutput.getOutputId()));
     }
 
     // TODO - JavaDoc - Lebeda
@@ -106,13 +114,19 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     @Override
     public void onSuccess(OutputGeneratorWorker result) {
         final Integer arrOutputId = result.getArrOutputId();
-        ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
+        //ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
+        ArrOutputDefinition byOutput = outputDefinitionRepository.findByOutputId(arrOutputId);
+        ArrFund fund = fundRepository.findByOutputDefinitionId(byOutput.getOutputDefinitionId());
 
-        // TODO Lebeda - dořešit
-//        eventNotificationService.publishEvent(EventFactory.createIdInVersionEvent(EventType.OUTPUT_GENERATED,
-//                arrangementService.getOpenVersionByFundId(arrOutput.getOutputDefinition().getFund().getFundId()),
-//                arrOutputId));
-
+        eventNotificationService.forcePublish(
+                EventFactory.createIdInVersionEvent(
+                        EventType.OUTPUT_GENERATED,
+                        arrangementService.getOpenVersionByFundId(
+                                fund.getFundId()
+                        ),
+                        arrOutputId
+                )
+        );
         worker = null;
         logger.info("Worker doběhl správně");
         runNextOutput();

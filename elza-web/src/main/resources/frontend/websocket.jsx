@@ -4,6 +4,7 @@ import {EmailSettingsActions, ApplicationActions} from 'actions/index.jsx';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
 import {buklActionStateChange} from 'actions/arr/bulkActions.jsx';
 import {store} from 'stores/app/AppStore.jsx';
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 
 import {
     changeConformityInfo,
@@ -196,7 +197,7 @@ function processEvents(values) {
                 fundDelete(value);
                 break;
             
-            case 'GENERATED_OUTPUT':
+            case 'OUTPUT_GENERATED':
                 outputGenerated(value);
                 break;
 
@@ -257,7 +258,8 @@ function fundDelete(value) {
 }
 
 function outputGenerated(value) {
-    store.dispatch(fundOutputGenerated(value.versionId, value.entityIds));
+    store.dispatch(fundOutputGenerated(value.versionId, value.entityId));
+    store.dispatch(addToastrSuccess('Výstup byl vygenerován.'));
 }
 
 function outputChanges(value) {

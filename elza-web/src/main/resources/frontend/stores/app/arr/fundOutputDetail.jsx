@@ -18,8 +18,8 @@ export default function fundOutputDetail(state = initialState, action = {}) {
             subNodeForm: subNodeForm(state.subNodeForm, action),
         };
         return consolidateState(state, result);
-    }    
-    
+    }
+
     switch (action.type) {
         case types.STORE_SAVE:{
             const {id} = state;
@@ -35,6 +35,16 @@ export default function fundOutputDetail(state = initialState, action = {}) {
                 currentDataKey: '',
                 subNodeForm: subNodeForm()
             }
+        }
+        case types.GENERATED_OUTPUT:{
+            console.log(action);
+            if (action.outputId === state.id) {
+                return {
+                    ...state,
+                    currentDataKey: ''
+                }
+            }
+            return state
         }
         case types.OUTPUT_CHANGES:
         case types.OUTPUT_CHANGES_DETAIL:{

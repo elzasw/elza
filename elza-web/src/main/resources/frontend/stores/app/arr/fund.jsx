@@ -214,6 +214,8 @@ export function fund(state, action) {
             }
         case types.OUTPUT_CHANGES:
         case types.OUTPUT_CHANGES_DETAIL:
+        case types.GENERATED_OUTPUT:
+            console.log('fund');
             var result = {
                 ...state,
                 fundOutput: fundOutput(state.fundOutput, action),

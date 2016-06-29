@@ -8,7 +8,6 @@ export function isFundOutputFilesAction(action) {
         case types.FUND_OUTPUT_FILES_REQUEST:
         case types.FUND_OUTPUT_FILES_RECEIVE:
         case types.FUND_OUTPUT_FILES_FILTER:
-        case types.GENERATED_OUTPUT:
             return true;
         default:
             return false

@@ -27,6 +27,7 @@ export default function fundOutputFiles(state = initialState, action = {}) {
             }
         }
         case types.GENERATED_OUTPUT:{
+            console.log(action);
             return {
                 ...state,
                 currentDataKey: ''

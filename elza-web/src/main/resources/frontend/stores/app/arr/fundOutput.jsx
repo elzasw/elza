@@ -67,12 +67,13 @@ export default function fundOutput(state = initialState, action = {}) {
             return consolidateState(state, result)
         }
         case types.GENERATED_OUTPUT:{
+            console.log('test');
             const result = {
                 ...state,
                 fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
                 fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action)
             };
-            const index = indexById(action.outputIds);
+            const index = indexById(action.outputId);
             if (index !== null) {
                 result.currentDataKey = ''
             }

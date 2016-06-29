@@ -41,6 +41,9 @@ public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.a
     @OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
     private List<ArrFundVersion> versions;
 
+    @OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
+    private List<ArrOutputDefinition> outputDefinitions;
+
     @Override
     public Integer getFundId() {
         return fundId;
@@ -107,5 +110,13 @@ public class ArrFund extends AbstractVersionableEntity implements cz.tacr.elza.a
     @Override
     public ArrFund getFund() {
         return this;
+    }
+
+    public List<ArrOutputDefinition> getOutputDefinitions() {
+        return outputDefinitions;
+    }
+
+    public void setOutputDefinitions(List<ArrOutputDefinition> outputDefinitions) {
+        this.outputDefinitions = outputDefinitions;
     }
 }
