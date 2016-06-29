@@ -6,7 +6,7 @@ require ('./FundNodesList.less')
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {ListBox, Icon, AbstractReactComponent, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, AddRemoveList, i18n} from 'components/index.jsx';
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Button} from 'react-bootstrap';
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
@@ -31,7 +31,7 @@ var FundNodesList = class FundNodesList extends AbstractReactComponent {
         }
     }
 
-    handleRenderItem(node, index) {
+    handleRenderItem(node) {
         const {readOnly} = this.props
 
         const refMark = <div className="reference-mark">{createReferenceMarkString(node)}</div>
@@ -44,27 +44,24 @@ var FundNodesList = class FundNodesList extends AbstractReactComponent {
 
         return (
             <div className="item">
-                <div className="item-container">
-                    {refMark}
-                    {name}
-                </div>
-                <div className="actions-container">
-                    {!readOnly && <Button onClick={this.handleDeleteItem.bind(this, node)}><Icon glyph="fa-trash"/></Button>}
-                </div>
+                {refMark}
+                {name}
             </div>
         )
     }
     
     render() {
-        const {nodes} = this.props
+        const {nodes, onAddNode, readOnly} = this.props
 
         return (
-            <ListBox
-                className="fund-nodes-list-listbox"
+            <AddRemoveList
+                readOnly={readOnly}
                 items={nodes}
-                renderItemContent={this.handleRenderItem}
-                onSelect={this.handleSelectItem}
-                onDelete={this.handleDeleteItem}
+                onAdd={onAddNode}
+                onRemove={this.handleDeleteItem}
+                addTitle="arr.fund.nodes.title.select"
+                removeTitle="arr.fund.nodes.title.remove"
+                renderItem={this.handleRenderItem}
             />
         )
     }
@@ -72,7 +69,8 @@ var FundNodesList = class FundNodesList extends AbstractReactComponent {
 
 FundNodesList.propTypes = {
     nodes: React.PropTypes.array.isRequired,
-    onDeleteNode: React.PropTypes.func,
+    onDeleteNode: React.PropTypes.func.isRequired,
+    onAddNode: React.PropTypes.func.isRequired,
 }
 
 module.exports = connect()(FundNodesList);

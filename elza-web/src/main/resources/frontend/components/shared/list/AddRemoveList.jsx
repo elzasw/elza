@@ -33,16 +33,17 @@ var AddRemoveList = class AddRemoveList extends AbstractReactComponent {
     }
 
     render() {
-        const {items, className, onRemove, onAdd, renderItem, addTitle, removeTitle} = this.props;
-
+        const {items, readOnly, className, onAdd, renderItem, addTitle, removeTitle} = this.props;
 
         const groups = items.map((item, index) => {
             return (
-                <div className="item">
+                <div className="item-container">
                     {renderItem(item, index)}
-                    <NoFocusButton className="remove" onClick={this.handleRemove.bind(this, item, index)} title={i18n(removeTitle)}>
-                        <Icon glyph="fa-remove"/>
-                    </NoFocusButton>
+                    {!readOnly && <div className="item-actions-container">
+                        <NoFocusButton className="remove" onClick={this.handleRemove.bind(this, item, index)} title={i18n(removeTitle)}>
+                            <Icon glyph="fa-remove"/>
+                        </NoFocusButton>
+                    </div>}
                 </div>
             )
         })
@@ -52,11 +53,11 @@ var AddRemoveList = class AddRemoveList extends AbstractReactComponent {
                 <div className="item-list-container">
                     {groups}
                 </div>
-                <div className="actions">
-                    <NoFocusButton onClick={this.props.onAdd} title={i18n(addTitle)}>
+                {!readOnly && <div className="actions-container">
+                    <NoFocusButton onClick={onAdd} title={i18n(addTitle)}>
                         <Icon glyph="fa-plus"/>
                     </NoFocusButton>
-                </div>
+                </div>}
             </div>
         )        
     }
@@ -69,11 +70,13 @@ AddRemoveList.propTypes = {
     renderItem: React.PropTypes.func.isRequired,
     addTitle: React.PropTypes.string,
     removeTitle: React.PropTypes.string,
+    readOnly: React.PropTypes.bool.isRequired,
 };
 
 AddRemoveList.defaultProps = {
     addTitle: "global.action.add",
     removeTitle: "global.action.remove",
+    readOnly: false,
     renderItem: (item) => <div>{item.name}</div>
 };
 

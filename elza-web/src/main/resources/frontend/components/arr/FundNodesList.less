@@ -22,7 +22,7 @@
     }
 }
 
-.fund-nodes-list-listbox {
+.fund-nodes-list-listbox, .list-add-remove-container {
     background: @fa-file-tree-bg-list;
     border: 1px solid @fa-file-tree-border;
     flex-grow: 1;
@@ -30,36 +30,30 @@
     overflow: hidden;
     overflow-y: auto;
 
-    .listbox-item {
+    .item-container {
         display: flex;
         flex-direction: column;
+        padding: 5px;
+
+        .node-register-form-standard-actions;
 
         .item {
-            padding: 5px;
+            flex-grow: 1;
+            //width: 100%;
 
-            .node-register-form-standard-actions;
-
-            display: flex;
-
-            .item-container {
-                flex-grow: 1;
-                //width: 100%;
-
-                .reference-mark {
-                    height: 1em;
-                    color: @tree-node-reference-mark;
-                    font-size: 0.7em;
-                }
-                //.name {
-                //    overflow: hidden;
-                //    text-overflow: ellipsis;
-                //    white-space: nowrap;
-                //}
+            .reference-mark {
+                height: 1em;
+                color: @tree-node-reference-mark;
+                font-size: 0.7em;
             }
+            //.name {
+            //    overflow: hidden;
+            //    text-overflow: ellipsis;
+            //    white-space: nowrap;
+            //}
+        }
 
-            .actions-container {
-                flex-shrink: 0;
-            }
+        .actions-container {
         }
     }
 }

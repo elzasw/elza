@@ -9,13 +9,15 @@ import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
 import Utils from "components/Utils.jsx";
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
-import {Loading, i18n, OutputSubNodeForm, AbstractReactComponent} from 'components/index.jsx';
+import {Loading, i18n, OutputSubNodeForm, FundNodesAddForm, FundNodesList, AbstractReactComponent} from 'components/index.jsx';
 import {Input} from 'react-bootstrap';
 import {fundOutputDetailFetchIfNeeded} from 'actions/arr/fundOutput.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
+import {fundOutputRemoveNodes, fundOutputAddNodes } from 'actions/arr/fundOutput.jsx'
+import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 var keyModifier = Utils.getKeyModifier()
@@ -31,7 +33,8 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('trySetFocus', 'handleShortcuts');
+        this.bindMethods('trySetFocus', 'handleShortcuts', "handleRemoveNode",
+            "handleRenderNodeItem", "handleAddNodes");
     }
 
     componentDidMount() {
@@ -88,6 +91,49 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
         return { shortcuts: shortcutManager };
     }
 
+    handleRemoveNode(node) {
+        const {fund, fundOutputDetail} = this.props;
+
+        if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
+            this.dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]))
+        }
+    }
+
+    handleRenderNodeItem(node) {
+        const {readOnly} = this.props
+
+        const refMark = <div className="reference-mark">{createReferenceMarkString(node)}</div>
+
+        var name = node.name ? node.name : <i>{i18n('fundTree.node.name.undefined', node.id)}</i>;
+        if (name.length > NODE_NAME_MAX_CHARS) {
+            name = name.substring(0, NODE_NAME_MAX_CHARS - 3) + '...'
+        }
+        name = <div title={name} className="name">{name}</div>
+
+        return (
+            <div className="item">
+                <div className="item-container">
+                    {refMark}
+                    {name}
+                </div>
+                <div className="actions-container">
+                    {!readOnly && <Button onClick={this.handleDeleteItem.bind(this, node)}><Icon glyph="fa-trash"/></Button>}
+                </div>
+            </div>
+        )
+    }
+
+    handleAddNodes() {
+        const {fund, fundOutputDetail} = this.props;
+
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
+            <FundNodesAddForm
+                onSubmitForm={(ids, nodes) => {
+                    this.dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids))
+                }}
+            />))
+    }
+
     render() {
         const {fundOutputDetail, outputTypes, templates, fund, versionId, packets, packetTypes, descItemTypes, calendarTypes, rulDataTypes} = this.props;
         
@@ -138,6 +184,16 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
                     <Input type="text" label={i18n('arr.output.internalCode')} disabled value={fundOutputDetail.outputDefinition.internalCode}/>
                     {template && <Input type="text" label={i18n('arr.output.template')} disabled value={template}/>}
                     {outputType && <Input type="text" label={i18n('arr.output.outputType')} disabled value={outputType}/>}
+
+                    <div className="fund-nodes-container">
+                        <h2>{i18n("arr.output.title.nodes")}</h2>
+                        <FundNodesList
+                            nodes={fundOutputDetail.outputDefinition.nodes}
+                            onDeleteNode={this.handleRemoveNode}
+                            onAddNode={this.handleAddNodes}
+                            readOnly={fundOutputDetail.lockDate ? true : false}
+                        />
+                    </div>
 
                     {form}
                 </div>

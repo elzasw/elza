@@ -125,9 +125,10 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                 </Input>
                 </div>
                 {description}
-                <Button onClick={this.handleFormNodesAdd}><Icon glyph="fa-plus"/> {i18n('arr.fundAction.form.addNodes')}</Button>
+                <h2>{i18n("arr.fundAction.title.nodes")}</h2>
                 <FundNodesList
                     nodes={form.nodes}
+                    onAddNode={this.handleFormNodesAdd}
                     onDeleteNode={this.handleFormNodeDelete}
                 />
             </div>

@@ -79,10 +79,8 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             'trySetFocus',
             'handleShortcuts',
             'handleAddOutput',
-            'handleAddNodes',
             'handleUsageEnd',
             'handleDelete',
-            'handleRemoveNode',
             'handleBulkActions',
             'handleEditOutput',
             'renderRightPanel',
@@ -133,7 +131,8 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 })
                 focusWasSet()
             }
-        }    }
+        }
+    }
 
     getActiveFund(props = this.props) {
         const arrRegion = props.arrRegion;
@@ -185,26 +184,6 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             <AddOutputForm
                 initData={{name: fundOutputDetail.outputDefinition.name, internalCode: fundOutputDetail.outputDefinition.internalCode, templateId: fundOutputDetail.outputDefinition.templateId}}
                 onSubmitForm={(data) => {this.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data))}}/>));
-    }
-
-    handleAddNodes() {
-        const fund = this.getActiveFund()
-        const fundOutputDetail = fund.fundOutput.fundOutputDetail
-
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
-            <FundNodesAddForm
-                onSubmitForm={(ids, nodes) => {
-                    this.dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids))
-                }}
-            />))
-    }
-
-    handleRemoveNode(node) {
-        if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
-            const fund = this.getActiveFund()
-            const fundOutputDetail = fund.fundOutput.fundOutputDetail
-            this.dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]))
-        }
     }
 
     handleBulkActions() {
@@ -311,9 +290,6 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                                 <div><span className="btnText">{i18n('ribbon.action.arr.output.edit')}</span></div>
                             </Button>
                         );
-                        itemActions.push(
-                            <Button key="add-fund-nodes" onClick={this.handleAddNodes}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.nodes.add')}</span></div></Button>
-                        )
                         itemActions.push(
                             <Button key="add-item" onClick={this.handleAddDescItemType}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.item.add')}</span></div></Button>
                         )
@@ -485,21 +461,10 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                     userDetail={userDetail}
                     fundOutputDetail={fundOutput.fundOutputDetail}
                 />;
-                /*
-
-                 <div className="fund-nodes-container">
-                 <FundNodesList
-                 nodes={fundOutputDetail.outputDefinition.nodes}
-                 onDeleteNode={this.handleRemoveNode}
-                 readOnly={fundOutputDetail.lockDate ? true : false}
-                 />
-                 </div>
-
-                 */
                 const fundOutputDetail = fund.fundOutput.fundOutputDetail;
                 if (fundOutputDetail.id !== null && fundOutputDetail.fetched) {
                     rightPanel = (
-                        <div className="fund-nodes-container">{this.renderRightPanel()}</div>
+                        <div className="fund-output-right-panel-container">{this.renderRightPanel()}</div>
                     )
                 }
             } else {

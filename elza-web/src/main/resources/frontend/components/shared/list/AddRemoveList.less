@@ -22,15 +22,20 @@
     }
 
     .item-list-container {
-        .item {
+        .item-container {
             display: flex;
             flex-direction: row;
-            .btn.remove {
 
+            &:hover {
+                background: @tree-node-label-active-bg
+            }
+
+            .item-actions-container {
+                flex-shrink: 0;
             }
         }
     }
-    .actions {
+    .actions-container {
 
     }
 }
