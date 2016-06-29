@@ -78,6 +78,9 @@ public class ArrangementService {
     private RulesExecutor rulesExecutor;
 
     @Autowired
+    private ItemRepository itemRepository;
+
+    @Autowired
     private IEventNotificationService eventNotificationService;
 
     @Autowired
@@ -672,7 +675,7 @@ public class ArrangementService {
      * @return Identifikátor objektu
      */
     public Integer getNextDescItemObjectId() {
-        Integer maxDescItemObjectId = descItemRepository.findMaxDescItemObjectId();
+        Integer maxDescItemObjectId = itemRepository.findMaxItemObjectId();
         if (maxDescItemObjectId == null) {
             maxDescItemObjectId = 0;
         }
