@@ -133,7 +133,7 @@ var messages = {
     "arr.output.panel.title.function": "Funkce",
     "arr.output.panel.title.template": "Šablony",
     "arr.output.panel.title.output": "Výstupy",
-    "arr.output.panel.template.noSettings": "Vybraná šablona nemá žádné nastavení",
+    "arr.output.panel.template.noSettings": "Vybraná šablona nemá žádná nastavení",
     "arr.output.panel.files.notGenerated" : "Výstup nebyl vygenerován",
 
     "arr.fundAction.noFa" : "Není vybrán žádný archivní soubor",

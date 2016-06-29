@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputResult;
 import org.springframework.stereotype.Repository;
 
@@ -13,4 +14,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OutputResultRepository extends ElzaJpaRepository<ArrOutputResult, Integer> {
 
+    ArrOutputResult findByOutputDefinition(final ArrOutputDefinition outputDefinition);
 }

@@ -13,7 +13,8 @@ const initialState = {
     currentDataKey: '',
     outputs: [],
     fundOutputDetail: fundOutputDetail(),
-}
+    fundOutputFiles: fundOutputFiles()
+};
 
 export default function fundOutput(state = initialState, action = {}) {
     if (isFundOutputDetail(action) || outputFormActions.isSubNodeFormAction(action, "OUTPUT")) {
@@ -37,12 +38,14 @@ export default function fundOutput(state = initialState, action = {}) {
                 isFetching: false,
                 fetched: false,
                 currentDataKey: '',
-                fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action)
+                fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
+                fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action)
             }
         }
         case types.STORE_SAVE:{
             return {
-                fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action)
+                fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
+                fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action)
             }
         }
         case types.OUTPUT_CHANGES_DETAIL:{

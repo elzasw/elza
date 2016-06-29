@@ -169,6 +169,8 @@ public class DmsService {
         IOUtils.closeQuietly(fileStream);
         IOUtils.closeQuietly(outputStream);
 
+        dmsFile.setFileSize((int)outputFile.length());
+
         if (dmsFile.getMimeType().toLowerCase().equals(MIME_TYPE_APPLICATION_PDF)) {
             PDDocument reader = PDDocument.load(outputFile);
             dmsFile.setPagesCount(reader.getNumberOfPages());

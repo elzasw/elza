@@ -27,12 +27,12 @@ export function fetchFundOutputFilesIfNeeded(versionId, outputResultId) {
             return
         }
 
-        const fundFiles = fund.fundFiles;
-        const dataKey = _dataGridKey(fundFiles);
-        if (fundFiles.currentDataKey !== dataKey) {
+        const fundOutputFiles = fund.fundOutput.fundOutputFiles;
+        const dataKey = _dataGridKey(fundOutputFiles);
+        if (fundOutputFiles.currentDataKey !== dataKey) {
             dispatch(_dataRequest(versionId, dataKey));
 
-            WebApi.findFundOutputFiles(outputResultId, fundFiles.filterText)
+            WebApi.findFundOutputFiles(outputResultId, fundOutputFiles.filterText)
             .then(response => {
                 const newFund = objectById(state.arrRegion.funds, versionId, 'versionId');
                 if (newFund !== null) {

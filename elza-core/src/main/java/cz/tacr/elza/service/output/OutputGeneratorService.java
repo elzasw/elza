@@ -1,7 +1,9 @@
 package cz.tacr.elza.service.output;
 
 import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import org.apache.commons.collections.CollectionUtils;
@@ -9,8 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
@@ -39,6 +43,9 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     private OutputRepository outputRepository;
 
     @Autowired
+    private OutputResultRepository outputResultRepository;
+
+    @Autowired
     private EventNotificationService eventNotificationService;
 
     @Autowired
@@ -48,8 +55,22 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     @Qualifier("threadPoolTaskExecutor")
     private ThreadPoolTaskExecutor taskExecutor;
 
+    @Value("${elza.templates.templatesDir}")
+    private String templatesDir;
+
+    /**
+     * Získání cesty ke složce šablon
+     *
+     * @return cesta ke složce šablon
+     */
+    public String getTemplatesDir() {
+        return templatesDir;
+    }
+
     // TODO - JavaDoc - Lebeda
     public void generateOutput(ArrOutput arrOutput) {
+        ArrOutputResult outputResult = outputResultRepository.findByOutputDefinition(arrOutput.getOutputDefinition());
+        Assert.isNull(outputResult, "Tento výstup byl již vygenerován.");
         outputQueue.add(getWorker(arrOutput));
         runNextOutput(); // zkusí sputit frontu
 

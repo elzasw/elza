@@ -498,7 +498,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
     renderOutputPanel() {
         const activeFund = this.getActiveFund();
-        const {fundOutputDetail} = activeFund.fundOutput;
+        const {fundOutput : {fundOutputDetail, fundOutputFiles}} = activeFund;
         if (fundOutputDetail.outputDefinition.outputResultId === null) {
             return <div>{i18n('arr.output.panel.files.notGenerated')}</div>
         }
@@ -507,7 +507,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 ref="fundOutputFiles"
                 versionId={activeFund.versionId}
                 outputResultId={fundOutputDetail.outputDefinition.outputResultId}
-                
+                {...fundOutputFiles}
             />
         }
         return <Loading />
