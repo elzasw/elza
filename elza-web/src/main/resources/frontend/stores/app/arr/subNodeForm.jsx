@@ -1,7 +1,6 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {i18n} from 'components/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {createDescItemFromDb, getItemType, updateFormData, createDescItem, consolidateDescItems} from './subNodeFormUtils.jsx'
 var subNodeFormUtils = require('./subNodeFormUtils.jsx')
 import {validateInt, validateDouble, validateCoordinatePoint} from 'components/validate.jsx'
@@ -191,7 +190,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     if (loc.descItem.validateTimer) {
                         clearTimeout(loc.descItem.validateTimer);
                     }
-                    var fc = () => action.dispatch(nodeFormActions.fundSubNodeFormValueValidate(action.versionId, action.routingKey, action.valueLocation));
+                    var fc = () => action.dispatch(action.formActions.fundSubNodeFormValueValidate(action.versionId, action.routingKey, action.valueLocation));
                     loc.descItem.validateTimer = setTimeout(fc, 250);
                     break;
                 default:
@@ -237,6 +236,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             state.formData = {...state.formData};
             return {...state};
         case types.CHANGE_NODES:
+        case types.CHANGE_OUTPUTS:
             return {...state, dirty: true}
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
             state.data.parent = action.copySiblingResult.parent;

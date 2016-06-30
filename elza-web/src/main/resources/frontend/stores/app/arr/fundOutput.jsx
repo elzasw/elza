@@ -48,7 +48,8 @@ export default function fundOutput(state = initialState, action = {}) {
                 fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action)
             }
         }
-        case types.OUTPUT_CHANGES_DETAIL:{
+        case types.OUTPUT_CHANGES_DETAIL:
+        case types.CHANGE_OUTPUTS: {
             const result = {
                 ...state,
                 fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action)

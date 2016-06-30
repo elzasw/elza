@@ -67,6 +67,14 @@ export function changeNodes(versionId, nodeIds) {
     }
 }
 
+export function changeOutputs(versionId, outputDefinitionIds) {
+    return {
+        type: types.CHANGE_OUTPUTS,
+        versionId,
+        outputDefinitionIds
+    }
+}
+
 export function changeDeleteLevel(versionId, nodeId, parentNodeId) {
 
     return {

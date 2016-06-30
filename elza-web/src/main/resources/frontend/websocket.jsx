@@ -13,6 +13,7 @@ import {
     changeFiles,
     changePackets,
     changeNodes,
+    changeOutputs,
     changeDeleteLevel,
     changeAddLevel,
     changeApproveVersion,
@@ -132,7 +133,9 @@ function processEvents(values) {
             case 'NODES_CHANGE':
                 nodesChange(value);
                 break;
-
+            case 'OUTPUT_ITEM_CHANGE':
+                outputItemChange(value);
+                break;
             case 'PACKETS_CHANGE':
                 packetsChangeEvent(value);
                 break;
@@ -321,6 +324,9 @@ function filesChangeEvent(value) {
 
 function nodesChange(value) {
     store.dispatch(changeNodes(value.versionId, value.entityIds));
+}
+function outputItemChange(value) {
+    store.dispatch(changeOutputs(value.versionId, [value.outputDefinitionId]));
 }
 
 function deleteLevelChange(value) {

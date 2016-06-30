@@ -338,7 +338,8 @@ class ItemFormActions {
                 routingKey,
                 valueLocation,
                 value,
-                dispatch
+                dispatch,
+                formActions: this,
             })
 
             if (forceStore) {

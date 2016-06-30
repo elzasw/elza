@@ -2,6 +2,7 @@ import * as types from 'actions/constants/ActionTypes.js';
 import subNodeForm from './subNodeForm.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import {consolidateState} from 'components/Utils.jsx'
+import {indexById} from 'stores/app/utils.jsx';
 
 const initialState = {
     id: null,
@@ -83,6 +84,15 @@ export default function fundOutputDetail(state = initialState, action = {}) {
                 fetched: true
             }
         }
+        case types.CHANGE_OUTPUTS:
+            if (indexById(action.outputDefinitionIds, state.id)) {
+                return {
+                    ...state,
+                    subNodeForm: subNodeForm(state.subNodeForm, action),
+                }
+            } else {
+                return state;
+            }
         case types.FUND_OUTPUT_DETAIL_CLEAR:
             return initialState;
         default:
