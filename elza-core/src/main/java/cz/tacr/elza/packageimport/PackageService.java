@@ -1038,6 +1038,9 @@ public class PackageService {
     private void deleteTemplates(File dirTemplates, List<RulTemplate> rulTemplateActual) throws IOException {
         for (RulTemplate template : rulTemplateActual) {
             File dirFile = new File(dirTemplates + File.separator + template.getDirectory());
+            if (!dirFile.exists()) {
+                continue;
+            }
             for (File file : dirFile.listFiles()) {
                 deleteFile(dirFile, file.getName());
             }
