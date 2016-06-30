@@ -5,6 +5,7 @@ package cz.tacr.elza.print;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.print.item.Item;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -14,6 +15,7 @@ import org.springframework.util.Assert;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,6 +77,19 @@ public class Node implements RecordProvider {
                 .filter(item -> codes.contains(item.getType().getCode()))
                 .sorted(Item::compareToItemViewOrderPosition)
                 .collect(Collectors.toList());
+    }
+
+    // TODO - JavaDoc - Lebeda
+    public String getItemsValueByCode(@NotNull String code) {
+        return getItems(Collections.singletonList(code)).stream()
+                .map(Item::serializeValue)
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.joining(", "));
+    }
+
+    // TODO - JavaDoc - Lebeda
+    public Node getNode() {
+        return this;
     }
 
     // TODO - JavaDoc - Lebeda

@@ -19,12 +19,12 @@ public class ItemEnum extends AbstractItem<String> {
 
     @Override
     public String serializeValue() {
-        return getValue();
+        return getSpecification().getName();
     }
 
     @Override
     public String serialize() {
-        return getSpecification().getName();
+        return serializeValue();
     }
 
 }

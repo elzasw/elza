@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.output;
 
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -30,6 +31,7 @@ import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
@@ -40,6 +42,7 @@ import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.Output;
 import cz.tacr.elza.print.Packet;
 import cz.tacr.elza.print.Record;
+import cz.tacr.elza.print.RecordType;
 import cz.tacr.elza.print.UnitDate;
 import cz.tacr.elza.print.UnitDateText;
 import cz.tacr.elza.print.item.AbstractItem;
@@ -66,6 +69,12 @@ import cz.tacr.elza.repository.PartyGroupRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.OutputService;
+import ma.glasnost.orika.CustomMapper;
+import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MapperFactory;
+import ma.glasnost.orika.MappingContext;
+import ma.glasnost.orika.impl.DefaultMapperFactory;
+import ma.glasnost.orika.metadata.MappingDirection;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.slf4j.Logger;
@@ -97,8 +106,14 @@ public class OutputFactoryService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private MapperFactory mapperFactory;
+    private MapperFacade mapper;
+
     @Autowired
     private OutputRepository outputRepository;
+
+    @Autowired
+    private OutputGeneratorWorkerFactory outputGeneratorFactory;
 
     @Autowired
     private PartyGroupRepository partyGroupRepository;
@@ -118,13 +133,36 @@ public class OutputFactoryService {
     @Autowired
     private OutputService outputService;
 
+    public OutputFactoryService() {
+        // inicializace mapperů
+        this.mapperFactory = new DefaultMapperFactory.Builder().build();
+
+        mapperFactory.classMap(ArrItemUnitdate.class, UnitDate.class)
+                .customize(new CustomMapper<ArrItemUnitdate, UnitDate>() {
+                    @Override
+                    public void mapAtoB(ArrItemUnitdate arrItemUnitdate, UnitDate unitDate, MappingContext context) {
+                        super.mapAtoB(arrItemUnitdate, unitDate, context);
+                        final ArrCalendarType calendarType = arrItemUnitdate.getCalendarType();
+                        unitDate.setCalendarType(calendarType);
+                        unitDate.setCalendar(calendarType.getName());
+                        unitDate.setCalendarCode(calendarType.getCode());
+                    }
+                })
+                .exclude("calendarType")
+                .byDefault(MappingDirection.A_TO_B).register();
+
+        mapperFactory.classMap(RegRegisterType.class, RecordType.class).byDefault(MappingDirection.A_TO_B).register();
+
+        mapper = mapperFactory.getMapperFacade();
+    }
+
     // TODO - JavaDoc - Lebeda
     // Factory metoda pro vytvoření logické struktury Output struktury
     @Bean
     @Scope("prototype")
     public Output createOutput(final ArrOutput arrOutput) {
         // naplnit output
-        final Output output = new Output(arrOutput);
+        final Output output = outputGeneratorFactory.getOutput(arrOutput);
         output.setName(arrOutput.getOutputDefinition().getName());
         output.setInternal_code(arrOutput.getOutputDefinition().getInternalCode());
         output.setTypeCode(arrOutput.getOutputDefinition().getOutputType().getCode());
@@ -182,23 +220,25 @@ public class OutputFactoryService {
         partyRecord.setRecord(parPartyRecord.getRecord());
         partyRecord.setCharacteristics(parPartyRecord.getCharacteristics());
         parPartyRecord.getVariantRecordList().stream().forEach(regVariantRecord -> partyRecord.getVariantRecords().add(regVariantRecord.getRecord()));
-//        final RecordType recordType = new RecordType(); // TODO Lebeda -
-//        partyRecord.setType();
-//        partyRecord.setType();
-//        partyGroup.setRecord(partyRecord); // TODO Lebeda -
 
-        institution.setPartyGroup(partyGroup); // TODO Lebeda -
+        partyRecord.setType(getRecordTypeByPartyRecord(output, parPartyRecord));
+        partyGroup.setRecord(partyRecord);
+
+        institution.setPartyGroup(partyGroup);
 
         fund.setInstitution(institution);
 
-        // TODO Lebeda - records
+        // records
+        // TODO Lebeda - Co je tou vazbou myšleno??
+//        output.getRecords().add();
+
 
         // zařadit items přímo přiřazené na output
         final List<ArrOutputItem> outputItems = outputService.getOutputItems(arrFundVersion, arrOutput.getOutputDefinition());
         outputItems.stream().forEach(arrOutputItem -> {
             final ArrItem arrItem = itemRepository.findOne(arrOutputItem.getItemId());
             final AbstractItem item = getItem(arrItem, output, null);
-//            item.setPosition(arrDescItem.getPosition()); TODO Lebeda - Kde vzít pozici itemu?
+            item.setPosition(arrItem.getPosition());
             output.getItems().add(item);
         });
 
@@ -215,6 +255,8 @@ public class OutputFactoryService {
         return output;
     }
 
+
+
     // TODO - JavaDoc - Lebeda
     private PartyName createPartyName(ParPartyName parPartyPreferredName) {
         PartyName preferredName = new PartyName();
@@ -229,16 +271,12 @@ public class OutputFactoryService {
     }
 
     // TODO - JavaDoc - Lebeda
-    private UnitDateText createUnitDateText(ParUnitdate from) {
+    private UnitDateText createUnitDateText(final ParUnitdate parUnitdate) {
         UnitDateText dateFrom = null;
-        if (StringUtils.isNotBlank(from.getFormat())) { // musí být nastaven formát
-            try {
-                dateFrom = new UnitDateText();
-                dateFrom.setValueText(UnitDateConvertor.convertToString(from));
-            } catch (Exception e) {
-                // TODO Lebeda - ošetřit exception
-                logger.error("Nepodařilo se datum " + from.toString() + " převést na textovou reprezentaci.", e);
-            }
+        final String format = parUnitdate.getFormat();
+        if (StringUtils.isNotBlank(format)) { // musí být nastaven formát
+            dateFrom = new UnitDateText();
+            dateFrom.setValueText(UnitDateConvertor.convertToString(parUnitdate));
         }
         return dateFrom;
     }
@@ -294,9 +332,10 @@ public class OutputFactoryService {
         node.setPosition(arrLevel.getPosition());
 
         final List<ArrLevel> levelList = levelRepository.findAllParentsByNodeAndVersion(arrNode, arrFundVersion);
-        node.setDepth(levelList.size()+1);
+        node.setDepth(levelList.size() + 1);
 
-//        node.getRecords().add(); // TODO Lebeda - plnit návazné records
+//        node.getRecords().add(); // TODO Lebeda - plnit návazné records - kde je vazba???
+//        node.getRecords().add()
 
         // items navázané k node
         final List<ArrDescItem> descItems = arrangementService.getDescItems(arrFundVersion, arrNode);
@@ -391,30 +430,53 @@ public class OutputFactoryService {
     }
 
     private AbstractItem getItemUnitRecordRef(Output output, Node node, ArrItem arrItem, ArrItemRecordRef itemData) {
-        return new ItemRecordRef(arrItem, output, node, getRecord(output, node, itemData));
+        final Record record = getRecordByItem(output, node, itemData);
+        return new ItemRecordRef(arrItem, output, node, record);
     }
 
-    @Bean
-    @Scope("prototype")
-    private Record getRecord(Output output, Node node, ArrItemRecordRef itemData) {
-        Record record = new Record(output, node, itemData.getRecord());
-//        RecordType recordType = new RecordType();
-//        final RegRegisterType registerType = itemData.getRecord().getRegisterType();
-//        recordType.setName(registerType.getName());
-//        recordType.setCode(registerType.getCode());
-//        recordType.setCountRecords(registerType.);
-//        private String name;
-//            private String code;
-//            private Integer countRecords;
-//            private Integer countDirectRecords;
-//        record.setType(recordType);
-        // TODO Lebeda - práce s recordtypem
-//        private RecordType type;
-        record.setRecord(itemData.getRecord().getRecord());
-        record.setCharacteristics(itemData.getRecord().getCharacteristics());
-        itemData.getRecord().getVariantRecordList().stream().forEach(regVariantRecord -> record.getVariantRecords().add(regVariantRecord.getRecord()));
+    private Record getRecordByItem(Output output, Node node, ArrItemRecordRef itemData) {
+        Record record = getRecord(output, node, itemData.getRecord());
+        record.setType(getRecordTypeByItem(output, itemData));
         return record;
     }
+
+    private Record getRecordByParty(Output output, RegRecord partyRecord) {
+        Record record = getRecord(output, null, partyRecord);
+        record.setType(getRecordTypeByPartyRecord(output, partyRecord));
+        return record;
+        }
+
+    private Record getRecord(@NotNull Output output, Node node, @NotNull final RegRecord regRecord) {
+        Record record = outputGeneratorFactory.getRecord(output, node, regRecord);
+        record.setRecord(regRecord.getRecord());
+        record.setCharacteristics(regRecord.getCharacteristics());
+        regRecord.getVariantRecordList().stream().forEach(regVariantRecord -> record.getVariantRecords().add(regVariantRecord.getRecord()));
+        return record;
+    }
+
+    private RecordType getRecordTypeByItem(Output output, ArrItemRecordRef itemData) {
+        final RegRegisterType registerType = itemData.getRecord().getRegisterType();
+        final RecordType recordType = getRecordType(output, registerType);
+        recordType.setCountRecords(recordType.getCountRecords() + 1); // TODO Lebeda - ??? co přesně znamená proměnná
+        return recordType;
+    }
+
+    private RecordType getRecordTypeByPartyRecord(Output output, RegRecord parPartyRecord) {
+        final RegRegisterType registerType = parPartyRecord.getRegisterType();
+        final RecordType recordType = getRecordType(output, registerType);
+        recordType.setCountRecords(recordType.getCountDirectRecords() + 1); // TODO Lebeda - ??? co přesně znamená proměnná
+        return recordType;
+    }
+
+    private RecordType getRecordType(Output output, RegRegisterType registerType) {
+        RecordType recordType = output.getRecordTypes().get(registerType.getCode());
+        if (recordType == null) {
+            recordType = mapper.map(registerType, RecordType.class);
+            output.getRecordTypes().put(registerType.getCode(), recordType);
+        }
+        return recordType;
+    }
+
 
     private AbstractItem getItemUnitPartyRef(Output output, Node node, ArrItem arrItem, ArrItemPartyRef itemData) {
         final ParParty parParty = itemData.getParty();
@@ -426,9 +488,9 @@ public class OutputFactoryService {
         party.setHistory(parParty.getHistory());
         party.setSourceInformation(parParty.getSourceInformation());
         party.setCharacteristics(parParty.getCharacteristics());
-//            private Record record; TODO Lebeda - dopsat konverzi
-//            private UnitDateText unitdateFrom; TODO Lebeda -
-//            private UnitDateText unitdateTo; TODO Lebeda -
+        party.setRecord(getRecordByParty(output, parParty.getRecord()));
+        party.setUnitdateFrom(createUnitDateText(parParty.getFrom()));
+        party.setUnitdateTo(createUnitDateText(parParty.getTo()));
         party.setType(parParty.getPartyType().getName());
         party.setTypeCode(parParty.getPartyType().getCode());
 
@@ -475,9 +537,7 @@ public class OutputFactoryService {
     }
 
     private AbstractItem getItemUnitdate(Output output, Node node, ArrItem arrItem, ArrItemUnitdate itemData) {
-        UnitDate data = new UnitDate();
-        data.setValueText(itemData.toString());
-        // TODO Lebeda - Jak korektně převést strukturované datum
+        UnitDate data = mapper.map(itemData, UnitDate.class);
         return new ItemUnitdate(arrItem, output, node, data);
     }
 

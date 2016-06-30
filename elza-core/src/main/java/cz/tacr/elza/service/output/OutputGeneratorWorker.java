@@ -20,7 +20,6 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +29,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Date;
@@ -49,13 +49,15 @@ import java.util.concurrent.Callable;
 
 @Component
 @Scope("prototype")
-public class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
+class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
 
     private static final String JASPER_MAIN_TEMPLATE_BASE_NAME = "index";
     private static final String JASPER_TEMPLATE_SUFFIX = ".jrxml";
     private static final String JASPER_MAIN_TEMPLATE = JASPER_MAIN_TEMPLATE_BASE_NAME + JASPER_TEMPLATE_SUFFIX;
     private static final String OUTFILE_SUFFIX_PDF = ".pdf";
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
     @Autowired
     private OutputFactoryService outputFactoryService;
 
@@ -75,13 +77,12 @@ public class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
     private String templatesDir;
 
     private Integer arrOutputId;
-    private ArrOutput arrOutput;
 
     public void init(Integer outputInProgress) {
         arrOutputId = outputInProgress;
     }
 
-    // TODO Lebeda - @Override
+    @Override
     @Transactional
     public OutputGeneratorWorker call() throws Exception {
         generateOutput();
@@ -89,19 +90,23 @@ public class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
     }
 
     // TODO - JavaDoc - Lebeda
-    // TODO Lebeda - doplnit logování
     private String generateOutput() {
-        arrOutput = outputRepository.findOne(arrOutputId);
+        logger.info("Spuštěno generování výstupu pro arr_output id={}", arrOutputId);
+        ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
         final ArrOutputDefinition arrOutputDefinition = arrOutput.getOutputDefinition();
         final RulTemplate rulTemplate = arrOutputDefinition.getTemplate();
         Assert.notNull(rulTemplate, "Nepodařilo se najít definici šablony.");
 
         // sestavení outputu
+        logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} spuštěno", arrOutputId);
         final Output output = outputFactoryService.createOutput(arrOutput);
+        logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} dokončeno", arrOutputId);
 
         // skutečné vytvoření výstupného souboru na základě definice
         if (RulTemplate.Engine.JASPER.equals(rulTemplate.getEngine())) {
+            logger.info("Spuštěno generování PDF výstupu pro arr_output id={}", arrOutputId);
             generatePdfByJasper(arrOutputDefinition, rulTemplate, output);
+            // dokončení generování je logováno v service onSucces/onFailure
         } else if (RulTemplate.Engine.JASPER.equals(rulTemplate.getEngine())) {
             // TODO Lebeda - implementovat podporu pro FreeMarker
         }
@@ -123,7 +128,7 @@ public class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
             JasperReport jasperReport = JasperCompileManager.compileReport(mainJasperTemplate.getAbsolutePath());
 
             // Parameters for report
-            Map<String, Object> parameters = new HashMap<String, Object>();
+            Map<String, Object> parameters = new HashMap<>();
             parameters.put("output", output);
 
             // subreporty
@@ -141,25 +146,20 @@ public class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
 
             // Export to PDF - pouze příprava procesu pro renderování - reálně proběhne až při čtení z in v dms
-            // TODO Lebeda - nefunguje - broken pipe
-//            PipedInputStream in = new PipedInputStream();
-//            PipedOutputStream out = new PipedOutputStream(in);
-            final ByteArrayOutputStream out = new ByteArrayOutputStream();
-//            new Thread(
-//                    new Runnable() {
-//                        public void run() {
+            PipedInputStream in = new PipedInputStream();
+            PipedOutputStream out = new PipedOutputStream(in);
+            new Thread(
+                    new Runnable() {
+                        public void run() {
                             try {
                                 JasperExportManager.exportReportToPdfStream(jasperPrint, out);
                                 out.close();
-                            } catch (JRException e) {
-//                                throw new IllegalStateException("Nepodařilo se vyrenderovat PDF ze šablony " + mainJasperTemplate.getAbsolutePath() + ".");
-                                throw new IllegalStateException("Nepodařilo se vyrenderovat PDF ze šablony .");
-                            } catch (IOException e) {
-                                e.printStackTrace();  // TODO Lebeda - implementova
+                            } catch (JRException | IOException e) {
+                                throw new IllegalStateException("Nepodařilo se vyrenderovat PDF ze šablony " + mainJasperTemplate.getAbsolutePath() + ".", e);
                             }
-//                        }
-//                    }
-//            ).start();
+                        }
+                    }
+            ).start();
 
             // TODO Lebeda - null = admin
             final ArrChange change = createChange(null);
@@ -178,7 +178,8 @@ public class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
             dmsFile.setMimeType(DmsService.MIME_TYPE_APPLICATION_PDF);
             dmsFile.setFileSize(0); // 0 - zajistí refresh po skutečném uložení do souboru na disk
 
-            dmsService.createFile(dmsFile, new ByteArrayInputStream(out.toByteArray())); // zajistí prezentaci výstupu na klienta
+            dmsService.createFile(dmsFile, in); // zajistí prezentaci výstupu na klienta
+
 
         } catch (JRException e) {
             throw new IllegalStateException("Nepodařilo se vytisknout report.", e);
@@ -188,7 +189,7 @@ public class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
     }
 
     protected ArrChange createChange(final Integer userId) {
-            // TODO Lebeda - OK????
+            // review Lebeda - je použití cizí service OK????
             return bulkActionService.createChange(userId);
         }
 
