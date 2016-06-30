@@ -171,6 +171,8 @@ public class PackageService {
     @Autowired
     private OutputGeneratorService outputGeneratorService;
 
+    private List<RulTemplate> newRultemplates = null;
+
     /**
      * Provede import balíčku.
      *
@@ -184,6 +186,7 @@ public class PackageService {
         ZipFile zipFile = null;
         List<RulAction> rulPackageActions = null;
         List<RulRule> rulPackageRules = null;
+        List<RulTemplate> originalRulTemplates = null;
 
         try {
 
@@ -197,6 +200,8 @@ public class PackageService {
             PackageInfo packageInfo = convertXmlStreamToObject(PackageInfo.class, mapEntry.get(PACKAGE_XML));
 
             RulPackage rulPackage = processRulPackage(packageInfo);
+
+            originalRulTemplates = templateRepository.findByRulPackage(rulPackage);
 
             RuleSets ruleSets = convertXmlStreamToObject(RuleSets.class, mapEntry.get(RULE_SET_XML));
 
@@ -235,6 +240,13 @@ public class PackageService {
             cleanBackupFiles(dirActions);
             cleanBackupFiles(dirRules);
 
+            if (originalRulTemplates != null) {
+                cleanBackupTemplates(dirTemplates, originalRulTemplates);
+            }
+            if (newRultemplates != null) {
+                cleanBackupTemplates(dirTemplates, newRultemplates);
+            }
+
             eventNotificationService.publishEvent(new ActionEvent(EventType.PACKAGE));
 
         } catch (Exception e) {
@@ -248,6 +260,19 @@ public class PackageService {
                 if (rulPackageRules != null) {
                     for (RulRule rulPackageRule : rulPackageRules) {
                         forceDeleteFile(dirRules, rulPackageRule.getFilename());
+                    }
+                }
+
+                if (newRultemplates != null) {
+                    deleteTemplates(dirTemplates, newRultemplates);
+                }
+
+                if (originalRulTemplates != null) {
+                    for (RulTemplate rulTemplate : originalRulTemplates) {
+                        File dirFile = new File(dirTemplates + File.separator + rulTemplate.getDirectory());
+                        if (dirFile.exists()) {
+                            rollBackFiles(dirFile);
+                        }
                     }
                 }
 
@@ -268,6 +293,15 @@ public class PackageService {
             }
         }
 
+    }
+
+    private void cleanBackupTemplates(File dirTemplates, List<RulTemplate> originalRulTemplates) {
+        for (RulTemplate rulTemplate : originalRulTemplates) {
+            File dirFile = new File(dirTemplates + File.separator + rulTemplate.getDirectory());
+            if (dirFile.exists()) {
+                cleanBackupFiles(dirFile);
+            }
+        }
     }
 
     /**
@@ -969,7 +1003,7 @@ public class PackageService {
 
         rulOutputTypesNew = outputTypeRepository.save(rulOutputTypesNew);
 
-        processTemplates(templates, rulPackage, rulOutputTypesNew, mapEntry, dirTemplates);
+        newRultemplates = processTemplates(templates, rulPackage, rulOutputTypesNew, mapEntry, dirTemplates);
 
         List<RulOutputType> rulPacketTypesDelete = new ArrayList<>(rulOutputTypes);
         rulPacketTypesDelete.removeAll(rulOutputTypesNew);
@@ -985,7 +1019,7 @@ public class PackageService {
      * @param rulOutputTypes    seznam typů atributů
      * @param dirTemplates
      */
-    private void processTemplates(
+    private List<RulTemplate> processTemplates(
             final Templates templates,
             final RulPackage rulPackage,
             final List<RulOutputType> rulOutputTypes,
@@ -1029,7 +1063,7 @@ public class PackageService {
 
             importTemplatesFiles(mapEntry, dirTemplates, rulTemplateNew);
 
-            bulkActionConfigManager.load();
+            return rulTemplateNew;
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
