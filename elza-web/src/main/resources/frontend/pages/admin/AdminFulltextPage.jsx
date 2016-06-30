@@ -28,7 +28,6 @@ var AdminFulltextPage = class AdminFulltextPage extends React.Component {
     }
 
     render() {
-console.log(1111111, this.props);
         const {splitter} = this.props;
 
         var centerPanel = (

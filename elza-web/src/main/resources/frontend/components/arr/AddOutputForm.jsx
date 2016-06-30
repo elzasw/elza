@@ -44,8 +44,6 @@ var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
         const {fields: {name, internalCode, temporary, templateId, outputTypeId}, create, handleSubmit, onClose, outputTypes, templates} = this.props;
         var submitForm = submitReduxForm.bind(this, validate)
 
-        console.log(111, templateId)
-
         return (
             <div className="add-output-form-container">
                 <Modal.Body>

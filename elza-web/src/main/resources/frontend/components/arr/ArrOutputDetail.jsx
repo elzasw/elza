@@ -11,13 +11,14 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {Loading, i18n, OutputSubNodeForm, FundNodesAddForm, FundNodesList, AbstractReactComponent} from 'components/index.jsx';
 import {Input} from 'react-bootstrap';
-import {fundOutputDetailFetchIfNeeded} from 'actions/arr/fundOutput.jsx'
+import {fundOutputDetailFetchIfNeeded, fundOutputEdit} from 'actions/arr/fundOutput.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundOutputRemoveNodes, fundOutputAddNodes } from 'actions/arr/fundOutput.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
+import OutputInlineForm from './form/OutputInlineForm.jsx'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 var keyModifier = Utils.getKeyModifier()
@@ -34,7 +35,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('trySetFocus', 'handleShortcuts', "handleRemoveNode",
-            "handleRenderNodeItem", "handleAddNodes");
+            "handleRenderNodeItem", "handleAddNodes", "handleSaveOutput");
     }
 
     componentDidMount() {
@@ -85,6 +86,11 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
 
     handleShortcuts(action) {
         console.log("#handleShortcuts", '[' + action + ']', this);
+    }
+
+    handleSaveOutput(data) {
+        const {fund, fundOutputDetail} = this.props;
+        this.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data));
     }
 
     getChildContext() {
@@ -145,17 +151,6 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
             return <div className='arr-output-detail-container'><Loading/></div>
         }
 
-        var outputType = false;
-        if (outputTypes) {
-            const index = indexById(outputTypes, fundOutputDetail.outputDefinition.outputTypeId);
-            outputType = index !== null ? outputTypes[index].name : false;
-        }
-        var template = false;
-        if (outputTypes) {
-            const index = indexById(templates.items, fundOutputDetail.outputDefinition.templateId);
-            template = index !== null ? templates.items[index].name : false;
-        }
-
         var form
         if (fundOutputDetail.subNodeForm.fetched && calendarTypes.fetched && descItemTypes.fetched) {
             form = (
@@ -175,16 +170,17 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
             )
         } else {
             form = <Loading value={i18n('global.data.loading.form')}/>
-        }console.log(888, this.props)
+        }
 
         return (
             <Shortcuts name='ArrOutputDetail' handler={this.handleShortcuts}>
                 <div className={"arr-output-detail-container"}>
                     <div className="output-definition-commons">
-                        <Input type="text" label={i18n('arr.output.name')} disabled value={fundOutputDetail.outputDefinition.name}/>
-                        <Input type="text" label={i18n('arr.output.internalCode')} disabled value={fundOutputDetail.outputDefinition.internalCode}/>
-                        {template && <Input type="text" label={i18n('arr.output.template')} disabled value={template}/>}
-                        {outputType && <Input type="text" label={i18n('arr.output.outputType')} disabled value={outputType}/>}
+                        <OutputInlineForm
+                            disabled={fundOutputDetail.lockDate}
+                            initData={fundOutputDetail.outputDefinition}
+                            onSave={this.handleSaveOutput}
+                            />
                     </div>
 
                     <div className="fund-nodes-container">

@@ -667,7 +667,7 @@ public class ConfigMapperConfiguration {
                 "fundVersionId", "id").
                 exclude("arrangementType").register();
         mapperFactory.classMap(ArrOutputDefinition.class, ArrOutputDefinitionVO.class)
-                .exclude("outputs")
+//                .exclude("outputs")
                 .exclude("nodes")
                 .byDefault()
                 .field("outputDefinitionId", "id")

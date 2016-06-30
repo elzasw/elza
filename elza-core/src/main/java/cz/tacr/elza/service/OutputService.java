@@ -255,6 +255,10 @@ public class OutputService {
 
         ArrChange change = arrangementService.createChange();
         ArrOutput output = createOutput(outputDefinition, change);
+        List<ArrOutput> outputs = new ArrayList<>();
+        outputs.add(output);
+        outputDefinition.setOutputs(outputs);
+        outputDefinitionRepository.save(outputDefinition);
 
         EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, output.getOutputId());
         eventNotificationService.publishEvent(event);

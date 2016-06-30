@@ -5,15 +5,23 @@
 /**
  * Vrácení objektu pro dekoraci input prvku inplace editace.
  * @param field {Object} objekt s informací o inplace prvku
+ * @param inline {Boolean} pokud je true, jedná se o inline editaci, kde se chyba nezobrazuje pod prvke, ale až po najetí myší jako title
  * @return {Object} objekt pro dekoraci input prvku
  */
-export function decorateFormField(field) {
+export function decorateFormField(field, inline = false) {
     if (field.touched && field.error) {
-        return {
+        var result = {
             bsStyle: 'error',
             hasFeedback: true,
-            help: field.error
         }
+
+        if (inline) {
+            result.title = field.error;
+        } else {
+            result.help = field.error;
+        }
+
+        return result;
     }
 }
 

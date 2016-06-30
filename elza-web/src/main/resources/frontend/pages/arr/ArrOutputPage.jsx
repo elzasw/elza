@@ -35,7 +35,6 @@ import {
     fundOutputRemoveNodes,
     fundOutputSelectOutput,
     fundOutputCreate,
-    fundOutputEdit,
     fundOutputUsageEnd,
     fundOutputDelete,
     fundOutputAddNodes,
@@ -82,7 +81,6 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             'handleUsageEnd',
             'handleDelete',
             'handleBulkActions',
-            'handleEditOutput',
             'renderRightPanel',
             'renderFunctionsPanel',
             'renderTemplatesPanel',
@@ -173,17 +171,6 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             <AddOutputForm
                 create
                 onSubmitForm={(data) => {this.dispatch(fundOutputCreate(fund.versionId, data))}}/>));
-    }
-
-    handleEditOutput() {
-        const fund = this.getActiveFund()
-        const fundOutput = fund.fundOutput
-        const fundOutputDetail = fundOutput.fundOutputDetail
-
-        this.dispatch(modalDialogShow(this, i18n('arr.output.title.edit'),
-            <AddOutputForm
-                initData={{name: fundOutputDetail.outputDefinition.name, internalCode: fundOutputDetail.outputDefinition.internalCode, templateId: fundOutputDetail.outputDefinition.templateId}}
-                onSubmitForm={(data) => {this.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data))}}/>));
     }
 
     handleBulkActions() {
@@ -285,11 +272,6 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             if (isDetailIdNotNull && isDetailLoaded) {
                 if (hasPersmission) {
                     if (!outputDetail.lockDate) {
-                        itemActions.push(
-                            <Button key="edit-output" onClick={this.handleEditOutput}><Icon glyph="fa-edit"/>
-                                <div><span className="btnText">{i18n('ribbon.action.arr.output.edit')}</span></div>
-                            </Button>
-                        );
                         itemActions.push(
                             <Button key="add-item" onClick={this.handleAddDescItemType}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.item.add')}</span></div></Button>
                         )
