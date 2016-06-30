@@ -993,6 +993,7 @@ public class PackageService {
             final File dirTemplates) {
         List<RulTemplate> rulTemplate = templateRepository.findByRulPackage(rulPackage);
         List<RulTemplate> rulTemplateNew = new ArrayList<>();
+        List<RulTemplate> rulTemplateActual = new ArrayList<>();
 
         if (!CollectionUtils.isEmpty(templates.getTemplates())) {
             for (Template template : templates.getTemplates()) {
@@ -1000,13 +1001,18 @@ public class PackageService {
                         .filter((r) -> r.getCode().equals(template.getCode())).collect(
                                 Collectors.toList());
                 RulTemplate item;
-                if (findItems.size() > 0) {
+
+                boolean existTemplate = findItems.size() > 0;
+                if (existTemplate) {
                     item = findItems.get(0);
                 } else {
                     item = new RulTemplate();
                 }
 
                 convertRulTemplate(rulPackage, template, item, rulOutputTypes);
+                if (existTemplate) {
+                    rulTemplateActual.add(item);
+                }
                 rulTemplateNew.add(item);
             }
         }
@@ -1018,29 +1024,38 @@ public class PackageService {
         templateRepository.delete(rulTemplateToDelete);
 
         try {
-            for (RulTemplate template : rulTemplateToDelete) {
-                File dirFile = new File(dirTemplates + File.separator + template.getDirectory());
-                for (File file : dirFile.listFiles()) {
-                    deleteFile(dirFile, file.getName());
-                }
-            }
+            deleteTemplates(dirTemplates, rulTemplateToDelete);
+            deleteTemplates(dirTemplates, rulTemplateActual);
 
-            for (RulTemplate template : rulTemplateNew) {
-                final String templateDir = ZIP_DIR_TEMPLATES + File.separator + template.getDirectory();
-                final String templateZipKeyDir = templateDir + File.separator;
-                Set<String> templateFileKeys = mapEntry.keySet().stream().filter(key -> key.contains(templateZipKeyDir) && !key.equals(templateZipKeyDir)).map(key -> key.replace(templateZipKeyDir, "")).collect(Collectors.toSet());
-                File dirFile = new File(dirTemplates + File.separator + template.getDirectory());
-                if (!dirFile.exists() && !dirFile.mkdirs()) {
-                    throw new IOException("Nepodařilo se vytvořit složku.");
-                }
-                for (String file : templateFileKeys) {
-                    saveFile(mapEntry, dirFile, templateDir, file);
-                }
-            }
+            importTemplatesFiles(mapEntry, dirTemplates, rulTemplateNew);
 
             bulkActionConfigManager.load();
         } catch (IOException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    private void deleteTemplates(File dirTemplates, List<RulTemplate> rulTemplateActual) throws IOException {
+        for (RulTemplate template : rulTemplateActual) {
+            File dirFile = new File(dirTemplates + File.separator + template.getDirectory());
+            for (File file : dirFile.listFiles()) {
+                deleteFile(dirFile, file.getName());
+            }
+        }
+    }
+
+    private void importTemplatesFiles(Map<String, ByteArrayInputStream> mapEntry, File dirTemplates, List<RulTemplate> rulTemplateActual) throws IOException {
+        for (RulTemplate template : rulTemplateActual) {
+            final String templateDir = ZIP_DIR_TEMPLATES + File.separator + template.getDirectory();
+            final String templateZipKeyDir = templateDir + File.separator;
+            Set<String> templateFileKeys = mapEntry.keySet().stream().filter(key -> key.contains(templateZipKeyDir) && !key.equals(templateZipKeyDir)).map(key -> key.replace(templateZipKeyDir, "")).collect(Collectors.toSet());
+            File dirFile = new File(dirTemplates + File.separator + template.getDirectory());
+            if (!dirFile.exists() && !dirFile.mkdirs()) {
+                throw new IOException("Nepodařilo se vytvořit složku.");
+            }
+            for (String file : templateFileKeys) {
+                saveFile(mapEntry, dirFile, templateDir, file);
+            }
         }
     }
 
