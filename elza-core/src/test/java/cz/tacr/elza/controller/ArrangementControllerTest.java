@@ -235,6 +235,13 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrItemVO itemDeleted = outputItem.getItem();
         Assert.isNull(itemDeleted);
 
+        item = new ArrItemStringVO();
+        item.setValue("test1");
+        outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), outputDefinition.getId(), outputDefinition.getVersion());
+        itemCreated = outputItem.getItem();
+
+        deleteOutputItemsByType(fundVersion.getId(), outputItem.getParent().getId(), outputItem.getParent().getVersion(), typeVo.getId());
+
         deleteNamedOutput(fundVersion.getId(), output.getId());
 
         outputs = getOutputs(fundVersion.getId());

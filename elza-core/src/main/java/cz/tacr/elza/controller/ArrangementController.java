@@ -319,6 +319,39 @@ public class ArrangementController {
     }
 
     /**
+     * Smazání hodnot atributu podle typu.
+     *
+     * @param fundVersionId   identfikátor verze AP
+     * @param nodeId                identfikátor výstupu
+     * @param nodeVersion           verze výstupu
+     * @param itemTypeId        identfikátor typu hodnoty atributu
+     */
+    @Transactional
+    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/{itemTypeId}",
+            method = RequestMethod.DELETE,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public OutputItemResult deleteOutputItemsByType(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                    @PathVariable(value = "outputDefinitionId") final Integer nodeId,
+                                                    @PathVariable(value = "outputDefinitionVersion") final Integer nodeVersion,
+                                                    @PathVariable(value = "itemTypeId") final Integer itemTypeId) {
+
+        Assert.notNull(fundVersionId);
+        Assert.notNull(nodeVersion);
+        Assert.notNull(itemTypeId);
+        Assert.notNull(nodeId);
+
+        ArrOutputDefinition node = outputService
+                .deleteOutputItemsByType(fundVersionId, nodeId, nodeVersion, itemTypeId);
+
+        OutputItemResult outputItemResult = new OutputItemResult();
+        outputItemResult.setItem(null);
+        outputItemResult.setParent(factoryVo.createArrOutputDefinition(node));
+
+        return outputItemResult;
+    }
+
+    /**
      * Smazání hodnoty atributu.
      *
      * @param descItemVO            hodnota atributu

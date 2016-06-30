@@ -152,6 +152,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
             + "/descItems/{fundVersionId}/{nodeVersion}/delete";
     protected static final String DELETE_DESC_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL
             + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}";
+    protected static final String DELETE_OUTPUT_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL
+            + "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/{itemTypeId}";
     protected static final String CREATE_OUTPUT_ITEM = ARRANGEMENT_CONTROLLER_URL
             + "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/{itemTypeId}/create";
     protected static final String UPDATE_OUTPUT_ITEM = ARRANGEMENT_CONTROLLER_URL
@@ -1700,6 +1702,26 @@ public abstract class AbstractControllerTest extends AbstractTest {
                         .pathParameter("nodeVersion", nodeVersion)
                         .pathParameter("descItemTypeId", descItemTypeId),
                         DELETE_DESC_ITEM_BY_TYPE).getBody().as(ArrangementController.DescItemResult.class);
+    }
+
+    /**
+     * Smazání hodnot atributu podle typu.
+     *
+     * @param fundVersionId   identfikátor verze AP
+     * @param outputDefinitionId                identfikátor výstupu
+     * @param outputDefinitionVersion           verze výstupu
+     * @param itemTypeId        identfikátor typu hodnoty atributu
+     */
+    protected ArrangementController.OutputItemResult deleteOutputItemsByType(final Integer fundVersionId,
+                                                                         final Integer outputDefinitionId,
+                                                                         final Integer outputDefinitionVersion,
+                                                                         final Integer itemTypeId) {
+        return delete(spec -> spec
+                        .pathParameter("fundVersionId", fundVersionId)
+                        .pathParameter("outputDefinitionId", outputDefinitionId)
+                        .pathParameter("outputDefinitionVersion", outputDefinitionVersion)
+                        .pathParameter("itemTypeId", itemTypeId),
+                DELETE_OUTPUT_ITEM_BY_TYPE).getBody().as(ArrangementController.OutputItemResult.class);
     }
 
     /**

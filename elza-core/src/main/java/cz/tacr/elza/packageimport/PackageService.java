@@ -1030,7 +1030,7 @@ public class PackageService {
                 final String templateZipKeyDir = templateDir + File.separator;
                 Set<String> templateFileKeys = mapEntry.keySet().stream().filter(key -> key.contains(templateZipKeyDir) && !key.equals(templateZipKeyDir)).map(key -> key.replace(templateZipKeyDir, "")).collect(Collectors.toSet());
                 File dirFile = new File(dirTemplates + File.separator + template.getDirectory());
-                if (!dirFile.mkdirs()) {
+                if (!dirFile.exists() && !dirFile.mkdirs()) {
                     throw new IOException("Nepodařilo se vytvořit složku.");
                 }
                 for (String file : templateFileKeys) {

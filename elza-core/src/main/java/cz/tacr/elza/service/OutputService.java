@@ -918,4 +918,45 @@ public class OutputService {
 
         return outputDefinition;
     }
+
+    /**
+     * Smazání hodnot podle typu atributu.
+     *
+     * @param fundVersionId             identifikátor verze fondu
+     * @param outputDefinitionId        identifikátor výstupu
+     * @param outputDefinitionVersion   verze výstupu
+     * @param itemTypeId                identifikátor typu atributu
+     * @return  výstup
+     */
+    public ArrOutputDefinition deleteOutputItemsByType(final Integer fundVersionId,
+                                                       final Integer outputDefinitionId,
+                                                       final Integer outputDefinitionVersion,
+                                                       final Integer itemTypeId) {
+
+        ArrChange change = arrangementService.createChange();
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
+
+        Assert.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
+        Assert.notNull(itemType, "Typ atributu neexistuje");
+
+        ArrOutputDefinition outputDefinition = outputDefinitionRepository.findOne(outputDefinitionId);
+        Assert.notNull(outputDefinition);
+        outputDefinition.setVersion(outputDefinitionVersion);
+        saveOutputDefinition(outputDefinition);
+
+
+        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemType, outputDefinition);
+
+        if (outputItems.size() == 0) {
+            throw new IllegalStateException("Nebyla nalezena žádná hodnota atributu ke smazání");
+        }
+
+        List<ArrOutputItem> outputItemsDeleted = new ArrayList<>(outputItems.size());
+        for (ArrOutputItem descItem : outputItems) {
+            outputItemsDeleted.add(deleteOutputItem(descItem, fundVersion, change, false));
+        }
+
+        return outputDefinition;
+    }
 }
