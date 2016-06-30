@@ -16,7 +16,9 @@ import org.springframework.util.Assert;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -49,6 +51,8 @@ public class Output implements RecordProvider {
 
     // seznam rejstříkových hesel všech nodes outputu odkazovaných přes arr_node_register
     private List<Record> records = new ArrayList<>();
+
+    private Map<String, RecordType> recordTypes = new HashMap<>(); // seznam rejstříků podle code
 
     /**
      * Vytvoření instance s povinnými údaji
@@ -103,6 +107,7 @@ public class Output implements RecordProvider {
                 .sorted(Item::compareToItemViewOrderPosition)
                 .collect(Collectors.toList());
     }
+
 
     // TODO - JavaDoc - Lebeda
     // vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě hodnot typů uvedených ve vstupu metody;
@@ -161,6 +166,10 @@ public class Output implements RecordProvider {
 
     public List<Record> getRecords() {
         return records;
+    }
+
+    public Map<String, RecordType> getRecordTypes() {
+        return recordTypes;
     }
 
     @Override

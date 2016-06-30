@@ -97,17 +97,18 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         }
     }
 
+    // TODO - JavaDoc - Lebeda
     private OutputGeneratorWorker getWorker(ArrOutput output) {
         final OutputGeneratorWorker generatorWorker = workerFactory.getOutputGeneratorWorker();
-//        final OutputGeneratorWorker generatorWorker = new OutputGeneratorWorker();
         generatorWorker.init(output.getOutputId());
         return generatorWorker;
     }
 
     @Override
     public void onFailure(Throwable ex) {
+        final Integer arrOutputId = worker.getArrOutputId();
         worker = null;
-        logger.error("Worker nedoběhl správně", ex);
+        logger.error("Generování výstupu pro arr_output id="+arrOutputId+" dokončeno s chybou.", ex);
         runNextOutput();
     }
 
@@ -128,7 +129,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
                 )
         );
         worker = null;
-        logger.info("Worker doběhl správně");
+        logger.info("Generování výstupu pro arr_output id="+arrOutputId+" dokončeno úspěšně.", arrOutputId);
         runNextOutput();
     }
 }

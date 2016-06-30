@@ -8,8 +8,8 @@ package cz.tacr.elza.print;
 public class RecordType {
     private String name;
     private String code;
-    private Integer countRecords;
-    private Integer countDirectRecords;
+    private Integer countRecords = 0;
+    private Integer countDirectRecords = 0;
 
     public String getCode() {
         return code;

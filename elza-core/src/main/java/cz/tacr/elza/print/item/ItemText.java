@@ -5,6 +5,7 @@ package cz.tacr.elza.print.item;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.Output;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -19,7 +20,7 @@ public class ItemText extends AbstractItem<String> {
 
     @Override
     public String serializeValue() {
-        return getValue();
+        return StringUtils.trim(getValue());
     }
 
 }

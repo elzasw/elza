@@ -4,6 +4,7 @@ import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ParUnitdate;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.time.LocalDate;
@@ -221,11 +222,11 @@ public class UnitDateConvertor {
      */
     private static String addEstimate(String format, IUnitdate unitdate, boolean first) {
         if (first) {
-            if (unitdate.getValueFromEstimated()) {
+            if (BooleanUtils.isTrue(unitdate.getValueFromEstimated())) {
                 format = "(" + format + ")";
             }
         } else {
-            if (unitdate.getValueToEstimated()) {
+            if (BooleanUtils.isTrue(unitdate.getValueToEstimated())) {
                 format = "(" + format + ")";
             }
         }
