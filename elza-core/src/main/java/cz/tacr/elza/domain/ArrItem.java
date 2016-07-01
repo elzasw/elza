@@ -1,14 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import cz.tacr.elza.search.ItemIndexingInterceptor;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.NumericField;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -21,6 +12,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.NumericField;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 
 /**
  * Implementace {@link cz.tacr.elza.api.ArrItem}
@@ -28,7 +27,6 @@ import javax.persistence.Transient;
  * @author Martin Šlapa
  * @since 19.06.2016
  */
-@Indexed(interceptor = ItemIndexingInterceptor.class)
 @Entity(name = "arr_item")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -159,18 +157,22 @@ public abstract class ArrItem<T extends ArrItemData> implements cz.tacr.elza.api
         this.position = position;
     }
 
+    @Override
     public RulItemType getItemType() {
         return itemType;
     }
 
+    @Override
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
     }
 
+    @Override
     public RulItemSpec getItemSpec() {
         return itemSpec;
     }
 
+    @Override
     public void setItemSpec(final RulItemSpec itemSpec) {
         this.itemSpec = itemSpec;
     }

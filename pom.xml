@@ -138,6 +138,20 @@
                 <groupId>net.sf.jasperreports</groupId>
                 <artifactId>jasperreports</artifactId>
                 <version>6.3.0</version>
+	            <exclusions>
+		            <exclusion>
+		                <artifactId>lucene-core</artifactId>
+		                <groupId>org.apache.lucene</groupId>
+		            </exclusion>
+		            <exclusion>
+		                <artifactId>lucene-analyzers-common</artifactId>
+		                <groupId>org.apache.lucene</groupId>
+		            </exclusion>
+                    <exclusion>
+	                    <artifactId>lucene-queryparser</artifactId>
+	                    <groupId>org.apache.lucene</groupId>
+                    </exclusion>
+	            </exclusions>                
             </dependency>
             <dependency>
                 <groupId>net.sf.jasperreports</groupId>

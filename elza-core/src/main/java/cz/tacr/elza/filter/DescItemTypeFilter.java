@@ -9,7 +9,6 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.domain.RulItemType;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
@@ -18,6 +17,7 @@ import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.filter.condition.DescItemCondition;
 import cz.tacr.elza.filter.condition.HibernateDescItemCondition;
 import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
@@ -82,7 +82,7 @@ public class DescItemTypeFilter {
                 booleanJunction.must(q);
             });
 
-            List<Object> rows = createFullTextQuery(fullTextEntityManager, booleanJunction.createQuery(), ArrData.class).setProjection("nodeId", "descItemId").getResultList();
+            List<Object> rows = createFullTextQuery(fullTextEntityManager, booleanJunction.createQuery(), ArrData.class).setProjection("nodeId", "itemId").getResultList();
 
             nodeIdToDescItemIds = new HashMap<>(rows.size());
             for (Object row: rows) {

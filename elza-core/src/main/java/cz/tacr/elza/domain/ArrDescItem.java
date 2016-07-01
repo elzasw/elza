@@ -8,15 +8,17 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import cz.tacr.elza.search.ItemIndexingInterceptor;
-import org.apache.commons.lang.NotImplementedException;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
+import org.hibernate.search.bridge.builtin.IntegerBridge;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import cz.tacr.elza.search.ItemIndexingInterceptor;
 
 
 /**
@@ -60,6 +62,7 @@ public class ArrDescItem<T extends ArrItemData> extends ArrItem<T> implements cz
         return getItemId().toString();
     }
 
+    @Override
     @Field(store = Store.YES)
     public Integer getNodeId() {
         return node.getNodeId();
@@ -75,6 +78,7 @@ public class ArrDescItem<T extends ArrItemData> extends ArrItem<T> implements cz
         return node;
     }
 
+    @Override
     public ArrOutputDefinition getOutputDefinition() {
         return null; //throw new NotImplementedException();
     }

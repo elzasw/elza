@@ -1,12 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import cz.tacr.elza.search.ItemIndexingInterceptor;
-import org.apache.commons.lang.NotImplementedException;
-import org.hibernate.search.annotations.Indexed;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Inheritance;
@@ -15,6 +8,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 
 /**
  * Implementace {@link cz.tacr.elza.api.ArrOutputItem}
@@ -22,7 +20,6 @@ import javax.persistence.Table;
  * @author Martin Šlapa
  * @since 20.06.2016
  */
-@Indexed(interceptor = ItemIndexingInterceptor.class)
 @Entity(name = "arr_output_item")
 @Table
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -46,10 +43,12 @@ public class ArrOutputItem<T extends ArrItemData> extends ArrItem<T> implements 
         super(clazz.newInstance());
     }
 
+    @Override
     public ArrOutputDefinition getOutputDefinition() {
         return outputDefinition;
     }
 
+    @Override
     public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
         this.outputDefinition = outputDefinition;
     }
