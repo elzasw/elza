@@ -1,11 +1,7 @@
 package cz.tacr.elza.bulkaction;
 
-import java.io.IOException;
-import java.io.StringReader;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import cz.tacr.elza.bulkaction.yaml.YamlProperties;
+import cz.tacr.elza.utils.Yaml;
 
 
 /**
@@ -19,7 +15,7 @@ public class BulkActionConfig implements cz.tacr.elza.api.vo.BulkActionConfig {
     private String code;
 
     @JsonIgnore
-    private YamlProperties yaml = new YamlProperties();
+    private Yaml yaml = new Yaml();
 
     @Override
     public String getCode() {
@@ -39,22 +35,22 @@ public class BulkActionConfig implements cz.tacr.elza.api.vo.BulkActionConfig {
     @Override
     public void setConfiguration(final String configuration) {
         try {
-            yaml.load(new StringReader(configuration));
-        } catch (IOException e) {
+            yaml.load(configuration);
+        } catch (Yaml.YAMLInvalidContentException e) {
             throw new IllegalArgumentException("Formát konfigurace není platný", e);
         }
     }
 
-    public YamlProperties getYaml() {
+    public Yaml getYaml() {
         return yaml;
     }
 
-    public void setYaml(YamlProperties yaml) {
+    public void setYaml(Yaml yaml) {
         this.yaml = yaml;
     }
 
-    public Object getProperty(String key) {
-        return yaml.getProperty(key);
+    public String getString(final String key) {
+        return yaml.getString(key, null);
     }
 
     @Override

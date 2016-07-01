@@ -1,5 +1,6 @@
 package cz.tacr.elza.bulkaction.factory;
 
+import cz.tacr.elza.bulkaction.generator.MultipleBulkAction;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -40,6 +41,9 @@ public class BulkActionFactory {
 
             case FundValidationBulkAction.TYPE:
                 return new FundValidationBulkAction();
+
+            case MultipleBulkAction.TYPE:
+                return new MultipleBulkAction();
 
             default:
                 throw new IllegalStateException("Hromadna akce " + code + " neexistuje");

@@ -12,12 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.utils.Yaml;
 import liquibase.util.file.FilenameUtils;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import cz.tacr.elza.bulkaction.yaml.YamlProperties;
 
 
 /**
@@ -62,7 +61,7 @@ public class BulkActionConfigManager {
     /**
      * Načtení hromadných akcí z adresáře.
      */
-    public void load() throws IOException {
+    public void load() throws IOException, Yaml.YAMLInvalidContentException {
 
         bulkActionConfigMap = new HashMap<>();
 
@@ -137,7 +136,7 @@ public class BulkActionConfigManager {
     /**
      * Uložení nastavení hromadných akcí do konfuguračních souborů.
      */
-    public void save() throws IOException {
+    public void save() throws IOException, Yaml.YAMLNotInitializedException {
         for (Map.Entry<String, BulkActionConfig> bulkActionConfigEntry : bulkActionConfigMap.entrySet()) {
             String name = getFileName(bulkActionConfigEntry.getValue());
             saveFile(bulkActionConfigEntry.getValue().getYaml(), name);
@@ -150,7 +149,7 @@ public class BulkActionConfigManager {
      * @param bulkActionConfig nastavení hromadné akce
      * @return upravené nastavení hromadné akce
      */
-    public BulkActionConfig update(final BulkActionConfig bulkActionConfig) throws IOException {
+    public BulkActionConfig update(final BulkActionConfig bulkActionConfig) throws IOException, Yaml.YAMLNotInitializedException {
         BulkActionConfig bulkActionConfigOrig = get(bulkActionConfig.getCode());
 
         if (bulkActionConfigOrig == null) {
@@ -190,23 +189,16 @@ public class BulkActionConfigManager {
 
     /**
      * Uložení nastavení hromadné akce do souboru.
-     *
-     * @param yaml struktura kofiguračního souboru
+     *  @param yaml struktura kofiguračního souboru
      * @param name název konfiguračního souboru
      */
-    private void saveFile(final YamlProperties yaml, final String name) throws IOException {
+    private void saveFile(final Yaml yaml, final String name) throws IOException, Yaml.YAMLNotInitializedException {
         File file = new File(name);
         if (!file.exists()) {
             file.getParentFile().mkdirs();
             file.createNewFile();
         }
-
-        FileWriter fw = new FileWriter(file);
-        try {
-            yaml.store(fw, "");
-        } finally {
-            fw.close();
-        }
+        yaml.save(file);
     }
 
     /**
@@ -214,7 +206,7 @@ public class BulkActionConfigManager {
      *
      * @param bulkActionConfig nastavení hromadné akce
      */
-    public void save(final BulkActionConfig bulkActionConfig) throws IOException {
+    public void save(final BulkActionConfig bulkActionConfig) throws IOException, Yaml.YAMLNotInitializedException {
         String name = getFileName(bulkActionConfig);
         saveFile(bulkActionConfig.getYaml(), name);
     }

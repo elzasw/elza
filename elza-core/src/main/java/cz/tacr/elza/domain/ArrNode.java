@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Entity(name = "arr_node")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrNode<ArrFund> {
+public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrNode<ArrFund>, Comparable<ArrNode> {
 
     public static final String FUND = "fund";
 
@@ -118,5 +118,10 @@ public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.a
 
     public void setLevels(final List<ArrLevel> levels) {
         this.levels = levels;
+    }
+
+    @Override
+    public int compareTo(final ArrNode o) {
+        return getNodeId().compareTo(o.getNodeId());
     }
 }

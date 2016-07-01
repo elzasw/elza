@@ -93,22 +93,28 @@ public class SerialNumberBulkAction extends BulkAction {
 
         Assert.notNull(bulkActionConfig);
 
-        String serialIdCode = (String) bulkActionConfig.getProperty("serial_id_code");
-        Assert.notNull(serialIdCode);
+        try {
 
-        descItemType = itemTypeRepository.getOneByCode(serialIdCode);
-        Assert.notNull(descItemType);
+            String serialIdCode = (String) bulkActionConfig.getString("serial_id_code");
+            Assert.notNull(serialIdCode);
 
-        String levelTypeCode = (String) bulkActionConfig.getProperty("level_type_code");
-        if (levelTypeCode != null) {
-            descItemEndType = itemTypeRepository.getOneByCode(levelTypeCode);
-            Assert.notNull(descItemEndType);
+            descItemType = itemTypeRepository.getOneByCode(serialIdCode);
+            Assert.notNull(descItemType);
 
-            String levelTypeEndGenerationForArrType = (String) bulkActionConfig.getProperty(
-                    "level_type_end_generation_for_arr_type");
-            Assert.notNull(levelTypeEndGenerationForArrType);
-            descItemEndSpec = itemSpecRepository.getOneByCode(levelTypeEndGenerationForArrType);
-            Assert.notNull(descItemEndSpec);
+            String levelTypeCode = (String) bulkActionConfig.getString("level_type_code");
+            if (levelTypeCode != null) {
+                descItemEndType = itemTypeRepository.getOneByCode(levelTypeCode);
+                Assert.notNull(descItemEndType);
+
+                String levelTypeEndGenerationForArrType = (String) bulkActionConfig.getString(
+                        "level_type_end_generation_for_arr_type");
+                Assert.notNull(levelTypeEndGenerationForArrType);
+                descItemEndSpec = itemSpecRepository.getOneByCode(levelTypeEndGenerationForArrType);
+                Assert.notNull(descItemEndSpec);
+            }
+
+        } catch (Exception e) {
+
         }
     }
 
@@ -227,9 +233,9 @@ public class SerialNumberBulkAction extends BulkAction {
 
         for (Integer nodeId : inputNodeIds) {
             ArrNode node = nodeRepository.findOne(nodeId);
-            Assert.notNull("Node s nodeId=" + nodeId + " neexistuje");
+            Assert.notNull(nodeId, "Node s nodeId=" + nodeId + " neexistuje");
             ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
-            Assert.notNull("Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
+            Assert.notNull(level, "Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
 
             generate(level, rootNode);
         }

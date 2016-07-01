@@ -26,7 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
- * TODO: vyplnit popis třídy
+ * Serviska pro správu hodnot atributů.
  *
  * @author Martin Šlapa
  * @since 24.06.2016
@@ -656,6 +656,8 @@ public class ItemService implements InitializingBean {
                         arrItemUnitdate.setValueTo(arrDataUnitdate.getValueTo());
                         arrItemUnitdate.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
                         arrItemUnitdate.setFormat(arrDataUnitdate.getFormat());
+                        arrItemUnitdate.setNormalizedTo(arrDataUnitdate.getNormalizedTo());
+                        arrItemUnitdate.setNormalizedFrom(arrDataUnitdate.getNormalizedFrom());
                     }
                 }).register();
 
@@ -673,6 +675,8 @@ public class ItemService implements InitializingBean {
                         arrDataUnitdateNew.setValueTo(arrDataUnitdate.getValueTo());
                         arrDataUnitdateNew.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
                         arrDataUnitdateNew.setFormat(arrDataUnitdate.getFormat());
+                        arrDataUnitdateNew.setNormalizedTo(arrDataUnitdate.getNormalizedTo());
+                        arrDataUnitdateNew.setNormalizedFrom(arrDataUnitdate.getNormalizedFrom());
                     }
                 }).register();
     }

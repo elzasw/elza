@@ -21,4 +21,13 @@
             <action-item-type item-type="ZP2015_IMPRINT_COUNT" />
         </action-item-types>
     </package-action>
+
+    <package-action filename="GENERATOR_MULTIPLE_ZP2015.yaml">
+        <action-recommendeds>
+            <action-recommended output-type="AP_INVENTORY" />
+            <action-recommended output-type="AP_CATALOG" />
+            <action-recommended output-type="LABELS" />
+            <action-recommended output-type="INVENTORY" />
+        </action-recommendeds>
+    </package-action>
 </package-actions>
