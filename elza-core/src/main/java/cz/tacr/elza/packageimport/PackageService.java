@@ -2,7 +2,22 @@ package cz.tacr.elza.packageimport;
 
 import com.google.common.collect.Maps;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulActionRecommended;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulDefaultItemType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecRegister;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeAction;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulRule;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.packageimport.xml.*;
@@ -11,6 +26,7 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
+import cz.tacr.elza.utils.Yaml;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -279,7 +295,7 @@ public class PackageService {
                 rollBackFiles(dirActions);
                 rollBackFiles(dirRules);
                 bulkActionConfigManager.load();
-            } catch (IOException e1) {
+            } catch (Yaml.YAMLInvalidContentException | IOException e1) {
                 throw new IllegalStateException(e);
             }
             throw new IllegalStateException(e);
@@ -534,7 +550,7 @@ public class PackageService {
             }
 
             bulkActionConfigManager.load();
-        } catch (IOException e) {
+        } catch (Yaml.YAMLInvalidContentException | IOException e) {
             throw new IllegalStateException(e);
         }
 
@@ -697,7 +713,7 @@ public class PackageService {
             }
 
             bulkActionConfigManager.load();
-        } catch (IOException e) {
+        } catch (Yaml.YAMLInvalidContentException | IOException e) {
             throw new IllegalStateException(e);
         }
 
@@ -875,8 +891,8 @@ public class PackageService {
                     if (item.getColumnsDefinition() != null && !equalsColumns(item.getColumnsDefinition(), itemType.getColumnsDefinition())) {
                         Long countDescItems = descItemRepository.getCountByType(item);
                         if (countDescItems != null && countDescItems > 0) {
-//                            throw new IllegalStateException("Nelze změnit definici sloupců (datový typ a kód) u typu " + item.getCode()
-//                                    + ", protože existují záznamy, které typ využívají");
+                            throw new IllegalStateException("Nelze změnit definici sloupců (datový typ a kód) u typu " + item.getCode()
+                                    + ", protože existují záznamy, které typ využívají");
                         }
                     }
 
@@ -1092,6 +1108,12 @@ public class PackageService {
             }
             for (String file : templateFileKeys) {
                 saveFile(mapEntry, dirFile, templateDir, file);
+            }
+            try {
+                bulkActionConfigManager.load();
+            }
+            catch (Yaml.YAMLInvalidContentException | IOException e) {
+                throw new IllegalStateException(e);
             }
         }
     }
@@ -1512,7 +1534,7 @@ public class PackageService {
 
                 bulkActionConfigManager.load();
                 throw new IllegalStateException(e);
-            } catch (IOException e1) {
+            } catch (Yaml.YAMLInvalidContentException | IOException e1) {
                 throw new IllegalStateException(e);
             }
         }

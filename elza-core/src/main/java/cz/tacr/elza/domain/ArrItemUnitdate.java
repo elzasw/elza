@@ -21,6 +21,10 @@ public class ArrItemUnitdate extends ArrItemData implements cz.tacr.elza.api.Arr
 
     private String format;
 
+    private Long normalizedTo;
+
+    private Long normalizedFrom;
+
     @Override
     public String getValueFrom() {
         return this.valueFrom;
@@ -106,5 +110,21 @@ public class ArrItemUnitdate extends ArrItemData implements cz.tacr.elza.api.Arr
 
         return ret;
 
+    }
+
+    public void setNormalizedTo(final Long normalizedTo) {
+        this.normalizedTo = normalizedTo;
+    }
+
+    public Long getNormalizedTo() {
+        return normalizedTo;
+    }
+
+    public void setNormalizedFrom(final Long normalizedFrom) {
+        this.normalizedFrom = normalizedFrom;
+    }
+
+    public Long getNormalizedFrom() {
+        return normalizedFrom;
     }
 }

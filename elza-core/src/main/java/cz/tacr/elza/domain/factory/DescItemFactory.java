@@ -574,6 +574,8 @@ public class DescItemFactory implements InitializingBean {
                         arrItemUnitdate.setValueTo(arrDataUnitdate.getValueTo());
                         arrItemUnitdate.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
                         arrItemUnitdate.setFormat(arrDataUnitdate.getFormat());
+                        arrItemUnitdate.setNormalizedTo(arrDataUnitdate.getNormalizedTo());
+                        arrItemUnitdate.setNormalizedFrom(arrDataUnitdate.getNormalizedFrom());
                     }
                 }).register();
 

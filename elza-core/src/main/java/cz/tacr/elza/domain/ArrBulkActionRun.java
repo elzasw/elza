@@ -3,10 +3,16 @@ package cz.tacr.elza.domain;
 import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.tacr.elza.bulkaction.generator.result.Result;
+import cz.tacr.elza.domain.table.ElzaColumn;
 import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -20,7 +26,9 @@ import java.util.List;
  */
 @Entity(name = "arr_bulk_action_run")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrChange, ArrFundVersion, ArrBulkActionNode, ArrOutputDefinition> {
+public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrChange, ArrFundVersion, ArrBulkActionNode, ArrOutputDefinition, Result> {
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Id
     @GeneratedValue
@@ -198,13 +206,24 @@ public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrCh
     }
 
     @Override
-    public String getResult() {
-        return result;
+    public Result getResult() {
+        if (this.result == null) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(this.result, new TypeReference<Result>(){});
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Problém při generování JSON", e);
+        }
     }
 
     @Override
-    public void setResult(final String result) {
-        this.result = result;
+    public void setResult(final Result result) {
+        try {
+            this.result = objectMapper.writeValueAsString(result);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Problém při parsování JSON", e);
+        }
     }
 
     @Override

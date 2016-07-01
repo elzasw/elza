@@ -1,5 +1,7 @@
 package cz.tacr.elza.api;
 
+import cz.tacr.elza.api.vo.result.Result;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -14,7 +16,8 @@ import java.util.List;
  * @author Martin Šlapa
  * @since 10.11.2015
  */
-public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFundVersion, ABAN extends ArrBulkActionNode, OD extends ArrOutputDefinition> extends Serializable {
+public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFundVersion, ABAN extends ArrBulkActionNode,
+        OD extends ArrOutputDefinition, R extends Result> extends Serializable {
 
     /**
      * Stav hromadné akce
@@ -219,12 +222,12 @@ public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFundVersi
     /**
      * @return výsledek hromadné akce
      */
-    String getResult();
+    R getResult();
 
     /**
      * @param result výsledek hromadné akce
      */
-    void setResult(String result);
+    void setResult(R result);
 
     /**
      * @return vazba na výstup

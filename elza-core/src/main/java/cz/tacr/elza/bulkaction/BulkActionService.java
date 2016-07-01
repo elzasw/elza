@@ -22,6 +22,7 @@ import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.utils.Yaml;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -228,7 +229,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     public void reload() {
         try {
             bulkActionConfigManager.load();
-        } catch (IOException e) {
+        } catch (Yaml.YAMLInvalidContentException | IOException e) {
             throw new IllegalStateException("Nastal problem při načítání hromadných akcí", e);
         }
     }
@@ -334,7 +335,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     public BulkActionConfig update(final BulkActionConfig bulkActionConfig) {
         try {
             return bulkActionConfigManager.update(bulkActionConfig);
-        } catch (IOException e) {
+        } catch (IOException | Yaml.YAMLNotInitializedException e) {
             throw new IllegalStateException("Problém při aktualizaci hromadné akce", e);
         }
     }
@@ -484,7 +485,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
             bulkActionRun.setFundVersion(version);
 
-            String ruleCode = (String) bulkActionConfigOrig.getProperty("rule_code");
+            String ruleCode = (String) bulkActionConfigOrig.getString("rule_code");
             if (ruleCode == null || !version.getRuleSet().getCode().equals(ruleCode)) {
                 throw new IllegalArgumentException("Nastavení kódu pravidel (rule_code: " + ruleCode
                         + ") hromadné akce neodpovídá verzi archivní pomůcky (rule_code: " + version.getRuleSet().getCode()

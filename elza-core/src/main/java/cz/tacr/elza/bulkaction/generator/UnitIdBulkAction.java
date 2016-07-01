@@ -101,36 +101,36 @@ public class UnitIdBulkAction extends BulkAction {
 
         Assert.notNull(bulkActionConfig);
 
-        String unitIdCode = (String) bulkActionConfig.getProperty("unit_id_code");
+        String unitIdCode = (String) bulkActionConfig.getString("unit_id_code");
         Assert.notNull(unitIdCode);
 
         descItemType = itemTypeRepository.getOneByCode(unitIdCode);
         Assert.notNull(descItemType);
 
-        String levelTypeCode = (String) bulkActionConfig.getProperty("level_type_code");
+        String levelTypeCode = (String) bulkActionConfig.getString("level_type_code");
         Assert.notNull(levelTypeCode);
 
         descItemLevelType = itemTypeRepository.getOneByCode(levelTypeCode);
         Assert.notNull(descItemLevelType);
 
-        String delimiterMajor = (String) bulkActionConfig.getProperty("delimiter_major");
+        String delimiterMajor = (String) bulkActionConfig.getString("delimiter_major");
         Assert.notNull(delimiterMajor);
         this.delimiterMajor = delimiterMajor;
 
-        String delimiterMinor = (String) bulkActionConfig.getProperty("delimiter_minor");
+        String delimiterMinor = (String) bulkActionConfig.getString("delimiter_minor");
         Assert.notNull(delimiterMinor);
         this.delimiterMinor = delimiterMinor;
 
-        String previousIdCode = (String) bulkActionConfig.getProperty("previous_id_code");
+        String previousIdCode = (String) bulkActionConfig.getString("previous_id_code");
         descItemPreviousType = itemTypeRepository.getOneByCode(previousIdCode);
         Assert.notNull(descItemPreviousType);
 
-        String previousIdSpecCode = (String) bulkActionConfig.getProperty("previous_id_spec_code");
+        String previousIdSpecCode = (String) bulkActionConfig.getString("previous_id_spec_code");
         descItemPreviousSpec = itemSpecRepository.getOneByCode(previousIdSpecCode);
         Assert.notNull(descItemPreviousSpec);
 
         String delimiterMajorLevelTypeNotUse = (String) bulkActionConfig
-                .getProperty("delimiter_major_level_type_not_use");
+                .getString("delimiter_major_level_type_not_use");
         if (delimiterMajorLevelTypeNotUse == null) {
             delimiterMajorLevelTypeNotUseList = new ArrayList<>();
         } else {
