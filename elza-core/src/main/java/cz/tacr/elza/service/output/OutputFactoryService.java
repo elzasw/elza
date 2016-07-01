@@ -3,6 +3,7 @@ package cz.tacr.elza.service.output;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
@@ -10,6 +11,7 @@ import cz.tacr.elza.domain.ArrItemCoordinates;
 import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.ArrItemDecimal;
 import cz.tacr.elza.domain.ArrItemEnum;
+import cz.tacr.elza.domain.ArrItemFileRef;
 import cz.tacr.elza.domain.ArrItemFormattedText;
 import cz.tacr.elza.domain.ArrItemInt;
 import cz.tacr.elza.domain.ArrItemJsonTable;
@@ -49,6 +51,7 @@ import cz.tacr.elza.print.item.AbstractItem;
 import cz.tacr.elza.print.item.ItemCoordinates;
 import cz.tacr.elza.print.item.ItemDecimal;
 import cz.tacr.elza.print.item.ItemEnum;
+import cz.tacr.elza.print.item.ItemFile;
 import cz.tacr.elza.print.item.ItemInteger;
 import cz.tacr.elza.print.item.ItemJsonTable;
 import cz.tacr.elza.print.item.ItemPacketRef;
@@ -228,11 +231,6 @@ public class OutputFactoryService {
 
         fund.setInstitution(institution);
 
-        // records
-        // TODO Lebeda - Co je tou vazbou myšleno??
-//        output.getRecords().add();
-
-
         // zařadit items přímo přiřazené na output
         final List<ArrOutputItem> outputItems = outputService.getOutputItems(arrFundVersion, arrOutput.getOutputDefinition());
         outputItems.stream().forEach(arrOutputItem -> {
@@ -334,11 +332,8 @@ public class OutputFactoryService {
         final List<ArrLevel> levelList = levelRepository.findAllParentsByNodeAndVersion(arrNode, arrFundVersion);
         node.setDepth(levelList.size() + 1);
 
-//        node.getRecords().add(); // TODO Lebeda - plnit návazné records - kde je vazba???
-//        node.getRecords().add()
-
         // items navázané k node
-        final List<ArrDescItem> descItems = arrangementService.getDescItems(arrFundVersion, arrNode);
+        final List<ArrDescItem> descItems = arrangementService.getArrDescItemsInternal(arrFundVersion, arrNode);
         descItems.stream()
                 .sorted((o1, o2) -> o1.getPosition().compareTo(o2.getPosition()))
                 .forEach(arrDescItem -> {
@@ -408,10 +403,8 @@ public class OutputFactoryService {
             item = getItemUnitInteger(output, node, arrItem, (ArrItemInt) itemData);
         } else if (itemData instanceof ArrItemFormattedText) {
             item = getItemUnitFormatedText(output, node, arrItem, (ArrItemFormattedText) itemData);
-//        } else if (itemData instanceof ArrItemFile) {
-//            item = getItemUnitid(output, node, arrItem, (ArrItemFile) itemData);
-//            item = new ItemFile(arrItem, output, node, value);
-//             TODO Lebeda - implementovat pro jaký zdrojový typ???
+        } else if (itemData instanceof ArrItemFileRef) {
+            item = getItemFile(output, node, arrItem, (ArrItemFileRef) itemData);
         } else if (itemData instanceof ArrItemEnum) {
             item = getItemUnitEnum(output, node, arrItem, (ArrItemEnum) itemData);
         } else if (itemData instanceof ArrItemDecimal) {
@@ -423,6 +416,19 @@ public class OutputFactoryService {
             item = new ItemString(arrItem, output, node, itemData.toString());
         }
         return item;
+    }
+
+    private AbstractItem getItemFile(Output output, Node node, ArrItem arrItem, ArrItemFileRef itemData) {
+        final ArrFile arrFile = itemData.getFile();
+
+        final ItemFile itemFile = new ItemFile(arrItem, output, node, arrFile.getFile());
+        itemFile.setName(arrFile.getName());
+        itemFile.setFileName(arrFile.getFileName());
+        itemFile.setFileSize(arrFile.getFileSize());
+        itemFile.setMimeType(arrFile.getMimeType());
+        itemFile.setPagesCount(arrFile.getPagesCount());
+
+        return itemFile;
     }
 
     private AbstractItem getItemUnitString(Output output, Node node, ArrItem arrItem, ArrItemString itemData) {

@@ -1598,7 +1598,8 @@ public class ArrangementController {
     @RequestMapping(value = "/output/generate/{outputId}", method = RequestMethod.GET)
     public void generateOutput(@PathVariable(value = "outputId") final Integer outputId) {
         ArrOutput output = outputService.getOutput(outputId);
-        outputGeneratorService.generateOutput(output);
+        // TODO Compel - místo null při volání plnit správné userID
+        outputGeneratorService.generateOutput(output, null);
     }
 
     /**

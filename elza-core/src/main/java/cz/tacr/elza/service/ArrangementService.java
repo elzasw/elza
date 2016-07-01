@@ -18,13 +18,50 @@ import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundRegisterScope;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UIVisiblePolicy;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.InvalidQueryException;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.repository.BulkActionNodeRepository;
+import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FundRegisterScopeRepository;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeOutputRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
+import cz.tacr.elza.repository.OutputItemRepository;
+import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
@@ -34,7 +71,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,106 +80,87 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.annotation.Nullable;
 import java.text.Normalizer;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 
 /**
- *
- *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 20. 12. 2015
  */
 @Service
 public class ArrangementService {
 
-    private Log logger = LogFactory.getLog(this.getClass());
-
-    @Autowired
-    private LevelTreeCacheService levelTreeCacheService;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private UpdateConformityInfoService updateConformityInfoService;
-
-    @Autowired
-    private BulkActionService bulkActionService;
-
-    @Autowired
-    private RuleService ruleService;
-
-    @Autowired
-    private RulesExecutor rulesExecutor;
-
-    @Autowired
-    private ItemRepository itemRepository;
-
-    @Autowired
-    private IEventNotificationService eventNotificationService;
-
-    @Autowired
-    private DescriptionItemService descriptionItemService;
-
-    @Autowired
-    private FundVersionRepository fundVersionRepository;
-
-    @Autowired
-    private FundRepository fundRepository;
-
-    @Autowired
-    private ChangeRepository changeRepository;
-
-    @Autowired
-    private LevelRepository levelRepository;
-
-    @Autowired
-    private NodeRepository nodeRepository;
-
-    @Autowired
-    private DescItemRepository descItemRepository;
-
-    @Autowired
-    private DataRepository dataRepository;
-
-    @Autowired
-    private NodeRegisterRepository nodeRegisterRepository;
-
-    @Autowired
-    private NodeConformityRepository nodeConformityInfoRepository;
-
-    @Autowired
-    private NodeConformityErrorRepository nodeConformityErrorsRepository;
-
-    @Autowired
-    private NodeConformityMissingRepository nodeConformityMissingRepository;
-
-    @Autowired
-    private BulkActionRunRepository faBulkActionRepository;
-
-    @Autowired
-    private BulkActionNodeRepository faBulkActionNodeRepository;
-
-    @Autowired
-    private PacketRepository packetRepository;
-
-    @Autowired
-    private DescItemFactory descItemFactory;
-
-    @Autowired
-    private FundRegisterScopeRepository faRegisterRepository;
-
-    @Autowired
-    private ScopeRepository scopeRepository;
-
-    @Autowired
-    private OutputItemRepository outputItemRepository;
-
     //TODO smazat závislost až bude DescItemService
     @Autowired
     protected FundRegisterScopeRepository fundRegisterScopeRepository;
-
+    private Log logger = LogFactory.getLog(this.getClass());
+    @Autowired
+    private LevelTreeCacheService levelTreeCacheService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private UpdateConformityInfoService updateConformityInfoService;
+    @Autowired
+    private BulkActionService bulkActionService;
+    @Autowired
+    private RuleService ruleService;
+    @Autowired
+    private RulesExecutor rulesExecutor;
+    @Autowired
+    private ItemRepository itemRepository;
+    @Autowired
+    private IEventNotificationService eventNotificationService;
+    @Autowired
+    private DescriptionItemService descriptionItemService;
+    @Autowired
+    private FundVersionRepository fundVersionRepository;
+    @Autowired
+    private FundRepository fundRepository;
+    @Autowired
+    private ChangeRepository changeRepository;
+    @Autowired
+    private LevelRepository levelRepository;
+    @Autowired
+    private NodeRepository nodeRepository;
+    @Autowired
+    private DescItemRepository descItemRepository;
+    @Autowired
+    private DataRepository dataRepository;
+    @Autowired
+    private NodeRegisterRepository nodeRegisterRepository;
+    @Autowired
+    private NodeConformityRepository nodeConformityInfoRepository;
+    @Autowired
+    private NodeConformityErrorRepository nodeConformityErrorsRepository;
+    @Autowired
+    private NodeConformityMissingRepository nodeConformityMissingRepository;
+    @Autowired
+    private BulkActionRunRepository faBulkActionRepository;
+    @Autowired
+    private BulkActionNodeRepository faBulkActionNodeRepository;
+    @Autowired
+    private PacketRepository packetRepository;
+    @Autowired
+    private DescItemFactory descItemFactory;
+    @Autowired
+    private FundRegisterScopeRepository faRegisterRepository;
+    @Autowired
+    private ScopeRepository scopeRepository;
+    @Autowired
+    private OutputItemRepository outputItemRepository;
     @Autowired
     private RegistryService registryService;
 
@@ -165,13 +182,13 @@ public class ArrangementService {
     /**
      * Vytvoření archivního souboru.
      *
-     * @param name          název
-     * @param ruleSet       pravidla
-     * @param change        změna
-     * @param uuid          uuid
-     * @param internalCode  iterní kód
-     * @param institution   instituce
-     * @param dateRange     časový rozsah
+     * @param name         název
+     * @param ruleSet      pravidla
+     * @param change       změna
+     * @param uuid         uuid
+     * @param internalCode iterní kód
+     * @param institution  instituce
+     * @param dateRange    časový rozsah
      * @return vytvořený arch. soubor
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
@@ -204,7 +221,7 @@ public class ArrangementService {
     /**
      * @param fund
      * @param ruleSet
-     *@param scopes  @return Upravená archivní pomůcka
+     * @param scopes  @return Upravená archivní pomůcka
      */
     @Transactional
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
@@ -232,7 +249,7 @@ public class ArrangementService {
 
 
         ArrFundVersion openVersion = getOpenVersionByFundId(originalFund.getFundId());
-        if(!ruleSet.equals(openVersion.getRuleSet())){
+        if (!ruleSet.equals(openVersion.getRuleSet())) {
             openVersion.setRuleSet(ruleSet);
             fundVersionRepository.save(openVersion);
 
@@ -280,10 +297,10 @@ public class ArrangementService {
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas. Pro root
      * vytvoří atributy podle scénáře.
      *
-     * @param name            název archivní pomůcky
-     * @param ruleSet         id pravidel podle kterých se vytváří popis
-     * @param dateRange       vysčítaná informace o časovém rozsahu fondu
-     * @param internalCode    interní označení
+     * @param name         název archivní pomůcky
+     * @param ruleSet      id pravidel podle kterých se vytváří popis
+     * @param dateRange    vysčítaná informace o časovém rozsahu fondu
+     * @param internalCode interní označení
      * @return nová archivní pomůcka
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
@@ -331,10 +348,10 @@ public class ArrangementService {
 
 
     private ArrFundVersion createVersion(final ArrChange createChange,
-                                        final ArrFund fund,
-                                        final RulRuleSet ruleSet,
-                                        final ArrNode rootNode,
-                                        final String dateRange) {
+                                         final ArrFund fund,
+                                         final RulRuleSet ruleSet,
+                                         final ArrNode rootNode,
+                                         final String dateRange) {
         ArrFundVersion version = new ArrFundVersion();
         version.setCreateChange(createChange);
         version.setFund(fund);
@@ -345,9 +362,9 @@ public class ArrangementService {
     }
 
     private ArrLevel createLevel(final ArrChange createChange,
-                                final ArrNode parentNode,
-                                final String uuid,
-                                final ArrFund fund) {
+                                 final ArrNode parentNode,
+                                 final String uuid,
+                                 final ArrFund fund) {
         ArrLevel level = new ArrLevel();
         level.setPosition(1);
         level.setCreateChange(createChange);
@@ -434,7 +451,7 @@ public class ArrangementService {
 
         List<ArrOutputDefinition> outputDefinitions = outputDefinitionRepository.findByFund(fund);
 
-        if(!outputDefinitions.isEmpty()){
+        if (!outputDefinitions.isEmpty()) {
             for (ArrOutputDefinition outputDefinition : outputDefinitions) {
                 outputRepository.delete(outputDefinition.getOutputs());
                 nodeOutputRepository.delete(outputDefinition.getOutputNodes());
@@ -451,7 +468,7 @@ public class ArrangementService {
 
         fundVersionRepository.findVersionsByFundIdOrderByCreateDateDesc(fundId)
                 .forEach(deleteVersion ->
-                                deleteVersion(deleteVersion)
+                        deleteVersion(deleteVersion)
                 );
 
 
@@ -478,8 +495,8 @@ public class ArrangementService {
      * Uzavře otevřenou verzi archivní pomůcky a otevře novou verzi.
      * - spustí přepočet stavů uzlů pro novou verzi
      *
-     * @param version         verze, která se má uzavřít
-     * @param dateRange       vysčítaná informace o časovém rozsahu fondu
+     * @param version   verze, která se má uzavřít
+     * @param dateRange vysčítaná informace o časovém rozsahu fondu
      * @return nová verze archivní pomůcky
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
      */
@@ -528,8 +545,8 @@ public class ArrangementService {
         bulkActionService.terminateBulkActions(version.getFundVersionId());
 
         faBulkActionRepository.findByFundVersionId(version.getFundVersionId()).forEach(action -> {
-                        faBulkActionNodeRepository.deleteByBulkAction(action);
-                        faBulkActionRepository.delete(action);
+            faBulkActionNodeRepository.deleteByBulkAction(action);
+            faBulkActionRepository.delete(action);
         });
 
         nodeConformityInfoRepository.findByFundVersion(version).forEach(conformityInfo -> {
@@ -541,10 +558,10 @@ public class ArrangementService {
 
     private void deleteConformityInfo(final ArrNodeConformity conformityInfo) {
         nodeConformityErrorsRepository.findByNodeConformity(conformityInfo).forEach(error ->
-                        nodeConformityErrorsRepository.delete(error)
+                nodeConformityErrorsRepository.delete(error)
         );
         nodeConformityMissingRepository.findByNodeConformity(conformityInfo).forEach(error ->
-                        nodeConformityMissingRepository.delete(error)
+                nodeConformityMissingRepository.delete(error)
         );
 
         nodeConformityInfoRepository.delete(conformityInfo);
@@ -656,7 +673,7 @@ public class ArrangementService {
         descItem.setDeleteChange(deleteChange);
         ArrDescItem descItemTmp;
         //try {
-            descItemTmp = new ArrDescItem();
+        descItemTmp = new ArrDescItem();
         /*} catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException(e);
         }*/
@@ -666,7 +683,7 @@ public class ArrangementService {
 
     /**
      * Vrací další identifikátor objektu pro atribut (oproti PK se zachovává při nové verzi)
-     *
+     * <p>
      * TODO:
      * Není dořešené, může dojít k přidělení stejného object_id dvěma různýmhodnotám atributu.
      * Řešit v budoucnu zrušením object_id (pravděpodobně GUID) nebo vytvořením nové entity,
@@ -693,6 +710,18 @@ public class ArrangementService {
     public List<ArrDescItem> getDescItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                           final ArrNode node) {
 
+        return getArrDescItemsInternal(version, node);
+    }
+
+    /**
+     * Získání hodnot atributů podle verze AP a uzlu.
+     * <b> Metoda nekontroluje oprávnění. </b>
+     *
+     * @param version verze AP
+     * @param node    uzel
+     * @return seznam hodnot atributů
+     */
+    public List<ArrDescItem> getArrDescItemsInternal(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion version, ArrNode node) {
         List<ArrDescItem> itemList;
 
         if (version.getLockChange() == null) {
@@ -761,29 +790,28 @@ public class ArrangementService {
      * @return true pokud patří uzel do verze, jinak false
      */
     public boolean validLevelInVersion(final ArrLevel level, final ArrFundVersion version) {
-           Assert.notNull(level);
-           Assert.notNull(version);
-           Integer lockChange = version.getLockChange() == null
-                                ? Integer.MAX_VALUE : version.getLockChange().getChangeId();
+        Assert.notNull(level);
+        Assert.notNull(version);
+        Integer lockChange = version.getLockChange() == null
+                ? Integer.MAX_VALUE : version.getLockChange().getChangeId();
 
-           Integer levelDeleteChange = level.getDeleteChange() == null ?
-                                       Integer.MAX_VALUE : level.getDeleteChange().getChangeId();
+        Integer levelDeleteChange = level.getDeleteChange() == null ?
+                Integer.MAX_VALUE : level.getDeleteChange().getChangeId();
 
-           if (level.getCreateChange().getChangeId() < lockChange && levelDeleteChange >= lockChange) {
-               return true;
-           } else {
-               return false;
-           }
-       }
+        if (level.getCreateChange().getChangeId() < lockChange && levelDeleteChange >= lockChange) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Vyhledání id nodů podle hodnoty atributu.
      *
-     * @param version   verze AP
-     * @param nodeId    id uzlu pod kterým se má hledat, může být null
+     * @param version     verze AP
+     * @param nodeId      id uzlu pod kterým se má hledat, může být null
      * @param searchValue hledaná hodnota
-     * @param depth     hloubka v jaké se hledá pod předaným nodeId
-     *
+     * @param depth       hloubka v jaké se hledá pod předaným nodeId
      * @return seznam id uzlů které vyhovují parametrům
      */
     public Set<Integer> findNodeIdsByFulltext(final ArrFundVersion version, final Integer nodeId, final String searchValue, final Depth depth) {
@@ -881,7 +909,6 @@ public class ArrangementService {
      * Načte počet chyb verze archivní pomůcky.
      *
      * @param fundVersion verze archivní pomůcky
-     *
      * @return počet chyb
      */
     public Integer getVersionErrorCount(final ArrFundVersion fundVersion) {
@@ -951,7 +978,6 @@ public class ArrangementService {
      *
      * @param nodeIds id nodů
      * @param version verze AP
-     *
      * @return seznam id nodů a jejich rodičů
      */
     public List<TreeNodeFulltext> createTreeNodeFulltextList(final Set<Integer> nodeIds, final ArrFundVersion version) {
@@ -962,7 +988,7 @@ public class ArrangementService {
 
         List<Integer> sortedNodeIds = levelTreeCacheService.sortNodesByTreePosition(nodeIds, version);
 
-        List<TreeNodeFulltext> result =  new ArrayList<>(sortedNodeIds.size());
+        List<TreeNodeFulltext> result = new ArrayList<>(sortedNodeIds.size());
         for (Integer nodeId : sortedNodeIds) {
             TreeNodeFulltext treeNodeFulltext = new TreeNodeFulltext();
 
@@ -1036,10 +1062,10 @@ public class ArrangementService {
     /**
      * Vyhledání sousedních uzlů kolem určitého uzlu.
      *
-     * @param version   verze AP
-     * @param node      uzel
-     * @param around    velikost okolí
-     * @return  okolní uzly (včetně původního)
+     * @param version verze AP
+     * @param node    uzel
+     * @param around  velikost okolí
+     * @return okolní uzly (včetně původního)
      */
     public List<ArrNode> findSiblingsAroundOfNode(final ArrFundVersion version, final ArrNode node, final Integer around) {
         List<ArrNode> siblings = nodeRepository.findNodesByDirection(node, version, RelatedNodeDirection.ALL_SIBLINGS);
@@ -1058,7 +1084,7 @@ public class ArrangementService {
         min = min < 0 ? 0 : min;
         max = max > siblings.size() - 1 ? siblings.size() - 1 : max;
 
-        for(int i = min; i <= max; i++) {
+        for (int i = min; i <= max; i++) {
             result.add(siblings.get(i));
         }
 
@@ -1068,9 +1094,9 @@ public class ArrangementService {
     /**
      * Vrací výsek chybných JP podle indexů.
      *
-     * @param fundVersion   verze archivní pomůcky
-     * @param indexFrom     od indexu
-     * @param indexTo       do indexu
+     * @param fundVersion verze archivní pomůcky
+     * @param indexFrom   od indexu
+     * @param indexTo     do indexu
      * @return
      */
     public ArrangementController.ValidationItems getValidationNodes(final ArrFundVersion fundVersion,
@@ -1159,9 +1185,9 @@ public class ArrangementService {
     /**
      * Vyhledává chyby po/před zvolené JP.
      *
-     * @param fundVersion   verze archivního fondu
-     * @param nodeId        identifikátor uzlu, od kterého vyhledávám
-     * @param direction     směr hledání
+     * @param fundVersion verze archivního fondu
+     * @param nodeId      identifikátor uzlu, od kterého vyhledávám
+     * @param direction   směr hledání
      * @return výsledek hledání
      */
     public ArrangementController.ValidationItems findErrorNode(final ArrFundVersion fundVersion,
@@ -1288,10 +1314,10 @@ public class ArrangementService {
     /**
      * Detekuje, zdali nad předanými uzly byly provedené změny po předaných změnách.
      *
-     * @param nodes             seznam nodů od kterých prohledáváme
-     * @param changes           seznam změn vůči kterým porovnáváme
-     * @param includeParents    zahrnout rodiče k root?
-     * @param includeChildren   zahrnout podstrom?
+     * @param nodes           seznam nodů od kterých prohledáváme
+     * @param changes         seznam změn vůči kterým porovnáváme
+     * @param includeParents  zahrnout rodiče k root?
+     * @param includeChildren zahrnout podstrom?
      * @return mapa, zdali bylo něco upraveno podle změn
      */
     public Map<ArrChange, Boolean> detectChangeNodes(final Set<ArrNode> nodes,

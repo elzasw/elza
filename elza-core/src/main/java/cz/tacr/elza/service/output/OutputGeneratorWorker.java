@@ -90,9 +90,11 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
     private String templatesDir;
 
     private Integer arrOutputId;
+    private Integer userId;
 
-    public void init(Integer outputInProgress) {
-        arrOutputId = outputInProgress;
+    public void init(Integer outputInProgress, Integer userId) {
+        this.arrOutputId = outputInProgress;
+        this.userId = userId;
     }
 
     @Override
@@ -234,8 +236,7 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
     // TODO - JavaDoc - Lebeda
     private void storeOutputInDms(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate,
                                   InputStream in, final String outfileSuffix, final String mimeType) throws IOException {
-        // TODO Lebeda - null = admin
-        final ArrChange change = createChange(null);
+        final ArrChange change = createChange(userId);
 
         ArrOutputResult outputResult = new ArrOutputResult();
         outputResult.setChange(change);
@@ -250,12 +251,10 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
         dmsFile.setMimeType(mimeType);
         dmsFile.setFileSize(0); // 0 - zajistí refresh po skutečném uložení do souboru na disk
         dmsService.createFile(dmsFile, in); // zajistí prezentaci výstupu na klienta
-
     }
 
     // TODO - JavaDoc - Lebeda
     protected ArrChange createChange(final Integer userId) {
-        // review Lebeda - je použití cizí service OK????
         return bulkActionService.createChange(userId);
     }
 

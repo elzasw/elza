@@ -33,8 +33,7 @@ public class Output implements RecordProvider {
     @Autowired
     private OutputService outputService; // interní vazba na service
 
-    // review Lebeda - není lepší držet jen objekt místo ID???
-    private final ArrOutput arrOutput; //
+    private final ArrOutput arrOutput; // interní záležitost - vazba na původní objekt
     private final Integer outputId; // ID pro vazbu do DB na entitu arr_output
 
     private String internal_code;

@@ -20,7 +20,6 @@ public class ItemUnitId extends AbstractItem<String> {
 
     @Override
     public String serializeValue() {
-        // TODO Lebeda - jak to reprezentovat??
         return getValue();
     }
 

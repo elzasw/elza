@@ -841,7 +841,9 @@ public class OutputService {
         return outputDefinitionRepository.findOne(outputDefinitionId);
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @return dohledané Nody navázané na vstupní RegRecord
+     */
     public List<ArrNode> getNodesByRegister(RegRecord regRecord) {
         final List<ArrNodeRegister> arrNodeRegisters = nodeRegisterRepository.findByRecordId(regRecord);
         return arrNodeRegisters.stream()
