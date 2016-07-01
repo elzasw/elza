@@ -11,6 +11,10 @@ import cz.tacr.elza.print.Output;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.DmsService;
+import freemarker.cache.FileTemplateLoader;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
@@ -20,6 +24,7 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.input.ReaderInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +36,12 @@ import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.io.PipedReader;
+import java.io.PipedWriter;
+import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Date;
@@ -51,10 +60,14 @@ import java.util.concurrent.Callable;
 @Scope("prototype")
 class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
 
-    private static final String JASPER_MAIN_TEMPLATE_BASE_NAME = "index";
+    // konstanty pro pojmenování souborů šablon
+    private static final String MAIN_TEMPLATE_BASE_NAME = "index";
     private static final String JASPER_TEMPLATE_SUFFIX = ".jrxml";
-    private static final String JASPER_MAIN_TEMPLATE = JASPER_MAIN_TEMPLATE_BASE_NAME + JASPER_TEMPLATE_SUFFIX;
+    private static final String FREEMARKER_TEMPLATE_SUFFIX = ".ftl";
+    private static final String JASPER_MAIN_TEMPLATE = MAIN_TEMPLATE_BASE_NAME + JASPER_TEMPLATE_SUFFIX;
+    private static final String FREEMARKER_MAIN_TEMPLATE = MAIN_TEMPLATE_BASE_NAME + FREEMARKER_TEMPLATE_SUFFIX;
     private static final String OUTFILE_SUFFIX_PDF = ".pdf";
+    private static final String OUTFILE_SUFFIX_CVS = ".cvs";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -107,17 +120,64 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
             logger.info("Spuštěno generování PDF výstupu pro arr_output id={}", arrOutputId);
             generatePdfByJasper(arrOutputDefinition, rulTemplate, output);
             // dokončení generování je logováno v service onSucces/onFailure
-        } else if (RulTemplate.Engine.JASPER.equals(rulTemplate.getEngine())) {
-            // TODO Lebeda - implementovat podporu pro FreeMarker
+        } else if (RulTemplate.Engine.FREEMARKER.equals(rulTemplate.getEngine())) {
+            generateCvsByFreemarker(arrOutputDefinition, rulTemplate, output);
+            // dokončení generování je logováno v service onSucces/onFailure
         }
 
         return new Date().toString();
     }
 
     // TODO - JavaDoc - Lebeda
+    private void generateCvsByFreemarker(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate, Output output) {
+        try {
+            // dohledání šablony
+            final String rulTemplateDirectory = rulTemplate.getDirectory();
+            final File templateDir = Paths.get(templatesDir, rulTemplateDirectory).toFile();
+            Assert.isTrue(templateDir.exists() && templateDir.isDirectory(), "Nepodařilo se najít adresář s definicí šablony: " + templateDir.getAbsolutePath());
+
+            final File mainFreemarkerTemplate = Paths.get(templateDir.getAbsolutePath(), FREEMARKER_MAIN_TEMPLATE).toFile();
+            Assert.isTrue(mainFreemarkerTemplate.exists(), "Nepodařilo se najít definici hlavní šablony.");
+
+            Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
+            // Export do výstupu - pouze příprava procesu pro renderování - reálně proběhne až při čtení z in v dms
+            PipedReader in = new PipedReader();
+            PipedWriter out = new PipedWriter(in);
+
+            // inicializace
+            FileTemplateLoader templateLoader = new FileTemplateLoader(mainFreemarkerTemplate.getParentFile());
+            cfg.setTemplateLoader(templateLoader);
+            Template template = cfg.getTemplate(mainFreemarkerTemplate.getName());
+
+            // příparava dat
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("output", output);
+
+            new Thread(
+                    new Runnable() {
+                        public void run() {
+                            try {
+                                template.process(parameters, out);
+                                out.close();
+                            } catch (TemplateException | IOException e) {
+                                throw new IllegalStateException("Nepodařilo se vyrenderovat výstup ze šablony " + mainFreemarkerTemplate.getAbsolutePath() + ".", e);
+                            }
+                        }
+                    }
+            ).start();
+
+            // Uložení do výstupní struktury a DMS
+            storeOutputInDms(arrOutputDefinition, rulTemplate, new ReaderInputStream(in, Charset.defaultCharset()), OUTFILE_SUFFIX_CVS, DmsService.MIME_TYPE_APPLICATION_PDF);
+
+        } catch (IOException e) {
+            throw new IllegalStateException("Nepodařilo se uložit výstup.", e);
+        }
+    }
+
+    // TODO - JavaDoc - Lebeda
     private void generatePdfByJasper(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate, Output output) {
         try {
-            // tisk do PDF
+            // dohledání šablony
             final String rulTemplateDirectory = rulTemplate.getDirectory();
             final File templateDir = Paths.get(templatesDir, rulTemplateDirectory).toFile();
             Assert.isTrue(templateDir.exists() && templateDir.isDirectory(), "Nepodařilo se najít adresář s definicí šablony: " + templateDir.getAbsolutePath());
@@ -161,25 +221,8 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
                     }
             ).start();
 
-            // TODO Lebeda - null = admin
-            final ArrChange change = createChange(null);
-
-            // Uložení do výstupní struktury
-            ArrOutputResult outputResult = new ArrOutputResult();
-            outputResult.setChange(change);
-            outputResult.setOutputDefinition(arrOutputDefinition);
-            outputResult.setTemplate(rulTemplate);
-            outputResultRepository.save(outputResult);
-
-            ArrOutputFile dmsFile = new ArrOutputFile();
-            dmsFile.setOutputResult(outputResult);
-            dmsFile.setFileName(arrOutputDefinition.getName() + OUTFILE_SUFFIX_PDF);
-            dmsFile.setName(arrOutputDefinition.getName());
-            dmsFile.setMimeType(DmsService.MIME_TYPE_APPLICATION_PDF);
-            dmsFile.setFileSize(0); // 0 - zajistí refresh po skutečném uložení do souboru na disk
-
-            dmsService.createFile(dmsFile, in); // zajistí prezentaci výstupu na klienta
-
+            // Uložení do výstupní struktury a DMS
+            storeOutputInDms(arrOutputDefinition, rulTemplate, in, OUTFILE_SUFFIX_PDF, DmsService.MIME_TYPE_APPLICATION_PDF);
 
         } catch (JRException e) {
             throw new IllegalStateException("Nepodařilo se vytisknout report.", e);
@@ -188,10 +231,33 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
         }
     }
 
+    // TODO - JavaDoc - Lebeda
+    private void storeOutputInDms(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate,
+                                  InputStream in, final String outfileSuffix, final String mimeType) throws IOException {
+        // TODO Lebeda - null = admin
+        final ArrChange change = createChange(null);
+
+        ArrOutputResult outputResult = new ArrOutputResult();
+        outputResult.setChange(change);
+        outputResult.setOutputDefinition(arrOutputDefinition);
+        outputResult.setTemplate(rulTemplate);
+        outputResultRepository.save(outputResult);
+
+        ArrOutputFile dmsFile = new ArrOutputFile();
+        dmsFile.setOutputResult(outputResult);
+        dmsFile.setFileName(arrOutputDefinition.getName() + outfileSuffix);
+        dmsFile.setName(arrOutputDefinition.getName());
+        dmsFile.setMimeType(mimeType);
+        dmsFile.setFileSize(0); // 0 - zajistí refresh po skutečném uložení do souboru na disk
+        dmsService.createFile(dmsFile, in); // zajistí prezentaci výstupu na klienta
+
+    }
+
+    // TODO - JavaDoc - Lebeda
     protected ArrChange createChange(final Integer userId) {
-            // review Lebeda - je použití cizí service OK????
-            return bulkActionService.createChange(userId);
-        }
+        // review Lebeda - je použití cizí service OK????
+        return bulkActionService.createChange(userId);
+    }
 
     public Integer getArrOutputId() {
         return arrOutputId;

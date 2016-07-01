@@ -28,6 +28,7 @@ import java.io.*;
 public class DmsService {
 
     public static final String MIME_TYPE_APPLICATION_PDF = "application/pdf";
+    public static final String MIME_TYPE_TEXT_CVS = "text/csv";
     /**
      * Složka se soubory DMS
      */

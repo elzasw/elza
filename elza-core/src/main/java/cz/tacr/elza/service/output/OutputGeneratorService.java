@@ -83,6 +83,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     public void generateOutput(ArrOutput arrOutput) {
         ArrOutputResult outputResult = outputResultRepository.findByOutputDefinition(arrOutput.getOutputDefinition());
         Assert.isNull(outputResult, "Tento výstup byl již vygenerován.");
+
         outputQueue.add(getWorker(arrOutput));
         runNextOutput(); // zkusí sputit frontu
     }
