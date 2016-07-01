@@ -63,7 +63,11 @@ public class Output implements RecordProvider {
         this.arrOutput = output;
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @param recordProvider entita poskytující seznam recordů
+     * @param code    požadovaný kód recordu, pokud je vyplněno code, bude filtrovat
+     * @return seznam všech recordů
+     */
     private static List<Record> getRecordsInternal(final RecordProvider recordProvider, final String code) {
         // za samotný output
         final List<Record> records = recordProvider.getRecords().stream()
@@ -107,10 +111,13 @@ public class Output implements RecordProvider {
                 .collect(Collectors.toList());
     }
 
-
-    // TODO - JavaDoc - Lebeda
-    // vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě hodnot typů uvedených ve vstupu metody;
-    // řazeno dle rul_desc_item.view_order + arr_item.position
+    /**
+     * Vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě hodnot typů uvedených ve vstupu metody;
+     * řazeno dle rul_desc_item.view_order + arr_item.position.
+     *
+     * @param codes seznam ignorovaných kódů itemů
+     * @return  seznam všech items výstupu kromě hodnot typů uvedených ve vstupu metody
+     */
     public List<Item> getAllItems(@NotNull Collection<String> codes) {
         Assert.notNull(codes);
         return items.stream()
@@ -119,9 +126,13 @@ public class Output implements RecordProvider {
                 .collect(Collectors.toList());
     }
 
-    // TODO - JavaDoc - Lebeda
-    // vrací seznam typů rejstříku, pro každý počet záznamů v něm přímo zařazených a počet záznamů včetně podřízených typů;
-    // řazeno dle pořadí ve stromu typů rejstříku (zjevně dle názvu typu)
+    /**
+     * vrací seznam typů rejstříku, pro každý počet záznamů v něm přímo zařazených a počet záznamů včetně podřízených typů;
+     * řazeno dle pořadí ve stromu typů rejstříku (zjevně dle názvu typu)
+     *
+     * @param withCount pouze s countRecords > 0
+     * @return  seznam typů rejstříku
+     */
     public List<RecordType> getRecordTypes(boolean withCount) {
         final List<Record> records = getRecordsInternal(this, null); // všechny záznamy rekurzivně
         return records.stream()
@@ -131,20 +142,22 @@ public class Output implements RecordProvider {
                 .collect(Collectors.toList());
     }
 
-    // TODO - JavaDoc - Lebeda
-    // vstupem je kód typu rejstříku a vrací se seznam rejstříkových hesel řazených podle názvu (record)
+    /**
+     * vstupem je kód typu rejstříku a vrací se seznam rejstříkových hesel řazených podle názvu (record).
+     *
+     * @param code           požadovaný kód recordu, pokud je vyplněno code, bude filtrovat
+     * @return seznam všech recordů
+     */
     public List<Record> getRecordsByType(String code) {
         return getRecordsInternal(this, code);
 
     }
 
-    // TODO - JavaDoc - Lebeda
     // vstupem je seznam kódu typů atributů a vrací se seznam hodnot těchto atributů řazených dle ???
     public List<Item> getNodeItems(Collection<String> codes) {
         return null;  // TODO Lebeda - ?? implementovat
     }
 
-    // TODO - JavaDoc - Lebeda
     // vstupem je seznam kódu typů atributů a vrací se seznam unikátních hodnot těchto atributů řazených dle ???
     public List<Item> getNodeItemsDistinct(Collection<String> codes) {
         return null;  // TODO Lebeda - ?? implementovat

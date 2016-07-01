@@ -1,7 +1,5 @@
 package cz.tacr.elza.print;
 
-// TODO - JavaDoc - Lebeda
-
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.print.item.Item;
@@ -39,12 +37,13 @@ public class Node implements RecordProvider {
         this.arrLevel = arrLevel;
     }
 
-    // TODO - JavaDoc - Lebeda
     public Integer getDepthInLevel() {
         return null;  // TODO Lebeda - implementovat ???
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @return dohledá v output.modes node, který je nadřazený tomuto. Pokud není nalezen nebo neexistuje vrací null.
+     */
     public Node getParent() {
         final ArrNode arrNodeParent = arrLevel.getNodeParent();
 
@@ -59,8 +58,9 @@ public class Node implements RecordProvider {
 
     }
 
-    // TODO - JavaDoc - Lebeda
-    // vrací seznam dětí, omezeno jen na node outputu
+    /**
+     * @return vrací seznam dětí, omezeno jen na node outputu
+     */
     public List<Node> getChildren() {
         return output.getNodes().stream()
                 .filter(node -> arrNode.equals(node.getArrLevel().getNodeParent()))
@@ -79,7 +79,12 @@ public class Node implements RecordProvider {
                 .collect(Collectors.toList());
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Metoda pro získání hodnoty do fieldu v Jasper.
+     *
+     * @param code požadovaný kód položky
+     * @return vrací seznam hodnot položek s odpovídajícím kódem oddělený čárkou (typicky 1 položka = její serializeValue)
+     */
     public String getItemsValueByCode(@NotNull String code) {
         return getItems(Collections.singletonList(code)).stream()
                 .map(Item::serializeValue)
@@ -87,14 +92,23 @@ public class Node implements RecordProvider {
                 .collect(Collectors.joining(", "));
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Metoda pro získání hodnoty do fieldu v Jasper.
+     * Umožní na položce v detailu volat metody sám nad sebou (nejen implicitně zpřístupněné gettery).
+     *
+     * @return odkaz sám na sebe
+     */
     public Node getNode() {
         return this;
     }
 
-    // TODO - JavaDoc - Lebeda
-    // vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě hodnot typů uvedených ve vstupu metody;
-    // řazeno dle rul_desc_item.view_order + arr_item.position
+    /**
+     * Vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě hodnot
+     * typů uvedených ve vstupu metody, řazeno dle rul_desc_item.view_order + arr_item.position.
+     *
+     * @param codes     seznam kódu typů atributů
+     * @return   seznam všech hodnot atributů kromě hodnot typů uvedených ve vstupu metody
+     */
     public List<Item> getAllItems(@NotNull Collection<String> codes) {
         Assert.notNull(codes);
         return items.stream()

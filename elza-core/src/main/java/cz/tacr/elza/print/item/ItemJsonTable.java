@@ -1,7 +1,5 @@
 package cz.tacr.elza.print.item;
 
-// TODO - JavaDoc - Lebeda
-
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.print.Node;

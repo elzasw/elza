@@ -44,7 +44,6 @@ import java.io.PipedWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -104,8 +103,10 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
         return this;
     }
 
-    // TODO - JavaDoc - Lebeda
-    private String generateOutput() {
+    /**
+     * Společná část generování výstupu.
+     */
+    private void generateOutput() {
         logger.info("Spuštěno generování výstupu pro arr_output id={}", arrOutputId);
         ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
         final ArrOutputDefinition arrOutputDefinition = arrOutput.getOutputDefinition();
@@ -126,11 +127,11 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
             generateCvsByFreemarker(arrOutputDefinition, rulTemplate, output);
             // dokončení generování je logováno v service onSucces/onFailure
         }
-
-        return new Date().toString();
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * část generování specifická pro freemarker
+     */
     private void generateCvsByFreemarker(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate, Output output) {
         try {
             // dohledání šablony
@@ -176,7 +177,9 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
         }
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * část generování specifická pro jasper.
+     */
     private void generatePdfByJasper(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate, Output output) {
         try {
             // dohledání šablony
@@ -233,7 +236,9 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
         }
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * zajistí uložení výstupu do DB a DMS.
+     */
     private void storeOutputInDms(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate,
                                   InputStream in, final String outfileSuffix, final String mimeType) throws IOException {
         final ArrChange change = createChange(userId);
@@ -253,12 +258,17 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
         dmsService.createFile(dmsFile, in); // zajistí prezentaci výstupu na klienta
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * vytvoří změnu potřebnou pro uložení výstupu
+     *
+     * @param userId uživatel který spustil generování výstupu
+     * @return vytvořená změna
+     */
     protected ArrChange createChange(final Integer userId) {
         return bulkActionService.createChange(userId);
     }
 
-    public Integer getArrOutputId() {
+    Integer getArrOutputId() {
         return arrOutputId;
     }
 }

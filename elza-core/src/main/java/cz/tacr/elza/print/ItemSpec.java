@@ -1,6 +1,5 @@
 package cz.tacr.elza.print;
 
-// TODO - JavaDoc - Lebeda
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16

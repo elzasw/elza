@@ -16,8 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// TODO - JavaDoc - Lebeda
-
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
@@ -51,7 +49,11 @@ public class Record {
                 .collect(Collectors.toList());
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Fieldy spojí v uvedeném pořadí "record characteristics" a oddělí mezerou, zohledňuje pouze vyplněné položky.
+     *
+     * @return hodnota formátovaná jako text k tisku
+     */
     public String serialize() {
         return (StringUtils.defaultString(record) + " " + StringUtils.defaultString(characteristics)).trim();
     }

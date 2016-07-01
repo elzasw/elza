@@ -19,7 +19,11 @@ public class Packet {
     private String storageNumber;
     private String state;
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Fieldy spojí v uvedeném pořadí "type typeCode typeShortcut storageNumber state" a oddělí čárkou, zohledňuje pouze vyplněné položky.
+     *
+     * @return hodnota formátovaná jako text k tisku
+     */
     public String serialize() {
         StringJoiner sj = new StringJoiner(", ");
         if (StringUtils.isNotBlank(type)) {

@@ -1,50 +1,76 @@
 package cz.tacr.elza.print.item;
 
-// TODO - JavaDoc - Lebeda
-
 import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.print.ItemSpec;
+import cz.tacr.elza.print.ItemType;
 import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.Output;
 
 /**
+ * Rozhranní pro tiskový Item. Implementováno dle jednotlivých datových typů.
+ *
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
 public interface Item<T> {
-    // TODO - JavaDoc - Lebeda
+
+    /**
+     * @return původní uložený item, ze kterého tiskový objekt vychází
+     */
     ArrItem getArrItem();
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @return node na který je item navázán, pokud je null, jde o navázání přímo na output
+     */
     Node getNode();
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @return output na který je item navázán
+     */
     Output getOutput();
 
-    // TODO - JavaDoc - Lebeda
-    cz.tacr.elza.print.ItemType getType();
+    /**
+     * @return typ item, odpovídá rul_item_type (+rul_data_type)
+     */
+    ItemType getType();
 
-    // TODO - JavaDoc - Lebeda
-    cz.tacr.elza.print.ItemSpec getSpecification();
+    /**
+     * @return specifikace item, odpovídá rul_item_spec
+     */
+    ItemSpec getSpecification();
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @return pozice item v seznamu
+     */
     Integer getPosition();
 
-    // TODO - JavaDoc - Lebeda
-    // řazených dle rul_desc_item.view_order + arr_item.position
+    /**
+     * porovnání pro řazení dle rul_item_type.view_order + arr_item.position
+     */
     int compareToItemViewOrderPosition(Item o);
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @return vrací hodnotu formátovanou jako text k tisku
+     */
     String serializeValue();
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @return vrací hodnotu formátovanou jako text k tisku - pro použití jako field serializedValue v jasperu
+     */
     String getSerializedValue();
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @return vrací popis položky + hodnotu formátovanou jako text k tisku
+     */
     String serialize();
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @return vrací popis položky + hodnotu formátovanou jako text k tisku - pro použití jako field serializedValue v jasperu
+     */
     String getSerialized();
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @return vrací původní hodnotu položky
+     */
     T getValue();
 }

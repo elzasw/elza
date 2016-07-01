@@ -5,7 +5,6 @@ import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.Output;
 import cz.tacr.elza.print.Packet;
 
-// TODO - JavaDoc - Lebeda
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16

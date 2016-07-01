@@ -1,14 +1,12 @@
 package cz.tacr.elza.print.party;
 
-// TODO - JavaDoc - Lebeda
-
+import cz.tacr.elza.print.Record;
+import cz.tacr.elza.print.UnitDateText;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import cz.tacr.elza.print.Record;
-import cz.tacr.elza.print.UnitDateText;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +28,16 @@ public class Party {
     private String type;
     private String typeCode;
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @return vrací hodnotu formátovanou jako text k tisku
+     */
     public String serialize() {
         return (StringUtils.defaultString(record.getRecord()) + " " + StringUtils.defaultString(record.getCharacteristics())).trim();
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @return obsah položky record.getRecord()
+     */
     public String getName() {
         return record.getRecord();
     }

@@ -5,13 +5,17 @@ import cz.tacr.elza.print.ItemSpec;
 import cz.tacr.elza.print.ItemType;
 import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.Output;
-import org.apache.commons.lang.builder.*;
+import org.apache.commons.lang.builder.CompareToBuilder;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 import javax.validation.constraints.NotNull;
 
-// TODO - JavaDoc - Lebeda
-
 /**
+ * Abstraktní základ se společnými metodami pro Items.
+ *
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
@@ -41,11 +45,10 @@ public abstract class AbstractItem<T> implements Item<T> {
         this.position = position;
     }
 
-    // TODO - JavaDoc - Lebeda
-    // řazených dle rul_item_type.view_order + arr_item.position
+    @Override
     public int compareToItemViewOrderPosition(Item o) {
         return new CompareToBuilder()
-                 .append(getArrItem().getItemType().getViewOrder(), o.getArrItem().getItemType().getViewOrder())
+                .append(getArrItem().getItemType().getViewOrder(), o.getArrItem().getItemType().getViewOrder())
                 .append(getArrItem().getPosition(), o.getArrItem().getPosition())
                 .toComparison();
     }

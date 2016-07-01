@@ -1,6 +1,5 @@
 package cz.tacr.elza.print;
 
-// TODO - JavaDoc - Lebeda
 
 import java.util.List;
 
@@ -9,9 +8,14 @@ import java.util.List;
  *         Date: 27.6.16
  */
 public interface RecordProvider {
-     // TODO - JavaDoc - Lebeda
+
+     /**
+      * @return seznam všech recordů vázaných přímo na objektu
+      */
      public List<Record> getRecords();
 
-     // TODO - JavaDoc - Lebeda
+     /**
+      * @return seznam podřízených objektů obsahujících další recordy
+      */
      public List<? extends RecordProvider> getRecordProviderChildern();
 }

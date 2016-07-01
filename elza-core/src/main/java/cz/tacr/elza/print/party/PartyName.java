@@ -1,7 +1,5 @@
 package cz.tacr.elza.print.party;
 
-// TODO - JavaDoc - Lebeda
-
 import cz.tacr.elza.print.UnitDateText;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -25,8 +23,9 @@ public class PartyName {
     private UnitDateText validFrom;
     private UnitDateText validTo;
 
-    // TODO - JavaDoc - Lebeda
-    // vrací mainPart otherPart degreeBefore degreeAfter
+    /**
+     * @return obsah fieldů "mainPart otherPart degreeBefore degreeAfter" oddělený mezerou
+     */
     public String serialize() {
         List<String> resultList = new ArrayList<>();
         if (StringUtils.isNotBlank(mainPart)) {

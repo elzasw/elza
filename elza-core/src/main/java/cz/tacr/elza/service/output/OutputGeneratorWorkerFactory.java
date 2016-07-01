@@ -10,9 +10,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-// TODO - JavaDoc - Lebeda
-
 /**
+ * Factory metoda pro vytváření objektů s dependency injections.
+ *
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 29.6.16
  */
@@ -22,21 +22,31 @@ import org.springframework.stereotype.Component;
 public class OutputGeneratorWorkerFactory {
 
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @return vytvořený objekt s provedeným dependency injections
+     */
     @Bean
     @Scope("prototype")
     public OutputGeneratorWorker getOutputGeneratorWorker() {
         return new OutputGeneratorWorker();
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @param output output ke kterému je record zařazen
+     * @param node node ke kterému je record zařazen, pokud je null, je zařazen přímo k outputu
+     * @param record zdrojový record
+     * @return vytvořený objekt s provedeným dependency injections
+     */
     @Bean
     @Scope("prototype")
     public Record getRecord(Output output, Node node, RegRecord record) {
         return new Record(output, node, record);
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * @param arrOutput zdrojová deinice výstupu
+     * @return vytvořený objekt s provedeným dependency injections
+     */
     @Bean
     @Scope("prototype")
     public Output getOutput(ArrOutput arrOutput) {

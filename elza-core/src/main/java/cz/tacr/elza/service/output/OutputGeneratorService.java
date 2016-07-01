@@ -28,7 +28,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 /**
- * Zajišťuje generování výstupu a jeho uložení do dms na základě vstupní definice.
+ * Zajišťuje asynchronní generování výstupu a jeho uložení do dms na základě vstupní definice.
+ * Zajišťuje spuštění jedné jediné úlohy najednou, zbytek udržuje ve frontě.
  *
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 24.6.16
@@ -79,7 +80,12 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         return templatesDir;
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Spuštění generování výstupu a jeho uložení do DMS
+     *
+     * @param arrOutput definice outputu s definicí výstupu
+     * @param userId ID uživatele pod kterým bude vytvořená změna arrChange související s generováním
+     */
     public void generateOutput(ArrOutput arrOutput, Integer userId) {
         ArrOutputResult outputResult = outputResultRepository.findByOutputDefinition(arrOutput.getOutputDefinition());
         Assert.isNull(outputResult, "Tento výstup byl již vygenerován.");
@@ -88,7 +94,11 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         runNextOutput(); // zkusí sputit frontu
     }
 
-    // TODO - JavaDoc - Lebeda
+
+    /**
+     * Podívá se do fronty úkolů a zda aktuálně probíhá generování,
+     * pokud generování NEprobíhá a existuje ve frontě existujuje zařazená úloha, bude spuštěna.
+     */
     private void runNextOutput() {
         if ((worker == null) && CollectionUtils.isNotEmpty(outputQueue)) {
             worker = outputQueue.poll();
@@ -98,7 +108,14 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         }
     }
 
-    // TODO - JavaDoc - Lebeda
+
+    /**
+     * Založí nový worker pro úlohu.
+     *
+     * @param output definice požadovaného výstupu
+     * @param userId ID uživatele pod kterým bude vytvořená změna arrChange související s generováním
+     * @return worker pro úlohu
+     */
     private OutputGeneratorWorker getWorker(ArrOutput output, Integer userId) {
         final OutputGeneratorWorker generatorWorker = workerFactory.getOutputGeneratorWorker();
         generatorWorker.init(output.getOutputId(), userId);

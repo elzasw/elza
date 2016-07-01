@@ -159,8 +159,12 @@ public class OutputFactoryService {
         mapper = mapperFactory.getMapperFacade();
     }
 
-    // TODO - JavaDoc - Lebeda
-    // Factory metoda pro vytvoření logické struktury Output struktury
+    /**
+     * Factory metoda pro vytvoření logické struktury Output struktury
+     *
+     * @param arrOutput databázová položka s definicí požadovaného výstupu
+     * @return struktura pro použití v šablonách
+     */
     @Bean
     @Scope("prototype")
     public Output createOutput(final ArrOutput arrOutput) {
@@ -253,9 +257,9 @@ public class OutputFactoryService {
         return output;
     }
 
-
-
-    // TODO - JavaDoc - Lebeda
+    /**
+     * factory metoda konvertující objekty
+     */
     private PartyName createPartyName(ParPartyName parPartyPreferredName) {
         PartyName preferredName = new PartyName();
         preferredName.setMainPart(parPartyPreferredName.getMainPart());
@@ -268,7 +272,9 @@ public class OutputFactoryService {
         return preferredName;
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * factory metoda konvertující objekty
+     */
     private UnitDateText createUnitDateText(final ParUnitdate parUnitdate) {
         UnitDateText dateFrom = null;
         final String format = parUnitdate.getFormat();
@@ -279,7 +285,14 @@ public class OutputFactoryService {
         return dateFrom;
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Metoda vytvoří strukturu nodů vč. nadřazených až k rootu a vč. stromu všech potomků
+     * Ke každému node vytvoří i příslušné items.
+     *
+     * @param arrNode node přímo přiřazený k outputu
+     * @param output  výstup, ke kterému se budou nody zařazovat
+     * @return seznam  nodů vč. nadřazených až k rootu a vč. stromu všech potomků
+     */
     private Set<Node> getParentNodeByNode(ArrNode arrNode, Output output) {
         final Set<Node> nodes = new LinkedHashSet<>();
         // získat node vč potomků a atributů
@@ -298,7 +311,14 @@ public class OutputFactoryService {
         return nodes;
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Vytvoří node vč. celého stromu potomků.
+     * Ke každému node vytvoří i příslušné items.
+     *
+     * @param arrNode zdrojový node
+     * @param output  výstup, ke kterému se budou nody zařazovat
+     * @return seznam node vč. celého stromu potomků.
+     */
     private Set<Node> createNodeWithChildernAndAttributes(ArrNode arrNode, Output output) {
         final Set<Node> nodes = new LinkedHashSet<>();
         final Node nodeWithAttributes = getNodeWithItems(arrNode, output, output.getFund().getRootNode().getArrNode());
@@ -319,7 +339,15 @@ public class OutputFactoryService {
         return nodes;
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Vytvoří node vč. celého stromu potomků.
+     * Ke každému node vytvoří i příslušné items.
+     *
+     * @param arrNode     zdrojový node
+     * @param output      výstup, ke kterému se budou nody zařazovat
+     * @param rootArrNode kořenový node výstupu (definovaný jako kořenový ve fundu v outputu)
+     * @return node vč. items
+     */
     private Node getNodeWithItems(ArrNode arrNode, Output output, @NotNull final ArrNode rootArrNode) {
         final ArrFundVersion arrFundVersion = output.getFund().getArrFundVersion();
         final ArrChange arrChange = arrFundVersion.getLockChange();
@@ -348,7 +376,14 @@ public class OutputFactoryService {
         return node;
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Vytvoří item podle zdrojového typu.
+     *
+     * @param arrItem zdrojový item
+     * @param output  výstup, ke kterému se budou items zařazovat
+     * @param node    node, ke kterému se budou nody zařazovat, pokud je null jde o itemy přiřazené přímo k output
+     * @return item
+     */
     private AbstractItem getItem(ArrItem arrItem, Output output, Node node) {
         final RulItemType rulItemType = arrItem.getItemType();
         final RulItemSpec rulItemSpec = arrItem.getItemSpec();
@@ -366,7 +401,6 @@ public class OutputFactoryService {
         final ItemType itemType = new ItemType();
         itemType.setName(rulItemType.getName());
         itemType.setDataType(rulItemType.getDataType().getCode());
-        final String valueTable = rulItemType.getDataType().getStorageTable();
         itemType.setShortcut(rulItemType.getShortcut());
         itemType.setDescription(rulItemType.getDescription());
         itemType.setCode(rulItemType.getCode());
@@ -380,7 +414,15 @@ public class OutputFactoryService {
         return item;
     }
 
-    // TODO - JavaDoc - Lebeda
+    /**
+     * Vytvoří item podle zdrojového typu.
+     *
+     * @param arrItem  zdrojový item
+     * @param itemData zdrojová data k itemu
+     * @param output   výstup, ke kterému se budou items zařazovat
+     * @param node     node, ke kterému se budou nody zařazovat, pokud je null jde o itemy přiřazené přímo k output
+     * @return item
+     */
     private AbstractItem getItemByType(Output output, Node node, ArrItem arrItem, ArrItemData itemData) {
         AbstractItem item;
         if (itemData instanceof ArrItemUnitid) {
@@ -450,7 +492,7 @@ public class OutputFactoryService {
         Record record = getRecord(output, null, partyRecord);
         record.setType(getRecordTypeByPartyRecord(output, partyRecord));
         return record;
-        }
+    }
 
     private Record getRecord(@NotNull Output output, Node node, @NotNull final RegRecord regRecord) {
         Record record = outputGeneratorFactory.getRecord(output, node, regRecord);

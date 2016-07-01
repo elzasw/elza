@@ -7,7 +7,6 @@ import cz.tacr.elza.print.Output;
 
 import java.io.File;
 
-// TODO - JavaDoc - Lebeda
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
@@ -31,7 +30,6 @@ public class ItemFile extends AbstractItem<File> {
         return getName() + " (" + getFileName() + ")";
     }
     
-    // TODO - JavaDoc - Lebeda
     public File getFile() {
         return getValue();
     }

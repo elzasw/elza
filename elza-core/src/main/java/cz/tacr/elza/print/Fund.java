@@ -1,7 +1,5 @@
 package cz.tacr.elza.print;
 
-// TODO - JavaDoc - Lebeda
-
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;

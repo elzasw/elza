@@ -1,7 +1,5 @@
 package cz.tacr.elza.print.party;
 
-// TODO - JavaDoc - Lebeda
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;

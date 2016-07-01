@@ -1,7 +1,8 @@
 package cz.tacr.elza.print;
 
-// TODO - JavaDoc - Lebeda
 /**
+ * Typ Itemu, odpovídá rul_item_type (+rul_data_type)
+ *
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
