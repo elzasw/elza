@@ -7,6 +7,8 @@ import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
 import {splitterResize} from 'actions/global/splitter.jsx';
 import {normalizeInt} from 'components/validate.jsx';
 
+import reduxFormUtils from "./form/reduxFormUtils.jsx"
+
 const normalizePacketSize = (value, previousValue, allValues, previousAllValues) => {
     var vv = normalizeInt(value, previousValue, allValues, previousAllValues)
     if (vv > 32) {
@@ -112,7 +114,11 @@ var inlineFormSupport = new class {
         this.forms = {}
         this.init = {}
         this.fields = {}
+        this.initFields = {}
+        this.initialFormData = {}
+        this.wasChanged = {}
     }
+
 
     addForm(formName) {
         this.forms[formName] = true;
@@ -120,30 +126,23 @@ var inlineFormSupport = new class {
 
     getFormData(formName, state) {
         const formState = state.form[formName];
-        if (!formState) {
-            console.error("Nenalezen store pro formulář", action.form);
-            return {};
-        }
-
-        const init = this.init[formName];
-        if (!init) {
-            console.error("Formulář není inicializován dispatchem initForm", action.form);
-            return {};
-        }
-
-        var data = {}
-        this.fields[formName].forEach(field => {
-            var fd = formState[field];
-            data[field] = fd.value;
-        })
-
-        return data;
+        const reduxFormData = reduxFormUtils.getValues(this.initFields[formName], formState, false);
+        return reduxFormData;
     }
 
+    // DEEP ??
     setFields(formName, fields) {
+        this.initFields[formName] = fields;
         this.fields[formName] = fields;
     }
-    
+
+    /**
+     * Prvotní inicializace. Zde bude nutné udělat inicializaci validace vnořených dat!
+     * @param formName
+     * @param validate
+     * @param onSave
+     */
+    // DEEP
     setInit(formName, validate, onSave) {
         if (!validate) {
             console.error("Chyba inicializace formuláře", formName, " chybí validate.");
@@ -154,6 +153,12 @@ var inlineFormSupport = new class {
         this.init[formName] = {validate, onSave};
     }
 
+    /**
+     * Načtení store pro formulář.
+     * @param formName
+     * @param state
+     * @returns {*}
+     */
     getFormState(formName, state) {
         const formState = state.form[formName];
         if (!formState) {
@@ -163,6 +168,7 @@ var inlineFormSupport = new class {
         return formState;
     }
 
+    // DEEP
     getValidatedFormState(state, dispatch, action) {
         const init = this.init[action.form];
         const formState = this.getFormState(action.form, state);
@@ -191,6 +197,7 @@ var inlineFormSupport = new class {
         };
     }
 
+    // DEEP
     getMergedFormState(state, dispatch, action) {
         const formState = this.getFormState(action.form, state);
 
@@ -225,6 +232,13 @@ var inlineFormSupport = new class {
         return result;
     }
 
+    /**
+     * Je již formulář naincializován - má již přes redux form inicializovány fieldy?
+     * @param state
+     * @param dispatch
+     * @param action
+     * @returns {boolean}
+     */
     exists(state, dispatch, action) {
         if (!this.fields[action.form]) {
             return false;
@@ -233,18 +247,120 @@ var inlineFormSupport = new class {
         const formState = this.getFormState(action.form, state);
 
         var someFieldExist = false;
-        this.fields[action.form].forEach(field => {
-            if (formState[field]) {
-                someFieldExist = true;
+        for (let a=0; a<this.initFields[action.form].length; a++) {
+            const field = this.initFields[action.form][a];
+
+            const dotIndex = field.indexOf('.');
+            const openIndex = field.indexOf('[');
+            let f;
+            if (dotIndex >= 0 && (openIndex < 0 || dotIndex < openIndex)) { // is dot notation
+                f = field.substring(0, dotIndex);
+            } else if (openIndex >= 0 && (dotIndex < 0 || openIndex < dotIndex)) {  // is array notation
+                f = field.substring(0, openIndex);
+            } else {
+                f = field;
             }
-        })
+
+            if (formState[f]) {
+                someFieldExist = true;
+                break;
+            }
+        }
+
         return someFieldExist;
     }
 
+    /**
+     * Je tento formulář inline? - je registrovaný jako inline?
+     * @param formName
+     * @returns {*}
+     */
     isSupported(formName) {
         return this.forms[formName];
     }
 
+    // DEEP
+    wasDataChanged(formName, state) {
+        const changedInfo = this.wasChanged[formName];
+        if (changedInfo) {
+            if (changedInfo.bigChange) {    // bigChange bude nastaveno např. při odebrání nebo přidání řádků v kolekcích - již se to špatně testuje a tak při této změně dáme big změnu a již nebudeme testovat
+                return true;
+            }
+
+            var changed = false;
+            const keys = Object.keys(changedInfo);
+            for (let a=0; a<keys.length; a++) {
+                if (changedInfo[keys[a]]) {
+                    changed = true;
+                    break;
+                }
+            }
+            return changed;
+        } else {
+            return false;
+        }
+    }
+
+    // DEEP
+    isDataValid(formName, data) {
+        const init = this.init[formName];
+        var errors = init.validate(data);
+        var isValid = true;
+        this.fields[formName].forEach(field => {
+            if (errors[field]) {
+                isValid = false;
+            }
+        })
+        return isValid;
+    }
+
+    /**
+     * Nastavení initial dat a vynulování stavu změněných položek, volá se po načtení nebo merge formuláře - máme stav, ze kterého budeme vycházet.
+     * @param state
+     * @param action
+     */
+    storeInitialData(state, action) {
+        const formState = state.form[action.form];
+        const initialFormData = reduxFormUtils.getValues(this.initFields[action.form], formState, true);
+        this.initialFormData[action.form] = initialFormData;
+
+        // !vynulování changes state!
+        this.wasChanged[action.form] = {};
+    }
+
+    /**
+     * Aktualizace změněných fieldů vůči původní initial hodnotě.
+     * @param state
+     * @param action
+     */
+    updateChanged(state, action) {
+        // Initial hodnota
+        const initialValue = reduxFormUtils.read(action.field, this.initialFormData[action.form]);
+
+        // Nová hodnota
+        const formData = this.getFormData(action.form, state);
+        const currentValue = reduxFormUtils.read(action.field, formData);
+
+        var changedInfo = this.wasChanged[action.form];
+        if (!changedInfo) {
+            changedInfo = {};
+            this.wasChanged[action.form] = changedInfo;
+        }
+        if (!changedInfo.bigChange) {   // pokud je již big změna, nemá cenu udržovat podrobnosti o fieldech
+            if (currentValue != initialValue) {
+                changedInfo[action.field] = true;
+            } else {
+                changedInfo[action.field] = false;
+            }
+        }
+    }
+
+    /**
+     * Pokud jsou data validní a byla změněna, colá se onSave callback.
+     * @param state
+     * @param dispatch
+     * @param action
+     */
     onBlur(state, dispatch, action) {
         if (!this.isSupported(action.form)) {
             return;
@@ -256,24 +372,10 @@ var inlineFormSupport = new class {
             return;
         }
 
-        const formState = this.getFormState(action.form, state);
+        // const formState = this.getFormState(action.form, state);
         var data = this.getFormData(action.form, state);
-
-        var changed = false;
-        this.fields[action.form].forEach(field => {
-            var fd = formState[field];
-            if (fd.value != fd.initial) {
-                changed = true;
-            }
-        })
-
-        var errors = init.validate(data);
-        var isValid = true;
-        this.fields[action.form].forEach(field => {
-            if (errors[field]) {
-                isValid = false;
-            }
-        })
+        var changed = this.wasDataChanged(action.form, state);
+        var isValid = this.isDataValid(action.form, data);
 
         if (changed && isValid) {
             init.onSave(data);
@@ -297,9 +399,15 @@ var inlineFormMiddleware = function (_ref) {
                             type: "redux-form/REPLACE_STATE",
                             formState: mergedState,
                         })
+
+                        // Uchování prvotních dat pro porovnání změn po MERGE
+                        inlineFormSupport.storeInitialData(getState(), action);
                     } else {    // init
                         next(action);
                         inlineFormSupport.setFields(action.form, action.fields);
+
+                        // Uchování prvotních dat pro porovnání změn
+                        inlineFormSupport.storeInitialData(getState(), action);
                     }
                 } else {    // standardní poslání dál, není to náš formulář
                     next(action);
@@ -314,6 +422,10 @@ var inlineFormMiddleware = function (_ref) {
                     }
                     next(newAction);
 
+                    // Aktualizace wasChanged
+                    inlineFormSupport.updateChanged(getState(), action);
+
+                    // ---
                     var vfs = inlineFormSupport.getValidatedFormState(getState(), dispatch, action);
                     if (vfs.stateChanged) {
                         dispatch({
