@@ -45,7 +45,7 @@ public class NodeCountAction extends Action {
     }
 
     @Override
-    public void apply(final List<ArrDescItem> items, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
+    public void apply(final ArrNode node, final List<ArrDescItem> items, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
         count++;
     }
 

@@ -135,7 +135,7 @@ public class MultipleBulkAction extends BulkAction {
             LevelWithItems levelWithItems = nodeLevelWithItems.get(node);
             List<ArrDescItem> descItems = loadDescItems(level);
             levelWithItems.descItems.addAll(descItems);
-            apply(descItems, TypeLevel.PARENT, null);
+            apply(node, descItems, TypeLevel.PARENT, null);
         }
 
         for (ArrNode node : nodes) {
@@ -149,7 +149,7 @@ public class MultipleBulkAction extends BulkAction {
                 nodeDescItems.put(levelWithItems.level.getNode(), levelWithItems.descItems);
             }
 
-            generate(level, nodeDescItems);
+            generate(node, level, nodeDescItems);
         }
 
         Result result = new Result();
@@ -175,17 +175,18 @@ public class MultipleBulkAction extends BulkAction {
     /**
      * Rekurzivní metody pro procházení JP ve stromu.
      *
+     * @param node
      * @param level procházený uzel
      * @param parentNodeDescItems data předků
      */
-    private void generate(final ArrLevel level, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
+    private void generate(final ArrNode node, final ArrLevel level, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
         if (bulkActionRun.isInterrupted()) {
             bulkActionRun.setState(cz.tacr.elza.api.ArrBulkActionRun.State.INTERRUPTED);
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
         }
 
         List<ArrDescItem> descItems = loadDescItems(level);
-        apply(descItems, TypeLevel.CHILD, parentNodeDescItems);
+        apply(node, descItems, TypeLevel.CHILD, parentNodeDescItems);
 
         List<ArrLevel> childLevels = getChildren(level);
 
@@ -193,20 +194,21 @@ public class MultipleBulkAction extends BulkAction {
         newNarentNodeDescItems.put(level.getNode(), descItems);
 
         for (ArrLevel childLevel : childLevels) {
-            generate(childLevel, newNarentNodeDescItems);
+            generate(childLevel.getNode(), childLevel, newNarentNodeDescItems);
         }
     }
 
     /**
      * Aplikování akcí.
      *
+     * @param node
      * @param items                 hodnoty atributů uzlu
      * @param typeLevel             typ uzlu
      * @param parentNodeDescItems   data předků
      */
-    private void apply(final List<ArrDescItem> items, final TypeLevel typeLevel, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
+    private void apply(final ArrNode node, final List<ArrDescItem> items, final TypeLevel typeLevel, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
         actions.stream().filter(action -> action.canApply(typeLevel))
-                .forEach(action -> action.apply(items, parentNodeDescItems));
+                .forEach(action -> action.apply(node, items, parentNodeDescItems));
     }
 
     /**

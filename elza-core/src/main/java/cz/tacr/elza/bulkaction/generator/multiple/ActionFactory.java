@@ -43,7 +43,7 @@ public class ActionFactory {
             }
 
             case UNIT_COUNT: {
-                throw new IllegalStateException("Neimplementováno");
+                return new UnitCountAction(section);
             }
 
             default:

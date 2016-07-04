@@ -5,7 +5,6 @@ import cz.tacr.elza.bulkaction.generator.result.TableStatisticActionResult;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaColumn;
@@ -15,7 +14,6 @@ import cz.tacr.elza.utils.Yaml;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,7 +85,7 @@ public class TableStatisticAction extends Action {
     }
 
     @Override
-    public void apply(final List<ArrDescItem> items, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
+    public void apply(final ArrNode node, final List<ArrDescItem> items, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
         for (ArrItem item : items) {
             if (inputItemTypes.contains(item.getItemType())) {
                 ArrItemData itemData = item.getItem();
