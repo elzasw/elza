@@ -3,6 +3,8 @@ package cz.tacr.elza.bulkaction.generator;
 import cz.tacr.elza.api.ArrBulkActionRun.State;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
+import cz.tacr.elza.bulkaction.generator.result.Result;
+import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
@@ -12,9 +14,11 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -79,6 +83,11 @@ public class UnitIdBulkAction extends BulkAction {
      * Stav hromadné akce
      */
     private ArrBulkActionRun bulkActionRun;
+
+    /**
+     * Počet změněných položek.
+     */
+    private Integer countChanges = 0;
 
     @Autowired
     private ItemTypeRepository itemTypeRepository;
@@ -219,7 +228,7 @@ public class UnitIdBulkAction extends BulkAction {
                     ((ArrItemUnitid) item).setValue(unitId.getData());
                     ret = saveDescItem(descItem, version, change);
                     level.setNode(ret.getNode());
-
+                    countChanges++;
                 }
 
             }
@@ -332,6 +341,12 @@ public class UnitIdBulkAction extends BulkAction {
             }
 
         }
+
+        Result resultBA = new Result();
+        UnitIdResult result = new UnitIdResult();
+        result.setCountChanges(countChanges);
+        resultBA.getResults().add(result);
+        bulkActionRun.setResult(resultBA);
     }
 
     /**

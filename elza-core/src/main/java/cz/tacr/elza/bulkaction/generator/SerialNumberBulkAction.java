@@ -3,6 +3,9 @@ package cz.tacr.elza.bulkaction.generator;
 import cz.tacr.elza.api.ArrBulkActionRun.State;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
+import cz.tacr.elza.bulkaction.generator.result.Result;
+import cz.tacr.elza.bulkaction.generator.result.SerialNumberResult;
+import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.factory.DescItemFactory;
@@ -69,6 +72,11 @@ public class SerialNumberBulkAction extends BulkAction {
      */
     private RulItemSpec descItemEndSpec;
 
+    /**
+     * Počet změněných položek.
+     */
+    private Integer countChanges = 0;
+
     @Autowired
     private ItemTypeRepository itemTypeRepository;
 
@@ -114,7 +122,7 @@ public class SerialNumberBulkAction extends BulkAction {
             }
 
         } catch (Exception e) {
-
+            throw new IllegalArgumentException(e);
         }
     }
 
@@ -129,6 +137,7 @@ public class SerialNumberBulkAction extends BulkAction {
             bulkActionRun.setState(State.INTERRUPTED);
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
         }
+        change = bulkActionRun.getChange();
 
         if (!level.getNode().equals(rootNode)) {
             ArrDescItem<ArrItemInt> descItem = loadDescItem(level);
@@ -152,6 +161,7 @@ public class SerialNumberBulkAction extends BulkAction {
                 item.setValue(sn);
                 ArrDescItem ret = saveDescItem(descItem, version, change);
                 level.setNode(ret.getNode());
+                countChanges++;
             }
 
             if (descItemEndType != null) {
@@ -239,6 +249,12 @@ public class SerialNumberBulkAction extends BulkAction {
 
             generate(level, rootNode);
         }
+
+        Result resultBA = new Result();
+        SerialNumberResult result = new SerialNumberResult();
+        result.setCountChanges(countChanges);
+        resultBA.getResults().add(result);
+        bulkActionRun.setResult(resultBA);
     }
 
     /**

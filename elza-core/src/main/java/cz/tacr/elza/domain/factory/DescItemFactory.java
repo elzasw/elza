@@ -757,6 +757,10 @@ public class DescItemFactory implements InitializingBean {
      * @return výsledný atributu s daty
      */
     public ArrDescItem getDescItem(ArrDescItem descItem, String formatData) {
+        if (descItem.getItem() != null) {
+            return descItem;
+        }
+
         ArrData data = getDataByDescItem(descItem);
 
         if (formatData != null) {
