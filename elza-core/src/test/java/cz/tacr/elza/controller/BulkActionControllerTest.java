@@ -237,7 +237,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
         } while (!hasResult);
 
-        Assert.assertTrue("Čas překročen", counter >= 0);
+        Assert.assertTrue("Čas překročen (poslední stav: " + state.getState() + ")", counter >= 0);
     }
 
 }
