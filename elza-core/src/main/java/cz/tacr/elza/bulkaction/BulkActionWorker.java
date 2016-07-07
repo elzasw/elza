@@ -93,6 +93,10 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
         bulkActionRun.setState(state);
         bulkActionService.storeBulkActionRun(bulkActionRun);
         bulkActionService.eventPublishBulkAction(bulkActionRun);
+
+        if (state.equals(State.FINISHED)) {
+            bulkActionService.finished(bulkActionRun);
+        }
     }
 
 

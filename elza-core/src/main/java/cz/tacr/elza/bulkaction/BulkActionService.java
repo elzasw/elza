@@ -4,6 +4,7 @@ package cz.tacr.elza.bulkaction;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -21,7 +22,9 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.utils.Yaml;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -41,6 +44,7 @@ import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 
 /**
  * Serviska pro obsluhu hromadných akcí.
@@ -95,6 +99,12 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private OutputService outputService;
+
+    @Autowired
+    private ArrangementService arrangementService;
 
     /**
      * Seznam běžících úloh instancí hromadných akcí.
@@ -192,6 +202,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             bulkActionNode.setBulkActionRun(bulkActionRun);
             bulkActionNodes.add(bulkActionNode);
         }
+        bulkActionRun.setArrBulkActionNodes(bulkActionNodes);
         storeBulkActionNodes(bulkActionNodes);
         runNextWorker();
         eventPublishBulkAction(bulkActionRun);
@@ -208,6 +219,16 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         BulkActionWorker bulkActionWorker = workerFactory.getWorker();
         bulkActionWorker.init(bulkActionRun.getBulkActionRunId());
         runningWorkers.put(bulkActionRun.getFundVersionId(), bulkActionWorker);
+
+        // změna stavu výstupů na počítání
+        outputService.changeOutputsStateByNodes(bulkActionRun.getFundVersion(),
+                bulkActionRun.getArrBulkActionNodes()
+                        .stream()
+                        .map(ArrBulkActionNode::getNode)
+                        .collect(Collectors.toSet()),
+                OutputState.COMPUTING,
+                OutputState.OPEN);
+
         runWorker(bulkActionWorker);
         return bulkActionWorker.getBulkActionRun();
     }
@@ -503,5 +524,25 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      */
     public void storeBulkActionNodes(List<ArrBulkActionNode> bulkActionNodes) {
         bulkActionNodeRepository.save(bulkActionNodes);
+    }
+
+    /**
+     * Doběhnutí hromadné akce.
+     *
+     * @param bulkActionRun objekt hromadné akce
+     */
+    public void finished(final ArrBulkActionRun bulkActionRun) {
+        Set<ArrNode> nodes = new HashSet<>();
+        List<ArrBulkActionNode> arrBulkActionNodes = bulkActionRun.getArrBulkActionNodes();
+        nodes.addAll(arrBulkActionNodes.stream().map(ArrBulkActionNode::getNode).collect(Collectors.toSet()));
+
+        try {
+            logger.info("Zahájení překlopení výsledku hromadné akce do výstupů");
+            ArrChange change = arrangementService.createChange();
+            outputService.storeResult(bulkActionRun.getResult(), bulkActionRun.getFundVersion(), nodes, change);
+            logger.info("Překlopení výsledku hromadné akce bylo úspěšně dokončeno");
+        } catch (Exception e) {
+            logger.error("Nastal problém při překlopení výsledků hromadné akce do výstupů", e);
+        }
     }
 }
