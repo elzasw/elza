@@ -3,7 +3,6 @@ package cz.tacr.elza.repository;
 import java.util.List;
 
 import cz.tacr.elza.api.ArrBulkActionRun.State;
-import cz.tacr.elza.domain.ArrFund;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -15,7 +14,7 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 
 
 @Repository
-public interface BulkActionRunRepository extends JpaRepository<ArrBulkActionRun, Integer> {
+public interface BulkActionRunRepository extends JpaRepository<ArrBulkActionRun, Integer>, BulkActionRunRepositoryCustom {
 
     /**
      * Vrátí všechny hromadné akce daného FA

@@ -4,6 +4,7 @@ import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
 import cz.tacr.elza.bulkaction.generator.result.DataceRangeActionResult;
@@ -14,6 +15,7 @@ import cz.tacr.elza.bulkaction.generator.result.TableStatisticActionResult;
 import cz.tacr.elza.bulkaction.generator.result.TextAggregationActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitCountActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemData;
@@ -30,8 +32,11 @@ import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
@@ -131,6 +136,12 @@ public class OutputService {
 
     @Autowired
     private OutputGeneratorService outputGeneratorService;
+
+    @Autowired
+    private BulkActionService bulkActionService;
+
+    @Autowired
+    private ActionRecommendedRepository actionRecommendedRepository;
 
     /**
      * Vyhledá platné nody k výstupu.
@@ -463,6 +474,10 @@ public class OutputService {
 
         checkFund(fundVersion, outputDefinition);
 
+        List<ArrNodeOutput> outputNodes = outputDefinition.getOutputNodes().stream()
+                .filter(nodeOutput -> nodeOutput.getDeleteChange() == null)
+                .collect(Collectors.toList());
+
         Set<ArrNodeOutput> nodeOutputs = outputDefinition.getOutputNodes().stream()
                 .filter(nodeOutput -> nodeOutput.getDeleteChange() == null && nodeIds.contains(nodeOutput.getNode().getNodeId()))
                 .collect(Collectors.toSet());
@@ -470,6 +485,13 @@ public class OutputService {
         if (nodeOutputs.size() > 0) {
             nodeOutputs.stream().forEach(arrNodeOutput -> arrNodeOutput.setDeleteChange(change));
             nodeOutputRepository.save(nodeOutputs);
+
+            outputNodes.removeAll(nodeOutputs);
+            Set<ArrNode> allNodes = outputNodes.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet());
+
+            if (allNodes.size() > 0) {
+                storeResults(fundVersion, change, allNodes, outputDefinition);
+            }
 
             Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
             EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
@@ -591,9 +613,11 @@ public class OutputService {
 
         checkFund(fundVersion, outputDefinition);
 
-        Set<Integer> nodesIdsDb = outputDefinition.getOutputNodes().stream()
+        Set<ArrNode> allNodes = outputDefinition.getOutputNodes().stream()
                 .filter(arrNodeOutput -> arrNodeOutput.getDeleteChange() == null) // pouze nesmazané nody
-                .map(ArrNodeOutput::getNode)
+                .map(ArrNodeOutput::getNode).collect(Collectors.toSet());
+
+        Set<Integer> nodesIdsDb = allNodes.stream()
                 .map(ArrNode::getNodeId)
                 .collect(Collectors.toSet());
 
@@ -613,9 +637,36 @@ public class OutputService {
 
             nodeOutputRepository.save(nodeOutputs);
 
+            allNodes.addAll(nodeOutputs.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet()));
+            storeResults(fundVersion, change, allNodes, outputDefinition);
+
             Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
             EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
             eventNotificationService.publishEvent(event);
+        }
+    }
+
+    /**
+     * Uložení výsledků z hromadných akcí podle nodů - pouze doporučené hromadné akce.
+     *
+     * @param fundVersion verze AS
+     * @param change      změna překlopení
+     * @param nodes       seznam uzlů
+     */
+    private void storeResults(final ArrFundVersion fundVersion,
+                              final ArrChange change,
+                              final Set<ArrNode> nodes,
+                              final ArrOutputDefinition outputDefinition) {
+        List<ArrBulkActionRun> bulkActionRunList = bulkActionService.findBulkActionsByNodes(fundVersion, nodes);
+        List<RulActionRecommended> actionRecommendeds = actionRecommendedRepository.findByOutputType(outputDefinition.getOutputType());
+
+        for (ArrBulkActionRun bulkActionRun : bulkActionRunList) {
+            RulAction action = bulkActionService.getBulkActionByCode(bulkActionRun.getBulkActionCode());
+            for (RulActionRecommended actionRecommended : actionRecommendeds) {
+                if (actionRecommended.getAction().equals(action)) {
+                    storeResult(bulkActionRun.getResult(), fundVersion, nodes, change);
+                }
+            }
         }
     }
 

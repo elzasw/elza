@@ -20,6 +20,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.ArrangementService;
@@ -105,6 +106,9 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
     @Autowired
     private ArrangementService arrangementService;
+
+    @Autowired
+    private ActionRepository actionRepository;
 
     /**
      * Seznam běžících úloh instancí hromadných akcí.
@@ -545,4 +549,27 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             logger.error("Nastal problém při překlopení výsledků hromadné akce do výstupů", e);
         }
     }
+
+    /**
+     * Vyhledání výstupů podle uzlů.
+     *
+     * @param fundVersion verze AS
+     * @param nodes       seznam uzlů
+     * @return seznam hromadných akcí
+     */
+    public List<ArrBulkActionRun> findBulkActionsByNodes(final ArrFundVersion fundVersion,
+                                                         final Set<ArrNode> nodes) {
+        return bulkActionRepository.findBulkActionsByNodes(fundVersion, nodes, State.FINISHED);
+    }
+
+    /**
+     * Vyhledá hromadnou akci podle kódu.
+     *
+     * @param code  kód hromadné akce
+     * @return hromadná akce
+     */
+    public RulAction getBulkActionByCode(final String code) {
+        return actionRepository.findOneByFilename(code + ".yaml");
+    }
+
 }

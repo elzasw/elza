@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
+import cz.tacr.elza.domain.RulOutputType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,4 +27,6 @@ public interface ActionRecommendedRepository extends JpaRepository<RulActionReco
 
     @Query("SELECT r FROM rul_action_recommended r JOIN r.outputType ot WHERE ot.code = :code")
     RulActionRecommended findOneByOutputTypeCode(@Param("code") String code);
+
+    List<RulActionRecommended> findByOutputType(RulOutputType outputType);
 }
