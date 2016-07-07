@@ -37,6 +37,9 @@ class UrlFactory {
     static downloadDmsFile(id) {
         return window.location.origin + '/api/dms/' + id
     }
+    static downloadOutputResult(id) {
+        return window.location.origin + '/api/outputResult/' + id
+    }
 }
 
 /**
@@ -930,6 +933,14 @@ class WebApi{
 
     outputGenerate(outputId) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/output/generate/' + outputId);
+    }
+
+    outputRevert(versionId, outputId) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/output/' + versionId + '/' + outputId + '/revert');
+    }
+
+    outputClone(versionId, outputId) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/output/' + versionId + '/' + outputId + '/clone');
     }
 }
 

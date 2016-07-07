@@ -35,7 +35,7 @@ export function fetchFundOutputFilesIfNeeded(versionId, outputResultId) {
             .then(response => {
                 const newFund = objectById(state.arrRegion.funds, versionId, 'versionId');
                 if (newFund !== null) {
-                    const newFundOutputFiles = fund.fundFiles;
+                    const newFundOutputFiles = fund.fundOutput.fundOutputFiles;
                     const newDataKey = _dataGridKey(newFundOutputFiles);
                     if (newDataKey === dataKey) {
                         dispatch(_dataReceive(versionId, response))

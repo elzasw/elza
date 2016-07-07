@@ -2,29 +2,10 @@ package cz.tacr.elza.service;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputItem;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.NodeOutputRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
-import cz.tacr.elza.repository.OutputItemRepository;
-import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.OutputTypeRepository;
-import cz.tacr.elza.repository.TemplateRepository;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
@@ -100,6 +81,12 @@ public class OutputService {
     @Autowired
     private EventNotificationService notificationService;
 
+    @Autowired
+    private OutputResultRepository outputResultRepository;
+
+    @Autowired
+    private OutputFileRepository outputFileRepository;
+
     /**
      * Vyhledá platné nody k výstupu.
      *
@@ -139,13 +126,109 @@ public class OutputService {
             throw new IllegalArgumentException("Nelze smazat již smazaný výstup");
         }
 
+
+        if (outputDefinition.getState() != OutputState.OPEN &&
+                outputDefinition.getState() != OutputState.FINISHED &&
+                outputDefinition.getState() != OutputState.OUTDATED) {
+            throw new IllegalArgumentException("Nelze smazat výstup v tomto stavu.");
+        }
+
         outputDefinition.setDeleted(true);
 
-        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(size -> new Integer[size]);
+        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
         EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, outputIds);
         eventNotificationService.publishEvent(event);
 
         return outputDefinitionRepository.save(outputDefinition);
+    }
+
+    /**
+     * Vrátí stav do Otevřeno
+     *
+     * @param fundVersion      verze AS
+     * @param outputDefinition pojmenovaný výstup
+     * @return pojmenovaný výstup
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
+    public ArrOutputDefinition revertToOpenState(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                                 final ArrOutputDefinition outputDefinition) {
+        Assert.notNull(fundVersion);
+        Assert.notNull(outputDefinition);
+
+        if (fundVersion.getLockChange() != null) {
+            throw new IllegalArgumentException("Nelze vrátit do přípravy výstup v uzavřené verzi AS");
+        }
+
+        checkFund(fundVersion, outputDefinition);
+
+        if (outputDefinition.getDeleted()) {
+            throw new IllegalArgumentException("Nelze vrátit do přípravy smazaný výstup");
+        }
+
+        if (outputDefinition.getState() != OutputState.OUTDATED && outputDefinition.getState() != OutputState.FINISHED) {
+            throw new IllegalArgumentException("Do stavu \"V přípravě\" lze vrátit pouze \"Neaktuální\" či \"Vygenerované\" výstupy");
+        }
+
+        outputDefinition.setState(OutputState.OPEN);
+
+        ArrOutputResult outputResult = outputDefinition.getOutputResult();
+        if (outputResult != null) {
+            List<ArrOutputFile> outputFiles = outputResult.getOutputFiles();
+            if (outputFiles != null && !outputFiles.isEmpty()) {
+                outputFileRepository.delete(outputFiles);
+            }
+            outputResultRepository.delete(outputResult);
+        }
+
+        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
+        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, outputIds);
+        eventNotificationService.publishEvent(event);
+
+        return outputDefinitionRepository.save(outputDefinition);
+    }
+
+    /**
+     * Vytvoří kopii výstupu s nody bez resultů
+     *
+     * @param fundVersion      verze AS
+     * @param originalOutputDef pojmenovaný výstup originál
+     * @return pojmenovaný výstup kopie
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
+    public ArrOutputDefinition cloneOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                                 final ArrOutputDefinition originalOutputDef) {
+        Assert.notNull(fundVersion);
+        Assert.notNull(originalOutputDef);
+
+        checkFund(fundVersion, originalOutputDef);
+
+        if (originalOutputDef.getDeleted()) {
+            throw new IllegalArgumentException("Nelze klonovat smazaný výstup");
+        }
+
+        final ArrOutputDefinition newOutputDef = createOutputDefinition(fundVersion,
+                originalOutputDef.getName() + " (kopie)",
+                originalOutputDef.getInternalCode() + " (kopie)",
+                originalOutputDef.getTemporary(),
+                originalOutputDef.getOutputType().getOutputTypeId(),
+                originalOutputDef.getTemplate().getTemplateId()
+        );
+
+        final ArrChange change = newOutputDef.getOutputs().get(0).getCreateChange();
+        final ArrayList<ArrNodeOutput> newNodes = new ArrayList<>();
+        originalOutputDef.getOutputNodes().stream().forEach(node -> {
+            ArrNodeOutput newNode = new ArrNodeOutput();
+            newNode.setCreateChange(change);
+            newNode.setNode(node.getNode());
+            newNode.setOutputDefinition(newOutputDef);
+            newNodes.add(newNode);
+        });
+
+        nodeOutputRepository.save(newNodes);
+
+        return newOutputDef;
     }
 
     /**
@@ -240,6 +323,7 @@ public class OutputService {
         outputDefinition.setInternalCode(internalCode);
         outputDefinition.setDeleted(false);
         outputDefinition.setTemporary(temporary);
+        outputDefinition.setState(OutputState.OPEN);
 
         RulOutputType type = outputTypeRepository.findOne(outputTypeId);
         Assert.notNull(type);
@@ -254,7 +338,7 @@ public class OutputService {
         outputDefinitionRepository.save(outputDefinition);
 
         ArrChange change = arrangementService.createChange();
-        ArrOutput output = createOutput(outputDefinition, change);
+        ArrOutput output = createOutputWithChange(outputDefinition, change);
         List<ArrOutput> outputs = new ArrayList<>();
         outputs.add(output);
         outputDefinition.setOutputs(outputs);
@@ -273,8 +357,8 @@ public class OutputService {
      * @param change           změna
      * @return vytvořený výstup
      */
-    private ArrOutput createOutput(final ArrOutputDefinition outputDefinition,
-                                   final ArrChange change) {
+    private ArrOutput createOutputWithChange(final ArrOutputDefinition outputDefinition,
+                                             final ArrChange change) {
         Assert.notNull(outputDefinition);
         Assert.notNull(change);
 
@@ -326,7 +410,11 @@ public class OutputService {
             throw new IllegalArgumentException("Nelze odebrat uzly u zamčeného výstupu");
         }
 
-        ArrOutputDefinition outputDefinition = output.getOutputDefinition();
+        final ArrOutputDefinition outputDefinition = output.getOutputDefinition();
+
+        if (outputDefinition.getState() != OutputState.OPEN) {
+            throw new IllegalArgumentException("Nelze odebrat uzly z výstupu, který není ve stavu otevřený");
+        }
 
         checkFund(fundVersion, outputDefinition);
 
@@ -338,7 +426,7 @@ public class OutputService {
             nodeOutputs.stream().forEach(arrNodeOutput -> arrNodeOutput.setDeleteChange(change));
             nodeOutputRepository.save(nodeOutputs);
 
-            Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(size -> new Integer[size]);
+            Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
             EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
             eventNotificationService.publishEvent(event);
         }
@@ -373,7 +461,12 @@ public class OutputService {
             throw new IllegalArgumentException("Nelze upravit uzavřený výstup");
         }
 
-        ArrOutputDefinition outputDefinition = output.getOutputDefinition();
+        final ArrOutputDefinition outputDefinition = output.getOutputDefinition();
+
+
+        if (outputDefinition.getState() != OutputState.OPEN) {
+            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        }
 
         outputDefinition.setName(name);
         outputDefinition.setInternalCode(internalCode);
@@ -385,7 +478,7 @@ public class OutputService {
 
         outputDefinitionRepository.save(outputDefinition);
 
-        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(size -> new Integer[size]);
+        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
         EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
         eventNotificationService.publishEvent(event);
 
@@ -442,10 +535,14 @@ public class OutputService {
         }
 
         if (output.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze odebrat uzly u zamčeného výstupu");
+            throw new IllegalArgumentException("Nelze přidat uzly u zamčeného výstupu");
         }
 
-        ArrOutputDefinition outputDefinition = output.getOutputDefinition();
+        final ArrOutputDefinition outputDefinition = output.getOutputDefinition();
+
+        if (outputDefinition.getState() != OutputState.OPEN) {
+            throw new IllegalArgumentException("Nelze přidat uzly k výstupu, který není ve stavu otevřený");
+        }
 
         checkFund(fundVersion, outputDefinition);
 
@@ -544,6 +641,9 @@ public class OutputService {
                                           @Nullable final ArrChange createChange) {
         ArrChange change = createChange == null ? arrangementService.createChange() : createChange;
 
+        if (outputDefinition.getState() != OutputState.OPEN) {
+            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        }
         outputItem.setOutputDefinition(outputDefinition);
 
         outputItem.setOutputDefinition(outputDefinition);
@@ -630,8 +730,15 @@ public class OutputService {
         }
 
         ArrOutputItem outputItem = outputItems.get(0);
-        outputItem.getOutputDefinition().setVersion(outputVersion);
-        saveOutputDefinition(outputItem.getOutputDefinition());
+        ArrOutputDefinition outputDefinition = outputItem.getOutputDefinition();
+
+        if (outputDefinition.getState() != OutputState.OPEN) {
+            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        }
+
+        outputDefinition.setVersion(outputVersion);
+
+        saveOutputDefinition(outputDefinition);
 
         ArrOutputItem outputItemDeleted = deleteOutputItem(outputItem, fundVersion, change, true);
 
@@ -648,6 +755,13 @@ public class OutputService {
 
         // pro mazání musí být verze otevřená
         itemService.checkFundVersionLock(version);
+
+
+
+        if (outputItem.getOutputDefinition().getState()!= OutputState.OPEN) {
+            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        }
+
 
         if (moveAfter) {
             // načtení hodnot, které je potřeba přesunout výš
@@ -690,8 +804,12 @@ public class OutputService {
         }
         ArrOutputItem outputItemDB = outputItems.get(0);
 
-        ArrOutputDefinition outputDefinition = outputItemDB.getOutputDefinition();
+        final ArrOutputDefinition outputDefinition = outputItemDB.getOutputDefinition();
         Assert.notNull(outputDefinition);
+
+        if (outputDefinition.getState() != OutputState.OPEN) {
+            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        }
 
         if (createNewVersion) {
             outputDefinition.setVersion(outputDefinitionVersion);
@@ -878,7 +996,9 @@ public class OutputService {
                                                     final ArrOutputDefinition outputDefinition,
                                                     final ArrFundVersion version,
                                                     @Nullable final ArrChange createChange) {
-
+        if (outputDefinition.getState() != OutputState.OPEN) {
+            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        }
         ArrChange change = createChange == null ? arrangementService.createChange() : createChange;
         List<ArrOutputItem> createdItems = new ArrayList<>();
         for (ArrOutputItem outputItem :
@@ -900,7 +1020,6 @@ public class OutputService {
 
     public ArrOutputDefinition deleteOutputItemsByTypeWithoutVersion(final Integer fundVersionId,
                                                                      final Integer outputDefinitionId,
-                                                                     final Integer outputDefinitionVersion,
                                                                      final Integer descItemTypeId) {
         ArrChange change = arrangementService.createChange();
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
@@ -909,7 +1028,10 @@ public class OutputService {
         Assert.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
         Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
-        ArrOutputDefinition outputDefinition = findOutputDefinition(outputDefinitionId);
+        final ArrOutputDefinition outputDefinition = findOutputDefinition(outputDefinitionId);
+        if (outputDefinition.getState() != OutputState.OPEN) {
+            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        }
 
         List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(descItemType, outputDefinition);
 
@@ -948,6 +1070,11 @@ public class OutputService {
 
         ArrOutputDefinition outputDefinition = outputDefinitionRepository.findOne(outputDefinitionId);
         Assert.notNull(outputDefinition);
+
+        if (outputDefinition.getState() != OutputState.OPEN) {
+            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        }
+
         outputDefinition.setVersion(outputDefinitionVersion);
         saveOutputDefinition(outputDefinition);
 

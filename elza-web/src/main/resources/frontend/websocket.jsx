@@ -29,7 +29,8 @@ import {
     fundOutputChanges,
     fundOutputChangesDetail,
     changeFundAction,
-    fundOutputGenerated
+    fundOutputStateChange,
+    fundOutputStateChangeToastr
 } from 'actions/global/change.jsx';
 
 
@@ -200,8 +201,8 @@ function processEvents(values) {
                 fundDelete(value);
                 break;
             
-            case 'OUTPUT_GENERATED':
-                outputGenerated(value);
+            case 'OUTPUT_STATE_CHANGE':
+                outputStateChange(value);
                 break;
 
             case 'OUTPUT_CHANGES':
@@ -260,10 +261,15 @@ function fundDelete(value) {
     store.dispatch(deleteFund(value.ids[0]));
 }
 
-function outputGenerated(value) {
-    store.dispatch(fundOutputGenerated(value.versionId, value.entityId));
-    store.dispatch(addToastrSuccess('Výstup byl vygenerován.'));
+function outputStateChange(value) {
+    store.dispatch(fundOutputStateChange(value.versionId, value.entityId, value.entityString));
+    store.dispatch(fundOutputStateChangeToastr(value.versionId, value.entityId, value.entityString));
 }
+
+/*function outputStateChange(value) {
+    store.dispatch(fundOutputStateChange(value.versionId, value.entityId));
+    store.dispatch(addToastrSuccess('Výstup byl vygenerován.'));
+}*/
 
 function outputChanges(value) {
     store.dispatch(fundOutputChanges(value.versionId, value.entityIds));

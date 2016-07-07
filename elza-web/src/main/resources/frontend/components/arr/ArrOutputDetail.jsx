@@ -30,12 +30,28 @@ var keymap = {
 };
 var shortcutManager = new ShortcutsManager(keymap);
 
+const OutputState = {
+    OPEN: 'OPEN',
+    COMPUTING: 'COMPUTING',
+    GENERATING: 'GENERATING',
+    FINISHED: 'FINISHED',
+    OUTDATED: 'OUTDATED',
+    ERROR: 'ERROR' /// Pomocný stav websocketu
+};
+
 var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('trySetFocus', 'handleShortcuts', "handleRemoveNode",
-            "handleRenderNodeItem", "handleAddNodes", "handleSaveOutput");
+        this.bindMethods(
+            'trySetFocus',
+            'handleShortcuts',
+            'handleRemoveNode',
+            'handleRenderNodeItem',
+            'handleAddNodes',
+            'handleSaveOutput',
+            'isEditable'
+        );
     }
 
     componentDidMount() {
@@ -44,7 +60,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
         this.dispatch(outputTypesFetchIfNeeded());
 
         this.requestData(this.props.versionId, this.props.fundOutputDetail);
-        
+
         this.trySetFocus(this.props)
     }
 
@@ -52,9 +68,9 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
         const {versionId, fundOutputDetail} = nextProps;
         fundOutputDetail.id !== null && this.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
         this.dispatch(outputTypesFetchIfNeeded());
-        
+
         this.requestData(nextProps.versionId, nextProps.fundOutputDetail);
-        
+
         this.trySetFocus(nextProps)
     }
 
@@ -69,7 +85,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
         }
         this.dispatch(refRulDataTypesFetchIfNeeded());
         this.dispatch(calendarTypesFetchIfNeeded());
-    }    
+    }
 
     trySetFocus(props) {
         var {focus} = props;
@@ -140,9 +156,13 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
             />))
     }
 
+    isEditable(item = this.props.fundOutputDetail) {
+        return !item.lockDate && item.outputDefinition.state === OutputState.OPEN
+    }
+
     render() {
         const {fundOutputDetail, outputTypes, templates, fund, versionId, packets, packetTypes, descItemTypes, calendarTypes, rulDataTypes} = this.props;
-        
+
         if (fundOutputDetail.id === null) {
             return <div className='arr-output-detail-container'></div>
         }
@@ -164,7 +184,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
                     packetTypes={packetTypes}
                     packets={packets}
                     subNodeForm={fundOutputDetail.subNodeForm}
-                    closed={fundOutputDetail.lockDate ? true : false}
+                    closed={!this.isEditable()}
                     focus={focus}
                 />
             )
@@ -177,7 +197,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
                 <div className={"arr-output-detail-container"}>
                     <div className="output-definition-commons">
                         <OutputInlineForm
-                            disabled={fundOutputDetail.lockDate}
+                            disabled={!this.isEditable()}
                             initData={fundOutputDetail.outputDefinition}
                             onSave={this.handleSaveOutput}
                             />
@@ -189,7 +209,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
                             nodes={fundOutputDetail.outputDefinition.nodes}
                             onDeleteNode={this.handleRemoveNode}
                             onAddNode={this.handleAddNodes}
-                            readOnly={fundOutputDetail.lockDate ? true : false}
+                            readOnly={!this.isEditable()}
                         />
                     </div>
 
@@ -206,7 +226,7 @@ function mapStateToProps(state) {
         outputTypes: state.refTables.outputTypes.items,
         focus,
         userDetail,
-    }    
+    }
 }
 
 ArrOutputDetail.propTypes = {

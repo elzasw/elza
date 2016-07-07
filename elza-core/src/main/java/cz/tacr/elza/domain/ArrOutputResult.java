@@ -3,6 +3,7 @@ package cz.tacr.elza.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
+import java.util.List;
 
 /**
  * Implementace třídy {@link cz.tacr.elza.api.ArrOutputResult}
@@ -12,7 +13,7 @@ import javax.persistence.*;
  */
 @Entity(name = "arr_output_result")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrOutputResult implements cz.tacr.elza.api.ArrOutputResult<ArrOutputDefinition, RulTemplate, ArrChange> {
+public class ArrOutputResult implements cz.tacr.elza.api.ArrOutputResult<ArrOutputDefinition, RulTemplate, ArrChange, ArrOutputFile> {
 
     @Id
     @GeneratedValue
@@ -29,6 +30,9 @@ public class ArrOutputResult implements cz.tacr.elza.api.ArrOutputResult<ArrOutp
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "changeId", nullable = false)
     private ArrChange change;
+
+    @OneToMany(mappedBy = "outputResult", fetch = FetchType.LAZY)
+    private List<ArrOutputFile> outputFiles;
 
     @Override
     public Integer getOutputResultId() {
@@ -49,7 +53,6 @@ public class ArrOutputResult implements cz.tacr.elza.api.ArrOutputResult<ArrOutp
         this.outputDefinition = outputDefinition;
     }
 
-
     @Override
     public RulTemplate getTemplate() {
         return template;
@@ -59,7 +62,6 @@ public class ArrOutputResult implements cz.tacr.elza.api.ArrOutputResult<ArrOutp
     public void setTemplate(RulTemplate template) {
         this.template = template;
     }
-
 
     @Override
     public ArrChange getChange() {
@@ -71,4 +73,13 @@ public class ArrOutputResult implements cz.tacr.elza.api.ArrOutputResult<ArrOutp
         this.change = change;
     }
 
+    @Override
+    public List<ArrOutputFile> getOutputFiles() {
+        return outputFiles;
+    }
+
+    @Override
+    public void setOutputFiles(List<ArrOutputFile> outputFiles) {
+        this.outputFiles = outputFiles;
+    }
 }

@@ -8,8 +8,10 @@ import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrOutputFile;
+import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.DmsService;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Nullable;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.function.Function;
 
 /**
@@ -42,6 +43,9 @@ public class DmsController {
 
     @Autowired
     private DmsService dmsService;
+
+    @Autowired
+    private OutputResultRepository outputResultRepository;
 
     /**
      * Vytvoření souboru
@@ -187,6 +191,27 @@ public class DmsController {
     }
 
     /**
+     * Stažení souboru
+     * @param response http odpověd
+     * @param outputResultId id souboru
+     * @throws IOException
+     */
+    @RequestMapping(value = "/api/outputResult/{outputResultId}", method = RequestMethod.GET)
+    public void getOutputResultZip(HttpServletResponse response, @PathVariable(value = "outputResultId") Integer outputResultId) throws IOException {
+        Assert.notNull(outputResultId);
+        ArrOutputResult result = outputResultRepository.getOneCheckExist(outputResultId);
+        File outputFilesZip = dmsService.getOutputFilesZip(result);
+        response.setHeader("Content-Disposition", "attachment;filename="+outputFilesZip.getName());
+
+        ServletOutputStream out = response.getOutputStream();
+        InputStream in = new BufferedInputStream(new FileInputStream(outputFilesZip));
+        IOUtils.copy(in, out);
+        IOUtils.closeQuietly(in);
+        IOUtils.closeQuietly(out);
+        outputFilesZip.delete();
+    }
+
+    /**
      * Vyhledávání
      * @param search vyhledávaný text
      * @param from od záznamu
@@ -254,6 +279,7 @@ public class DmsController {
     public void deleteArrFile(@PathVariable(value = "fileId") Integer fileId) throws IOException {
         dmsService.deleteArrFile(fileId);
     }
+
     /**
      * Smazání souboru
      *

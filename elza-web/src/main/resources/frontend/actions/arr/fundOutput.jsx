@@ -21,7 +21,7 @@ export function isFundOutput(action) {
     switch (action.type) {
         case types.FUND_OUTPUT_REQUEST:
         case types.FUND_OUTPUT_RECEIVE:
-            return true
+            return true;
         default:
             return false
     }
@@ -86,6 +86,24 @@ export function fundOutputDelete(versionId, outputId) {
     }
 }
 
+export function fundOutputRevert(versionId, outputId) {
+    return (dispatch, getState) => {
+        WebApi.outputRevert(versionId, outputId)
+            .then((json) => {
+                dispatch(addToastrSuccess(i18n("arr.output.title.revert")));
+            });        
+    }
+}
+export function fundOutputClone(versionId, outputId) {
+    return (dispatch, getState) => {
+        WebApi.outputClone(versionId, outputId)
+            .then((json) => {
+                dispatch(fundOutputSelectOutput(versionId, json.id));
+                dispatch(addToastrSuccess(i18n("arr.output.title.clone")));
+            });
+    }
+}
+
 export function fundOutputCreate(versionId, data) {
     return (dispatch, getState) => {
         WebApi.createOutput(versionId, data)
@@ -130,24 +148,24 @@ function _getFundOutput(versionId, getState) {
  */
 export function fundOutputDetailFetchIfNeeded(versionId, outputId) {
     return (dispatch, getState) => {
-        const fundOutput = _getFundOutput(versionId, getState)
+        const fundOutput = _getFundOutput(versionId, getState);
         if (fundOutput == null) {
             return
         }
 
-        const fundOutputDetail = fundOutput.fundOutputDetail
-        const dataKey = _fundOutputDetailDataKey(fundOutputDetail)
+        const fundOutputDetail = fundOutput.fundOutputDetail;
+        const dataKey = _fundOutputDetailDataKey(fundOutputDetail);
 
         if (fundOutputDetail.currentDataKey !== dataKey) {
-            dispatch(fundOutputDetailRequest(versionId, dataKey))
+            dispatch(fundOutputDetailRequest(versionId, dataKey));
             WebApi.getFundOutputDetail(versionId, outputId)
                 .then(json => {
-                    const newFundOutput = _getFundOutput(versionId, getState)
+                    const newFundOutput = _getFundOutput(versionId, getState);
                     if (newFundOutput == null) {
                         return
                     }
-                    const newFundOutputDetail = newFundOutput.fundOutputDetail
-                    const newDataKey = _fundOutputDetailDataKey(newFundOutputDetail)
+                    const newFundOutputDetail = newFundOutput.fundOutputDetail;
+                    const newDataKey = _fundOutputDetailDataKey(newFundOutputDetail);
                     if (newDataKey === dataKey) {
                         dispatch(fundOutputDetailReceive(versionId, json))
                     }
@@ -161,22 +179,22 @@ export function fundOutputDetailFetchIfNeeded(versionId, outputId) {
  */
 export function fundOutputFetchIfNeeded(versionId) {
     return (dispatch, getState) => {
-        const fundOutput = _getFundOutput(versionId, getState)
+        const fundOutput = _getFundOutput(versionId, getState);
         if (fundOutput == null) {
             return
         }
 
-        const dataKey = _fundOutputDataKey(fundOutput)
+        const dataKey = _fundOutputDataKey(fundOutput);
 
         if (fundOutput.currentDataKey !== dataKey) {
-            dispatch(fundOutputRequest(versionId, dataKey))
+            dispatch(fundOutputRequest(versionId, dataKey));
             WebApi.getOutputs(versionId)
                 .then(json => {
-                    const newFundOutput = _getFundOutput(versionId, getState)
+                    const newFundOutput = _getFundOutput(versionId, getState);
                     if (newFundOutput == null) {
                         return
                     }
-                    const newDataKey = _fundOutputDataKey(newFundOutput)
+                    const newDataKey = _fundOutputDataKey(newFundOutput);
                     if (newDataKey === dataKey) {
                         dispatch(fundOutputReceive(versionId, json))
                     }
@@ -189,7 +207,7 @@ function fundOutputRequest(versionId, dataKey) {
     return {
         type: types.FUND_OUTPUT_REQUEST,
         versionId,
-        dataKey,
+        dataKey
     }
 }
 
@@ -197,7 +215,7 @@ function fundOutputReceive(versionId, outputs) {
     return {
         type: types.FUND_OUTPUT_RECEIVE,
         versionId,
-        outputs,
+        outputs
     }
 }
 
@@ -205,7 +223,7 @@ function fundOutputDetailRequest(versionId, dataKey) {
     return {
         type: types.FUND_OUTPUT_DETAIL_REQUEST,
         versionId,
-        dataKey,
+        dataKey
     }
 }
 
@@ -213,7 +231,7 @@ function fundOutputDetailReceive(versionId, data) {
     return {
         type: types.FUND_OUTPUT_DETAIL_RECEIVE,
         versionId,
-        data,
+        data
     }
 }
 

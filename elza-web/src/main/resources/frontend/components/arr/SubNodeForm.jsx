@@ -24,14 +24,31 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderDescItemGroup', 'renderDescItemType', 'handleChange', 'handleChangePosition',
-            'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus',
-            'handleDescItemAdd', 'handleDescItemRemove',
+        this.bindMethods(
+            'renderDescItemGroup', 
+            'renderDescItemType', 
+            'handleChange', 
+            'handleChangePosition',
+            'handleChangeSpec', 
+            'handleDescItemTypeRemove', 
+            'handleBlur', 
+            'handleFocus',
+            'handleDescItemAdd', 
+            'handleDescItemRemove',
             'handleCreateParty',
-            "handleDescItemTypeCopyFromPrev", "handleDescItemTypeLock", "handleDescItemTypeCopy",
-            'handleCreatedParty', 'handleCreateRecord', 'handleCreatedRecord',
-            'trySetFocus', 'initFocus', 'getFlatDescItemTypes',
-            'addNodeAfterClick', 'addNodeBeforeClick', 'addNodeChildClick', 'handleJsonTableDownload'
+            'handleDescItemTypeCopyFromPrev', 
+            'handleDescItemTypeLock', 
+            'handleDescItemTypeCopy',
+            'handleCreatedParty', 
+            'handleCreateRecord', 
+            'handleCreatedRecord',
+            'trySetFocus', 
+            'initFocus', 
+            'getFlatDescItemTypes',
+            'addNodeAfterClick', 
+            'addNodeBeforeClick', 
+            'addNodeChildClick', 
+            'handleJsonTableDownload'
         );
     }
 

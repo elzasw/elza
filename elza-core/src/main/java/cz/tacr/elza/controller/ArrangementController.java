@@ -17,6 +17,7 @@ import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.FilterExpiredException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.*;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.*;
 import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.output.OutputGeneratorService;
@@ -1598,8 +1599,9 @@ public class ArrangementController {
     @RequestMapping(value = "/output/generate/{outputId}", method = RequestMethod.GET)
     public void generateOutput(@PathVariable(value = "outputId") final Integer outputId) {
         ArrOutput output = outputService.getOutput(outputId);
-        // TODO Compel - místo null při volání plnit správné userID
-        outputGeneratorService.generateOutput(output, null);
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        Integer userId = userDetail != null ? userDetail.getId() : null;
+        outputGeneratorService.generateOutput(output, userId);
     }
 
     /**
@@ -1682,6 +1684,37 @@ public class ArrangementController {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
         outputService.deleteNamedOutput(fundVersion, output.getOutputDefinition());
+    }
+
+    /**
+     * Vrácení stavu pojmenovaného výstupu do stavu otevřený.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identifikátor výstupu
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{fundVersionId}/{outputId}/revert", method = RequestMethod.POST)
+    public void revertToOpenState(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                  @PathVariable(value = "outputId") final Integer outputId) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        outputService.revertToOpenState(fundVersion, output.getOutputDefinition());
+    }
+
+    /**
+     * Vytvoření kopie outputu
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param outputId      identifikátor výstupu
+     * @return kopie výstupu
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{fundVersionId}/{outputId}/clone", method = RequestMethod.POST)
+    public ArrOutputDefinitionVO cloneOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                             @PathVariable(value = "outputId") final Integer outputId) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        return factoryVo.createOutputDefinition(outputService.cloneOutput(fundVersion, output.getOutputDefinition()));
     }
 
     /**

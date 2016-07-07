@@ -1,7 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
-import java.util.List;
+import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 
+import java.util.List;
 
 /**
  * VO Výstup z archivního souboru.
@@ -16,6 +17,13 @@ public class ArrOutputDefinitionVO {
     private String internalCode;
 
     private String name;
+
+    /**
+     * Stav outputu
+     */
+    private OutputState state;
+
+    private String error;
 
     private Boolean temporary;
 
@@ -55,6 +63,22 @@ public class ArrOutputDefinitionVO {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public OutputState getState() {
+        return state;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
+
+    public void setState(OutputState state) {
+        this.state = state;
     }
 
     public Boolean getTemporary() {

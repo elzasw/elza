@@ -53,6 +53,15 @@ public class EventFactory {
         return new EventStringInVersion(eventType, versionId, entityString);
     }
 
+    public static EventIdAndStringInVersion createStringAndIdInVersionEvent(final EventType eventType,
+                                                                            final Integer versionId,
+                                                                            final Integer entityId,
+                                                                            final String entityString) {
+        Assert.notNull(versionId);
+
+        return new EventIdAndStringInVersion(eventType, versionId, entityId, entityString);
+    }
+
 
     /**
      * Vytvoří událost přesunutí uzlu.

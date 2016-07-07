@@ -49,4 +49,5 @@ public interface ArrOutput<NO extends ArrOutputDefinition, C extends ArrChange> 
      * @param lockChange změna uzamčení
      */
     void setLockChange(C lockChange);
+
 }

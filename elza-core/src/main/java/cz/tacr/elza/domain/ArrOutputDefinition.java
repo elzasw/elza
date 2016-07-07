@@ -1,11 +1,10 @@
 package cz.tacr.elza.domain;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Implementace třídy {@link cz.tacr.elza.api.ArrOutputDefinition}
@@ -41,6 +40,13 @@ public class ArrOutputDefinition extends AbstractVersionableEntity implements cz
 
     @Column(length = 250, nullable = false)
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 12, nullable = false)
+    private OutputState state;
+
+    @Column(length = 10000)
+    private String error;
 
     @Column(nullable = false)
     private Boolean temporary;
@@ -105,6 +111,16 @@ public class ArrOutputDefinition extends AbstractVersionableEntity implements cz
     @Override
     public void setName(final String name) {
         this.name = name;
+    }
+
+    @Override
+    public OutputState getState() {
+        return state;
+    }
+
+    @Override
+    public void setState(OutputState state) {
+        this.state = state;
     }
 
     @Override
@@ -175,5 +191,15 @@ public class ArrOutputDefinition extends AbstractVersionableEntity implements cz
     @Override
     public void setOutputResult(ArrOutputResult outputResult) {
         this.outputResult = outputResult;
+    }
+
+    @Override
+    public String getError() {
+        return error;
+    }
+
+    @Override
+    public void setError(String error) {
+        this.error = error;
     }
 }

@@ -13,6 +13,32 @@ import java.util.List;
 public interface ArrOutputDefinition<F extends ArrFund,N extends ArrNodeOutput,O extends ArrOutput,R extends RulOutputType, T extends RulTemplate, Q extends ArrOutputResult> extends Serializable {
 
     /**
+     * Stav outputu
+     */
+    enum OutputState {
+        /**
+         * Rozpracovaný
+         */
+        OPEN,
+        /**
+         * Běží hromadná akce
+         */
+        COMPUTING,
+        /**
+         * Generování
+         */
+        GENERATING,
+        /**
+         * Vygenerovaný
+         */
+        FINISHED,
+        /**
+         * Vygenerovaný neaktuální
+         */
+        OUTDATED
+    }
+
+    /**
      * @return identifikátor entity
      */
     Integer getOutputDefinitionId();
@@ -76,23 +102,73 @@ public interface ArrOutputDefinition<F extends ArrFund,N extends ArrNodeOutput,O
      */
     void setDeleted(Boolean deleted);
 
+    /**
+     * @return List verzí outputů
+     */
     List<O> getOutputs();
 
+    /**
+     * @param outputs List verzí outputů
+     */
     void setOutputs(List<O> outputs);
 
+    /**
+     * @return List nodů outputu
+     */
     List<N> getOutputNodes();
 
+    /**
+     * @param outputNodes List nodů outputu
+     */
     void setOutputNodes(List<N> outputNodes);
 
+    /**
+     * @return Typ outputu
+     */
     R getOutputType();
 
+    /**
+     * @param outputType Typ outputu
+     */
     void setOutputType(R outputType);
 
+    /**
+     * @return šablona outputu
+     */
     T getTemplate();
-    
+
+    /**
+     * @param template šablona outputu
+     */
     void setTemplate(T template);
 
+    /**
+     * @return Výsledek outputu
+     */
     Q getOutputResult();
 
+    /**
+     * @param outputResult Výsledek outputu
+     */
     void setOutputResult(Q outputResult);
+
+    /**
+     * @return stav
+     */
+    OutputState getState();
+
+    /**
+     * @param state stav
+     */
+    void setState(OutputState state);
+
+    /**
+     * @return Vrátí chybu outputu
+     */
+    String getError();
+
+    /**
+     * @param error nastaví chybu outputu
+     */
+    void setError(String error);
 }

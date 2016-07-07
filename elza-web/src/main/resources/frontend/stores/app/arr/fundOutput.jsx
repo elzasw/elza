@@ -67,8 +67,7 @@ export default function fundOutput(state = initialState, action = {}) {
             }
             return consolidateState(state, result)
         }
-        case types.GENERATED_OUTPUT:{
-            console.log('test');
+        case types.OUTPUT_STATE_CHANGE:{
             const result = {
                 ...state,
                 fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),

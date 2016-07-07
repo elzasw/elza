@@ -252,7 +252,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
             if (!isFormVisible) {
                 if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) {
                     altActions.push(
-                        <Button key="new-action" onClick={this.handleRibbonNewAction}><Icon glyph="fa-plus"/>
+                        <Button key="new-action" onClick={this.handleRibbonNewAction}><Icon glyph="fa-plus-circle"/>
                             <div><span className="btnText">{i18n('ribbon.action.fundAction.action.new')}</span></div>
                         </Button>
                     );

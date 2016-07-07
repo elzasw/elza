@@ -38,7 +38,9 @@ import {
     fundOutputUsageEnd,
     fundOutputDelete,
     fundOutputAddNodes,
-    fundOutputGenerate
+    fundOutputGenerate,
+    fundOutputRevert,
+    fundOutputClone
 } from 'actions/arr/fundOutput.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
@@ -50,22 +52,33 @@ import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
+import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
 var classNames = require('classnames');
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 
-var keyModifier = Utils.getKeyModifier()
+var keyModifier = Utils.getKeyModifier();
 
 var keymap = {
     ArrOutput: {
         area1: keyModifier + '1',
         area2: keyModifier + '2',
-        area3: keyModifier + '3',
-    },
-}
-var shortcutManager = new ShortcutsManager(keymap)
+        area3: keyModifier + '3'
+    }
+};
+var shortcutManager = new ShortcutsManager(keymap);
 
 let _selectedTab = 0
+
+
+const OutputState = {
+    OPEN: 'OPEN',
+    COMPUTING: 'COMPUTING',
+    GENERATING: 'GENERATING',
+    FINISHED: 'FINISHED',
+    OUTDATED: 'OUTDATED',
+    ERROR: 'ERROR' /// Pomocný stav websocketu
+};
 
 const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     constructor(props) {
@@ -87,7 +100,10 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             'renderOutputPanel',
             'handleTabSelect',
             'handleGenerateOutput',
-            'handleAddDescItemType'
+            'handleAddDescItemType',
+            'handleRevertToOpen',
+            'handleClone',
+            'isEditable'
         );
     }
 
@@ -101,6 +117,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         if (fund) {
             this.dispatch(fundOutputFetchIfNeeded(fund.versionId));
             this.dispatch(packetsFetchIfNeeded(fund.id));
+            this.dispatch(outputTypesFetchIfNeeded());
         }
         this.trySetFocus(this.props)
     }
@@ -149,13 +166,13 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         console.log("#handleShortcuts", '[' + action + ']', this);
         switch (action) {
             case 'area1':
-                this.dispatch(setFocus('fund-output', 1))
-                break
+                this.dispatch(setFocus('fund-output', 1));
+                break;
             case 'area2':
-                this.dispatch(setFocus('fund-output', 2))
-                break
+                this.dispatch(setFocus('fund-output', 2));
+                break;
             case 'area3':
-                this.dispatch(setFocus('fund-output', 3))
+                this.dispatch(setFocus('fund-output', 3));
                 break
         }
     }
@@ -165,7 +182,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleAddOutput() {
-        const fund = this.getActiveFund()
+        const fund = this.getActiveFund();
 
         this.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
             <AddOutputForm
@@ -174,8 +191,8 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleBulkActions() {
-        const fund = this.getActiveFund()
-        const fundOutputDetail = fund.fundOutput.fundOutputDetail
+        const fund = this.getActiveFund();
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail;
 
         this.dispatch(fundActionFormChange(fund.versionId, {nodes: fundOutputDetail.outputDefinition.nodes}));
         this.dispatch(fundActionFormShow(fund.versionId));
@@ -186,11 +203,11 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
      * Zobrazení dialogu pro přidání atributu.
      */
     handleAddDescItemType() {
-        const fund = this.getActiveFund(this.props)
+        const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
         const subNodeForm = fundOutputDetail.subNodeForm;
 
-        const formData = subNodeForm.formData
+        const formData = subNodeForm.formData;
 
         // Pro přidání chceme jen ty, které zatím ještě nemáme
         var infoTypesMap = {...subNodeForm.infoTypesMap};
@@ -238,9 +255,9 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
      * @return {Object} view
      */
     buildRibbon() {
-        const {userDetail} = this.props
+        const {userDetail} = this.props;
 
-        const fund = this.getActiveFund()
+        const fund = this.getActiveFund();
         var itemActions = [];
         var altActions = [];
         if (fund) {
@@ -261,7 +278,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 )
                 if (isDetailIdNotNull) {
                     altActions.push(
-                        <Button key="generate-output" onClick={() => {this.handleGenerateOutput(outputDetail.id)}} disabled={!isDetailLoaded && this.isOutputGeneratingAllowed(outputDetail)}><Icon glyph="fa-youtube-play" />
+                        <Button key="generate-output" onClick={() => {this.handleGenerateOutput(outputDetail.id)}} disabled={!isDetailLoaded || !this.isOutputGeneratingAllowed(outputDetail.outputDefinition)}><Icon glyph="fa-youtube-play" />
                             <div><span className="btnText">{i18n('ribbon.action.arr.output.generate')}</span></div>
                         </Button>
                     )
@@ -271,7 +288,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
             if (isDetailIdNotNull && isDetailLoaded) {
                 if (hasPersmission) {
-                    if (!outputDetail.lockDate) {
+                    if (!outputDetail.lockDate && (outputDetail.state === OutputState.FINISHED || outputDetail.state === OutputState.OUTDATED)) {
                         itemActions.push(
                             <Button key="add-item" onClick={this.handleAddDescItemType}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.item.add')}</span></div></Button>
                         )
@@ -282,8 +299,20 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                         );
                     }
                     itemActions.push(
-                        <Button key="fund-output-delete" onClick={this.handleDelete}><Icon glyph="fa-trash"/>
+                        <Button key="fund-output-delete" onClick={this.handleDelete} disabled={!isDetailLoaded}><Icon glyph="fa-trash"/>
                             <div><span className="btnText">{i18n('ribbon.action.arr.output.delete')}</span></div>
+                        </Button>
+                    );
+                    if (!outputDetail.lockDate && (outputDetail.state === OutputState.FINISHED || outputDetail.state === OutputState.OUTDATED)) {
+                        itemActions.push(
+                            <Button key="fund-output-revert" onClick={this.handleRevertToOpen} disabled={!isDetailLoaded}><Icon glyph="fa-undo"/>
+                                <div><span className="btnText">{i18n('ribbon.action.arr.output.revert')}</span></div>
+                            </Button>
+                        );
+                    }
+                    itemActions.push(
+                        <Button key="fund-output-clone" onClick={this.handleClone} disabled={!isDetailLoaded}><Icon glyph="fa-clone"/>
+                            <div><span className="btnText">{i18n('ribbon.action.arr.output.clone')}</span></div>
                         </Button>
                     )
                 }
@@ -317,8 +346,10 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         )
     }
 
-    isOutputGeneratingAllowed(outputDetail) {
-        return outputDetail.outputDefinition && outputDetail.outputDefinition.outputResultId == null;
+    isOutputGeneratingAllowed(outputDefinition) {
+        return outputDefinition &&
+            outputDefinition.outputResultId == null &&
+            outputDefinition.state === OutputState.OPEN
     }
 
     handleUsageEnd() {
@@ -338,6 +369,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     renderListItem(item, isActive, index) {
+        const {outputTypes} = this.props;
         const fund = this.getActiveFund()
         const fundOutput = fund.fundOutput
 
@@ -350,10 +382,13 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             item: true,
             'temporary-splitter': currTemporary !== prevTemporary
         }
+        const typeIndex = indexById(outputTypes, item.outputDefinition.outputTypeId);
 
         return (
             <div className={classNames(cls)}>
                 <div className='name'>{item.outputDefinition.name}</div>
+                <div className='type'>{i18n('arr.output.list.type', typeIndex !== null ? outputTypes[typeIndex].name : "")}</div>
+                <div className='state'>{i18n('arr.output.list.state.label')} {i18n('arr.output.list.state.' + item.outputDefinition.state.toLowerCase())}</div>
                 {item.lockDate ? <div>{Utils.dateTimeToString(new Date(item.lockDate))}</div> : <div>&nbsp;</div>}
             </div>
         )
@@ -397,6 +432,10 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         )
     }
 
+    isEditable(item) {
+        return !item.lockDate && item.outputDefinition && item.outputDefinition.state === OutputState.OPEN
+    }
+
     render() {
         const {focus, arrRegion, splitter, templates, userDetail, rulDataTypes, packetTypes, descItemTypes, calendarTypes} = this.props;
 
@@ -430,8 +469,9 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                         />
                     </div>
                 );
-
+                const fundOutputDetail = fund.fundOutput.fundOutputDetail;
                 centerPanel = <ArrOutputDetail
+                    readOnly={!this.isEditable(fundOutputDetail)}
                     versionId={fund.versionId}
                     fund={fund}
                     calendarTypes={calendarTypes}
@@ -441,9 +481,9 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                     packets={packets}
                     rulDataTypes={rulDataTypes}
                     userDetail={userDetail}
-                    fundOutputDetail={fundOutput.fundOutputDetail}
+                    fundOutputDetail={fundOutputDetail}
                 />;
-                const fundOutputDetail = fund.fundOutput.fundOutputDetail;
+
                 if (fundOutputDetail.id !== null && fundOutputDetail.fetched) {
                     rightPanel = (
                         <div className="fund-output-right-panel-container">{this.renderRightPanel()}</div>
@@ -504,6 +544,20 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     handleGenerateOutput(outputId) {
         this.dispatch(fundOutputGenerate(outputId));
     }
+
+    handleRevertToOpen() {
+        const fund = this.getActiveFund();
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail;
+        //if (confirm(i18n('arr.output.revert.confirm'))) {
+            this.dispatch(fundOutputRevert(fund.versionId, fundOutputDetail.id));
+        //}
+    }
+
+    handleClone() {
+        const fund = this.getActiveFund();
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail;
+        this.dispatch(fundOutputClone(fund.versionId, fundOutputDetail.id));
+    }
 };
 
 function mapStateToProps(state) {
@@ -519,6 +573,7 @@ function mapStateToProps(state) {
         packetTypes: refTables.packetTypes,
         ruleSet: refTables.ruleSet,
         templates: refTables.templates,
+        outputTypes: refTables.outputTypes.items,
     }
 }
 

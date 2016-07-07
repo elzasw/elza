@@ -1,7 +1,11 @@
 import * as types from 'actions/constants/ActionTypes.js';
 
+import React from 'react';
 import {i18n} from 'components/index.jsx';
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {Button} from 'react-bootstrap';
+import {addToastrSuccess, addToastrInfo, addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
+import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx'
+import {routerNavigate} from 'actions/router.jsx'
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -103,14 +107,14 @@ export function changeFundAction(versionId, id) {
     }
 }
 
-export function changeParty(partyId){
+export function changeParty(partyId) {
     return {
         type: types.PARTY_UPDATED,
         partyId: partyId
     }
 }
 
-export function changePartyDelete(partyId){
+export function changePartyDelete(partyId) {
     return {
         type: types.CHANGE_PARTY_DELETED,
         partyId: partyId
@@ -135,7 +139,7 @@ export function changeMoveLevel(versionId) {
     }
 }
 
-export function changeRegistryRecord(changedIds){
+export function changeRegistryRecord(changedIds) {
     return {
         type: types.CHANGE_REGISTRY_UPDATE,
         changedIds
@@ -194,10 +198,41 @@ export function changeVisiblePolicy(versionId, nodeId, invalidateNodes) {
     }
 }
 
-export function fundOutputGenerated(versionId, outputId) {
+export function fundOutputStateChange(versionId, outputId, state) {
     return {
-        type: types.GENERATED_OUTPUT,
+        type: types.OUTPUT_STATE_CHANGE,
         versionId,
-        outputId
+        outputId,
+        state
+    }
+}
+
+export function fundOutputStateChangeToastr(versionId, entityId, state) {
+    return (dispatch, getState) => {
+        const {arrRegion} = getState();
+        if (arrRegion.activeIndex != null) {
+            const fund = arrRegion.funds[arrRegion.activeIndex];
+            if (fund === null || fund.versionId !== versionId) {
+                return;
+            }
+
+            const showBtn = <Button bsStyle="link" onClick={() => {
+                dispatch(routerNavigate('/arr/output'));
+                dispatch(fundOutputSelectOutput(versionId, entityId))
+            }}>{i18n('change.arr.output.clickToShow')}</Button>;
+
+            switch (state) {
+                case 'GENERATING':
+                    return dispatch(addToastrInfo(i18n('change.arr.output.generating.title'),showBtn));
+                case 'OUTDATED':
+                    return dispatch(addToastrSuccess(i18n('change.arr.output.outdated.title'),showBtn));
+                case 'FINISHED':
+                    return dispatch(addToastrSuccess(i18n('change.arr.output.finished.title'),showBtn));
+                case 'ERROR':
+                    return dispatch(addToastrDanger(i18n('change.arr.output.error.title'),showBtn));
+                default:
+                    return;
+            }
+        }
     }
 }

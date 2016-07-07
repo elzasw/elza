@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrOutputFile;
+import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.io.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Dms Service
@@ -29,6 +32,7 @@ public class DmsService {
 
     public static final String MIME_TYPE_APPLICATION_PDF = "application/pdf";
     public static final String MIME_TYPE_TEXT_CVS = "text/csv";
+
     /**
      * Složka se soubory DMS
      */
@@ -53,6 +57,13 @@ public class DmsService {
     @Autowired
     private EventNotificationService eventNotificationService;
 
+    /**
+     * Uloží DMS soubor se streamem a publishne event
+     *
+     * @param dmsFile    DO
+     * @param fileStream stream pro uložení souboru
+     * @throws IOException
+     */
     public void createFile(final DmsFile dmsFile, final InputStream fileStream) throws IOException {
         Assert.notNull(dmsFile);
         Assert.notNull(fileStream);
@@ -69,6 +80,11 @@ public class DmsService {
         publishFileChange(dmsFile);
     }
 
+    /**
+     * Publish eventu
+     *
+     * @param dmsFile dms sobor
+     */
     private void publishFileChange(final DmsFile dmsFile) {
         Integer notifyId;
         if (dmsFile instanceof ArrFile) {
@@ -84,6 +100,13 @@ public class DmsService {
         eventNotificationService.publishEvent(event);
     }
 
+    /**
+     * Úprava detailů souboru či jeho nahrazení
+     *
+     * @param newFile    nové DO DMS file
+     * @param fileStream Stream
+     * @throws IOException
+     */
     public void updateFile(final DmsFile newFile, final InputStream fileStream) throws IOException {
         Assert.notNull(newFile);
         Assert.notNull(newFile.getFileId());
@@ -101,7 +124,7 @@ public class DmsService {
         }
 
 
-        if(newFile.getName() != null && !newFile.getName().isEmpty()) {
+        if (newFile.getName() != null && !newFile.getName().isEmpty()) {
             dbFile.setName(newFile.getName());
         }
 
@@ -119,6 +142,12 @@ public class DmsService {
         publishFileChange(dbFile);
     }
 
+    /**
+     * Vrátí stream pro stažení souboru
+     *
+     * @param dmsFile dms Soubor ke stažení
+     * @return stream
+     */
     public InputStream downloadFile(final DmsFile dmsFile) {
         Assert.notNull(dmsFile);
 
@@ -137,19 +166,44 @@ public class DmsService {
         }
     }
 
+    /**
+     * Smazání DMS file pomocí ID
+     *
+     * @param fileId ID
+     * @throws IOException
+     */
     public void deleteFile(final Integer fileId) throws IOException {
         deleteFile(fileRepository.getOneCheckExist(fileId));
     }
 
-    public void deleteArrFile(final Integer fileId) throws IOException {
-        deleteFile(fundFileRepository.getOneCheckExist(fileId));
+
+    /**
+     * Smazání Arr file pomocí ID
+     *
+     * @param arrFileId ID
+     * @throws IOException
+     */
+    public void deleteArrFile(final Integer arrFileId) throws IOException {
+        deleteFile(fundFileRepository.getOneCheckExist(arrFileId));
     }
 
 
-    public void deleteOutputFile(final Integer fileId) throws IOException {
-        deleteFile(outputFileRepository.getOneCheckExist(fileId));
+    /**
+     * Smazání Output file pomocí ID
+     *
+     * @param outputFileId ID
+     * @throws IOException
+     */
+    public void deleteOutputFile(final Integer outputFileId) throws IOException {
+        deleteFile(outputFileRepository.getOneCheckExist(outputFileId));
     }
 
+    /**
+     * Smazání DMS soboru včetně reálného souboru
+     *
+     * @param dmsFile DMS soubor ke smazání
+     * @throws IOException
+     */
     public void deleteFile(final DmsFile dmsFile) throws IOException {
         Assert.notNull(dmsFile);
 
@@ -162,6 +216,14 @@ public class DmsService {
         publishFileChange(dmsFile);
     }
 
+    /**
+     * Uložení do souboru
+     *
+     * @param dmsFile    DO
+     * @param fileStream stream souboru
+     * @param outputFile místo k uložení souboru
+     * @throws IOException
+     */
     private void saveFile(final DmsFile dmsFile, final InputStream fileStream, final File outputFile) throws IOException {
 
         FileUtils.touch(outputFile);
@@ -170,7 +232,7 @@ public class DmsService {
         IOUtils.closeQuietly(fileStream);
         IOUtils.closeQuietly(outputStream);
 
-        dmsFile.setFileSize((int)outputFile.length());
+        dmsFile.setFileSize((int) outputFile.length());
 
         if (dmsFile.getMimeType().toLowerCase().equals(MIME_TYPE_APPLICATION_PDF)) {
             PDDocument reader = PDDocument.load(outputFile);
@@ -206,8 +268,8 @@ public class DmsService {
      * Vyhledávání DMS file
      *
      * @param search text
-     * @param from od záznamu
-     * @param count počet
+     * @param from   od záznamu
+     * @param count  počet
      * @return filtrovaný list
      */
     public FilteredResult<DmsFile> findDmsFiles(String search, Integer from, Integer count) {
@@ -218,8 +280,8 @@ public class DmsService {
      * Vyhledávání Arr file
      *
      * @param search text
-     * @param from od záznamu
-     * @param count počet
+     * @param from   od záznamu
+     * @param count  počet
      * @return filtrovaný list
      */
     public FilteredResult<ArrFile> findArrFiles(String search, Integer fundId, Integer from, Integer count) {
@@ -232,12 +294,81 @@ public class DmsService {
      * Vyhledávání Arr file
      *
      * @param search text
-     * @param from od záznamu
-     * @param count počet
+     * @param from   od záznamu
+     * @param count  počet
      * @return filtrovaný list
      */
     public FilteredResult<ArrOutputFile> findOutputFiles(String search, Integer outputResultId, Integer from, Integer count) {
         Assert.notNull(outputResultId);
         return outputFileRepository.findByTextAndResult(search, outputResultRepository.getOneCheckExist(outputResultId), from, count);
+    }
+
+    public File getOutputFilesZip(ArrOutputResult result) {
+
+        File file = null;
+        FileOutputStream fos = null;
+        ZipOutputStream zos = null;
+
+        try {
+            file = File.createTempFile(result.getOutputDefinition().getName(), ".zip");
+            fos = new FileOutputStream(file);
+            zos = new ZipOutputStream(fos);
+
+            for (ArrOutputFile outputFile : result.getOutputFiles()) {
+                File dmsFile = new File(getFilePath(outputFile));
+                if (dmsFile.exists()) {
+                    addToZipFile(outputFile.getFileName(), dmsFile, zos);
+                }
+            }
+
+            file.deleteOnExit();
+            return file;
+        } catch (IOException e) {
+
+            if (file != null) {
+                file.delete();
+            }
+
+            throw new IllegalStateException(e);
+
+        } finally {
+
+            if (zos != null) {
+                try {
+                    zos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+    }
+
+    /**
+     * Přidání souboru do zip souboru.
+     *
+     * @param fileName název souboru v zip
+     * @param file     zdrojový soubor
+     * @param zos      stream zip souboru
+     */
+    private void addToZipFile(String fileName, File file, ZipOutputStream zos) throws IOException {
+        FileInputStream fis = new FileInputStream(file);
+        ZipEntry zipEntry = new ZipEntry(fileName);
+        zos.putNextEntry(zipEntry);
+        byte[] bytes = new byte[1024];
+        int length;
+        while ((length = fis.read(bytes)) >= 0) {
+            zos.write(bytes, 0, length);
+        }
+        zos.closeEntry();
+        fis.close();
     }
 }

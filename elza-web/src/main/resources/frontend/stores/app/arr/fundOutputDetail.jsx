@@ -37,12 +37,15 @@ export default function fundOutputDetail(state = initialState, action = {}) {
                 subNodeForm: subNodeForm()
             }
         }
-        case types.GENERATED_OUTPUT:{
-            console.log(action);
+        case types.OUTPUT_STATE_CHANGE:{
             if (action.outputId === state.id) {
                 return {
                     ...state,
-                    currentDataKey: ''
+                    currentDataKey: '',
+                    outputDefinition: {
+                        ...state.outputDefinition,
+                        state: action.state
+                    }
                 }
             }
             return state

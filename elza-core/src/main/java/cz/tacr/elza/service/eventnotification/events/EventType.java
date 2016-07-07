@@ -56,7 +56,7 @@ public enum EventType {
 
     CONFORMITY_INFO(EventIdsInVersion.class),
 
-    OUTPUT_GENERATED(EventIdInVersion.class),
+    OUTPUT_STATE_CHANGE(EventIdAndStringInVersion.class),
     OUTPUT_CHANGES(EventIdsInVersion.class),
     OUTPUT_CHANGES_DETAIL(EventIdsInVersion.class),
 

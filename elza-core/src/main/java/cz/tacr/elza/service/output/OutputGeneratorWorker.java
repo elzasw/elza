@@ -91,6 +91,8 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
     private Integer arrOutputId;
     private Integer userId;
 
+    private ArrChange change;
+
     public void init(Integer outputInProgress, Integer userId) {
         this.arrOutputId = outputInProgress;
         this.userId = userId;
@@ -241,7 +243,7 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
      */
     private void storeOutputInDms(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate,
                                   InputStream in, final String outfileSuffix, final String mimeType) throws IOException {
-        final ArrChange change = createChange(userId);
+        change = createChange(userId);
 
         ArrOutputResult outputResult = new ArrOutputResult();
         outputResult.setChange(change);
@@ -270,5 +272,9 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
 
     Integer getArrOutputId() {
         return arrOutputId;
+    }
+
+    public ArrChange getChange() {
+        return change;
     }
 }

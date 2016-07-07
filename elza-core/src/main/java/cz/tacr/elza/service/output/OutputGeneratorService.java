@@ -1,13 +1,9 @@
 package cz.tacr.elza.service.output;
 
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputResult;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
-import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.OutputResultRepository;
+import com.google.common.collect.Sets;
+import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -24,8 +20,12 @@ import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
+import javax.annotation.Nullable;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.stream.Collectors;
 
 /**
  * Zajišťuje asynchronní generování výstupu a jeho uložení do dms na základě vstupní definice.
@@ -37,6 +37,8 @@ import java.util.Queue;
 
 @Service
 public class OutputGeneratorService implements ListenableFutureCallback<OutputGeneratorWorker> {
+
+    public static final String OUTPUT_WEBSOCKET_ERROR_STATE = "ERROR";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -51,6 +53,9 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
 
     @Autowired
     private OutputDefinitionRepository outputDefinitionRepository;
+
+    @Autowired
+    private NodeOutputRepository nodeOutputRepository;
 
     @Autowired
     private FundRepository fundRepository;
@@ -89,7 +94,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     public void generateOutput(ArrOutput arrOutput, Integer userId) {
         ArrOutputResult outputResult = outputResultRepository.findByOutputDefinition(arrOutput.getOutputDefinition());
         Assert.isNull(outputResult, "Tento výstup byl již vygenerován.");
-
+        setStateAndSave(arrOutput.getOutputDefinition(), OutputState.GENERATING);
         outputQueue.add(getWorker(arrOutput, userId));
         runNextOutput(); // zkusí sputit frontu
     }
@@ -122,9 +127,36 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         return generatorWorker;
     }
 
+    private void publicOutputStateEvent(final ArrOutputDefinition arrOutputDefinition, final @Nullable String customState) {
+        final ArrFund fund = fundRepository.findByOutputDefinitionId(arrOutputDefinition.getOutputDefinitionId());
+
+        eventNotificationService.forcePublish(
+                EventFactory.createStringAndIdInVersionEvent(
+                        EventType.OUTPUT_STATE_CHANGE,
+                        arrangementService.getOpenVersionByFundId(
+                                fund.getFundId()
+                        ).getFundVersionId(),
+                        arrOutputDefinition.getOutputDefinitionId(),
+                        customState == null ? arrOutputDefinition.getState().toString() : customState
+                )
+        );
+    }
+
+    private void setStateAndSave(ArrOutputDefinition arrOutputDefinition, OutputState state) {
+        arrOutputDefinition.setState(state);
+        outputDefinitionRepository.save(arrOutputDefinition);
+    }
+
     @Override
     public void onFailure(Throwable ex) {
         final Integer arrOutputId = worker.getArrOutputId();
+        if (worker != null && worker.getArrOutputId() != null) {
+            ArrOutput arrOutput = outputRepository.findOne(worker.getArrOutputId());
+            ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
+            arrOutputDefinition.setError(ex.getLocalizedMessage());
+            setStateAndSave(arrOutputDefinition, OutputState.OPEN);
+            publicOutputStateEvent(arrOutputDefinition, OUTPUT_WEBSOCKET_ERROR_STATE);
+        }
         worker = null;
         logger.error("Generování výstupu pro arr_output id="+arrOutputId+" dokončeno s chybou.", ex);
         runNextOutput();
@@ -133,19 +165,18 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     @Override
     public void onSuccess(OutputGeneratorWorker result) {
         final Integer arrOutputId = result.getArrOutputId();
-        //ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
-        ArrOutputDefinition byOutput = outputDefinitionRepository.findByOutputId(arrOutputId);
-        ArrFund fund = fundRepository.findByOutputDefinitionId(byOutput.getOutputDefinitionId());
+        final ArrChange change = result.getChange();
+        ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
+        ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
+        List<ArrNodeOutput> nodesList = nodeOutputRepository.findByOutputDefinition(arrOutputDefinition);
+        Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(nodesList.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet()), Sets.newHashSet(change), false, true);
 
-        eventNotificationService.forcePublish(
-                EventFactory.createIdInVersionEvent(
-                        EventType.OUTPUT_GENERATED,
-                        arrangementService.getOpenVersionByFundId(
-                                fund.getFundId()
-                        ),
-                        arrOutputId
-                )
-        );
+        if (arrChangeBooleanMap.containsKey(change) && arrChangeBooleanMap.get(change)) {
+            setStateAndSave(arrOutputDefinition, OutputState.OUTDATED);
+        } else {
+            setStateAndSave(arrOutputDefinition, OutputState.FINISHED);
+        }
+        publicOutputStateEvent(arrOutputDefinition, null);
         worker = null;
         logger.info("Generování výstupu pro arr_output id="+arrOutputId+" dokončeno úspěšně.", arrOutputId);
         runNextOutput();

@@ -15,4 +15,6 @@ import org.springframework.stereotype.Repository;
 public interface OutputResultRepository extends ElzaJpaRepository<ArrOutputResult, Integer> {
 
     ArrOutputResult findByOutputDefinition(final ArrOutputDefinition outputDefinition);
+
+    void deleteByOutputDefinition(final ArrOutputDefinition outputDefinition);
 }

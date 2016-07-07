@@ -52,7 +52,7 @@ export function fundInitState(fundWithVersion) {
         bulkActions: bulkActions(undefined, {type: ''}),
         versionValidation: versionValidation(undefined, {type: ''}),
         fundNodesError: {}, // zatím jen pomocný, je řešeno ve state
-    }
+    };
 
     result.fundTreeMovementsLeft = {...result.fundTreeMovementsLeft};
     result.fundTreeMovementsLeft.multipleSelection = true;
@@ -214,8 +214,9 @@ export function fund(state, action) {
             }
         case types.OUTPUT_CHANGES:
         case types.OUTPUT_CHANGES_DETAIL:
-        case types.GENERATED_OUTPUT:
+        case types.OUTPUT_STATE_CHANGE:
         case types.CHANGE_OUTPUTS:
+        case types.OUTPUT_STATE_CHANGE:
             var result = {
                 ...state,
                 fundOutput: fundOutput(state.fundOutput, action),
@@ -227,7 +228,6 @@ export function fund(state, action) {
                 fundPackets: fundPackets(state.fundPackets, action)
             }
         case types.CHANGE_FILES:{
-            console.log('hereFund');
             return {
                 ...state,
                 fundFiles: fundFiles(state.fundFiles, action)

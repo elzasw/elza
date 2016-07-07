@@ -18,6 +18,7 @@ const FundOutputFiles = class FundOutputFiles extends AbstractReactComponent {
         this.bindMethods(
             'handleTextSearch',
             'handleDownload',
+            'handleDownloadAll',
             'focus'
         );
 
@@ -44,6 +45,10 @@ const FundOutputFiles = class FundOutputFiles extends AbstractReactComponent {
         window.open(UrlFactory.downloadDmsFile(id))
     }
 
+    handleDownloadAll() {
+        window.open(UrlFactory.downloadOutputResult(this.props.outputResultId))
+    }
+
     focus() {
         this.refs.listBox.focus()
     }
@@ -57,7 +62,7 @@ const FundOutputFiles = class FundOutputFiles extends AbstractReactComponent {
 
         return (
             <div className='fund-packets'>
-                <Button>{i18n('downloadAll')}</Button>
+                <Button onClick={this.handleDownloadAll}>{i18n('global.action.downloadAll')}</Button>
                 <FileListBox
                     ref="listBox"
                     items={data.list}
