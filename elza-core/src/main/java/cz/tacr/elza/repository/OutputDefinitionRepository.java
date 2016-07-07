@@ -17,7 +17,7 @@ import java.util.List;
  * @since 01.04.2016
  */
 @Repository
-public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefinition, Integer> {
+public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefinition, Integer>, OutputDefinitionRepositoryCustom {
 
     /**
      * Najde platné AP (není deleted), pro které existuje otevřená verze.

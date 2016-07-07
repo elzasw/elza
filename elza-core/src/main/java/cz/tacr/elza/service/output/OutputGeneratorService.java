@@ -132,7 +132,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         return generatorWorker;
     }
 
-    private void publicOutputStateEvent(final ArrOutputDefinition arrOutputDefinition, final @Nullable String customState) {
+    public void publishOutputStateEvent(final ArrOutputDefinition arrOutputDefinition, final @Nullable String customState) {
         final ArrFund fund = fundRepository.findByOutputDefinitionId(arrOutputDefinition.getOutputDefinitionId());
 
         eventNotificationService.forcePublish(
@@ -160,7 +160,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
             ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
             arrOutputDefinition.setError(ex.getLocalizedMessage());
             setStateAndSave(arrOutputDefinition, OutputState.OPEN);
-            publicOutputStateEvent(arrOutputDefinition, OUTPUT_WEBSOCKET_ERROR_STATE);
+            publishOutputStateEvent(arrOutputDefinition, OUTPUT_WEBSOCKET_ERROR_STATE);
         }
         worker = null;
         logger.error("Generování výstupu pro arr_output id="+arrOutputId+" dokončeno s chybou.", ex);
@@ -187,7 +187,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
                 } else {
                     setStateAndSave(arrOutputDefinition, OutputState.FINISHED);
                 }
-                publicOutputStateEvent(arrOutputDefinition, null);
+                publishOutputStateEvent(arrOutputDefinition, null);
                 worker = null;
                 logger.info("Generování výstupu pro arr_output id=" + arrOutputId + " dokončeno úspěšně.", arrOutputId);
                 runNextOutput();
