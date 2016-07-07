@@ -16,15 +16,16 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import javax.annotation.Nullable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -75,6 +76,10 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
 
     @Value("${elza.templates.templatesDir}")
     private String templatesDir;
+
+    @Autowired
+    @Qualifier("transactionManager")
+    protected PlatformTransactionManager txManager;
 
     /**
      * Získání cesty ke složce šablon
@@ -163,22 +168,30 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     }
 
     @Override
-    public void onSuccess(OutputGeneratorWorker result) {
-        final Integer arrOutputId = result.getArrOutputId();
-        final ArrChange change = result.getChange();
-        ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
-        ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
-        List<ArrNodeOutput> nodesList = nodeOutputRepository.findByOutputDefinition(arrOutputDefinition);
-        Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(nodesList.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet()), Sets.newHashSet(change), false, true);
+    public void onSuccess(final OutputGeneratorWorker result) {
+        TransactionTemplate tmpl = new TransactionTemplate(txManager);
 
-        if (arrChangeBooleanMap.containsKey(change) && arrChangeBooleanMap.get(change)) {
-            setStateAndSave(arrOutputDefinition, OutputState.OUTDATED);
-        } else {
-            setStateAndSave(arrOutputDefinition, OutputState.FINISHED);
-        }
-        publicOutputStateEvent(arrOutputDefinition, null);
-        worker = null;
-        logger.info("Generování výstupu pro arr_output id="+arrOutputId+" dokončeno úspěšně.", arrOutputId);
-        runNextOutput();
+        // načítání dat v samostatné transakci
+        tmpl.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                final Integer arrOutputId = result.getArrOutputId();
+                final ArrChange change = result.getChange();
+                ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
+                ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
+                List<ArrNodeOutput> nodesList = nodeOutputRepository.findByOutputDefinition(arrOutputDefinition);
+                Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(nodesList.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet()), Sets.newHashSet(change), false, true);
+
+                if (arrChangeBooleanMap.containsKey(change) && arrChangeBooleanMap.get(change)) {
+                    setStateAndSave(arrOutputDefinition, OutputState.OUTDATED);
+                } else {
+                    setStateAndSave(arrOutputDefinition, OutputState.FINISHED);
+                }
+                publicOutputStateEvent(arrOutputDefinition, null);
+                worker = null;
+                logger.info("Generování výstupu pro arr_output id=" + arrOutputId + " dokončeno úspěšně.", arrOutputId);
+                runNextOutput();
+            }
+        });
     }
 }

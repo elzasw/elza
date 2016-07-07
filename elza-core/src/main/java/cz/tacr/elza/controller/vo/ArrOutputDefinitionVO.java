@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -38,6 +39,8 @@ public class ArrOutputDefinitionVO {
     private Integer templateId;
 
     private Integer outputResultId;
+
+    private Date generatedDate;
 
     private Integer version;
 
@@ -143,5 +146,13 @@ public class ArrOutputDefinitionVO {
 
     public void setOutputResultId(Integer outputResultId) {
         this.outputResultId = outputResultId;
+    }
+
+    public Date getGeneratedDate() {
+        return generatedDate;
+    }
+
+    public void setGeneratedDate(Date generatedDate) {
+        this.generatedDate = generatedDate;
     }
 }

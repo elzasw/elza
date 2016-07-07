@@ -73,9 +73,11 @@ export default function fundOutput(state = initialState, action = {}) {
                 fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
                 fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action)
             };
-            const index = indexById(action.outputId);
-            if (index !== null) {
-                result.currentDataKey = ''
+            for(const item of state.outputs) {
+                if(item.outputDefinition.id == action.outputId) {
+                    result.currentDataKey = '';
+                    break;
+                }
             }
             return consolidateState(state, result)
         }

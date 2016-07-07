@@ -568,7 +568,7 @@ public class OutputService {
 
             nodeOutputRepository.save(nodeOutputs);
 
-            Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(size -> new Integer[size]);
+            Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
             EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
             eventNotificationService.publishEvent(event);
         }
@@ -582,9 +582,9 @@ public class OutputService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public List<ArrOutput> getOutputs(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
+    public List<ArrOutput> getSortedOutputs(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
         Assert.notNull(fundVersion);
-        List<ArrOutput> outputs = outputRepository.findByFundVersion(fundVersion);
+        List<ArrOutput> outputs = outputRepository.findByFundVersionSorted(fundVersion);
         return outputs;
     }
 

@@ -19,4 +19,7 @@ public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer> 
 
     @Query("SELECT o FROM arr_output o JOIN o.outputDefinition no JOIN no.fund f JOIN f.versions v WHERE v = :fundVersion AND no.deleted = false ORDER BY no.temporary ASC, no.name ASC")
     List<ArrOutput> findByFundVersion(@Param("fundVersion") ArrFundVersion fundVersion);
+
+    @Query("SELECT o FROM arr_output o JOIN o.outputDefinition od JOIN od.fund f JOIN f.versions v LEFT JOIN od.outputResult res WHERE v = :fundVersion AND od.deleted = false ORDER BY res.change.changeId desc, od.temporary ASC, od.name ASC")
+    List<ArrOutput> findByFundVersionSorted(@Param("fundVersion") ArrFundVersion fundVersion);
 }

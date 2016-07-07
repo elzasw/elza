@@ -1576,7 +1576,7 @@ public class ArrangementController {
     @RequestMapping(value = "/output/{fundVersionId}", method = RequestMethod.GET)
     public List<ArrOutputExtVO> getOutputs(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        List<ArrOutput> outputs = outputService.getOutputs(fundVersion);
+        List<ArrOutput> outputs = outputService.getSortedOutputs(fundVersion);
         return factoryVo.createOutputExtList(outputs, fundVersion);
     }
 

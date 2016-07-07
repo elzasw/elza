@@ -131,6 +131,7 @@ var messages = {
     "arr.output.title.nodes": "Napojení na AS",
     "arr.output.title.revert": "Vráceno do přípravy",
     "arr.output.title.clone": "Kopie vytvořena",
+    "arr.output.title.error": "Chyba",
     "arr.output.name": "Název výstupu",
     "arr.output.internalCode": "Interní kód výstupu",
     "arr.output.temporary": "Dočasný výstup",

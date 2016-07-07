@@ -201,6 +201,9 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
                             initData={fundOutputDetail.outputDefinition}
                             onSave={this.handleSaveOutput}
                             />
+                        {fundOutputDetail.outputDefinition.error && <div>
+                            <Input type="textarea" value={fundOutputDetail.outputDefinition.error} disabled label={i18n('arr.output.title.error')}/>
+                        </div>}
                     </div>
 
                     <div className="fund-nodes-container">

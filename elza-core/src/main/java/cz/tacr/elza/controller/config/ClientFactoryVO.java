@@ -1309,7 +1309,7 @@ public class ClientFactoryVO {
     public ArrOutputExtVO createOutputExt(final ArrOutput output, final ArrFundVersion fundVersion) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrOutputExtVO outputExt = mapper.map(output, ArrOutputExtVO.class);
-        outputExt.setOutputDefinition(mapper.map(output.getOutputDefinition(), ArrOutputDefinitionVO.class));
+        outputExt.setOutputDefinition(createArrOutputDefinition(output.getOutputDefinition()));
         outputExt.setCreateDate(mapper.map(output.getCreateChange().getChangeDate(), Date.class));
         outputExt.setLockDate(output.getLockChange() != null ? mapper.map(output.getLockChange().getChangeDate(), Date.class) : null);
 
@@ -1447,6 +1447,9 @@ public class ClientFactoryVO {
         Assert.notNull(outputDefinition);
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrOutputDefinitionVO result = mapper.map(outputDefinition, ArrOutputDefinitionVO.class);
+        if (outputDefinition.getOutputResult() != null) {
+            result.setGeneratedDate(mapper.map(outputDefinition.getOutputResult().getChange().getChangeDate(), Date.class));
+        }
         return result;
     }
 

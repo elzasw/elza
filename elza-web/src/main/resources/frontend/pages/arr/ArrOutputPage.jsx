@@ -276,7 +276,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                         <div><span className="btnText">{i18n('ribbon.action.arr.output.add')}</span></div>
                     </Button>
                 )
-                if (isDetailIdNotNull) {
+                if (isDetailIdNotNull && !outputDetail.lockDate) {
                     altActions.push(
                         <Button key="generate-output" onClick={() => {this.handleGenerateOutput(outputDetail.id)}} disabled={!isDetailLoaded || !this.isOutputGeneratingAllowed(outputDetail.outputDefinition)}><Icon glyph="fa-youtube-play" />
                             <div><span className="btnText">{i18n('ribbon.action.arr.output.generate')}</span></div>
@@ -288,22 +288,27 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
             if (isDetailIdNotNull && isDetailLoaded) {
                 if (hasPersmission) {
-                    if (!outputDetail.lockDate && (outputDetail.state === OutputState.FINISHED || outputDetail.state === OutputState.OUTDATED)) {
+                    if (!outputDetail.lockDate && outputDetail.outputDefinition.state !== OutputState.FINISHED && outputDetail.outputDefinition.state !== OutputState.OUTDATED) {
                         itemActions.push(
                             <Button key="add-item" onClick={this.handleAddDescItemType}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.item.add')}</span></div></Button>
                         )
+                        /**
+                         *  Skrytí tlačítka - pravděpodobně nebudeme verzovat
+                         */
+                        /*
                         itemActions.push(
                             <Button key="fund-output-usage-end" onClick={this.handleUsageEnd}><Icon glyph="fa-clock-o"/>
                                 <div><span className="btnText">{i18n('ribbon.action.arr.output.usageEnd')}</span></div>
                             </Button>
                         );
+                        */
                     }
                     itemActions.push(
                         <Button key="fund-output-delete" onClick={this.handleDelete} disabled={!isDetailLoaded}><Icon glyph="fa-trash"/>
                             <div><span className="btnText">{i18n('ribbon.action.arr.output.delete')}</span></div>
                         </Button>
                     );
-                    if (!outputDetail.lockDate && (outputDetail.state === OutputState.FINISHED || outputDetail.state === OutputState.OUTDATED)) {
+                    if (outputDetail.outputDefinition.generatedDate && (outputDetail.outputDefinition.state === OutputState.FINISHED || outputDetail.outputDefinition.state === OutputState.OUTDATED)) {
                         itemActions.push(
                             <Button key="fund-output-revert" onClick={this.handleRevertToOpen} disabled={!isDetailLoaded}><Icon glyph="fa-undo"/>
                                 <div><span className="btnText">{i18n('ribbon.action.arr.output.revert')}</span></div>
@@ -388,7 +393,9 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             <div className={classNames(cls)}>
                 <div className='name'>{item.outputDefinition.name}</div>
                 <div className='type'>{i18n('arr.output.list.type', typeIndex !== null ? outputTypes[typeIndex].name : "")}</div>
-                <div className='state'>{i18n('arr.output.list.state.label')} {i18n('arr.output.list.state.' + item.outputDefinition.state.toLowerCase())}</div>
+                <div className='state'>{i18n('arr.output.list.state.label')} {i18n('arr.output.list.state.' + item.outputDefinition.state.toLowerCase())} {
+                    item.outputDefinition.generatedDate && <span>({Utils.dateToString(new Date(item.outputDefinition.generatedDate))})</span>
+                }</div>
                 {item.lockDate ? <div>{Utils.dateTimeToString(new Date(item.lockDate))}</div> : <div>&nbsp;</div>}
             </div>
         )
