@@ -879,8 +879,8 @@ class WebApi{
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/output/types');
     }
 
-    getOutputs(versionId) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/output/' + versionId);
+    getOutputs(versionId, state) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/output/' + versionId + (state != null ? '?state=' + state : ''));
     }
 
     getFundOutputDetail(versionId, outputId) {

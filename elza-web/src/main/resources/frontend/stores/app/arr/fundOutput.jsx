@@ -11,6 +11,7 @@ const initialState = {
     fetched: false,
     fetching: false,
     currentDataKey: '',
+    filterState: null,
     outputs: [],
     fundOutputDetail: fundOutputDetail(),
     fundOutputFiles: fundOutputFiles()
@@ -45,7 +46,8 @@ export default function fundOutput(state = initialState, action = {}) {
         case types.STORE_SAVE:{
             return {
                 fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
-                fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action)
+                fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action),
+                filterState: state.filterState
             }
         }
         case types.OUTPUT_CHANGES_DETAIL:
@@ -94,6 +96,12 @@ export default function fundOutput(state = initialState, action = {}) {
                 fetching: false,
                 fetched: true,
                 outputs: action.outputs
+            };
+        }
+        case types.FUND_OUTPUT_FILTER_STATE:{
+            return {
+                ...state,
+                filterState: action.state
             };
         }
         default:

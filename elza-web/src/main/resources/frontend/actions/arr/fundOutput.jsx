@@ -21,6 +21,7 @@ export function isFundOutput(action) {
     switch (action.type) {
         case types.FUND_OUTPUT_REQUEST:
         case types.FUND_OUTPUT_RECEIVE:
+        case types.FUND_OUTPUT_FILTER_STATE:
             return true;
         default:
             return false
@@ -40,7 +41,7 @@ export function isFundOutputDetail(action) {
 }
 
 function _fundOutputDataKey(fundOutput) {
-    return true
+    return '-FilterState=' + fundOutput.filterState;
 }
 
 function _fundOutputDetailDataKey(fundOutputDetail) {
@@ -185,10 +186,9 @@ export function fundOutputFetchIfNeeded(versionId) {
         }
 
         const dataKey = _fundOutputDataKey(fundOutput);
-
         if (fundOutput.currentDataKey !== dataKey) {
             dispatch(fundOutputRequest(versionId, dataKey));
-            WebApi.getOutputs(versionId)
+            WebApi.getOutputs(versionId, fundOutput.filterState != -1 ? fundOutput.filterState : null)
                 .then(json => {
                     const newFundOutput = _getFundOutput(versionId, getState);
                     if (newFundOutput == null) {
@@ -246,5 +246,13 @@ export function fundOutputDetailClear(versionId) {
 export function fundOutputGenerate(outputId) {
     return (dispatch, getState) => {
         WebApi.outputGenerate(outputId);
+    }
+}
+
+export function fundOutputFilterByState(versionId, state) {
+    return {
+        type: types.FUND_OUTPUT_FILTER_STATE,
+        versionId,
+        state
     }
 }

@@ -145,6 +145,7 @@ var messages = {
     "arr.output.list.state.finished": "Dokončeno",
     "arr.output.list.state.outdated": "Neaktuální",
     "arr.output.list.state.computing": "Přepočítává se",
+    "arr.output.list.state.all": "Vše",
 
     "arr.output.panel.title.function": "Funkce",
     "arr.output.panel.title.template": "Šablony",

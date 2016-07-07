@@ -634,6 +634,20 @@ public class OutputService {
     }
 
     /**
+     * Získání výstupů podle verze AS.
+     *
+     * @param fundVersion verze AS
+     * @param state stav outputu
+     * @return seznam výstupů
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public List<ArrOutput> getSortedOutputsByState(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final OutputState state) {
+        Assert.notNull(fundVersion);
+        return outputRepository.findByFundVersionAndStateSorted(fundVersion, state);
+    }
+
+    /**
      * Získání pojmenovaného výstupu.
      *
      * @param fundVersion verze AS

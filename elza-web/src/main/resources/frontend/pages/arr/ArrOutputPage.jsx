@@ -26,7 +26,7 @@ import {
     Tabs,
     FundOutputFiles
 } from 'components/index.jsx';
-import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
+import {Input, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
@@ -40,7 +40,8 @@ import {
     fundOutputAddNodes,
     fundOutputGenerate,
     fundOutputRevert,
-    fundOutputClone
+    fundOutputClone,
+    fundOutputFilterByState
 } from 'actions/arr/fundOutput.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
@@ -103,6 +104,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             'handleAddDescItemType',
             'handleRevertToOpen',
             'handleClone',
+            'handleStateSearch',
             'isEditable'
         );
     }
@@ -463,8 +465,19 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 if (fundOutput.fundOutputDetail.id !== null) {
                     activeIndex = indexById(fundOutput.outputs, fundOutput.fundOutputDetail.id)
                 }
+                const filterStates = [];
+                for (const item in OutputState) {
+                    if (item === OutputState.ERROR) {
+                        continue;
+                    }
+                    filterStates.push(<option value={item} key={"state" + item}>{i18n('arr.output.list.state.' + item.toLocaleLowerCase())}</option>)
+                }
                 leftPanel = (
                     <div className="fund-output-list-container">
+                        <Input type="select" onChange={this.handleStateSearch} value={fundOutput.filterState}>
+                            <option value={-1} key="no-filter">{i18n('arr.output.list.state.all')}</option>
+                            {filterStates}
+                        </Input>
                         <ListBox
                             className='fund-output-listbox'
                             ref='fundOutputList'
@@ -564,6 +577,11 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         const fund = this.getActiveFund();
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
         this.dispatch(fundOutputClone(fund.versionId, fundOutputDetail.id));
+    }
+
+    handleStateSearch(e) {
+        const fund = this.getActiveFund();
+        this.dispatch(fundOutputFilterByState(fund.versionId, e.target.value));
     }
 };
 

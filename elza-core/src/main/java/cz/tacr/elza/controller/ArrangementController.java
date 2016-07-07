@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
@@ -1574,9 +1575,9 @@ public class ArrangementController {
      * @return  seznam outputů
      */
     @RequestMapping(value = "/output/{fundVersionId}", method = RequestMethod.GET)
-    public List<ArrOutputExtVO> getOutputs(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+    public List<ArrOutputExtVO> getOutputs(@PathVariable(value = "fundVersionId") final Integer fundVersionId, @RequestParam(value = "state", required = false) final OutputState state) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        List<ArrOutput> outputs = outputService.getSortedOutputs(fundVersion);
+        List<ArrOutput> outputs = state == null ? outputService.getSortedOutputs(fundVersion) : outputService.getSortedOutputsByState(fundVersion, state);
         return factoryVo.createOutputExtList(outputs, fundVersion);
     }
 

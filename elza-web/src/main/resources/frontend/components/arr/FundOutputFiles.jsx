@@ -36,6 +36,7 @@ const FundOutputFiles = class FundOutputFiles extends AbstractReactComponent {
         const {versionId, outputResultId} = this.props;
         this.dispatch(fetchFundOutputFilesIfNeeded(versionId, outputResultId));
     }
+    
     handleTextSearch(text) {
         const {versionId} = this.props;
         this.dispatch(fundOutputFilesFilterByText(versionId, text));
