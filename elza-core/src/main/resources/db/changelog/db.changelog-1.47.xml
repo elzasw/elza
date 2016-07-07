@@ -21,7 +21,7 @@
             <column name="state" value="OPEN" />
             <where>(SELECT arr_output_result.output_result_id from arr_output_result where arr_output_result.output_definition_id = arr_output_definition.output_definition_id) IS NULL</where>
         </update>
-        <addNotNullConstraint tableName="arr_output_definition" columnName="state" />
+        <addNotNullConstraint tableName="arr_output_definition" columnName="state" columnDataType="CHAR(12)" />
     </changeSet>
 
 </databaseChangeLog>
