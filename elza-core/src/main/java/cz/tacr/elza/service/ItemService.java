@@ -1,14 +1,66 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.elza.api.controller.ArrangementManager;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrItemCoordinates;
+import cz.tacr.elza.domain.ArrItemData;
+import cz.tacr.elza.domain.ArrItemDecimal;
+import cz.tacr.elza.domain.ArrItemEnum;
+import cz.tacr.elza.domain.ArrItemFileRef;
+import cz.tacr.elza.domain.ArrItemFormattedText;
+import cz.tacr.elza.domain.ArrItemInt;
+import cz.tacr.elza.domain.ArrItemJsonTable;
+import cz.tacr.elza.domain.ArrItemPacketRef;
+import cz.tacr.elza.domain.ArrItemPartyRef;
+import cz.tacr.elza.domain.ArrItemRecordRef;
+import cz.tacr.elza.domain.ArrItemString;
+import cz.tacr.elza.domain.ArrItemText;
+import cz.tacr.elza.domain.ArrItemUnitdate;
+import cz.tacr.elza.domain.ArrItemUnitid;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.domain.table.ElzaRow;
+import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.repository.DataCoordinatesRepository;
+import cz.tacr.elza.repository.DataDecimalRepository;
+import cz.tacr.elza.repository.DataFileRefRepository;
+import cz.tacr.elza.repository.DataIntegerRepository;
+import cz.tacr.elza.repository.DataJsonTableRepository;
+import cz.tacr.elza.repository.DataNullRepository;
+import cz.tacr.elza.repository.DataPacketRefRepository;
+import cz.tacr.elza.repository.DataPartyRefRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataStringRepository;
+import cz.tacr.elza.repository.DataTextRepository;
+import cz.tacr.elza.repository.DataUnitdateRepository;
+import cz.tacr.elza.repository.DataUnitidRepository;
+import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import org.apache.commons.lang.NotImplementedException;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +68,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.validation.constraints.NotNull;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
@@ -24,6 +77,8 @@ import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Serviska pro správu hodnot atributů.
@@ -98,6 +153,44 @@ public class ItemService implements InitializingBean {
     @Autowired
     private ItemSpecRepository itemSpecRepository;
 
+    /**
+     * Kontrola sloupců v JSON tabulce.
+     *
+     * @param table   kontrolovaná tabulka
+     * @param columns seznam definicí sloupců
+     */
+    public void checkJsonTableData(@NotNull final ElzaTable table,
+                                   @NotEmpty final List<ElzaColumn> columns) {
+        Map<String, ElzaColumn.DataType> typeMap = columns.stream().collect(Collectors.toMap(ElzaColumn::getCode, ElzaColumn::getDataType));
+        for (ElzaRow row : table.getRows()) {
+            for (Map.Entry<String, String> entry : row.getValues().entrySet()) {
+                ElzaColumn.DataType dataType = typeMap.get(entry.getKey());
+                if (dataType == null) {
+                    throw new IllegalArgumentException("Sloupec s kódem '" + entry.getKey() +  "' neexistuje v definici tabulky");
+                }
+
+                switch (dataType) {
+                    case INTEGER:
+                        try {
+                            Integer.parseInt(entry.getValue());
+                        } catch (NumberFormatException e) {
+                            throw new IllegalArgumentException("Neplatný vstup: Hodnota sloupce '" + entry.getKey() + "' musí být celé číslo", e);
+                        }
+                        break;
+
+                    case TEXT:
+                        if (entry.getValue() == null) {
+                            throw new IllegalArgumentException("Neplatný vstup: Hodnota sloupce '" + entry.getKey() + "' nesmí být null");
+                        }
+                        break;
+
+                    default:
+                        throw new IllegalStateException("Neznámý typ sloupce '" + dataType.name() + "' ve validaci JSON tabulky");
+                }
+            }
+        }
+    }
+
     public ArrData getDataByItem(final ArrItem item) {
         List<ArrData> dataList = dataRepository.findByItem(item);
         if (dataList.size() != 1) {
@@ -115,6 +208,10 @@ public class ItemService implements InitializingBean {
         itemRepository.save(item);
 
         ArrItemData itemData = item.getItem();
+
+        if (itemData instanceof ArrItemJsonTable) {
+            checkJsonTableData(((ArrItemJsonTable) itemData).getValue(), item.getItemType().getColumnsDefinition());
+        }
 
         ArrData data;
         if (createNewVersion) {
@@ -889,9 +986,9 @@ public class ItemService implements InitializingBean {
      * @param diff   počet a směr posunu
      */
     public <T extends ArrItem> void copyItems(final ArrChange change,
-                                               final List<T> items,
-                                               final Integer diff,
-                                               final ArrFundVersion version) {
+                                              final List<T> items,
+                                              final Integer diff,
+                                              final ArrFundVersion version) {
         for (T itemMove : items) {
 
             T itemNew = copyItem(change, itemMove, itemMove.getPosition() + diff);
@@ -933,8 +1030,8 @@ public class ItemService implements InitializingBean {
     /**
      * Kopíruje všechny property krom propert, které má zadaná třída.
      *
-     * @param from z objektu
-     * @param to   do objektu
+     * @param from   z objektu
+     * @param to     do objektu
      * @param aClass ignorovaná třída (subclass)
      * @param <T>    ignorovaná třída (subclass)
      * @param <TYPE> kopírovaná třída
