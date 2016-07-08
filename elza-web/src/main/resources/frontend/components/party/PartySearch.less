@@ -1,0 +1,32 @@
+@import "~variables.less";
+
+.partySearch {
+    padding: 0;
+    display: flex;
+    
+    .party-listbox {
+        flex-grow: 1;
+        border: 1px solid transparent;
+        overflow: hidden;
+        overflow-y: auto;
+        
+        .search-result-row {
+            padding: 5px;
+            list-style-type: none;
+            border-bottom:1px solid #EEEEEE;
+            span{
+                font-size:0.8em;
+                display:block;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+            .name {
+                font-size:1em;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+        }
+    }
+}

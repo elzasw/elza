@@ -1,0 +1,115 @@
+@import "~variables.less";
+
+@rowHeight: 16px;
+
+@TREE_TOP_PADDING: 20px;    // nutné definovat i v komponentě!
+
+.fa-tree-lazy-main-container {
+    height: 100%;
+
+    .fa-tree-lazy-container {
+        height: 100%;
+        height: calc(~"100% - 28px");
+        overflow: auto;
+        background: white;
+        border: 1px solid #DDDDDD;
+        position: relative;
+        padding-top: @TREE_TOP_PADDING;
+        width: 100%;
+
+        div {
+            width: 100%;
+            display: block;
+        }
+
+        .level {
+            height: 16px;
+            line-height: 16px;
+            max-width: 14px;
+            min-width: 14px;
+            color: @tree-node-reference-mark;
+            font-size: 0.8em;
+            text-align: center;
+            vertical-align: middle;
+            overflow: hidden;
+            padding: 0 2px;
+        }
+
+        .separator {
+            color: @tree-node-separator-border;
+            min-width: 6px;
+            max-width: 6px;
+            text-align: center;
+        }
+
+        .exp-col {
+            flex-grow: 1;
+            line-height: 16px;
+            min-width: 26px;
+            max-width: 26px;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+        }
+
+        .node-label {
+            flex-grow: 1;
+            height: 16px;
+            line-height: 16px;
+            vertical-align: middle;
+            cursor: pointer;
+        }
+
+        .node-icon {
+            height: 16px;
+            line-height: 16px;
+            vertical-align: middle;
+            margin: 0 5px 0 3px;
+        }
+
+        .node {
+            display: flex;
+            height: @rowHeight;
+            white-space: nowrap;
+            font-size: 0.9em;
+            width: 100%;
+            &:hover {
+                background: @tree-node-label-active-bg;
+                cursor: pointer;
+            }
+        }
+
+        .level.small {
+            font-size: 0.5em;
+        }    
+
+        .active {
+            background: @tree-node-active-bg;
+            &:hover {
+                background: @tree-node-active-hover-bg;
+            }
+        }
+
+        .focus {
+            .node-label {
+                /*outline: 1px solid @tree-node-focus-border;*/
+            }
+        }
+
+        .btn {
+            position: absolute;
+            border: none;
+            background: transparent;
+            &.tree-collapse {
+                top: 0;
+                right: 0;
+                .icon {
+                    padding: 0 5px 0 0;
+                }
+            }
+            &:hover{
+                background: @node-form-actions-hover;
+            }
+        }
+    }
+}

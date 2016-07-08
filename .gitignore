@@ -1,0 +1,54 @@
+# Java classes
+*.class
+rebel.xml
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Logs
+hs_err_pid*
+*.log
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# IntelliJ IDEA
+*.iml
+.idea
+atlassian-ide-plugin.xml
+
+# NetBeans
+nbproject/
+build/
+nbactions.xml
+nb-configuration.xml
+
+# Eclipse
+.project
+org.eclipse.core.resources.prefs
+org.eclipse.m2e.core.prefs
+.classpath
+com.vaadin.integration.eclipse.prefs
+org.eclipse.jdt.core.prefs
+.settings
+/elza-ui/bulkactions
+/elza-core/bulkactions
+/elza-ui/rules
+/elza-web/src/main/resources/frontend/node_modules/
+elza-ui/config/elza.yaml
+elza-web/config/elza.yaml
+/elza-web/bulkactions
+/elza-web/rules
+/elza-ui/config/elza.yaml
+/elza-web/lucene
+/elza-web/groovy
+/elza-web/work/
+/elza-core/work/
+

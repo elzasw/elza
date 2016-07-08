@@ -1,0 +1,17 @@
+@import "~variables.less";
+
+.listbox-container {
+    border: 1px solid #DDDDDD;
+    .listbox-item {
+        cursor:pointer;
+        &:hover {
+            background: @tree-node-label-active-bg
+        }
+        &.active {
+            background: @tree-node-active-bg;
+            &:hover {
+                background: @tree-node-active-hover-bg;
+            }            
+        }
+    }
+}

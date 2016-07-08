@@ -1,0 +1,143 @@
+@import "~variables.less";
+
+@ribbon-font-size: 12px;
+@ribbon-icon-font-size: 20px;
+@ribbon-large-btn-height: 54px;
+@ribbon-large-btn-width: 54px;
+@ribbon-btn-padding: 2px;
+@ribbon-line-height: @ribbon-btn-padding + @ribbon-font-size;
+@ribbon-small-btn-height: @ribbon-large-btn-height / 3;
+
+.ribbon-menu {
+    padding: 4px 0 4px 6px;
+    background: @ribbon-bg;
+    height: 63px;
+    .content {
+        display: flex;
+        flex-direction: row;
+
+        .ribbonSmallGroupsContainer {
+            display: flex;
+        }
+
+        .ribbonGroup {
+            margin-right: 5px;
+            display: flex;
+
+            .btn-default {
+                border: none;
+                margin: 0 2px 0 2px;
+                background: @ribbon-button-bg;
+                &:hover, &.active {
+                    background: @ribbon-button-active-bg;
+                }
+            }
+
+            span.icon {
+                padding: 1px;
+                font-size: @ribbon-icon-font-size;
+            }
+
+            span.btnText {
+                display: inline-block;
+                font-size: @ribbon-font-size;
+                line-height: @ribbon-line-height;
+
+                overflow: hidden;
+
+                word-wrap: break-word;
+                white-space: normal;
+            }
+        }
+        .ribbonGroup.right {
+            margin-left: auto;
+        }
+
+        .ribbonGroup.large {
+            flex-direction: row;
+
+            .btn, .dropdown, .dropdown-toggle > span.dropContent {
+                position: relative;
+                height: @ribbon-large-btn-height;
+                min-width: @ribbon-large-btn-width;
+                max-width: @ribbon-large-btn-width * 1.5;
+
+                padding: @ribbon-btn-padding;
+
+                > div {
+                    line-height: 2 * @ribbon-line-height;
+                    vertical-align: middle;
+                    overflow: hidden;
+                    max-height: 2 * @ribbon-line-height;
+                }
+
+                span.icon {
+                    font-size: @ribbon-icon-font-size;
+                }
+            }
+
+            .dropdown-toggle {
+                > span.dropContent {
+                    padding: 0;
+                    display: block;
+                    height: @ribbon-large-btn-height - (2* @ribbon-btn-padding);
+                }
+
+                span.caret {
+                    position: absolute;
+                    bottom: @ribbon-btn-padding;
+                    left: 50% - 2*@ribbon-btn-padding;
+                }
+            }
+        }
+
+        .ribbonGroup.small {
+            flex-direction: column;
+
+            .btn{
+                position: relative;
+            }
+
+            .btn, .dropdown, .dropdown-toggle > span.dropContent {
+                line-height: @ribbon-small-btn-height;
+                vertical-align: middle;
+                height: @ribbon-small-btn-height;
+                text-align: left;
+                padding: @ribbon-btn-padding;
+
+
+                > div {
+                    display: inline-block;
+                    padding: 0 5px;
+                }
+
+                span.icon {
+                    padding: 0 1px;
+                    height: @ribbon-small-btn-height;
+                    display: inline-block;
+                    vertical-align: top;
+                    font-size: @ribbon-icon-font-size * 0.6;
+                }
+            }
+
+            .dropdown-toggle {
+                > span.dropContent {
+                    padding: 0;
+                    padding-right: 8px;
+                }
+
+                span.caret{
+                    position: absolute;
+                    right: @ribbon-btn-padding;
+                    top: @ribbon-small-btn-height / 2 - @ribbon-btn-padding;
+                }
+            }
+        }
+
+        .ribbonSplit{
+            padding: 2px;
+            height: @ribbon-large-btn-height;
+            border-left: solid 1px @btn-default-border;
+        }
+    }
+}

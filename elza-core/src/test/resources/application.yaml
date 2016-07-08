@@ -1,0 +1,105 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:scratchdb
+  jpa:
+    show-sql: false
+    #pametova databaze automaticky zapina hibernate.ddl-auto: create
+    hibernate.ddl-auto: none
+
+    properties:
+          hibernate:
+              search:
+                  lucene_version: LUCENE_CURRENT
+                  default:
+                      indexBase: ${elza.workingDir}/lucene/indexes/
+                      directory_provider: filesystem
+              dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
+
+elza:
+  treenode:
+    defaultTitle: <Není nastaven popisek>
+
+  workingDir: ./work
+
+  templates:
+      templatesDir: ${elza.workingDir}/templates
+
+  xmlImport:
+    transformationDir: ${elza.workingDir}/transformations/
+
+  xmlExport:
+    transformationDir: ${elza.workingDir}/xmlExportTransformations/  
+    
+  bulkactions:
+    bulkactionsDir: ${elza.workingDir}/bulkactions
+
+  rulesDir: ${elza.workingDir}/rules
+
+  dmsDir: ${elza.workingDir}/dms/
+
+  rules:
+    ZP2015:
+      default:
+        - NORMAL
+
+  groovy:
+    groovyDir: ${elza.workingDir}/groovy
+
+  fund:
+      ZP2015:
+        default:
+          tree-item:
+            - ZP2015_TITLE
+            - ZP2015_UNIT_DATE
+          accordion-left:
+            - ZP2015_TITLE
+            - ZP2015_UNIT_DATE
+          accordion-right:
+            - ZP2015_FOLDER_TYPE
+            - ZP2015_STORAGE_ID
+          hierarchy:
+            ZP2015_LEVEL_TYPE:
+              ZP2015_LEVEL_ROOT:
+                icon: fa-sitemap
+                separator-first: '||'
+                separator-other: '|'
+              ZP2015_LEVEL_SERIES:
+                icon: fa-server
+                separator-first: '||'
+                separator-other: '|'
+              ZP2015_LEVEL_FOLDER:
+                icon: fa-folder-o
+                separator-first: '||'
+                separator-other: '|'
+              ZP2015_LEVEL_ITEM:
+                icon: fa-building
+                separator-first: '||'
+                separator-other: '|'
+              ZP2015_LEVEL_PART:
+                icon: fa-building-o
+                separator-first: '||'
+                separator-other: '|'
+
+  type-groups:
+      ZP2015:
+        default:
+          GROUP1:
+            types:
+              - code: ZP2015_NOTE
+                width: 0
+              - code: ZP2015_LEVEL_TYPE
+                width: 1
+              - code: ZP2015_UNIT_ID
+                width: 2
+              - code: ZP2015_ORIGINATOR
+                width: 0
+          GROUP2:
+            types:
+              - code: ZP2015_SIZE
+                width: 1
+              - code: ZP2015_OTHER_ID
+                width: 3
+
+  record:
+    scopeCodes:
+      - GLOBAL

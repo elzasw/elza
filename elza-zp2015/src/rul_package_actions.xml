@@ -1,0 +1,5 @@
+<package-actions>
+    <package-action filename="FUND_VALIDATION_ZP2015.yaml" />
+    <package-action filename="GENERATOR_SERIAL_NUMBER_ZP2015.yaml" />
+    <package-action filename="GENERATOR_UNIT_ID_ZP2015.yaml" />
+</package-actions>

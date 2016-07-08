@@ -1,0 +1,18 @@
+<package-rules>
+    <package-rule filename="ZP2015_Validation.drl" rule-set="ZP2015">
+        <rule-type>CONFORMITY_INFO</rule-type>
+        <priority>1</priority>
+    </package-rule>
+    <package-rule filename="ZP2015_NewLevel.drl" rule-set="ZP2015">
+        <rule-type>NEW_LEVEL</rule-type>
+        <priority>1</priority>
+    </package-rule>
+    <package-rule filename="ZP2015_ChangeImpact.drl" rule-set="ZP2015">
+        <rule-type>CONFORMITY_IMPACT</rule-type>
+        <priority>1</priority>
+    </package-rule>
+    <package-rule filename="ZP2015_AvailableItems.drl" rule-set="ZP2015">
+        <rule-type>ATTRIBUTE_TYPES</rule-type>
+        <priority>1</priority>
+    </package-rule>
+</package-rules>

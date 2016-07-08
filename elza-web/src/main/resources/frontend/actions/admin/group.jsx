@@ -1,0 +1,142 @@
+/**
+ * Akce pro správu skupin uživatelů.
+ */
+
+import * as types from 'actions/constants/ActionTypes.js';
+import {WebApi} from 'actions/index.jsx';
+import {permissionReceive} from "./permission.jsx"
+
+export function isGroupAction(action) {
+    if (isGroupDetailAction(action)) {
+        return true;
+    }
+
+    switch (action.type) {
+        case types.GROUPS_RECEIVE:
+        case types.GROUPS_REQUEST:
+        case types.GROUPS_SEARCH:
+            return true
+        default:
+            return false
+    }
+}
+
+export function isGroupDetailAction(action) {
+    switch (action.type) {
+        case types.GROUPS_SELECT_GROUP:
+        case types.GROUPS_GROUP_DETAIL_REQUEST:
+        case types.GROUPS_GROUP_DETAIL_RECEIVE:
+            return true
+        default:
+            return false
+    }
+}
+
+function _groupDataKey(group) {
+    return group.filterText + '_'
+}
+
+function _groupDetailDataKey(groupDetail) {
+    if (groupDetail.id !== null) {
+        return groupDetail.id + '_'
+    } else {
+        return ''
+    }
+}
+
+export function groupsSelectGroup(id) {
+    return {
+        type: types.GROUPS_SELECT_GROUP,
+        id,
+    }
+}
+
+export function groupsSearch(filterText) {
+    return {
+        type: types.GROUPS_SEARCH,
+        filterText,
+    }
+}
+
+/**
+ * Fetch dat pro detail skupiny.
+ */
+export function groupsGroupDetailFetchIfNeeded() {
+    return (dispatch, getState) => {
+        var state = getState();
+        const groupDetail = state.adminRegion.group.groupDetail
+        const dataKey = _groupDetailDataKey(groupDetail)
+
+        if (groupDetail.currentDataKey !== dataKey) {
+            dispatch(groupsGroupDetailRequest(dataKey))
+            WebApi.getGroup(groupDetail.id)
+                .then(json => {
+                    var newState = getState();
+                    const newGroupDetail = newState.adminRegion.group.groupDetail;
+                    const newDataKey = _groupDetailDataKey(newGroupDetail)
+                    if (newDataKey === dataKey) {
+                        dispatch(groupsGroupDetailReceive(json))
+                    }
+                })
+        }
+    }
+}
+
+/**
+ * Fetch dat pro seznam uživatelů.
+ */
+export function groupsFetchIfNeeded() {
+    return (dispatch, getState) => {
+        var state = getState();
+        const group = state.adminRegion.group;
+        const dataKey = _groupDataKey(group)
+
+        if (group.currentDataKey !== dataKey) {
+            dispatch(groupsRequest(dataKey))
+
+            WebApi.findGroup(group.filterText)
+                .then(json => {
+                    var newState = getState();
+                    const newGroup = newState.adminRegion.group;
+                    const newDataKey = _groupDataKey(newGroup)
+                    if (newDataKey === dataKey) {
+                        dispatch(groupsReceive(json))
+                    }
+                })
+        }
+    }
+}
+
+function groupsRequest(dataKey) {
+    return {
+        type: types.GROUPS_REQUEST,
+        dataKey,
+    }
+}
+
+function groupsReceive(data) {
+    return {
+        type: types.GROUPS_RECEIVE,
+        data,
+    }
+}
+
+function groupsGroupDetailRequest(dataKey) {
+    return {
+        type: types.GROUPS_GROUP_DETAIL_REQUEST,
+        dataKey,
+    }
+}
+
+function groupsGroupDetailReceive(data) {
+    return (dispatch, getState) => {
+        // Detail
+        dispatch({
+            type: types.GROUPS_GROUP_DETAIL_RECEIVE,
+            data,
+        })
+
+        // Oprávnění z detailu
+        dispatch(permissionReceive("GROUP", data.permissions));
+    }    
+}

@@ -1,0 +1,56 @@
+@import "~variables.less";
+
+.autocomplete-desc-item-type {
+
+    @item-padding: 5px;
+
+    .autocomplete-menu-container {
+        width: 568px;
+        .autocomplete-menu-wrapper {
+            width: 100%;
+            .autocomplete-menu {
+                padding-right: 0;
+                width: 100%;
+            }
+        }
+    }
+
+    .item {
+        .name {
+            padding: @item-padding;
+        }
+
+        &.type-recommended {
+            background-color: #edffe9;
+        }
+
+        &.type-possible {
+            background-color: #e0e6ff;
+        }
+
+        &.type-impossible {
+            background-color: #ffeed3;
+        }
+    }
+
+    .autocomplete-menu-footer {
+
+        .create-party {
+            position: fixed;
+            padding: 5px;
+            .create-party-label {
+                margin-left: 3px;
+            }
+        }
+    }
+
+}
+
+.modal-dialog {
+    .add-link {
+        padding: 0 10px 0 0;
+        .icon {
+            padding-right: 4px;
+        }
+    }
+}

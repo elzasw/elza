@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns:kml="http://earth.google.com/kml/2.1" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   <Document id="featureCollection">
+      <Placemark id="1">
+         <Point>
+            <coordinates>13.283843994140625,49.73690656023086</coordinates>
+         </Point>
+      </Placemark>
+      <Placemark id="2">
+         <LineString>
+            <coordinates>13.283843994140625,49.73690656023086
+                	12.283843994140625,48.73690656023086</coordinates>
+         </LineString>
+      </Placemark>
+      <Placemark id="3">
+         <Polygon>
+            <outerBoundaryIs>
+               <LinearRing>
+                  <coordinates>13.283843994140625,49.73690656023086
+                	12.283843994140625,48.73690656023086
+                	13.283843994140625,48.73690656023086
+                	13.283843994140625,49.73690656023086</coordinates>
+               </LinearRing>
+            </outerBoundaryIs>
+         </Polygon>
+      </Placemark>
+   </Document>
+</kml>

@@ -1,0 +1,6 @@
+code_type_bulk_action: GENERATOR_SERIAL_NUMBER
+serial_id_code: ZP2015_SERIAL_NUMBER
+name: Generátor pořadového čísla
+rule_code: ZP2015
+level_type_code: ZP2015_LEVEL_TYPE
+level_type_end_generation_for_arr_type: ZP2015_LEVEL_ITEM

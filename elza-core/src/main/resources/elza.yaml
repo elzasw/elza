@@ -1,0 +1,52 @@
+elza:
+  treenode:
+    title: ${elza.conf.treenode.title}
+    defaultTitle: ${elza.conf.treenode.default.title} 
+  workingDir: ./work
+  xmlImport:
+    transformationDir: ${elza.workingDir}/transformations/
+  xmlExport:
+    transformationDir: ${elza.workingDir}/xmlExportTransformations/      
+  bulkactions:
+    bulkactionsDir: ${elza.workingDir}/bulkactions
+  rulesDir: ${elza.workingDir}/rules
+  groovy:
+    groovyDir: ${elza.workingDir}/groovy
+  templates:
+    templatesDir: ${elza.workingDir}/templates
+  dmsDir: ${elza.workingDir}/dms/
+spring:
+  application:
+     name: elza
+     version: ${project.parent.version}
+  datasource:
+    url: ${elza.data.url}
+    username: ${elza.data.user}
+    password: ${elza.data.pass}
+  data:
+    rest:
+      base-uri: /rest
+  app:
+      buildType: REL      
+  jpa:
+    # Logovani SQL dotazu
+    #show-sql: true
+    properties:
+          hibernate:
+              search:
+                  lucene_version: LUCENE_CURRENT
+                  default:
+                      indexBase: ${elza.workingDir}/lucene/indexes/
+                      directory_provider: filesystem
+
+              # PostgreSQL
+              dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
+              # H2
+              #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
+              # MySQL
+              #dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
+              # Oracle
+              #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
+              # MSSQL
+              #dialect: org.hibernate.dialect.SQLServer2008Dialect
+                      

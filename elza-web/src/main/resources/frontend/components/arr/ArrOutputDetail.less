@@ -1,0 +1,24 @@
+@import "~variables.less";
+
+.arr-output-detail-container {
+    height: 100%;
+    overflow-y: auto;
+
+    .output-definition-commons {
+        padding: 6px;
+    }
+
+    .fund-nodes-container {
+        padding: 5px;
+        background: @fa-file-tree-bg;
+        border: 1px solid @fa-file-tree-border;
+        border-top: none;
+        display: flex;
+        flex-direction: column;
+
+        .item-list-container {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    }
+}
