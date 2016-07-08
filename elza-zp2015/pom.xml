@@ -14,25 +14,43 @@
 
     <build>
       <plugins>
-<plugin>
-  <artifactId>maven-assembly-plugin</artifactId>
-  <version>2.6</version>
-  <configuration>
-    <descriptors>
-      <descriptor>zip-src.xml</descriptor>
-    </descriptors>
-    <appendAssemblyId>false</appendAssemblyId>
-  </configuration>
-  <executions>
-    <execution>
-      <id>elza-zp2015</id> <!-- this is used for inheritance merges -->
-      <phase>package</phase> <!-- append to the packaging phase. -->
-      <goals>
-        <goal>single</goal> <!-- goals == mojos -->
-      </goals>
-    </execution>
-  </executions>
-</plugin>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.6</version>
+          <configuration>
+            <descriptors>
+              <descriptor>zip-src.xml</descriptor>
+            </descriptors>
+            <appendAssemblyId>false</appendAssemblyId>
+          </configuration>
+          <executions>
+            <execution>
+              <id>elza-zp2015</id> <!-- this is used for inheritance merges -->
+              <phase>package</phase> <!-- append to the packaging phase. -->
+              <goals>
+                <goal>single</goal> <!-- goals == mojos -->
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>package-dev</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>zip-src-dev.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
