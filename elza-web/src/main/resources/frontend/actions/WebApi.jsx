@@ -931,8 +931,12 @@ class WebApi{
         return AjaxUtils.ajaxDelete('/api/dms/fund/' + fileId, null, null);
     }
 
-    findFundOutputFiles(fundId, searchText, count = 20) {
-        return AjaxUtils.ajaxGet('/api/dms/output/' + fundId, {'count': count, 'search': searchText});
+    findFundOutputFiles(resultId, searchText, count = 20) {
+        return AjaxUtils.ajaxGet('/api/dms/output/' + resultId, {'count': count, 'search': searchText});
+    }
+
+    getFundOutputFunctions(outputId, getRecommended) {
+        return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/output/' + outputId, {'recommended': getRecommended});
     }
 
     outputGenerate(outputId) {

@@ -1313,15 +1313,14 @@ public class OutputService {
                             final Set<ArrNode> nodes,
                             final ArrChange change,
                             @Nullable final RulItemType itemType) {
-        if (result == null) {
-            return;
-        }
 
         List<ArrOutputDefinition> outputDefinitions = findOutputsByNodes(fundVersion, nodes, OutputState.OPEN, OutputState.COMPUTING);
 
         for (ArrOutputDefinition outputDefinition : outputDefinitions) {
-            for (ActionResult actionResult : result.getResults()) {
-                storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType);
+            if (result != null) {
+                for (ActionResult actionResult : result.getResults()) {
+                    storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType);
+                }
             }
             changeOutputState(outputDefinition, OutputState.OPEN);
         }

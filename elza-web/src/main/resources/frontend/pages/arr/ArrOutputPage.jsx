@@ -24,7 +24,9 @@ import {
     AddOutputForm,
     AbstractReactComponent,
     Tabs,
-    FundOutputFiles
+    FundOutputFiles,
+    FundOutputFunctions,
+    RunActionForm
 } from 'components/index.jsx';
 import {Input, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
@@ -43,6 +45,7 @@ import {
     fundOutputClone,
     fundOutputFilterByState
 } from 'actions/arr/fundOutput.jsx'
+import {fundOutputActionRun} from 'actions/arr/fundOutputFunctions.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
 import {routerNavigate} from 'actions/router.jsx'
@@ -95,6 +98,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             'handleUsageEnd',
             'handleDelete',
             'handleBulkActions',
+            'handleOtherActionDialog',
             'renderRightPanel',
             'renderFunctionsPanel',
             'renderTemplatesPanel',
@@ -104,7 +108,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             'handleAddDescItemType',
             'handleRevertToOpen',
             'handleClone',
-            'handleStateSearch',
+            'handleOutputStateSearch',
             'isEditable'
         );
     }
@@ -199,6 +203,17 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         this.dispatch(fundActionFormChange(fund.versionId, {nodes: fundOutputDetail.outputDefinition.nodes}));
         this.dispatch(fundActionFormShow(fund.versionId));
         this.dispatch(routerNavigate('/arr/actions'));
+    }
+
+    handleOtherActionDialog() {
+        const fund = this.getActiveFund();
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail;
+
+        this.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
+            <RunActionForm versionId={fund.versionId} onSubmitForm={(data) => {
+                this.dispatch(fundOutputActionRun(fund.versionId, data.code));
+                this.dispatch(modalDialogHide());
+            }}/>));
     }
 
     /**
@@ -327,6 +342,13 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 if (outputDetail.outputDefinition.nodes.length > 0) {
                     if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) { // právo na hromadné akce
                         itemActions.push(
+                            <Button key="fund-output-other-action" onClick={this.handleOtherActionDialog}><Icon
+                                glyph="fa-cog"/>
+                                <div><span className="btnText">{i18n('ribbon.action.arr.output.otherAction')}</span>
+                                </div>
+                            </Button>
+                        );
+                        itemActions.push(
                             <Button key="fund-output-bulk-actions" onClick={this.handleBulkActions}><Icon
                                 glyph="fa-cog"/>
                                 <div><span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span>
@@ -409,11 +431,14 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     renderRightPanel() {
+        if (!this.getActiveFund().fundOutput.fundOutputDetail.fetched) {
+            return <span>Not selected</span>;
+        }
 
         // Záložky a obsah aktuálně vybrané založky
-        var items = [];
-        var tabContent
-        var tabIndex = 0
+        const items = [];
+        let tabContent
+        let tabIndex = 0
 
         items.push({id: tabIndex, title: i18n('arr.output.panel.title.function')});
         if (_selectedTab === tabIndex) tabContent = this.renderFunctionsPanel();
@@ -474,7 +499,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 }
                 leftPanel = (
                     <div className="fund-output-list-container">
-                        <Input type="select" onChange={this.handleStateSearch} value={fundOutput.filterState}>
+                        <Input type="select" onChange={this.handleOutputStateSearch} value={fundOutput.filterState}>
                             <option value={-1} key="no-filter">{i18n('arr.output.list.state.all')}</option>
                             {filterStates}
                         </Input>
@@ -531,7 +556,17 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     renderFunctionsPanel() {
-
+        const activeFund = this.getActiveFund();
+        const {fundOutput} = activeFund;
+        if (fundOutput.fundOutputDetail.fetched) {
+            return <FundOutputFunctions
+                ref="fundOutputFunctions"
+                versionId={activeFund.versionId}
+                outputId={fundOutput.fundOutputDetail.id}
+                {...fundOutput.fundOutputFunctions}
+            />
+        }
+        return <Loading />
     }
 
     renderTemplatesPanel() {
@@ -579,7 +614,12 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         this.dispatch(fundOutputClone(fund.versionId, fundOutputDetail.id));
     }
 
-    handleStateSearch(e) {
+    handleOutputStateSearch(e) {
+        const fund = this.getActiveFund();
+        this.dispatch(fundOutputFilterByState(fund.versionId, e.target.value));
+    }
+
+    handleFunctionsStateSearch(e) {
         const fund = this.getActiveFund();
         this.dispatch(fundOutputFilterByState(fund.versionId, e.target.value));
     }

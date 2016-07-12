@@ -7,6 +7,7 @@ import {WebApi} from 'actions/index.jsx'
 import {i18n} from 'components/index.jsx';
 import {indexById} from 'stores/app/utils.jsx';
 import {isFundOutputFilesAction} from './fundOutputFiles.jsx';
+import {isFundOutputFunctionsAction} from './fundOutputFunctions.jsx';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 
@@ -15,6 +16,9 @@ export function isFundOutput(action) {
         return true
     }
     if (isFundOutputFilesAction(action)) {
+        return true
+    }
+    if (isFundOutputFunctionsAction(action)) {
         return true
     }
     

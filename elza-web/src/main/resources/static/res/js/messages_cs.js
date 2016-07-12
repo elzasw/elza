@@ -33,7 +33,8 @@ var messages = {
     "global.action.export": "Exportovat",
     "global.action.download": "Stáhnout",
     "global.action.downloadAll": "Stáhnout vše",
-    
+    "global.action.run": "Spustit",
+
     "search.input.search": "Vyhledat...",
     "search.not.found": "nenalezeno",
 
@@ -57,6 +58,7 @@ var messages = {
     "ribbon.action.arr.output.usageEnd": "Ukončit používání",
     "ribbon.action.arr.output.delete": "Smazat",
     "ribbon.action.arr.output.bulkActions": "Hrom. akce pro výstup",
+    "ribbon.action.arr.output.otherAction": "Použít jinou funkci",
     "ribbon.action.arr.output.revert": "Vrátit do přípravy",
     "ribbon.action.arr.output.clone": "Vytvořit kopii",
     "ribbon.action.arr.fund.add": "Nový AS",
@@ -137,6 +139,10 @@ var messages = {
     "arr.output.temporary": "Dočasný výstup",
     "arr.output.outputType": "Typ výstup",
     "arr.output.template": "Šablona",
+    "arr.output.functions.state" : "Stav: {0}",
+    "arr.output.functions.notStarted" : "Nebyla provedena",
+    "arr.output.functions.recommended": "Doporučené",
+    "arr.output.functions.all": "Všechny použité funkce",
 
     "arr.output.list.type": "Typ: {0}",
     "arr.output.list.state.label": "Stav:",

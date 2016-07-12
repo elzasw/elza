@@ -45,7 +45,7 @@ const ActionState = {
     INTERRUPTED: 'INTERRUPTED'
 };
 
-var FundActionPage = class FundActionPage extends AbstractReactComponent {
+const FundActionPage = class FundActionPage extends AbstractReactComponent {
 
     constructor(props) {
         super(props);
@@ -141,7 +141,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
             if (detail.fetched) {
                 const {data} = detail;
                 const config = this.getConfigByCode(data.code);
-                var date = null;
+                let date = null;
                 if (data.datePlanned) {
                     date = dateTimeToString(new Date(data.datePlanned));
                 } else if (data.dateStarted) {
@@ -153,7 +153,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                 return <div className='detail'>
                     <div>
                         <h1>{config.name}</h1>
-                        <h3>{this.getStateIcon(data.state)} {this.getStateTranslation(data.state)}
+                        <h3>{FundActionPage.getStateIcon(data.state)} {FundActionPage.getStateTranslation(data.state)}
                             <small>{date}</small>
                         </h3>
                     </div>
@@ -334,7 +334,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
     }
 
 
-    getStateIcon(state) {
+    static getStateIcon(state) {
         switch (state) {
             case ActionState.RUNNING:
                 return <Icon glyph='fa-cog'/>;
@@ -349,11 +349,11 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
             case ActionState.INTERRUPTED:
                 return <Icon glyph='fa-times'/>;
             default:
-                return <Icon glyph='fa-question'/>;
+                return;
         }
     }
 
-    getStateTranslation(state) {
+    static getStateTranslation(state) {
         switch (state) {
             case ActionState.RUNNING:
                 return i18n('arr.fundAction.state.running');
@@ -368,14 +368,13 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
             case ActionState.INTERRUPTED:
                 return i18n('arr.fundAction.state.interrupted');
             default:
-                return i18n('arr.fundAction.state.unknown');
-                break;
+                return;
         }
     }
 
 
     renderRowItem(item) {
-        const icon = this.getStateIcon(item.state);
+        const icon = FundActionPage.getStateIcon(item.state);
         const config = this.getConfigByCode(item.code);
         const name = config ? <span title={item.name} className='name'>{config.name}</span> : '';
 
@@ -386,7 +385,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                     <div>{name}</div>
                     <div>
                         {item.date}
-                        {this.getStateTranslation(item.state)}
+                        {FundActionPage.getStateTranslation(item.state)}
                     </div>
                 </div>
 

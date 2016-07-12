@@ -1,31 +1,23 @@
 package cz.tacr.elza.bulkaction;
 
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.transaction.Transactional;
-
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrBulkActionRun.State;
+import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
 import cz.tacr.elza.bulkaction.factory.BulkActionWorkerFactory;
 import cz.tacr.elza.bulkaction.generator.BulkAction;
-import cz.tacr.elza.domain.ArrBulkActionNode;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
+import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.utils.Yaml;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -40,12 +32,11 @@ import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
-import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
-import cz.tacr.elza.service.RuleService;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
+import javax.transaction.Transactional;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Serviska pro obsluhu hromadných akcí.
@@ -109,6 +100,9 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
     @Autowired
     private ActionRepository actionRepository;
+
+    @Autowired
+    private ActionRecommendedRepository actionRecommendedRepository;
 
     /**
      * Seznam běžících úloh instancí hromadných akcí.
@@ -423,6 +417,20 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         Assert.notNull(bulkActionRunId);
         ArrBulkActionRun bulkActionRun = bulkActionRepository.findOne(bulkActionRunId);
         checkAuthBA(bulkActionRun.getFundVersion());
+
+        if (bulkActionRun.getState() == State.FINISHED) {
+            Set<ArrNode> collect = bulkActionRun.getArrBulkActionNodes().stream().map(ArrBulkActionNode::getNode).collect(Collectors.toSet());
+            HashSet<ArrChange> arrChanges = new HashSet<>(1);
+            ArrChange change = bulkActionRun.getChange();
+            arrChanges.add(change);
+
+            Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(collect, arrChanges, true, true);
+            if (arrChangeBooleanMap.containsKey(change) && arrChangeBooleanMap.get(change)) {
+                bulkActionRun.setState(State.OUTDATED);
+                bulkActionRepository.save(bulkActionRun);
+            }
+        }
+
         return bulkActionRun;
     }
 
@@ -563,6 +571,17 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     }
 
     /**
+     * Vyhledání výstupů podle uzlů.
+     *
+     * @param fundVersion verze AS
+     * @param nodes       seznam uzlů
+     * @return seznam hromadných akcí
+     */
+    public List<ArrBulkActionRun> findBulkActionsByNodes(final ArrFundVersion fundVersion, final Set<ArrNode> nodes, final State... states) {
+        return bulkActionRepository.findBulkActionsByNodes(fundVersion, nodes, states);
+    }
+
+    /**
      * Vyhledá hromadnou akci podle kódu.
      *
      * @param code  kód hromadné akce
@@ -572,4 +591,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         return actionRepository.findOneByFilename(code + ".yaml");
     }
 
+    public Set<RulAction> getRecommendedActions(RulOutputType outputType) {
+        return actionRecommendedRepository.findByOutputType(outputType).stream().map(RulActionRecommended::getAction).collect(Collectors.toSet());
+    }
 }

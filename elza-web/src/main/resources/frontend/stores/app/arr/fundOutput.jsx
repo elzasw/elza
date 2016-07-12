@@ -2,8 +2,10 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {indexById} from 'stores/app/utils.jsx'
 import fundOutputDetail from './fundOutputDetail.jsx'
 import fundOutputFiles from './fundOutputFiles.jsx'
+import fundOutputFunctions from './fundOutputFunctions.jsx'
 import {isFundOutputDetail} from 'actions/arr/fundOutput.jsx'
 import {isFundOutputFilesAction} from 'actions/arr/fundOutputFiles.jsx'
+import {isFundOutputFunctionsAction} from 'actions/arr/fundOutputFunctions.jsx'
 import {consolidateState} from 'components/Utils.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 
@@ -14,7 +16,8 @@ const initialState = {
     filterState: null,
     outputs: [],
     fundOutputDetail: fundOutputDetail(),
-    fundOutputFiles: fundOutputFiles()
+    fundOutputFiles: fundOutputFiles(),
+    fundOutputFunctions: fundOutputFunctions()
 };
 
 export default function fundOutput(state = initialState, action = {}) {
@@ -30,6 +33,12 @@ export default function fundOutput(state = initialState, action = {}) {
             fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action)
         }
     }
+    if (isFundOutputFunctionsAction(action)) {
+        return {
+            ...state,
+            fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action)
+        }
+    }
     
     switch (action.type) {
         case types.STORE_LOAD:{
@@ -40,13 +49,15 @@ export default function fundOutput(state = initialState, action = {}) {
                 fetched: false,
                 currentDataKey: '',
                 fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
-                fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action)
+                fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action),
+                fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action)
             }
         }
         case types.STORE_SAVE:{
             return {
                 fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
                 fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action),
+                fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action),
                 filterState: state.filterState
             }
         }
@@ -54,7 +65,8 @@ export default function fundOutput(state = initialState, action = {}) {
         case types.CHANGE_OUTPUTS: {
             const result = {
                 ...state,
-                fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action)
+                fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
+                fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action)
             };
             return consolidateState(state, result)
         }
@@ -103,6 +115,12 @@ export default function fundOutput(state = initialState, action = {}) {
                 ...state,
                 filterState: action.state
             };
+        }
+        case types.CHANGE_FUND_ACTION: {
+            return {
+                ...state,
+                fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action)
+            }
         }
         default:
             return state

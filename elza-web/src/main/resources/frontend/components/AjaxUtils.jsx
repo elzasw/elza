@@ -14,7 +14,7 @@ var _logDuration = false;    // moznost logovani delky volani
 var React = require('react');
 import {i18n, Toastr, LongText} from 'components/index.jsx';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
-import {store} from '../stores/app/AppStore.jsx';
+import {store} from '../stores/AppStore.jsx';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 
 var _callIndex = 0;
