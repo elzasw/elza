@@ -1,8 +1,11 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrItemSettings;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulItemType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 
 /**
@@ -11,7 +14,9 @@ import org.springframework.stereotype.Repository;
  * @author Martin Šlapa
  * @since 27.06.2016
  */
-@Repository
 public interface ItemSettingsRepository extends JpaRepository<ArrItemSettings, Integer> {
 
+    List<ArrItemSettings> findByOutputDefinition(ArrOutputDefinition outputDefinition);
+
+    ArrItemSettings findOneByOutputDefinitionAndItemType(ArrOutputDefinition outputDefinition, RulItemType itemType);
 }

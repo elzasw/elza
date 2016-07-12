@@ -21,6 +21,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.ArrItemInt;
 import cz.tacr.elza.domain.ArrItemJsonTable;
+import cz.tacr.elza.domain.ArrItemSettings;
 import cz.tacr.elza.domain.ArrItemString;
 import cz.tacr.elza.domain.ArrItemText;
 import cz.tacr.elza.domain.ArrNode;
@@ -35,10 +36,13 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeActionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
@@ -120,9 +124,6 @@ public class OutputService {
     private ItemTypeRepository itemTypeRepository;
 
     @Autowired
-    private ItemSpecRepository itemSpecRepository;
-
-    @Autowired
     private ItemService itemService;
 
     @Autowired
@@ -142,6 +143,12 @@ public class OutputService {
 
     @Autowired
     private ActionRecommendedRepository actionRecommendedRepository;
+
+    @Autowired
+    private ItemSettingsRepository itemSettingsRepository;
+
+    @Autowired
+    private ItemTypeActionRepository itemTypeActionRepository;
 
     /**
      * Vyhledá platné nody k výstupu.
@@ -490,7 +497,7 @@ public class OutputService {
             Set<ArrNode> allNodes = outputNodes.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet());
 
             if (allNodes.size() > 0) {
-                storeResults(fundVersion, change, allNodes, outputDefinition);
+                storeResults(fundVersion, change, allNodes, outputDefinition, null);
             }
 
             Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
@@ -638,7 +645,7 @@ public class OutputService {
             nodeOutputRepository.save(nodeOutputs);
 
             allNodes.addAll(nodeOutputs.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet()));
-            storeResults(fundVersion, change, allNodes, outputDefinition);
+            storeResults(fundVersion, change, allNodes, outputDefinition, null);
 
             Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
             EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
@@ -656,7 +663,8 @@ public class OutputService {
     private void storeResults(final ArrFundVersion fundVersion,
                               final ArrChange change,
                               final Set<ArrNode> nodes,
-                              final ArrOutputDefinition outputDefinition) {
+                              final ArrOutputDefinition outputDefinition,
+                              final RulItemType itemType) {
         List<ArrBulkActionRun> bulkActionRunList = bulkActionService.findBulkActionsByNodes(fundVersion, nodes);
         List<RulActionRecommended> actionRecommendeds = actionRecommendedRepository.findByOutputType(outputDefinition.getOutputType());
 
@@ -664,7 +672,7 @@ public class OutputService {
             RulAction action = bulkActionService.getBulkActionByCode(bulkActionRun.getBulkActionCode());
             for (RulActionRecommended actionRecommended : actionRecommendeds) {
                 if (actionRecommended.getAction().equals(action)) {
-                    storeResult(bulkActionRun.getResult(), fundVersion, nodes, change);
+                    storeResult(bulkActionRun.getResult(), fundVersion, nodes, change, itemType);
                 }
             }
         }
@@ -688,7 +696,7 @@ public class OutputService {
      * Získání výstupů podle verze AS.
      *
      * @param fundVersion verze AS
-     * @param state stav outputu
+     * @param state       stav outputu
      * @return seznam výstupů
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
@@ -715,11 +723,24 @@ public class OutputService {
         return output.getOutputDefinition();
     }
 
+    /**
+     * Vrací seznam typů výstupu.
+     *
+     * @return seznam typů výstupu.
+     */
     public List<RulOutputType> getOutputTypes() {
         return outputTypeRepository.findAll();
     }
 
-    // pro controler
+    /**
+     * Vytvoření hodnoty atributu.
+     *
+     * @param item                    data pro hodnotu atributu
+     * @param outputDefinitionId      identifikátor výstupu
+     * @param outputDefinitionVersion verze výstupu
+     * @param fundVersionId           identifikátor verze fondu
+     * @return vytvořená hodnota atributu
+     */
     public ArrOutputItem createOutputItem(final ArrOutputItem item,
                                           final Integer outputDefinitionId,
                                           final Integer outputDefinitionVersion,
@@ -739,6 +760,7 @@ public class OutputService {
             throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
         }
 
+        checkCalculatingAttribute(outputDefinition, item.getItemType());
         return createOutputItem(item, outputDefinition, fundVersion, null);
     }
 
@@ -770,6 +792,14 @@ public class OutputService {
         return outputItemCreated;
     }
 
+    /**
+     * Vytvoření hodnoty atributu pro výstup.
+     *
+     * @param outputItem hodnota atributu
+     * @param version    verze AS
+     * @param change     změna
+     * @return vytvořená hodnota atributu
+     */
     private ArrOutputItem createOutputItem(final ArrOutputItem outputItem,
                                            final ArrFundVersion version,
                                            final ArrChange change) {
@@ -822,7 +852,14 @@ public class OutputService {
         return maxPosition;
     }
 
-    // pro controller
+    /**
+     * Vytvoření hodnoty atributu pro výstup.
+     *
+     * @param descItemObjectId identfikátor hodnoty
+     * @param outputVersion    verze výstupu
+     * @param fundVersionId    identifikátor verze fondu
+     * @return vytvořená hodnota atributu
+     */
     public ArrOutputItem deleteOutputItem(final Integer descItemObjectId,
                                           final Integer outputVersion,
                                           final Integer fundVersionId) {
@@ -847,6 +884,8 @@ public class OutputService {
             throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
         }
 
+        checkCalculatingAttribute(outputDefinition, outputItem.getItemType());
+
         outputDefinition.setVersion(outputVersion);
 
         saveOutputDefinition(outputDefinition);
@@ -860,6 +899,15 @@ public class OutputService {
         return outputItemDeleted;
     }
 
+    /**
+     * Smazání hodnoty atributu.
+     *
+     * @param outputItem hodnota atributu
+     * @param version    verze AS
+     * @param change     změna
+     * @param moveAfter  posunout?
+     * @return smazaná hodnota atributu
+     */
     public ArrOutputItem deleteOutputItem(final ArrOutputItem outputItem,
                                           final ArrFundVersion version,
                                           final ArrChange change,
@@ -918,6 +966,8 @@ public class OutputService {
         if (outputDefinition.getState() != OutputState.OPEN) {
             throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
         }
+
+        checkCalculatingAttribute(outputDefinition, outputItemDB.getItemType());
 
         if (createNewVersion) {
             outputDefinition.setVersion(outputDefinitionVersion);
@@ -1183,6 +1233,8 @@ public class OutputService {
             throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
         }
 
+        checkCalculatingAttribute(outputDefinition, itemType);
+
         outputDefinition.setVersion(outputDefinitionVersion);
         saveOutputDefinition(outputDefinition);
 
@@ -1253,12 +1305,14 @@ public class OutputService {
      * @param fundVersion verze AS
      * @param nodes       seznam uzlů
      * @param change      změna překlopení
+     * @param itemType    typ atributu
      */
     @Transactional
     public void storeResult(final Result result,
                             final ArrFundVersion fundVersion,
                             final Set<ArrNode> nodes,
-                            final ArrChange change) {
+                            final ArrChange change,
+                            @Nullable final RulItemType itemType) {
         if (result == null) {
             return;
         }
@@ -1267,7 +1321,7 @@ public class OutputService {
 
         for (ArrOutputDefinition outputDefinition : outputDefinitions) {
             for (ActionResult actionResult : result.getResults()) {
-                storeActionResult(outputDefinition, actionResult, fundVersion, change);
+                storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType);
             }
             changeOutputState(outputDefinition, OutputState.OPEN);
         }
@@ -1293,11 +1347,13 @@ public class OutputService {
      * @param actionResult     výsledek akce
      * @param fundVersion      verze AS
      * @param change           změna překlopení
+     * @param itemType         typ atributu
      */
     private void storeActionResult(final ArrOutputDefinition outputDefinition,
                                    final ActionResult actionResult,
                                    final ArrFundVersion fundVersion,
-                                   final ArrChange change) {
+                                   final ArrChange change,
+                                   @Nullable final RulItemType itemType) {
         RulItemType type;
         List<ArrItemData> dataItems;
 
@@ -1348,8 +1404,9 @@ public class OutputService {
         } else {
             throw new IllegalStateException("Nedefinovný typ výsledku: " + actionResult.getClass().getSimpleName());
         }
-
-        storeDataItems(type, dataItems, outputDefinition, fundVersion, change);
+        if (itemType == null || itemType.equals(type)) {
+            storeDataItems(type, dataItems, outputDefinition, fundVersion, change);
+        }
     }
 
     /**
@@ -1387,5 +1444,63 @@ public class OutputService {
                                                         final Set<ArrNode> nodes,
                                                         final OutputState... states) {
         return outputDefinitionRepository.findOutputsByNodes(fundVersion, nodes, states);
+    }
+
+    /**
+     * Změnit typ kalkulace typu atributu - uživatelsky/automaticky.
+     *
+     * @param outputDefinition pojmenovaný výstup
+     * @param fundVersion      verze AS
+     * @param itemType         typ atributu
+     */
+    public void switchOutputCalculating(final ArrOutputDefinition outputDefinition,
+                                        final ArrFundVersion fundVersion,
+                                        final RulItemType itemType) {
+        Assert.notNull(outputDefinition, "Neplatný výstup");
+        Assert.notNull(fundVersion, "Neplatná verze fondu");
+        Assert.notNull(itemType, "Neplatný typ atributu");
+
+        if (outputDefinition.getState() != OutputState.OPEN) {
+            throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
+        }
+
+        ArrItemSettings itemSettings = itemSettingsRepository.findOneByOutputDefinitionAndItemType(outputDefinition, itemType);
+
+        ArrChange change = arrangementService.createChange();
+
+        if (itemSettings == null) {
+            itemSettings = new ArrItemSettings();
+            itemSettings.setBlockActionResult(true);
+            itemSettings.setItemType(itemType);
+            itemSettings.setOutputDefinition(outputDefinition);
+            itemSettingsRepository.save(itemSettings);
+
+            List<ArrOutputItem> items = outputItemRepository.findOpenOutputItems(itemType, outputDefinition);
+            for (ArrOutputItem item : items) {
+                publishChangeOutputItem(fundVersion, item);
+            }
+        } else {
+            itemSettingsRepository.delete(itemSettings);
+            Set<ArrNode> nodes = outputDefinition.getOutputNodes().stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet());
+            deleteOutputItemsByType(fundVersion, outputDefinition, itemType, change);
+            storeResults(fundVersion, change, nodes, outputDefinition, itemType);
+        }
+    }
+
+    /**
+     * Kontrola, že neměníme typ atributu, který je počítán automaticky.
+     *
+     * @param outputDefinition pojmenovaný výstup
+     * @param itemType         typ atributu
+     */
+    private void checkCalculatingAttribute(final ArrOutputDefinition outputDefinition,
+                                           final RulItemType itemType) {
+        RulItemTypeAction itemTypeAction = itemTypeActionRepository.findOneByItemTypeCode(itemType.getCode());
+        if (itemTypeAction != null) {
+            ArrItemSettings itemSettings = itemSettingsRepository.findOneByOutputDefinitionAndItemType(outputDefinition, itemType);
+            if (itemSettings == null || itemSettings.getBlockActionResult() == false) {
+                throw new IllegalStateException("Tento atribut je počítán automaticky a nemůže být ručně editován");
+            }
+        }
     }
 }

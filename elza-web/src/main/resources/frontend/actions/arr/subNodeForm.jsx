@@ -568,6 +568,27 @@ class ItemFormActions {
     _callDeleteDescItemType(versionId, parentId, parentVersionId, descItemTypeId) {}
 
     /**
+     * Přepnutí počítání hodnot atributu uživatelské/automatické.
+     *
+     * @param {int} fundVersionId identifikátor verze AS
+     * @param {int} outputDefinitionId identifikátor výstupu
+     * @param {int} itemTypeId identifikátor typu atributu
+     */
+    switchOutputCalculating(fundVersionId, itemTypeId, routingKey) {
+        return (dispatch, getState) => {
+            var state = getState();
+            var fundIndex = indexById(state.arrRegion.funds, fundVersionId, "versionId");
+            var outputDefinitionId;
+            if (fundIndex !== null) {
+                outputDefinitionId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
+            } else {
+                return null
+            }
+            WebApi.switchOutputCalculating(fundVersionId, outputDefinitionId, itemTypeId);
+        }
+    }
+
+    /**
      * Smazání atributu.
      * @param {int} versionId verze AS
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář

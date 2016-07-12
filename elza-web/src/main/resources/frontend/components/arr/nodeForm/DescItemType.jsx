@@ -57,6 +57,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
                 'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver',
                 'handleDragLeave', 'getShowDeleteDescItemType', 'getShowDeleteDescItem', 'focus', 'handleDescItemTypeShortcuts',
+                'handleSwitchCalculating',
                 'handleDescItemShortcuts', 'handleCoordinatesUploadButtonClick', 'handleJsonTableUploadButtonClick', 'handleCoordinatesUpload', 'handleJsonTableUploadUpload', 'removePlaceholder');
     }
 
@@ -725,6 +726,12 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             actions.push(<NoFocusButton key="delete" onClick={this.props.onDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Icon glyph="fa-trash" /></NoFocusButton>);
         }
 
+        if (infoType.cal === 1) {
+            var icon = infoType.calSt ? "fa-flash" : "fa-calculator";
+            var title = infoType.calSt ? i18n('subNodeForm.calculate-user') : i18n('subNodeForm.calculate-auto');
+            actions.push(<NoFocusButton onClick={this.handleSwitchCalculating} key="calculate" title={title}><Icon glyph={icon} /></NoFocusButton>);
+        }
+
         var titleText = descItemType.name;
         if (refType.description && refType.description.length > 0) {
             if (refType.description != titleText) {
@@ -764,6 +771,13 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
      */
     handleDescItemTypeCopyFromPrev() {
         this.props.onDescItemTypeCopyFromPrev();
+    }
+
+    /**
+     * Akce na přepnutí vyplňování hodnot atributu.
+     */
+    handleSwitchCalculating() {
+        this.props.onSwitchCalculating();
     }
 
     render() {

@@ -372,6 +372,11 @@ var messages = {
     "subNodeForm.errorPointCoordinates": "Chybně zadaný bod. Zadávejte ve tvaru \"15.5154,49.535\"",
     "subNodeForm.formatPointCoordinates": "Zadávejte ve tvaru \"15.5154,49.535\"",
 
+    "subNodeForm.calculate-user": "Pole je vyplňováno uživatelsky, přepnout na automatické",
+    "subNodeForm.calculate-auto": "Pole je vyplňováno automaticky, přepnout na uživatelské",
+    "subNodeForm.calculate-user.confirm": "Pole již nebude automaticky aktualizováno funkcí. Opravdu chcete provést akci?",
+    "subNodeForm.calculate-auto.confirm": "Pole již nebude uživatelsky upravováno, bude automaticky aktualizováno funcí. Opravdu chcete provést akci?",
+
     "subNodeForm.descItemTypeAdd": "Přidat prvek",
     "subNodeForm.descItemTypeUnlockAll": "Odemknout vše",
 

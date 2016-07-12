@@ -27,6 +27,16 @@ public class ItemTypeLiteVO {
     private Integer rep;
 
     /**
+     * počítaný
+     */
+    private Integer cal;
+
+    /**
+     * stav počítanýho atributu
+     */
+    private Integer calSt;
+
+    /**
      * seznam specifikací atributu
      */
     private List<DescItemSpecLiteVO> specs;
@@ -74,5 +84,21 @@ public class ItemTypeLiteVO {
 
     public void setWidth(final Integer width) {
         this.width = width;
+    }
+
+    public Integer getCal() {
+        return cal;
+    }
+
+    public Integer getCalSt() {
+        return calSt;
+    }
+
+    public void setCalSt(final Integer calSt) {
+        this.calSt = calSt;
+    }
+
+    public void setCal(final Integer cal) {
+        this.cal = cal;
     }
 }

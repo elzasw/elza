@@ -236,6 +236,10 @@ class WebApi{
         return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/outputItems/' + versionId + "/" + outputDefinitionId + "/" + outputDefinitionVersion + "/" + descItemTypeId, null, null);
     }
 
+    switchOutputCalculating(fundVersionId, outputDefinitionId, itemTypeId) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/output/' + outputDefinitionId + "/" + fundVersionId + "/" + itemTypeId + "/switch", null, null);
+    }
+
     addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName) {
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/levels', null, {
             versionId,

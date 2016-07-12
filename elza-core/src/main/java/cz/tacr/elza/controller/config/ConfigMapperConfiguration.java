@@ -624,6 +624,8 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         super.mapAtoB(rulDescItemTypeExt, itemTypeLiteVO, context);
                         itemTypeLiteVO.setRep(rulDescItemTypeExt.getRepeatable() ? 1 : 0);
+                        itemTypeLiteVO.setCal(rulDescItemTypeExt.getCalculable() ? 1 : 0);
+                        itemTypeLiteVO.setCalSt(rulDescItemTypeExt.getCalculableState() ? 1 : 0);
                     }
                 })
                 .register();

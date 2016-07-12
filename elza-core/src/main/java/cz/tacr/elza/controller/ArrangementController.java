@@ -654,6 +654,25 @@ public class ArrangementController {
     }
 
     /**
+     * Přepnutí na automatickou/uživatelskou úpravu typu atributu.
+     *
+     * @param outputDefinitionId identifikátor výstupu
+     * @param fundVersionId      identfikátor verze AS
+     * @param itemTypeId         identfikátor typu hodnoty atributu
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{outputDefinitionId}/{fundVersionId}/{itemTypeId}/switch", method = RequestMethod.POST)
+    public void switchOutputCalculating(@PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
+                                        @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                        @PathVariable(value = "itemTypeId") final Integer itemTypeId) {
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
+        RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
+
+        outputService.switchOutputCalculating(outputDefinition, version, itemType);
+    }
+
+    /**
      * Získání dat pro formulář.
      *
      * @param outputDefinitionId    identfikátor outputu
