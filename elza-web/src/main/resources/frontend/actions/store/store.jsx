@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {save} from 'stores/app/AppStore.jsx'
+import {save} from 'stores/AppStore.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 
@@ -19,7 +19,7 @@ export function storeRestoreFromStorage() {
     return (dispatch, getState) => {
         // Načtení z local storage
         if(typeof(Storage) !== "undefined") {
-            var localStorageData = localStorage.getItem('ELZA-STORE-STATE');
+            let localStorageData = localStorage.getItem('ELZA-STORE-STATE');
             if (localStorageData) {
                 localStorageData = JSON.parse(localStorageData);
             }
@@ -60,16 +60,16 @@ export function storeSave() {
             //console.log('@@@@storeSave', data);
 
             // Uložení dat do store - pro zobrazování home stránky a pro uložení dalších inicializačních dat, např. splitter atp.
-            dispatch(storeStateData(data))
+            dispatch(storeStateData(data));
 
             // Uložení do local storage
             if(typeof(Storage) !== "undefined") {
                 var storeNew = getState();
 
-                var localStorageData = {
+                const localStorageData = {
                     stateRegion: storeNew.stateRegion,
                     splitter: storeNew.splitter,
-                }
+                };
 
                 _storeSaveEnabled && localStorage.setItem('ELZA-STORE-STATE', JSON.stringify(localStorageData));
             }

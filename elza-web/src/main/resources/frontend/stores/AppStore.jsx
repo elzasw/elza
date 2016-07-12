@@ -1,21 +1,13 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {combineReducers, createStore, applyMiddleware, compose} from 'redux'
+import {createStore, applyMiddleware, compose} from 'redux'
 import thunkMiddleware from 'redux-thunk'
 import createLogger from 'redux-logger'
-import {reducer as formReducer} from 'redux-form';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
 import {splitterResize} from 'actions/global/splitter.jsx';
-import {normalizeInt} from 'components/validate.jsx';
 
-import reduxFormUtils from "./form/reduxFormUtils.jsx"
-
-const normalizePacketSize = (value, previousValue, allValues, previousAllValues) => {
-    var vv = normalizeInt(value, previousValue, allValues, previousAllValues)
-    if (vv > 32) {
-        return previousValue
-    }
-    return vv
-}
+import rootReducer from './reducers.jsx'
+import reduxFormUtils from './app/form/reduxFormUtils.jsx'
+import defaultImport from './defaultImport.jsx'
 
 //import devTools from 'remote-redux-devtools';
 
@@ -24,80 +16,6 @@ const _logStoreState = true;
 const _logStoreSize = false;
 const _logActionDuration = false;
 const _logCollapsed = true;
-
-/**
- * Sestavení reducerů.
- */
-import arrRegion from './arr/arrRegion.jsx';
-import refTables from './refTables/refTables.jsx';
-import registryRegion from './registry/registryRegion.jsx';
-import registryRegionRecordTypes from './registry/registryRegionRecordTypes.jsx';
-import toastr from '../../components/shared/toastr/ToastrStore.jsx';
-import partyRegion from './party/partyRegion.jsx';
-import fundRegion from './fund/fundRegion.jsx';
-import contextMenu from './global/contextMenu.jsx';
-import modalDialog from './global/modalDialog.jsx';
-import webSocket from './global/webSocket.jsx';
-import login from './global/login.jsx';
-import splitter from './global/splitter.jsx';
-import developer from './global/developer.jsx';
-import focus from './global/focus.jsx';
-import adminRegion from './admin/adminRegion.jsx';
-import fundForm from './arr/form/fundForm.jsx';
-import inlineForm from './form/inlineForm.jsx';
-import addPacketForm from './arr/form/addPacketForm.jsx';
-import stateRegion from './state/stateRegion.jsx';
-import userDetail from './user/userDetail.jsx';
-import router from './router.jsx';
-
-import addPartyForm from './party/form/addPartyForm.jsx';
-import partyNameForm from './party/form/partyNameForm.jsx';
-import partyIdentifierForm from './party/form/partyIdentifierForm.jsx';
-import partyCreatorForm from './party/form/partyCreatorForm.jsx';
-import relationForm from './party/form/relationForm.jsx';
-
-import addRegistryForm from './registry/form/addRegistryForm.jsx';
-import editRegistryForm from './registry/form/editRegistryForm.jsx';
-
-
-let reducer = combineReducers({
-    arrRegion,
-    refTables,
-    registryRegion,
-    registryRegionRecordTypes,
-    toastr,
-    developer,
-    partyRegion,
-    fundRegion,
-    contextMenu,
-    modalDialog,
-    webSocket,
-    login,
-    splitter,
-    focus,
-    adminRegion,
-    stateRegion,
-    router,
-    userDetail,
-    form: formReducer.plugin({
-        fundForm: fundForm,
-        outputEditForm: inlineForm,
-        addPacketForm: addPacketForm,
-        addPartyForm: addPartyForm,
-        partyNameForm: partyNameForm,
-        partyIdentifierForm: partyIdentifierForm,
-        partyCreatorForm: partyCreatorForm,
-        relationForm: relationForm,
-        addRegistryForm: addRegistryForm,
-        editRegistryForm: editRegistryForm,
-    }).normalize({
-        addPacketForm: {
-            'start': normalizeInt,
-            'size': normalizePacketSize,
-            'count': normalizeInt,
-        }
-    })
-});
 
 // Store a middleware
 const loggerMiddleware = createLogger({
@@ -109,7 +27,7 @@ const loggerMiddleware = createLogger({
 /**
  * Třída pro definici inline formulářů.
  */
-var inlineFormSupport = new class {
+const inlineFormSupport = new class {
     constructor() {
         this.forms = {}
         this.init = {}
@@ -383,9 +301,9 @@ var inlineFormSupport = new class {
     }
 }();
 
-var inlineFormMiddleware = function (_ref) {
-    var getState = _ref.getState;
-    var dispatch = _ref.dispatch;
+const inlineFormMiddleware = function (_ref) {
+    const getState = _ref.getState;
+    const dispatch = _ref.dispatch;
 
     return (next) => {
         return (action) => {
@@ -449,37 +367,50 @@ var inlineFormMiddleware = function (_ref) {
     }
 }
 
-var createStoreWithMiddleware;
-if (_logStoreState) {
-    createStoreWithMiddleware = applyMiddleware(
-        thunkMiddleware,
-        loggerMiddleware,
-        inlineFormMiddleware
+
+let createStoreWithMiddleware;
+
+if (typeof __DEVTOOLS__ !== 'undefined' && __DEVTOOLS__) {
+    const { persistState } = require('redux-devtools');
+    const DevTools = defaultImport(require('../DevTools'));
+    createStoreWithMiddleware = compose(
+        applyMiddleware(
+            // enforceImmutableMiddleware,
+            thunkMiddleware,
+            // promiseMiddleware,
+            loggerMiddleware,
+            inlineFormMiddleware
+        ),
+        DevTools.instrument(),
+        persistState(window.location.href.match(/[?&]debug_session=([^&]+)\b/))
+    )(createStore)
+} else if(loggerMiddleware) {
+    createStoreWithMiddleware = compose(
+        applyMiddleware(
+            thunkMiddleware,
+            loggerMiddleware,
+            inlineFormMiddleware
+        ),
     )(createStore)
 } else {
-    createStoreWithMiddleware = applyMiddleware(
-        thunkMiddleware,
-        inlineFormMiddleware
+    createStoreWithMiddleware = compose(
+        applyMiddleware(thunkMiddleware, inlineFormMiddleware)
     )(createStore)
 }
-/* REDUX DEBUG
- var createStoreWithMiddleware;
- if (_logStoreState) {
- createStoreWithMiddleware = compose(applyMiddleware(
- thunkMiddleware,
- loggerMiddleware
- ), window.devToolsExtension ? window.devToolsExtension() : f => f)(createStore)
- } else {
- createStoreWithMiddleware = compose(applyMiddleware(
- thunkMiddleware
- ), window.devToolsExtension ? window.devToolsExtension() : f => f)(createStore)
- }
- */
 
-var initialState = {
-}
-var store = function configureStore(initialState) {
-    return createStoreWithMiddleware(reducer, initialState)
+
+const initialState = {};
+const store = function configureStore(initialState) {
+    const state = createStoreWithMiddleware(rootReducer, initialState);
+    if (module.hot) {
+        // Enable Webpack hot module replacement for reducers
+        module.hot.accept('./reducers.jsx', () => {
+            const nextRootReducer = defaultImport(require('./reducers.jsx'));
+
+            state.replaceReducer(nextRootReducer)
+        })
+    }
+    return state;
 }(initialState);
 
 /*
@@ -498,14 +429,14 @@ store.dispatch(selectFundTab(fund));
 
 // Resize
 window.addEventListener("resize", () => {
-    const state = store.getState()
+    const state = store.getState();
     store.dispatch(splitterResize(state.splitter.leftSize, state.splitter.rightSize))
 });
 
 if (_logStoreSize) {
-    let curr
+    let curr;
     function handleChange() {
-        let prev = curr
+        let prev = curr;
         curr = store.getState().arrRegion;
 
         if (curr !== prev) {
@@ -518,7 +449,18 @@ if (_logStoreSize) {
     store.subscribe(handleChange);
 }
 
-var save = function(store) {
+/**
+ * reducery pro save
+ */
+import arrRegion from './app/arr/arrRegion.jsx';
+import registryRegion from './app/registry/registryRegion.jsx';
+import partyRegion from './app/party/partyRegion.jsx';
+import fundRegion from './app/fund/fundRegion.jsx';
+import splitter from './app/global/splitter.jsx';
+import adminRegion from './app/admin/adminRegion.jsx';
+
+
+const save = function(store) {
     const action = {
         type: types.STORE_SAVE
     };
@@ -528,14 +470,14 @@ var save = function(store) {
     // result.registryRegion._info = result.registryRegion.registryRegionData._info
     // result.registryRegion.selectedId = result.registryRegion.registryRegionData.selectedId
 
-    var result = {
+    const result = {
         partyRegion: partyRegion(store.partyRegion, action),
         registryRegion: registryRegion(store.registryRegion, action),
         arrRegion: arrRegion(store.arrRegion, action),
         fundRegion: fundRegion(store.fundRegion, action),
         adminRegion: adminRegion(store.adminRegion, action),
         splitter: splitter(store.splitter, action)
-    }
+    };
     // console.log("SAVE", result)
     return result;
 }
@@ -549,4 +491,4 @@ inlineFormSupport.addForm("outputEditForm");
 module.exports = {
     store,
     save
-}
+};

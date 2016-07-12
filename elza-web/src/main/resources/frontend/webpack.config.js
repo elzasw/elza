@@ -15,7 +15,7 @@ module.exports = {
             {
                 test: /\.jsx?$/,
                 exclude: /(node_modules|bower_components)/,
-                loaders: ['babel-loader']
+                loaders: ['react-hot', 'babel-loader']
             },
             {
                 test: /\.json$/,
@@ -55,9 +55,14 @@ module.exports = {
         extensions: ['', '.js', '.jsx']
     },
     plugins: [
+        new webpack.NoErrorsPlugin(),
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery"
+        }),
+        new webpack.DefinePlugin({
+            __DEVTOOLS__: false,
+            __SHOW_DEVTOOLS__: false
         })
     ]
 }
