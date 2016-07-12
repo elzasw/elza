@@ -124,7 +124,10 @@ public class BulkActionController {
         Assert.notNull(outputId);
         final ArrOutput output = outputService.getOutput(outputId);
         final ArrOutputDefinition outputDefinition = output.getOutputDefinition();
-        final Set<ArrNode> nodes = outputDefinition.getOutputNodes().stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet());
+        final Set<ArrNode> nodes = outputDefinition.getOutputNodes().stream()
+                .filter(nodeOutput -> nodeOutput.getDeleteChange() == null)
+                .map(ArrNodeOutput::getNode)
+                .collect(Collectors.toSet());
         final List<ArrBulkActionRun> bulkActionsByNodes = nodes.isEmpty() ? Collections.EMPTY_LIST :
                 bulkActionService.findBulkActionsByNodes(
                         arrangementService.getOpenVersionByFundId(outputDefinition.getFund().getFundId()),
