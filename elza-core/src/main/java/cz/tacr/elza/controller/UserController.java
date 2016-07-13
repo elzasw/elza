@@ -12,12 +12,14 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
+import javax.websocket.server.PathParam;
 import java.util.List;
 
 /**
@@ -52,8 +54,8 @@ public class UserController {
      * @param userId id
      * @return VO
      */
-    @RequestMapping(value = "/getUser", method = RequestMethod.GET)
-    UsrUserVO getUser(@RequestParam(value = "userId") final Integer userId) {
+    @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
+    UsrUserVO getUser(@PathVariable(value = "userId") final Integer userId) {
         Assert.notNull(userId);
 
         UsrUser user = userService.getUser(userId);
@@ -65,8 +67,8 @@ public class UserController {
      * @param groupId id
      * @return VO
      */
-    @RequestMapping(value = "/getGroup", method = RequestMethod.GET)
-    UsrGroupVO getGroup(@RequestParam(value = "groupId") final Integer groupId) {
+    @RequestMapping(value = "/group/{groupId}", method = RequestMethod.GET)
+    UsrGroupVO getGroup(@PathVariable(value = "groupId") final Integer groupId) {
         Assert.notNull(groupId);
 
         UsrGroup group = userService.getGroup(groupId);
@@ -82,7 +84,7 @@ public class UserController {
      * @param disabled mají se vracet zakázané osoby?
      * @return seznam s celkovým počtem
      */
-    @RequestMapping(value = "/findUser", method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET)
     public FilteredResultVO<UsrUserVO> findUser(@Nullable @RequestParam(value = "search", required = false) final String search,
                                                 @RequestParam("active") final Boolean active,
                                                 @RequestParam("disabled") final Boolean disabled,
@@ -95,7 +97,7 @@ public class UserController {
 
         FilteredResult<UsrUser> users = userService.findUser(search, active, disabled, from, count);
         List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList());
-        return new FilteredResultVO<UsrUserVO>(resultVo, users.getTotalCount());
+        return new FilteredResultVO<>(resultVo, users.getTotalCount());
     }
 
     /**
@@ -105,13 +107,13 @@ public class UserController {
      * @param count počet vrácených záznamů
      * @return seznam s celkovým počtem
      */
-    @RequestMapping(value = "/findGroup", method = RequestMethod.GET)
+    @RequestMapping(value = "/group", method = RequestMethod.GET)
     public FilteredResultVO<UsrGroupVO> findGroup(@Nullable @RequestParam(value = "search", required = false) final String search,
                                                   @RequestParam("from") final Integer from,
                                                   @RequestParam("count") final Integer count
     ) {
         FilteredResult<UsrGroup> groups = userService.findGroup(search, from, count);
         List<UsrGroupVO> resultVo = factoryVO.createGroupList(groups.getList(), false, false);
-        return new FilteredResultVO<UsrGroupVO>(resultVo, groups.getTotalCount());
+        return new FilteredResultVO<>(resultVo, groups.getTotalCount());
     }
 }
