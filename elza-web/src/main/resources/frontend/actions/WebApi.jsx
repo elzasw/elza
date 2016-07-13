@@ -852,6 +852,34 @@ class WebApi{
         return AjaxUtils.ajaxGet(WebApi.userUrl + '/' + userId);
     }
 
+    createUser(username, password, partyId) {
+        var params = {
+            username: username,
+            password: password,
+            partyId: partyId
+        }
+        return AjaxUtils.ajaxPost(WebApi.userUrl, null, params);
+    }
+
+    changePasswordUser(oldPassword, newPassword) {
+        var params = {
+            oldPassword: oldPassword,
+            newPassword: newPassword
+        }
+        return AjaxUtils.ajaxPut(WebApi.userUrl + '/password', null, params);
+    }
+
+    changePassword(userId, newPassword) {
+        var params = {
+            newPassword: newPassword
+        }
+        return AjaxUtils.ajaxPut(WebApi.userUrl + '/' + userId + '/password', null, params);
+    }
+
+    changeActive(userId, active) {
+        return AjaxUtils.ajaxPut(WebApi.userUrl + '/' + userId + '/active/' + active);
+    }
+
     getGroup(groupId){
         return AjaxUtils.ajaxGet(WebApi.userUrl + '/group/' + groupId);
     }
