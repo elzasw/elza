@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
@@ -34,6 +35,12 @@ public class UserControllerTest extends AbstractControllerTest {
 
         // vytvoření uživatele
         UsrUserVO user = createUser();
+
+        // vyhledání uživatele
+        FilteredResultVO<UsrUserVO> data = findUser(null, true, true, 0, 10);
+        Assert.notNull(data);
+        Assert.isTrue(data.getTotalCount() == 1);
+        Assert.isTrue(data.getList().get(0).getId().equals(user.getId()));
 
         // změna hesla - administrace
         changePassword(user, PASS_NEW);

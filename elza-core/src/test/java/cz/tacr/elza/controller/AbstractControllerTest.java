@@ -19,6 +19,7 @@ import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
@@ -271,7 +272,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static String USER_DETAIL = USER_CONTROLLER_URL + "/detail";
     protected final static String CHANGE_PASSWORD = USER_CONTROLLER_URL + "/{userId}/password";
     protected final static String CHANGE_PASSWORD_USER = USER_CONTROLLER_URL + "/password";
-
+    protected final static String FIND_USER = USER_CONTROLLER_URL;
     protected final static String ACTIVE_USER = USER_CONTROLLER_URL + "/{userId}/active/{active}";
 
     protected final static String CREATE_USER = USER_CONTROLLER_URL;
@@ -2433,6 +2434,29 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.setPartyId(partyId);
         return createUser(params);
     }
+
+    /**
+    * Načte seznam uživatelů.
+    *
+    * @param search   hledaný řetězec
+    * @param from     počáteční záznam
+    * @param count    počet vrácených záznamů
+    * @param active   mají se vracet aktivní osoby?
+    * @param disabled mají se vracet zakázané osoby?
+    * @return seznam s celkovým počtem
+    */
+    protected FilteredResultVO findUser(@Nullable final String search,
+                                                   final Boolean active,
+                                                   final Boolean disabled,
+                                                   final Integer from,
+                                                   final Integer count) {
+        return get(spec -> spec.queryParam("active", active)
+                .queryParam("search", search)
+                .queryParam("from", from)
+                .queryParam("count", count)
+                .queryParam("disabled", disabled), FIND_USER).as(FilteredResultVO.class);
+    }
+
 
     /**
      * Získání unikátních hodnot atributů podle typu.
