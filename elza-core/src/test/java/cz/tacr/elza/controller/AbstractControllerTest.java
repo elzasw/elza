@@ -45,6 +45,7 @@ import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -266,7 +267,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
     // XmlImport
     protected final static String XML_IMPORT = XML_IMPORT_CONTROLLER_URL + "/import";
 
+    // Uživatelé a skupiny
     protected final static String USER_DETAIL = USER_CONTROLLER_URL + "/detail";
+    protected final static String CHANGE_PASSWORD = USER_CONTROLLER_URL + "/{userId}/password";
+    protected final static String CHANGE_PASSWORD_USER = USER_CONTROLLER_URL + "/password";
+
+    protected final static String ACTIVE_USER = USER_CONTROLLER_URL + "/{userId}/active/{active}";
+
+    protected final static String CREATE_USER = USER_CONTROLLER_URL;
 
     @Value("${local.server.port}")
     private int port;
@@ -2337,6 +2345,93 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected UserInfoVO getUserDetail() {
         return get(spec -> spec, USER_DETAIL).as(UserInfoVO.class);
+    }
+
+    /**
+     * Změna hesla uživatele.
+     *
+     * @param userId identifikátor uživatele
+     * @param params parametry změny hesla
+     * @return uživatel
+     */
+    protected UsrUserVO changePassword(final Integer userId,
+                                       final UserController.ChangePassword params) {
+        return put(spec -> spec.body(params)
+                .pathParameter("userId", userId), CHANGE_PASSWORD).as(UserInfoVO.class);
+    }
+
+    /**
+     * Změna hesla uživatele.
+     *
+     * @param params parametry změny hesla
+     * @return uživatel
+     */
+    protected UsrUserVO changePassword(final UserController.ChangePassword params) {
+        return put(spec -> spec.body(params), CHANGE_PASSWORD_USER).as(UserInfoVO.class);
+    }
+
+
+    /**
+     * Změna hesla uživatele.
+     *
+     * @return uživatel
+     */
+    protected UsrUserVO changePassword(final String oldPassword,
+                                       final String newPassword) {
+        UserController.ChangePassword params = new UserController.ChangePassword();
+        params.setNewPassword(newPassword);
+        params.setOldPassword(oldPassword);
+        return changePassword(params);
+    }
+
+    /**
+     * Změna hesla uživatele.
+     *
+     * @return uživatel
+     */
+    protected UsrUserVO changePassword(final UsrUserVO user,
+                                       final String newPassword) {
+        UserController.ChangePassword params = new UserController.ChangePassword();
+        params.setNewPassword(newPassword);
+        return changePassword(user.getId(), params);
+    }
+
+    /**
+     * Vytvořené nového uživatele.
+     *
+     * @param params parametry pro vytvoření uživatele
+     * @return vytvořený uživatel
+     */
+    protected UsrUserVO createUser(final UserController.CreateUser params) {
+        return post(spec -> spec.body(params), CREATE_USER).as(UsrUserVO.class);
+    }
+
+    /**
+     *
+     *
+     * @param user   uživatel
+     * @param active je aktivní?
+     * @return uživatel
+     */
+    protected UsrUserVO changeActive(final UsrUserVO user,
+                                     final Boolean active) {
+        return put(spec -> spec.pathParameter("active", active)
+                .pathParameter("userId", user.getId()), ACTIVE_USER).as(UsrUserVO.class);
+    }
+
+    /**
+     * Vytvořené nového uživatele.
+     *
+     * @return vytvořený uživatel
+     */
+    protected UsrUserVO createUser(final String username,
+                                   final String password,
+                                   final Integer partyId) {
+        UserController.CreateUser params = new UserController.CreateUser();
+        params.setUsername(username);
+        params.setPassword(password);
+        params.setPartyId(partyId);
+        return createUser(params);
     }
 
     /**

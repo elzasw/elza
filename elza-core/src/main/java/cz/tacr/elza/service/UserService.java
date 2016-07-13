@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
@@ -9,6 +10,9 @@ import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
+import cz.tacr.elza.service.eventnotification.events.EventId;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
@@ -18,6 +22,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,10 +41,18 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private GroupRepository groupRepository;
+
     @Autowired
     private PermissionRepository permissionRepository;
+
+    @Autowired
+    private PartyService partyService;
+
+    @Autowired
+    private IEventNotificationService eventNotificationService;
 
     @Value("${elza.security.salt:kdFss=+4Df_%}")
     private String SALT;
@@ -46,10 +60,70 @@ public class UserService {
     private ShaPasswordEncoder encoder = new ShaPasswordEncoder(256);
 
     /**
+     * Vytvoření uživatele.
+     *
+     * @param username uživatelské jméno
+     * @param password heslo (v plaintextu)
+     * @param partyId  identifikátor osoby
+     * @return vytvořený uživatel
+     */
+    public UsrUser createUser(@NotEmpty final String username,
+                              @NotEmpty final String password,
+                              @NotNull final Integer partyId) {
+
+        ParParty party = partyService.getParty(partyId);
+        if (party == null) {
+            throw new IllegalArgumentException("Osoba neexistuje");
+        }
+
+        UsrUser user = findByUsername(username);
+        if (user != null) {
+            throw new IllegalArgumentException("Uživatelské jméno již existuje");
+        }
+
+        user = new UsrUser();
+        user.setActive(true);
+        user.setParty(party);
+        user.setUsername(username);
+        user.setPassword(encodePassword(username, password));
+
+        userRepository.save(user);
+
+        createUserEvent(user);
+        return user;
+    }
+
+    /**
+     * Změna hesla uživatele.
+     *
+     * @param user        uživate, kterému měním heslo
+     * @param oldPassword původní heslo (v plaintextu)
+     * @param newPassword nové heslo (v plaintextu)
+     * @return uživatel
+     */
+    public UsrUser changePassword(@NotNull final UsrUser user,
+                                  @Nullable final String oldPassword,
+                                  @NotEmpty final String newPassword) {
+        if (oldPassword != null) {
+            String oldPasswordHash = encodePassword(user.getUsername(), oldPassword);
+
+            if (!oldPasswordHash.equals(user.getPassword())) {
+                throw new IllegalArgumentException("Původní heslo se neshoduje");
+            }
+        }
+
+        user.setPassword(encodePassword(user.getUsername(), newPassword));
+        userRepository.save(user);
+
+        changeUserEvent(user);
+        return user;
+    }
+
+    /**
      * Vyhledání uživatele podle username.
      *
-     * @param username  uživatelské jméno
-     * @return  uživatel
+     * @param username uživatelské jméno
+     * @return uživatel
      * @throws UsernameNotFoundException
      */
     public UsrUser findByUsername(final String username) throws UsernameNotFoundException {
@@ -59,8 +133,8 @@ public class UserService {
     /**
      * Zahashování hesla.
      *
-     * @param username  uživatelské jméno
-     * @param password  uživatelské heslo v plaintextu
+     * @param username uživatelské jméno
+     * @param password uživatelské heslo v plaintextu
      * @return zahashované heslo
      */
     public String encodePassword(final String username, final String password) {
@@ -96,7 +170,7 @@ public class UserService {
     /**
      * Vypočítá oprávnění pro uživatele.
      *
-     * @param user  uživatel
+     * @param user uživatel
      * @return seznam oprávnění
      */
     public Collection<UserPermission> calcUserPermission(final UsrUser user) {
@@ -141,8 +215,8 @@ public class UserService {
     /**
      * Kontroluje oprávnění přihlášeného uživatele.
      *
-     * @param permission    typ oprávnění
-     * @param entityId      identifikátor entity, ke které se ověřuje oprávnění
+     * @param permission typ oprávnění
+     * @param entityId   identifikátor entity, ke které se ověřuje oprávnění
      * @return má oprávnění?
      */
     public boolean hasPermission(final UsrPermission.Permission permission,
@@ -188,11 +262,12 @@ public class UserService {
 
     /**
      * Hledání uživatelů na základě podmínek.
-     * @param search hledaný text
-     * @param active aktivní uživatelé
-     * @param disabled zakázaní uživatelé
+     *
+     * @param search      hledaný text
+     * @param active      aktivní uživatelé
+     * @param disabled    zakázaní uživatelé
      * @param firstResult od jakého záznamu
-     * @param maxResults maximální počet vrácených záznamů
+     * @param maxResults  maximální počet vrácených záznamů
      * @return výsledky hledání
      */
     public FilteredResult<UsrUser> findUser(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults) {
@@ -205,9 +280,10 @@ public class UserService {
 
     /**
      * Hledání skupin na základě podmínek.
-     * @param search hledaný text
+     *
+     * @param search      hledaný text
      * @param firstResult od jakého záznamu
-     * @param maxResults maximální počet vrácených záznamů
+     * @param maxResults  maximální počet vrácených záznamů
      * @return výsledky hledání
      */
     public FilteredResult<UsrGroup> findGroup(final String search, final Integer firstResult, final Integer maxResults) {
@@ -216,6 +292,7 @@ public class UserService {
 
     /**
      * Načtení objektu uživatele dle id.
+     *
      * @param userId id
      * @return objekt
      */
@@ -226,6 +303,7 @@ public class UserService {
 
     /**
      * Načtení objektu skupiny dle id.
+     *
      * @param groupId id
      * @return objekt
      */
@@ -233,4 +311,39 @@ public class UserService {
         Assert.notNull(groupId);
         return groupRepository.getOneCheckExist(groupId);
     }
+
+    /**
+     * Aktivace/deaktivace uživatele.
+     *
+     * @param user   upravovaný uživatel
+     * @param active je aktivní?
+     * @return uživatel
+     */
+    public UsrUser changeActive(@NotNull final UsrUser user,
+                                @NotNull final Boolean active) {
+        user.setActive(active);
+        userRepository.save(user);
+
+        changeUserEvent(user);
+        return user;
+    }
+
+    /**
+     * Event změněného uživatele.
+     *
+     * @param user uživatel
+     */
+    private void changeUserEvent(final UsrUser user) {
+        eventNotificationService.publishEvent(new EventId(EventType.USER_CHANGE, user.getUserId()));
+    }
+
+    /**
+     * Event vytvořeného uživatele.
+     *
+     * @param user uživatel
+     */
+    private void createUserEvent(final UsrUser user) {
+        eventNotificationService.publishEvent(new EventId(EventType.USER_CREATE, user.getUserId()));
+    }
+
 }
