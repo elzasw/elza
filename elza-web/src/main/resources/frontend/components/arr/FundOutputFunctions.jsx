@@ -15,6 +15,16 @@ import {indexById} from 'stores/app/utils.jsx'
 import {dateTimeToString} from 'components/Utils.jsx';
 
 const ACTION_RUNNING_STATE = ['RUNNING', 'WAITING', 'PLANNED',];
+const ACTION_NOT_RUNNING_STATE = ['FINISHED', 'ERROR', 'INTERRUPTED',];
+
+const OutputState = {
+    OPEN: 'OPEN',
+    COMPUTING: 'COMPUTING',
+    GENERATING: 'GENERATING',
+    FINISHED: 'FINISHED',
+    OUTDATED: 'OUTDATED',
+    ERROR: 'ERROR' /// Pomocný stav websocketu
+};
 
 const FundOutputFunctions = class FundOutputFunctions extends AbstractReactComponent {
     constructor(props) {
@@ -73,9 +83,18 @@ const FundOutputFunctions = class FundOutputFunctions extends AbstractReactCompo
     }
 
     renderListItem(item) {
+        const {outputState} = this.props;
         const config = this.getConfigByCode(item.code);
         const name = config ? <span title={item.name} className='name'>{config.name}</span> : '';
         const state = FundActionPage.getStateTranslation(item.state);
+        let buttons = null;
+        if (outputState !== OutputState.FINISHED && outputState !== OutputState.OUTDATED) {
+            if (state == null || ACTION_NOT_RUNNING_STATE.indexOf(item.state)) {
+                buttons = <Icon glyph="fa-play" onClick={() => this.handleActionRun(item.code)}/>;
+            } else if (ACTION_RUNNING_STATE.indexOf(item.state) !== -1) {
+                buttons = <Icon glyph="fa-stop" onClick={() => this.handleActionInterrupt(item.id)}/>
+            }
+        }
         return (
             <div className='item' key={item.id}>
                 <div>
@@ -84,10 +103,7 @@ const FundOutputFunctions = class FundOutputFunctions extends AbstractReactCompo
                         {i18n('arr.output.functions.state', state == null ? i18n('arr.output.functions.notStarted') : state + (item.dateFinished != null ? " (" + dateTimeToString(new Date(item.dateFinished)) + ")" : ''))}
                     </div>
                 </div>
-                <div>
-                    {state == null && <Icon glyph="fa-play" onClick={() => this.handleActionRun(item.code)}/>}
-                    {ACTION_RUNNING_STATE.indexOf(item.state) !== -1 && <Icon glyph="fa-stop" onClick={() => this.handleActionInterrupt(item.id)}/>}
-                </div>
+                <div>{buttons}</div>
             </div>
         )
     }
@@ -123,7 +139,8 @@ FundOutputFunctions.propTypes = {
     versionId: React.PropTypes.number.isRequired,
     data: React.PropTypes.array,
     filterRecommended: React.PropTypes.bool.isRequired,
-    fetched: React.PropTypes.bool.isRequired
+    fetched: React.PropTypes.bool.isRequired,
+    outputState: React.PropTypes.string.isRequired
 };
 
 function mapStateToProps(state) {

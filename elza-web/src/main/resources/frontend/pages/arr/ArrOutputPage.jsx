@@ -304,8 +304,9 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
 
             if (isDetailIdNotNull && isDetailLoaded) {
+                const runnable = !outputDetail.lockDate && outputDetail.outputDefinition.state !== OutputState.FINISHED && outputDetail.outputDefinition.state !== OutputState.OUTDATED;
                 if (hasPersmission) {
-                    if (!outputDetail.lockDate && outputDetail.outputDefinition.state !== OutputState.FINISHED && outputDetail.outputDefinition.state !== OutputState.OUTDATED) {
+                    if (runnable) {
                         itemActions.push(
                             <Button key="add-item" onClick={this.handleAddDescItemType}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.item.add')}</span></div></Button>
                         )
@@ -320,11 +321,13 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                         );
                         */
                     }
+
                     itemActions.push(
                         <Button key="fund-output-delete" onClick={this.handleDelete} disabled={!isDetailLoaded}><Icon glyph="fa-trash"/>
                             <div><span className="btnText">{i18n('ribbon.action.arr.output.delete')}</span></div>
                         </Button>
                     );
+
                     if (outputDetail.outputDefinition.generatedDate && (outputDetail.outputDefinition.state === OutputState.FINISHED || outputDetail.outputDefinition.state === OutputState.OUTDATED)) {
                         itemActions.push(
                             <Button key="fund-output-revert" onClick={this.handleRevertToOpen} disabled={!isDetailLoaded}><Icon glyph="fa-undo"/>
@@ -339,7 +342,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                     )
                 }
 
-                if (outputDetail.outputDefinition.nodes.length > 0) {
+                if (runnable && outputDetail.outputDefinition.nodes.length > 0) {
                     if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) { // právo na hromadné akce
                         itemActions.push(
                             <Button key="fund-output-other-action" onClick={this.handleOtherActionDialog}><Icon
@@ -563,6 +566,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 ref="fundOutputFunctions"
                 versionId={activeFund.versionId}
                 outputId={fundOutput.fundOutputDetail.id}
+                outputState={fundOutput.fundOutputDetail.outputDefinition.state}
                 {...fundOutput.fundOutputFunctions}
             />
         }
