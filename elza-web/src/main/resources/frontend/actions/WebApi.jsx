@@ -852,6 +852,26 @@ class WebApi{
         return AjaxUtils.ajaxGet(WebApi.userUrl + '/' + userId);
     }
 
+    createGroup(name, code) {
+        var params = {
+            name: name,
+            code: code
+        }
+        return AjaxUtils.ajaxPost(WebApi.userUrl + '/group', null, params);
+    }
+
+    changeGroup(groupId, name, descriptiom) {
+        var params = {
+            name: name,
+            descriptiom: descriptiom
+        }
+        return AjaxUtils.ajaxPut(WebApi.userUrl + '/group/' + groupId, null, params);
+    }
+
+    deleteGroup(groupId) {
+        return AjaxUtils.ajaxDelete(WebApi.userUrl + '/group/' + groupId);
+    }
+
     createUser(username, password, partyId) {
         var params = {
             username: username,

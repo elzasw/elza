@@ -3,6 +3,7 @@ package cz.tacr.elza.controller;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import org.junit.Test;
 import org.springframework.util.Assert;
@@ -21,6 +22,10 @@ public class UserControllerTest extends AbstractControllerTest {
     public static final String USER = "user1";
     public static final String PASS = "pass";
     public static final String PASS_NEW = "pass_new";
+    public static final String NAME_GROUP_CHANGe = "Skupina 1x";
+    public static final String DESCRIPTION = "popis";
+    public static final String GROUP_NAME = "Skupina 1";
+    public static final String GROUP_CODE = "SK1";
 
     @Test
     public void userDetail() {
@@ -55,6 +60,17 @@ public class UserControllerTest extends AbstractControllerTest {
         // aktivace/deaktivace uživatele
         changeActive(user);
 
+        UsrGroupVO sk1 = createGroup(new UserController.CreateGroup(GROUP_NAME, GROUP_CODE));
+        Assert.notNull(sk1);
+        Assert.notNull(sk1.getId());
+
+        UsrGroupVO sk1change = changeGroup(sk1.getId(), new UserController.ChangeGroup(NAME_GROUP_CHANGe, DESCRIPTION));
+        Assert.notNull(sk1change);
+        Assert.isTrue(sk1change.getId().equals(sk1.getId()));
+        Assert.isTrue(sk1change.getName().equals(NAME_GROUP_CHANGe));
+        Assert.isTrue(sk1change.getDescription().equals(DESCRIPTION));
+
+        deleteGroup(sk1.getId());
     }
 
     /**

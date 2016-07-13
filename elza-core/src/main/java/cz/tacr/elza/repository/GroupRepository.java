@@ -19,4 +19,6 @@ public interface GroupRepository extends ElzaJpaRepository<UsrGroup, Integer>, G
 
     @Query("select ugu.group from usr_group_user ugu where ugu.user = :user")
     List<UsrGroup> findByUser(@Param("user") UsrUser user);
+
+    UsrGroup findOneByCode(String code);
 }

@@ -76,7 +76,7 @@ public class UserController {
     @RequestMapping(value = "/{userId}/password", method = RequestMethod.PUT)
     @Transactional
     public UsrUserVO changePassword(@PathVariable("userId") final Integer userId,
-                             @RequestBody final ChangePassword params) {
+                                    @RequestBody final ChangePassword params) {
         Assert.notNull(params);
 
         UsrUser user = userService.getUser(userId);
@@ -128,7 +128,7 @@ public class UserController {
     @RequestMapping(value = "/{userId}/active/{active}", method = RequestMethod.PUT)
     @Transactional
     public UsrUserVO changeActive(@PathVariable("userId") final Integer userId,
-                           @PathVariable("active") final Boolean active) {
+                                  @PathVariable("active") final Boolean active) {
 
         UsrUser user = userService.getUser(userId);
 
@@ -213,17 +213,73 @@ public class UserController {
     }
 
     /**
+     * Vytvořené skupiny.
+     *
+     * @param params parametry pro vytvoření skupiny
+     * @return vytvořená skupina
+     */
+    @RequestMapping(value = "/group", method = RequestMethod.POST)
+    @Transactional
+    public UsrGroupVO createGroup(@RequestBody CreateGroup params) {
+        UsrGroup group = userService.createGroup(params.getName(), params.getCode());
+        return factoryVO.createGroup(group, true, true);
+    }
+
+    /**
+     * Smazání skupiny.
+     *
+     * @param groupId identifikátor skupiny
+     */
+    @RequestMapping(value = "/group/{groupId}", method = RequestMethod.DELETE)
+    @Transactional
+    public void deleteGroup(@PathVariable(value = "groupId") final Integer groupId) {
+        UsrGroup group = userService.getGroup(groupId);
+
+        if (group == null) {
+            throw new IllegalArgumentException("Skupina neexistuje");
+        }
+
+        userService.deleteGroup(group);
+    }
+
+    /**
+     * Změna skupiny.
+     *
+     * @param groupId identifikátor skupiny
+     * @param params  parametry změny skupiny
+     */
+    @RequestMapping(value = "/group/{groupId}", method = RequestMethod.PUT)
+    @Transactional
+    public UsrGroupVO changeGroup(@PathVariable(value = "groupId") final Integer groupId,
+                                  @RequestBody final ChangeGroup params) {
+        UsrGroup group = userService.getGroup(groupId);
+
+        if (group == null) {
+            throw new IllegalArgumentException("Skupina neexistuje");
+        }
+
+        group = userService.changeGroup(group, params.getName(), params.getDescription());
+        return factoryVO.createGroup(group, true, true);
+    }
+
+    /**
      * Pomocná struktura pro vytvoření uživatele.
      */
     public static class CreateUser {
 
-        /** Identifikátor osoby */
+        /**
+         * Identifikátor osoby
+         */
         private Integer partyId;
 
-        /** Uživatelské jméno */
+        /**
+         * Uživatelské jméno
+         */
         private String username;
 
-        /** Heslo */
+        /**
+         * Heslo
+         */
         private String password;
 
         public Integer getPartyId() {
@@ -252,14 +308,98 @@ public class UserController {
     }
 
     /**
+     * Pomocná struktura pro vytvoření skupiny.
+     */
+    public static class CreateGroup {
+
+        /**
+         * název skupiny
+         */
+        private String name;
+
+        /**
+         * kód skupiny
+         */
+        private String code;
+
+        public CreateGroup() {
+        }
+
+        public CreateGroup(final String name, final String code) {
+            this.name = name;
+            this.code = code;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(final String name) {
+            this.name = name;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(final String code) {
+            this.code = code;
+        }
+    }
+
+    /**
+     * Pomocná struktura pro vytvoření skupiny.
+     */
+    public static class ChangeGroup {
+
+        /**
+         * název skupiny
+         */
+        private String name;
+
+        /**
+         * popis skupiny
+         */
+        private String description;
+
+        public ChangeGroup() {
+        }
+
+        public ChangeGroup(final String name, final String description) {
+            this.name = name;
+            this.description = description;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(final String name) {
+            this.name = name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(final String description) {
+            this.description = description;
+        }
+    }
+
+    /**
      * Pomocná struktura pro změnu hesla
      */
     public static class ChangePassword {
 
-        /** Původní heslo */
+        /**
+         * Původní heslo
+         */
         private String oldPassword;
 
-        /** Nové heslo */
+        /**
+         * Nové heslo
+         */
         private String newPassword;
 
         public String getOldPassword() {

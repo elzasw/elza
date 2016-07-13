@@ -46,6 +46,7 @@ import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.controller.vo.filter.Filters;
@@ -274,8 +275,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static String CHANGE_PASSWORD_USER = USER_CONTROLLER_URL + "/password";
     protected final static String FIND_USER = USER_CONTROLLER_URL;
     protected final static String ACTIVE_USER = USER_CONTROLLER_URL + "/{userId}/active/{active}";
-
     protected final static String CREATE_USER = USER_CONTROLLER_URL;
+    protected final static String CREATE_GROUP = USER_CONTROLLER_URL + "/group";
+    protected final static String DELETE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
+    protected final static String CHANGE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
 
     @Value("${local.server.port}")
     private int port;
@@ -2433,6 +2436,36 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.setPassword(password);
         params.setPartyId(partyId);
         return createUser(params);
+    }
+
+    /**
+     * Vytvořené skupiny.
+     *
+     * @param params parametry pro vytvoření skupiny
+     * @return vytvořená skupina
+     */
+    public UsrGroupVO createGroup(UserController.CreateGroup params) {
+        return post(spec -> spec.body(params), CREATE_GROUP).as(UsrGroupVO.class);
+    }
+
+    /**
+     * Smazání skupiny.
+     *
+     * @param groupId identifikátor skupiny
+     */
+    protected void deleteGroup(final Integer groupId) {
+        delete(spec -> spec.pathParameter("groupId", groupId), DELETE_GROUP);
+    }
+
+    /**
+     * Změna skupiny.
+     *
+     * @param groupId identifikátor skupiny
+     * @param params  parametry změny skupiny
+     */
+    public UsrGroupVO changeGroup(final Integer groupId,
+                                  final UserController.ChangeGroup params) {
+        return put(spec -> spec.body(params).pathParameter("groupId", groupId), CHANGE_GROUP).as(UsrGroupVO.class);
     }
 
     /**

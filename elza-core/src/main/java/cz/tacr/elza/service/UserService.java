@@ -2,10 +2,12 @@ package cz.tacr.elza.service;
 
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.GroupRepository;
+import cz.tacr.elza.repository.GroupUserRepository;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
@@ -29,6 +31,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Serviska pro uživatele.
@@ -46,6 +50,9 @@ public class UserService {
     private GroupRepository groupRepository;
 
     @Autowired
+    private GroupUserRepository groupUserRepository;
+
+    @Autowired
     private PermissionRepository permissionRepository;
 
     @Autowired
@@ -58,6 +65,75 @@ public class UserService {
     private String SALT;
 
     private ShaPasswordEncoder encoder = new ShaPasswordEncoder(256);
+
+    /**
+     * Vytvoření skupiny.
+     *
+     * @param name název skupiny
+     * @param code kód skupiny
+     * @return skupina
+     */
+    public UsrGroup createGroup(@NotEmpty final String name,
+                                @NotEmpty final String code) {
+        UsrGroup group = groupRepository.findOneByCode(code);
+        if (group != null) {
+            throw new IllegalArgumentException("Skupina s kódem již existuje");
+        }
+
+        group = new UsrGroup();
+        group.setName(name);
+        group.setCode(code);
+
+        groupRepository.save(group);
+        createGroupEvent(group);
+        return group;
+    }
+
+    /**
+     * Smazání skupiny.
+     *
+     * @return skupina
+     */
+    public UsrGroup deleteGroup(@NotNull final UsrGroup group) {
+
+        List<UsrGroupUser> groupUserList = groupUserRepository.findByGroup(group);
+        Set<UsrUser> users = groupUserList.stream()
+                .map(UsrGroupUser::getUser)
+                .collect(Collectors.toSet());
+
+        List<UsrPermission> permissions = permissionRepository.findByGroup(group);
+        Set<UsrUser> usersByPermission = permissions.stream()
+                .filter(permission -> permission.getUser() != null)
+                .map(UsrPermission::getUser)
+                .collect(Collectors.toSet());
+        users.addAll(usersByPermission);
+
+        changeUsersEvent(users);
+
+        permissionRepository.deleteByGroup(group);
+        groupUserRepository.deleteByGroup(group);
+        groupRepository.delete(group);
+        deleteGroupEvent(group);
+        return group;
+    }
+
+    /**
+     * Změna skupiny.
+     *
+     * @param group       měněná skupina
+     * @param name        název skupiny
+     * @param description popis skupiny
+     * @return skupina
+     */
+    public UsrGroup changeGroup(@NotNull final UsrGroup group,
+                                @NotEmpty final String name,
+                                final String description) {
+        group.setName(name);
+        group.setDescription(description);
+        groupRepository.save(group);
+        changeGroupEvent(group);
+        return group;
+    }
 
     /**
      * Vytvoření uživatele.
@@ -338,12 +414,49 @@ public class UserService {
     }
 
     /**
+     * Event změněných uživatelů.
+     *
+     * @param users uživatelé
+     */
+    private void changeUsersEvent(final Set<UsrUser> users) {
+        Set<Integer> userIds = users.stream().map(UsrUser::getUserId).collect(Collectors.toSet());
+        eventNotificationService.publishEvent(new EventId(EventType.USER_CHANGE, userIds));
+    }
+
+    /**
      * Event vytvořeného uživatele.
      *
      * @param user uživatel
      */
     private void createUserEvent(final UsrUser user) {
         eventNotificationService.publishEvent(new EventId(EventType.USER_CREATE, user.getUserId()));
+    }
+
+    /**
+     * Event změněného uživatele.
+     *
+     * @param group skupina
+     */
+    private void changeGroupEvent(final UsrGroup group) {
+        eventNotificationService.publishEvent(new EventId(EventType.GROUP_CHANGE, group.getGroupId()));
+    }
+
+    /**
+     * Event vytvořené skupiny.
+     *
+     * @param group skupina
+     */
+    private void createGroupEvent(final UsrGroup group) {
+        eventNotificationService.publishEvent(new EventId(EventType.GROUP_CREATE, group.getGroupId()));
+    }
+
+    /**
+     * Event smazané skupiny.
+     *
+     * @param group skupina
+     */
+    private void deleteGroupEvent(final UsrGroup group) {
+        eventNotificationService.publishEvent(new EventId(EventType.GROUP_DELETE, group.getGroupId()));
     }
 
 }

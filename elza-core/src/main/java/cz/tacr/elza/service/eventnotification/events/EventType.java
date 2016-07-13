@@ -62,6 +62,9 @@ public enum EventType {
 
     USER_CHANGE(EventId.class),
     USER_CREATE(EventId.class),
+    GROUP_CHANGE(EventId.class),
+    GROUP_CREATE(EventId.class),
+    GROUP_DELETE(EventId.class),
 
     BULK_ACTION_STATE_CHANGE(EventStringInVersion.class);
 

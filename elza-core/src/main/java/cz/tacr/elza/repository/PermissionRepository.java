@@ -32,4 +32,6 @@ public interface PermissionRepository extends JpaRepository<UsrPermission, Integ
     List<UsrPermission> findByUser(UsrUser user);
 
     List<UsrPermission> findByGroup(UsrGroup group);
+
+    void deleteByGroup(UsrGroup group);
 }
