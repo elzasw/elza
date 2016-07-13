@@ -111,14 +111,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
     private static final Header MULTIPART_HEADER = new Header(CONTENT_TYPE_HEADER, MediaType.MULTIPART_FORM_DATA_VALUE);
 
     protected static final String ADMIN_CONTROLLER_URL = "/api/admin";
-    protected static final String ARRANGEMENT_CONTROLLER_URL = "/api/arrangementManagerV2";
-    protected static final String BULK_ACTION_CONTROLLER_URL = "/api/bulkActionManagerV2";
-    protected static final String PARTY_CONTROLLER_URL = "/api/partyManagerV2";
-    protected static final String REGISTRY_CONTROLLER_URL = "/api/registryManagerV2";
-    protected static final String KML_CONTROLLER_URL = "/api/kmlManagerV1";
+    protected static final String ARRANGEMENT_CONTROLLER_URL = "/api/arrangement";
+    protected static final String BULK_ACTION_CONTROLLER_URL = "/api/action";
+    protected static final String PARTY_CONTROLLER_URL = "/api/party";
+    protected static final String REGISTRY_CONTROLLER_URL = "/api/registry";
+    protected static final String KML_CONTROLLER_URL = "/api/kml";
     protected static final String VALIDATION_CONTROLLER_URL = "/api/validate";
-    protected static final String RULE_CONTROLLER_URL = "/api/ruleSetManagerV2";
-    protected static final String XML_IMPORT_CONTROLLER_URL = "/api/xmlImportManagerV2";
+    protected static final String RULE_CONTROLLER_URL = "/api/rule";
+    protected static final String XML_IMPORT_CONTROLLER_URL = "/api/import";
     protected static final String USER_CONTROLLER_URL = "/api/user";
 
     // ADMIN

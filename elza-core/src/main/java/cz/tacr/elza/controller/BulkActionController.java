@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * @since 29. 1. 2016
  */
 @RestController
-@RequestMapping("/api/bulkActionManagerV2")
+@RequestMapping("/api/action")
 public class BulkActionController {
 
     public static final String YAML_FILE_EXTENSION = ".yaml";

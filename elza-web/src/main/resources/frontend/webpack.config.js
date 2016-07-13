@@ -1,6 +1,9 @@
 var webpack = require('webpack');
 var path = require('path');
 
+process.env.BABEL_ENV = 'development';
+process.env.NODE_ENV = 'development';
+
 module.exports = {
     entry: [
         './index.jsx',

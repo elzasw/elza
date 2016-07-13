@@ -34,7 +34,7 @@ public class XmlImportController {
     @Autowired
     private ScopeRepository scopeRepository;
 
-    @RequestMapping(value = "/api/xmlImportManagerV2/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(value = "/api/import/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void importData(
             @RequestParam(required = false, value = "transformationName") final String transformationName,
             @RequestParam(required = false, value = "stopOnError") final Boolean stopOnError,
@@ -74,7 +74,7 @@ public class XmlImportController {
         }
     }
 
-    @RequestMapping(value = "/api/xmlImportManagerV2/transformations", method = RequestMethod.GET)
+    @RequestMapping(value = "/api/import/transformations", method = RequestMethod.GET)
     public List<String> getTransformations() {
         return xmlImportService.getTransformationNames();
     }

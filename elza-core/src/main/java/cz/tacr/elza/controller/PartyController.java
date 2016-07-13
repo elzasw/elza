@@ -39,7 +39,7 @@ import java.util.*;
  * @since 21.12.2015
  */
 @RestController
-@RequestMapping("/api/partyManagerV2")
+@RequestMapping("/api/party")
 public class PartyController {
 
     @Autowired

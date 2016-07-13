@@ -36,7 +36,7 @@ public class XmlExportController {
     private XmlExportService xmlExportService;
 
     @Transactional
-    @RequestMapping(value = "/api/xmlExportManagerV2/fund/{versionId}", method = RequestMethod.GET, produces = "application/*")
+    @RequestMapping(value = "/api/export/fund/{versionId}", method = RequestMethod.GET, produces = "application/*")
     public void exportFund(final HttpServletResponse response,
                            @PathVariable(value = "versionId") final Integer versionId,
                            @RequestParam(value = "transformationName") final String transformationName
@@ -73,7 +73,7 @@ public class XmlExportController {
         response.flushBuffer();
     }
 
-    @RequestMapping(value = "/api/xmlExportManagerV2/transformations", method = RequestMethod.GET)
+    @RequestMapping(value = "/api/export/transformations", method = RequestMethod.GET)
     public List<String> getTransformations() {
         return xmlExportService.getTransformationNames();
     }

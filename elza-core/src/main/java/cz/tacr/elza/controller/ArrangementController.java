@@ -46,7 +46,7 @@ import java.util.*;
  * @since 7. 1. 2016
  */
 @RestController
-@RequestMapping("/api/arrangementManagerV2")
+@RequestMapping("/api/arrangement")
 public class ArrangementController {
 
     @Autowired

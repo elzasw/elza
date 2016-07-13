@@ -54,7 +54,7 @@ public class KmlController {
     private ArrIOService arrIOService;
 
     @Transactional
-    @RequestMapping(value = "/api/kmlManagerV1/import/outputCoordinates", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(value = "/api/kml/import/outputCoordinates", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public List<Integer> importArrCoordinates(
             @RequestParam(required = false, value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(required = false, value = "descItemTypeId") final Integer descItemTypeId,
@@ -70,7 +70,7 @@ public class KmlController {
     }
 
     @Transactional
-    @RequestMapping(value = "/api/kmlManagerV1/import/descCoordinates", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(value = "/api/kml/import/descCoordinates", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public List<Integer> coordinatesDescImport(
             @RequestParam(required = false, value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(required = false, value = "descItemTypeId") final Integer descItemTypeId,
@@ -86,7 +86,7 @@ public class KmlController {
     }
 
     @Transactional
-    @RequestMapping(value = "/api/kmlManagerV1/import/regCoordinates", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(value = "/api/kml/import/regCoordinates", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public List<Integer> importRegCoordinates(
             @RequestParam(value = "regRecordId") final Integer regRecordId,
             @RequestParam(value = "file") final MultipartFile importFile) throws IOException, ParserConfigurationException, SAXException {
@@ -127,7 +127,7 @@ public class KmlController {
     }
 
 
-    @RequestMapping(value = "/api/kmlManagerV1/export/descCoordinates/{fundVersionId}/{descItemObjectId}",
+    @RequestMapping(value = "/api/kml/export/descCoordinates/{fundVersionId}/{descItemObjectId}",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_XML_VALUE)
     public void coordinatesDescExport(HttpServletResponse response,
@@ -140,7 +140,7 @@ public class KmlController {
     }
 
 
-    @RequestMapping(value = "/api/kmlManagerV1/export/outputCoordinates/{fundVersionId}/{descItemObjectId}",
+    @RequestMapping(value = "/api/kml/export/outputCoordinates/{fundVersionId}/{descItemObjectId}",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_XML_VALUE)
     public void coordinatesOutputExport(HttpServletResponse response,
@@ -152,7 +152,7 @@ public class KmlController {
         arrIOService.coordinatesOutputExport(response, descItemObjectId, fundVersionId);
     }
 
-    @RequestMapping(value = "/api/kmlManagerV1/export/regCoordinates/{coordinatesId}",
+    @RequestMapping(value = "/api/kml/export/regCoordinates/{coordinatesId}",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_XML_VALUE)
     public void exportRegCoordinates(HttpServletResponse response, @PathVariable(value = "coordinatesId") final Integer coordinatesId) throws IOException {

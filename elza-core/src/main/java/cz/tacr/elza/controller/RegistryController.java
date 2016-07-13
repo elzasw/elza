@@ -41,7 +41,7 @@ import cz.tacr.elza.service.RegistryService;
  * @since 21.12.2015
  */
 @RestController
-@RequestMapping("/api/registryManagerV2")
+@RequestMapping("/api/registry")
 public class RegistryController {
 
     @Autowired
