@@ -119,7 +119,7 @@ public class BulkActionController {
      * @return list
      */
     @RequestMapping(value = "/output/{outputId}", method = RequestMethod.GET)
-    public List<BulkActionRunVO> findOutputFiles(@PathVariable final Integer outputId,
+    public List<BulkActionRunVO> getOutputBulkActions(@PathVariable final Integer outputId,
                                                  @RequestParam(required = false, defaultValue = "false") @Nullable final Boolean recommended) {
         Assert.notNull(outputId);
         final ArrOutput output = outputService.getOutput(outputId);
