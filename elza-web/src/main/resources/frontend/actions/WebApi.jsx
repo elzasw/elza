@@ -833,27 +833,27 @@ class WebApi{
         return AjaxUtils.ajaxCallRaw('/logout', {}, "POST", "", "application/x-www-form-urlencoded", true);
     }
 
-    findFunds(fulltext, max=200) {
+    findFunds(fulltext, max = 200) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFunds', {fulltext, max})
             .then(json => ({funds: json.list, fundCount: json.count}))
     }
 
-    findUser(fulltext, active, disabled, max=200) {
-        return AjaxUtils.ajaxGet('/api/user/findUser', {search: fulltext, active, disabled, from: 0, count: max})
+    findUser(fulltext, active, disabled, max = 200) {
+        return AjaxUtils.ajaxGet('/api/user', {search: fulltext, active, disabled, from: 0, count: max})
             .then(json => ({users: json.list, usersCount: json.totalCount}))
     }
     
-    findGroup(fulltext, max=200) {
-        return AjaxUtils.ajaxGet('/api/user/findGroup', {search: fulltext, from: 0, count: max})
+    findGroup(fulltext, max = 200) {
+        return AjaxUtils.ajaxGet('/api/user/group', {search: fulltext, from: 0, count: max})
             .then(json => ({groups: json.list, groupsCount: json.totalCount}))
     }
 
     getUser(userId){
-        return AjaxUtils.ajaxGet('/api/user/getUser', {userId});
+        return AjaxUtils.ajaxGet('/api/user/' + userId);
     }
 
     getGroup(groupId){
-        return AjaxUtils.ajaxGet('/api/user/getGroup', {groupId});
+        return AjaxUtils.ajaxGet('/api/user/group/' + groupId);
     }
 
     getFundDetail(fundId) {
