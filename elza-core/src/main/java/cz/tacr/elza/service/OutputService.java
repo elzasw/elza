@@ -1317,9 +1317,16 @@ public class OutputService {
         List<ArrOutputDefinition> outputDefinitions = findOutputsByNodes(fundVersion, nodes, OutputState.OPEN, OutputState.COMPUTING);
 
         for (ArrOutputDefinition outputDefinition : outputDefinitions) {
+
+            List<ArrItemSettings> itemSettingsList = itemSettingsRepository.findByOutputDefinition(outputDefinition);
+            Set<RulItemType> itemTypesIgnored = itemSettingsList.stream()
+                    .filter(ArrItemSettings::getBlockActionResult)
+                    .map(ArrItemSettings::getItemType)
+                    .collect(Collectors.toSet());
+
             if (result != null) {
                 for (ActionResult actionResult : result.getResults()) {
-                    storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType);
+                    storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType, itemTypesIgnored);
                 }
             }
             changeOutputState(outputDefinition, OutputState.OPEN);
@@ -1347,12 +1354,14 @@ public class OutputService {
      * @param fundVersion      verze AS
      * @param change           změna překlopení
      * @param itemType         typ atributu
+     * @param itemTypesIgnored seznam typů atributů, které se nepřeklápí
      */
     private void storeActionResult(final ArrOutputDefinition outputDefinition,
                                    final ActionResult actionResult,
                                    final ArrFundVersion fundVersion,
                                    final ArrChange change,
-                                   @Nullable final RulItemType itemType) {
+                                   @Nullable final RulItemType itemType,
+                                   @Nullable final Set<RulItemType> itemTypesIgnored) {
         RulItemType type;
         List<ArrItemData> dataItems;
 
@@ -1403,6 +1412,11 @@ public class OutputService {
         } else {
             throw new IllegalStateException("Nedefinovný typ výsledku: " + actionResult.getClass().getSimpleName());
         }
+
+        if (itemTypesIgnored != null && itemTypesIgnored.contains(type)) {
+            return;
+        }
+
         if (itemType == null || itemType.equals(type)) {
             storeDataItems(type, dataItems, outputDefinition, fundVersion, change);
         }
