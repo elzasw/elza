@@ -24,6 +24,7 @@ import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrItemUnitid;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrPacket;
@@ -67,7 +68,7 @@ import cz.tacr.elza.print.party.PartyGroup;
 import cz.tacr.elza.print.party.PartyName;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyGroupRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.service.ArrangementService;
@@ -113,9 +114,6 @@ public class OutputFactoryService {
     private MapperFacade mapper;
 
     @Autowired
-    private OutputRepository outputRepository;
-
-    @Autowired
     private OutputGeneratorWorkerFactory outputGeneratorFactory;
 
     @Autowired
@@ -135,6 +133,9 @@ public class OutputFactoryService {
 
     @Autowired
     private OutputService outputService;
+
+    @Autowired
+    private NodeRegisterRepository nodeRegisterRepository;
 
     public OutputFactoryService() {
         // inicializace mapperů
@@ -173,6 +174,7 @@ public class OutputFactoryService {
         output.setName(arrOutput.getOutputDefinition().getName());
         output.setInternal_code(arrOutput.getOutputDefinition().getInternalCode());
         output.setTypeCode(arrOutput.getOutputDefinition().getOutputType().getCode());
+        output.setType(arrOutput.getOutputDefinition().getOutputType().getName());
 
         // fund
         final ArrFund arrFund = arrOutput.getOutputDefinition().getFund();
@@ -360,6 +362,12 @@ public class OutputFactoryService {
         final List<ArrLevel> levelList = levelRepository.findAllParentsByNodeAndVersion(arrNode, arrFundVersion);
         node.setDepth(levelList.size() + 1);
 
+        // registers navázané k node
+        nodeRegisterRepository.findByNode(arrNode).stream()
+                .map(ArrNodeRegister::getRecord)
+                .map(regRecord -> getRecordByNode(output, node, regRecord))
+                .forEach(record -> node.getRecords().add(record));
+
         // items navázané k node
         final List<ArrDescItem> descItems = arrangementService.getArrDescItemsInternal(arrFundVersion, arrNode);
         descItems.stream()
@@ -488,6 +496,12 @@ public class OutputFactoryService {
         return record;
     }
 
+    private Record getRecordByNode(Output output, Node node, RegRecord regRecord) {
+        Record record =  getRecord(output, node, regRecord);
+        record.setType(getRecordTypeByNode(output, regRecord.getRegisterType()));
+        return record;
+    }
+
     private Record getRecordByParty(Output output, RegRecord partyRecord) {
         Record record = getRecord(output, null, partyRecord);
         record.setType(getRecordTypeByPartyRecord(output, partyRecord));
@@ -505,14 +519,21 @@ public class OutputFactoryService {
     private RecordType getRecordTypeByItem(Output output, ArrItemRecordRef itemData) {
         final RegRegisterType registerType = itemData.getRecord().getRegisterType();
         final RecordType recordType = getRecordType(output, registerType);
-        recordType.setCountRecords(recordType.getCountRecords() + 1); // TODO Lebeda - ??? co přesně znamená proměnná
+        recordType.setCountRecords(recordType.getCountDirectRecords() + 1);
         return recordType;
     }
+
+    private RecordType getRecordTypeByNode(Output output, RegRegisterType registerType) {
+        final RecordType recordType = getRecordType(output, registerType);
+        recordType.setCountDirectRecords(recordType.getCountDirectRecords() + 1);
+        recordType.setCountRecords(recordType.getCountDirectRecords() + 1);
+        return recordType;
+        }
 
     private RecordType getRecordTypeByPartyRecord(Output output, RegRecord parPartyRecord) {
         final RegRegisterType registerType = parPartyRecord.getRegisterType();
         final RecordType recordType = getRecordType(output, registerType);
-        recordType.setCountRecords(recordType.getCountDirectRecords() + 1); // TODO Lebeda - ??? co přesně znamená proměnná
+        recordType.setCountRecords(recordType.getCountDirectRecords() + 1);
         return recordType;
     }
 

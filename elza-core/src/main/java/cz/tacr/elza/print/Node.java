@@ -3,11 +3,11 @@ package cz.tacr.elza.print;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.item.ItemRecordRef;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.springframework.util.Assert;
 
 import javax.validation.constraints.NotNull;
@@ -15,13 +15,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class Node implements RecordProvider {
+public class Node implements RecordProvider, Comparable<Node> {
     private final Output output; // vazba na parent output
     private final ArrNode arrNode; // vazba na DB objekt, povinný údaj
     private final ArrLevel arrLevel; // vazba na DB objekt, povinný údaj
@@ -117,6 +118,31 @@ public class Node implements RecordProvider {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Metoda pro potřeby jasperu
+     * @return položky jako getItems, serializované a spojené čárkou
+     */
+    public String getAllItemsAsString(@NotNull Collection<String> codes) {
+       return getItems(codes).stream()
+//               .map((item) -> item.serialize() + "[" + item.getType().getCode() + "]") // pro potřeby identifikace políčka při ladění šablony
+               .map(Item::serialize)
+               .filter(StringUtils::isNotBlank)
+               .collect(Collectors.joining(", "));
+    }
+
+//    /**
+//     * Metoda pro potřeby jasperu
+//     *
+//     * @return první serializovanou položku s odpovídajícím kódem (vyhledává v zadaném pořadí) a spojené čárkou
+//     */
+//    public String getFirstItemAsString(@NotNull Collection<String> codes) {
+//        return getAllItems(codes).stream()
+//                //               .map((item) -> item.serialize() + "[" + item.getType().getCode() + "]") // pro potřeby identifikace políčka při ladění šablony
+//                .map(Item::serialize)
+//                .filter(StringUtils::isNotBlank)
+//                .collect(Collectors.joining(", "));
+//    }
+
     public ArrNode getArrNode() {
         return arrNode;
     }
@@ -149,7 +175,17 @@ public class Node implements RecordProvider {
     }
 
     public List<Record> getRecords() {
-        return records;
+        final List<Record> recordList = this.records; // interně navázané recordy
+
+        // recordy z itemů
+        getItems().stream()
+                .filter(item -> item instanceof ItemRecordRef)
+                .forEach(item -> {
+                    ItemRecordRef itemRecordRef = (ItemRecordRef) item;
+                    recordList.add(itemRecordRef.getValue());
+                });
+
+        return recordList;
     }
 
     @Override
@@ -181,6 +217,11 @@ public class Node implements RecordProvider {
 
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
+        return new StringJoiner(", ").add(depth.toString()).add(position.toString()).toString();
+    }
+
+    @Override
+    public int compareTo(Node o) {
+        return CompareToBuilder.reflectionCompare(this, o);
     }
 }

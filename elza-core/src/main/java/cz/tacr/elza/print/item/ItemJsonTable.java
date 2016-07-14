@@ -16,11 +16,8 @@ public class ItemJsonTable extends AbstractItem<ElzaTable> {
         setValue(value);
     }
 
-
-
     @Override
     public String serializeValue() {
-        // TODO Lebeda - JsonTable - jak bude reprezentovaná?
         return getValue().toString();
     }
 

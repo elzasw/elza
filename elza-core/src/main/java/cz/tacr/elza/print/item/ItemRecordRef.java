@@ -15,6 +15,7 @@ public class ItemRecordRef extends AbstractItem<Record> {
     public ItemRecordRef(ArrItem arrItem, Output output, Node node, Record value) {
         super(arrItem, output, node);
         setValue(value);
+        value.setItem(this);
     }
 
     @Override
