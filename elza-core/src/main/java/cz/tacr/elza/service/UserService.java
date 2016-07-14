@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
@@ -95,6 +96,7 @@ public class UserService {
      * @param group skupina do které přidávám uživatel
      * @param user  přidávaný uživatel
      */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public void joinGroup(@NotNull final UsrGroup group,
                           @NotNull final UsrUser user) {
         UsrGroupUser item = groupUserRepository.findOneByGroupAndUser(group, user);
@@ -119,6 +121,7 @@ public class UserService {
      * @param group skupina ze které odebírám
      * @param user  odebíraný uživatel
      */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public void leaveGroup(@NotNull final UsrGroup group,
                            @NotNull final UsrUser user) {
         UsrGroupUser item = groupUserRepository.findOneByGroupAndUser(group, user);
@@ -140,6 +143,7 @@ public class UserService {
      * @param code kód skupiny
      * @return skupina
      */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public UsrGroup createGroup(@NotEmpty final String name,
                                 @NotEmpty final String code) {
         UsrGroup group = groupRepository.findOneByCode(code);
@@ -161,6 +165,7 @@ public class UserService {
      *
      * @return skupina
      */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public UsrGroup deleteGroup(@NotNull final UsrGroup group) {
 
         List<UsrGroupUser> groupUserList = groupUserRepository.findByGroup(group);
@@ -192,6 +197,7 @@ public class UserService {
      * @param description popis skupiny
      * @return skupina
      */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public UsrGroup changeGroup(@NotNull final UsrGroup group,
                                 @NotEmpty final String name,
                                 final String description) {
@@ -210,6 +216,7 @@ public class UserService {
      * @param partyId  identifikátor osoby
      * @return vytvořený uživatel
      */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public UsrUser createUser(@NotEmpty final String username,
                               @NotEmpty final String password,
                               @NotNull final Integer partyId) {
@@ -245,7 +252,7 @@ public class UserService {
      * @return uživatel
      */
     public UsrUser changePassword(@NotNull final UsrUser user,
-                                  @Nullable final String oldPassword,
+                                  @NotEmpty final String oldPassword,
                                   @NotEmpty final String newPassword) {
         if (oldPassword != null) {
             String oldPasswordHash = encodePassword(user.getUsername(), oldPassword);
@@ -255,9 +262,33 @@ public class UserService {
             }
         }
 
+        return changePasswordPrivate(user, newPassword);
+    }
+
+    /**
+     * Změna hesla uživatele - s ověřením oprávnění.
+     *
+     * @param user        uživate, kterému měním heslo
+     * @param newPassword nové heslo (v plaintextu)
+     * @return uživatel
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    public UsrUser changePassword(@NotNull final UsrUser user,
+                                  @NotEmpty final String newPassword) {
+        return changePasswordPrivate(user, newPassword);
+    }
+
+    /**
+     * Změna hesla uživatele.
+     *
+     * @param user        uživate, kterému měním heslo
+     * @param newPassword nové heslo (v plaintextu)
+     * @return uživatel
+     */
+    private UsrUser changePasswordPrivate(@NotNull final UsrUser user,
+                                          @NotEmpty final String newPassword) {
         user.setPassword(encodePassword(user.getUsername(), newPassword));
         userRepository.save(user);
-
         changeUserEvent(user);
         return user;
     }
@@ -422,6 +453,7 @@ public class UserService {
      * @param maxResults  maximální počet vrácených záznamů
      * @return výsledky hledání
      */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public FilteredResult<UsrUser> findUser(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults) {
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
@@ -438,6 +470,7 @@ public class UserService {
      * @param maxResults  maximální počet vrácených záznamů
      * @return výsledky hledání
      */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public FilteredResult<UsrGroup> findGroup(final String search, final Integer firstResult, final Integer maxResults) {
         return groupRepository.findGroupByTextCount(search, firstResult, maxResults);
     }
@@ -448,6 +481,7 @@ public class UserService {
      * @param userId id
      * @return objekt
      */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public UsrUser getUser(final Integer userId) {
         Assert.notNull(userId);
         return userRepository.getOneCheckExist(userId);
@@ -459,6 +493,7 @@ public class UserService {
      * @param groupId id
      * @return objekt
      */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public UsrGroup getGroup(final Integer groupId) {
         Assert.notNull(groupId);
         return groupRepository.getOneCheckExist(groupId);
@@ -471,6 +506,7 @@ public class UserService {
      * @param active je aktivní?
      * @return uživatel
      */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public UsrUser changeActive(@NotNull final UsrUser user,
                                 @NotNull final Boolean active) {
         user.setActive(active);

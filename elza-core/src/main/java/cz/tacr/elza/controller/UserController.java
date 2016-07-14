@@ -85,7 +85,7 @@ public class UserController {
             throw new IllegalArgumentException("Uživatel neexistuje");
         }
 
-        user = userService.changePassword(user, params.getOldPassword(), params.getNewPassword());
+        user = userService.changePassword(user, params.getNewPassword());
         return factoryVO.createUser(user);
     }
 
