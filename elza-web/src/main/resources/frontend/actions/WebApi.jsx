@@ -872,6 +872,14 @@ class WebApi{
         return AjaxUtils.ajaxDelete(WebApi.userUrl + '/group/' + groupId);
     }
 
+    joinGroup(groupId, userId) {
+        return AjaxUtils.ajaxPost(WebApi.userUrl + '/group/' + groupId + '/join/' + userId, null, null);
+    }
+
+    leaveGroup(groupId, userId) {
+        return AjaxUtils.ajaxPost(WebApi.userUrl + '/group/' + groupId + '/leave/' + userId, null, null);
+    }
+
     createUser(username, password, partyId) {
         var params = {
             username: username,

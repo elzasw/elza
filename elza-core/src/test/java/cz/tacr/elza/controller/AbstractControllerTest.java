@@ -282,6 +282,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static String CREATE_GROUP = USER_CONTROLLER_URL + "/group";
     protected final static String DELETE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
     protected final static String CHANGE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
+    protected final static String JOIN_GROUP = USER_CONTROLLER_URL + "/group/{groupId}/join/{userId}";
+    protected final static String LEAVE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}/leave/{userId}";
 
     @Value("${local.server.port}")
     private int port;
@@ -2527,6 +2529,28 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected UsrGroupVO getGroup(final Integer groupId) {
         return get(spec -> spec.pathParameter("groupId", groupId), GET_GROUP).as(UsrGroupVO.class);
+    }
+
+    /**
+     * Přidání uživatele do skupiny.
+     *
+     * @param groupId identifikátor skupiny, do které přidávám uživatel
+     * @param userId  identifikátor přidávaného uživatele
+     */
+    public void joinGroup(final Integer groupId,
+                          final Integer userId) {
+        post(spec -> spec.pathParameter("groupId", groupId).pathParameter("userId", userId), JOIN_GROUP);
+    }
+
+    /**
+     * Přidání uživatele do skupiny.
+     *
+     * @param groupId identifikátor skupiny, ze které odebírám uživatel
+     * @param userId  identifikátor odebíraného uživatele
+     */
+    public void leaveGroup(final Integer groupId,
+                           final Integer userId) {
+        post(spec -> spec.pathParameter("groupId", groupId).pathParameter("userId", userId), LEAVE_GROUP);
     }
 
     /**

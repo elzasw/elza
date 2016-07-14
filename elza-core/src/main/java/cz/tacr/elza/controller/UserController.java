@@ -263,6 +263,55 @@ public class UserController {
     }
 
     /**
+     * Přidání uživatele do skupiny.
+     *
+     * @param groupId identifikátor skupiny, do které přidávám uživatel
+     * @param userId  identifikátor přidávaného uživatele
+     */
+    @Transactional
+    @RequestMapping(value = "/group/{groupId}/join/{userId}", method = RequestMethod.POST)
+    public void joinGroup(@PathVariable(value = "groupId") final Integer groupId,
+                          @PathVariable(value = "userId") final Integer userId) {
+        UsrGroup group = userService.getGroup(groupId);
+        UsrUser user = userService.getUser(userId);
+
+        checkExists(user, group);
+        userService.joinGroup(group, user);
+    }
+
+    /**
+     * Přidání uživatele do skupiny.
+     *
+     * @param groupId identifikátor skupiny, ze které odebírám uživatel
+     * @param userId  identifikátor odebíraného uživatele
+     */
+    @Transactional
+    @RequestMapping(value = "/group/{groupId}/leave/{userId}", method = RequestMethod.POST)
+    public void leaveGroup(@PathVariable(value = "groupId") final Integer groupId,
+                           @PathVariable(value = "userId") final Integer userId) {
+        UsrGroup group = userService.getGroup(groupId);
+        UsrUser user = userService.getUser(userId);
+
+        checkExists(user, group);
+        userService.leaveGroup(group, user);
+    }
+
+    /**
+     * Ověření existence uživatele a skupiny.
+     *
+     * @param user  uživatel
+     * @param group skupina
+     */
+    private void checkExists(final UsrUser user, final UsrGroup group) {
+        if (user == null) {
+            throw new IllegalArgumentException("Uživatel neexistuje");
+        }
+        if (group == null) {
+            throw new IllegalArgumentException("Skupina neexistuje");
+        }
+    }
+
+    /**
      * Pomocná struktura pro vytvoření uživatele.
      */
     public static class CreateUser {

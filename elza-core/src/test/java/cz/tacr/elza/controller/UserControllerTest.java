@@ -68,17 +68,25 @@ public class UserControllerTest extends AbstractControllerTest {
         Assert.notNull(group);
         Assert.notNull(group.getId());
 
-        UsrGroupVO sk1change = changeGroup(group.getId(), new UserController.ChangeGroup(NAME_GROUP_CHANGe, DESCRIPTION));
-        Assert.notNull(sk1change);
-        Assert.isTrue(sk1change.getId().equals(group.getId()));
-        Assert.isTrue(sk1change.getName().equals(NAME_GROUP_CHANGe));
-        Assert.isTrue(sk1change.getDescription().equals(DESCRIPTION));
+        UsrGroupVO groupChange = changeGroup(group.getId(), new UserController.ChangeGroup(NAME_GROUP_CHANGe, DESCRIPTION));
+        Assert.notNull(groupChange);
+        Assert.isTrue(groupChange.getId().equals(group.getId()));
+        Assert.isTrue(groupChange.getName().equals(NAME_GROUP_CHANGe));
+        Assert.isTrue(groupChange.getDescription().equals(DESCRIPTION));
 
         // vyhledání skupiny
         FilteredResultVO<UsrGroupVO> dataGroup = findGroup(null, 0, 10);
         Assert.notNull(dataGroup);
         Assert.isTrue(dataGroup.getTotalCount() == 1);
         Assert.isTrue(dataGroup.getList().get(0).getId().equals(group.getId()));
+
+        joinGroup(group.getId(), user.getId());
+
+        group = getGroup(group.getId());
+        Assert.isTrue(group.getUsers().size() == 1);
+
+        user = getUser(user.getId());
+        Assert.isTrue(user.getGroups().size() == 1);
 
         UsrGroupVO groupReturn = getGroup(group.getId());
         Assert.notNull(groupReturn);

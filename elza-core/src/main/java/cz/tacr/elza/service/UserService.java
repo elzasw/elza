@@ -20,15 +20,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,10 +65,73 @@ public class UserService {
     @Autowired
     private IEventNotificationService eventNotificationService;
 
+    @Autowired
+    private SessionRegistry sessionRegistry;
+
     @Value("${elza.security.salt:kdFss=+4Df_%}")
     private String SALT;
 
     private ShaPasswordEncoder encoder = new ShaPasswordEncoder(256);
+
+    /** Seznam session id, pro které se má přepočítat oprávnění */
+    private Set<String> reCalcSessionIds = new HashSet<>();
+
+    /**
+     * Provede přenačtení oprávnění uživatele.
+     *
+     * @param user uživatel, kterému přepočítáváme práva
+     */
+    public void recalcUserPermission(@NotNull final UsrUser user) {
+        List<SessionInformation> infoSessions = sessionRegistry.getAllSessions(user.getUsername(), false);
+        for (SessionInformation infoSession : infoSessions) {
+            String sessionId = infoSession.getSessionId();
+            reCalcSessionIds.add(sessionId);
+        }
+    }
+
+    /**
+     * Přidání uživatele do skupiny.
+     *
+     * @param group skupina do které přidávám uživatel
+     * @param user  přidávaný uživatel
+     */
+    public void joinGroup(@NotNull final UsrGroup group,
+                          @NotNull final UsrUser user) {
+        UsrGroupUser item = groupUserRepository.findOneByGroupAndUser(group, user);
+
+        if (item != null) {
+            throw new IllegalArgumentException("Uživatel '" + user.getUsername() + "' je již členem skupiny '" + group.getName());
+        }
+
+        item = new UsrGroupUser();
+        item.setGroup(group);
+        item.setUser(user);
+
+        groupUserRepository.save(item);
+        recalcUserPermission(user);
+        changeUserEvent(user);
+        changeGroupEvent(group);
+    }
+
+    /**
+     * Odebrání uživatele ze skupiny.
+     *
+     * @param group skupina ze které odebírám
+     * @param user  odebíraný uživatel
+     */
+    public void leaveGroup(@NotNull final UsrGroup group,
+                           @NotNull final UsrUser user) {
+        UsrGroupUser item = groupUserRepository.findOneByGroupAndUser(group, user);
+
+        if (item == null) {
+            throw new IllegalArgumentException("Uživatel '" + user.getUsername() + "' není členem skupiny '" + group.getName());
+        }
+
+        groupUserRepository.delete(item);
+        recalcUserPermission(user);
+        changeUserEvent(user);
+        changeGroupEvent(group);
+    }
 
     /**
      * Vytvoření skupiny.
@@ -240,7 +307,16 @@ public class UserService {
         if (auth == null) {
             return null;
         }
-        return (UserDetail) auth.getDetails();
+        String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
+
+        UserDetail details = (UserDetail) auth.getDetails();
+        if (reCalcSessionIds.contains(sessionId)) {
+            reCalcSessionIds.remove(sessionId);
+            UsrUser user = userRepository.findByUsername(details.getUsername());
+            details.getUserPermission().clear();
+            details.getUserPermission().addAll(calcUserPermission(user));
+        }
+        return details;
     }
 
     /**

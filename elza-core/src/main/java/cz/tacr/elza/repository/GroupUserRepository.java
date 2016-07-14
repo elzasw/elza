@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
+import cz.tacr.elza.domain.UsrUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -19,4 +20,6 @@ public interface GroupUserRepository extends JpaRepository<UsrGroupUser, Integer
     void deleteByGroup(UsrGroup group);
 
     List<UsrGroupUser> findByGroup(UsrGroup group);
+
+    UsrGroupUser findOneByGroupAndUser(UsrGroup group, UsrUser user);
 }
