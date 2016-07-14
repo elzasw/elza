@@ -55,6 +55,7 @@ export default function fundOutputDetail(state = initialState, action = {}) {
             if (action.outputIds.indexOf(state.id) !== -1) {
                 return {
                     ...state,
+                    subNodeForm: subNodeForm(state.subNodeForm, action),
                     currentDataKey: ''
                 }
             }

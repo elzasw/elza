@@ -236,6 +236,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             state.formData = {...state.formData};
             return {...state};
         case types.CHANGE_NODES:
+        case types.OUTPUT_CHANGES_DETAIL:
         case types.CHANGE_OUTPUTS:
             return {...state, dirty: true}
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
