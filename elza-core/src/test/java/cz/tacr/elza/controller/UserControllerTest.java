@@ -42,10 +42,10 @@ public class UserControllerTest extends AbstractControllerTest {
         UsrUserVO user = createUser();
 
         // vyhledání uživatele
-        FilteredResultVO<UsrUserVO> data = findUser(null, true, true, 0, 10);
-        Assert.notNull(data);
-        Assert.isTrue(data.getTotalCount() == 1);
-        Assert.isTrue(data.getList().get(0).getId().equals(user.getId()));
+        FilteredResultVO<UsrUserVO> dataUser = findUser(null, true, true, 0, 10);
+        Assert.notNull(dataUser);
+        Assert.isTrue(dataUser.getTotalCount() == 1);
+        Assert.isTrue(dataUser.getList().get(0).getId().equals(user.getId()));
 
         // změna hesla - administrace
         changePassword(user, PASS_NEW);
@@ -69,6 +69,12 @@ public class UserControllerTest extends AbstractControllerTest {
         Assert.isTrue(sk1change.getId().equals(sk1.getId()));
         Assert.isTrue(sk1change.getName().equals(NAME_GROUP_CHANGe));
         Assert.isTrue(sk1change.getDescription().equals(DESCRIPTION));
+
+        // vyhledání skupiny
+        FilteredResultVO<UsrGroupVO> dataGroup = findGroup(null, 0, 10);
+        Assert.notNull(dataGroup);
+        Assert.isTrue(dataGroup.getTotalCount() == 1);
+        Assert.isTrue(dataGroup.getList().get(0).getId().equals(sk1.getId()));
 
         deleteGroup(sk1.getId());
     }

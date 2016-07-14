@@ -276,6 +276,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static String FIND_USER = USER_CONTROLLER_URL;
     protected final static String ACTIVE_USER = USER_CONTROLLER_URL + "/{userId}/active/{active}";
     protected final static String CREATE_USER = USER_CONTROLLER_URL;
+    protected final static String FIND_GROUP = USER_CONTROLLER_URL + "/group";
     protected final static String CREATE_GROUP = USER_CONTROLLER_URL + "/group";
     protected final static String DELETE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
     protected final static String CHANGE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
@@ -2455,6 +2456,22 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected void deleteGroup(final Integer groupId) {
         delete(spec -> spec.pathParameter("groupId", groupId), DELETE_GROUP);
+    }
+
+    /**
+     * Načte seznam skupin.
+     *
+     * @param search hledaný řetězec
+     * @param from   počáteční záznam
+     * @param count  počet vrácených záznamů
+     * @return seznam s celkovým počtem
+     */
+    protected FilteredResultVO findGroup(final String search,
+                                         final Integer from,
+                                         final Integer count) {
+        return get(spec -> spec.queryParam("search", search)
+                .queryParam("from", from)
+                .queryParam("count", count), FIND_GROUP).as(FilteredResultVO.class);
     }
 
     /**
