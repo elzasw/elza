@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * VO skupiny oprávnění.
@@ -68,5 +69,23 @@ public class UsrGroupVO {
 
     public void setUsers(final List<UsrUserVO> users) {
         this.users = users;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UsrGroupVO that = (UsrGroupVO) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(code, that.code) &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(permissions, that.permissions) &&
+                Objects.equals(users, that.users);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, code, name, description, permissions, users);
     }
 }

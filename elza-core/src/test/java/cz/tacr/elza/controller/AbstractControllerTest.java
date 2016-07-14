@@ -274,9 +274,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static String CHANGE_PASSWORD = USER_CONTROLLER_URL + "/{userId}/password";
     protected final static String CHANGE_PASSWORD_USER = USER_CONTROLLER_URL + "/password";
     protected final static String FIND_USER = USER_CONTROLLER_URL;
+    protected final static String GET_USER = USER_CONTROLLER_URL + "/{userId}";
     protected final static String ACTIVE_USER = USER_CONTROLLER_URL + "/{userId}/active/{active}";
     protected final static String CREATE_USER = USER_CONTROLLER_URL;
     protected final static String FIND_GROUP = USER_CONTROLLER_URL + "/group";
+    protected final static String GET_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
     protected final static String CREATE_GROUP = USER_CONTROLLER_URL + "/group";
     protected final static String DELETE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
     protected final static String CHANGE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
@@ -2507,6 +2509,25 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .queryParam("disabled", disabled), FIND_USER).as(FilteredResultVO.class);
     }
 
+    /**
+     * Načtení uživatele s daty pro zobrazení na detailu s možností editace.
+     *
+     * @param userId id
+     * @return VO
+     */
+    protected UsrUserVO getUser(final Integer userId) {
+        return get(spec -> spec.pathParameter("userId", userId), GET_USER).as(UsrUserVO.class);
+    }
+
+    /**
+     * Načtení skupiny s daty pro zobrazení na detailu s možností editace.
+     *
+     * @param groupId id
+     * @return VO
+     */
+    protected UsrGroupVO getGroup(final Integer groupId) {
+        return get(spec -> spec.pathParameter("groupId", groupId), GET_GROUP).as(UsrGroupVO.class);
+    }
 
     /**
      * Získání unikátních hodnot atributů podle typu.

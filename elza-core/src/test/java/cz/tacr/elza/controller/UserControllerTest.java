@@ -47,6 +47,10 @@ public class UserControllerTest extends AbstractControllerTest {
         Assert.isTrue(dataUser.getTotalCount() == 1);
         Assert.isTrue(dataUser.getList().get(0).getId().equals(user.getId()));
 
+        UsrUserVO userReturn = getUser(user.getId());
+        Assert.notNull(userReturn);
+        Assert.isTrue(userReturn.getId().equals(user.getId()));
+
         // změna hesla - administrace
         changePassword(user, PASS_NEW);
 
@@ -60,13 +64,13 @@ public class UserControllerTest extends AbstractControllerTest {
         // aktivace/deaktivace uživatele
         changeActive(user);
 
-        UsrGroupVO sk1 = createGroup(new UserController.CreateGroup(GROUP_NAME, GROUP_CODE));
-        Assert.notNull(sk1);
-        Assert.notNull(sk1.getId());
+        UsrGroupVO group = createGroup(new UserController.CreateGroup(GROUP_NAME, GROUP_CODE));
+        Assert.notNull(group);
+        Assert.notNull(group.getId());
 
-        UsrGroupVO sk1change = changeGroup(sk1.getId(), new UserController.ChangeGroup(NAME_GROUP_CHANGe, DESCRIPTION));
+        UsrGroupVO sk1change = changeGroup(group.getId(), new UserController.ChangeGroup(NAME_GROUP_CHANGe, DESCRIPTION));
         Assert.notNull(sk1change);
-        Assert.isTrue(sk1change.getId().equals(sk1.getId()));
+        Assert.isTrue(sk1change.getId().equals(group.getId()));
         Assert.isTrue(sk1change.getName().equals(NAME_GROUP_CHANGe));
         Assert.isTrue(sk1change.getDescription().equals(DESCRIPTION));
 
@@ -74,9 +78,13 @@ public class UserControllerTest extends AbstractControllerTest {
         FilteredResultVO<UsrGroupVO> dataGroup = findGroup(null, 0, 10);
         Assert.notNull(dataGroup);
         Assert.isTrue(dataGroup.getTotalCount() == 1);
-        Assert.isTrue(dataGroup.getList().get(0).getId().equals(sk1.getId()));
+        Assert.isTrue(dataGroup.getList().get(0).getId().equals(group.getId()));
 
-        deleteGroup(sk1.getId());
+        UsrGroupVO groupReturn = getGroup(group.getId());
+        Assert.notNull(groupReturn);
+        Assert.isTrue(groupReturn.getId().equals(group.getId()));
+
+        deleteGroup(group.getId());
     }
 
     /**
