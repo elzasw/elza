@@ -282,7 +282,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static String CREATE_GROUP = USER_CONTROLLER_URL + "/group";
     protected final static String DELETE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
     protected final static String CHANGE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
-    protected final static String JOIN_GROUP = USER_CONTROLLER_URL + "/group/{groupId}/join/{userId}";
+    protected final static String JOIN_GROUP = USER_CONTROLLER_URL + "/group/join";
     protected final static String LEAVE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}/leave/{userId}";
 
     @Value("${local.server.port}")
@@ -2532,14 +2532,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     * Přidání uživatele do skupiny.
+     * Přidání uživatelů do skupin.
      *
-     * @param groupId identifikátor skupiny, do které přidávám uživatel
-     * @param userId  identifikátor přidávaného uživatele
+     * @param groupIds identifikátor skupin, do které přidáváme uživatele
+     * @param userIds  identifikátor přidávaných uživatelů
      */
-    public void joinGroup(final Integer groupId,
-                          final Integer userId) {
-        post(spec -> spec.pathParameter("groupId", groupId).pathParameter("userId", userId), JOIN_GROUP);
+    protected void joinGroup(final Set<Integer> groupIds,
+                          final Set<Integer> userIds) {
+        UserController.IdsParam param = new UserController.IdsParam(groupIds, userIds);
+        post(spec -> spec.body(param), JOIN_GROUP);
     }
 
     /**
@@ -2548,7 +2549,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param groupId identifikátor skupiny, ze které odebírám uživatel
      * @param userId  identifikátor odebíraného uživatele
      */
-    public void leaveGroup(final Integer groupId,
+    protected void leaveGroup(final Integer groupId,
                            final Integer userId) {
         post(spec -> spec.pathParameter("groupId", groupId).pathParameter("userId", userId), LEAVE_GROUP);
     }

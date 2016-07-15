@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Kontroler pro uživatele.
@@ -263,20 +264,16 @@ public class UserController {
     }
 
     /**
-     * Přidání uživatele do skupiny.
+     * Přidání uživatelů do skupin.
      *
-     * @param groupId identifikátor skupiny, do které přidávám uživatel
-     * @param userId  identifikátor přidávaného uživatele
+     * @param params  identifikátory přidávaných uživatelů a skupin
      */
     @Transactional
-    @RequestMapping(value = "/group/{groupId}/join/{userId}", method = RequestMethod.POST)
-    public void joinGroup(@PathVariable(value = "groupId") final Integer groupId,
-                          @PathVariable(value = "userId") final Integer userId) {
-        UsrGroup group = userService.getGroup(groupId);
-        UsrUser user = userService.getUser(userId);
-
-        checkExists(user, group);
-        userService.joinGroup(group, user);
+    @RequestMapping(value = "/group/join", method = RequestMethod.POST)
+    public void joinGroup(@RequestBody final IdsParam params) {
+        Set<UsrGroup> groups = userService.getGroups(params.getGroupIds());
+        Set<UsrUser> users = userService.getUsers(params.getUserIds());
+        userService.joinGroup(groups, users);
     }
 
     /**
@@ -292,23 +289,7 @@ public class UserController {
         UsrGroup group = userService.getGroup(groupId);
         UsrUser user = userService.getUser(userId);
 
-        checkExists(user, group);
         userService.leaveGroup(group, user);
-    }
-
-    /**
-     * Ověření existence uživatele a skupiny.
-     *
-     * @param user  uživatel
-     * @param group skupina
-     */
-    private void checkExists(final UsrUser user, final UsrGroup group) {
-        if (user == null) {
-            throw new IllegalArgumentException("Uživatel neexistuje");
-        }
-        if (group == null) {
-            throw new IllegalArgumentException("Skupina neexistuje");
-        }
     }
 
     /**
@@ -465,6 +446,46 @@ public class UserController {
 
         public void setNewPassword(final String newPassword) {
             this.newPassword = newPassword;
+        }
+    }
+
+    /**
+     * Pomocná třída na předání identifikátorů skupin a uživatelů.
+     */
+    public static class IdsParam {
+
+        /**
+         * Identifikátory skupin
+         */
+        private Set<Integer> groupIds;
+
+        /**
+         * Identifikátory uživatelů
+         */
+        private Set<Integer> userIds;
+
+        public IdsParam() {
+        }
+
+        public IdsParam(final Set<Integer> groupIds, final Set<Integer> userIds) {
+            this.groupIds = groupIds;
+            this.userIds = userIds;
+        }
+
+        public Set<Integer> getGroupIds() {
+            return groupIds;
+        }
+
+        public void setGroupIds(final Set<Integer> groupIds) {
+            this.groupIds = groupIds;
+        }
+
+        public Set<Integer> getUserIds() {
+            return userIds;
+        }
+
+        public void setUserIds(final Set<Integer> userIds) {
+            this.userIds = userIds;
         }
     }
 }

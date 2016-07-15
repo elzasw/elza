@@ -91,28 +91,33 @@ public class UserService {
     }
 
     /**
-     * Přidání uživatele do skupiny.
+     * Přidání uživatelů do skupin.
      *
-     * @param group skupina do které přidávám uživatel
-     * @param user  přidávaný uživatel
+     * @param groups skupiny do které přidávám uživatele
+     * @param users přidávaní uživatelé
      */
     @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
-    public void joinGroup(@NotNull final UsrGroup group,
-                          @NotNull final UsrUser user) {
-        UsrGroupUser item = groupUserRepository.findOneByGroupAndUser(group, user);
+    public void joinGroup(@NotEmpty final Set<UsrGroup> groups,
+                          @NotEmpty final Set<UsrUser> users) {
+        for (UsrUser user : users) {
+            for (UsrGroup group : groups) {
+                UsrGroupUser item = groupUserRepository.findOneByGroupAndUser(group, user);
 
-        if (item != null) {
-            throw new IllegalArgumentException("Uživatel '" + user.getUsername() + "' je již členem skupiny '" + group.getName());
+                if (item != null) {
+                    throw new IllegalArgumentException("Uživatel '" + user.getUsername() + "' je již členem skupiny '" + group.getName());
+                }
+
+                item = new UsrGroupUser();
+                item.setGroup(group);
+                item.setUser(user);
+
+                groupUserRepository.save(item);
+            }
+            recalcUserPermission(user);
         }
 
-        item = new UsrGroupUser();
-        item.setGroup(group);
-        item.setUser(user);
-
-        groupUserRepository.save(item);
-        recalcUserPermission(user);
-        changeUserEvent(user);
-        changeGroupEvent(group);
+        changeUsersEvent(users);
+        changeGroupsEvent(groups);
     }
 
     /**
@@ -488,6 +493,38 @@ public class UserService {
     }
 
     /**
+     * Načtení objektu uživatele dle id.
+     *
+     * @param userIds ids
+     * @return objekt
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    public Set<UsrUser> getUsers(final Set<Integer> userIds) {
+        Assert.notNull(userIds);
+        List<UsrUser> users = userRepository.findAll(userIds);
+        if (users.size() != userIds.size()) {
+            throw new IllegalArgumentException("Některý uživatel neexistuje");
+        }
+        return new HashSet<>(users);
+    }
+
+    /**
+     * Načtení objektu uživatele dle id.
+     *
+     * @param groupIds ids
+     * @return objekt
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    public Set<UsrGroup> getGroups(final Set<Integer> groupIds) {
+        Assert.notNull(groupIds);
+        List<UsrGroup> groups = groupRepository.findAll(groupIds);
+        if (groups.size() != groupIds.size()) {
+            throw new IllegalArgumentException("Některá skupina neexistuje");
+        }
+        return new HashSet<>(groups);
+    }
+
+    /**
      * Načtení objektu skupiny dle id.
      *
      * @param groupId id
@@ -551,6 +588,16 @@ public class UserService {
      */
     private void changeGroupEvent(final UsrGroup group) {
         eventNotificationService.publishEvent(new EventId(EventType.GROUP_CHANGE, group.getGroupId()));
+    }
+
+    /**
+     * Event změněné skupiny.
+     *
+     * @param groups skupiny
+     */
+    private void changeGroupsEvent(final Set<UsrGroup> groups) {
+        Set<Integer> groupIds = groups.stream().map(UsrGroup::getGroupId).collect(Collectors.toSet());
+        eventNotificationService.publishEvent(new EventId(EventType.GROUP_CHANGE, groupIds));
     }
 
     /**

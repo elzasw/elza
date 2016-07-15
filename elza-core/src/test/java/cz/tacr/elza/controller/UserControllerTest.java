@@ -8,7 +8,9 @@ import cz.tacr.elza.controller.vo.UsrUserVO;
 import org.junit.Test;
 import org.springframework.util.Assert;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -80,7 +82,11 @@ public class UserControllerTest extends AbstractControllerTest {
         Assert.isTrue(dataGroup.getTotalCount() == 1);
         Assert.isTrue(dataGroup.getList().get(0).getId().equals(group.getId()));
 
-        joinGroup(group.getId(), user.getId());
+        Set<Integer> groupIds = new HashSet<>();
+        groupIds.add(group.getId());
+        Set<Integer> userIds = new HashSet<>();
+        userIds.add(user.getId());
+        joinGroup(groupIds, userIds);
 
         group = getGroup(group.getId());
         Assert.isTrue(group.getUsers().size() == 1);
