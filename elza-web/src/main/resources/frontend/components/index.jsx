@@ -43,6 +43,7 @@ exports.Resizer = require('components/shared/resizer/Resizer.jsx');
 exports.FormUtils = require('components/form/FormUtils.jsx');
 exports.ImportForm = require('components/form/ImportForm.jsx');
 exports.ExportForm = require('components/form/ExportForm.jsx');
+exports.FormInput = require('components/form/FormInput.jsx');
 
 exports.Ribbon = require('components/page/Ribbon.jsx');
 

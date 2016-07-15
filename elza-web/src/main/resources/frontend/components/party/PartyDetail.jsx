@@ -2,13 +2,12 @@
  * Komponenta detailu osoby
  */
 
-require ('./PartyFormStyles.less');
+require('./PartyFormStyles.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Button, Input, SplitButton} from 'react-bootstrap';
-import {PartyDetailCreators, PartyDetailIdentifiers, PartyDetailNames, AbstractReactComponent, Search, i18n} from 'components/index.jsx';
+import {PartyDetailCreators, PartyDetailIdentifiers, PartyDetailNames, AbstractReactComponent, Search, i18n, FormInput} from 'components/index.jsx';
 import {AppActions} from 'stores/index.jsx';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
@@ -246,32 +245,32 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                 <div ref='partyDetail' className={"partyDetail"}>
                     <h1>{party.record.record}</h1>
                     <div className="line">
-                    <Input disabled={!canEdit} type="textarea" label={i18n('party.detail.characteristics')} name="characteristics" value={party.characteristics != undefined ? party.characteristics : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
+                    <FormInput disabled={!canEdit} componentClass="textarea" label={i18n('party.detail.characteristics')} name="characteristics" value={party.characteristics != undefined ? party.characteristics : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
                     </div>
 
                     <div className="line typ">
-                        <Input type="select" disabled={true} value={party.partyType.partyTypeId} label={i18n('party.detail.type')}>
+                        <FormInput componentClass="select" disabled={true} value={party.partyType.partyTypeId} label={i18n('party.detail.type')}>
                             {this.props.refTables.partyTypes.items.map(i=> {return <option key={i.partyTypeId} value={i.partyTypeId}>{i.name}</option>})}
-                        </Input>
+                        </FormInput>
                     </div>
                     <div className="line datation">
                         <div className="date-group">
                             <div>
                                 <label>{i18n('party.nameValidFrom')}</label>
                                 <div className="date">
-                                    <Input disabled={!canEdit} type="select" name="fromCalendar" value={this.state.fromCalendar} onChange={this.changeValue.bind(this,party.from != undefined && party.from.textDate != undefined)} onBlur={this.updateValue}>
+                                    <FormInput disabled={!canEdit} componentClass="select" name="fromCalendar" value={this.state.fromCalendar} onChange={this.changeValue.bind(this,party.from != undefined && party.from.textDate != undefined)} onBlur={this.updateValue}>
                                         {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
-                                    </Input>
-                                    <Input disabled={!canEdit} type="text"  name="fromText" value={party.from == null || party.from.textDate == null ? '' : party.from.textDate} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue} />
+                                    </FormInput>
+                                    <FormInput disabled={!canEdit} type="text"  name="fromText" value={party.from == null || party.from.textDate == null ? '' : party.from.textDate} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue} />
                                 </div>
                             </div>
                             <div>
                                 <label>{i18n('party.nameValidTo')}</label>
                                 <div className="date">
-                                    <Input disabled={!canEdit} type="select" name="toCalendar" value={this.state.toCalendar} onChange={this.changeValue.bind(this, party.to != undefined && party.to.textDate != undefined)} onBlur={this.updateValue} >
+                                    <FormInput disabled={!canEdit} componentClass="select" name="toCalendar" value={this.state.toCalendar} onChange={this.changeValue.bind(this, party.to != undefined && party.to.textDate != undefined)} onBlur={this.updateValue} >
                                         {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
-                                    </Input>
-                                    <Input disabled={!canEdit} type="text" name="toText" value={party.to == null || party.to.textDate == null ? '' : party.to.textDate} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue} />
+                                    </FormInput>
+                                    <FormInput disabled={!canEdit} type="text" name="toText" value={party.to == null || party.to.textDate == null ? '' : party.to.textDate} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue} />
                                 </div>
                             </div>
                         </div>
@@ -289,17 +288,17 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
 
 
                     {party.partyType.partyTypeId == this.state.dynastyId ? <div className="line">
-                        <Input disabled={!canEdit} type="textarea" label={i18n('party.detail.genealogy')} name="genealogy" value={party.genealogy != undefined ? party.genealogy : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/> </div>:  null}
+                        <FormInput disabled={!canEdit} componentClass="textarea" label={i18n('party.detail.genealogy')} name="genealogy" value={party.genealogy != undefined ? party.genealogy : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/> </div>:  null}
 
-                    <div className="line"><Input disabled={!canEdit} type="textarea" label={i18n('party.detail.note')} name="note" value={party.record.note != undefined ? party.record.note : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
-                    <div className="line"><Input disabled={!canEdit} type="textarea" label={i18n('party.detail.history')} name="history" value={party.history != undefined ? party.history : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
-                    <div className="line"><Input disabled={!canEdit} type="textarea" label={i18n('party.detail.sources')} name="sourceInformation" value={party.sourceInformation == null ? '' : party.sourceInformation} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
+                    <div className="line"><FormInput disabled={!canEdit} componentClass="textarea" label={i18n('party.detail.note')} name="note" value={party.record.note != undefined ? party.record.note : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
+                    <div className="line"><FormInput disabled={!canEdit} componentClass="textarea" label={i18n('party.detail.history')} name="history" value={party.history != undefined ? party.history : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
+                    <div className="line"><FormInput disabled={!canEdit} componentClass="textarea" label={i18n('party.detail.sources')} name="sourceInformation" value={party.sourceInformation == null ? '' : party.sourceInformation} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
 
                     {party.partyType.partyTypeId == this.state.groupId ? <div className="line group-panel">
-                        <Input disabled={!canEdit} type="text" label={i18n('party.detail.groupOrganization')} name="organization" value={party.organization != undefined ? party.organization : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
-                        <Input disabled={!canEdit} type="text" label={i18n('party.detail.groupFoundingNorm')} name="foundingNorm" value={party.foundingNorm != undefined ? party.foundingNorm : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
-                        <Input disabled={!canEdit} type="text" label={i18n('party.detail.groupScopeNorm')} name="scopeNorm" value={party.scopeNorm != undefined ? party.scopeNorm : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
-                        <Input disabled={!canEdit} type="text" label={i18n('party.detail.groupScope')} name="scope" value={party.scope != undefined ? party.scope : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
+                        <FormInput disabled={!canEdit} type="text" label={i18n('party.detail.groupOrganization')} name="organization" value={party.organization != undefined ? party.organization : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
+                        <FormInput disabled={!canEdit} type="text" label={i18n('party.detail.groupFoundingNorm')} name="foundingNorm" value={party.foundingNorm != undefined ? party.foundingNorm : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
+                        <FormInput disabled={!canEdit} type="text" label={i18n('party.detail.groupScopeNorm')} name="scopeNorm" value={party.scopeNorm != undefined ? party.scopeNorm : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
+                        <FormInput disabled={!canEdit} type="text" label={i18n('party.detail.groupScope')} name="scope" value={party.scope != undefined ? party.scope : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
                     </div> :  ''}
 
                     <div className="line party-creators">

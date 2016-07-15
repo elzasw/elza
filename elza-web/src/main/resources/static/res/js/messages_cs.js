@@ -369,6 +369,7 @@ var messages = {
 
     "subNodeForm.descItem.coordinates.action.add": "Nahrát souřadnice",
 
+    "subNodeForm.add.noScenario": "Bez scénáře",
     "subNodeForm.addNodeBefore": "JP před",
     "subNodeForm.addSubNode": "JP pod",
     "subNodeForm.deleteNode": "Smazat JP",
@@ -532,7 +533,7 @@ var messages = {
     "admin.packages.message.delete.title": "Smazání balíčku",
     "admin.packages.message.delete.message": "Balíček {0} byl úspěšně smazán",
 
-    "admin.user.filter.all": "Všichni uživatlé",
+    "admin.user.filter.all": "Všichni uživatelé",
     "admin.user.filter.onlyActive": "Aktivní uživatelé",
     "admin.user.label.username": "Uživatelské jméno",
     "admin.user.title.groups": "Členství ve skupinách",

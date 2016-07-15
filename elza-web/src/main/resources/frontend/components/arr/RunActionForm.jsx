@@ -4,8 +4,8 @@
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {Modal, Button} from 'react-bootstrap';
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx'
 
@@ -44,7 +44,7 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
             <div className="run-action-form-container">
                 <Modal.Body>
                     <form onSubmit={handleSubmit(submitForm)}>
-                        <Input type="select"
+                        <FormInput componentClass="select"
                                label={i18n('arr.fundAction.form.type')}
                                key='code-action'
                                ref='code-action'
@@ -54,7 +54,7 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
                         >
                             <option key="novalue" value={null}/>
                             {actionConfig.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}
-                        </Input>
+                        </FormInput>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

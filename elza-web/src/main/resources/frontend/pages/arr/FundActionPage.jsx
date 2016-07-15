@@ -17,9 +17,10 @@ import {
     ListBox,
     RibbonGroup,
     FundNodesAddForm,
-    FundNodesList
+    FundNodesList,
+    FormInput
 } from 'components/index.jsx';
-import {Button, Input} from 'react-bootstrap';
+import {Button} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {PageLayout} from 'pages/index.jsx';
 import {dateTimeToString} from 'components/Utils.jsx'
@@ -112,7 +113,7 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
             return <div>
                 <h2>{i18n('arr.fundAction.form.newAction')}</h2>
                 <div>
-                <Input type="select"
+                <FormInput componentClass="select"
                        label={i18n('arr.fundAction.form.type')}
                        key='code-action'
                        ref='code-action'
@@ -122,7 +123,7 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
                        >
                     <option key="novalue" />
                     {config.data.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}
-                </Input>
+                </FormInput>
                 </div>
                 {description}
                 <h2>{i18n("arr.fundAction.title.nodes")}</h2>

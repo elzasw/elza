@@ -8,7 +8,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
@@ -155,23 +155,23 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
         switch (operationType.value) {
             case 'findAndReplace':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.findAndReplace'
-                operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.findAndRFeplace.findText')} {...findText} {...decorateFormField(findText)} />)
-                operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.findAndRFeplace.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />)
+                operationInputs.push(<FormInput type="text" label={i18n('arr.fund.bulkModifications.findAndRFeplace.findText')} {...findText} {...decorateFormField(findText)} />)
+                operationInputs.push(<FormInput type="text" label={i18n('arr.fund.bulkModifications.findAndRFeplace.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />)
                 break
             case 'replace':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.replace'
                 if (refType.useSpecification) {
                     operationInputs.push(
-                        <Input type='select' label={i18n('arr.fund.bulkModifications.replace.replaceSpec')} {...replaceSpec} {...decorateFormField(replaceSpec)}>
+                        <FormInput componentClass='select' label={i18n('arr.fund.bulkModifications.replace.replaceSpec')} {...replaceSpec} {...decorateFormField(replaceSpec)}>
                             <option />
                             {refType.descItemSpecs.map(i => (
                                 <option key={i.id} value={i.id}>{i.name}</option>
                             ))}
-                        </Input>
+                        </FormInput>
                     )
                 }
 
-                operationInputs.push(<Input type="text" label={i18n('arr.fund.bulkModifications.replace.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />)
+                operationInputs.push(<FormInput type="text" label={i18n('arr.fund.bulkModifications.replace.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />)
                 break
             case 'delete':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.delete'
@@ -201,11 +201,11 @@ var FundBulkModificationsForm = class FundBulkModificationsForm extends Abstract
                             {checkedItemsCount > 0 && checkedItemsCount < allItemsCount && <Input type="radio" label={i18n('arr.fund.bulkModifications.itemsArea.selected', checkedItemsCount)} {...itemsArea} value='selected' checked={itemsArea.value === 'selected'} />}
                             {uncheckedItemsCount > 0 && checkedItemsCount > 0 && <Input type="radio" label={i18n('arr.fund.bulkModifications.itemsArea.unselected', uncheckedItemsCount)} {...itemsArea} value='unselected' checked={itemsArea.value === 'unselected'} />}
                         </Input>
-                        <Input type='select' label={i18n('arr.fund.bulkModifications.operationType')} {...operationType} {...decorateFormField(operationType)}>
+                        <FormInput componentClass='select' label={i18n('arr.fund.bulkModifications.operationType')} {...operationType} {...decorateFormField(operationType)}>
                             {this.supportFindAndReplace() && <option key='findAndReplace' value='findAndReplace'>{i18n('arr.fund.bulkModifications.operationType.findAndReplace')}</option>}
                             {this.supportReplace() && <option key='replace' value='replace'>{i18n('arr.fund.bulkModifications.operationType.replace')}</option>}
                             <option key='delete' value='delete'>{i18n('arr.fund.bulkModifications.operationType.delete')}</option>
-                        </Input>
+                        </FormInput>
                         {operationInputs}
                     </form>
                 </Modal.Body>

@@ -6,8 +6,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {DropDownTree, AbstractReactComponent, i18n, Scope, Icon} from 'components/index.jsx';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {DropDownTree, AbstractReactComponent, i18n, Scope, Icon, FormInput} from 'components/index.jsx';
+import {Modal, Button} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
@@ -21,12 +21,9 @@ import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
  * *********************************************
  * formulář nové osoby
  */
-var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
+const AddPartyForm = class AddPartyForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
-        this.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
-        this.dispatch(refPartyTypesFetchIfNeeded());        // načtení seznamu typů jmen
 
         this.state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
             data : this.props.initData,                     // předvyplněná data formuláře
@@ -49,12 +46,18 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
+        this.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
+        this.dispatch(refPartyTypesFetchIfNeeded());        // načtení seznamu typů jmen
         this.dispatch(getRegistryRecordTypesIfNeeded(this.props.initData.partyTypeId));
         this.dispatch(requestScopesIfNeeded(null));
         this.preselectSelects(nextProps);
     }
 
     componentDidMount() {
+        this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
+        this.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
+        this.dispatch(refPartyTypesFetchIfNeeded());        // načtení seznamu typů jmen
         this.dispatch(getRegistryRecordTypesIfNeeded(this.props.initData.partyTypeId));
         this.dispatch(requestScopesIfNeeded(null));
         this.preselectSelects(this.props);
@@ -235,7 +238,7 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
         return errors;                                          // vrácení seznamu chyb
     }
 
-   /**
+    /**
      * HANDLE CLOSE
      * *********************************************
      * Zavření dialogového okénka formuláře
@@ -290,29 +293,29 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                             <Scope versionId={this.props.versionId} name="scopeId" label={i18n('party.recordScope')} onChange={this.updateValue} value={this.state.data.scopeId}/>
                         </div>
 
-                        <Input type="select" label={i18n('party.nameFormType')} name="nameFormTypeId" onChange={this.updateValue} value={this.state.data.nameFormTypeId} >
-                            <option value="0" key="0"></option> 
+                        <FormInput componentClass="select" label={i18n('party.nameFormType')} name="nameFormTypeId" onChange={this.updateValue} value={this.state.data.nameFormTypeId} >
+                            <option value="0" key="0"/> 
                             {this.props.refTables.partyNameFormTypes.items.map((i, index)=> {return <option value={i.nameFormTypeId} key={i.nameFormTypeId}>{i.name}</option>})}
-                        </Input>
+                        </FormInput>
 
                         <hr/>
                         {this.state.data.partyTypeCode == "PERSON" ?  <div className="line">
-                            <Input type="text" label={i18n('party.degreeBefore')} name="degreeBefore" value={this.state.data.degreeBefore} onChange={this.updateValue} />
-                            <Input type="text" label={i18n('party.degreeAfter')} name="degreeAfter" value={this.state.data.degreeAfter} onChange={this.updateValue} />
+                            <FormInput type="text" label={i18n('party.degreeBefore')} name="degreeBefore" value={this.state.data.degreeBefore} onChange={this.updateValue} />
+                            <FormInput type="text" label={i18n('party.degreeAfter')} name="degreeAfter" value={this.state.data.degreeAfter} onChange={this.updateValue} />
                         </div> : ""}
                         
-                        <Input type="text" label={i18n('party.nameMain')} name="mainPart" value={this.state.data.mainPart} onChange={this.updateValue} />
-                        <Input type="text" label={i18n('party.nameOther')} name="otherPart" value={this.state.data.otherPart} onChange={this.updateValue} />
+                        <FormInput type="text" label={i18n('party.nameMain')} name="mainPart" value={this.state.data.mainPart} onChange={this.updateValue} />
+                        <FormInput type="text" label={i18n('party.nameOther')} name="otherPart" value={this.state.data.otherPart} onChange={this.updateValue} />
                         <hr/>
                         <div className="line">
                             <label>{i18n('party.nameComplements')}</label>
                             {this.state.data.complements.map((j,index)=> {return <div className="block complement">
                                 <div className="line">
-                                    <Input type="text" value={j.complement} onChange={this.updateComplementValue.bind(this, {index:index, variable: 'complement'})}/>
-                                    <Input type="select" value={j.complementTypeId} onChange={this.updateComplementValue.bind(this, {index:index, variable: 'complementTypeId'})}>
-                                        <option value={0} key={0}></option> 
+                                    <FormInput type="text" value={j.complement} onChange={this.updateComplementValue.bind(this, {index:index, variable: 'complement'})}/>
+                                    <FormInput componentClass="select" value={j.complementTypeId} onChange={this.updateComplementValue.bind(this, {index:index, variable: 'complementTypeId'})}>
+                                        <option value={0} key={0}/> 
                                         {complementsTypes ? complementsTypes.map(i=> {return <option value={i.complementTypeId} key={i.complementTypeId}>{i.name}</option>}) : null}
-                                    </Input> 
+                                    </FormInput> 
                                     <Button onClick={this.removeComplement.bind(this, index)}><Icon glyph="fa-trash"/></Button>
                                 </div>
                             </div>})}
@@ -331,7 +334,7 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
     }
 }
 
-
+/// TODO - Chyba Redux form bez fieldů !!!!
 module.exports = reduxForm({
     form: 'AddPartyForm',
     fields: [],

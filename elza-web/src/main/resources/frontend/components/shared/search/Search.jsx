@@ -7,8 +7,7 @@
 
 import React from 'react';
 
-import {Button, Input} from 'react-bootstrap';
-import {i18n, Icon, NoFocusButton} from 'components/index.jsx';
+import {i18n, Icon, NoFocusButton, FormInput} from 'components/index.jsx';
 import ReactDOM from 'react-dom'
 
 require ('./Search.less');
@@ -107,15 +106,23 @@ var Search = class Search extends React.Component {
             <div className={cls}>
                 {beforeInput}
                 <div className='search-input'>
-                    <Input
-                        type={textAreaInput ? 'textarea' : 'text'}
+                    {textAreaInput ? <FormInput
+                        componentClass='textarea'
                         value={this.state.filterText}
                         ref="input"
                         labelClassName="label-class"
                         placeholder={this.props.placeholder}
                         onChange={this.handleChange}
                         onKeyUp={this.handleKeyUp}
-                        />
+                    />:<FormInput
+                        type='text'
+                        value={this.state.filterText}
+                        ref="input"
+                        labelClassName="label-class"
+                        placeholder={this.props.placeholder}
+                        onChange={this.handleChange}
+                        onKeyUp={this.handleKeyUp}
+                    />}
                 </div>
                 <div className='search-actions'>
                     {actions}

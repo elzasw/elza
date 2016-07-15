@@ -7,8 +7,8 @@ import {WebApi} from 'actions/index.jsx';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, Autocomplete, i18n, Icon} from 'components/index.jsx';
-import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';
+import {AbstractReactComponent, Autocomplete, i18n, Icon, FormInput} from 'components/index.jsx';
+import {Modal, Button, Glyphicon} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
@@ -17,14 +17,14 @@ import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {Combobox} from 'react-input-enhancements'
 
 
-require ('./PartyFormStyles.less');
+require('./PartyFormStyles.less');
 
 /**
   * RELATION FORM
   * *********************************************
   * Formulář vztahu osoby
   */ 
-var RelationForm = class RelationForm extends AbstractReactComponent {
+const RelationForm = class RelationForm extends AbstractReactComponent {
     constructor(props) {
         super(props);                                       
 
@@ -54,8 +54,8 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
         this.dispatch(refPartyTypesFetchIfNeeded());        // budeme potřebovt také seznam typů osob
         this.dispatch(refRegistryListFetchIfNeeded());      // a budeme potřebovat potřebovat seznam rejstříkových položek
 
-        var data = this.state.data;
-        var types = this.initRelationTypes(nextProps.initData.relationTypeId, nextProps);
+        let data = this.state.data;
+        const types = this.initRelationTypes(nextProps.initData.relationTypeId, nextProps);
         data =  Object.assign({}, data, {...types});
         this.setState({
             data: data
@@ -68,8 +68,8 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
         this.dispatch(refRegistryListFetchIfNeeded());      // a budeme potřebovat potřebovat seznam rejstříkových položek
 
 
-        var data = this.state.data;
-        var types = this.initRelationTypes(this.props.initData.relationTypeId, this.props);
+        let data = this.state.data;
+        const types = this.initRelationTypes(this.props.initData.relationTypeId, this.props);
         data =  Object.assign({}, data, {...types});
         this.setState({
             data: data
@@ -81,8 +81,8 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
      * *********************************************
      * přidání nové prázdné entity do vztahu
      */ 
-    addEntity(){
-        var data = this.state.data;                         // původní data vztahu(formuláře)
+    addEntity() {
+        const data = this.state.data;                         // původní data vztahu(formuláře)
         data.entities[data.entities.length]={               // pridání nové prázdné entity na konec seznamu entit
             record: null,
             roleTypeId: null,
@@ -98,33 +98,33 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
      * @param nextProps properties
      * @returns {{roleTypes: Array, relationTypes: Array, relationTypeId: *}}
      */
-    initRelationTypes(relationTypeId, nextProps){
-        var allRelationTypes = [];
-        for(var i=0; i<nextProps.refTables.partyTypes.items.length; i++){
-            if(nextProps.refTables.partyTypes.items[i].partyTypeId == nextProps.initData.partyTypeId){
+    initRelationTypes(relationTypeId, nextProps) {
+        let allRelationTypes = [];
+        for(let i=0; i<nextProps.refTables.partyTypes.items.length; i++) {
+            if(nextProps.refTables.partyTypes.items[i].partyTypeId == nextProps.initData.partyTypeId) {
                 allRelationTypes = nextProps.refTables.partyTypes.items[i].relationTypes;
             }
         }
 
-        var roleTypes = [];
-        var relationTypes = [];
+        let roleTypes = [];
+        const relationTypes = [];
 
-        if(allRelationTypes){
+        if(allRelationTypes) {
             var classType = nextProps.initData.classType;
-            for(var i=0; i<allRelationTypes.length; i++){
-                if(allRelationTypes[i].classType === classType){
+            for(let i=0; i<allRelationTypes.length; i++) {
+                if(allRelationTypes[i].classType === classType) {
                     relationTypes.push(allRelationTypes[i]);
                 }
             }
         }
 
         var selectedRelationTypeId = relationTypeId;
-        if(selectedRelationTypeId == undefined){
+        if(selectedRelationTypeId == undefined) {
             selectedRelationTypeId = relationTypes && relationTypes[0] ? relationTypes[0].relationTypeId : null;
         }
 
         relationTypes.map(rt => {
-           if(rt.relationTypeId == selectedRelationTypeId){
+           if(rt.relationTypeId == selectedRelationTypeId) {
                roleTypes = rt.relationRoleTypes;
            }
         });
@@ -143,11 +143,11 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
      * @params int index - lokální index entity, kterou odstranit 
      * @params event - událost která změnu vyvolala
      */ 
-    removeEntity(index, event){
-        var data = this.state.data;                                 // původní data formuláře
-        var entities = [];                                          // nový seznnam entit
-        for(var i=0; i<data.entities.length; i++){                  // procházejí se původní entity
-            if(i != index){                                         // a všechny co nejsou mazaná entita
+    removeEntity(index, event) {
+        const data = this.state.data;                                 // původní data formuláře
+        const entities = [];                                          // nový seznnam entit
+        for(let i=0; i<data.entities.length; i++) {                  // procházejí se původní entity
+            if(i != index) {                                         // a všechny co nejsou mazaná entita
                entities[entities.length] = data.entities[i];        // přidáme do nových entit
             }
         }
@@ -163,13 +163,13 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
      * aktualizace nějaké hodnoty ve formuláři (kromě entit)
      * @params event - událost která změnu vyvolala
      */
-    updateValue(event){
-        var value = event.target.value;                                                 // hodnota změněného pole formuláře
-        var variable = event.target.name;                                               // nazeb měněné hodnoty
-        var data = this.state.data;                                                     // puvodni data formuláře
-        switch(variable){
+    updateValue(event) {
+        const value = event.target.value;                                                 // hodnota změněného pole formuláře
+        const variable = event.target.name;                                               // nazeb měněné hodnoty
+        const data = this.state.data;                                                     // puvodni data formuláře
+        switch(variable) {
             case "relationTypeId" : {
-                data.relationTypeId = event.target.value;
+                data.relationTypeId = value;
                 data.entities.map((i,index) =>{
                     data.entities[index].roleTypeId = null;
                     data.entities[index].record = null;
@@ -181,13 +181,13 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
 
                 break;
             }
-            case "note" : data.note = event.target.value; break;                        // změna poznámky
-            case "dateNote" : data.dateNote = event.target.value; break;                // změna poznámky k času
-            case "source" : data.source = event.target.value; break;
-            case "fromText" : data.from.textDate = event.target.value; break;           // změna data od
-            case "toText" : data.to.textDate = event.target.value; break;               // změna data do
-            case "fromCalendar" : data.from.calendarTypeId = event.target.value; break; // změna typu kalendáře od
-            case "toCalendar" : data.to.calendarTypeId = event.target.value; break;     // změna typu kalendáře do
+            case "note" : data.note = value; break;                        // změna poznámky
+            case "dateNote" : data.dateNote = value; break;                // změna poznámky k času
+            case "source" : data.source = value; break;
+            case "fromText" : data.from.textDate = value; break;           // změna data od
+            case "toText" : data.to.textDate = value; break;               // změna data do
+            case "fromCalendar" : data.from.calendarTypeId = value; break; // změna typu kalendáře od
+            case "toCalendar" : data.to.calendarTypeId = value; break;     // změna typu kalendáře do
         }
         this.setState({
             data : data                                                                 // uložení změn do state
@@ -201,11 +201,11 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
      * @params obj entity - obsahuje index entity a měněnou hodnotu, např {index 5, variable: 'record'} 
      * @params event - událost která změnu vyvolala
      */   
-    updateEntityValue(entity, event){
-        var data = this.state.data;                             // puvodní data formuláře
-        for(var i=0; i<data.entities.length; i++){              // procházejí se všechny entity
-            if(i == entity.index){                              // nalezení té pravé, krou máme změnit
-                switch(entity.variable){                        
+    updateEntityValue(entity, event) {
+        const data = this.state.data;                             // puvodní data formuláře
+        for(let i=0; i<data.entities.length; i++) {              // procházejí se všechny entity
+            if(i == entity.index) {                              // nalezení té pravé, krou máme změnit
+                switch(entity.variable) {                        
                     case "record" : data.entities[entity.index].record = {...event}; break;
                     case "role" : {
                         data.entities[entity.index].roleTypeId = event.target.value;
@@ -226,9 +226,9 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
      * *********************************************
      * Odeslání formuláře
      */
-    handleSubmit(e){
-        var errors = this.validate();               // seznam  chyb ve vyplněných datech
-        if(errors.length > 0){                      // pokud je formulář chybně vyplnění
+    handleSubmit(e) {
+        const errors = this.validate();               // seznam  chyb ve vyplněných datech
+        if(errors.length > 0) {                      // pokud je formulář chybně vyplnění
             this.setState({             
                 errors : errors                     // seznam chyb se uloží do state => dojde s přerenderování, při kterém budou chyby vypsany
             });
@@ -244,12 +244,12 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
      * Kontrola vyplnění formuláře vztahu
      * @return array errors - seznam chyb 
      */
-    validate(){
-        var errors = [];                                        // seznam chyb
-        var data = this.state.data;                             // zadaná data z formuláře
+    validate() {
+        const errors = [];                                        // seznam chyb
+        const data = this.state.data;                             // zadaná data z formuláře
 
         //kontrola vyplnění typu vztahu
-        if(data.relationTypeId == 0 || data.relationTypeId == null ||  data.relationTypeId == undefined){
+        if(data.relationTypeId == 0 || data.relationTypeId == null ||  data.relationTypeId == undefined) {
             errors[errors.length] = i18n('party.relation.errors.undefinedRelationType');
         }
 
@@ -257,20 +257,20 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
         if(
             data.from.calendarTypeId == 0 || data.from.calendarTypeId == null ||  data.from.calendarTypeId == undefined || 
             data.to.calendarTypeId == 0 || data.to.calendarTypeId == null ||  data.to.calendarTypeId == undefined 
-        ){
+        ) {
             errors[errors.length] = i18n('party.relation.errors.undefinedCalendarType');
         }
 
 
-        for(var i=0; i<data.entities.length; i++){
-            if(data.entities[i].record == undefined || data.entities[i].record.id == undefined){
+        for(let i=0; i<data.entities.length; i++) {
+            if(data.entities[i].record == undefined || data.entities[i].record.id == undefined) {
                 errors[errors.length] = i18n('party.relation.errors.undefinedRecord');
                 break;
             }
         }
 
-        for(var i=0; i<data.entities.length; i++){
-            if(data.entities[i].roleTypeId ==0 || data.entities[i].roleTypeId == null ||  data.entities[i].roleTypeId == undefined){
+        for(let i=0; i<data.entities.length; i++) {
+            if(data.entities[i].roleTypeId ==0 || data.entities[i].roleTypeId == null ||  data.entities[i].roleTypeId == undefined) {
                 errors[errors.length] = i18n('party.relation.errors.undefinedRoleType');
                 break;
             }
@@ -284,12 +284,12 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
      * *********************************************
      * Zavření dialogového okénka formuláře
      */
-    handleClose(){
+    handleClose() {
         this.dispatch(modalDialogHide());
     }
 
     renderRecord(item, isHighlighted, isSelected) {
-        var cls = 'item';
+        let cls = 'item';
         if (isHighlighted) {
             cls += ' focus'
         }
@@ -297,16 +297,14 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
             cls += ' active'
         }
 
-        return (
-            <div className={cls} key={item.id} >
-             <div className="name" title={item.record}>{item.record}</div>
-             <div className="characteristics" title={item.characteristics}>{item.characteristics}</div>
-            </div>
-                )
+        return (<div className={cls} key={item.id} >
+            <div className="name" title={item.record}>{item.record}</div>
+            <div className="characteristics" title={item.characteristics}>{item.characteristics}</div>
+        </div>)
     }
 
     handleSearchChange(roleTypeId, text) {
-        var partyId = this.props.initData.partyId;
+        const partyId = this.props.initData.partyId;
         text = text == "" ? null : text;
 
         WebApi.findRecordForRelation(text,roleTypeId, partyId)
@@ -331,12 +329,12 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
      */
     render() {
 
-        var roleTypes = this.state.data.roleTypes;
-        var relationTypes = this.state.data.relationTypes;
+        const roleTypes = this.state.data.roleTypes;
+        const relationTypes = this.state.data.relationTypes;
 
         // zaznamy pro autocomplate
-        var records = [];
-        for(var i = 0; i<this.props.refTables.registryRegionList.items.recordList.length; i++){
+        const records = [];
+        for(let i = 0; i<this.props.refTables.registryRegionList.items.recordList.length; i++) {
             records[records.length] = {
                 id: this.props.refTables.registryRegionList.items.recordList[i].recordId,
                 name: this.props.refTables.registryRegionList.items.recordList[i].record,
@@ -351,40 +349,40 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
                 <Modal.Body>
                     <form>
                         <ul className="errors">
-                            {this.state.errors.map(i=> {return <li>{i}</li>})}
+                            {this.state.errors.map((i, index)=> {return <li key={index}>{i}</li>})}
                         </ul>
-                        <Input disabled={this.state.data.relationId != undefined}
-                               type="select" label={i18n('party.relation.type')} name="relationTypeId" value={selectedRelationTypeId} onChange={this.updateValue}>
-                            <option value="0" key="0"></option> 
+                        <FormInput disabled={this.state.data.relationId != undefined}
+                                     componentClass="select" label={i18n('party.relation.type')} name="relationTypeId" value={selectedRelationTypeId} onChange={this.updateValue}>
+                            <option value="0" key="0"/>
                             {relationTypes ? relationTypes.map(i=> {return <option value={i.relationTypeId} key={i.relationTypeId}>{i.name}</option>}) : null}
-                        </Input>
+                        </FormInput>
                         <hr/>
                         <div className="line datation">
                             <div className="date line">
                                 <div>
                                     <label>{i18n('party.relation.from')}</label>
                                     <div className="line">
-                                        <Input type="select" name="fromCalendar" value={this.state.data.from.calendarTypeId} onChange={this.updateValue} >
-                                            <option value={0} key={0}></option>
+                                        <FormInput componentClass="select" name="fromCalendar" value={this.state.data.from.calendarTypeId} onChange={this.updateValue} >
+                                            <option value={0} key={0}/>
                                             {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
-                                        </Input>
-                                        <Input type="text"  name="fromText" value={this.state.data.from.textDate} onChange={this.updateValue} />
+                                        </FormInput>
+                                        <FormInput type="text"  name="fromText" value={this.state.data.from.textDate} onChange={this.updateValue} />
                                     </div>
                                 </div>
                                 <div>
                                     <label>{i18n('party.relation.to')}</label>
                                     <div className="line">
-                                        <Input type="select" name="toCalendar" value={this.state.data.to.calendarTypeId} onChange={this.updateValue} >
+                                        <FormInput componentClass="select" name="toCalendar" value={this.state.data.to.calendarTypeId} onChange={this.updateValue} >
                                             {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
-                                        </Input>
-                                        <Input type="text" name="toText" value={this.state.data.to.textDate} onChange={this.updateValue} />
+                                        </FormInput>
+                                        <FormInput type="text" name="toText" value={this.state.data.to.textDate} onChange={this.updateValue} />
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <Input type="text" label={i18n('party.relation.dateNote')}  name="dateNote" value={this.state.data.dateNote} onChange={this.updateValue} />
-                        <Input type="text" label={i18n('party.relation.note')} name="note" value={this.state.data.note} onChange={this.updateValue} />
-                        <Input type="textarea" label={i18n('party.relation.sources')} name="source" value={this.state.data.source} onChange={this.updateValue} />
+                        <FormInput type="text" label={i18n('party.relation.dateNote')}  name="dateNote" value={this.state.data.dateNote} onChange={this.updateValue} />
+                        <FormInput type="text" label={i18n('party.relation.note')} name="note" value={this.state.data.note} onChange={this.updateValue} />
+                        <FormInput componentClass="textarea" label={i18n('party.relation.sources')} name="source" value={this.state.data.source} onChange={this.updateValue} />
                         <hr/>
                         <label>{i18n('party.relation.entities')}</label>
 
@@ -400,10 +398,10 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
                                         var roleTypeUnselected = j.roleTypeId == undefined || j.roleTypeId == 0;
                                         return <div className="relation-row" key={index}>
                                                     <div className="type">
-                                                <Input type="select" disabled={typeUnselected} value={j.roleTypeId} onChange={this.updateEntityValue.bind(this, {index:index, variable: 'role'})}>
-                                                    <option value={0} key={0}></option>
+                                                <FormInput componentClass="select" disabled={typeUnselected} value={j.roleTypeId} onChange={this.updateEntityValue.bind(this, {index:index, variable: 'role'})}>
+                                                    <option value={0} key={0}/>
                                                     {roleTypes ? roleTypes.map(i=> {return <option value={i.roleTypeId} key={i.roleTypeId}>{i.name}</option>}) : null}
-                                                </Input>
+                                                </FormInput>
                                                     </div>
                                                     <div className="record">
                                                      <Autocomplete
@@ -444,10 +442,10 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
      * *********************************************
      * Získání identifikátorů gregoriánského kalendáře, který bude výchozí
      */
-     getGregorianCalendarId(){
-        var id = null;
-        for(var i = 0; i<this.props.refTables.calendarTypes.items.length; i++){
-            if(this.props.refTables.calendarTypes.items[i].code == "GREGORIAN"){
+     getGregorianCalendarId() {
+        let id = null;
+        for(let i = 0; i<this.props.refTables.calendarTypes.items.length; i++) {
+            if(this.props.refTables.calendarTypes.items[i].code == "GREGORIAN") {
                 id = this.props.refTables.calendarTypes.items[i].id;
             }
         }

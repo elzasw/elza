@@ -6,9 +6,8 @@ require('./FundOutputFunctions.less')
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, ListBox, Loading} from 'components/index.jsx';
+import {AbstractReactComponent, Icon, i18n, ListBox, Loading, FormInput} from 'components/index.jsx';
 import FundActionPage from 'pages/arr/FundActionPage.jsx'
-import {Input} from 'react-bootstrap'
 import {fetchFundOutputFunctionsIfNeeded, fundOutputFunctionsFilterByState, fundOutputActionRun, fundOutputActionInterrupt} from 'actions/arr/fundOutputFunctions.jsx'
 import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx'
 import {indexById} from 'stores/app/utils.jsx'
@@ -117,10 +116,10 @@ const FundOutputFunctions = class FundOutputFunctions extends AbstractReactCompo
 
         return (
             <div className='functions-list-container'>
-                <Input type="select" onChange={(e) => this.handleStateSearch(e.target.value)} value={filterRecommended}>
+                <FormInput componentClass="select" onChange={(e) => this.handleStateSearch(e.target.value)} value={filterRecommended}>
                     <option value={true} key="recommended-filter">{i18n('arr.output.functions.recommended')}</option>
                     <option value={false} key="no-filter">{i18n('arr.output.functions.all')}</option>
-                </Input>
+                </FormInput>
 
                 <ListBox
                     ref="listBox"

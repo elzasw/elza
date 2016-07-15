@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {DropdownButton} from 'react-bootstrap';
 import {AbstractReactComponent} from 'components/index.jsx';
 
-var ControllableDropdownButton = class ControllableDropdownButton extends AbstractReactComponent {
+const ControllableDropdownButton = class ControllableDropdownButton extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -24,7 +24,7 @@ var ControllableDropdownButton = class ControllableDropdownButton extends Abstra
     }
 
     getOpenValue(props, state) {
-        var open
+        let open
         if (typeof props.open !== 'undefined') {
             open = props.open
         } else if (typeof state.open !== 'undefined') {
@@ -38,14 +38,14 @@ var ControllableDropdownButton = class ControllableDropdownButton extends Abstra
 
     focusFirstMenuItem() {
         // TODO - není dobré řešení, ale v tuto chvíli mě jiné nenapadá
-        var child = this.props.children[0]
-        var ref
+        const child = this.props.children[0]
+        let ref;
         if (typeof child.ref !== 'undefined' && child.ref !== null) {
             ref = child.ref
         } else {
             ref = 'firstMenuItem'
         }
-        var el = ReactDOM.findDOMNode(this.refs[ref])
+        const el = ReactDOM.findDOMNode(this.refs[ref])
         el.children[0].focus()
     }
 
@@ -61,10 +61,10 @@ var ControllableDropdownButton = class ControllableDropdownButton extends Abstra
     }
 
     render() {
-        const {open, onToggle, ...other} = this.props
+        const {open, onToggle, id, ...other} = this.props
 
-        var children = React.Children.map(this.props.children, (child, index) => {
-            var opts = {}
+        const children = React.Children.map(this.props.children, (child, index) => {
+            const opts = {}
             if (index === 0) {
                 if (typeof child.ref !== 'undefined' && child.ref !== null) {
                     opts.ref = child.ref
@@ -77,6 +77,7 @@ var ControllableDropdownButton = class ControllableDropdownButton extends Abstra
 
         return (
             <DropdownButton
+                id={id}
                 open={this.state.open}
                 {...other}
                 onToggle={this.handleToggle}
@@ -86,6 +87,13 @@ var ControllableDropdownButton = class ControllableDropdownButton extends Abstra
         );
           
     }
+}
+
+ControllableDropdownButton.propsTypes = {
+    id: React.PropTypes.string.isRequired,
+    children: React.PropTypes.array.isRequired,
+    onToggle: React.PropTypes.func,
+    open: React.PropTypes.bool
 }
 
 

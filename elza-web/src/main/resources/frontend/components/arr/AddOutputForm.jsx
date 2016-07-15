@@ -4,8 +4,8 @@
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {Modal, Button, Checkbox} from 'react-bootstrap';
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx'
 
@@ -25,7 +25,7 @@ const validate = (values, props) => {
     return errors;
 };
 
-var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
+const AddOutputForm = class AddOutputForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.state = {};
@@ -48,17 +48,17 @@ var AddOutputForm = class AddOutputForm extends AbstractReactComponent {
             <div className="add-output-form-container">
                 <Modal.Body>
                     <form onSubmit={handleSubmit(submitForm)}>
-                        <Input type="text" label={i18n('arr.output.name')} {...name} {...decorateFormField(name)} />
-                        <Input type="text" label={i18n('arr.output.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />
-                        {create && <Input type="select" label={i18n('arr.output.outputType')} {...outputTypeId} {...decorateFormField(outputTypeId)}>
+                        <FormInput type="text" label={i18n('arr.output.name')} {...name} {...decorateFormField(name)} />
+                        <FormInput type="text" label={i18n('arr.output.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />
+                        {create && <FormInput componentClass="select" label={i18n('arr.output.outputType')} {...outputTypeId} {...decorateFormField(outputTypeId)}>
                             <option key='-outputTypeId'/>
                             {outputTypes.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
-                        </Input>}
-                        <Input type="select" label={i18n('arr.output.template')} {...templateId} {...decorateFormField(templateId)}>
+                        </FormInput>}
+                        <FormInput componentClass="select" label={i18n('arr.output.template')} {...templateId} {...decorateFormField(templateId)}>
                             <option key='-templateId'/>
                             {templates.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
-                        </Input>
-                        {create && <Input type="checkbox" label={i18n('arr.output.temporary')} {...temporary} {...decorateFormField(temporary)} />}
+                        </FormInput>
+                        {create && <Checkbox {...temporary} {...decorateFormField(temporary)}>{i18n('arr.output.temporary')}</Checkbox>}
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

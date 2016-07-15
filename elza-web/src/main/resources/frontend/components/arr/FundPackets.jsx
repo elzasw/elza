@@ -6,8 +6,8 @@ require('./FundPackets.less')
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, FilterableListBox, Loading, AddPacketForm, FixedDropDownButton} from 'components/index.jsx';
-import {DropdownButton, MenuItem, Input} from 'react-bootstrap'
+import {AbstractReactComponent, Icon, i18n, FilterableListBox, Loading, AddPacketForm, FixedDropDownButton, FormInput} from 'components/index.jsx';
+import {DropdownButton, MenuItem} from 'react-bootstrap'
 import {fetchFundPacketsIfNeeded, fundPacketsFilterByText, fundPacketsChangeSelection, fundPacketsFilterByState, fundPacketsChangeState, fundPacketsCreate, fundPacketsChangeNumbers, fundPacketsDelete} from 'actions/arr/fundPackets.jsx'
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
@@ -160,11 +160,11 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
 
         const altSearch = (
             <div className="state-filter">
-                <Input type="select" _label={i18n('arr.fund.packets.state')} value={filterState} onChange={this.handleFilterStateChange}>
+                <FormInput componentClass="select" _label={i18n('arr.fund.packets.state')} value={filterState} onChange={this.handleFilterStateChange}>
                     <option value="OPEN">{i18n('arr.fund.packets.state.open')}</option>
                     <option value="CLOSED">{i18n('arr.fund.packets.state.closed')}</option>
                     <option value="CANCELED">{i18n('arr.fund.packets.state.canceled')}</option>
-                </Input>
+                </FormInput>
             </div>
         )
         return (

@@ -4,11 +4,10 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Input, Button} from 'react-bootstrap';
-import {Icon, NoFocusButton, AbstractReactComponent, DropDownTree} from 'components/index.jsx';
+import {Icon, NoFocusButton, AbstractReactComponent, DropDownTree, FormInput} from 'components/index.jsx';
 import {connect} from 'react-redux'
 
-var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
+const RegistryLabel = class RegistryLabel extends AbstractReactComponent {
     constructor(props){
         super(props);
         this.bindMethods(
@@ -49,7 +48,7 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
                 <div className='title' title={label}>{label}</div>
                 <div className="desc-item-value-container">
                     <span>
-                        <Input
+                        <FormInput
                             disabled={disabled}
                             ref='input'
                             type='text'
@@ -59,7 +58,7 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
                             onBlur={onBlur}
                         />
                     </span>
-                    <NoFocusButton disabled={disabled} onClick = {onClickDelete}><Icon glyph='fa-times' /></NoFocusButton>
+                    <NoFocusButton disabled={disabled} onClick={onClickDelete}><Icon glyph='fa-times' /></NoFocusButton>
                 </div>
             </div>
         )

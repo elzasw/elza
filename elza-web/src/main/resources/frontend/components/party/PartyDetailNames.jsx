@@ -16,7 +16,7 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
   * *********************************************
   * Blok v detailu osoby se zobrazení a funkcemi pri správu jmen
   */ 
-var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
+const PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.dispatch(calendarTypesFetchIfNeeded());    // seznam typů kalendářů (gregoriánský, juliánský, ...)
@@ -30,7 +30,7 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
         );
     }
 
-   /**
+    /**
      * HANDLE DELETE NAME
      * *********************************************
      * Kliknutí na tlačítko smazání jména
@@ -49,7 +49,7 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
         }
     }
 
-   /**
+    /**
      * DELETE NAME
      * *********************************************
      * Smazání jména
@@ -81,11 +81,11 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
         this.dispatch(updateParty(party));
     }
 
-   /**
+    /**
      * ADD NAME
      * *********************************************
      * Vložení nového jména
-     * @param obj data - data jména z formuláře
+     * @param data object - data jména z formuláře
      */ 
     addName(data) {
         var party = this.props.partyRegion.selectedPartyData;       // aktuálně upravovaná osoba
@@ -105,7 +105,7 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
         this.dispatch(updateParty(party));                          // jméno se uloží a osoba znovu načte     
     }
 
-   /**
+    /**
      * HANDLE ADD NAME
      * *********************************************
      * Kliknutí na vložení nového jména
@@ -128,7 +128,7 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('party.detail.name.new') , <PartyNameForm initData={data} onSave={this.addName} />));    // otevře se formuláš nového jména   
     }
 
-   /**
+    /**
      * HANDLE UPDATE RELATION
      * *********************************************
      * Kliknutí na ikonu editace vztahu
@@ -174,17 +174,17 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, name.mainPart , <PartyNameForm initData={data} onSave={this.updateName} />));
     }
 
-   /**
+    /**
      * UPDATE RELATION
      * *********************************************
      * Uložení změn ve jménu
-     * @param obj data - data vyplněná v formuláři 
+     * @param data object - data vyplněná v formuláři
      */ 
     updateName(data){
         var party = this.props.partyRegion.selectedPartyData;                           // identifikátor osoby, které patří měněné jméno
 
         var complements = [];                                                           // nový (zatím prázdný) seznam doplnku jména
-        for(var i = 0; i<data.complements.length; i++){                                 // projdeme data doplňků z formuláře
+        for(let i = 0; i<data.complements.length; i++){                                 // projdeme data doplňků z formuláře
             complements[complements.length] = {                                         // a přidáme je do seznamu nových doplňků
                 complement: data.complements[i].complement,                             // textová hodnota doplňky
                 complementTypeId: data.complements[i].complementTypeId,                 // identifikátor typu doplňku
@@ -193,7 +193,7 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
         }        
 
         var names = party.partyNames;                                                   // původní jména osoby
-        for(var i = 0; i<names.length; i++){                                            // je potřeba ho najít mezi ostatními jmény
+        for(let i = 0; i<names.length; i++){                                            // je potřeba ho najít mezi ostatními jmény
             if(names[i].partyNameId == data.partyNameId){                               // to je ono            
                 party.partyNames[i].mainPart = data.mainPart;                           // hlavní část jména
                 party.partyNames[i].otherPart = data.otherPart;                         // vedlejší část jména
@@ -224,42 +224,39 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
         this.dispatch(updateParty(party));                                              // uložení změn a znovu načtení dat osoby              
     }
 
-   /**
+    /**
      * RENDER
      * *********************************************
      * Vykreslení bloku jmen
      */ 
     render() {
-       const {canEdit} = this.props
+        const {canEdit, partyRegion:{selectedPartyData}} = this.props;
 
-        var party = this.props.partyRegion.selectedPartyData;
+        const party = selectedPartyData;
 
         return  <div className="partyNames">
-                    <table>
-                        <tbody>
-                            {party.partyNames.map(i=> {
-                                var cls = "name column";
-                                if(i.prefferedName){
-                                    cls += " text-bold";
-                                }
+            <table>
+                <tbody>
+                    {party.partyNames.map(i=> {
+                        let cls = "name column";
+                        if(i.prefferedName) {
+                            cls += " text-bold";
+                        }
 
-                                var prefferedBtn = i.prefferedName || !canEdit ? "" :
-                                                   <Button className="column" onClick={this.handleSelectPrefferedName.bind(this, i.partyNameId)}><Icon glyph="fa-check"/></Button>;
-                                var deleteBtn = i.prefferedName || !canEdit ? "" :
-                                    <Button className="column" onClick={this.handleDeleteName.bind(this, i.partyNameId)}><Icon glyph="fa-trash"/></Button>;
-                                return <tr className="name">
-                                <td className={cls}>{i.displayName}</td>
-                                    <td className="buttons">
-                                        {canEdit && <Button className="column" onClick={this.handleUpdateName.bind(this, i.partyNameId)}><Icon glyph="fa-pencil"/></Button>}
-                                        {deleteBtn}
-                                        {prefferedBtn}
-                                    </td>
-                                <td className="description">{(i.preferred ? i18n('party.detail.name.preferred') : "" )}</td>
-                            </tr>})}
-                        </tbody>
-                    </table>
-                    {canEdit && <Button className="column" onClick={this.handleAddName}><Icon glyph="fa-plus"/> { i18n('party.detail.name.new')}</Button>}
-                </div>
+                        const allowedDeleteOrSelect = i.prefferedName || !canEdit;
+                        return <tr key={'partyName' + i.partyNameId} className="name">
+                        <td className={cls}>{i.displayName}</td>
+                            <td className="buttons">
+                                {canEdit && <Button className="column" onClick={this.handleUpdateName.bind(this, i.partyNameId)}><Icon glyph="fa-pencil"/></Button>}
+                                {allowedDeleteOrSelect && <Button className="column" onClick={this.handleDeleteName.bind(this, i.partyNameId)}><Icon glyph="fa-trash"/></Button>}
+                                {allowedDeleteOrSelect && <Button className="column" onClick={this.handleSelectPrefferedName.bind(this, i.partyNameId)}><Icon glyph="fa-check"/></Button>}
+                            </td>
+                        <td className="description">{(i.preferred ? i18n('party.detail.name.preferred') : "" )}</td>
+                    </tr>})}
+                </tbody>
+            </table>
+            {canEdit && <Button className="column" onClick={this.handleAddName}><Icon glyph="fa-plus"/> { i18n('party.detail.name.new')}</Button>}
+        </div>
     }
 }
 

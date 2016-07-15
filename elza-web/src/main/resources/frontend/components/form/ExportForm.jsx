@@ -6,8 +6,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Autocomplete, Icon} from 'components/index.jsx';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, Autocomplete, Icon, FormInput} from 'components/index.jsx';
+import {Modal, Button} from 'react-bootstrap';
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx';
 import {WebApi} from 'actions/index.jsx';
 
@@ -36,7 +36,7 @@ var ExportForm = class ExportForm extends AbstractReactComponent {
             <div>
                 <Modal.Body>
                     <form onSubmit={submitForm}>
-                        {isFetching ? <Loading /> : <Input type="select"
+                        {isFetching ? <Loading /> : <FormInput componentClass="select"
                                    label={i18n('export.transformationName')}
                                     {...transformationName}
                                     {...decorateFormField(transformationName)}
@@ -45,7 +45,7 @@ var ExportForm = class ExportForm extends AbstractReactComponent {
                                 {this.state.transformationNames.map((i, index)=> {
                                     return <option key={index+'name'} value={i}>{i}</option>
                                 })}
-                            </Input>
+                            </FormInput>
                         }
                     </form>
                 </Modal.Body>

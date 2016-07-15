@@ -19,7 +19,7 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 * *********************************************
 * panel pro správu entit jedné osoby
 */ 
-var PartyEntities = class PartyEntities extends AbstractReactComponent {
+const PartyEntities = class PartyEntities extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.bindMethods(
@@ -33,15 +33,15 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.trySetFocus(this.props)
+        this.trySetFocus()
     }
 
     componentWillReceiveProps(nextProps) {
         this.trySetFocus(nextProps)
     }
 
-    trySetFocus(props) {
-        var {focus} = props
+    trySetFocus(props = this.props) {
+        const {focus} = props
 
         if (canSetFocus()) {
             if (isFocusFor(focus, 'party', 3) || isFocusFor(focus, 'party', 3, 'list')) {
@@ -60,36 +60,42 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
      * @param data - data vyplněná v formuláři
      */ 
     updateRelation(data) {
-        var partyId = this.props.partyRegion.selectedPartyData.partyId;             // identifikátor osoby, které patří měněný vztah
-        var relations = this.props.partyRegion.selectedPartyData.relations;         // původní vztahy osoby
-        var relation = null;                                                        // původní verze relace, kterou budeme měnit
-        for(var i = 0; i<relations.length; i++){                                    // je potřeba jí najít mezi ostatními relacemi
+        const {partyRegion:{selectedPartyData:{partyId, relations}}} = this.props;  // identifikátor osoby, které patří měněný vztah a původní vztahy osoby
+        let relation = null;                                                        // původní verze relace, kterou budeme měnit
+        for(let i = 0; i<relations.length; i++){                                    // je potřeba jí najít mezi ostatními relacemi
             if(relations[i].relationId == data.relationId){                         // to je ona            
                 relation = relations[i];                                            // zapamatujeme si, která to je
             }
         }
         var entities = [];                                                          // nový (zatím prázdný) seznam entit vztahu
-        for(var i = 0; i<data.entities.length; i++){                                // projdeme data entit z formuláře
+        for(let i = 0; i<data.entities.length; i++){                                // projdeme data entit z formuláře
             entities[entities.length] = {                                           // a přidáme je do seznamu nových entit
                 source: data.entities[i].sources,                                   // poznámka ke vztahu o zdrojích dat
                 record: {recordId: data.entities[i].record.id},                                    // rejstříková položka
                 roleType: {roleTypeId: data.entities[i].roleTypeId},                // typ vztahu osoby a rejstříkové položky
                 relationEntityId: data.entities[i].relationEntityId                 // identifikátor entity vztahu
             }
-        }        
-        relation.dateNote = data.dateNote;                                          // poznámka k dataci
-        relation.note = data.note;                                                  // poznámka ke vztahu
-        relation.from = data.from;                                                  // datace vztahu od
-        relation.to = data.to;
-        relation.source = data.source;
-        relation.relationEntities = entities;                                       // seznamm entit ve vztahu
-        relation.complementType.relationTypeId = data.relationTypeId;               // typ vztahu
+        }
+        relation = {
+            ...relation,
+            dateNote: data.dateNote,                                          // poznámka k dataci
+            note: data.note,                                                  // poznámka ke vztahu
+            from: data.from,                                                  // datace vztahu od
+            to: data.to,
+            source: data.source,
+            relationEntities: entities,                                       // seznamm entit ve vztahu
+            complementType: {
+                ...relation.complementType,
+                relationTypeId:data.relationTypeId                              // typ vztahu
+            },
+        };
+
         if(
             !relation.from ||
             relation.from.textDate == "" || 
             relation.from.textDate == null || 
             relation.from.textDate == undefined
-        ){  
+        ) {
             relation.from = null;                                                   // pokud není zadaný textová část data, celý datum se ruší
         }
         if(
@@ -97,7 +103,7 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
             relation.to.textDate == "" || 
             relation.to.textDate == null || 
             relation.to.textDate == undefined
-        ){  
+        ) {
             relation.to = null;                                                     // pokud není zadaný textová část data, celý datum se ruší
         }
 
@@ -110,16 +116,17 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
      * Kliknutí na ikonu editace vztahu
      */ 
     handleUpdateRelation(relationId){
-        var party = this.props.partyRegion.selectedPartyData;                       // osoba, které paří vztah, co bysme chtěli měnit
-        var relation = {};                                                          // proměná pro relaci, kterou budeme měnit
-        for(var i = 0; i<party.relations.length; i++){                              // musíme jí najit mezi ostatníma relacena
+        const {partyRegion: {selectedPartyData, gregorianCalendarId, refTables}} = this.props;
+        const party = selectedPartyData;                                             // osoba, které paří vztah, co bysme chtěli měnit
+        let relation = {};                                                          // proměná pro relaci, kterou budeme měnit
+        for(let i = 0; i<party.relations.length; i++){                              // musíme jí najit mezi ostatníma relacena
             if(party.relations[i].relationId == relationId){                        // to je ona
                 relation = party.relations[i];                                      // uložíme si ji do připravené proměnné
             }
         };
-        var entities = [];                                                          // seznam entit ve vztahu
+        let entities = [];                                                          // seznam entit ve vztahu
         if(relation.relationEntities){                                              // pokud má vztah nějakké entity
-            for(var i = 0; i<relation.relationEntities.length; i++){                // tak se projdou
+            for(let i = 0; i<relation.relationEntities.length; i++){                // tak se projdou
                 entities[entities.length]={                                         // a přidají so seznamu vztahů
                     record: {
                         id: relation.relationEntities[i].record.recordId,
@@ -132,7 +139,7 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
                 };
             };
         }
-        var data = {
+        const data = {
             partyId: party.partyId,                                                 // data, která odešleme formuláři pro editace
             partyTypeId: party.partyType.partyTypeId,                               // typ osoby - podle typu osoby budou pak na výběr specifické typy vztahů
             relationId: relation.relationId,                                        // identifikátor vztahu
@@ -143,17 +150,17 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
             source: relation.source,
             from: {                                                                 // datace od
                 textDate: (relation.from != null ? relation.from.textDate : ""),    
-                calendarTypeId: (relation.from != null ? relation.from.calendarTypeId : this.props.partyRegion.gregorianCalendarId )
+                calendarTypeId: (relation.from != null ? relation.from.calendarTypeId : gregorianCalendarId )
             },
             to: {                                                                   // datace do
                 textDate: (relation.to != null ? relation.to.textDate : ""), 
-                calendarTypeId: (relation.to != null ? relation.to.calendarTypeId : this.props.partyRegion.gregorianCalendarId)
+                calendarTypeId: (relation.to != null ? relation.to.calendarTypeId : gregorianCalendarId)
             },
             entities: entities,                                                     // entity ve vztahu
         }
         this.dispatch(                                                              // otevření formáláře s editací vztahu
-            modalDialogShow(this, this.props.partyRegion.selectedPartyData.record.record , 
-            <RelationForm initData={data} refTables={this.props.partyRegion.refTables} onSave={this.updateRelation} />)
+            modalDialogShow(this, selectedPartyData.record.record ,
+            <RelationForm initData={data} refTables={refTables} onSave={this.updateRelation} />)
         );
     }
 
@@ -161,7 +168,7 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
      * HANDLE DELETE RELATION
      * *********************************************
      * Kliknutí na ikonu smazání vztahu
-     * @param int relationId - identifikátor vztahu, který chceme smazzat
+     * @param relationId int - identifikátor vztahu, který chceme smazzat
      * @param event - událost, která provází kliknnutí na smazat
      */ 
     handleDeleteRelation(relationId, event){
@@ -174,7 +181,7 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
      * DELETE RELATION
      * *********************************************
      * Smazání vztahu
-     * @param int relationId - identifikátor vztahu, který chceme smazzat
+     * @param relationId int - identifikátor vztahu, který chceme smazzat
      */ 
     deleteRelation(relationId){
         var partyId = this.props.partyRegion.selectedPartyData.partyId;         // identifikátor osoby, které chceme vztah smazat
@@ -206,25 +213,25 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
      * Vykreslení panelu vztahů
      */ 
     render() {
-        const {canEdit} = this.props
+        const {canEdit, partyRegion: {selectedPartyData}} = this.props;
         
-        var entities = <div></div>;
+        let entities;
 
-        if(this.props.partyRegion.selectedPartyData && this.props.partyRegion.selectedPartyData.relations != null){
-            entities = this.props.partyRegion.selectedPartyData.relations.map(i=> {
-                var icon;
+        if(selectedPartyData && selectedPartyData.relations != null){
+            entities = selectedPartyData.relations.map(i=> {
+                let icon;
                 switch (i.complementType.classType){
                     case "B": icon = "fa-plus"; break;
                     case "E": icon = "fa-minus"; break;
                     case "R": icon = "fa-code-fork"; break;
                 }
 
-                var relationEntities = i.relationEntities ? i.relationEntities.map(e =>e.record.record).join(", ") : null;
+                const relationEntities = i.relationEntities ? i.relationEntities.map(e =>e.record.record).join(", ") : null;
 
-                var date = this.formatDateToText(i.from);
+                let date = this.formatDateToText(i.from);
                 date += i.from != undefined && i.to != undefined  ? " - " + this.formatDateToText(i.to) : this.formatDateToText(i.to);
 
-                return <div className="relation-entity">
+                return <div className="relation-entity" key={"relation-" + i.relationId}>
                             <div className="block-row title"><Icon glyph={icon}/> <strong>{i.complementType.name}</strong></div>
 
                             <div className="block-row">{relationEntities}</div>

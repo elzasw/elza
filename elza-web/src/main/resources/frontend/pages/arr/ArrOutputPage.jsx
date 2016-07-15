@@ -26,9 +26,10 @@ import {
     Tabs,
     FundOutputFiles,
     FundOutputFunctions,
-    RunActionForm
+    RunActionForm,
+    FormInput
 } from 'components/index.jsx';
-import {Input, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
+import {Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
@@ -502,10 +503,10 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 }
                 leftPanel = (
                     <div className="fund-output-list-container">
-                        <Input type="select" onChange={this.handleOutputStateSearch} value={fundOutput.filterState}>
+                        <FormInput componentClass="select" onChange={this.handleOutputStateSearch} value={fundOutput.filterState}>
                             <option value={-1} key="no-filter">{i18n('arr.output.list.state.all')}</option>
                             {filterStates}
-                        </Input>
+                        </FormInput>
                         <ListBox
                             className='fund-output-listbox'
                             ref='fundOutputList'

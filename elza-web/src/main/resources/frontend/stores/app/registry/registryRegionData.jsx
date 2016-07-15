@@ -171,7 +171,7 @@ export default function registryRegionData(state = initialState, action = {}) {
                 variantRecordId: null,
                 regRecordId: record.recordId,
                 version:0,
-                record:null,
+                record:"",
                 variantRecordInternalId:state.variantRecordInternalId
             });
             return {

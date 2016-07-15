@@ -6,9 +6,9 @@
  */
 import React from 'react';
 import {connect} from 'react-redux'
-import {Button, Input} from 'react-bootstrap';
+import {Button} from 'react-bootstrap';
 import {AppActions} from 'stores/index.jsx';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
 
 import {importPackage} from 'actions/admin/packages.jsx';
 
@@ -39,7 +39,7 @@ var AdminPackagesUpload = class AdminPackagesUpload extends AbstractReactCompone
 
         return (
                 <div>
-                    <Input onChange={this.handleChangeFile} ref="file" name="file" type="file" />
+                    <FormInput onChange={this.handleChangeFile} ref="file" name="file" type="file" />
                     <Button disabled={this.state.disabled} onClick={this.handleUpload}>{i18n('admin.packages.action.import')}</Button>
                 </div>
         );

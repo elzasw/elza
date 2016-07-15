@@ -87,17 +87,17 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
                     </div>
                     <hr className="fund-detail-split" />
                     <div className="versions-container">
-                        {fundDetail.versions.map(ver => {
+                        {fundDetail.versions.map((ver, index) => {
                             if (ver.lockDate) {
                                 return (
-                                    <div className='fund-version'>
+                                    <div className='fund-version' key={'fund-version-' +  index}>
                                         <div className="version-label">{i18n('arr.fund.version', dateToString(new Date(ver.lockDate)))}</div>
                                         <Button onClick={this.handleShowInArr.bind(this, ver)} bsStyle='link'>{i18n('arr.fund.action.showInArr')}</Button>
                                     </div>
                                 )
                             } else {
                                 return (
-                                    <div className='fund-version'>
+                                    <div className='fund-version' key={'fund-version-' +  index}>
                                         <div className="version-label">{i18n('arr.fund.currentVersion')}</div>
                                         <Button onClick={this.handleShowInArr.bind(this, ver)} bsStyle='link'>{i18n('arr.fund.action.showInArr')}</Button>
                                     </div>
