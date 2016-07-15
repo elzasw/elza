@@ -470,8 +470,7 @@ public class OutputFactoryService {
 
     private AbstractItem getItemFile(Output output, Node node, ArrItem arrItem, ArrItemFileRef itemData) {
         final ArrFile arrFile = itemData.getFile();
-
-        final ItemFile itemFile = new ItemFile(arrItem, output, node, arrFile.getFile());
+        final ItemFile itemFile = new ItemFile(arrItem, output, node, arrFile);
         itemFile.setName(arrFile.getName());
         itemFile.setFileName(arrFile.getFileName());
         itemFile.setFileSize(arrFile.getFileSize());

@@ -4,7 +4,9 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.print.item.AbstractItem;
 import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.item.ItemFile;
 import cz.tacr.elza.print.item.ItemPacketRef;
+import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.OutputService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -22,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Základní objekt pro generování výstupu, při tisku se vytváří 1 instance.
@@ -79,7 +82,31 @@ public class Output implements RecordProvider {
         return page;
     }
 
+    /**
+     * @return sečtená hodnota počtu stránek příloh pdf připojených k nodům v output.
+     */
+    public Integer getAttachedPages() {
+        return getItemFilePdfsStream()
+                .mapToInt(ItemFile::getPagesCount)
+                .sum();
+    }
 
+    /**
+     * @return seznam PDF příloh připojených k nodům v output.
+     */
+    public List<ItemFile> getAttachements() {
+        return getItemFilePdfsStream()
+//                .map(AbstractItem::getValue)
+                .collect(Collectors.toList());
+    }
+
+    private Stream<ItemFile> getItemFilePdfsStream() {
+        return getNodes().stream()
+                .flatMap(node -> node.getAllItems(new ArrayList<>()).stream())
+                .filter(item -> item instanceof ItemFile)
+                .map(item -> (ItemFile) item)
+                .filter(itemFile -> itemFile.getMimeType().equals(DmsService.MIME_TYPE_APPLICATION_PDF));
+    }
 
     /**
      * @param recordProvider entita poskytující seznam recordů

@@ -6,8 +6,11 @@ import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.print.Output;
+import cz.tacr.elza.print.item.ItemFile;
+import cz.tacr.elza.print.party.DummyDetail;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.DmsService;
@@ -16,15 +19,18 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.ReaderInputStream;
+import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +41,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -44,7 +52,9 @@ import java.io.PipedWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -67,6 +77,7 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
     private static final String FREEMARKER_MAIN_TEMPLATE = MAIN_TEMPLATE_BASE_NAME + FREEMARKER_TEMPLATE_SUFFIX;
     private static final String OUTFILE_SUFFIX_PDF = ".pdf";
     private static final String OUTFILE_SUFFIX_CVS = ".cvs";
+    public static final int MAX_MERGE_MAIN_MEMORY_BYTES = 100 * 1024 * 1024;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -209,24 +220,52 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
             });
 
             // DataSource
-            JRDataSource dataSource = new JREmptyDataSource();
+//            JRDataSource dataSource = new JREmptyDataSource();
+            JRDataSource dataSource = new JRBeanCollectionDataSource(Collections.singletonList(new DummyDetail()));
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
 
             // Export to PDF - pouze příprava procesu pro renderování - reálně proběhne až při čtení z in v dms
             PipedInputStream in = new PipedInputStream();
             PipedOutputStream out = new PipedOutputStream(in);
-            new Thread(
-                    new Runnable() {
-                        public void run() {
-                            try {
-                                JasperExportManager.exportReportToPdfStream(jasperPrint, out);
-                                out.close();
-                            } catch (JRException | IOException e) {
-                                throw new IllegalStateException("Nepodařilo se vyrenderovat PDF ze šablony " + mainJasperTemplate.getAbsolutePath() + ".", e);
+            new Thread(() -> {
+                try {
+                    JasperExportManager.exportReportToPdfStream(jasperPrint, out);
+                    out.close();
+                } catch (JRException | IOException e) {
+                    throw new IllegalStateException("Nepodařilo se vyrenderovat PDF ze šablony " + mainJasperTemplate.getAbsolutePath() + ".", e);
+                }
+            }).start();
+
+            // připojení PDF příloh
+            PipedInputStream inm = new PipedInputStream();
+            PipedOutputStream outm = new PipedOutputStream(inm);
+            new Thread(() -> {
+                PDFMergerUtility ut = new PDFMergerUtility();
+                ut.addSource(in);
+                final List<ItemFile> attachements = output.getAttachements();
+                attachements.stream()
+                        .forEach(itemFile -> {
+                            File file = itemFile.getFile();
+                            if (file == null) { // obezlička, protože arrFile ten file nevrací
+                                final DmsFile dmsFile = dmsService.getFile(itemFile.getFileId());
+                                final String filePath = dmsService.getFilePath(dmsFile);
+                                file = new File(filePath);
                             }
-                        }
-                    }
-            ).start();
+
+                            try {
+                                ut.addSource(file);
+                            } catch (FileNotFoundException e) {
+                                throw new IllegalStateException(e);
+                            }
+                        });
+                ut.setDestinationStream(outm);
+                try {
+                    ut.mergeDocuments(MemoryUsageSetting.setupMixed(MAX_MERGE_MAIN_MEMORY_BYTES));
+                    outm.close();
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
+                }
+            }).start();
 
             // Uložení do výstupní struktury a DMS
             storeOutputInDms(arrOutputDefinition, rulTemplate, in, OUTFILE_SUFFIX_PDF, DmsService.MIME_TYPE_APPLICATION_PDF);
@@ -258,6 +297,21 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
         dmsFile.setMimeType(mimeType);
         dmsFile.setFileSize(0); // 0 - zajistí refresh po skutečném uložení do souboru na disk
         dmsService.createFile(dmsFile, in); // zajistí prezentaci výstupu na klienta
+    }
+
+
+    /**
+     * @deprecated method only for debug template - DO NOT USE IN PRODUCTION CODE
+     */
+    @Deprecated
+    private void storeOutputOnDisk(InputStream in) {
+        try {
+            final FileOutputStream fos = new FileOutputStream("/tmp/output.pdf");
+            IOUtils.copy(in, fos);
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

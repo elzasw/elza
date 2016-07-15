@@ -38,10 +38,6 @@ public class Node implements RecordProvider, Comparable<Node> {
         this.arrLevel = arrLevel;
     }
 
-    public Integer getDepthInLevel() {
-        return null;  // TODO Lebeda - implementovat ???
-    }
-
     /**
      * @return dohledá v output.modes node, který je nadřazený tomuto. Pokud není nalezen nebo neexistuje vrací null.
      */

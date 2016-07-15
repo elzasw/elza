@@ -1,6 +1,7 @@
 package cz.tacr.elza.print.item;
 
 
+import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.Output;
@@ -13,17 +14,26 @@ import java.io.File;
  */
 public class ItemFile extends AbstractItem<File> {
 
+    private Integer fileId;
     private String name;
     private String fileName;
     private Integer fileSize;
     private String mimeType;
     private Integer pagesCount;
 
-    public ItemFile(ArrItem arrItem, Output output, Node node, File value) {
+    public ItemFile(ArrItem arrItem, Output output, Node node, ArrFile value) {
         super(arrItem, output, node);
-        setValue(value);
+        setValue(value.getFile());
+        this.fileId = value.getFileId();
     }
 
+    public Integer getFileId() {
+        return fileId;
+    }
+
+    public void setFileId(Integer fileId) {
+        this.fileId = fileId;
+    }
 
     @Override
     public String serializeValue() {
