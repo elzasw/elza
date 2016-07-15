@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.apache.commons.lang.builder.EqualsBuilder;
 
 import javax.persistence.*;
 
@@ -111,5 +112,20 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
     @Override
     public void setOutputType(RulOutputType outputType) {
         this.outputType = outputType;
+    }
+
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (!(obj instanceof cz.tacr.elza.domain.RulTemplate)) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+
+        cz.tacr.elza.domain.RulTemplate other = (cz.tacr.elza.domain.RulTemplate) obj;
+
+        return new EqualsBuilder().append(templateId, other.getTemplateId()).isEquals();
     }
 }

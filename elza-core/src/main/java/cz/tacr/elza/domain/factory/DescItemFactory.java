@@ -4,6 +4,7 @@ import cz.tacr.elza.api.controller.ArrangementManager;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.ItemService;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MappingContext;
@@ -92,6 +93,9 @@ public class DescItemFactory implements InitializingBean {
 
     @Autowired
     private DataJsonTableRepository dataJsonTableRepository;
+
+    @Autowired
+    private ItemService itemService;
 
     public DescItemFactory() {
     }
@@ -817,8 +821,12 @@ public class DescItemFactory implements InitializingBean {
         descItemRepository.save(descItem);
 
         ArrItemData item = descItem.getItem();
-        ArrData data;
 
+        if (item instanceof ArrItemJsonTable) {
+            itemService.checkJsonTableData(((ArrItemJsonTable) item).getValue(), descItem.getItemType().getColumnsDefinition());
+        }
+
+        ArrData data;
         if (createNewVersion) {
             if (item instanceof ArrItemCoordinates) {
                 data = facade.map(item, ArrDataCoordinates.class);

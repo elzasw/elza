@@ -6,8 +6,8 @@ require('./FundFiles.less')
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, FileListBox, Loading, AddFileForm} from 'components/index.jsx';
-import {Input, Button} from 'react-bootstrap'
+import {AbstractReactComponent, Icon, i18n, FileListBox, Loading, AddFileForm, FormInput} from 'components/index.jsx';
+import {Button} from 'react-bootstrap'
 import {fetchFundFilesIfNeeded, fundFilesFilterByText, fundFilesCreate, fundFilesDelete, fundFilesReplace} from 'actions/arr/fundFiles.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {UrlFactory} from 'actions/index.jsx';
@@ -67,7 +67,7 @@ const FundFiles = class FundFiles extends AbstractReactComponent {
     }
 
     handleReplace(id) {
-        this.refs.uploadInput.getInputDOMNode().click();
+        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
         _ReplaceId = id;
     }
 
@@ -102,7 +102,7 @@ const FundFiles = class FundFiles extends AbstractReactComponent {
                         <Button onClick={this.handleCreate} eventKey='add'><Icon glyph='fa-plus' /> {i18n('arr.fund.files.action.add')}</Button>
                     </div>
                 </div>
-                <Input className="hidden" type="file" ref='uploadInput' onChange={this.handleReplaceSubmit} />
+                <FormInput className="hidden" type="file" ref='uploadInput' onChange={this.handleReplaceSubmit} />
 
                 <FileListBox
                     ref="listBox"

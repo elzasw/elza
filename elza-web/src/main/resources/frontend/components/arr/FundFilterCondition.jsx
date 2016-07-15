@@ -7,8 +7,8 @@ require ('./FundFilterSettings.less')
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {Modal, Button} from 'react-bootstrap';
 import {indexById, getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 
 var FundFilterCondition = class FundFilterCondition extends AbstractReactComponent {
@@ -122,13 +122,13 @@ var FundFilterCondition = class FundFilterCondition extends AbstractReactCompone
             <div className={cls}>
                 {lbl}
                 <div className='inputs-container'>
-                    <Input type='select' onChange={this.handleCodeChange} value={selectedCode}>
+                    <FormInput componentClass='select' onChange={this.handleCodeChange} value={selectedCode}>
                         {items.map(i => {
                             return (
                                 <option key={i.code} value={i.code}>{i.name}</option>
                             )
                         })}
-                    </Input>
+                    </FormInput>
                 </div>
                 <div className='vlaues-container'>
                     {this.renderValues()}

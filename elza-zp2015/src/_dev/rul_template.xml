@@ -9,4 +9,9 @@
         <engine>JASPER</engine>
         <directory>tstJasper</directory>
     </template>
+    <template code="AP_INVENTORY_PDFTEMPLATE" output-type="AP_INVENTORY">
+        <name>AP inventář PDF Template</name>
+        <engine>JASPER</engine>
+        <directory>pdfTemplate</directory>
+    </template>
 </templates>

@@ -1,6 +1,9 @@
 var webpack = require('webpack');
 var path = require('path');
 
+process.env.BABEL_ENV = 'development';
+process.env.NODE_ENV = 'development';
+
 module.exports = {
     entry: [
         './index.jsx',
@@ -15,7 +18,7 @@ module.exports = {
             {
                 test: /\.jsx?$/,
                 exclude: /(node_modules|bower_components)/,
-                loaders: ['babel-loader']
+                loaders: ['react-hot', 'babel-loader']
             },
             {
                 test: /\.json$/,
@@ -55,9 +58,14 @@ module.exports = {
         extensions: ['', '.js', '.jsx']
     },
     plugins: [
+        new webpack.NoErrorsPlugin(),
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery"
+        }),
+        new webpack.DefinePlugin({
+            __DEVTOOLS__: false,
+            __SHOW_DEVTOOLS__: false
         })
     ]
 }

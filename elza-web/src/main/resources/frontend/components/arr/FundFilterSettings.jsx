@@ -8,10 +8,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {FilterableListBox, AbstractReactComponent, i18n} from 'components/index.jsx';
+import {FilterableListBox, AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
 import DescItemUnitdate from './nodeForm/DescItemUnitdate.jsx'
 import DescItemCoordinates from './nodeForm/DescItemCoordinates.jsx'
-import {Modal, Button, Input} from 'react-bootstrap';
+import {Modal, Button} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
@@ -38,7 +38,7 @@ const renderTextFields = (fields) => {
 
         return (
             <div key={index} className='value-container'>
-                <Input {...decorate} type="text" value={field.value} onChange={(e) => field.onChange(e.target.value)} />
+                <FormInput {...decorate} type="text" value={field.value} onChange={(e) => field.onChange(e.target.value)} />
             </div>
         )
     })
@@ -62,7 +62,7 @@ const renderCoordinatesFields = (fields) => {
                         onFocus={()=>{}}
                         onBlur={()=>{}}
                         />
-                    {false && <Input type="text" value={fields[0].value} onChange={(e) => fields[0].onChange(e.target.value)} />}
+                    {false && <FormInput type="text" value={fields[0].value} onChange={(e) => fields[0].onChange(e.target.value)} />}
                 </div>
             )
         case 2:
@@ -84,11 +84,11 @@ const renderCoordinatesFields = (fields) => {
             )
             vals.push(
                 <div key={1} className='value-container'>
-                    <Input type="select" defaultValue={10000} value={fields[1].value} onChange={(e) => fields[1].onChange(e.target.value)}>
+                    <FormInput componentClass="select" defaultValue={10000} value={fields[1].value} onChange={(e) => fields[1].onChange(e.target.value)}>
                         {[100, 500, 1000, 10000, 20000, 50000, 100000].map(l => {
                             return <option key={l} value={l}>{i18n('arr.fund.filterSettings.condition.coordinates.near.' + l)}</option>
                         })}
-                    </Input>
+                    </FormInput>
                 </div>
             )
             return vals
@@ -103,19 +103,19 @@ const renderUnitdateFields = (calendarTypes, fields) => {
             var vals = []
             vals.push(
                 <div key={0} className='value-container'>
-                    <Input type="select"
+                    <FormInput componentClass="select"
                         value={typeof fields[0].value !== 'undefined' ? fields[0].value : 1}
                         onChange={(e) => {fields[0].onChange(e.target.value);}}
                     >
                         {calendarTypes.items.map(calendarType => (
                             <option key={calendarType.id} value={calendarType.id}>{calendarType.name}</option>
                         ))}
-                    </Input>
+                    </FormInput>
                 </div>
             )
             vals.push(
                 <div key={1} className='value-container'>
-                    <Input type="text"
+                    <FormInput type="text"
                         value={fields[1].value}
                         onChange={(e) => {fields[1].onChange(e.target.value);}}
                    />

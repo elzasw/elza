@@ -1,61 +1,59 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, Icon, i18n} from 'components/index.jsx';
-import Button from '../../node_modules/react-bootstrap/lib/Button';
-import SplitButton from '../../node_modules/react-bootstrap/lib/SplitButton';
-import MenuItem from '../../node_modules/react-bootstrap/lib/MenuItem';
-import Loading from '../shared/loading/Loading.jsx'
+import {AbstractReactComponent, Icon, i18n, Loading} from 'components/index.jsx';
+import {SplitButton, MenuItem} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 
-var initState = {
+const INIT_STATE = {
     items: undefined,
     loading: false,
     open: false
 };
 
-var AddNodeDropdown = class AddNodeDropdown extends AbstractReactComponent {
-
-
+const AddNodeDropdown = class AddNodeDropdown extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('focusFirstMenuItem')
+        this.bindMethods('focusFirstMenuItem', 'handleToggle');
 
-        this.state = initState;
+        this.state = INIT_STATE;
     }
 
     /**
      * Renderuje dropdown pro přidání JP se scénáři
      */
     render() {
-        var items = []
-        if (this.state.items) {
-            this.state.items.map((item, index) => {
+        const menuItems = [];
+        const {items, loading, open} = this.state;
+        if (items) {
+            items.map((item, index) => {
                 if (index === 0) {
-                    items.push(<MenuItem ref='firstMenuItem' eventKey={item.name}>{item.name}</MenuItem>)
+                    menuItems.push(<MenuItem key={'add-item-' + index} ref='firstMenuItem' eventKey={item.name}>{item.name}</MenuItem>)
                 } else {
-                    items.push(<MenuItem eventKey={item.name}>{item.name}</MenuItem>)
+                    menuItems.push(<MenuItem key={'add-item-' + index} eventKey={item.name}>{item.name}</MenuItem>)
                 }
-            })
+            });
+
             if (items.length === 0) {
-                items.push(<MenuItem ref='firstMenuItem' eventKey={null}>Bez scénáře</MenuItem>)
+                menuItems.push(<MenuItem key={'add-item-' + 0} ref='firstMenuItem' eventKey={null}>{i18n('subNodeForm.add.noScenario')}</MenuItem>)
             } else {
-                items.push(<MenuItem eventKey={null}>Bez scénáře</MenuItem>)
+                menuItems.push(<MenuItem key={'add-item-' + items.length} eventKey={null}>{i18n('subNodeForm.add.noScenario')}</MenuItem>)
             }
         }
 
+        const {key, action, glyph, title} = this.props;
         return (
             <SplitButton bsStyle="default"
                          tabIndex={-1}
-                         id={`dropdown-${this.props.key}`}
-                         key={this.props.key}
-                         onSelect={this.props.action}
+                         id={`dropdown-${key}`}
+                         key={key}
+                         onSelect={action}
                          onClick={(isOpen) => {this.handleToggle(isOpen, false)}} // Klik na tlačítko
                          onToggle={(isOpen) => {this.handleToggle(isOpen, true)}} // Klik na dropdown
-                         open={this.state.open}
-                         title={<span>{this.props.glyph && <Icon glyph={this.props.glyph} />} {this.props.title}</span>}>
-                {this.state.loading && <Loading />}
-                {items}
+                         open={open}
+                         title={<span>{glyph && <Icon glyph={glyph} />} {title}</span>}>
+                {loading && <Loading />}
+                {menuItems}
             </SplitButton>
         )
     }
@@ -69,13 +67,13 @@ var AddNodeDropdown = class AddNodeDropdown extends AbstractReactComponent {
      * Načte scénáře a vrátí je pro zobrazení v DropDown
      */
     handleToggle(isOpen, isDropdown) {
-        // TODO Zkontrolovat načítání
         if (isOpen && !this.state.loading) {
             this.setState({
                 ...this.state,
                 loading: true
             });
-            WebApi.getNodeAddScenarios(this.props.node, this.props.version, this.props.direction).then((result) => {
+            const {node, version, direction} = this.props;
+            WebApi.getNodeAddScenarios(node, version, direction).then((result) => {
                 if (isDropdown || result.length > 1) {
                     this.setState({
                         ...this.state,
@@ -85,11 +83,10 @@ var AddNodeDropdown = class AddNodeDropdown extends AbstractReactComponent {
                     }, ()=>{this.focusFirstMenuItem()});
                 } else if (result.length === 1) {
                     this.props.action(undefined, result[0].name);
-                    this.setState(initState);
-
+                    this.setState(INIT_STATE);
                 } else {
                     this.props.action();
-                    this.setState(initState);
+                    this.setState(INIT_STATE);
                 }
             });
         } else {
@@ -104,10 +101,11 @@ var AddNodeDropdown = class AddNodeDropdown extends AbstractReactComponent {
 
 AddNodeDropdown.propTypes = {
     title: React.PropTypes.string.isRequired,
-    glyph: React.PropTypes.string.isRequired,
+    glyph: React.PropTypes.string,
     version: React.PropTypes.number.isRequired,
     node: React.PropTypes.object.isRequired,
-    direction: React.PropTypes.string.isRequired
+    direction: React.PropTypes.string.isRequired,
+    action: React.PropTypes.func.isRequired
 };
 
 module.exports = AddNodeDropdown;

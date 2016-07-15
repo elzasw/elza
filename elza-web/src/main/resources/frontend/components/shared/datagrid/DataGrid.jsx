@@ -468,9 +468,11 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
     }
 
     handleEdit(rowIndex, colIndex) {
-        const {rows, onEdit} = this.props;
+        const {rows, onEdit, locked} = this.props;
         const {cols} = this.state;
-        onEdit(rows[rowIndex], rowIndex, cols[colIndex], colIndex)
+        if (locked == null || !locked) {
+            onEdit(rows[rowIndex], rowIndex, cols[colIndex], colIndex)
+        }
     }
 
     handleDelete(rowIndex, colIndex) {
@@ -527,7 +529,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
     render() {
         var cls = this.props.className ? 'datagrid-container ' + this.props.className : 'datagrid-container'
 
-        const {rows, onFocus, onBlur, staticColumns} = this.props;
+        const {rows, onFocus, onBlur, staticColumns, locked} = this.props;
         const {focus, cols, colWidths, selectedRowIndexes, selectedIds} = this.state;
 
         let fullWidth = 0;
@@ -550,8 +552,13 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
             bodyStyle = { width: fullWidth };
         }
 
+        var ti = 0;
+        if (locked) {
+            ti = -1;
+        }
+
         var ret = (
-            <div ref="dataGrid" className={cls} onKeyDown={this.handleKeyDown} tabIndex={0} onFocus={onFocus} onBlur={onBlur}>
+            <div ref="dataGrid" className={cls} onKeyDown={this.handleKeyDown} tabIndex={ti} onFocus={onFocus} onBlur={onBlur}>
                 <div ref='header' className='header-container'>
                     <table className="header-table" style={headerStyle}>
                         <thead>
@@ -620,6 +627,7 @@ DataGrid.propTypes = {
     cols: React.PropTypes.array.isRequired, // pole objektů definice sloupčeků, viz výše
     allowRowCheck: React.PropTypes.bool.isRequired,
     staticColumns: React.PropTypes.bool.isRequired,
+    locked: React.PropTypes.bool,
     focusRow: React.PropTypes.object,
     focusCol: React.PropTypes.object,
     selectedIds: React.PropTypes.array,

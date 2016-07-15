@@ -4,8 +4,8 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Utils, Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components/index.jsx';
-import {Tooltip, OverlayTrigger,Input} from 'react-bootstrap';
+import {Utils, Icon, i18n, AbstractReactComponent, NoFocusButton, FormInput} from 'components/index.jsx';
+import {Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {connect} from 'react-redux'
 import {WebApi} from 'actions/index.jsx';
@@ -57,6 +57,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
                 'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver',
                 'handleDragLeave', 'getShowDeleteDescItemType', 'getShowDeleteDescItem', 'focus', 'handleDescItemTypeShortcuts',
+                'handleSwitchCalculating',
                 'handleDescItemShortcuts', 'handleCoordinatesUploadButtonClick', 'handleJsonTableUploadButtonClick', 'handleCoordinatesUpload', 'handleJsonTableUploadUpload', 'removePlaceholder');
     }
 
@@ -418,11 +419,11 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     handleCoordinatesUploadButtonClick() {
-        this.refs.uploadInput.getInputDOMNode().click();
+        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
     }
 
     handleJsonTableUploadButtonClick() {
-        this.refs.uploadInput.getInputDOMNode().click();
+        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
     }
 
     handleCoordinatesUpload(e) {
@@ -725,6 +726,12 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             actions.push(<NoFocusButton key="delete" onClick={this.props.onDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Icon glyph="fa-trash" /></NoFocusButton>);
         }
 
+        if (infoType.cal === 1) {
+            var icon = infoType.calSt ? "fa-flash" : "fa-calculator";
+            var title = infoType.calSt ? i18n('subNodeForm.calculate-user') : i18n('subNodeForm.calculate-auto');
+            actions.push(<NoFocusButton onClick={this.handleSwitchCalculating} key="calculate" title={title}><Icon glyph={icon} /></NoFocusButton>);
+        }
+
         var titleText = descItemType.name;
         if (refType.description && refType.description.length > 0) {
             if (refType.description != titleText) {
@@ -766,6 +773,13 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         this.props.onDescItemTypeCopyFromPrev();
     }
 
+    /**
+     * Akce na přepnutí vyplňování hodnot atributu.
+     */
+    handleSwitchCalculating() {
+        this.props.onSwitchCalculating();
+    }
+
     render() {
         const {fundId, userDetail, onDescItemRemove, onDescItemAdd, descItemType, refType, infoType, locked, conformityInfo, closed} = this.props;
 
@@ -778,13 +792,13 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                     addAction = <div className='desc-item-type-actions'>
                         <NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus"/></NoFocusButton>
                         <NoFocusButton onClick={this.handleCoordinatesUploadButtonClick} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-upload"/></NoFocusButton>
-                        <Input className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload}/>
+                        <FormInput className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload}/>
                     </div>
                 } else if (this.props.rulDataType.code === "JSON_TABLE") {
                     addAction = <div className='desc-item-type-actions'>
                         <NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton>
                         <NoFocusButton onClick={this.handleJsonTableUploadButtonClick} title={i18n('subNodeForm.descItem.jsonTable.action.upload')}><Icon glyph="fa-upload" /></NoFocusButton>
-                        <Input className="hidden" accept="text/csv" type="file" ref='uploadInput' onChange={this.handleJsonTableUploadUpload} />
+                        <FormInput className="hidden" accept="text/csv" type="file" ref='uploadInput' onChange={this.handleJsonTableUploadUpload} />
                     </div>
                 } else {
                     addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton></div>

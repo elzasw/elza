@@ -99,7 +99,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
     handleApproveFundVersion() {
         const {fundRegion: {fundDetail}} = this.props
 
-        var data = {
+        const data = {
             dateRange: fundDetail.activeVersion.dateRange,
         }
         this.dispatch(
@@ -138,7 +138,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
         const {fundRegion} = this.props
         const fundDetail = fundRegion.fundDetail
 
-        var that = this;
+        const that = this;
         barrier(
             WebApi.getScopes(fundDetail.versionId),
             WebApi.getAllScopes()
@@ -150,7 +150,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
                 }
             })
             .then(json => {
-                var data = {
+                const data = {
                     name: fundDetail.name,
                     institutionId: fundDetail.institutionId,
                     internalCode: fundDetail.internalCode,
@@ -177,7 +177,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
     buildRibbon() {
         const {fundRegion, userDetail} = this.props
 
-        var altActions = [];
+        const altActions = [];
         if (userDetail.hasOne(perms.FUND_ADMIN)) {
             altActions.push(
                 <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div></Button>
@@ -189,7 +189,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
             )
         }
 
-        var itemActions = [];
+        const itemActions = [];
         if (fundRegion.fundDetail.id !== null && !fundRegion.fundDetail.fetching && fundRegion.fundDetail.fetched) {
             if (userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId: fundRegion.fundDetail.id})) {
                 itemActions.push(
@@ -219,14 +219,14 @@ var FundPage = class FundPage extends AbstractReactComponent {
             }
         }
 
-        var altSection;
+        let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup className="small">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key="alt-actions" className="small">{altActions}</RibbonGroup>
         }
 
-        var itemSection;
+        let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key="item-actions" className="small">{itemActions}</RibbonGroup>
         }
 
         return (
@@ -277,12 +277,12 @@ var FundPage = class FundPage extends AbstractReactComponent {
     render() {
         const {splitter, focus, fundRegion} = this.props;
 
-        var activeIndex
+        let activeIndex
         if (fundRegion.fundDetail.id !== null) {
             activeIndex = indexById(fundRegion.funds, fundRegion.fundDetail.id)
         }
         
-        var leftPanel = (
+        const leftPanel = (
             <div className="fund-list-container">
                 <Search
                     onSearch={this.handleSearch}
@@ -302,14 +302,14 @@ var FundPage = class FundPage extends AbstractReactComponent {
             </div>
         )
 
-        var centerPanel = (
+        const centerPanel = (
             <FundDetail
                 fundDetail={fundRegion.fundDetail}
                 focus={focus}
             />
         )
 
-        var rightPanel = (
+        const rightPanel = (
             <FundDetailExt
                 fundDetail={fundRegion.fundDetail}
                 focus={focus}

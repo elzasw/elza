@@ -11,7 +11,7 @@ import javax.persistence.*;
 
 
 /**
- * Implementace třídy {@link cz.tacr.elza.api.RulOut}
+ * Implementace třídy {@link cz.tacr.elza.api.RulOutputType}
  * @author Petr Compel <petr.compel@marbes.cz>
  * @since 16.6.2016
  */
@@ -75,4 +75,17 @@ public class RulOutputType implements cz.tacr.elza.api.RulOutputType<RulPackage>
         this.rulPackage = rulPackage;
     }
 
+    @Override
+    public boolean equals(final Object obj) {
+        if (!(obj instanceof cz.tacr.elza.domain.RulOutputType)) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+
+        cz.tacr.elza.domain.RulOutputType other = (cz.tacr.elza.domain.RulOutputType) obj;
+
+        return new EqualsBuilder().append(outputTypeId, other.getOutputTypeId()).isEquals();
+    }
 }

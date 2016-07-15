@@ -8,8 +8,7 @@ require ('./RegistryPanel.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Input, Button} from 'react-bootstrap';
-import {Icon, NoFocusButton, AbstractReactComponent, RegistryLabel, Loading, EditRegistryForm, RegistryCoordinates, i18n} from 'components/index.jsx';
+import {Icon, NoFocusButton, AbstractReactComponent, RegistryLabel, Loading, EditRegistryForm, RegistryCoordinates, i18n, FormInput} from 'components/index.jsx';
 import {WebApi, UrlFactory} from 'actions/index.jsx';
 import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions/registry/registryRegionList.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
@@ -318,11 +317,11 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
 
     handleCoordinatesUploadButtonClick() {
-        this.refs.uploadInput.getInputDOMNode().click();
+        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
     }
 
     handleCoordinatesUpload() {
-        const fileList = this.refs.uploadInput.getInputDOMNode().files;
+        const fileList = ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).files;
 
         if (fileList.length != 1) {
             return;
@@ -330,7 +329,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
         this.dispatch(registryRecordCoordinatesUpload(fileList[0], this.props.registryRegionData.item.recordId));
 
-        this.refs.uploadInput.value = null;
+        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).value = null;
     }
 
     handleGoToPartyPerson() {
@@ -361,7 +360,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             const addCoordinate = <div className="registry-coordinate-add">
                     <NoFocusButton disabled={disableEdit} onClick={this.handleCoordinatesAdd} title={i18n('registry.coordinates.addPoint')}  ><Icon glyph='fa-plus' /></NoFocusButton>
                     <NoFocusButton onClick={this.handleCoordinatesUploadButtonClick} title={i18n('registry.coordinates.upload')} disabled={disableEdit}><Icon glyph="fa-upload" /></NoFocusButton>
-                    <Input className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload} />
+                    <FormInput className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload} />
             </div>;
 
             const hiearchie = [];
@@ -463,7 +462,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                             </div>
                             <div className='line note'>
                                 <label>{i18n('registry.detail.note')}</label>
-                                <Input disabled={disableEdit} type='textarea' value={this.state.note} onChange={this.handleNoteChange} onBlur={this.handleNoteBlur.bind(this)} />
+                                <FormInput disabled={disableEdit} componentClass='textarea' value={this.state.note} onChange={this.handleNoteChange} onBlur={this.handleNoteBlur.bind(this)} />
                             </div>
                         </div>
                     </div>

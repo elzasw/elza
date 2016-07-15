@@ -167,11 +167,19 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
     }
 
     cellRowDeleteRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus) {
+        const {locked} = this.props;
+
+        var actions = [];
+
+        if (!locked) {
+            actions.push(<NoFocusButton className="remove" onClick={this.handleRemoveRow.bind(this, row, rowIndex)} title={i18n("subNodeForm.descItem.jsonTable.action.removeRow")}>
+                <Icon glyph="fa-remove"/>
+            </NoFocusButton>)
+        }
+
         return (
             <div className='value'>
-                <NoFocusButton className="remove" onClick={this.handleRemoveRow.bind(this, row, rowIndex)} title={i18n("subNodeForm.descItem.jsonTable.action.removeRow")}>
-                    <Icon glyph="fa-remove"/>
-                </NoFocusButton>
+                {actions}
             </div>
         )
     }
@@ -179,6 +187,14 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
     render() {
         const {descItem, locked, onFocus, onDownload} = this.props;
         const {rows, cols} = this.state;
+
+        var actions = [];
+
+        actions.push(<NoFocusButton onClick={onDownload} title={i18n('subNodeForm.descItem.jsonTable.action.download')}><Icon glyph="fa-download" /></NoFocusButton>)
+
+        if (!locked) {
+            actions.push(<NoFocusButton onClick={this.handleAddRow} title={i18n('subNodeForm.descItem.jsonTable.action.addRow')}><Icon glyph="fa-plus" /></NoFocusButton>)
+        }
 
         return (
             <div className='desc-item-value desc-item-value-table'>
@@ -193,10 +209,10 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
                     staticColumns={true}
                     onEdit={this.handleEdit}
                     onDelete={this.handleDelete}
+                    locked={locked}
                     />
                 <div className='desc-item-value-actions'>
-                    <NoFocusButton onClick={this.handleAddRow} title={i18n('subNodeForm.descItem.jsonTable.action.addRow')}><Icon glyph="fa-plus" /></NoFocusButton>
-                    <NoFocusButton onClick={onDownload} title={i18n('subNodeForm.descItem.jsonTable.action.download')}><Icon glyph="fa-download" /></NoFocusButton>
+                    {actions}
                 </div>
             </div>
         )

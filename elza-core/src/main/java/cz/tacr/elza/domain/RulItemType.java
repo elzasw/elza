@@ -91,6 +91,12 @@ public class RulItemType implements cz.tacr.elza.api.RulItemType<RulDataType, Ru
     private Boolean repeatable;
 
     @Transient
+    private Boolean calculable;
+
+    @Transient
+    private Boolean calculableState;
+
+    @Transient
     private String policyTypeCode;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
@@ -213,6 +219,26 @@ public class RulItemType implements cz.tacr.elza.api.RulItemType<RulDataType, Ru
     @Override
     public void setRepeatable(final Boolean repeatable) {
         this.repeatable = repeatable;
+    }
+
+    @Override
+    public Boolean getCalculable() {
+        return calculable;
+    }
+
+    @Override
+    public void setCalculable(final Boolean calculable) {
+        this.calculable = calculable;
+    }
+
+    @Override
+    public Boolean getCalculableState() {
+        return calculableState;
+    }
+
+    @Override
+    public void setCalculableState(final Boolean calculableState) {
+        this.calculableState = calculableState;
     }
 
     @Override

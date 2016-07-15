@@ -1,18 +1,20 @@
 package cz.tacr.elza.print;
 
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.print.item.ItemRecordRef;
 import cz.tacr.elza.service.OutputService;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,12 +23,11 @@ import java.util.stream.Collectors;
  *         Date: 22.6.16
  */
 @Scope("prototype")
-public class Record {
+public class Record implements Comparable<Record> {
     private final Output output; // vazba na nadřazený output
     private final Node node; // vazba na node, může být null, v takovém případě patří přímo k output
-
     private final RegRecord regRecord;
-
+    private ItemRecordRef item; // vazba na item, může být null
     @Autowired
     private OutputService outputService; // interní vazba na service
 
@@ -41,12 +42,50 @@ public class Record {
         this.regRecord = regRecord;
     }
 
+    /**
+     * Metoda pro získání hodnoty do fieldu v Jasper.
+     * Umožní na položce v detailu volat metody sám nad sebou (nejen implicitně zpřístupněné gettery).
+     *
+     * @return odkaz sám na sebe
+     */
+    public Record getRecordVo() {
+        return this;
+    }
+
     // vrací seznam Node přiřazených přes vazbu arr_node_register
     List<Node> getNodes() {
-        final List<ArrNode> nodesByRegister = outputService.getNodesByRegister(regRecord);
         return output.getNodes().stream()
-                .filter(node -> nodesByRegister.contains(node.getArrNode()))
+                .filter(node -> node.getRecords().contains(this))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Serializuje seznam node navázaných na record v aktuálním outputu pomocí první nalezené hodnoty z itemů dle code.
+     * Pokud není naleze žádný vyhovující item, vypíše se node.toString().
+     *
+     * @param codes seznam kódů možných itemů, pořadí je respektováno
+     * @return seznam serializovaných node oddělěný čárkou
+     */
+    public String getNodesSerialized(@NotNull Collection<String> codes) {
+        List<String> result = new ArrayList<>();
+        final List<Node> nodes = getNodes().stream().distinct().collect(Collectors.toList());
+
+        nodes.stream().forEach(node1 -> {
+            String serializedString = "";
+            for (String code : codes) {
+                serializedString = node1.getAllItemsAsString(Collections.singletonList(code));
+                if (StringUtils.isNotBlank(serializedString)) {
+                    break;
+                }
+            }
+            if (StringUtils.isBlank(serializedString)) {
+                serializedString = "[" + node1.toString() + "]";
+            }
+            final String trim = StringUtils.trim(serializedString);
+            result.add(trim);
+        });
+
+        return StringUtils.join(result, ", ");
     }
 
     /**
@@ -92,16 +131,40 @@ public class Record {
 
     @Override
     public boolean equals(final Object o) {
-        return EqualsBuilder.reflectionEquals(o, this);
+        if (o instanceof Record) {
+            Record other = (Record) o;
+            return new EqualsBuilder()
+                    .append(getRecord(), other.getRecord())
+                    .append(getCharacteristics(), other.getCharacteristics())
+                    .isEquals();
+        }
+        return false;
     }
 
     @Override
     public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
+        return new HashCodeBuilder()
+//                .append(getType())
+                .append(getRecord())
+                .append(getCharacteristics())
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
+        return new ToStringBuilder(this).append("record", record).append("characteristics", characteristics).toString();
+    }
+
+    public ItemRecordRef getItem() {
+        return item;
+    }
+
+    public void setItem(ItemRecordRef item) {
+        this.item = item;
+    }
+
+    @Override
+    public int compareTo(Record o) {
+        return CompareToBuilder.reflectionCompare(this, o);
     }
 }

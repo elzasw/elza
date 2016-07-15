@@ -1,9 +1,8 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {Modal, Button} from 'react-bootstrap';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
@@ -48,7 +47,7 @@ var GoToPositionForm = class GoToPositionForm extends AbstractReactComponent {
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit(submitForm)}>
-                        <Input type="text" label={i18n('arr.fund.subNodes.findPositionNumber', maxPosition)} {...position} {...decorateFormField(position)} />
+                        <FormInput type="text" label={i18n('arr.fund.subNodes.findPositionNumber', maxPosition)} {...position} {...decorateFormField(position)} />
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

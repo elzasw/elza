@@ -55,6 +55,7 @@ export default function fundOutputDetail(state = initialState, action = {}) {
             if (action.outputIds.indexOf(state.id) !== -1) {
                 return {
                     ...state,
+                    subNodeForm: subNodeForm(state.subNodeForm, action),
                     currentDataKey: ''
                 }
             }
@@ -88,7 +89,7 @@ export default function fundOutputDetail(state = initialState, action = {}) {
             }
         }
         case types.CHANGE_OUTPUTS:
-            if (indexById(action.outputDefinitionIds, state.id)) {
+            if (action.outputDefinitionIds && action.outputDefinitionIds.indexOf(state.id) >= 0) {
                 return {
                     ...state,
                     subNodeForm: subNodeForm(state.subNodeForm, action),

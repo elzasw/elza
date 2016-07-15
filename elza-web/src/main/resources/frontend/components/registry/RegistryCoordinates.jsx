@@ -1,11 +1,10 @@
-
 require ('./RegistryCoordinates.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Input, Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
+import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, NoFocusButton, Icon} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, NoFocusButton, Icon, FormInput} from 'components/index.jsx';
 
 var RegistryCoordinates = class RegistryCoordinates extends AbstractReactComponent {
     constructor(props) {
@@ -69,7 +68,7 @@ var RegistryCoordinates = class RegistryCoordinates extends AbstractReactCompone
                         <div className='value'>
                             <Button bsStyle='default' disabled>{wktType(this.state.type)}</Button>
                             <OverlayTrigger overlay={tooltip} placement="bottom">
-                                <Input
+                                <FormInput
                                     type='text'
                                     ref='focusEl'
                                     className={title !== '' ? 'error' : ''}
@@ -91,10 +90,9 @@ var RegistryCoordinates = class RegistryCoordinates extends AbstractReactCompone
                         </div>
                 }
                 <div className='description'>
-                    <Input
-                        type='string'
+                    <FormInput
+                        type='text'
                         ref='focusEldesc'
-                        className='form-control'
                         disabled={disabled}
                         onBlur={onBlur}
                         value={item.description}

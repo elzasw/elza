@@ -73,4 +73,12 @@ public interface Item<T> {
      * @return vrací původní hodnotu položky
      */
     T getValue();
+
+    /**
+     * Metoda pro získání hodnoty do fieldu v Jasper.
+     * Umožní na položce v detailu volat metody sám nad sebou (nejen implicitně zpřístupněné gettery).
+     *
+     * @return odkaz sám na sebe
+     */
+    Item<T> getItem();
 }

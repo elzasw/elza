@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.boot.context.embedded.ServletListenerRegistrationBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.LockedException;
@@ -14,9 +16,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.stereotype.Component;
 
 /**
@@ -26,6 +32,7 @@ import org.springframework.stereotype.Component;
  * @since 11.04.2016
  */
 @Component
+@EnableWebMvcSecurity
 @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 
@@ -52,6 +59,16 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationSecurity.class);
 
+    private SessionRegistry sessionRegistry = null;
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        if (sessionRegistry == null) {
+            sessionRegistry = new SessionRegistryImpl();
+        }
+        return sessionRegistry;
+    }
+
     @Override
     protected void configure(AuthenticationManagerBuilder builder) throws Exception {
         builder.authenticationProvider(new AuthenticationProvider() {
@@ -62,6 +79,8 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
                 String encodePassword = userService.encodePassword(username, password);
 
                 UsrUser user = userService.findByUsername(username);
+
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword, null);
                 if (user != null) {
                     if (!user.getPassword().equals(encodePassword)) {
                         throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
@@ -71,18 +90,15 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
                         throw new LockedException("User is not active");
                     }
 
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword, null);
                     auth.setDetails(new UserDetail(user, userService.calcUserPermission(user)));
-                    return auth;
                 } else if (allowDefaultUser && username.equals(defaultUsername) && encodePassword.equalsIgnoreCase(defaultPassword)) {
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword, null);
                     auth.setDetails(new UserDetail(defaultUsername));
-                    return auth;
                 } else {
                     // TODO: smazat po vytvoření správy uživatelů
                     logger.warn(username + ":" + encodePassword);
                     throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
                 }
+                return auth;
             }
 
             @Override
@@ -93,10 +109,19 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 
     }
 
+    @Bean
+    public ServletListenerRegistrationBean<HttpSessionEventPublisher> httpSessionEventPublisher() {
+        return new ServletListenerRegistrationBean<>(new HttpSessionEventPublisher());
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests().antMatchers("/api/**").authenticated();
         http.csrf().disable();
+        http.sessionManagement()
+                .maximumSessions(10)
+                .maxSessionsPreventsLogin(false)
+                .sessionRegistry(sessionRegistry());
         http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint)
                 .and()
                 .logout().permitAll();

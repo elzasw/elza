@@ -9,9 +9,9 @@ import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {selectFundTab} from 'actions/arr/fund.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 
-require ('./FundDetailExt.less');
+require('./FundDetailExt.less');
 
-var FundDetailExt = class FundDetailExt extends AbstractReactComponent {
+const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -30,7 +30,7 @@ var FundDetailExt = class FundDetailExt extends AbstractReactComponent {
 
         // Otevření archivního souboru
         const fund = this.props.fundDetail
-        var fundObj = getFundFromFundAndVersion(fund, version);
+        const fundObj = getFundFromFundAndVersion(fund, version);
         this.dispatch(selectFundTab(fundObj));
     }
 
@@ -63,18 +63,18 @@ var FundDetailExt = class FundDetailExt extends AbstractReactComponent {
         //         ]},
         // ]
 
-        const validOutputs = fundDetail.validNamedOutputs.map(outputDefinition => {
+        const validOutputs = fundDetail.validNamedOutputs.map((outputDefinition, index) => {
             return (
-                <div className="output">
+                <div className="output" key={index}>
                     <div className="output-label">{outputDefinition.name}</div>
                     <Button bsStyle="link">{i18n('arr.fund.outputDefinition.action.showPDF')}</Button>
                 </div>
             )
         })
 
-        const histOutputs = fundDetail.historicalNamedOutputs.map(outputDefinition => {
+        const histOutputs = fundDetail.historicalNamedOutputs.map((outputDefinition, index) => {
             return (
-                <div className="output with-versions">
+                <div className="output with-versions"  key={index}>
                     <div className="output-label">{outputDefinition.name}</div>
                     <div className="versions-container">
                         {outputDefinition.outputs.map(output => (

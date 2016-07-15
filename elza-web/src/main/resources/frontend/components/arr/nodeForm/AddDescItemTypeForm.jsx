@@ -6,12 +6,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {Autocomplete, AbstractReactComponent, i18n, Icon} from 'components/index.jsx';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput} from 'components/index.jsx';
+import {Modal, Button} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 
-require ('./AddDescItemTypeForm.less')
+require('./AddDescItemTypeForm.less')
 
 const validate = (values, props) => {
     const errors = {};
@@ -95,10 +95,10 @@ var AddDescItemTypeForm = class AddDescItemTypeForm extends AbstractReactCompone
                             })}
                         </div>
                         {true && ac}
-                        {false && <Input type="select" label={i18n('subNodeForm.descItemType')} {...descItemTypeId} {...decorateFormField(descItemTypeId)}>
-                            <option></option>
+                        {false && <FormInput componentClass="select" label={i18n('subNodeForm.descItemType')} {...descItemTypeId} {...decorateFormField(descItemTypeId)}>
+                            <option key="blank"/>
                             {this.props.descItemTypes.map(i=> <option value={i.id}>{i.name}</option>)}
-                        </Input>}
+                        </FormInput>}
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

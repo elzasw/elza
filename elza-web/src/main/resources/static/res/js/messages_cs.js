@@ -33,7 +33,8 @@ var messages = {
     "global.action.export": "Exportovat",
     "global.action.download": "Stáhnout",
     "global.action.downloadAll": "Stáhnout vše",
-    
+    "global.action.run": "Spustit",
+
     "search.input.search": "Vyhledat...",
     "search.not.found": "nenalezeno",
 
@@ -57,6 +58,7 @@ var messages = {
     "ribbon.action.arr.output.usageEnd": "Ukončit používání",
     "ribbon.action.arr.output.delete": "Smazat",
     "ribbon.action.arr.output.bulkActions": "Hrom. akce pro výstup",
+    "ribbon.action.arr.output.otherAction": "Použít jinou funkci",
     "ribbon.action.arr.output.revert": "Vrátit do přípravy",
     "ribbon.action.arr.output.clone": "Vytvořit kopii",
     "ribbon.action.arr.fund.add": "Nový AS",
@@ -137,6 +139,10 @@ var messages = {
     "arr.output.temporary": "Dočasný výstup",
     "arr.output.outputType": "Typ výstup",
     "arr.output.template": "Šablona",
+    "arr.output.functions.state" : "Stav: {0}",
+    "arr.output.functions.notStarted" : "Nebyla provedena",
+    "arr.output.functions.recommended": "Doporučené",
+    "arr.output.functions.all": "Všechny použité funkce",
 
     "arr.output.list.type": "Typ: {0}",
     "arr.output.list.state.label": "Stav:",
@@ -363,6 +369,7 @@ var messages = {
 
     "subNodeForm.descItem.coordinates.action.add": "Nahrát souřadnice",
 
+    "subNodeForm.add.noScenario": "Bez scénáře",
     "subNodeForm.addNodeBefore": "JP před",
     "subNodeForm.addSubNode": "JP pod",
     "subNodeForm.deleteNode": "Smazat JP",
@@ -371,6 +378,11 @@ var messages = {
     "subNodeForm.countOfCoordinates": "Počet bodů: {0}",
     "subNodeForm.errorPointCoordinates": "Chybně zadaný bod. Zadávejte ve tvaru \"15.5154,49.535\"",
     "subNodeForm.formatPointCoordinates": "Zadávejte ve tvaru \"15.5154,49.535\"",
+
+    "subNodeForm.calculate-user": "Pole je vyplňováno uživatelsky, přepnout na automatické",
+    "subNodeForm.calculate-auto": "Pole je vyplňováno automaticky, přepnout na uživatelské",
+    "subNodeForm.calculate-user.confirm": "Pole již nebude automaticky aktualizováno funkcí. Opravdu chcete provést akci?",
+    "subNodeForm.calculate-auto.confirm": "Pole již nebude uživatelsky upravováno, bude automaticky aktualizováno funcí. Opravdu chcete provést akci?",
 
     "subNodeForm.descItemTypeAdd": "Přidat prvek",
     "subNodeForm.descItemTypeUnlockAll": "Odemknout vše",
@@ -521,7 +533,7 @@ var messages = {
     "admin.packages.message.delete.title": "Smazání balíčku",
     "admin.packages.message.delete.message": "Balíček {0} byl úspěšně smazán",
 
-    "admin.user.filter.all": "Všichni uživatlé",
+    "admin.user.filter.all": "Všichni uživatelé",
     "admin.user.filter.onlyActive": "Aktivní uživatelé",
     "admin.user.label.username": "Uživatelské jméno",
     "admin.user.title.groups": "Členství ve skupinách",

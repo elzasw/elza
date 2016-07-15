@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Button, Input} from 'react-bootstrap'
-import {AbstractReactComponent, AddRemoveList, i18n} from 'components/index.jsx';
+import {Button} from 'react-bootstrap'
+import {AbstractReactComponent, AddRemoveList, i18n, FormInput} from 'components/index.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import {permissionBlur, permissionAdd, permissionChange, permissionReceive, permissionRemove} from 'actions/admin/permission.jsx'
 
-require ('./Permissions.less');
+require('./Permissions.less');
 
-var Permissions = class Permissions extends AbstractReactComponent {
+const Permissions = class Permissions extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -52,8 +52,8 @@ var Permissions = class Permissions extends AbstractReactComponent {
         const permInfo = perms.all[permission.permission]
 
         const permInput = (
-            <Input
-                type="select"
+            <FormInput
+                componentClass="select"
                 value={permission.permission}
                 onChange={this.handleChangePermission.bind(this, permission, index)}
                 onBlur={() => this.dispatch(permissionBlur(area, index))}
@@ -62,14 +62,14 @@ var Permissions = class Permissions extends AbstractReactComponent {
                 {Object.keys(perms.all).map(perm => {
                     return <option value={perm}>{i18n("permission." + perm)}</option>
                 })}
-            </Input>
+            </FormInput>
         )
 
         var permValue;
         if (permInfo && (permInfo.fund || permInfo.scope)) {
             if (permInfo.fund) {
                 permValue = (
-                    <Input
+                    <FormInput
                         type="text"
                         value={permission.fundId}
                         onChange={this.handleChangeValue.bind(this, permission, index)}
@@ -78,7 +78,7 @@ var Permissions = class Permissions extends AbstractReactComponent {
                 )
             } else if (permInfo.scope) {
                 permValue = (
-                    <Input
+                    <FormInput
                         type="text"
                         value={permission.scopeId}
                         onChange={this.handleChangeValue.bind(this, permission, index)}

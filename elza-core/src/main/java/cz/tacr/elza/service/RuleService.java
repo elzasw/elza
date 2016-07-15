@@ -8,6 +8,7 @@ import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemSettings;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
@@ -18,6 +19,7 @@ import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -27,7 +29,9 @@ import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
 import cz.tacr.elza.repository.DefaultItemTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeActionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
@@ -111,6 +115,12 @@ public class RuleService {
 
     @Autowired
     private OutputService outputService;
+
+    @Autowired
+    private ItemTypeActionRepository itemTypeActionRepository;
+
+    @Autowired
+    private ItemSettingsRepository itemSettingsRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
@@ -511,6 +521,8 @@ public class RuleService {
 
             rulDescItemTypeExt.setType(RulItemType.Type.IMPOSSIBLE);
             rulDescItemTypeExt.setRepeatable(true);
+            rulDescItemTypeExt.setCalculable(false);
+            rulDescItemTypeExt.setCalculableState(false);
             rulDescItemTypeExt.setPolicyTypeCode(policyType.getCode());
 
             // projde všechny specifikace typů atributů
@@ -598,8 +610,38 @@ public class RuleService {
         return getOutputItemTypes(outputDefinition, version);
     }
 
+    /**
+     * Vrací typy atributu.
+     *
+     * @param outputDefinition výstup
+     * @param fundVersion      verze AS
+     * @return seznam typů
+     */
     public List<RulItemTypeExt> getOutputItemTypes(final ArrOutputDefinition outputDefinition, final ArrFundVersion fundVersion) {
         List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes();
+
+        List<RulItemTypeAction> itemTypeActions = itemTypeActionRepository.findAll();
+        Map<Integer, RulItemType> itemTypeMap = new HashMap<>();
+
+        for (RulItemTypeAction itemTypeAction : itemTypeActions) {
+            itemTypeMap.put(itemTypeAction.getItemType().getItemTypeId(), itemTypeAction.getItemType());
+        }
+
+        List<ArrItemSettings> settings = itemSettingsRepository.findByOutputDefinition(outputDefinition);
+        Map<Integer, Boolean> settingsMap = new HashMap<>();
+
+        for (ArrItemSettings setting : settings) {
+            settingsMap.put(setting.getItemType().getItemTypeId(), setting.getBlockActionResult());
+        }
+
+        for (RulItemTypeExt rulItemTypeExt : rulDescItemTypeExtList) {
+            if (itemTypeMap.get(rulItemTypeExt.getItemTypeId()) != null) {
+                rulItemTypeExt.setCalculable(true);
+                Boolean state = settingsMap.get(rulItemTypeExt.getItemTypeId());
+                rulItemTypeExt.setCalculableState(state == null ? false : state);
+            }
+        }
+
         return rulesExecutor.executeOutputItemTypesRules(outputDefinition, rulDescItemTypeExtList, fundVersion);
     }
 }

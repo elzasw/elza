@@ -1,6 +1,7 @@
 package cz.tacr.elza.print;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -12,12 +13,22 @@ import java.util.StringJoiner;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class Packet {
+public class Packet implements Comparable<Packet> {
     private String type;
     private String typeCode;
     private String typeShortcut;
     private String storageNumber;
     private String state;
+
+    /**
+     * Metoda pro získání hodnoty do fieldu v Jasper.
+     * Umožní na položce v detailu volat metody sám nad sebou (nejen implicitně zpřístupněné gettery).
+     *
+     * @return odkaz sám na sebe
+     */
+    public Packet getPacket() {
+        return this;
+    }
 
     /**
      * Fieldy spojí v uvedeném pořadí "type typeCode typeShortcut storageNumber state" a oddělí čárkou, zohledňuje pouze vyplněné položky.
@@ -29,24 +40,20 @@ public class Packet {
         if (StringUtils.isNotBlank(type)) {
             sj.add(type);
         }
-        if (StringUtils.isNotBlank(typeCode)) {
-            sj.add(typeCode);
-        }
+//        if (StringUtils.isNotBlank(typeCode)) {
+//            sj.add(typeCode);
+//        }
         if (StringUtils.isNotBlank(typeShortcut)) {
             sj.add(typeShortcut);
         }
         if (StringUtils.isNotBlank(storageNumber)) {
             sj.add(storageNumber);
         }
-        if (StringUtils.isNotBlank(state)) {
-            sj.add(state);
-        }
+//        if (StringUtils.isNotBlank(state)) {
+//            sj.add(state);
+//        }
         return sj.toString();
     }
-
-    // TODO Lebeda - implementovat ???
-//    +getNodes() : Node[*] ???
-
 
     public String getState() {
         return state;
@@ -101,5 +108,10 @@ public class Packet {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
+    }
+
+    @Override
+    public int compareTo(Packet o) {
+        return CompareToBuilder.reflectionCompare(this, o);
     }
 }

@@ -48,7 +48,7 @@ import java.util.Map;
  * @since 7. 1. 2016
  */
 @RestController
-@RequestMapping("/api/ruleSetManagerV2")
+@RequestMapping("/api/rule")
 public class RuleController {
 
     @Autowired

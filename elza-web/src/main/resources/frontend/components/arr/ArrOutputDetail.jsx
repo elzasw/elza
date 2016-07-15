@@ -9,8 +9,7 @@ import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
 import Utils from "components/Utils.jsx";
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
-import {Loading, i18n, OutputSubNodeForm, FundNodesAddForm, FundNodesList, AbstractReactComponent} from 'components/index.jsx';
-import {Input} from 'react-bootstrap';
+import {Loading, i18n, OutputSubNodeForm, FundNodesAddForm, FundNodesList, AbstractReactComponent, FormInput} from 'components/index.jsx';
 import {fundOutputDetailFetchIfNeeded, fundOutputEdit} from 'actions/arr/fundOutput.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
@@ -202,7 +201,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
                             onSave={this.handleSaveOutput}
                             />
                         {fundOutputDetail.outputDefinition.error && <div>
-                            <Input type="textarea" value={fundOutputDetail.outputDefinition.error} disabled label={i18n('arr.output.title.error')}/>
+                            <FormInput componentClass="textarea" value={fundOutputDetail.outputDefinition.error} disabled label={i18n('arr.output.title.error')}/>
                         </div>}
                     </div>
 

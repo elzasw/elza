@@ -7,9 +7,8 @@
 
 import React from 'react';
 
-import {Button, Input} from 'react-bootstrap';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
 import ReactDOM from 'react-dom'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 require ('./Scope.less');
@@ -39,10 +38,10 @@ var Scope = class Scope extends AbstractReactComponent {
         var {refTables, ...other} = this.props;
 
         return (
-            <Input type='select' options={data} {...other}>
+            <FormInput componentClass='select' options={data} {...other}>
                 <option />
                 {data.map((i)=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
-            </Input>
+            </FormInput>
         );
     }
 };

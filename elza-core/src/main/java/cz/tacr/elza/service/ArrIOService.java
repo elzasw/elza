@@ -212,6 +212,9 @@ public class ArrIOService {
             table.addRow(row);
         }
 
+        // kontrola datových typů tabulky
+        itemService.checkJsonTableData(table, descItemType.getColumnsDefinition());
+
         return item;
     }
 

@@ -222,33 +222,33 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
     buildRibbon() {
         const {userDetail, partyRegion, refTables} = this.props
 
-        var isSelected = partyRegion.selectedPartyID ? true : false;
-        var altActions = [];
+        const isSelected = partyRegion.selectedPartyID ? true : false;
+        const altActions = [];
         if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
             altActions.push(
-                <ControllableDropdownButton ref='addParty'
+                <ControllableDropdownButton key='addParty' ref='addParty' id='addParty'
                                             title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
                     {refTables.partyTypes.items.map(i=> {
-                        return <MenuItem key={i.partyTypeId} eventKey="{i.partyTypeId}"
+                        return <MenuItem key={i.partyTypeId} eventKey={i.partyTypeId}
                                          onClick={this.handleAddParty.bind(this, i.partyTypeId)}>{i.name}</MenuItem>
                     })}
                 </ControllableDropdownButton>
             );
             altActions.push(
-                <Button onClick={this.handleImport}><Icon glyph='fa-download'/>
+                <Button key='export-party' onClick={this.handleImport}><Icon glyph='fa-download'/>
                     <div><span className="btnText">{i18n('ribbon.action.party.import')}</span></div>
                 </Button>
             );
         }
 
-        var itemActions = [];
+        const itemActions = [];
         if (isSelected && partyRegion.fetchedDetail && !partyRegion.isFetchingDetail) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyRegion.selectedPartyData.record.scopeId})) {
                 itemActions.push(
-                    <ControllableDropdownButton ref='addRelation'
+                    <ControllableDropdownButton key='add-relation' ref='addRelation' id='addRelation'
                                                 title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.relation.add')}</span></div></span>}>
                         {["B", "E", "R"].map(i => {
-                            var name = i18n('party.relation.classType.' + i).toUpperCase();
+                            const name = i18n('party.relation.classType.' + i).toUpperCase();
                             return <MenuItem key={"classType"+i}
                                              onClick={this.handleAddRelation.bind(this,i)}>{name}</MenuItem>
                         })}
@@ -257,20 +257,20 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
                     //<Button onClick={this.handleAddRelation}><Icon glyph="fa-link" /><div><span className="btnText">{i18n('party.relation.add')}</span></div></Button>
                 );
                 itemActions.push(
-                    <Button onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
+                    <Button key='delete-relation' onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('party.delete.button')}</span></div>
                     </Button>
                 );
             }
         }
 
-        var altSection;
+        let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup className="small">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>
         }
-        var itemSection;
+        let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup className="small">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>
         }
 
         return (

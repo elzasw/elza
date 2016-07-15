@@ -1,17 +1,17 @@
-require ('./DescItemPartyRef.less')
+require('./DescItemPartyRef.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {decorateAutocompleteValue} from './DescItemUtils.jsx'
-import {MenuItem, DropdownButton, Button} from 'react-bootstrap';
+import {MenuItem, DropdownButton} from 'react-bootstrap';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 
-var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
+const DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.bindMethods('handleChange', 'renderParty', 'handleSearchChange', 'renderFooter', 'handleDetail', 'focus');
@@ -32,8 +32,7 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     }
 
     handleSearchChange(text) {
-
-        text = text == "" ? null : text;
+        text = text == '' ? null : text;
 
         WebApi.findParty(text, this.props.versionId).then(json => {
             this.setState({
@@ -82,16 +81,16 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
 
     render() {
         const {userDetail, descItem, locked, singleDescItemTypeEdit} = this.props;
-        var value = descItem.party ? descItem.party : null;
+        const value = descItem.party ? descItem.party : null;
 
-        var footer
+        let footer
         if (!singleDescItemTypeEdit) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR)) {
                 footer = this.renderFooter()
             }
         }
 
-        var actions = new Array;
+        const actions = new Array;
         if (descItem.party) {
             if (userDetail.hasOne(perms.REG_SCOPE_RD_ALL, {type: perms.REG_SCOPE_RD, scopeId: descItem.party.record.scopeId})) {
                 actions.push(<div onClick={this.handleDetail.bind(this, descItem.party.partyId)}

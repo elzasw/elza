@@ -18,17 +18,17 @@ require("./Toastr.less")
  *      addToastrWarning('title', 'message,...)
 **/
 
-var React = require('react');
-
+import React from 'react'
 import {Icon, i18n, AbstractReactComponent} from 'components/index.jsx';
 import {Alert} from 'react-bootstrap';
 import {connect} from 'react-redux'
-import {addToastr,removeToastr} from './ToastrActions.jsx'
+import {addToastr, removeToastr} from './ToastrActions.jsx'
 
-var Toastr = class Toastr extends AbstractReactComponent {
+require('./Toastr.less');
+
+const Toastr = class Toastr extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.state = {};
         this.bindMethods('handleDismiss')
     }
 
@@ -36,41 +36,36 @@ var Toastr = class Toastr extends AbstractReactComponent {
         this.dispatch(removeToastr(index));
     }
 
+    static getIconStyle(style) {
+        switch (style) {
+            case 'success':
+                return <Icon glyph="fa-check" />;
+            case 'warning':
+                return <Icon glyph="fa-exclamation" />;
+            case 'info':
+                return <Icon glyph="fa-info-circle" />;
+            case 'danger':
+                return <Icon glyph="fa-exclamation-circle" />;
+        }
+    }
+
     render() {
-        var rows = this.props.store.toasts.map((t, index) => {
-            var icon = null;
-            switch (t.style) {
-                case 'success':
-                    icon = <Icon glyph="fa-check" />;
-                break;
-                case 'warning':
-                    icon = <Icon glyph="fa-exclamation" />;
-                break;
-                case 'info':
-                    icon = <Icon glyph="fa-info-circle" />;
-                break;
-                case 'danger':
-                    icon = <Icon glyph="fa-exclamation-circle" />;
-                break;
-            }
-            return (
-                <Alert
+        const rows = this.props.store.toasts.map((t, index) => <Alert
+                    key={'toast-' + index}
                     bsStyle={t.style}
                     bsSize={t.size ? t.size : "lg"}
-                    key={t.key}
                     className={t.visible && "fade"}
                     closeLabel={i18n('global.action.close')}
                     onDismiss={() => (this.handleDismiss(index))}
                     dismissAfter={t.time}
                 >
-                    {icon}
+                    {Toastr.getIconStyle(t.style)}
                     <div className="content">
                         <h4>{t.title}</h4>
-                        <p>{t.message}</p>
+                        <div>{t.message}</div>
                     </div>
-                </Alert>
-            );
-        });
+            </Alert>
+        );
 
         return (
             <div className="toastrAlertBox">
@@ -80,10 +75,8 @@ var Toastr = class Toastr extends AbstractReactComponent {
     }
 };
 
-function mapStateToProps(state) {
-    return {
-        store: state.toastr
-    }
-}
+Toastr.propsTypes = {
+    store: React.PropTypes.object.isRequired
+};
 
-module.exports = connect(mapStateToProps)(Toastr);
+module.exports = connect((state) => ({store: state.toastr}))(Toastr);

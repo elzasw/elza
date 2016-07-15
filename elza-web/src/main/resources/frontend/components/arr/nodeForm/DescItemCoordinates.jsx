@@ -4,11 +4,11 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, i18n, NoFocusButton, Icon} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, NoFocusButton, Icon, FormInput} from 'components/index.jsx';
 import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
-import {Button, Input, OverlayTrigger, Tooltip} from 'react-bootstrap';
+import {Button, OverlayTrigger, Tooltip} from 'react-bootstrap';
 
 
 require('./DescItemCoordinates.less');
@@ -31,7 +31,7 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
     }
 
     handleUploadClick() {
-        this.refs.uploadInput.getInputDOMNode().click();
+        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
     }
 
     handleChangeData(e) {
@@ -76,7 +76,7 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
                 {
                     !repeatable && <div className='desc-item-coordinates-action' key='cord-actions'>
                         <NoFocusButton onClick={this.handleUploadClick} title={i18n('subNodeForm.descItem.coordinates.action.add')}><Icon glyph="fa-upload" /></NoFocusButton>
-                        <Input className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={onUpload} />
+                        <FormInput className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={onUpload} />
                     </div>
                 }
             </div>

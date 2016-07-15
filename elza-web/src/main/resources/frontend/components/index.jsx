@@ -43,6 +43,7 @@ exports.Resizer = require('components/shared/resizer/Resizer.jsx');
 exports.FormUtils = require('components/form/FormUtils.jsx');
 exports.ImportForm = require('components/form/ImportForm.jsx');
 exports.ExportForm = require('components/form/ExportForm.jsx');
+exports.FormInput = require('components/form/FormInput.jsx');
 
 exports.Ribbon = require('components/page/Ribbon.jsx');
 
@@ -64,6 +65,8 @@ exports.FundDataGridCellForm = require('components/arr/FundDataGridCellForm.jsx'
 exports.AddFileForm = require('components/arr/AddFileForm.jsx');
 exports.FundFiles = require('components/arr/FundFiles.jsx');
 exports.FundOutputFiles = require('components/arr/FundOutputFiles.jsx');
+exports.FundOutputFunctions = require('components/arr/FundOutputFunctions.jsx');
+exports.RunActionForm = require('components/arr/RunActionForm.jsx');
 exports.FundPackets = require('components/arr/FundPackets.jsx');
 exports.NodePanel = require('components/arr/NodePanel.jsx');
 exports.NodeTabs = require('components/arr/NodeTabs.jsx');

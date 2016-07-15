@@ -7,8 +7,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Autocomplete, Icon} from 'components/index.jsx';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, Autocomplete, Icon, FormInput} from 'components/index.jsx';
+import {Modal, Button} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx';
 import {decorateFormField} from 'components/form/FormUtils.jsx';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
@@ -119,11 +119,11 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {ruleSetId, rulArrTypeId, transformationName, recordScope, stopOnError, xmlFile}, onClose, handleSubmit} = this.props;
-        var ruleSets = this.props.refTables.ruleSet.items;
-        var currRuleSetId = this.props.values.ruleSetId;
-        var currRuleSet = [];
-        var ruleSetOptions = [];
+        const {fields: {ruleSetId, rulArrTypeId, transformationName, recordScope, stopOnError, xmlFile}, onClose, handleSubmit, refTables, values} = this.props;
+        const ruleSets = refTables.ruleSet.items;
+        const currRuleSetId = values.ruleSetId;
+        let currRuleSet = [];
+        let ruleSetOptions = [];
         if (!ruleSetId.invalid) {
             currRuleSet = ruleSets[indexById(ruleSets, currRuleSetId)];
             if (currRuleSet) {
@@ -140,13 +140,13 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                             <form onSubmit={handleSubmit(this.save)}>
                                 {
                                     <div>
-                                        <Input type="select"
+                                        <FormInput componentClass="select"
                                                label={i18n('import.transformationName')} {...transformationName} {...decorateFormField(transformationName)}>
                                             <option key='blankName'/>
                                             {this.state.transformationNames.map((i, index)=> {
                                                 return <option key={index+'name'} value={i}>{i}</option>
                                             })}
-                                        </Input>
+                                        </FormInput>
                                         <Autocomplete
                                             {...recordScope}
                                             {...decorateFormField(recordScope)}
@@ -176,24 +176,24 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                                 }
                                 {
                                     this.props.fund && transformationName.value && <div>
-                                        <Input type="select" label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
+                                        <FormInput componentClass="select" label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
                                             <option key='-ruleSetId'/>
                                             {ruleSets.map(i=> {
                                                 return <option value={i.id}>{i.name}</option>
                                             })}
-                                        </Input>
-                                        <Input type="select" disabled={ruleSetId.invalid}
+                                        </FormInput>
+                                        <FormInput componentClass="select" disabled={ruleSetId.invalid}
                                                label={i18n('arr.fund.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
                                             <option key='-rulArrTypeId'/>
                                             {ruleSetOptions}
-                                        </Input>
+                                        </FormInput>
                                     </div>
                                 }
-                                <Input type="checkbox"
+                                <FormInput type="checkbox"
                                        label={i18n('import.stopOnError')} {...stopOnError} {...decorateFormField(stopOnError)} />
 
                                 <label>{i18n('import.file')}</label>
-                                <Input type="file" {...xmlFile} {...decorateFormField(xmlFile)} value={null}/>
+                                <FormInput type="file" {...xmlFile} {...decorateFormField(xmlFile)} value={null}/>
                             </form>
                         </Modal.Body>
                         <Modal.Footer>

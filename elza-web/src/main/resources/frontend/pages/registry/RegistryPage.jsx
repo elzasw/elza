@@ -7,7 +7,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 require ('./RegistryPage.less');
-var classNames = require('classnames');
+const classNames = require('classnames');
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
@@ -41,16 +41,16 @@ import {fetchRegistryIfNeeded,
         registryArrReset
 } from 'actions/registry/registryRegionList.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
-var ShortcutsManager = require('react-shortcuts');
-var Shortcuts = require('react-shortcuts/component');
+const ShortcutsManager = require('react-shortcuts');
+const Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components/index.jsx';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 
-var keyModifier = Utils.getKeyModifier();
+const keyModifier = Utils.getKeyModifier();
 
-var keymap = {
+const keymap = {
     Registry: {
         addRegistry: keyModifier + 'n',
         registryMove: keyModifier + 'x',
@@ -252,9 +252,9 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     buildRibbon() {
-        const {registryRegion: {registryRegionData}, userDetail} = this.props
+        const {registryRegion: {registryRegionData}, userDetail} = this.props;
 
-        var altActions = [];
+        const altActions = [];
 
         if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
             altActions.push(
@@ -269,7 +269,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             );
         }
 
-        var itemActions = [];
+        const itemActions = [];
         if (this.canDeleteRegistry()) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: registryRegionData.item ? registryRegionData.item.scopeId : null})) {
                 itemActions.push(
@@ -305,13 +305,13 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             }
         }
 
-        var altSection;
+        let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup className="small">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key="ribbon-alt-actions" className="small">{altActions}</RibbonGroup>
         }
-        var itemSection;
+        let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup className="small">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key="ribbon-item-actions" className="small">{itemActions}</RibbonGroup>
         }
 
         return (

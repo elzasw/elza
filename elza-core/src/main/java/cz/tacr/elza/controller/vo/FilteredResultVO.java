@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import java.util.List;
 
 /**
@@ -12,8 +14,13 @@ import java.util.List;
 public class FilteredResultVO<T> {
     /** Celkový počet záznamů pro daná kriteria hledání. */
     private long totalCount;
+
     /** Seznam objektů. */
+    @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
     private List<T> list;
+
+    public FilteredResultVO() {
+    }
 
     public FilteredResultVO(final List<T> list, final long totalCount) {
         this.totalCount = totalCount;

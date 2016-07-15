@@ -170,6 +170,25 @@ public interface RulItemType<RT extends RulDataType, P extends RulPackage, C ext
      */
     void setRepeatable(Boolean repeatable);
 
+    /**
+     * @return počítaný atribut
+     */
+    Boolean getCalculable();
+
+    /**
+     * @param calculable počítaný atribut
+     */
+    void setCalculable(Boolean calculable);
+
+    /**
+     * @return stav kalkulace?
+     */
+    Boolean getCalculableState();
+
+    /**
+     * @param calculableState stav kalkulace?
+     */
+    void setCalculableState(Boolean calculableState);
 
     /**
      * @return balíček

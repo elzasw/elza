@@ -2,7 +2,7 @@
  * Home stránka
  */
 
-require ('./HomePage.less')
+require('./HomePage.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -22,11 +22,11 @@ import {WebApi} from 'actions/index.jsx';
 import {setInputFocus, dateToString} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 
-var rows = []
-var selectedIds = [0, 1, 2, 3, 4]
-var focus
+const rows = []
+const selectedIds = [0, 1, 2, 3, 4]
+let focus
 
-for (var a=0; a<40; a++) {
+for (let a=0; a<40; a++) {
     rows.push({
         id: a,
         firstname: 'jan ' + a,
@@ -40,7 +40,7 @@ for (var a=0; a<40; a++) {
     }
 }
 
-var cols = []
+const cols = []
 
 cols.push({
     dataName: 'id',
@@ -80,13 +80,17 @@ cols.push({
 })
 
 
-var HomePage = class HomePage extends AbstractReactComponent {
+const HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleAddFund', 'renderHistory',
-            'renderHistoryItem', 'getFundDesc', 'trySetFocus');
-
-        this.buildRibbon = this.buildRibbon.bind(this);
+        this.bindMethods(
+            'handleAddFund',
+            'renderHistory',
+            'renderHistoryItem',
+            'getFundDesc',
+            'trySetFocus',
+            'buildRibbon'
+        );
     }
 
     componentWillReceiveProps(nextProps) {
@@ -98,20 +102,20 @@ var HomePage = class HomePage extends AbstractReactComponent {
     }
 
     trySetFocus(props) {
-        var {focus} = props
+        const {focus} = props
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
                 if (this.refs.list) {   // ještě nemusí existovat
                     this.setState({}, () => {
-                        var listEl = ReactDOM.findDOMNode(this.refs.list)
+                        const listEl = ReactDOM.findDOMNode(this.refs.list)
                         setInputFocus(listEl, false)
                         focusWasSet()
                     })
                 }
             } else if (isFocusFor(focus, 'home', 1) || isFocusFor(focus, 'home', 1, 'list')) {
                 this.setState({}, () => {
-                    var listEl = ReactDOM.findDOMNode(this.refs.list)
+                    const listEl = ReactDOM.findDOMNode(this.refs.list)
                     setInputFocus(listEl, false)
                     focusWasSet()
                 })
@@ -125,14 +129,14 @@ var HomePage = class HomePage extends AbstractReactComponent {
     }
 
     buildRibbon() {
-        var altActions = [];
+        const altActions = [];
         altActions.push(
             <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div></Button>
         );
 
-        var altSection;
+        let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup className="small">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup className="small" key="ribbon-group-home">{altActions}</RibbonGroup>
         }
 
         return (
@@ -140,8 +144,8 @@ var HomePage = class HomePage extends AbstractReactComponent {
         )
     }
 
-    renderHistoryItem(name, desc, type, data) {
-        var glyph;
+    renderHistoryItem(name, desc, type, data, keyIndex) {
+        let glyph;
         switch (type) {
             case 'PARTY_REGION':
                 glyph = 'fa-users';
@@ -157,22 +161,22 @@ var HomePage = class HomePage extends AbstractReactComponent {
                 break;            
         }
 
-        var hasDesc = desc && desc.length > 0
-        var descComp;
+        const hasDesc = desc && desc.length > 0
+        let descComp;
         if (hasDesc) {
             descComp = <small>{desc}</small>
         } else {
             descComp = <small>&nbsp;</small>
         }
         return (
-            <Button className='history-list-item' onClick={() => this.dispatch(storeLoadData(type, data))}>
+            <Button className='history-list-item' onClick={() => this.dispatch(storeLoadData(type, data))} key={"button-" + keyIndex}>
                 <Icon glyph={glyph}/>
                 <div className='history-name'>{name}</div>
                 {false && descComp}
             </Button>
         )
         return (
-            <Panel className='history-list-item' header={name} onClick={() => this.dispatch(storeLoadData(type, data))}>
+            <Panel className='history-list-item' header={name} onClick={() => this.dispatch(storeLoadData(type, data))} key={"panel-" + keyIndex}>
                 ...[{type}]
             </Panel>
         )
@@ -189,31 +193,31 @@ var HomePage = class HomePage extends AbstractReactComponent {
     }
 
     getFundDesc(fund) {
-        var descs = fund.nodes.nodes.map(nodeobj => nodeobj.name);
+        const descs = fund.nodes.nodes.map(nodeobj => nodeobj.name);
         return this.arrToString(descs);
     }
 
     renderHistory() {
         const {stateRegion} = this.props;
 
-        var partyItems = stateRegion.partyRegionFront.map(x => {
+        const partyItems = stateRegion.partyRegionFront.map((x, index) => {
             if (x._info) {
-                var name = x._info.name;
-                var desc = x._info.desc
-                return this.renderHistoryItem(name, desc, 'PARTY_REGION', x)
+                const name = x._info.name;
+                const desc = x._info.desc
+                return this.renderHistoryItem(name, desc, 'PARTY_REGION', x, index)
             }
         })
-        var registryItems = stateRegion.registryRegionFront.map(x => {
+        const registryItems = stateRegion.registryRegionFront.map((x, index) => {
             if (x._info) {
-                var name = x._info.name;
-                var desc = x._info.desc
-                return this.renderHistoryItem(name, desc, 'REGISTRY_REGION', x)
+                const name = x._info.name;
+                const desc = x._info.desc
+                return this.renderHistoryItem(name, desc, 'REGISTRY_REGION', x, index)
             }
         })
-        var arrItems = stateRegion.arrRegionFront.map(x => {
-            var name = x.name + (x.lockDate ? ' ' + dateToString(new Date(x.lockDate)) : '');
-            var desc = this.getFundDesc(x)
-            return this.renderHistoryItem(name, desc, 'ARR_REGION_FUND', x)
+        const arrItems = stateRegion.arrRegionFront.map((x, index) => {
+            const name = x.name + (x.lockDate ? ' ' + dateToString(new Date(x.lockDate)) : '');
+            const desc = this.getFundDesc(x)
+            return this.renderHistoryItem(name, desc, 'ARR_REGION_FUND', x, index)
         })
 
         return (
@@ -228,7 +232,7 @@ var HomePage = class HomePage extends AbstractReactComponent {
     render() {
         const {splitter} = this.props;
 
-        var centerPanel = (
+        let centerPanel = (
             <div className='splitter-home'>
                 {false && <div>
                     <Button onClick={() => this.dispatch(storeSave())}>STORE</Button>
@@ -237,10 +241,7 @@ var HomePage = class HomePage extends AbstractReactComponent {
             </div>
         )
 
-centerPanel =
-    <div>
-        {centerPanel}
-    </div>
+        centerPanel = <div>{centerPanel}</div>;
 
         return (
             <PageLayout

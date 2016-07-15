@@ -4,8 +4,8 @@
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {Modal, Button} from 'react-bootstrap';
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 
 /**
@@ -46,8 +46,8 @@ const AddFileForm = class AddFileForm extends AbstractReactComponent {
             <div className="add-file-form-container">
                 <Modal.Body>
                     <form onSubmit={handleSubmit(submitForm)}>
-                        <Input type="text" label={i18n('dms.file.name')} {...name} {...decorateFormField(name)} />
-                        <Input type="file" {...file} {...decorateFormField(file)} value={null}/>
+                        <FormInput type="text" label={i18n('dms.file.name')} {...name} {...decorateFormField(name)} />
+                        <FormInput type="file" {...file} {...decorateFormField(file)} value={null}/>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

@@ -17,9 +17,10 @@ import {
     ListBox,
     RibbonGroup,
     FundNodesAddForm,
-    FundNodesList
+    FundNodesList,
+    FormInput
 } from 'components/index.jsx';
-import {Button, Input} from 'react-bootstrap';
+import {Button} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {PageLayout} from 'pages/index.jsx';
 import {dateTimeToString} from 'components/Utils.jsx'
@@ -45,7 +46,7 @@ const ActionState = {
     INTERRUPTED: 'INTERRUPTED'
 };
 
-var FundActionPage = class FundActionPage extends AbstractReactComponent {
+const FundActionPage = class FundActionPage extends AbstractReactComponent {
 
     constructor(props) {
         super(props);
@@ -112,7 +113,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
             return <div>
                 <h2>{i18n('arr.fundAction.form.newAction')}</h2>
                 <div>
-                <Input type="select"
+                <FormInput componentClass="select"
                        label={i18n('arr.fundAction.form.type')}
                        key='code-action'
                        ref='code-action'
@@ -122,7 +123,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                        >
                     <option key="novalue" />
                     {config.data.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}
-                </Input>
+                </FormInput>
                 </div>
                 {description}
                 <h2>{i18n("arr.fundAction.title.nodes")}</h2>
@@ -141,7 +142,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
             if (detail.fetched) {
                 const {data} = detail;
                 const config = this.getConfigByCode(data.code);
-                var date = null;
+                let date = null;
                 if (data.datePlanned) {
                     date = dateTimeToString(new Date(data.datePlanned));
                 } else if (data.dateStarted) {
@@ -153,7 +154,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                 return <div className='detail'>
                     <div>
                         <h1>{config.name}</h1>
-                        <h3>{this.getStateIcon(data.state)} {this.getStateTranslation(data.state)}
+                        <h3>{FundActionPage.getStateIcon(data.state)} {FundActionPage.getStateTranslation(data.state)}
                             <small>{date}</small>
                         </h3>
                     </div>
@@ -334,7 +335,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
     }
 
 
-    getStateIcon(state) {
+    static getStateIcon(state) {
         switch (state) {
             case ActionState.RUNNING:
                 return <Icon glyph='fa-cog'/>;
@@ -349,11 +350,11 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
             case ActionState.INTERRUPTED:
                 return <Icon glyph='fa-times'/>;
             default:
-                return <Icon glyph='fa-question'/>;
+                return;
         }
     }
 
-    getStateTranslation(state) {
+    static getStateTranslation(state) {
         switch (state) {
             case ActionState.RUNNING:
                 return i18n('arr.fundAction.state.running');
@@ -368,14 +369,13 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
             case ActionState.INTERRUPTED:
                 return i18n('arr.fundAction.state.interrupted');
             default:
-                return i18n('arr.fundAction.state.unknown');
-                break;
+                return;
         }
     }
 
 
     renderRowItem(item) {
-        const icon = this.getStateIcon(item.state);
+        const icon = FundActionPage.getStateIcon(item.state);
         const config = this.getConfigByCode(item.code);
         const name = config ? <span title={item.name} className='name'>{config.name}</span> : '';
 
@@ -386,7 +386,7 @@ var FundActionPage = class FundActionPage extends AbstractReactComponent {
                     <div>{name}</div>
                     <div>
                         {item.date}
-                        {this.getStateTranslation(item.state)}
+                        {FundActionPage.getStateTranslation(item.state)}
                     </div>
                 </div>
 

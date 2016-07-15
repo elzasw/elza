@@ -113,7 +113,7 @@ export default function fundAction(state = initialState, action = {}) {
             }
         }
         case types.FUND_ACTION_CONFIG_RECEIVE: {
-            if (state.list.currentDataKey !== action.dataKey) {
+            if (state.config.currentDataKey !== action.dataKey) {
                 return state;
             }
             return {

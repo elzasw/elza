@@ -19,6 +19,7 @@ import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
@@ -45,6 +46,8 @@ import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -111,14 +114,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
     private static final Header MULTIPART_HEADER = new Header(CONTENT_TYPE_HEADER, MediaType.MULTIPART_FORM_DATA_VALUE);
 
     protected static final String ADMIN_CONTROLLER_URL = "/api/admin";
-    protected static final String ARRANGEMENT_CONTROLLER_URL = "/api/arrangementManagerV2";
-    protected static final String BULK_ACTION_CONTROLLER_URL = "/api/bulkActionManagerV2";
-    protected static final String PARTY_CONTROLLER_URL = "/api/partyManagerV2";
-    protected static final String REGISTRY_CONTROLLER_URL = "/api/registryManagerV2";
-    protected static final String KML_CONTROLLER_URL = "/api/kmlManagerV1";
+    protected static final String ARRANGEMENT_CONTROLLER_URL = "/api/arrangement";
+    protected static final String BULK_ACTION_CONTROLLER_URL = "/api/action";
+    protected static final String PARTY_CONTROLLER_URL = "/api/party";
+    protected static final String REGISTRY_CONTROLLER_URL = "/api/registry";
+    protected static final String KML_CONTROLLER_URL = "/api/kml";
     protected static final String VALIDATION_CONTROLLER_URL = "/api/validate";
-    protected static final String RULE_CONTROLLER_URL = "/api/ruleSetManagerV2";
-    protected static final String XML_IMPORT_CONTROLLER_URL = "/api/xmlImportManagerV2";
+    protected static final String RULE_CONTROLLER_URL = "/api/rule";
+    protected static final String XML_IMPORT_CONTROLLER_URL = "/api/import";
     protected static final String USER_CONTROLLER_URL = "/api/user";
 
     // ADMIN
@@ -266,7 +269,23 @@ public abstract class AbstractControllerTest extends AbstractTest {
     // XmlImport
     protected final static String XML_IMPORT = XML_IMPORT_CONTROLLER_URL + "/import";
 
+    // Uživatelé a skupiny
     protected final static String USER_DETAIL = USER_CONTROLLER_URL + "/detail";
+    protected final static String CHANGE_PASSWORD = USER_CONTROLLER_URL + "/{userId}/password";
+    protected final static String CHANGE_PASSWORD_USER = USER_CONTROLLER_URL + "/password";
+    protected final static String FIND_USER = USER_CONTROLLER_URL;
+    protected final static String GET_USER = USER_CONTROLLER_URL + "/{userId}";
+    protected final static String ACTIVE_USER = USER_CONTROLLER_URL + "/{userId}/active/{active}";
+    protected final static String CREATE_USER = USER_CONTROLLER_URL;
+    protected final static String FIND_GROUP = USER_CONTROLLER_URL + "/group";
+    protected final static String GET_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
+    protected final static String CREATE_GROUP = USER_CONTROLLER_URL + "/group";
+    protected final static String DELETE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
+    protected final static String CHANGE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
+    protected final static String CHANGE_GROUP_PERMISSION = USER_CONTROLLER_URL + "/group/{groupId}/permission";
+    protected final static String JOIN_GROUP = USER_CONTROLLER_URL + "/group/join";
+    protected final static String LEAVE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}/leave/{userId}";
+    protected final static String CHANGE_USER_PERMISSION = USER_CONTROLLER_URL + "/{userId}/permission";
 
     @Value("${local.server.port}")
     private int port;
@@ -2337,6 +2356,226 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected UserInfoVO getUserDetail() {
         return get(spec -> spec, USER_DETAIL).as(UserInfoVO.class);
+    }
+
+    /**
+     * Změna hesla uživatele.
+     *
+     * @param userId identifikátor uživatele
+     * @param params parametry změny hesla
+     * @return uživatel
+     */
+    protected UsrUserVO changePassword(final Integer userId,
+                                       final UserController.ChangePassword params) {
+        return put(spec -> spec.body(params)
+                .pathParameter("userId", userId), CHANGE_PASSWORD).as(UserInfoVO.class);
+    }
+
+    /**
+     * Změna hesla uživatele.
+     *
+     * @param params parametry změny hesla
+     * @return uživatel
+     */
+    protected UsrUserVO changePassword(final UserController.ChangePassword params) {
+        return put(spec -> spec.body(params), CHANGE_PASSWORD_USER).as(UserInfoVO.class);
+    }
+
+
+    /**
+     * Změna hesla uživatele.
+     *
+     * @return uživatel
+     */
+    protected UsrUserVO changePassword(final String oldPassword,
+                                       final String newPassword) {
+        UserController.ChangePassword params = new UserController.ChangePassword();
+        params.setNewPassword(newPassword);
+        params.setOldPassword(oldPassword);
+        return changePassword(params);
+    }
+
+    /**
+     * Změna hesla uživatele.
+     *
+     * @return uživatel
+     */
+    protected UsrUserVO changePassword(final UsrUserVO user,
+                                       final String newPassword) {
+        UserController.ChangePassword params = new UserController.ChangePassword();
+        params.setNewPassword(newPassword);
+        return changePassword(user.getId(), params);
+    }
+
+    /**
+     * Vytvořené nového uživatele.
+     *
+     * @param params parametry pro vytvoření uživatele
+     * @return vytvořený uživatel
+     */
+    protected UsrUserVO createUser(final UserController.CreateUser params) {
+        return post(spec -> spec.body(params), CREATE_USER).as(UsrUserVO.class);
+    }
+
+    /**
+     *
+     *
+     * @param user   uživatel
+     * @param active je aktivní?
+     * @return uživatel
+     */
+    protected UsrUserVO changeActive(final UsrUserVO user,
+                                     final Boolean active) {
+        return put(spec -> spec.pathParameter("active", active)
+                .pathParameter("userId", user.getId()), ACTIVE_USER).as(UsrUserVO.class);
+    }
+
+    /**
+     * Vytvořené nového uživatele.
+     *
+     * @return vytvořený uživatel
+     */
+    protected UsrUserVO createUser(final String username,
+                                   final String password,
+                                   final Integer partyId) {
+        UserController.CreateUser params = new UserController.CreateUser();
+        params.setUsername(username);
+        params.setPassword(password);
+        params.setPartyId(partyId);
+        return createUser(params);
+    }
+
+    /**
+     * Vytvořené skupiny.
+     *
+     * @param params parametry pro vytvoření skupiny
+     * @return vytvořená skupina
+     */
+    protected UsrGroupVO createGroup(UserController.CreateGroup params) {
+        return post(spec -> spec.body(params), CREATE_GROUP).as(UsrGroupVO.class);
+    }
+
+    /**
+     * Smazání skupiny.
+     *
+     * @param groupId identifikátor skupiny
+     */
+    protected void deleteGroup(final Integer groupId) {
+        delete(spec -> spec.pathParameter("groupId", groupId), DELETE_GROUP);
+    }
+
+    /**
+     * Načte seznam skupin.
+     *
+     * @param search hledaný řetězec
+     * @param from   počáteční záznam
+     * @param count  počet vrácených záznamů
+     * @return seznam s celkovým počtem
+     */
+    protected FilteredResultVO findGroup(final String search,
+                                         final Integer from,
+                                         final Integer count) {
+        return get(spec -> spec.queryParam("search", search)
+                .queryParam("from", from)
+                .queryParam("count", count), FIND_GROUP).as(FilteredResultVO.class);
+    }
+
+    /**
+     * Změna skupiny.
+     *
+     * @param groupId identifikátor skupiny
+     * @param params  parametry změny skupiny
+     */
+    protected UsrGroupVO changeGroup(final Integer groupId,
+                                  final UserController.ChangeGroup params) {
+        return put(spec -> spec.body(params).pathParameter("groupId", groupId), CHANGE_GROUP).as(UsrGroupVO.class);
+    }
+
+    /**
+    * Načte seznam uživatelů.
+    *
+    * @param search   hledaný řetězec
+    * @param from     počáteční záznam
+    * @param count    počet vrácených záznamů
+    * @param active   mají se vracet aktivní osoby?
+    * @param disabled mají se vracet zakázané osoby?
+    * @return seznam s celkovým počtem
+    */
+    protected FilteredResultVO findUser(@Nullable final String search,
+                                                   final Boolean active,
+                                                   final Boolean disabled,
+                                                   final Integer from,
+                                                   final Integer count) {
+        return get(spec -> spec.queryParam("active", active)
+                .queryParam("search", search)
+                .queryParam("from", from)
+                .queryParam("count", count)
+                .queryParam("disabled", disabled), FIND_USER).as(FilteredResultVO.class);
+    }
+
+    /**
+     * Načtení uživatele s daty pro zobrazení na detailu s možností editace.
+     *
+     * @param userId id
+     * @return VO
+     */
+    protected UsrUserVO getUser(final Integer userId) {
+        return get(spec -> spec.pathParameter("userId", userId), GET_USER).as(UsrUserVO.class);
+    }
+
+    /**
+     * Načtení skupiny s daty pro zobrazení na detailu s možností editace.
+     *
+     * @param groupId id
+     * @return VO
+     */
+    protected UsrGroupVO getGroup(final Integer groupId) {
+        return get(spec -> spec.pathParameter("groupId", groupId), GET_GROUP).as(UsrGroupVO.class);
+    }
+
+    /**
+     * Přidání uživatelů do skupin.
+     *
+     * @param groupIds identifikátor skupin, do které přidáváme uživatele
+     * @param userIds  identifikátor přidávaných uživatelů
+     */
+    protected void joinGroup(final Set<Integer> groupIds,
+                          final Set<Integer> userIds) {
+        UserController.IdsParam param = new UserController.IdsParam(groupIds, userIds);
+        post(spec -> spec.body(param), JOIN_GROUP);
+    }
+
+    /**
+     * Přidání uživatele do skupiny.
+     *
+     * @param groupId identifikátor skupiny, ze které odebírám uživatel
+     * @param userId  identifikátor odebíraného uživatele
+     */
+    protected void leaveGroup(final Integer groupId,
+                           final Integer userId) {
+        post(spec -> spec.pathParameter("groupId", groupId).pathParameter("userId", userId), LEAVE_GROUP);
+    }
+
+    /**
+     * Nastavení oprávnění uživatele.
+     *
+     * @param userId      identifikátor uživatele
+     * @param permissions seznam oprávnění
+     */
+    protected void changeUserPermission(final Integer userId,
+                                     final UserController.Permissions permissions) {
+        post(spec -> spec.pathParameter("userId", userId).body(permissions), CHANGE_USER_PERMISSION);
+    }
+
+    /**
+     * Nastavení oprávnění skupiny.
+     *
+     * @param groupId     identifikátor skupiny
+     * @param permissions seznam oprávnění
+     */
+    protected void changeGroupPermission(final Integer groupId,
+                                      final UserController.Permissions permissions) {
+        post(spec -> spec.pathParameter("groupId", groupId).body(permissions), CHANGE_GROUP_PERMISSION);
     }
 
     /**

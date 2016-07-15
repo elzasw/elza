@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components/index.jsx';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {Modal, Button, Checkbox} from 'react-bootstrap';
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx'
@@ -53,7 +53,7 @@ var VisiblePolicyForm = class VisiblePolicyForm extends AbstractReactComponent {
                     <form onSubmit={handleSubmit(submitForm)}>
                         {records.map((val, index) =>
                             <div key={index}>
-                                <Input type="checkbox" label={visiblePolicyTypes.items[val.id.initialValue].name} {...val.checked} value={true}  />
+                                <Checkbox {...val.checked} value={true}>{visiblePolicyTypes.items[val.id.initialValue].name}</Checkbox>
                             </div>
                         )}
                     </form>

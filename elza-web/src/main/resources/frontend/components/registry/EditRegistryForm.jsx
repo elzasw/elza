@@ -7,8 +7,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, DropDownTree} from 'components/index.jsx';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, DropDownTree, FormInput} from 'components/index.jsx';
+import {Modal, Button} from 'react-bootstrap';
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList.jsx'
 
@@ -69,8 +69,8 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
                             value={registerTypesIdValue}
                             disabled={parentRecordId != null}
                         />
-                        <Input type="text" label={i18n('registry.name')} {...record} {...decorateFormField(record)}/>
-                        <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)}/>
+                        <FormInput type="text" label={i18n('registry.name')} {...record} {...decorateFormField(record)}/>
+                        <FormInput componentClass="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)}/>
 
                     </form>
                 </Modal.Body>

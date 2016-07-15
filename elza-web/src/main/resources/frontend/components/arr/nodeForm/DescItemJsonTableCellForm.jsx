@@ -8,8 +8,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, SubNodeForm} from 'components/index.jsx';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, SubNodeForm, FormInput} from 'components/index.jsx';
 import {validateInt, normalizeInt} from 'components/validate.jsx';
 
 const keyDownHandlers = {
@@ -84,7 +83,7 @@ var DescItemJsonTableCellForm = class DescItemJsonTableCellForm extends Abstract
 
         return (
             <div className={"cell-edit-container " + (className ? className : "")} onKeyDown={this.handleKeyDown}>
-                <Input
+                <FormInput
                     type="text"
                     value={value}
                     onChange={this.handleChange}

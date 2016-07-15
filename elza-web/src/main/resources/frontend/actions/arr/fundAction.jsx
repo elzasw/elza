@@ -8,7 +8,6 @@ import {indexById} from 'stores/app/utils.jsx';
 
 export function isFundActionAction(action) {
     switch (action.type) {
-        case types.CHANGE_FUND_ACTION:
         case types.FUND_ACTION_ACTION_SELECT:
         case types.FUND_ACTION_CONFIG_REQUEST:
         case types.FUND_ACTION_CONFIG_RECEIVE:
@@ -84,7 +83,7 @@ export function fundActionActionSelect(versionId, dataKey) {
 }
 export function funcActionActionInterrupt(bulkActionRunId) {
     return dispatch => {
-        dispatch(WebApi.interruptBulkAction(bulkActionRunId))
+        WebApi.interruptBulkAction(bulkActionRunId)
     }
 }
 

@@ -7,7 +7,7 @@ require ('./FilterableListBox.less')
 
 import React from "react";
 import {Search, ListBox, AbstractReactComponent, i18n} from "components";
-import {Input, Button} from "react-bootstrap";
+import {Checkbox, Button} from "react-bootstrap";
 import {getSetFromIdsList} from "stores/app/utils.jsx";
 var __FilterableListBox_timer = null
 
@@ -137,7 +137,7 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
 
         return (
             <div className='checkbox-item'>
-                <Input type='checkbox' tabIndex={-1} checked={checked} label={item.name} onChange={(e) => {this.handleCheckItem.bind(this, item)()}}/>
+                <Checkbox tabIndex={-1} checked={checked} onChange={(e) => {this.handleCheckItem.bind(this, item)()}}>{item.name}</Checkbox>
             </div>
         )
     }

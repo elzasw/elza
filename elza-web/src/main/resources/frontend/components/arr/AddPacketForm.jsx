@@ -8,8 +8,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components/index.jsx';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {Modal, Button} from 'react-bootstrap';
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {indexById, getMapFromList} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
@@ -85,15 +85,15 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
             <div className="add-packet-form-container">
                 <Modal.Body>
                     <form onSubmit={handleSubmit(submitForm)}>
-                        <Input type="select" label={i18n('arr.packet.packetType')} {...packetTypeId} {...decorateFormField(packetTypeId)} help={packetTypeHelp}>
-                            <option key='-packetTypeId'></option>
+                        <FormInput componentClass="select" label={i18n('arr.packet.packetType')} {...packetTypeId} {...decorateFormField(packetTypeId)} help={packetTypeHelp}>
+                            <option key='-packetTypeId'/>
                             {packetTypes.items.map(i=> {return <option key={i.id} value={i.id}>{i.name}</option>})}
-                        </Input>
-                        {createSingle && <Input type="text" label={i18n('arr.packet.storageNumber')} {...storageNumber} {...decorateFormField(storageNumber)} />}
-                        {(createMany || changeNumbers) && <Input type="text" label={i18n('arr.packet.prefix')} {...prefix} {...decorateFormField(prefix)} />}
-                        {(createMany || changeNumbers) && <Input type="text" label={i18n('arr.packet.start')} {...start} {...decorateFormField(start)} />}
-                        {(createMany || changeNumbers) && <Input type="text" label={i18n('arr.packet.size')} {...size} {...decorateFormField(size)} />}
-                        {(createMany || changeNumbers) && <Input disabled={changeNumbers} type="text" label={i18n('arr.packet.count')} {...count} {...decorateFormField(count)} />}
+                        </FormInput>
+                        {createSingle && <FormInput type="text" label={i18n('arr.packet.storageNumber')} {...storageNumber} {...decorateFormField(storageNumber)} />}
+                        {(createMany || changeNumbers) && <FormInput type="text" label={i18n('arr.packet.prefix')} {...prefix} {...decorateFormField(prefix)} />}
+                        {(createMany || changeNumbers) && <FormInput type="text" label={i18n('arr.packet.start')} {...start} {...decorateFormField(start)} />}
+                        {(createMany || changeNumbers) && <FormInput type="text" label={i18n('arr.packet.size')} {...size} {...decorateFormField(size)} />}
+                        {(createMany || changeNumbers) && <FormInput disabled={changeNumbers} type="text" label={i18n('arr.packet.count')} {...count} {...decorateFormField(count)} />}
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

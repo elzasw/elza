@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -26,4 +27,6 @@ public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer> 
 
     @Query("SELECT o FROM arr_output o JOIN o.outputDefinition od JOIN od.fund f JOIN f.versions v LEFT JOIN od.outputResult res WHERE v = :fundVersion AND od.deleted = false AND od.state = :state ORDER BY res.change.changeId desc, od.temporary ASC, od.name ASC")
     List<ArrOutput> findByFundVersionAndStateSorted(@Param("fundVersion") ArrFundVersion fundVersion, @Param("state") OutputState state);
+
+    ArrOutput findOneByOutputDefinitionAndLockChangeIsNull(ArrOutputDefinition outputDefinition);
 }

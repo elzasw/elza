@@ -15,20 +15,20 @@ require('./RibbonMenu.less');
  * className: large = velká tlačítka v řadě
  * className: small = jednořádková tlačítka pod sebou, max 3 tlačítka na jednu skupinu
  */
-var RibbonGroup = class RibbonGroup extends React.Component {
+const RibbonGroup = class RibbonGroup extends React.Component {
 
     render() {
         const {className} = this.props
 
-        var classes = "ribbonGroup " + className;
+        const classes = "ribbonGroup " + className;
 
         if (className.indexOf("small") !== -1) {
             var parts = []
-            for (var a=0; a<this.props.children.length; a += 3) {
-                var sub = this.props.children.slice(a, a + 3)
-                parts.push(<div className={classes}>{sub}</div>)
+            for (let a=0; a<this.props.children.length; a += 3) {
+                const sub = this.props.children.slice(a, a + 3)
+                parts.push(<div key={"part-" + a} className={classes}>{sub}</div>)
             }
-            return <div className="ribbonSmallGroupsContainer">{parts}</div>
+            return <div className="ribbonSmallGroupsContainer" key="small-container">{parts}</div>
         } else {
             return (
                 <div className={classes}>

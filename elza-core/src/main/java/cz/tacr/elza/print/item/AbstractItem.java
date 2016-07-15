@@ -35,6 +35,10 @@ public abstract class AbstractItem<T> implements Item<T> {
         this.node = node;
     }
 
+    @Override
+    public Item<T> getItem() {
+        return this;
+    }
 
     @Override
     public Integer getPosition() {
@@ -95,7 +99,8 @@ public abstract class AbstractItem<T> implements Item<T> {
 
     @Override
     public String serialize() {
-        return getSpecification().getName() + ": " + serializeValue();
+        final String s = getType().getName();
+        return s + ": " + serializeValue();
     }
 
     @Override

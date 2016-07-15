@@ -1,6 +1,7 @@
 var webpack = require('webpack');
 var path = require('path');
-
+process.env.BABEL_ENV = 'production';
+process.env.NODE_ENV = 'production';
 module.exports = {
     entry: [
         './index.jsx',
@@ -58,6 +59,10 @@ module.exports = {
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery"
+        }),
+        new webpack.DefinePlugin({
+            __DEVTOOLS__: false,
+            __SHOW_DEVTOOLS__: false
         })
     ]    
 }

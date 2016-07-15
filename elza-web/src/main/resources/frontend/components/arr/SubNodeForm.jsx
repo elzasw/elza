@@ -30,8 +30,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'handleChange', 
             'handleChangePosition',
             'handleChangeSpec', 
-            'handleDescItemTypeRemove', 
-            'handleBlur', 
+            'handleDescItemTypeRemove',
+            'handleSwitchCalculating',
+            'handleBlur',
             'handleFocus',
             'handleDescItemAdd', 
             'handleDescItemRemove',
@@ -180,6 +181,22 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
         // Nyní pošleme focus
         this.dispatch(setFocusFunc())
+    }
+
+    handleSwitchCalculating(descItemGroupIndex, descItemTypeIndex) {
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+        }
+
+        const {subNodeForm: {formData}} = this.props
+        var descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
+
+        var msgI18n = descItemType.calSt === 1 ? 'subNodeForm.calculate-auto.confirm' : 'subNodeForm.calculate-user.confirm';
+
+        if(confirm(i18n(msgI18n))) {
+            this.dispatch(this.props.formActions.switchOutputCalculating(this.props.versionId, descItemType.id, this.props.routingKey, valueLocation));
+        }
     }
 
     /**
@@ -548,6 +565,11 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         var rulDataType = refType.dataType
 
         var locked = this.isDescItemLocked(nodeSetting, descItemType.id);
+
+        if (infoType.cal === 1) {
+            locked = locked || !infoType.calSt;
+        }
+
         var copy = false;
 
         // existují nějaké nastavení pro konkrétní node
@@ -590,6 +612,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onBlur={this.handleBlur.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onFocus={this.handleFocus.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemTypeRemove={this.handleDescItemTypeRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onSwitchCalculating={this.handleSwitchCalculating.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemTypeLock={this.handleDescItemTypeLock.bind(this, descItemType.id)}
                 onDescItemTypeCopy={this.handleDescItemTypeCopy.bind(this, descItemType.id)}
                 onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev.bind(this, descItemGroupIndex, descItemTypeIndex, descItemType.id)}

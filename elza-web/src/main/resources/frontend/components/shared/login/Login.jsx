@@ -2,8 +2,8 @@ var React = require('react');
 
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, ModalDialogWrapper} from 'components/index.jsx';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, ModalDialogWrapper, FormInput} from 'components/index.jsx';
+import {Modal, Button} from 'react-bootstrap';
 import {decorateFormField} from 'components/form/FormUtils.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {loginSuccess} from 'actions/global/login.jsx';
@@ -59,8 +59,8 @@ var Login = class extends AbstractReactComponent {
             <form onSubmit={this.handleLogin}>
                 <Modal.Body>
                     {error}
-                        <Input type="text" value={this.state.username} onChange={this.handleChange.bind(this, "username")} label={i18n('login.field.username')} />
-                        <Input type="password" value={this.state.password} onChange={this.handleChange.bind(this, "password")} label={i18n('login.field.password')} />
+                        <FormInput type="text" value={this.state.username} onChange={this.handleChange.bind(this, "username")} label={i18n('login.field.username')} />
+                        <FormInput type="password" value={this.state.password} onChange={this.handleChange.bind(this, "password")} label={i18n('login.field.password')} />
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={this.handleLogin}>{i18n('login.action.login')}</Button>

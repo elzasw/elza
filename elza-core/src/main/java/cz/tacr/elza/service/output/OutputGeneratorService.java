@@ -1,9 +1,21 @@
 package cz.tacr.elza.service.output;
 
 import com.google.common.collect.Sets;
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.NodeOutputRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
+import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -25,7 +37,10 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 /**
@@ -94,9 +109,13 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
      * Spuštění generování výstupu a jeho uložení do DMS
      *
      * @param arrOutput definice outputu s definicí výstupu
-     * @param userId ID uživatele pod kterým bude vytvořená změna arrChange související s generováním
+     * @param userId    ID uživatele pod kterým bude vytvořená změna arrChange související s generováním
+     * @param fund      AS výstupu
      */
-    public void generateOutput(ArrOutput arrOutput, Integer userId) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
+    public void generateOutput(final ArrOutput arrOutput,
+                               final Integer userId,
+                               @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) {
         ArrOutputResult outputResult = outputResultRepository.findByOutputDefinition(arrOutput.getOutputDefinition());
         Assert.isNull(outputResult, "Tento výstup byl již vygenerován.");
         setStateAndSave(arrOutput.getOutputDefinition(), OutputState.GENERATING);

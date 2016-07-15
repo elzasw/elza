@@ -98,7 +98,6 @@ export default function arrRegion(state = initialState, action) {
         || isFundFilesAction(action)
         || isFundActionAction(action)
         || isFundOutput(action)
-        || isFundOutputFilesAction(action)
     ) {
         var index = indexById(state.funds, action.versionId, "versionId")
         if (index !== null) {
@@ -200,6 +199,7 @@ export default function arrRegion(state = initialState, action) {
         case types.OUTPUT_CHANGES:
         case types.OUTPUT_CHANGES_DETAIL:
         case types.OUTPUT_STATE_CHANGE:
+        case types.CHANGE_FUND_ACTION:
             var index = indexById(state.funds, action.versionId, "versionId");
             return processFund(state, action, index);
         case types.FUND_FUNDS_RECEIVE:
@@ -312,7 +312,7 @@ export default function arrRegion(state = initialState, action) {
                 ...state
             };
 
-            var someFundChanged = false;
+            let someFundChanged = false;
             const funds = state.funds.map(fundObj => {
                 if (fundObj.id === action.fundId) {
                     someFundChanged = true;
