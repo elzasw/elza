@@ -1,13 +1,17 @@
 package cz.tacr.elza.controller;
 
+import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import org.junit.Test;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,6 +43,8 @@ public class UserControllerTest extends AbstractControllerTest {
 
     @Test
     public void usersTest() {
+
+        ArrFundVO fund = createFund("Test", "TST");
 
         // vytvoření uživatele
         UsrUserVO user = createUser();
@@ -97,6 +103,41 @@ public class UserControllerTest extends AbstractControllerTest {
         UsrGroupVO groupReturn = getGroup(group.getId());
         Assert.notNull(groupReturn);
         Assert.isTrue(groupReturn.getId().equals(group.getId()));
+
+        UserController.Permissions permissions = new UserController.Permissions();
+        List<UsrPermissionVO> permissionVOs = new ArrayList<>();
+
+        UsrPermissionVO permissionVO = new UsrPermissionVO();
+        permissionVO.setPermission(UsrPermission.Permission.FUND_RD_ALL);
+        permissionVOs.add(permissionVO);
+
+        permissionVO = new UsrPermissionVO();
+        permissionVO.setFundId(fund.getId());
+        permissionVO.setPermission(UsrPermission.Permission.FUND_ARR);
+        permissionVOs.add(permissionVO);
+
+        permissionVO = new UsrPermissionVO();
+        permissionVO.setScopeId(1);
+        permissionVO.setPermission(UsrPermission.Permission.REG_SCOPE_RD);
+        permissionVOs.add(permissionVO);
+
+        permissions.setPermissions(permissionVOs);
+
+        changeUserPermission(user.getId(), permissions);
+        changeGroupPermission(group.getId(), permissions);
+
+        user = getUser(user.getId());
+        Assert.notNull(user.getPermissions());
+        Assert.isTrue(user.getPermissions().size() == 3);
+        user.getPermissions().remove(0);
+        permissions.setPermissions(user.getPermissions());
+
+        changeUserPermission(user.getId(), permissions);
+        user = getUser(user.getId());
+        Assert.notNull(user.getPermissions());
+        Assert.isTrue(user.getPermissions().size() == 2);
+
+        leaveGroup(group.getId(), user.getId());
 
         deleteGroup(group.getId());
     }

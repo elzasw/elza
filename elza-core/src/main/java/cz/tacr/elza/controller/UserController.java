@@ -1,11 +1,14 @@
 package cz.tacr.elza.controller;
 
+import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.security.UserDetail;
@@ -40,6 +43,9 @@ public class UserController {
 
     @Autowired
     private ClientFactoryVO factoryVO;
+
+    @Autowired
+    private ClientFactoryDO factoryDO;
 
     /**
      * Získání oprávnění uživatele.
@@ -266,7 +272,7 @@ public class UserController {
     /**
      * Přidání uživatelů do skupin.
      *
-     * @param params  identifikátory přidávaných uživatelů a skupin
+     * @param params identifikátory přidávaných uživatelů a skupin
      */
     @Transactional
     @RequestMapping(value = "/group/join", method = RequestMethod.POST)
@@ -290,6 +296,36 @@ public class UserController {
         UsrUser user = userService.getUser(userId);
 
         userService.leaveGroup(group, user);
+    }
+
+    /**
+     * Nastavení oprávnění uživatele.
+     *
+     * @param userId      identifikátor uživatele
+     * @param permissions seznam oprávnění
+     */
+    @Transactional
+    @RequestMapping(value = "/{userId}/permission", method = RequestMethod.POST)
+    public void changeUserPermission(@PathVariable(value = "userId") final Integer userId,
+                                     @RequestBody final Permissions permissions) {
+        UsrUser user = userService.getUser(userId);
+        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions.getPermissions());
+        userService.changeUserPermission(user, usrPermissions);
+    }
+
+    /**
+     * Nastavení oprávnění skupiny.
+     *
+     * @param groupId     identifikátor skupiny
+     * @param permissions seznam oprávnění
+     */
+    @Transactional
+    @RequestMapping(value = "/group/{groupId}/permission", method = RequestMethod.POST)
+    public void changeGroupPermission(@PathVariable(value = "groupId") final Integer groupId,
+                                      @RequestBody final Permissions permissions) {
+        UsrGroup group = userService.getGroup(groupId);
+        List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions.getPermissions());
+        userService.changeGroupPermission(group, usrPermissions);
     }
 
     /**
@@ -486,6 +522,25 @@ public class UserController {
 
         public void setUserIds(final Set<Integer> userIds) {
             this.userIds = userIds;
+        }
+    }
+
+    /**
+     * Seznam oprávnění.
+     */
+    public static class Permissions {
+
+        /**
+         * Seznam oprávnění.
+         */
+        private List<UsrPermissionVO> permissions;
+
+        public List<UsrPermissionVO> getPermissions() {
+            return permissions;
+        }
+
+        public void setPermissions(final List<UsrPermissionVO> permissions) {
+            this.permissions = permissions;
         }
     }
 }

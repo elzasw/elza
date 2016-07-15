@@ -825,4 +825,15 @@ public class ClientFactoryDO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(fileVO, ArrOutputFile.class);
     }
+
+    /**
+     * Převod seznamu oprávnávnění VO na DO.
+     *
+     * @param permissions seznam oprávnění
+     * @return seznam DO
+     */
+    public List<UsrPermission> createPermissionList(final List<UsrPermissionVO> permissions) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.mapAsList(permissions, UsrPermission.class);
+    }
 }

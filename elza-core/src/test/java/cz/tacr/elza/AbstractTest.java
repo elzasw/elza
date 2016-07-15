@@ -135,6 +135,12 @@ public abstract class AbstractTest {
     @Autowired
     protected UserRepository userRepository;
     @Autowired
+    protected PermissionRepository permissionRepository;
+    @Autowired
+    protected GroupUserRepository groupUserRepository;
+    @Autowired
+    protected GroupRepository groupRepository;
+    @Autowired
     private UtilsTest utilsTest;
 
     private RulPackage rulPackage;
@@ -206,6 +212,9 @@ public abstract class AbstractTest {
 
     protected void deleteTables() {
         // TODO: dopsat vsechny potrebne tabulky
+        permissionRepository.deleteAll();
+        groupUserRepository.deleteAll();
+        groupRepository.deleteAll();
         userRepository.deleteAll();
         arrDataRepository.deleteAll();
         bulkActionNodeRepository.deleteAll();

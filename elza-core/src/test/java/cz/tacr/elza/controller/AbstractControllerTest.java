@@ -282,8 +282,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static String CREATE_GROUP = USER_CONTROLLER_URL + "/group";
     protected final static String DELETE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
     protected final static String CHANGE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
+    protected final static String CHANGE_GROUP_PERMISSION = USER_CONTROLLER_URL + "/group/{groupId}/permission";
     protected final static String JOIN_GROUP = USER_CONTROLLER_URL + "/group/join";
     protected final static String LEAVE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}/leave/{userId}";
+    protected final static String CHANGE_USER_PERMISSION = USER_CONTROLLER_URL + "/{userId}/permission";
 
     @Value("${local.server.port}")
     private int port;
@@ -2449,7 +2451,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param params parametry pro vytvoření skupiny
      * @return vytvořená skupina
      */
-    public UsrGroupVO createGroup(UserController.CreateGroup params) {
+    protected UsrGroupVO createGroup(UserController.CreateGroup params) {
         return post(spec -> spec.body(params), CREATE_GROUP).as(UsrGroupVO.class);
     }
 
@@ -2484,7 +2486,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param groupId identifikátor skupiny
      * @param params  parametry změny skupiny
      */
-    public UsrGroupVO changeGroup(final Integer groupId,
+    protected UsrGroupVO changeGroup(final Integer groupId,
                                   final UserController.ChangeGroup params) {
         return put(spec -> spec.body(params).pathParameter("groupId", groupId), CHANGE_GROUP).as(UsrGroupVO.class);
     }
@@ -2552,6 +2554,28 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected void leaveGroup(final Integer groupId,
                            final Integer userId) {
         post(spec -> spec.pathParameter("groupId", groupId).pathParameter("userId", userId), LEAVE_GROUP);
+    }
+
+    /**
+     * Nastavení oprávnění uživatele.
+     *
+     * @param userId      identifikátor uživatele
+     * @param permissions seznam oprávnění
+     */
+    protected void changeUserPermission(final Integer userId,
+                                     final UserController.Permissions permissions) {
+        post(spec -> spec.pathParameter("userId", userId).body(permissions), CHANGE_USER_PERMISSION);
+    }
+
+    /**
+     * Nastavení oprávnění skupiny.
+     *
+     * @param groupId     identifikátor skupiny
+     * @param permissions seznam oprávnění
+     */
+    protected void changeGroupPermission(final Integer groupId,
+                                      final UserController.Permissions permissions) {
+        post(spec -> spec.pathParameter("groupId", groupId).body(permissions), CHANGE_GROUP_PERMISSION);
     }
 
     /**

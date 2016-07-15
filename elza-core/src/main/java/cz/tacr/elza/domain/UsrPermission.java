@@ -116,4 +116,20 @@ public class UsrPermission implements cz.tacr.elza.api.UsrPermission<UsrUser, Us
         this.scope = scope;
         this.scopeId = scope == null ? null : scope.getScopeId();
     }
+
+    public Integer getFundId() {
+        return fundId;
+    }
+
+    public Integer getScopeId() {
+        return scopeId;
+    }
+
+    public void setFundId(final Integer fundId) {
+        this.fundId = fundId;
+    }
+
+    public void setScopeId(final Integer scopeId) {
+        this.scopeId = scopeId;
+    }
 }

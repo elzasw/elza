@@ -1,15 +1,19 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.GroupUserRepository;
 import cz.tacr.elza.repository.PermissionRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
@@ -28,7 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -67,6 +71,12 @@ public class UserService {
     private IEventNotificationService eventNotificationService;
 
     @Autowired
+    private FundRepository fundRepository;
+
+    @Autowired
+    private ScopeRepository scopeRepository;
+
+    @Autowired
     private SessionRegistry sessionRegistry;
 
     @Value("${elza.security.salt:kdFss=+4Df_%}")
@@ -74,8 +84,102 @@ public class UserService {
 
     private ShaPasswordEncoder encoder = new ShaPasswordEncoder(256);
 
-    /** Seznam session id, pro které se má přepočítat oprávnění */
+    /**
+     * Seznam session id, pro které se má přepočítat oprávnění
+     */
     private Set<String> reCalcSessionIds = new HashSet<>();
+
+    private void changePermission(final @NotNull UsrUser user,
+                                  final @NotNull UsrGroup group,
+                                  final @NotNull List<UsrPermission> permissions,
+                                  final @NotNull List<UsrPermission> permissionsDB) {
+        Map<Integer, UsrPermission> permissionMap = permissionsDB.stream()
+                .collect(Collectors.toMap(UsrPermission::getPermissionId, Function.identity()));
+
+        List<UsrPermission> permissionsAdd = new ArrayList<>();
+        List<UsrPermission> permissionsUpdate = new ArrayList<>();
+
+        for (UsrPermission permission : permissions) {
+            if (permission.getPermissionId() == null) {
+                permission.setUser(user);
+                permission.setGroup(group);
+                loadPermissionEntity(permission);
+                permissionsAdd.add(permission);
+            } else {
+                UsrPermission permissionDB = permissionMap.get(permission.getPermissionId());
+                if (permissionDB == null) {
+                    throw new IllegalArgumentException("Oprávnění neexistuje a proto nemůže být upraveno");
+                }
+                permissionDB.setFundId(permission.getFundId());
+                permissionDB.setScopeId(permission.getScopeId());
+                loadPermissionEntity(permissionDB);
+                permissionsUpdate.add(permissionDB);
+            }
+        }
+
+        List<UsrPermission> permissionsDelete = new ArrayList<>(permissionsDB);
+        permissionsDelete.removeAll(permissionsUpdate);
+
+        for (UsrPermission permission : permissions) {
+            switch (permission.getPermission().getType()) {
+                case ALL: {
+                    if (permission.getScopeId() != null || permission.getFundId() != null) {
+                        throw new IllegalArgumentException("Neplatný vstup oprávnění: ALL");
+                    }
+                    break;
+                }
+                case SCOPE: {
+                    if (permission.getScopeId() == null || permission.getFundId() != null) {
+                        throw new IllegalArgumentException("Neplatný vstup oprávnění: SCOPE");
+                    }
+                    break;
+                }
+                case FUND: {
+                    if (permission.getScopeId() != null || permission.getFundId() == null) {
+                        throw new IllegalArgumentException("Neplatný vstup oprávnění: FUND");
+                    }
+                    break;
+                }
+                default:
+                    throw new IllegalStateException("Nedefinovaný typ oprávnění");
+            }
+        }
+
+        permissionRepository.delete(permissionsDelete);
+        permissionRepository.save(permissionsAdd);
+        permissionRepository.save(permissionsUpdate);
+    }
+
+    private void loadPermissionEntity(final UsrPermission permission) {
+        if (permission.getFundId() != null) {
+            ArrFund fund = fundRepository.findOne(permission.getFundId());
+            if (fund == null) {
+                throw new IllegalArgumentException("Neplatný archivní soubor");
+            }
+            permission.setFund(fund);
+        }
+        if (permission.getScopeId() != null) {
+            RegScope scope = scopeRepository.findOne(permission.getScopeId());
+            if (scope == null) {
+                throw new IllegalArgumentException("Neplatný scope");
+            }
+            permission.setScope(scope);
+        }
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
+    public void changeGroupPermission(@NotNull final UsrGroup group,
+                                      @NotNull final List<UsrPermission> permissions) {
+        List<UsrPermission> permissionsDB = permissionRepository.findByGroup(group);
+        changePermission(null, group, permissions, permissionsDB);
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
+    public void changeUserPermission(@NotNull final UsrUser user,
+                                     @NotNull final List<UsrPermission> permissions) {
+        List<UsrPermission> permissionsDB = permissionRepository.findByUser(user);
+        changePermission(user, null, permissions, permissionsDB);
+    }
 
     /**
      * Provede přenačtení oprávnění uživatele.
@@ -94,9 +198,9 @@ public class UserService {
      * Přidání uživatelů do skupin.
      *
      * @param groups skupiny do které přidávám uživatele
-     * @param users přidávaní uživatelé
+     * @param users  přidávaní uživatelé
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public void joinGroup(@NotEmpty final Set<UsrGroup> groups,
                           @NotEmpty final Set<UsrUser> users) {
         for (UsrUser user : users) {
@@ -126,7 +230,7 @@ public class UserService {
      * @param group skupina ze které odebírám
      * @param user  odebíraný uživatel
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public void leaveGroup(@NotNull final UsrGroup group,
                            @NotNull final UsrUser user) {
         UsrGroupUser item = groupUserRepository.findOneByGroupAndUser(group, user);
@@ -148,7 +252,7 @@ public class UserService {
      * @param code kód skupiny
      * @return skupina
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public UsrGroup createGroup(@NotEmpty final String name,
                                 @NotEmpty final String code) {
         UsrGroup group = groupRepository.findOneByCode(code);
@@ -170,7 +274,7 @@ public class UserService {
      *
      * @return skupina
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public UsrGroup deleteGroup(@NotNull final UsrGroup group) {
 
         List<UsrGroupUser> groupUserList = groupUserRepository.findByGroup(group);
@@ -202,7 +306,7 @@ public class UserService {
      * @param description popis skupiny
      * @return skupina
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public UsrGroup changeGroup(@NotNull final UsrGroup group,
                                 @NotEmpty final String name,
                                 final String description) {
@@ -221,7 +325,7 @@ public class UserService {
      * @param partyId  identifikátor osoby
      * @return vytvořený uživatel
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public UsrUser createUser(@NotEmpty final String username,
                               @NotEmpty final String password,
                               @NotNull final Integer partyId) {
@@ -277,7 +381,7 @@ public class UserService {
      * @param newPassword nové heslo (v plaintextu)
      * @return uživatel
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public UsrUser changePassword(@NotNull final UsrUser user,
                                   @NotEmpty final String newPassword) {
         return changePasswordPrivate(user, newPassword);
@@ -458,7 +562,7 @@ public class UserService {
      * @param maxResults  maximální počet vrácených záznamů
      * @return výsledky hledání
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public FilteredResult<UsrUser> findUser(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults) {
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
@@ -475,7 +579,7 @@ public class UserService {
      * @param maxResults  maximální počet vrácených záznamů
      * @return výsledky hledání
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public FilteredResult<UsrGroup> findGroup(final String search, final Integer firstResult, final Integer maxResults) {
         return groupRepository.findGroupByTextCount(search, firstResult, maxResults);
     }
@@ -486,7 +590,7 @@ public class UserService {
      * @param userId id
      * @return objekt
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public UsrUser getUser(final Integer userId) {
         Assert.notNull(userId);
         return userRepository.getOneCheckExist(userId);
@@ -498,7 +602,7 @@ public class UserService {
      * @param userIds ids
      * @return objekt
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public Set<UsrUser> getUsers(final Set<Integer> userIds) {
         Assert.notNull(userIds);
         List<UsrUser> users = userRepository.findAll(userIds);
@@ -514,7 +618,7 @@ public class UserService {
      * @param groupIds ids
      * @return objekt
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public Set<UsrGroup> getGroups(final Set<Integer> groupIds) {
         Assert.notNull(groupIds);
         List<UsrGroup> groups = groupRepository.findAll(groupIds);
@@ -530,7 +634,7 @@ public class UserService {
      * @param groupId id
      * @return objekt
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public UsrGroup getGroup(final Integer groupId) {
         Assert.notNull(groupId);
         return groupRepository.getOneCheckExist(groupId);
@@ -543,7 +647,7 @@ public class UserService {
      * @param active je aktivní?
      * @return uživatel
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public UsrUser changeActive(@NotNull final UsrUser user,
                                 @NotNull final Boolean active) {
         user.setActive(active);
