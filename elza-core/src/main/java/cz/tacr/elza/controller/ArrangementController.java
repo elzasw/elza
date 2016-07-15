@@ -1621,7 +1621,7 @@ public class ArrangementController {
         ArrOutput output = outputService.getOutput(outputId);
         UserDetail userDetail = userService.getLoggedUserDetail();
         Integer userId = userDetail != null ? userDetail.getId() : null;
-        outputGeneratorService.generateOutput(output, userId);
+        outputGeneratorService.generateOutput(output, userId, output.getOutputDefinition().getFund());
     }
 
     /**

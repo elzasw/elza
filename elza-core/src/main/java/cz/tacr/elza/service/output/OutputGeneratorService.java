@@ -1,7 +1,10 @@
 package cz.tacr.elza.service.output;
 
 import com.google.common.collect.Sets;
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNodeOutput;
@@ -106,9 +109,13 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
      * Spuštění generování výstupu a jeho uložení do DMS
      *
      * @param arrOutput definice outputu s definicí výstupu
-     * @param userId ID uživatele pod kterým bude vytvořená změna arrChange související s generováním
+     * @param userId    ID uživatele pod kterým bude vytvořená změna arrChange související s generováním
+     * @param fund      AS výstupu
      */
-    public void generateOutput(ArrOutput arrOutput, Integer userId) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
+    public void generateOutput(final ArrOutput arrOutput,
+                               final Integer userId,
+                               @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) {
         ArrOutputResult outputResult = outputResultRepository.findByOutputDefinition(arrOutput.getOutputDefinition());
         Assert.isNull(outputResult, "Tento výstup byl již vygenerován.");
         setStateAndSave(arrOutput.getOutputDefinition(), OutputState.GENERATING);

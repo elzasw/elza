@@ -741,10 +741,11 @@ public class OutputService {
      * @param fundVersionId           identifikátor verze fondu
      * @return vytvořená hodnota atributu
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public ArrOutputItem createOutputItem(final ArrOutputItem item,
                                           final Integer outputDefinitionId,
                                           final Integer outputDefinitionVersion,
-                                          final Integer fundVersionId) {
+                                          @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         Assert.notNull(item);
         Assert.notNull(outputDefinitionId);
         Assert.notNull(outputDefinitionVersion);
@@ -764,6 +765,12 @@ public class OutputService {
         return createOutputItem(item, outputDefinition, fundVersion, null);
     }
 
+    /**
+     * Uložení definice výstupu - zámky.
+     *
+     * @param outputDefinition pojmenovaný výstup
+     * @return pojmenovaný výstup
+     */
     private ArrOutputDefinition saveOutputDefinition(final ArrOutputDefinition outputDefinition) {
         outputDefinition.setLastUpdate(LocalDateTime.now());
         outputDefinitionRepository.save(outputDefinition);
@@ -771,9 +778,18 @@ public class OutputService {
         return outputDefinition;
     }
 
+    /**
+     * Vytvoření výstupu.
+     *
+     * @param outputItem       hodnota atributu
+     * @param outputDefinition pojmenovaný výstup
+     * @param fundVersion      verze AS
+     * @param createChange     použitá změna
+     * @return
+     */
     public ArrOutputItem createOutputItem(final ArrOutputItem outputItem,
                                           final ArrOutputDefinition outputDefinition,
-                                          final ArrFundVersion version,
+                                          final ArrFundVersion fundVersion,
                                           @Nullable final ArrChange createChange) {
         ArrChange change = createChange == null ? arrangementService.createChange() : createChange;
 
@@ -784,10 +800,10 @@ public class OutputService {
         outputItem.setDeleteChange(null);
         outputItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
 
-        ArrOutputItem outputItemCreated = createOutputItem(outputItem, version, change);
+        ArrOutputItem outputItemCreated = createOutputItem(outputItem, fundVersion, change);
 
         // sockety
-        publishChangeOutputItem(version, outputItemCreated);
+        publishChangeOutputItem(fundVersion, outputItemCreated);
 
         return outputItemCreated;
     }
@@ -860,9 +876,10 @@ public class OutputService {
      * @param fundVersionId    identifikátor verze fondu
      * @return vytvořená hodnota atributu
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public ArrOutputItem deleteOutputItem(final Integer descItemObjectId,
                                           final Integer outputVersion,
-                                          final Integer fundVersionId) {
+                                          @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         Assert.notNull(descItemObjectId);
         Assert.notNull(outputVersion);
         Assert.notNull(fundVersionId);
@@ -937,13 +954,23 @@ public class OutputService {
         return outputItemRepository.save(outputItem);
     }
 
-    public ArrOutputItem updateOutputItem(final ArrOutputItem outputItemItem,
+    /**
+     * Úprava hodnoty atributu.
+     *
+     * @param outputItem              hodnota atributu
+     * @param outputDefinitionVersion verze outputu
+     * @param fundVersionId           identifikátor verze fondu
+     * @param createNewVersion        vytvořit novou?
+     * @return upravená hodnota atributu
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
+    public ArrOutputItem updateOutputItem(final ArrOutputItem outputItem,
                                           final Integer outputDefinitionVersion,
-                                          final Integer fundVersionId,
+                                          @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                           final Boolean createNewVersion) {
-        Assert.notNull(outputItemItem);
-        Assert.notNull(outputItemItem.getPosition());
-        Assert.notNull(outputItemItem.getDescItemObjectId());
+        Assert.notNull(outputItem);
+        Assert.notNull(outputItem.getPosition());
+        Assert.notNull(outputItem.getDescItemObjectId());
         Assert.notNull(outputDefinitionVersion);
         Assert.notNull(fundVersionId);
         Assert.notNull(createNewVersion);
@@ -951,7 +978,7 @@ public class OutputService {
         ArrChange change = null;
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
 
-        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(outputItemItem.getDescItemObjectId());
+        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(outputItem.getDescItemObjectId());
 
         if (outputItems.size() > 1) {
             throw new IllegalStateException("Hodnota musí být právě jedna");
@@ -979,11 +1006,21 @@ public class OutputService {
             change = arrangementService.createChange();
         }
 
-        ArrOutputItem outputItemUpdated = updateOutputItem(outputItemItem, outputItemDB, fundVersion, change, createNewVersion);
+        ArrOutputItem outputItemUpdated = updateOutputItem(outputItem, outputItemDB, fundVersion, change, createNewVersion);
 
         return outputItemUpdated;
     }
 
+    /**
+     * Úprava hodnoty atributu.
+     *
+     * @param outputItem       hodnota atributu
+     * @param outputItemDB     hodnota atributu z DB
+     * @param version          verze AS
+     * @param change           změna pro úpravu
+     * @param createNewVersion odverzovat?
+     * @return upravená hodnota
+     */
     public ArrOutputItem updateOutputItem(final ArrOutputItem outputItem,
                                           final ArrOutputItem outputItemDB,
                                           final ArrFundVersion version,
@@ -1090,31 +1127,48 @@ public class OutputService {
         return descItems;
     }
 
+    /**
+     * Vyhledání definice podle identifikátoru výstupu.
+     *
+     * @param outputDefinitionId identifikátor výstupu
+     * @return výstup
+     */
     public ArrOutputDefinition findOutputDefinition(final Integer outputDefinitionId) {
         return outputDefinitionRepository.findOne(outputDefinitionId);
     }
 
-    public List<ArrOutputItem> getOutputItems(final ArrFundVersion version,
+    /**
+     * Vyhledání hodnot atributu výstupu.
+     *
+     * @param fundVersion      verze AS
+     * @param outputDefinition pojmenovaný výstup
+     * @return seznam hodnot atrubutů
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public List<ArrOutputItem> getOutputItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                               final ArrOutputDefinition outputDefinition) {
         List<ArrOutputItem> itemList;
 
-        if (version.getLockChange() == null) {
+        if (fundVersion.getLockChange() == null) {
             itemList = outputItemRepository.findByOutputAndDeleteChangeIsNull(outputDefinition);
         } else {
-            itemList = outputItemRepository.findByOutputAndChange(outputDefinition, version.getLockChange());
+            itemList = outputItemRepository.findByOutputAndChange(outputDefinition, fundVersion.getLockChange());
         }
 
         return itemService.loadData(itemList);
     }
 
-    private void publishChangeOutputItem(final ArrFundVersion version, final ArrOutputItem outputItem) {
+    /**
+     * Publikovat změnu - sockety.
+     *
+     * @param fundVersion verze AS
+     * @param outputItem  hodnota atributu
+     */
+    private void publishChangeOutputItem(final ArrFundVersion fundVersion,
+                                         final ArrOutputItem outputItem) {
         notificationService.publishEvent(
-                new EventChangeOutputItem(EventType.OUTPUT_ITEM_CHANGE, version.getFundVersionId(),
+                new EventChangeOutputItem(EventType.OUTPUT_ITEM_CHANGE, fundVersion.getFundVersionId(),
                         outputItem.getDescItemObjectId(), outputItem.getOutputDefinition().getOutputDefinitionId(), outputItem.getOutputDefinition().getVersion()));
-    }
-
-    public ArrOutputDefinition getOutputDefinition(final Integer outputDefinitionId) {
-        return outputDefinitionRepository.findOne(outputDefinitionId);
     }
 
     /**
@@ -1127,7 +1181,15 @@ public class OutputService {
                 .collect(Collectors.toList());
     }
 
-
+    /**
+     * Vytvoření hodnoty atributu výstupu.
+     *
+     * @param outputItems             seznam hodnot
+     * @param outputDefinitionId      identifikátor výstupu
+     * @param outputDefinitionVersion verze výstupu
+     * @param fundVersionId           identifikátor verze fondu
+     * @return seznam hodnot
+     */
     public List<ArrOutputItem> createOutputItems(final List<ArrOutputItem> outputItems,
                                                  final Integer outputDefinitionId,
                                                  final Integer outputDefinitionVersion,
@@ -1150,6 +1212,15 @@ public class OutputService {
         return createOutputItems(outputItems, outputDefinition, version, null);
     }
 
+    /**
+     * Vytvoření hodnoty atributu výstupu.
+     *
+     * @param outputItems      seznam hodnot
+     * @param outputDefinition pojmenovaný výstup
+     * @param version          verze AS
+     * @param createChange     použitá změna
+     * @return seznam hodnot
+     */
     public List<ArrOutputItem> createOutputItems(final List<ArrOutputItem> outputItems,
                                                  final ArrOutputDefinition outputDefinition,
                                                  final ArrFundVersion version,
@@ -1176,6 +1247,14 @@ public class OutputService {
         return createdItems;
     }
 
+    /**
+     * Smazání hodnot výstupů podle typu atributu.
+     *
+     * @param fundVersionId      identifikátor verze fondu
+     * @param outputDefinitionId identifikátor výstupu
+     * @param descItemTypeId     identifikátor typu atributu
+     * @return výstup
+     */
     public ArrOutputDefinition deleteOutputItemsByTypeWithoutVersion(final Integer fundVersionId,
                                                                      final Integer outputDefinitionId,
                                                                      final Integer descItemTypeId) {
@@ -1466,8 +1545,9 @@ public class OutputService {
      * @param fundVersion      verze AS
      * @param itemType         typ atributu
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public void switchOutputCalculating(final ArrOutputDefinition outputDefinition,
-                                        final ArrFundVersion fundVersion,
+                                        @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                         final RulItemType itemType) {
         Assert.notNull(outputDefinition, "Neplatný výstup");
         Assert.notNull(fundVersion, "Neplatná verze fondu");
