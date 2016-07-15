@@ -1,5 +1,9 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 /**
  * Rozšiřuje atribut archivního popisu o jeho hodnotu.
  *
@@ -8,6 +12,8 @@ package cz.tacr.elza.domain;
  */
 public class ArrItemFileRef extends ArrItemData implements cz.tacr.elza.api.ArrItemFileRef<ArrFile> {
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFile.class)
+    @JoinColumn(name = "fileId", nullable = false)
     private ArrFile file;
 
     @Override
