@@ -9,6 +9,7 @@ const FormInput = class FormInput extends AbstractReactComponent {
         return <FormGroup validationState={hasError ? 'error' : ''}>
             {label && <ControlLabel>{label}</ControlLabel>}
             <FormControl
+                ref='input'
                 value={value}
                 onChange={this.handleChange}
                 {...otherProps}

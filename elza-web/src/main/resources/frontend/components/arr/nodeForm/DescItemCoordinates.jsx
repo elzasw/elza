@@ -31,7 +31,7 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
     }
 
     handleUploadClick() {
-        this.refs.uploadInput.getInputDOMNode().click();
+        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
     }
 
     handleChangeData(e) {

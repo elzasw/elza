@@ -317,11 +317,11 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
 
     handleCoordinatesUploadButtonClick() {
-        this.refs.uploadInput.getInputDOMNode().click();
+        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
     }
 
     handleCoordinatesUpload() {
-        const fileList = this.refs.uploadInput.getInputDOMNode().files;
+        const fileList = ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).files;
 
         if (fileList.length != 1) {
             return;
@@ -329,7 +329,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
         this.dispatch(registryRecordCoordinatesUpload(fileList[0], this.props.registryRegionData.item.recordId));
 
-        this.refs.uploadInput.value = null;
+        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).value = null;
     }
 
     handleGoToPartyPerson() {

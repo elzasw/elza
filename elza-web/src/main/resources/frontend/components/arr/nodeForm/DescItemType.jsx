@@ -419,11 +419,11 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     handleCoordinatesUploadButtonClick() {
-        this.refs.uploadInput.getInputDOMNode().click();
+        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
     }
 
     handleJsonTableUploadButtonClick() {
-        this.refs.uploadInput.getInputDOMNode().click();
+        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
     }
 
     handleCoordinatesUpload(e) {

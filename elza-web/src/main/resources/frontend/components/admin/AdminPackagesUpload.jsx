@@ -5,6 +5,7 @@
  * @since 22.12.2015
  */
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
 import {AppActions} from 'stores/index.jsx';
@@ -27,12 +28,13 @@ var AdminPackagesUpload = class AdminPackagesUpload extends AbstractReactCompone
     handleUpload() {
         var file = this.refs.file;
         var data = new FormData();
-        data.append("file", file.refs.input.files[0]);
+        data.append("file", ReactDOM.findDOMNode(file.refs.input).files[0]);
         this.dispatch(importPackage(data));
     }
 
     handleChangeFile() {
-        this.setState({disabled: this.refs.file.refs.input.files.length == 0});
+        console.log(ReactDOM.findDOMNode(this.refs.file.refs.input));
+        this.setState({disabled: ReactDOM.findDOMNode(this.refs.file.refs.input).files.length == 0});
     }
 
     render() {

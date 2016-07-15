@@ -67,7 +67,7 @@ const FundFiles = class FundFiles extends AbstractReactComponent {
     }
 
     handleReplace(id) {
-        this.refs.uploadInput.getInputDOMNode().click();
+        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
         _ReplaceId = id;
     }
 
