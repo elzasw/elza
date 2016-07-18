@@ -118,7 +118,7 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
     }
 
     componentWillUnmount() {
-        this.unsubscribe();
+        //this.unsubscribe();
     }
 
     focus() {
