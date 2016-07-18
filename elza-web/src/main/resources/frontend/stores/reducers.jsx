@@ -23,6 +23,7 @@ import login from './app/global/login.jsx';
 import splitter from './app/global/splitter.jsx';
 import developer from './app/global/developer.jsx';
 import focus from './app/global/focus.jsx';
+import tab from './app/global/tab.jsx';
 import adminRegion from './app/admin/adminRegion.jsx';
 import fundForm from './app/arr/form/fundForm.jsx';
 import inlineForm from './app/form/inlineForm.jsx';
@@ -69,7 +70,8 @@ const rootReducer = combineReducers({
     stateRegion,
     router,
     userDetail,
-    form: formReducer.plugin({
+    tab,
+form: formReducer.plugin({
         fundForm: fundForm,
         outputEditForm: inlineForm,
         addPacketForm: addPacketForm,

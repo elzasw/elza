@@ -93,12 +93,13 @@ export function fundPacketsChangeSelection(versionId, selectedIds) {
     }
 }
 
-export function fundPacketsCreate(fundId, type, data) {
+export function fundPacketsCreate(fundId, type, data, callback = null) {
     return (dispatch, getState) => {
         switch (type) {
             case "SINGLE":
                 WebApi.insertPacket(fundId, data.storageNumber, data.packetTypeId, false)
-                    .then(() => {
+                    .then((json) => {
+                        callback && callback(json);
                         dispatch(modalDialogHide())
                     })
                 break

@@ -209,7 +209,7 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
                     staticColumns={true}
                     onEdit={this.handleEdit}
                     onDelete={this.handleDelete}
-                    locked={locked}
+                    disabled={locked}
                     />
                 <div className='desc-item-value-actions'>
                     {actions}

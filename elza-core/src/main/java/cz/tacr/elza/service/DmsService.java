@@ -1,6 +1,10 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
@@ -101,6 +105,16 @@ public class DmsService {
     }
 
     /**
+     * Ověření oprávnění na zápis souborů.
+     *
+     * @param fundId identifikátor archivního souboru
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_ALL})
+    public void checkFundWritePermission(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId) {
+        Assert.notNull(fundId);
+    }
+
+    /**
      * Úprava detailů souboru či jeho nahrazení
      *
      * @param newFile    nové DO DMS file
@@ -180,11 +194,14 @@ public class DmsService {
     /**
      * Smazání Arr file pomocí ID
      *
-     * @param arrFileId ID
+     * @param file soubor
+     * @param fund archivní soubor
      * @throws IOException
      */
-    public void deleteArrFile(final Integer arrFileId) throws IOException {
-        deleteFile(fundFileRepository.getOneCheckExist(arrFileId));
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL})
+    public void deleteArrFile(final ArrFile file,
+                              @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) throws IOException {
+        deleteFile(file);
     }
 
 
@@ -284,7 +301,11 @@ public class DmsService {
      * @param count  počet
      * @return filtrovaný list
      */
-    public FilteredResult<ArrFile> findArrFiles(String search, Integer fundId, Integer from, Integer count) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL})
+    public FilteredResult<ArrFile> findArrFiles(final String search,
+                                                @AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
+                                                final Integer from,
+                                                final Integer count) {
         Assert.notNull(fundId);
         return fundFileRepository.findByTextAndFund(search, fundRepository.getOneCheckExist(fundId), from, count);
     }
@@ -298,6 +319,7 @@ public class DmsService {
      * @param count  počet
      * @return filtrovaný list
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL})
     public FilteredResult<ArrOutputFile> findOutputFiles(String search, Integer outputResultId, Integer from, Integer count) {
         Assert.notNull(outputResultId);
         return outputFileRepository.findByTextAndResult(search, outputResultRepository.getOneCheckExist(outputResultId), from, count);
@@ -370,5 +392,15 @@ public class DmsService {
         }
         zos.closeEntry();
         fis.close();
+    }
+
+    /**
+     * Získání DO objektu souboru z pořádání podle id.
+     *
+     * @param fileId id souboru
+     * @return DO objekt souboru
+     */
+    public ArrFile getArrFile(final Integer fileId) {
+        return fundFileRepository.getOneCheckExist(fileId);
     }
 }

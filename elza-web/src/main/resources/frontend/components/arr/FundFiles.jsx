@@ -5,6 +5,8 @@
 require('./FundFiles.less')
 
 import React from 'react';
+import ReactDOM from 'react-dom';
+
 import {connect} from 'react-redux'
 import {AbstractReactComponent, Icon, i18n, FileListBox, Loading, AddFileForm, FormInput} from 'components/index.jsx';
 import {Button} from 'react-bootstrap'
@@ -85,7 +87,12 @@ const FundFiles = class FundFiles extends AbstractReactComponent {
     }
 
     focus() {
-        this.refs.listBox.focus()
+        if (this.refs.listBox) {
+            this.refs.listBox.focus()
+            return true;
+        } else {
+            return false;
+        }
     }
 
     render() {
