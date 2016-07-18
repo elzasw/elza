@@ -6,19 +6,22 @@ process.env.NODE_ENV = 'development';
 
 module.exports = {
     entry: [
+        'webpack/hot/only-dev-server',
+        'react-hot-loader/patch',
         './index.jsx',
     ],
     debug: true,
-    devtool: '#eval-source-map',
+    devtool: 'eval',
     output: {
         publicPath: 'http://localhost:8090/assets'
     },
+    historyApiFallback: true,
     module: {
         loaders: [
             {
                 test: /\.jsx?$/,
                 exclude: /(node_modules|bower_components)/,
-                loaders: ['react-hot', 'babel-loader']
+                loaders: ['babel-loader']
             },
             {
                 test: /\.json$/,
@@ -65,7 +68,8 @@ module.exports = {
         }),
         new webpack.DefinePlugin({
             __DEVTOOLS__: false,
-            __SHOW_DEVTOOLS__: false
+            __SHOW_DEVTOOLS__: false,
+            __DEV__: true
         })
     ]
 }

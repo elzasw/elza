@@ -144,3 +144,16 @@ function usersUserDetailReceive(data) {
         dispatch(permissionReceive("USER", data.permissions));
     }
 }
+
+
+function userCreate(username, password, partyId) {
+    return WebApi.createUser(username, password, partyId)
+}
+
+function userPasswordChange(oldPass, newPass) {
+    return WebApi.changePasswordUser(oldPass, newPass)
+}
+
+function adminPasswordChange(userId, newPassword) {
+    return WebApi.changePassword(userId, newPassword)
+}

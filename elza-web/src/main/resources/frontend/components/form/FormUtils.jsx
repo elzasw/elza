@@ -10,13 +10,13 @@
  */
 export function decorateFormField(field, inline = false) {
     if (field.touched && field.error) {
-        var result = {
+        const result = {
             bsStyle: 'error',
             hasFeedback: true,
         }
 
         if (inline) {
-            result.title = field.error;
+            result.inline = true;
         } else {
             result.help = field.error;
         }

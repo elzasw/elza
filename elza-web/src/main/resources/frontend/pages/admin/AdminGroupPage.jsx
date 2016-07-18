@@ -10,7 +10,7 @@ import {Button} from 'react-bootstrap';
 import {Ribbon} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
 import {i18n, GroupDetail, Search, ListBox, AbstractReactComponent, AddGroupForm, Icon, RibbonGroup, Loading} from 'components/index.jsx';
-import {groupsFetchIfNeeded, groupsGroupDetailFetchIfNeeded, groupsSelectGroup, groupsSearch} from 'actions/admin/group.jsx'
+import {groupsFetchIfNeeded, groupsGroupDetailFetchIfNeeded, groupsSelectGroup, groupsSearch, groupCreate, groupDelete} from 'actions/admin/group.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {WebApi} from 'actions/index.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
@@ -86,7 +86,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
 
     handleDeleteGroup() {
         const {group:{groupDetail:{id}}} = this.props;
-        WebApi.deleteGroup(id).then(response => {
+        groupDelete(id).then(response => {
             this.dispatch(addToastrSuccess(i18n('admin.group.delete.success')));
         });
     }
@@ -96,10 +96,10 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     }
 
     handleCreateGroup(data) {
-        WebApi.createGroup(data.name, data.code).then(response => {
-            console.log(response);
+        groupCreate(data.name, data.code).then(response => {
             this.dispatch(addToastrSuccess(i18n('admin.group.add.success')));
             this.dispatch(modalDialogHide());
+            this.dispatch(groupsSelectGroup(response.id));
         }).catch(e => {
             console.error(e);
         });

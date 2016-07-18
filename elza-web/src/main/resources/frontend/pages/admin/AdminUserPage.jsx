@@ -9,7 +9,7 @@ import {connect} from 'react-redux'
 import {PageLayout} from 'pages/index.jsx';
 import {FormControl, Button} from 'react-bootstrap';
 import {i18n, UserDetail, Search, ListBox, AbstractReactComponent, RibbonGroup, Ribbon, Icon, AddUserForm, PasswordForm} from 'components/index.jsx';
-import {usersFetchIfNeeded, usersUserDetailFetchIfNeeded, usersSelectUser, usersSearch} from 'actions/admin/user.jsx'
+import {usersFetchIfNeeded, usersUserDetailFetchIfNeeded, usersSelectUser, usersSearch, userCreate, adminPasswordChange} from 'actions/admin/user.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
@@ -62,23 +62,22 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
     }
 
     handleCreateUser(data) {
-        WebApi.createUser(data.username, data.password, data.party.partyId).then(response => {
-            console.log(response);
+        userCreate(data.username, data.password, data.party.partyId).then(response => {
             this.dispatch(addToastrSuccess(i18n('admin.user.add.success')));
             this.dispatch(modalDialogHide());
+            this.dispatch(usersSelectUser(response.id))
         }).catch(e => {
             console.error(e);
         });
     }
 
     handleChangeUserPasswordForm() {
-        this.dispatch(modalDialogShow(i18n('admin.user.passwordChange'), <PasswordForm admin={true} onSubmitForm={this.handleChangeUserPassword} />))
+        this.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm admin={true} onSubmitForm={this.handleChangeUserPassword} />))
     }
 
     handleChangeUserPassword(data) {
         const {user: {userDetail: {id}}} = this.props;
-        WebApi.changePassword(id, data.password).then(response => {
-            console.log(response);
+        adminPasswordChange(id, data.password).then(response => {
             this.dispatch(addToastrSuccess(i18n('admin.user.passwordChange.success')));
             this.dispatch(modalDialogHide())
         });

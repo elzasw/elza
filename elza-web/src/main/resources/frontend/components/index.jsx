@@ -103,6 +103,7 @@ exports.PartyNameForm = require('components/party/PartyNameForm.jsx');
 exports.PartyIdentifierForm = require('components/party/PartyIdentifierForm.jsx');
 exports.PartyCreatorForm = require('components/party/PartyCreatorForm.jsx');
 exports.RelationForm = require('components/party/RelationForm.jsx');
+exports.PartyField = require('components/party/PartyField.jsx');
 
 exports.AdminPackagesList = require('components/admin/AdminPackagesList.jsx');
 exports.AdminPackagesUpload = require('components/admin/AdminPackagesUpload.jsx');

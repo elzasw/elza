@@ -54,16 +54,32 @@ function createElements (history) {
     return elements
 }
 
+import {AppContainer} from 'react-hot-loader'
+import Redbox from 'redbox-react'
+
 // Aplikace
 exports.start = function() {
-    ReactDOM.render((
-        <Provider store={AppStore.store} key="provider">
-            <div style={{height: '100%'}}>
-                {createElements(browserHistory)}
-            </div>
-        </Provider>
-    ), document.getElementById('content'));
+    if (__DEV__) {
+        ReactDOM.render((
+        <AppContainer errorReporter={Redbox}>
+            <Provider store={AppStore.store} key="provider">
+                <div style={{height: '100%'}}>
+                    {createElements(browserHistory)}
+                </div>
+            </Provider>
+        </AppContainer>
+        ), document.getElementById('content'));
+    } else {
+        ReactDOM.render((
+            <Provider store={AppStore.store} key="provider">
+                <div style={{height: '100%'}}>
+                    {createElements(browserHistory)}
+                </div>
+            </Provider>
+        ), document.getElementById('content'));
+    }
 };
+
 
 
 

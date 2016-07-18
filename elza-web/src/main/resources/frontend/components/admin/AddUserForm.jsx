@@ -5,12 +5,11 @@
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Icon, FormInput, Autocomplete, VersionValidationState} from 'components/index.jsx';
-import {Modal, Button, FormControl, FormGroup, ControlLabel, HelpBlock} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, Icon, FormInput, Autocomplete, VersionValidationState, PartyField} from 'components/index.jsx';
+import {Modal, Button} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
-import PartyField from 'components/party/PartyField.jsx'
 
 /**
  * Validace formuláře.

@@ -19,7 +19,7 @@ import {developerSet} from 'actions/global/developer.jsx'
 import {resetLocalStorage} from 'actions/store/store.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 
-var AdminPage = class AdminPage extends AbstractReactComponent {
+const AdminPage = class AdminPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -55,7 +55,7 @@ var AdminPage = class AdminPage extends AbstractReactComponent {
             </Button>
         )
 
-        var altSection;
+        let altSection;
         if (altActions.length > 0) {
             altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
         }

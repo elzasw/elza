@@ -10,7 +10,6 @@ import {connect} from 'react-redux'
 import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, Loading, Icon, SearchWithGoto} from 'components/index.jsx';
 import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 var classNames = require('classnames');
-import {ResizeStore} from 'stores/index.jsx';
 import {propsEquals} from 'components/Utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, getNodeParent, getNodeFirstChild} from 'components/arr/ArrUtils.jsx'
@@ -106,9 +105,6 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.unsubscribe = ResizeStore.listen(status => {
-            this.setState({});
-        });
         this.setState({treeContainer: ReactDOM.findDOMNode(this.refs.treeContainer)});
     }
 

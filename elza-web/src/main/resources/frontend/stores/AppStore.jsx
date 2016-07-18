@@ -402,14 +402,14 @@ if (typeof __DEVTOOLS__ !== 'undefined' && __DEVTOOLS__) {
 const initialState = {};
 const store = function configureStore(initialState) {
     const state = createStoreWithMiddleware(rootReducer, initialState);
-    if (module.hot) {
+    /*if (module.hot) {
         // Enable Webpack hot module replacement for reducers
         module.hot.accept('./reducers.jsx', () => {
             const nextRootReducer = defaultImport(require('./reducers.jsx'));
 
             state.replaceReducer(nextRootReducer)
         })
-    }
+    }*/
     return state;
 }(initialState);
 

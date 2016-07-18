@@ -29,7 +29,7 @@ import * as perms from 'actions/user/Permission.jsx';
 
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
-import {WebApi} from 'actions/index.jsx'
+import {userPasswordChange} from 'actions/admin/user.jsx'
 
 const Ribbon = class Ribbon extends AbstractReactComponent {
     constructor(props) {
@@ -154,12 +154,11 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
     }
 
     handlePasswordChangeForm() {
-        this.dispatch(modalDialogShow(i18n('admin.user.passwordChange'), <PasswordForm onSubmitForm={this.handlePasswordChange} />))
+        this.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm onSubmitForm={this.handlePasswordChange} />))
     }
 
     handlePasswordChange(data) {
-        WebApi.changePasswordUser(data.oldPassword, data.password).then(response => {
-            console.log(response);
+        userPasswordChange(data.oldPassword, data.newPassword).then(response => {
             this.dispatch(addToastrSuccess(i18n('admin.user.passwordChange.success')));
             this.dispatch(modalDialogHide())
         });

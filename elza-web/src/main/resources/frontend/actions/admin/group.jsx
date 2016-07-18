@@ -140,3 +140,11 @@ function groupsGroupDetailReceive(data) {
         dispatch(permissionReceive("GROUP", data.permissions));
     }    
 }
+
+function groupCreate(name, code) {
+    return WebApi.createGroup(name,code);
+}
+
+function groupDelete(id) {
+    return WebApi.deleteGroup(id);
+}
