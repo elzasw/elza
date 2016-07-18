@@ -221,6 +221,42 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     /**
+     * Vytvoření nového obalu.
+     *
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     */
+    handleCreatePacket(descItemIndex) {
+        this.props.onCreatePacket(descItemIndex);
+    }
+
+    /**
+     * Zobrazení seznamu obalů
+     *
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     */
+    handleFundPackets(descItemIndex) {
+        this.props.onFundPackets(descItemIndex);
+    }
+
+    /**
+     * Vytvoření nového souboru.
+     *
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     */
+    handleCreateFile(descItemIndex) {
+        this.props.onCreateFile(descItemIndex);
+    }
+
+    /**
+     * Zobrazení seznamu souborů
+     *
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     */
+    handleFundFiles(descItemIndex) {
+        this.props.onFundFiles(descItemIndex);
+    }
+
+    /**
      * Vytvoření nové osoby.
      *
      * @param descItemIndex {Integer} index hodnoty atributu v seznamu
@@ -532,6 +568,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                     {...descItemProps}
                     singleDescItemTypeEdit={singleDescItemTypeEdit}
                     packets={packets}
+                    onCreatePacket={this.handleCreatePacket.bind(this, descItemIndex)}
+                    onFundPackets={this.handleFundPackets.bind(this, descItemIndex)}
                     fundId={fundId}
                     packetTypes={packetTypes}
                     />)
@@ -539,6 +577,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             case 'FILE_REF':
                 parts.push(<DescItemFileRef key={itemComponentKey}
                     {...descItemProps}
+                    onCreateFile={this.handleCreateFile.bind(this, descItemIndex)}
+                    onFundFiles={this.handleFundFiles.bind(this, descItemIndex)}
                     fundId={fundId}
                     />)
                 break;
@@ -872,6 +912,10 @@ DescItemType.propTypes = {
     onDetailParty: React.PropTypes.func.isRequired,
     onCreateRecord: React.PropTypes.func.isRequired,
     onDetailRecord: React.PropTypes.func.isRequired,
+    onCreatePacket: React.PropTypes.func.isRequired,
+    onFundPackets: React.PropTypes.func.isRequired,
+    onCreateFile: React.PropTypes.func.isRequired,
+    onFundFiles: React.PropTypes.func.isRequired,
     onDescItemTypeRemove: React.PropTypes.func.isRequired,
     onDescItemTypeLock: React.PropTypes.func.isRequired,
     onDescItemTypeCopy: React.PropTypes.func.isRequired,

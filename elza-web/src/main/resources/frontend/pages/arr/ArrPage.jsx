@@ -49,8 +49,7 @@ var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-
-var _selectedTab = 0
+import {selectTab} from 'actions/global/tab.jsx'
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -93,6 +92,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        const {tab} = this.props;
+        let selected = tab.values['arr-as'];
         this.dispatch(descItemTypesFetchIfNeeded());
         this.dispatch(packetTypesFetchIfNeeded());
         this.dispatch(calendarTypesFetchIfNeeded());
@@ -102,7 +103,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
         var activeFund = this.getActiveInfo(nextProps.arrRegion).activeFund;
         if (activeFund) {
-            if (_selectedTab === 1) {
+            if (selected === 1) {
                 this.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId));
             }
             if (nextProps.developer.enabled) {
@@ -139,29 +140,46 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     trySetFocus(props) {
-        var {focus} = props
-
+        var {focus, tab} = props
+        let selected = tab.values['arr-as'];
         if (canSetFocus()) {
+            console.log("trySetFocus, canSetFocus")
             if (isFocusFor(focus, 'arr', 3)) {
-                switch (_selectedTab) {
+                switch (selected) {
                     case 0:
                         this.refs.fundErrors && this.setState({}, () => {
                             ReactDOM.findDOMNode(this.refs.fundErrors).focus()
+                            focusWasSet()
                         })
                         break
                     case 1:
                         this.refs.fundVisiblePolicies && this.setState({}, () => {
                             ReactDOM.findDOMNode(this.refs.fundVisiblePolicies).focus()
+                            focusWasSet()
                         })
                         break
                     case 2:
-                        this.refs.fundPackets && this.refs.fundPackets.getWrappedInstance().focus()
+                        if (this.refs.fundPackets) {
+                            this.setState({}, () => {
+                                if (this.refs.fundPackets.getWrappedInstance().focus()) {
+                                    focusWasSet()
+                                }
+                            })
+                        }
+                        break
+                    case 3:
+                        if (this.refs.fundFiles) {
+                            this.setState({}, () => {
+                                if (this.refs.fundFiles.getWrappedInstance().focus()) {
+                                    focusWasSet()
+                                }
+                            })
+                        }
                         break
                     default:
-                        ref = null
+                        focusWasSet()
                         break
                 }
-                focusWasSet()
             }
         }
     }
@@ -558,19 +576,19 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     handleTabSelect(item) {
-        const {arrRegion} = this.props;
-        _selectedTab = item.id;
+        const {arrRegion, tab} = this.props;
 
-        if (_selectedTab === 1) {
+        this.dispatch(selectTab('arr-as', item.id));
+
+        if (item.id === 1) {
             var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
             this.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId));
         }
-
-        this.setState({});
     }
 
     renderPanel() {
-        const {developer, arrRegion, userDetail} = this.props;
+        const {developer, arrRegion, userDetail, tab} = this.props;
+        let selected = tab.values['arr-as'] ? tab.values['arr-as'] : 0;
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
 
         var node
@@ -585,30 +603,30 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var tabIndex = 0
 
         items.push({id: tabIndex, title: i18n('arr.panel.title.errors')});
-        if (_selectedTab === tabIndex) tabContent = this.renderFundErrors(activeFund)
+        if (selected === tabIndex) tabContent = this.renderFundErrors(activeFund)
         tabIndex++;
 
         items.push({id: tabIndex, title: i18n('arr.panel.title.visiblePolicies')});
-        if (_selectedTab === tabIndex) tabContent = this.renderFundVisiblePolicies(activeFund)
+        if (selected === tabIndex) tabContent = this.renderFundVisiblePolicies(activeFund)
         tabIndex++;
 
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
             items.push({id: tabIndex, title: i18n('arr.panel.title.packets')});
-            if (_selectedTab === tabIndex) tabContent = this.renderFundPackets(activeFund)
+            if (selected === tabIndex) tabContent = this.renderFundPackets(activeFund)
             tabIndex++;
         }
         items.push({id: tabIndex, title: i18n('arr.panel.title.files')});
-        if (_selectedTab === tabIndex) tabContent = this.renderFundFiles(activeFund)
+        if (selected === tabIndex) tabContent = this.renderFundFiles(activeFund)
         tabIndex++;
 
         // pouze v developer modu
         if (developer.enabled && node) {
             items.push({id: tabIndex, title: i18n('developer.title.descItems')});
-            if (_selectedTab === tabIndex) tabContent = this.renderDeveloperDescItems(activeFund, node)
+            if (selected === tabIndex) tabContent = this.renderDeveloperDescItems(activeFund, node)
             tabIndex++;
 
             items.push({id: tabIndex, title: i18n('developer.title.scenarios')});
-            if (_selectedTab === tabIndex) tabContent = this.renderDeveloperScenarios(activeFund, node)
+            if (selected === tabIndex) tabContent = this.renderDeveloperScenarios(activeFund, node)
             tabIndex++;
         }
         // -----------
@@ -617,7 +635,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             <Tabs.Container>
 
                 <Tabs.Tabs items={items}
-                           activeItem={{id: _selectedTab}}
+                           activeItem={{id: selected}}
                            onSelect={this.handleTabSelect}
                 />
                 <Tabs.Content>
@@ -746,7 +764,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, form, focus, developer, userDetail} = state
+    const {splitter, arrRegion, refTables, form, focus, developer, userDetail, tab} = state
     return {
         splitter,
         arrRegion,
@@ -758,6 +776,7 @@ function mapStateToProps(state) {
         descItemTypes: refTables.descItemTypes,
         packetTypes: refTables.packetTypes,
         ruleSet: refTables.ruleSet,
+        tab,
     }
 }
 

@@ -7,7 +7,8 @@ require('./SubNodeForm.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyForm, AddRegistryForm,
-    AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm, AddNodeDropdown} from 'components';
+    AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm, AddNodeDropdown,
+    AddFileForm} from 'components';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
@@ -18,6 +19,10 @@ import {routerNavigate} from 'actions/router.jsx'
 import {setInputFocus} from 'components/Utils.jsx'
 import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {UrlFactory} from 'actions/index.jsx';
+import {selectTab} from 'actions/global/tab.jsx'
+import {modalDialogShow} from 'actions/global/modalDialog.jsx'
+import {fundPacketsCreate} from 'actions/arr/fundPackets.jsx'
+import {fundFilesCreate} from 'actions/arr/fundFiles.jsx'
 var classNames = require('classnames');
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
@@ -37,6 +42,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'handleDescItemAdd', 
             'handleDescItemRemove',
             'handleCreateParty',
+            'handleCreatePacket',
+            'handleFundPackets',
+            'handleCreatePacketFormSubmit',
             'handleDescItemTypeCopyFromPrev', 
             'handleDescItemTypeLock', 
             'handleDescItemTypeCopy',
@@ -356,6 +364,70 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     /**
+     * Vytvoření obalu.
+     *
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     */
+    handleCreatePacket(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
+        const {fundId} = this.props
+
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex
+        }
+
+        const form = <AddPacketForm
+            initData={{}}
+            createSingle
+            fundId={fundId}
+            onSubmitForm={this.handleCreatePacketFormSubmit.bind(this, valueLocation, "SINGLE")}
+        />
+        this.dispatch(modalDialogShow(this, i18n('arr.packet.title.add'), form));
+
+    }
+
+    /**
+     * Odeslání formuláře na vytvoření obalu.
+     *
+     * @param valueLocation pozice hodnoty atributu
+     * @param type          typ obalu
+     * @param data          obal
+     */
+    handleCreatePacketFormSubmit(valueLocation, type, data) {
+        const {fundId} = this.props;
+        this.dispatch(fundPacketsCreate(fundId, type, data, this.handleCreatedPacket.bind(this, valueLocation)));
+    }
+
+    /**
+     * Vytvoření obalu.
+     *
+     * @param valueLocation pozice hodnoty atributu
+     * @param data          obal
+     */
+    handleCreatedPacket(valueLocation, data) {
+        const {versionId, routingKey} = this.props;
+
+        // Uložení hodnoty
+        this.dispatch(this.props.formActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true));
+    }
+
+    /**
+     * Zobrazení seznamu obalů.
+     *
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     */
+    handleFundPackets(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
+        this.dispatch(routerNavigate('arr'));
+        this.dispatch(selectTab('arr-as', 2));
+        this.dispatch(setFocus('arr', 3, null, null));
+    }
+
+    /**
      * Vytvoření nové osoby.
      *
      * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
@@ -371,6 +443,62 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
         this.dispatch(partyAdd(partyTypeId, versionId, this.handleCreatedParty.bind(this, valueLocation), true));
+    }
+
+    /**
+     * Vytvoření souboru.
+     *
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     */
+    handleCreateFile(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
+        const {fundId} = this.props
+
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex
+        }
+
+        this.dispatch(modalDialogShow(this, i18n('dms.file.title.add'), <AddFileForm onSubmitForm={this.handleCreateFileFormSubmit.bind(this, valueLocation)} />));
+    }
+
+    /**
+     * Odeslání formuláře na vytvoření souboru.
+     *
+     * @param valueLocation pozice hodnoty atributu
+     * @param data          soubor
+     */
+    handleCreateFileFormSubmit(valueLocation, data) {
+        const {fundId} = this.props;
+        this.dispatch(fundFilesCreate(fundId, data, this.handleCreatedFile.bind(this, valueLocation)))
+    }
+
+    /**
+     * Vytvoření souboru.
+     *
+     * @param valueLocation pozice hodnoty atributu
+     * @param data          soubor
+     */
+    handleCreatedFile(valueLocation, data) {
+        const {versionId, routingKey} = this.props;
+
+        // Uložení hodnoty
+        this.dispatch(this.props.formActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true));
+    }
+
+    /**
+     * Zobrazení seznamu obalů.
+     *
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     */
+    handleFundFiles(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
+        this.dispatch(routerNavigate('arr'));
+        this.dispatch(selectTab('arr-as', 3));
+        this.dispatch(setFocus('arr', 3, null, null));
     }
 
     /**
@@ -600,6 +728,10 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onDetailParty={this.handleDetailParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onCreateRecord={this.handleCreateRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDetailRecord={this.handleDetailRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onCreatePacket={this.handleCreatePacket.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onFundPackets={this.handleFundPackets.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onCreateFile={this.handleCreateFile.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onFundFiles={this.handleFundFiles.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onCoordinatesUpload={this.handleCoordinatesUpload.bind(this, descItemType.id)}
                 onJsonTableUpload={this.handleJsonTableUpload.bind(this, descItemType.id)}

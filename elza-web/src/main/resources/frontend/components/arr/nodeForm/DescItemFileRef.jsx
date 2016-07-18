@@ -1,17 +1,23 @@
-//require ('./DescItemFileRef.less')
+require ('./DescItemFileRef.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {connect} from 'react-redux'
 import {WebApi} from 'actions/index.jsx';
-import {AbstractReactComponent, Autocomplete} from 'components/index.jsx';
+import {Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/index.jsx';
 import {decorateAutocompleteValue} from './DescItemUtils.jsx'
+import {Button} from 'react-bootstrap';
 
 var DescItemFileRef = class DescItemFileRef extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleChange', 'handleSearchChange', 'focus');
+        this.bindMethods('handleChange',
+            'handleSearchChange',
+            'handleFundFiles',
+            'handleCreateFile',
+            'renderFooter',
+            'focus');
 
         this.state = {fileList: []};
     }
@@ -35,9 +41,39 @@ var DescItemFileRef = class DescItemFileRef extends AbstractReactComponent {
         })
     }
 
+    handleFundFiles() {
+        if (this.props.onFundFiles) {
+            this.refs.autocomplete.closeMenu();
+            this.props.onFundFiles();
+        } else {
+            console.warn("undefined handleFundFiles");
+        }
+    }
+
+    handleCreateFile() {
+        if (this.props.onCreateFile) {
+            this.refs.autocomplete.closeMenu();
+            this.props.onCreateFile();
+        } else {
+            console.warn("undefined handleCreateFile");
+        }
+    }
+
+    renderFooter() {
+        const {refTables} = this.props;
+        return (
+            <div className="create-file">
+                <Button onClick={this.handleCreateFile}><Icon glyph='fa-plus'/>{i18n('arr.fund.files.action.add')}</Button>
+                <Button onClick={this.handleFundFiles}>{i18n('arr.panel.title.files')}</Button>
+            </div>
+        )
+    }
+
     render() {
         const {descItem, locked} = this.props;
         var value = descItem.file ? descItem.file : null;
+
+        const footer = this.renderFooter();
 
         return (
             <div className='desc-item-value desc-item-value-parts'>
@@ -51,6 +87,7 @@ var DescItemFileRef = class DescItemFileRef extends AbstractReactComponent {
                     getItemName={(item) => item ? item.name : ''}
                     onSearchChange={this.handleSearchChange}
                     onChange={this.handleChange}
+                    footer={footer}
                 />
             </div>
         )

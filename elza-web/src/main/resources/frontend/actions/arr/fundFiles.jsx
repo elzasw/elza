@@ -70,7 +70,7 @@ export function fundFilesFilterByText(versionId, filterText) {
     }
 }
 
-export function fundFilesCreate(fundId, data) {
+export function fundFilesCreate(fundId, data, callback = null) {
     return (dispatch, getState) => {
         var formData = new FormData();
 
@@ -84,7 +84,8 @@ export function fundFilesCreate(fundId, data) {
         formData.append("@type", ".ArrFileVO");
 
         WebApi.createFundFile(formData)
-            .then(() => {
+            .then((json) => {
+                callback && callback(json);
                 dispatch(modalDialogHide())
             })
     }

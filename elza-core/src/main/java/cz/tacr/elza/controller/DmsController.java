@@ -65,9 +65,10 @@ public class DmsController {
      */
     @Transactional
     @RequestMapping(value = "/api/dms/fund", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void createFile(final ArrFileVO object) throws IOException {
+    public ArrFileVO createFile(final ArrFileVO object) throws IOException {
         dmsService.checkFundWritePermission(object.getFundId());
-        create(object, (fileVO) -> factoryDO.createArrFile((ArrFileVO) fileVO));
+        DmsFile file = create(object, (fileVO) -> factoryDO.createArrFile((ArrFileVO) fileVO));
+        return factoryVO.createArrFile((ArrFile) file);
     }
 
     /**
