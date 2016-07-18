@@ -8,8 +8,18 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components/index.jsx';
-import {RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FindindAidFileTree} from 'components/index.jsx';
-import {AbstractReactComponent, ModalDialog, NodeTabs, FundTreeTabs} from 'components/index.jsx';
+import {
+    RibbonMenu,
+    RibbonGroup,
+    RibbonSplit,
+    ToggleContent,
+    FindindAidFileTree,
+    PasswordForm,
+    AbstractReactComponent,
+    ModalDialog,
+    NodeTabs,
+    FundTreeTabs
+} from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {AppStore} from 'stores/index.jsx'
@@ -17,11 +27,20 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {logout} from 'actions/global/login.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {WebApi} from 'actions/index.jsx'
+
 const Ribbon = class Ribbon extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('trySetFocus', 'handleLogout')
+        this.bindMethods(
+            'trySetFocus',
+            'handleLogout',
+            'handlePasswordChangeForm',
+            'handlePasswordChange'
+        )
 
         this.state = {};
     }
@@ -121,7 +140,9 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
             <RibbonMenu opened onShowHide={this.handleRibbonShowHide}>
                 {partsWithSplit}
                 <RibbonGroup className="large right">
-                    <div key="username">{userDetail.username}</div>
+                    <DropdownButton bsStyle='default' title={userDetail.username} key='user-menu' id='user-menu'>
+                        <MenuItem eventKey="1" onClick={this.handlePasswordChangeForm}>{i18n('ribbon.action.admin.user.passwordChange')}</MenuItem>
+                    </DropdownButton>
                     <Button key="ribbon-btn-logout" onClick={this.handleLogout} ref='ribbonDefaultFocus'><Icon glyph="fa-sign-out" /><div><span className="btnText">{i18n('ribbon.action.logout')}</span></div></Button>
                 </RibbonGroup>
             </RibbonMenu>
@@ -130,6 +151,18 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
 
     handleLogout() {
         this.dispatch(logout());
+    }
+
+    handlePasswordChangeForm() {
+        this.dispatch(modalDialogShow(i18n('admin.user.passwordChange'), <PasswordForm onSubmitForm={this.handlePasswordChange} />))
+    }
+
+    handlePasswordChange(data) {
+        WebApi.changePasswordUser(data.oldPassword, data.password).then(response => {
+            console.log(response);
+            this.dispatch(addToastrSuccess(i18n('admin.user.passwordChange.success')));
+            this.dispatch(modalDialogHide())
+        });
     }
 }
 

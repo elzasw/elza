@@ -12,9 +12,9 @@ import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import Permissions from "./Permissions.jsx"
 
-require ('./GroupDetail.less');
+require('./GroupDetail.less');
 
-var GroupDetail = class GroupDetail extends AbstractReactComponent {
+const GroupDetail = class GroupDetail extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -45,7 +45,7 @@ var GroupDetail = class GroupDetail extends AbstractReactComponent {
                 <h2>{i18n("admin.group.title.users")}</h2>
                 <AddRemoveList
                     items={groupDetail.users}
-                    onAdd={this.handleAddUser}
+                    onAdd={this.handleCreateUserForm}
                     onRemove={this.handleRemoveUser}
                     addTitle="admin.group.user.action.add"
                     removeTitle="admin.group.user.action.delete"

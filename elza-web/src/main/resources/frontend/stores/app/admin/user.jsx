@@ -69,6 +69,12 @@ export default function user(state = initialState, action = {}) {
                 users: action.data.users,
                 usersCount: action.data.usersCount,
             }
+        case types.CHANGE_USER:
+            return {
+                ...state,
+                userDetail: userDetail(state.userDetail, action),
+                currentDataKey:''
+            }
         default:
             return state
     }

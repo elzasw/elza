@@ -109,3 +109,6 @@ exports.AdminPackagesUpload = require('components/admin/AdminPackagesUpload.jsx'
 exports.AdminFulltextReindex = require('components/admin/AdminFulltextReindex.jsx');
 exports.UserDetail = require('components/admin/UserDetail.jsx');
 exports.GroupDetail = require('components/admin/GroupDetail.jsx');
+exports.AddUserForm = require('components/admin/AddUserForm.jsx');
+exports.AddGroupForm = require('components/admin/AddGroupForm.jsx');
+exports.PasswordForm = require('components/admin/PasswordForm.jsx');

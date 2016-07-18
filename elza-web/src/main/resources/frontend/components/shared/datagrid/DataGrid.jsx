@@ -427,6 +427,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         if (col._rowCheck) {    // speciální slupeček pro označování řádků
             const checked = selectedIds[row.id] === true
 
+            /// TODO - asi použít Checkbox místo input
             content = (
                 <div className='cell-container'>
                     <input type='checkbox' checked={checked} onChange={this.handleCheckboxChange.bind(this, row, rowIndex)} />

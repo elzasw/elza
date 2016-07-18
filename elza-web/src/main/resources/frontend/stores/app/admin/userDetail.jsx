@@ -50,13 +50,22 @@ export default function userDetail(state = initialState, action = {}) {
                 currentDataKey: action.dataKey,
             }
         case types.USERS_USER_DETAIL_RECEIVE:
-            var {permissions, ...mainData} = action.data;
+            const {permissions, ...mainData} = action.data;
             return {
                 ...state,
                 ...mainData,
                 fetching: false,
                 fetched: true,
             }
+        case types.CHANGE_USER:{
+            if(state.id !== initialState.id && action.userIds.indexOf(state.id) !== -1) {
+                return {
+                    ...state,
+                    currentDataKey: ''
+                }
+            }
+            return state;
+        }
         default:
             return state
     }

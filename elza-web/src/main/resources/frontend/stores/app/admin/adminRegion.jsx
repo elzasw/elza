@@ -107,6 +107,31 @@ export default function adminRegion(state = initialState, action = {}) {
 
             return state;
         }
+        case types.CHANGE_USER:{
+            const userStore = user(state.user, action);
+
+            if (userStore !== state.user) {
+                return {
+                    ...state,
+                    user: userStore
+                }
+            }
+
+            return state;
+        }
+        case types.GROUP_DELETE:
+        case types.CHANGE_GROUP:{
+            const groupStore = group(state.group, action);
+
+            if (groupStore !== state.group) {
+                return {
+                    ...state,
+                    group: groupStore
+                }
+            }
+
+            return state;
+        }
         default:
             return state;
     }

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -16,7 +17,7 @@ import * as perms from 'actions/user/Permission.jsx';
 
 require ('./UserDetail.less');
 
-var UserDetail = class UserDetail extends AbstractReactComponent {
+const UserDetail = class UserDetail extends AbstractReactComponent {
     constructor(props) {
         super(props);
 

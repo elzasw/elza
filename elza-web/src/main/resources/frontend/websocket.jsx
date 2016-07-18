@@ -30,7 +30,10 @@ import {
     fundOutputChangesDetail,
     changeFundAction,
     fundOutputStateChange,
-    fundOutputStateChangeToastr
+    fundOutputStateChangeToastr,
+    userChange,
+    groupChange,
+    groupDelete,
 } from 'actions/global/change.jsx';
 
 
@@ -212,13 +215,36 @@ function processEvents(values) {
             case 'OUTPUT_CHANGES_DETAIL':
                 outputChangesDetail(value);
                 break;
-
+            case 'USER_CREATE':
+            case 'USER_CHANGE':
+                changeUser(value);
+                break;
+            case 'GROUP_CREATE':
+            case 'GROUP_CHANGE':
+                changeGroup(value);
+                break;
+            case 'GROUP_DELETE':
+                deleteGroup(value);
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
         }
 
     });
+}
+
+/**
+ * Změna uživatele
+ * @param value
+ */
+function changeUser(value) {
+    store.dispatch(userChange(value.ids))
+}
+function changeGroup(value) {
+    store.dispatch(groupChange(value.ids))
+}
+function deleteGroup(value) {
+    store.dispatch(groupDelete(value.ids[0]))
 }
 
 function approveVersionChange(value) {

@@ -6,7 +6,7 @@ const FormInput = class FormInput extends AbstractReactComponent {
     render() {
         const {label, error, touched, value, ...otherProps} = this.props;
         const hasError = touched && error;
-        return <FormGroup validationState={hasError ? 'error' : ''}>
+        return <FormGroup validationState={hasError ? 'error' : null}>
             {label && <ControlLabel>{label}</ControlLabel>}
             <FormControl
                 ref='input'

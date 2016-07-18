@@ -57,6 +57,19 @@ export default function groupDetail(state = initialState, action = {}) {
                 fetching: false,
                 fetched: true,
             }
+        case types.CHANGE_GROUP:
+            if(state.id !== initialState.id && action.ids.indexOf(state.id) !== -1) {
+                return {
+                    ...state,
+                    currentDataKey: ''
+                }
+            }
+            return state;
+        case types.GROUP_DELETE:
+            if(state.id === action.id) {
+                return initialState
+            }
+            return state;
         default:
             return state
     }

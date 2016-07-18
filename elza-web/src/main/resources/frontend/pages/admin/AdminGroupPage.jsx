@@ -1,18 +1,22 @@
 /**
  * Stránka pro správu uživatelů.
  */
-require ('./AdminGroupPage.less');
+require('./AdminGroupPage.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
+import {Button} from 'react-bootstrap';
 import {Ribbon} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
-import {i18n, GroupDetail, Search, ListBox, AbstractReactComponent} from 'components/index.jsx';
+import {i18n, GroupDetail, Search, ListBox, AbstractReactComponent, AddGroupForm, Icon, RibbonGroup, Loading} from 'components/index.jsx';
 import {groupsFetchIfNeeded, groupsGroupDetailFetchIfNeeded, groupsSelectGroup, groupsSearch} from 'actions/admin/group.jsx'
 import {indexById} from 'stores/app/utils.jsx'
+import {WebApi} from 'actions/index.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 
-var AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
+const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -23,6 +27,9 @@ var AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
             'handleSearch',
             'handleSearchClear',
             'handleSelect',
+            'handleCreateGroupForm',
+            'handleCreateGroup',
+            'handleDeleteGroup',
         );
     }
 
@@ -49,10 +56,55 @@ var AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     }
 
     buildRibbon() {
+        const {group: {groupDetail}} = this.props;
+        const altActions = [];
+        const itemActions = [];
+
+        altActions.push(
+            <Button key="add-group" onClick={this.handleCreateGroupForm}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.admin.group.add')}</span></div></Button>
+        );
+
+        if (groupDetail.id !== null) {
+            itemActions.push(
+                <Button key="delete-group" onClick={this.handleDeleteGroup}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('ribbon.action.admin.group.delete')}</span></div></Button>
+            );
+        }
+
+        let altSection;
+        if (altActions.length > 0) {
+            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>
+        }
+        let itemSection;
+        if (itemActions.length > 0) {
+            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>
+        }
+
         return (
-            <Ribbon admin {...this.props} />
+            <Ribbon admin {...this.props}  altSection={altSection} itemSection={itemSection} />
         )
     }
+
+    handleDeleteGroup() {
+        const {group:{groupDetail:{id}}} = this.props;
+        WebApi.deleteGroup(id).then(response => {
+            this.dispatch(addToastrSuccess(i18n('admin.group.delete.success')));
+        });
+    }
+
+    handleCreateGroupForm() {
+        this.dispatch(modalDialogShow(this, i18n('admin.group.add.title'), <AddGroupForm onSubmitForm={this.handleCreateGroup} />))
+    }
+
+    handleCreateGroup(data) {
+        WebApi.createGroup(data.name, data.code).then(response => {
+            console.log(response);
+            this.dispatch(addToastrSuccess(i18n('admin.group.add.success')));
+            this.dispatch(modalDialogHide());
+        }).catch(e => {
+            console.error(e);
+        });
+    }
+
 
     renderListItem(item) {
         return (
@@ -65,13 +117,13 @@ var AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     render() {
         const {splitter, group} = this.props;
 
-        var activeIndex
+        let activeIndex
         if (group.groupDetail.id !== null) {
             activeIndex = indexById(group.groups, group.groupDetail.id)
         }
 
-        var leftPanel = (
-            <div className="group-list-container">
+        const leftPanel = (
+            !group.fetching && group.groups ? <div className="group-list-container">
                 <Search
                     onSearch={this.handleSearch}
                     onClear={this.handleSearchClear}
@@ -87,10 +139,10 @@ var AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
                     onFocus={this.handleSelect}
                     onSelect={this.handleSelect}
                 />
-            </div>
+            </div> : <Loading />
         )
 
-        var centerPanel = (
+        const centerPanel = (
             <GroupDetail
                 groupDetail={group.groupDetail}
             />
