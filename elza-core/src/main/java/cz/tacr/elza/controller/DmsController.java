@@ -66,6 +66,7 @@ public class DmsController {
     @Transactional
     @RequestMapping(value = "/api/dms/fund", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void createFile(final ArrFileVO object) throws IOException {
+        dmsService.checkFundWritePermission(object.getFundId());
         create(object, (fileVO) -> factoryDO.createArrFile((ArrFileVO) fileVO));
     }
 
@@ -126,6 +127,7 @@ public class DmsController {
     // kvůli IE nelze použít PUT protože nemůžeme uploadovat soubor
     @RequestMapping(value = "/api/dms/fund/{fileId}", method = RequestMethod.POST)
     public void updateFile(@PathVariable(value = "fileId") Integer fileId, final ArrFileVO object) throws IOException {
+        dmsService.checkFundWritePermission(object.getFundId());
         update(fileId, object, (fileVO) -> factoryDO.createArrFile((ArrFileVO) fileVO));
     }
 
@@ -277,7 +279,8 @@ public class DmsController {
     @Transactional
     @RequestMapping(value = "/api/dms/fund/{fileId}", method = RequestMethod.DELETE)
     public void deleteArrFile(@PathVariable(value = "fileId") Integer fileId) throws IOException {
-        dmsService.deleteArrFile(fileId);
+        ArrFile arrFile = dmsService.getArrFile(fileId);
+        dmsService.deleteArrFile(arrFile, arrFile.getFund());
     }
 
     /**
