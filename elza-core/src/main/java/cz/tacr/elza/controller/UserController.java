@@ -109,7 +109,7 @@ public class UserController {
 
         UsrUser user = userService.getLoggedUser();
 
-        if (user != null) {
+        if (user == null) {
             throw new IllegalArgumentException("Uživatel není přihlášen");
         }
 
