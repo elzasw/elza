@@ -219,7 +219,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
             counter--;
 
             logger.info("Čekání na dokončení asynchronních operací...");
-            Thread.sleep(5000);
+            Thread.sleep(10000);
 
             state = getBulkAction(actionId);
 
