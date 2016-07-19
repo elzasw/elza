@@ -11,7 +11,7 @@ module.exports = {
         './index.jsx',
     ],
     debug: true,
-    devtool: 'eval',
+    devtool: '#eval-source-map',
     output: {
         publicPath: 'http://localhost:8090/assets'
     },
