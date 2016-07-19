@@ -141,10 +141,10 @@ function groupsGroupDetailReceive(data) {
     }    
 }
 
-function groupCreate(name, code) {
+export function groupCreate(name, code) {
     return WebApi.createGroup(name,code);
 }
 
-function groupDelete(id) {
+export function groupDelete(id) {
     return WebApi.deleteGroup(id);
 }

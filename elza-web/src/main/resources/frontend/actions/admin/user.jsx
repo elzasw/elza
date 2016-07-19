@@ -146,14 +146,14 @@ function usersUserDetailReceive(data) {
 }
 
 
-function userCreate(username, password, partyId) {
+export function userCreate(username, password, partyId) {
     return WebApi.createUser(username, password, partyId)
 }
 
-function userPasswordChange(oldPass, newPass) {
+export function userPasswordChange(oldPass, newPass) {
     return WebApi.changePasswordUser(oldPass, newPass)
 }
 
-function adminPasswordChange(userId, newPassword) {
+export function adminPasswordChange(userId, newPassword) {
     return WebApi.changePassword(userId, newPassword)
 }
