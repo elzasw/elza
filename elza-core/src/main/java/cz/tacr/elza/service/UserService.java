@@ -110,6 +110,7 @@ public class UserService {
                 if (permissionDB == null) {
                     throw new IllegalArgumentException("Oprávnění neexistuje a proto nemůže být upraveno");
                 }
+                permissionDB.setPermission(permission.getPermission());
                 permissionDB.setFundId(permission.getFundId());
                 permissionDB.setScopeId(permission.getScopeId());
                 loadPermissionEntity(permissionDB);
