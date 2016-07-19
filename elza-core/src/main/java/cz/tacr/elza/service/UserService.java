@@ -171,7 +171,7 @@ public class UserService {
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public void changeGroupPermission(@NotNull final UsrGroup group,
                                       @NotNull final List<UsrPermission> permissions) {
-        List<UsrPermission> permissionsDB = permissionRepository.findByGroup(group);
+        List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
         changePermission(null, group, permissions, permissionsDB);
         changeGroupEvent(group);
     }
@@ -179,7 +179,7 @@ public class UserService {
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public void changeUserPermission(@NotNull final UsrUser user,
                                      @NotNull final List<UsrPermission> permissions) {
-        List<UsrPermission> permissionsDB = permissionRepository.findByUser(user);
+        List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
         changePermission(user, null, permissions, permissionsDB);
         changeUserEvent(user);
     }
@@ -285,7 +285,7 @@ public class UserService {
                 .map(UsrGroupUser::getUser)
                 .collect(Collectors.toSet());
 
-        List<UsrPermission> permissions = permissionRepository.findByGroup(group);
+        List<UsrPermission> permissions = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
         Set<UsrUser> usersByPermission = permissions.stream()
                 .filter(permission -> permission.getUser() != null)
                 .map(UsrPermission::getUser)

@@ -1356,7 +1356,7 @@ public class ClientFactoryVO {
         UsrUserVO result = mapper.map(user, UsrUserVO.class);
 
         // Načtení oprávnění
-        List<UsrPermission> permissions = permissionRepository.findByUser(user);
+        List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
         result.setPermissions(createPermissionList(permissions));
 
         // Načtení členství ve skupinách
@@ -1379,7 +1379,7 @@ public class ClientFactoryVO {
         UsrGroupVO result = mapper.map(group, UsrGroupVO.class);
 
         // Načtení oprávnění
-        List<UsrPermission> permissions = permissionRepository.findByGroup(group);
+        List<UsrPermission> permissions = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
         result.setPermissions(createPermissionList(permissions));
 
         // Přiřazení uživatelé
