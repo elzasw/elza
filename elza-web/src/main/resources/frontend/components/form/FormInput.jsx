@@ -5,11 +5,13 @@ import {AbstractReactComponent} from 'components/index.jsx'
 const FormInput = class FormInput extends AbstractReactComponent {
     render() {
         const {label, error, touched, value, inline, ...otherProps} = this.props;
+
         const hasError = touched && error;
         let inlineProps = {};
         if (inline) {
             error && (inlineProps.title = error);
         }
+
         return <FormGroup validationState={hasError ? 'error' : null}>
             {label && <ControlLabel>{label}</ControlLabel>}
             <FormControl

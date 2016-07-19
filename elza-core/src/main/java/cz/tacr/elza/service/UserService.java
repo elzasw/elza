@@ -172,6 +172,7 @@ public class UserService {
                                       @NotNull final List<UsrPermission> permissions) {
         List<UsrPermission> permissionsDB = permissionRepository.findByGroup(group);
         changePermission(null, group, permissions, permissionsDB);
+        changeGroupEvent(group);
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
@@ -179,6 +180,7 @@ public class UserService {
                                      @NotNull final List<UsrPermission> permissions) {
         List<UsrPermission> permissionsDB = permissionRepository.findByUser(user);
         changePermission(user, null, permissions, permissionsDB);
+        changeUserEvent(user);
     }
 
     /**
