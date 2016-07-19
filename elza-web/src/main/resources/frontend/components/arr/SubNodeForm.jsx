@@ -136,7 +136,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 descItemTypes.push(i)
             }
         });
-        var cls = classNames({
+        const cls = classNames({
             'desc-item-group': true,
             active: descItemGroup.hasFocus
         });
