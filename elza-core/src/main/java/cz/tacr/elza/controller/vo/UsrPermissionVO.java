@@ -13,10 +13,12 @@ public class UsrPermissionVO {
     private Integer id;
     /** Typ oprávnění. */
     private UsrPermission.Permission permission;
-    /** Identifikátor AS, ke kterému se vztahuje oprávnění. */
-    private Integer fundId;
-    /** Identifikátor scope, ke kter0mu se vztahuje oprávnění. */
-    private Integer scopeId;
+
+    /** AS, ke kterému se vztahuje oprávnění. */
+    private ArrFundBaseVO fund;
+
+    /** Scope, ke kterému se vztahuje oprávnění. */
+    private RegScopeVO scope;
 
     /** Typ oprávnění. */
     public UsrPermission.Permission getPermission() {
@@ -27,20 +29,20 @@ public class UsrPermissionVO {
         this.permission = permission;
     }
 
-    public Integer getFundId() {
-        return fundId;
+    public ArrFundBaseVO getFund() {
+        return fund;
     }
 
-    public void setFundId(final Integer fundId) {
-        this.fundId = fundId;
+    public void setFund(final ArrFundBaseVO fund) {
+        this.fund = fund;
     }
 
-    public Integer getScopeId() {
-        return scopeId;
+    public RegScopeVO getScope() {
+        return scope;
     }
 
-    public void setScopeId(final Integer scopeId) {
-        this.scopeId = scopeId;
+    public void setScope(final RegScopeVO scope) {
+        this.scope = scope;
     }
 
     public Integer getId() {
