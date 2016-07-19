@@ -7,7 +7,7 @@ process.env.NODE_ENV = 'development';
 module.exports = {
     entry: [
         'webpack/hot/only-dev-server',
-        'react-hot-loader/patch',
+        ///'react-hot-loader/patch', - HOT3
         './index.jsx',
     ],
     debug: true,
@@ -21,7 +21,7 @@ module.exports = {
             {
                 test: /\.jsx?$/,
                 exclude: /(node_modules|bower_components)/,
-                loaders: ['babel-loader']
+                loaders: ['react-hot', 'babel-loader'] // Po upgrade na HOT 3 smazat
             },
             {
                 test: /\.json$/,
@@ -61,6 +61,8 @@ module.exports = {
         extensions: ['', '.js', '.jsx']
     },
     plugins: [
+        // Webpack 1 - pro hot
+        new webpack.optimize.OccurenceOrderPlugin(),
         new webpack.NoErrorsPlugin(),
         new webpack.ProvidePlugin({
             $: "jquery",

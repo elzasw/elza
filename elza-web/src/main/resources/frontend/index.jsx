@@ -8,7 +8,7 @@
 require('./elza-styles.less');
 
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { render } from 'react-dom';
 import { createHistory, useBasename } from 'history'
 import { Route, Link, History, Lifecycle } from 'react-router'
 import { Utils } from 'components/index.jsx';
@@ -137,13 +137,27 @@ WebApi.getUserDetail()
     })
 
 // Aplikace
-const Router = require('./router');
+import {AppContainer} from 'react-hot-loader'
+//import Redbox from 'redbox-react'
+import Root from './router';
+
+render(
+    //<AppContainer errorReporter={Redbox}><Root store={AppStore.store} /></AppContainer>,
+    <Root store={AppStore.store} />,
+    document.getElementById('content')
+);
+
 
 if (process.env.NODE_ENV === 'development' && module.hot) {
     // Accept changes to this file for hot reloading.
     module.hot.accept();
     // Any changes to our routes will cause a hotload re-render.
-    module.hot.accept('./router.jsx', Router.start());
+    module.hot.accept('./router.jsx', () => {
+        const NewRoot = require('./router').default;
+        render(
+            //<AppContainer errorReporter={Redbox}><NewRoot store={AppStore.store} /></AppContainer>, //HOT 3
+            <NewRoot store={AppStore.store} />, /// HOT 1
+            document.getElementById('content')
+        )
+    });
 }
-
-Router.start();
