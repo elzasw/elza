@@ -398,6 +398,9 @@ var messages = {
     "subNodeForm.descItem.jsonTable.action.download": "Stáhnout data",
     "subNodeForm.descItem.jsonTable.action.upload": "Nahrát data",
 
+    "subNodeForm.section.jp" : "Záznam:",
+    "subNodeForm.section.item" : "Položka:",
+
     "nodePanel.addSubNode": "Přidat JP na konec",
 
     "subNodeRegister.title": "Rejstříková hesla",

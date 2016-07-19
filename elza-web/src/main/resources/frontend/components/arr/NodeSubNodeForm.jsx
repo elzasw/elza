@@ -18,7 +18,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import {SubNodeForm} from "components/index.jsx";
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 
-var NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
+const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
         
@@ -40,7 +40,7 @@ var NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
     getNodeSetting() {
         const {nodeSettings, nodeId} = this.props;
 
-        var nodeSetting
+        let nodeSetting
         if (nodeSettings) {
             nodeSetting = nodeSettings.nodes[nodeSettings.nodes.map(function (node) {
                 return node.id;
@@ -130,7 +130,7 @@ var NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
     handleDescItemTypeCopyFromPrev(descItemGroupIndex, descItemTypeIndex, descItemTypeId) {
         const {routingKey} = this.props
 
-        var valueLocation = {
+        const valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
         }
@@ -141,9 +141,9 @@ var NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
      * Vrátí pole ke zkopírování
      */
     getDescItemTypeCopyIds() {
-        var itemsToCopy = null;
+        let itemsToCopy = null;
         if (this.props.nodeSettings != "undefined") {
-            var nodeIndex = indexById(this.props.nodeSettings.nodes, this.props.nodeId);
+            const nodeIndex = indexById(this.props.nodeSettings.nodes, this.props.nodeId);
             if (nodeIndex != null) {
                 itemsToCopy = this.props.nodeSettings.nodes[nodeIndex].descItemTypeCopyIds;
             }
@@ -156,54 +156,48 @@ var NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderFormActions() {
-        let notRoot = !isFundRootId(this.props.nodeId);
+        const notRoot = !isFundRootId(this.props.nodeId);
         return (
             <div className='node-form-actions-container'>
                 <div className='node-form-actions'>
-                    <NoFocusButton onClick={this.props.onAddDescItemType}><Icon
-                        glyph="fa-plus"/>{i18n('subNodeForm.descItemTypeAdd')}</NoFocusButton>
-                    <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Icon
-                        glyph="fa-lock"/>{i18n('subNodeForm.descItemTypeUnlockAll')}</NoFocusButton>
-                    {
-                        notRoot &&
-                        <AddNodeDropdown key="before"
-                                         ref='addNodeBefore'
-                                         title={i18n('subNodeForm.addNodeBefore')}
-                                         glyph="fa-plus"
-                                         action={this.handleAddNodeBefore}
-                                         node={this.props.selectedSubNode}
-                                         version={this.props.versionId}
-                                         direction="BEFORE"
-                        />
-                    }
-                    {
-                        notRoot &&
-                        <AddNodeDropdown key="after"
-                                         ref='addNodeAfter'
-                                         title={i18n('subNodeForm.addNodeAfter')}
-                                         glyph="fa-plus"
-                                         action={this.handleAddNodeAfter}
-                                         node={this.props.selectedSubNode}
-                                         version={this.props.versionId}
-                                         direction="AFTER"
-                        />
-                    }
-                    <AddNodeDropdown key="child"
+                    <div className='section'>
+                        <span>{i18n('subNodeForm.section.jp')}</span>
+                        {notRoot &&
+                            [<AddNodeDropdown key="before"
+                                             ref='addNodeBefore'
+                                             action={this.handleAddNodeBefore}
+                                             title={<span className="fa-stack fa-stack-right-bottom"><Icon glyph='fa-plus'/><Icon glyph='fa-arrow-up'/></span>}
+                                             node={this.props.selectedSubNode}
+                                             version={this.props.versionId}
+                                             direction="BEFORE"
+                            />,
+                            <AddNodeDropdown key="after"
+                                             ref='addNodeAfter'
+                                             title={<span className="fa-stack fa-stack-right-bottom"><Icon glyph='fa-plus'/><Icon glyph='fa-arrow-down'/></span>}
+                                             action={this.handleAddNodeAfter}
+                                             node={this.props.selectedSubNode}
+                                             version={this.props.versionId}
+                                             direction="AFTER"
+                            />]
+                        }
+                        <AddNodeDropdown key="child"
                                      ref='addNodeChild'
-                                     title={i18n('subNodeForm.addSubNode')}
-                                     glyph="fa-plus"
+                                     title={<span className="fa-stack fa-stack-right-bottom"><Icon glyph='fa-plus'/><Icon glyph='fa-arrow-right'/></span>}
                                      action={this.handleAddChildNode}
                                      node={this.props.selectedSubNode}
                                      version={this.props.versionId}
                                      direction="CHILD"
-                    />
-                    {
-                        notRoot &&
-                        <NoFocusButton onClick={this.handleDeleteNode}><Icon
-                            glyph="fa-trash"/>{i18n('subNodeForm.deleteNode')}</NoFocusButton>
-                    }
-                    <NoFocusButton onClick={this.props.onVisiblePolicy}><Icon
-                        glyph="fa-eye"/>{i18n('subNodeForm.visiblePolicy')}</NoFocusButton>
+                        />
+                        {notRoot && <NoFocusButton onClick={this.handleDeleteNode}><Icon glyph="fa-trash"/></NoFocusButton>}
+                    </div>
+                    <div className='section'>
+                        <span>{i18n('subNodeForm.section.item')}</span>
+                        <NoFocusButton onClick={this.props.onAddDescItemType}><Icon glyph="fa-plus"/></NoFocusButton>
+                        <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Icon glyph="fa-unlock"/></NoFocusButton>
+                    </div>
+                    <div className='section'>
+                        <NoFocusButton onClick={this.props.onVisiblePolicy}><Icon glyph="fa-eye"/>{i18n('subNodeForm.visiblePolicy')}</NoFocusButton>
+                    </div>
                 </div>
             </div>
         )
@@ -218,14 +212,14 @@ var NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
         const {versionId, focus, closed, fundId, routingKey, rulDataTypes, calendarTypes, descItemTypes, packetTypes, packets,
             subNodeForm, conformityInfo, descItemCopyFromPrevEnabled, singleDescItemTypeId} = this.props;
         
-        var formActions
+        let formActions
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
             if (!closed && !singleDescItemTypeEdit) {
                 formActions = this.renderFormActions();
             }
         }
 
-        var nodeSetting = this.getNodeSetting();
+        const nodeSetting = this.getNodeSetting();
 
         return (
             <div className="node-item-form-container">
@@ -261,7 +255,7 @@ var NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
 
 function mapStateToProps(state) {
     const {arrRegion, focus, userDetail} = state
-    var fund = null;
+    let fund = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
     }

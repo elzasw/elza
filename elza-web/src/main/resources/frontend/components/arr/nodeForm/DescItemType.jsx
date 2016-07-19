@@ -25,16 +25,16 @@ import {propsEquals} from 'components/Utils.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-var classNames = require('classnames');
+const classNames = require('classnames');
 import * as perms from 'actions/user/Permission.jsx';
-var ShortcutsManager = require('react-shortcuts');
-var Shortcuts = require('react-shortcuts/component')
+const ShortcutsManager = require('react-shortcuts');
+const Shortcuts = require('react-shortcuts/component')
 
-require ('./AbstractDescItem.less')
+require('./AbstractDescItem.less')
 
-var keyModifier = Utils.getKeyModifier()
+const keyModifier = Utils.getKeyModifier()
 
-var keymap = {
+const keymap = {
     DescItemType: {
         deleteDescItemType: keyModifier + 'y',
     },
@@ -43,22 +43,46 @@ var keymap = {
         deleteDescItem: keyModifier + 'd',
     },
 }
-var shortcutManager = new ShortcutsManager(keymap)
+const shortcutManager = new ShortcutsManager(keymap)
 
-var placeholder = document.createElement("div");
+const placeholder = document.createElement("div");
 placeholder.className = "placeholder";
 
-var DescItemType = class DescItemType extends AbstractReactComponent {
+const DescItemType = class DescItemType extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel',
-                'handleChange', 'handleChangeSpec', 'handleCreateParty', 'handleCreateRecord',
-                'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
-                'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver',
-                'handleDragLeave', 'getShowDeleteDescItemType', 'getShowDeleteDescItem', 'focus', 'handleDescItemTypeShortcuts',
-                'handleSwitchCalculating',
-                'handleDescItemShortcuts', 'handleCoordinatesUploadButtonClick', 'handleJsonTableUploadButtonClick', 'handleCoordinatesUpload', 'handleJsonTableUploadUpload', 'removePlaceholder');
+        this.bindMethods(
+            'focus',
+            'getShowDeleteDescItem',
+            'getShowDeleteDescItemType',
+            'handleBlur',
+            'handleChange',
+            'handleChangeSpec',
+            'handleCoordinatesUpload',
+            'handleCoordinatesUploadButtonClick',
+            'handleCreateParty',
+            'handleCreateRecord',
+            'handleDescItemShortcuts',
+            'handleDescItemTypeCopy',
+            'handleDescItemTypeCopyFromPrev',
+            'handleDescItemTypeLock',
+            'handleDescItemTypeShortcuts',
+            'handleDetailParty',
+            'handleDetailRecord',
+            'handleDragEnd',
+            'handleDragLeave',
+            'handleDragOver',
+            'handleDragStart',
+            'handleFocus',
+            'handleJsonTableUploadButtonClick',
+            'handleJsonTableUploadUpload',
+            'handleSwitchCalculating',
+            'removePlaceholder',
+            'renderDescItem',
+            'renderDescItemSpec',
+            'renderLabel',
+        );
     }
 
     componentWillReceiveProps(nextProps) {
@@ -66,7 +90,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
     shouldComponentUpdate(nextProps, nextState) {
         return true;
-        var eqProps = ['descItemType', 'rulDataType', 'calendarTypes', 'packetTypes', 'packets', 'locked', 'copy']
+        const eqProps = ['descItemType', 'rulDataType', 'calendarTypes', 'packetTypes', 'packets', 'locked', 'copy']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -97,7 +121,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 break
             case 'deleteDescItem':
                 if (!locked && infoType.rep === 1) {   // mazat hodnoty lze jen u vícehodnotových atributů a není zamčeno
-                    var descItem = descItemType.descItems[descItemIndex]
+                    const descItem = descItemType.descItems[descItemIndex]
                     if (this.getShowDeleteDescItem(descItem)) {
                         onDescItemRemove(descItemIndex)
                     }
@@ -115,7 +139,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
         const refPrefix = refType.useSpecification ? 'spec_' : ''
 
-        var ref, descItem;
+        let ref, descItem;
         if (typeof item.descItemObjectId !== 'undefined' && item.descItemObjectId !== null) {   // konkrétní hodnota
             descItem = descItemType.descItems[indexById(descItemType.descItems, item.descItemObjectId, 'descItemObjectId')]
             ref = this.refs[refPrefix + descItem.formKey]
@@ -156,13 +180,13 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     renderDescItemSpec(key, descItem, descItemIndex, locked) {
         const {infoType, refType} = this.props;
 
-        var options = infoType.specs.map(spec => {
-            var fullSpec = {...spec, ...refType.descItemSpecsMap[spec.id]}
-            var clsSpec = ['spec-' + spec.type.toLowerCase()];
+        const options = infoType.specs.map(spec => {
+            const fullSpec = {...spec, ...refType.descItemSpecsMap[spec.id]}
+            const clsSpec = ['spec-' + spec.type.toLowerCase()];
             return <option className={clsSpec} key={fullSpec.id} value={fullSpec.id}>{fullSpec.name}</option>
         });
 
-        var cls = classNames({
+        const cls = classNames({
             'form-control': true,
             value: true,
             'desc-item-spec': true,
@@ -170,7 +194,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             active: descItem.hasFocus,
         });
 
-        var descItemSpecProps = {
+        const descItemSpecProps = {
             onChange: this.handleChangeSpec.bind(this, descItemIndex),
             onBlur: this.handleBlur.bind(this, descItemIndex),
             onFocus: this.handleFocus.bind(this, descItemIndex),
@@ -282,7 +306,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
      * @param e {Object} event od prvku
      */
     handleChangeSpec(descItemIndex, e) {
-        var specId
+        let specId
         if (typeof e.target.value !== 'undefined' && e.target.value !== null && e.target.value !== '') {
             specId = Number(e.target.value)
         } else {
@@ -328,19 +352,19 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         }
 
         // Pokud nekliknul na dragger, nelze přesouvat
-        var drgs = e.target.getElementsByClassName('dragger')
+        const drgs = e.target.getElementsByClassName('dragger')
         if (drgs.length !== 1) {
             return this.cancelDragging(e)
         }
 
         // Nelze přesouvat neuložené položky
-        var index = e.currentTarget.dataset.id
+        const index = e.currentTarget.dataset.id
         if (typeof this.props.descItemType.descItems[index].id === 'undefined') {
             return this.cancelDragging(e)
         }
 
-        var draggerRect = drgs[0].getBoundingClientRect();
-        var clickOnDragger = (e.clientX >= draggerRect.left && e.clientX <= draggerRect.right
+        const draggerRect = drgs[0].getBoundingClientRect();
+        const clickOnDragger = (e.clientX >= draggerRect.left && e.clientX <= draggerRect.right
             && e.clientY >= draggerRect.top && e.clientY <= draggerRect.bottom)
         if (!clickOnDragger) {
             return this.cancelDragging(e)
@@ -365,8 +389,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         }
 
         // Update data
-        var from = Number(this.dragged.dataset.id);
-        var to = Number(this.over.dataset.id);
+        let from = Number(this.dragged.dataset.id);
+        let to = Number(this.over.dataset.id);
         if(from < to) to--;
         if(this.nodePlacement == "after") to++;
         //console.log(from, to);
@@ -410,7 +434,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
         this.dragged.style.display = "none";
 
-        var dragOverContainer = ReactDOM.findDOMNode(this.refs.dragOverContainer);
+        const dragOverContainer = ReactDOM.findDOMNode(this.refs.dragOverContainer);
         if (!this.isUnderContainer(e.target, dragOverContainer)) {
             e.dataTransfer.dropEffect = "none";
             this.over = null;
@@ -420,8 +444,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
         if (e.target.className == "placeholder") return;
 
-        var realTarget = e.target;
-        var found = false;
+        let realTarget = e.target;
+        let found = false;
         while (realTarget !== null) {
             if (typeof realTarget.dataset.id !== 'undefined') {
                 found = true;
@@ -438,10 +462,10 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         this.over = realTarget;
 
         // Inside the dragOver method - chceme az na shortcuts
-        var useTarget = realTarget.parentNode
-        var parent = useTarget.parentNode;
-        var overRect = this.over.getBoundingClientRect();
-        var height2 = (overRect.bottom - overRect.top) / 2;
+        const useTarget = realTarget.parentNode
+        const parent = useTarget.parentNode;
+        const overRect = this.over.getBoundingClientRect();
+        const height2 = (overRect.bottom - overRect.top) / 2;
 
         if (e.clientY < overRect.top + height2) {
             this.nodePlacement = "before"
@@ -499,7 +523,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     renderDescItem(descItemType, descItem, descItemIndex, actions, locked) {
         const {refType, fundId, infoType, singleDescItemTypeEdit, rulDataType, calendarTypes, packets, packetTypes, versionId} = this.props;
 
-        var cls = 'desc-item-type-desc-item-container';
+        let cls = 'desc-item-type-desc-item-container';
         if (actions.length > 0) {
             cls += ' with-action';
         }
@@ -507,10 +531,10 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             cls += ' draggable-desc-items';
         }
 
-        var parts = [];
-        var partsCls = 'desc-item-value-container';
+        const parts = [];
+        let partsCls = 'desc-item-value-container';
 
-        var key = descItem.formKey;
+        const key = descItem.formKey;
 
         if (refType.useSpecification) {
             parts.push(
@@ -522,7 +546,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         }
         partsCls += " dt" + rulDataType.code;
 
-        var descItemProps = {
+        const descItemProps = {
             descItem: descItem,
             onChange: this.handleChange.bind(this, descItemIndex),
             onBlur: this.handleBlur.bind(this, descItemIndex),
@@ -531,7 +555,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             ref: key
         }
 
-        var dragProps;
+        let dragProps;
         if (Utils.detectIE()) {
             dragProps = {};
         } else {
@@ -543,7 +567,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             }
         }
 
-        var itemComponentKey = 'value_' + key;
+        const itemComponentKey = 'value_' + key;
         switch (rulDataType.code) {
             case 'PARTY_REF':
                 parts.push(<DescItemPartyRef key={itemComponentKey}
@@ -717,8 +741,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             return true
         }
 
-        var descItemsShowDeleteItem = false
-        for (var a = 0; a < descItemType.descItems.length; a++) {
+        let descItemsShowDeleteItem = false
+        for (let a = 0; a < descItemType.descItems.length; a++) {
             let descItem = descItemType.descItems[a]
 
             if (nodeFormActions.descItemNeedStore(descItem, refType)) {
@@ -741,38 +765,41 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     renderLabel() {
         const {fundId, showNodeAddons, userDetail, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, copy, locked, descItemType, infoType, refType, conformityInfo, closed} = this.props;
 
-        var actions = [];
+        const actions = [];
 
         // Sestavení akcí
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
             if (showNodeAddons && !closed && !singleDescItemTypeEdit) {
-                actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.copy')} key="copy" onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
-                actions.push(<NoFocusButton disabled={!descItemCopyFromPrevEnabled} title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book" onClick={this.handleDescItemTypeCopyFromPrev}><Icon glyph="fa-book" /></NoFocusButton>);
-                actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.lock')} key="lock" onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>);
+                actions.push(
+                    <NoFocusButton disabled={!descItemCopyFromPrevEnabled} title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book" onClick={this.handleDescItemTypeCopyFromPrev}><Icon glyph="fa-paste" /></NoFocusButton>,
+                    <NoFocusButton title={i18n('subNodeForm.descItemType.copy')} key="copy" onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>,
+                    <NoFocusButton title={i18n('subNodeForm.descItemType.lock')} key="lock" onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>
+                );
             }
-        }
-
-        // Zprávy o chybějících položkách
-        var missings = conformityInfo.missings[descItemType.id];
-        if (missings && missings.length > 0) {
-            var messages = missings.map(missing => missing.description);
-            var tooltip = <Tooltip id="messages">{messages}</Tooltip>
-            actions.push(<OverlayTrigger key="state" placement="right" overlay={tooltip}>
-                <div className='btn btn-default'><Icon glyph="fa-exclamation-triangle" /></div>
-            </OverlayTrigger>);
         }
 
         if (this.getShowDeleteDescItemType()) {
             actions.push(<NoFocusButton key="delete" onClick={this.props.onDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Icon glyph="fa-trash" /></NoFocusButton>);
         }
 
+        // Zprávy o chybějících položkách
+        const missings = conformityInfo.missings[descItemType.id];
+        if (missings && missings.length > 0) {
+            const messages = missings.map(missing => missing.description);
+            const tooltip = <Tooltip id="messages">{messages}</Tooltip>
+            actions.push(<OverlayTrigger key="state" placement="right" overlay={tooltip}>
+                <div className='btn btn-default'><Icon glyph="fa-exclamation-triangle" /></div>
+            </OverlayTrigger>);
+        }
+
+
         if (infoType.cal === 1) {
-            var icon = infoType.calSt ? "fa-flash" : "fa-calculator";
-            var title = infoType.calSt ? i18n('subNodeForm.calculate-user') : i18n('subNodeForm.calculate-auto');
+            const icon = infoType.calSt ? "fa-flash" : "fa-calculator";
+            const title = infoType.calSt ? i18n('subNodeForm.calculate-user') : i18n('subNodeForm.calculate-auto');
             actions.push(<NoFocusButton onClick={this.handleSwitchCalculating} key="calculate" title={title}><Icon glyph={icon} /></NoFocusButton>);
         }
 
-        var titleText = descItemType.name;
+        let titleText = descItemType.name;
         if (refType.description && refType.description.length > 0) {
             if (refType.description != titleText) {
                 titleText = [titleText, refType.description].join('\n')
@@ -823,9 +850,9 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     render() {
         const {fundId, userDetail, onDescItemRemove, onDescItemAdd, descItemType, refType, infoType, locked, conformityInfo, closed} = this.props;
 
-        var label = this.renderLabel();
+        const label = this.renderLabel();
 
-        var addAction;
+        let addAction;
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
             if (infoType.rep === 1 && !(locked || closed)) {
                 if (this.props.rulDataType.code === "COORDINATES") {
@@ -846,24 +873,24 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             }
         }
 
-        var showDeleteDescItemType = this.getShowDeleteDescItemType();
-        var descItems = descItemType.descItems.map((descItem, descItemIndex) => {
-            var actions = [];
+        const showDeleteDescItemType = this.getShowDeleteDescItemType();
+        const descItems = descItemType.descItems.map((descItem, descItemIndex) => {
+            const actions = [];
 
             if (infoType.rep === 1) {
                 actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
             }
 
-            var errors = conformityInfo.errors[descItem.descItemObjectId];
+            const errors = conformityInfo.errors[descItem.descItemObjectId];
             if (errors && errors.length > 0) {
-                var messages = errors.map(error => error.description);
-                var tooltip = <Tooltip id="info">{messages}</Tooltip>
+                const messages = errors.map(error => error.description);
+                const tooltip = <Tooltip id="info">{messages}</Tooltip>
                 actions.push(<OverlayTrigger key="info" placement="left" overlay={tooltip}>
                     <div className='btn btn-default'><Icon glyph="fa-exclamation-triangle" /></div>
                 </OverlayTrigger>);
             }
 
-            var canModifyDescItem = !(locked || closed)
+            let canModifyDescItem = !(locked || closed)
 
             // Pokud nemá právo na pořádání, nelze provádět akci
             if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
@@ -873,7 +900,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             return this.renderDescItem(descItemType, descItem, descItemIndex, actions, !canModifyDescItem)
         });
 
-        var cls = classNames({
+        const cls = classNames({
             'desc-item-type': true,
             active: descItemType.hasFocus,
             ['el-' + infoType.width]: true
