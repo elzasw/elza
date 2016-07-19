@@ -48,19 +48,17 @@ const inlineFormSupport = new class {
         return reduxFormData;
     }
 
-    // DEEP ??
     setFields(formName, fields) {
         this.initFields[formName] = fields;
         this.fields[formName] = fields;
     }
 
     /**
-     * Prvotní inicializace. Zde bude nutné udělat inicializaci validace vnořených dat!
+     * Prvotní inicializace.
      * @param formName
      * @param validate
      * @param onSave
      */
-    // DEEP
     setInit(formName, validate, onSave) {
         if (!validate) {
             console.error("Chyba inicializace formuláře", formName, " chybí validate.");
@@ -87,36 +85,42 @@ const inlineFormSupport = new class {
     }
 
     // DEEP
-    getValidatedFormState(state, dispatch, action) {
-        const init = this.init[action.form];
-        const formState = this.getFormState(action.form, state);
-        var data = this.getFormData(action.form, state);
-        var errors = init.validate(data);
+    // getValidatedFormState(state, dispatch, action) {
+    //     const init = this.init[action.form];
+    //     const formState = this.getFormState(action.form, state);
+    //     var data = this.getFormData(action.form, state);
+    //     var errors = init.validate(data);
+    //
+    //     var result = {
+    //         ...formState,
+    //     }
+    //
+    //     var stateChanged = false;
+    //     this.fields[action.form].forEach(field => {
+    //         if (errors[field]) {
+    //             result[field] = {
+    //                 ...result[field],
+    //                 submitError: errors[field],
+    //                 touched: true,
+    //             }
+    //             stateChanged = true;    // zatím natvrdo, ale chtělo by to porovnávat, zda jsme změnili chybu
+    //         }
+    //     })
+    //
+    //     return {
+    //         formState: result,
+    //         stateChanged,
+    //     };
+    // }
 
-        var result = {
-            ...formState,
-        }
-
-        var stateChanged = false;
-        this.fields[action.form].forEach(field => {
-            if (errors[field]) {
-                result[field] = {
-                    ...result[field],
-                    submitError: errors[field],
-                    touched: true,
-                }
-                stateChanged = true;    // zatím natvrdo, ale chtělo by to porovnávat, zda jsme změnili chybu
-            }
-        })
-
-        return {
-            formState: result,
-            stateChanged,
-        };
+    getMergedFormState2(localFormState, serverFormState, action) {
+        return serverFormState;
     }
 
     // DEEP
     getMergedFormState(state, dispatch, action) {
+        console.log(">>>>>MERGE<<<<<")
+
         const formState = this.getFormState(action.form, state);
 
         var result = {
@@ -197,7 +201,13 @@ const inlineFormSupport = new class {
         return this.forms[formName];
     }
 
-    // DEEP
+    setBigChange(formName) {
+        const changedInfo = this.wasChanged[formName];
+        if (changedInfo) {
+            changedInfo.bigChange = true;
+        }
+    }
+
     wasDataChanged(formName, state) {
         const changedInfo = this.wasChanged[formName];
         if (changedInfo) {
@@ -219,17 +229,27 @@ const inlineFormSupport = new class {
         }
     }
 
-    // DEEP
     isDataValid(formName, data) {
         const init = this.init[formName];
         var errors = init.validate(data);
-        var isValid = true;
-        this.fields[formName].forEach(field => {
-            if (errors[field]) {
-                isValid = false;
+        return !this._hasErrors(errors);
+    }
+
+    _hasErrors(errors) {
+        const fields = Object.keys(errors);
+        for (let a=0; a<fields.length; a++) {
+            const value = errors[fields[a]];
+            if (value) {
+                if (typeof value === "object") {
+                    if (this._hasErrors(value)) {
+                        return true;
+                    }
+                } else {
+                    return true;
+                }
             }
-        })
-        return isValid;
+        }
+        return false;
     }
 
     /**
@@ -311,12 +331,29 @@ const inlineFormMiddleware = function (_ref) {
                 if (inlineFormSupport.isSupported(action.form)) {
                     // Pokud formulář již existuje, pouze provedeme merge dat
                     if (inlineFormSupport.exists(getState(), dispatch, action)) {  // merge
-                        const mergedState = inlineFormSupport.getMergedFormState(getState(), dispatch, action);
+                        // Uchování aktuálního store pro pozdější merge
+                        const localFormState = inlineFormSupport.getFormState(action.form, getState());
 
+                        // Promítnutí aktuálních nových příchozích dat do store
+                        next(action);
+
+                        // Načtení store, který odpovídá novým datům
+                        const serverFormState = inlineFormSupport.getFormState(action.form, getState());
+
+                        // Provedení merge local a server formuláře a nastavení výsledného store
+                        const mergedState = inlineFormSupport.getMergedFormState2(localFormState, serverFormState, action);
                         dispatch({
                             type: "redux-form/REPLACE_STATE",
                             formState: mergedState,
                         })
+
+                        // Načtení nového merge stavu
+                        // const mergedState = inlineFormSupport.getMergedFormState(getState(), dispatch, action);
+                        //
+                        // dispatch({
+                        //     type: "redux-form/REPLACE_STATE",
+                        //     formState: mergedState,
+                        // })
 
                         // Uchování prvotních dat pro porovnání změn po MERGE
                         inlineFormSupport.storeInitialData(getState(), action);
@@ -332,6 +369,11 @@ const inlineFormMiddleware = function (_ref) {
                 }
             } else if (action.type === "redux-form/INPLACE_INIT") {
                 inlineFormSupport.setInit(action.form, action.validate, action.onSave);
+            } else if (action.type === "redux-form/ADD_ARRAY_VALUE" || action.type === "redux-form/REMOVE_ARRAY_VALUE") {
+                if (inlineFormSupport.isSupported(action.form)) {
+                    inlineFormSupport.setBigChange(action.form);
+                }
+                next(action);
             } else if (action.type === "redux-form/CHANGE") {
                 if (inlineFormSupport.isSupported(action.form)) {
                     var newAction = {
@@ -344,13 +386,13 @@ const inlineFormMiddleware = function (_ref) {
                     inlineFormSupport.updateChanged(getState(), action);
 
                     // ---
-                    var vfs = inlineFormSupport.getValidatedFormState(getState(), dispatch, action);
-                    if (vfs.stateChanged) {
-                        dispatch({
-                            type: "redux-form/REPLACE_STATE",
-                            formState: vfs.formState,
-                        })
-                    }
+                    // var vfs = inlineFormSupport.getValidatedFormState(getState(), dispatch, action);
+                    // if (vfs.stateChanged) {
+                    //     dispatch({
+                    //         type: "redux-form/REPLACE_STATE",
+                    //         formState: vfs.formState,
+                    //     })
+                    // }
                 } else {    // standardní poslání dál, není to náš formulář
                     next(action);
                 }
@@ -486,6 +528,7 @@ const save = function(store) {
  * Registrace inline formulářů.
  */
 inlineFormSupport.addForm("outputEditForm");
+inlineFormSupport.addForm("permissionsEditForm");
 
 // ----------------------------------------------------
 module.exports = {

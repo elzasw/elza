@@ -69,7 +69,7 @@ var OutputInlineForm = class OutputInlineForm extends AbstractReactComponent {
 OutputInlineForm.propTypes = {
     create: React.PropTypes.bool,
     initData: React.PropTypes.object,
-    onSubmitForm: React.PropTypes.func.isRequired,
+    onSave: React.PropTypes.func.isRequired,
     templates: React.PropTypes.array.isRequired
 };
 

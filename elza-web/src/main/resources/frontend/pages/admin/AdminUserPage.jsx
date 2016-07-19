@@ -14,6 +14,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {WebApi} from 'actions/index.jsx'
+import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 
 const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
     constructor(props) {
@@ -36,10 +37,12 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
     }
 
     componentWillReceiveProps(nextProps) {
+        this.dispatch(requestScopesIfNeeded())
         this.dispatch(usersFetchIfNeeded())
     }
 
     componentDidMount() {
+        this.dispatch(requestScopesIfNeeded())
         this.dispatch(usersFetchIfNeeded())
     }
 

@@ -137,7 +137,7 @@ function groupsGroupDetailReceive(data) {
         })
 
         // Oprávnění z detailu
-        dispatch(permissionReceive("GROUP", data.permissions));
+        // dispatch(permissionReceive("GROUP", data.permissions));
     }    
 }
 
