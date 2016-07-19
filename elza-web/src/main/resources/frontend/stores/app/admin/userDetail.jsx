@@ -54,6 +54,7 @@ export default function userDetail(state = initialState, action = {}) {
             return {
                 ...state,
                 ...mainData,
+                permissions,
                 fetching: false,
                 fetched: true,
             }

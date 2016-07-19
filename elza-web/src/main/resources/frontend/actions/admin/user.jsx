@@ -141,7 +141,7 @@ function usersUserDetailReceive(data) {
         })
         
         // Oprávnění z detailu
-        dispatch(permissionReceive("USER", data.permissions));
+        // dispatch(permissionReceive("USER", data.permissions));
     }
 }
 

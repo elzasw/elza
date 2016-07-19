@@ -74,6 +74,7 @@ const rootReducer = combineReducers({
 form: formReducer.plugin({
         fundForm: fundForm,
         outputEditForm: inlineForm,
+        permissionsEditForm: inlineForm,
         addPacketForm: addPacketForm,
         addPartyForm: addPartyForm,
         partyNameForm: partyNameForm,

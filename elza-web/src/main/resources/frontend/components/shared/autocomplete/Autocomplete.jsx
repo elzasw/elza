@@ -1,6 +1,6 @@
 const React = require('react')
 import ReactDOM from 'react-dom';
-import {Button, Input} from 'react-bootstrap';
+import {Button, Input, HelpBlock} from 'react-bootstrap';
 const scrollIntoView = require('dom-scroll-into-view')
 import {Icon, AbstractReactComponent} from 'components/index.jsx';
 import {getBootstrapInputComponentInfo} from 'components/form/FormUtils.jsx';
@@ -575,6 +575,14 @@ return
     }
 
     render() {
+        const {error, title, touched, inline} = this.props;
+
+        const hasError = touched && error;
+        let inlineProps = {};
+        if (inline) {
+            error && (inlineProps.title = title ? title + "/" + error : error);
+        }
+
         var clsMain = 'autocomplete-control-container'
         if (this.props.className) {
             clsMain += ' ' + this.props.className;
@@ -591,11 +599,11 @@ return
                 <div className='autocomplete-control-box'>
                     <div className={cls}>
                         {this.props.label && <label className='control-label'>{this.props.label}</label>}
-                        <div className='autocomplete-input-container'>
+                        <div className={'autocomplete-input-container form-group' + (hasError ? " has-error" : "")}>
                             <input
                                 className='form-control'
                                 type='text'
-                                title={this.props.title}
+                                {...inlineProps}
                                 {...this.props.inputProps}
                                 label={this.props.label}
                                 disabled={this.props.disabled}
@@ -615,6 +623,7 @@ return
                                  onClick={()=>{this.state.isOpen ? this.closeMenu() : this.openMenu()}}><Icon
                                 glyph={glyph}/></div>
                             {this.props.actions}
+                            {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
                         </div>
                         {this.state.isOpen && this.renderMenu()}
                         {this.props.hasFeedback &&
@@ -657,7 +666,10 @@ Autocomplete.defaultProps = {
                 key={item.id}
             >{itemStr}</div>
         )
-    }
+    },
+    inline: false,
+    error: null,
+    touched: false,
 }
 Autocomplete.propTypes = {
     initialValue: React.PropTypes.any,
@@ -670,7 +682,10 @@ Autocomplete.propTypes = {
     renderItem: React.PropTypes.func,
     inputProps: React.PropTypes.object,
     actions: React.PropTypes.array,
-    tags: React.PropTypes.bool
+    tags: React.PropTypes.bool,
+    inline: React.PropTypes.bool,
+    touched: React.PropTypes.bool,
+    error: React.PropTypes.string,
 }
 
 module.exports = Autocomplete

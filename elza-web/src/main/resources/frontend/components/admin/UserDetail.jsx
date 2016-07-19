@@ -8,11 +8,13 @@ import {indexById} from 'stores/app/utils.jsx'
 import {dateToString} from 'components/Utils.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {selectFundTab} from 'actions/arr/fund.jsx'
+import {changeUserPermission} from 'actions/admin/permission.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {usersUserDetailFetchIfNeeded} from 'actions/admin/user.jsx'
 import Permissions from "./Permissions.jsx"
+import Permissions2 from "./Permissions2.jsx"
 import * as perms from 'actions/user/Permission.jsx';
 
 require ('./UserDetail.less');
@@ -21,7 +23,7 @@ const UserDetail = class UserDetail extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        // this.bindMethods("");
+        this.bindMethods("handleSavePermissions");
     }
 
     componentDidMount() {
@@ -30,6 +32,13 @@ const UserDetail = class UserDetail extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(usersUserDetailFetchIfNeeded())
+    }
+
+    handleSavePermissions(data) {
+        const {userDetail} = this.props;
+
+        console.log("handleSavePermissions", data);
+        this.dispatch(changeUserPermission(userDetail.id, data));
     }
 
     render() {
@@ -63,13 +72,20 @@ const UserDetail = class UserDetail extends AbstractReactComponent {
                     addTitle="admin.user.permission.action.add"
                     removeTitle="admin.user.permission.action.delete"
                     />
+                <Permissions2
+                    area="USER"
+                    initData={{permissions: userDetail.permissions}}
+                    onSave={this.handleSavePermissions}
+                    addTitle="admin.user.permission.action.add"
+                    removeTitle="admin.user.permission.action.delete"
+                    />
             </div>
         );
     }
 };
 
 UserDetail.propTypes = {
-    userDetail: React.PropTypes.object.isRequired
+    userDetail: React.PropTypes.object.isRequired,
 };
 
 function mapStateToProps(state) {

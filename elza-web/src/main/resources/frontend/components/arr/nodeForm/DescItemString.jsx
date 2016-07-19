@@ -11,7 +11,7 @@ import {decorateValue} from './DescItemUtils.jsx'
 
 const DescItemString_MAX_LENGTH = 1000;
 
-var DescItemString = class DescItemString extends AbstractReactComponent {
+const DescItemString = class DescItemString extends AbstractReactComponent {
     constructor(props) {
         super(props);
 

@@ -659,6 +659,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             default:
                 parts.push(<div key={itemComponentKey}>-unsupported type {rulDataType.code}-</div>)
         }
+        //{actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions.map(i => <span>{i}<Icon glyph="fa-save" /></span>)}</div>}
         return (
             <Shortcuts key={key} name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}>
                 <div className={cls} {...dragProps}>
@@ -667,6 +668,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
                         {parts}
                     </div>
                     {actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions}</div>}
+
                 </div>
             </Shortcuts>
         )
@@ -767,8 +769,9 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
 
         const actions = [];
 
+        const hasPermission = userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId});
         // Sestavení akcí
-        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+        if (hasPermission) {
             if (showNodeAddons && !closed && !singleDescItemTypeEdit) {
                 actions.push(
                     <NoFocusButton disabled={!descItemCopyFromPrevEnabled} title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book" onClick={this.handleDescItemTypeCopyFromPrev}><Icon glyph="fa-paste" /></NoFocusButton>,
@@ -803,6 +806,25 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         if (refType.description && refType.description.length > 0) {
             if (refType.description != titleText) {
                 titleText = [titleText, refType.description].join('\n')
+            }
+        }
+
+        if (hasPermission) {
+            if (infoType.rep === 1 && !(locked || closed)) {
+                const {onDescItemAdd} = this.props;
+                if (this.props.rulDataType.code === "COORDINATES") {
+                    actions.push(<NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus"/></NoFocusButton>,
+                        <NoFocusButton onClick={this.handleCoordinatesUploadButtonClick} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-upload"/></NoFocusButton>,
+                        <FormInput className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload}/>
+                    );
+                } else if (this.props.rulDataType.code === "JSON_TABLE") {
+                    actions.push(<NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton>,
+                        <NoFocusButton onClick={this.handleJsonTableUploadButtonClick} title={i18n('subNodeForm.descItem.jsonTable.action.upload')}><Icon glyph="fa-upload" /></NoFocusButton>,
+                        <FormInput className="hidden" accept="text/csv" type="file" ref='uploadInput' onChange={this.handleJsonTableUploadUpload} />
+                    );
+                } else {
+                    actions.push(<NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton>);
+                }
             }
         }
 
@@ -852,27 +874,6 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
 
         const label = this.renderLabel();
 
-        let addAction;
-        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
-            if (infoType.rep === 1 && !(locked || closed)) {
-                if (this.props.rulDataType.code === "COORDINATES") {
-                    addAction = <div className='desc-item-type-actions'>
-                        <NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus"/></NoFocusButton>
-                        <NoFocusButton onClick={this.handleCoordinatesUploadButtonClick} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-upload"/></NoFocusButton>
-                        <FormInput className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload}/>
-                    </div>
-                } else if (this.props.rulDataType.code === "JSON_TABLE") {
-                    addAction = <div className='desc-item-type-actions'>
-                        <NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton>
-                        <NoFocusButton onClick={this.handleJsonTableUploadButtonClick} title={i18n('subNodeForm.descItem.jsonTable.action.upload')}><Icon glyph="fa-upload" /></NoFocusButton>
-                        <FormInput className="hidden" accept="text/csv" type="file" ref='uploadInput' onChange={this.handleJsonTableUploadUpload} />
-                    </div>
-                } else {
-                    addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton></div>
-                }
-            }
-        }
-
         const showDeleteDescItemType = this.getShowDeleteDescItemType();
         const descItems = descItemType.descItems.map((descItem, descItemIndex) => {
             const actions = [];
@@ -912,7 +913,6 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
                     <div ref='dragOverContainer' className='desc-item-type-desc-items' onDragOver={this.handleDragOver} onDragLeave={this.handleDragLeave}>
                         {descItems}
                     </div>
-                    {addAction}
             </Shortcuts>
         )
     }
