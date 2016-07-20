@@ -76,6 +76,7 @@ var messages = {
     "ribbon.action.fundAction.form.run": "Spustit",
     "ribbon.action.fundAction.form.clear": "Vymazat",
     "ribbon.action.arr.show-register-jp": "Rejstříky k JP",
+    "ribbon.action.arr.fund.settings.ui": "Nastavení zobrazení",
     "ribbon.action.registry": "Rejstříková hesla",
     "ribbon.action.party": "Subjekty",
     "ribbon.action.admin": "Administrace",
@@ -206,6 +207,12 @@ var messages = {
 
     "arr.fund.files.action.add": "Nový soubor",
     "arr.fund.files.action.delete": "Odebrat soubor",
+
+    "arr.fund.settings.title": "Nastavení zobrazení archivního fondu",
+    "arr.fund.settings.panel.center.title": "Hlavní panel",
+    "arr.fund.settings.panel.center.parents": "Nadřízené JP",
+    "arr.fund.settings.panel.center.children": "Návazné JP",
+    "arr.fund.settings.panel.right.title": "Pravý panel",
 
     "arr.fund.version": "Verze {0}",
     "arr.fund.outputDefinition.active": "Přehled platných AP",

@@ -825,6 +825,10 @@ class WebApi{
         return AjaxUtils.ajaxGet(WebApi.userUrl + '/detail');
     }
 
+    setUserSettings(settings) {
+        return AjaxUtils.ajaxPut(WebApi.userUrl + '/detail/settings', null, settings);
+    }
+
     login(username, password) {
         return AjaxUtils.ajaxCallRaw('/login', {}, 'POST', 'username=' + username + '&password=' + password, 'application/x-www-form-urlencoded');
     }

@@ -146,6 +146,15 @@ function userDetailInt(state, action) {
                 permissionsMap,
             }
         }
+        case types.USER_DETAIL_RESPONSE_SETTINGS: {
+
+            var settings = action.settings;
+
+            return {
+                ...state,
+                settings
+            }
+        }
         default:
             return state
     }

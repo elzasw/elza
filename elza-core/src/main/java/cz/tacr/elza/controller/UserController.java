@@ -3,15 +3,18 @@ package cz.tacr.elza.controller;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -47,6 +50,9 @@ public class UserController {
     @Autowired
     private ClientFactoryDO factoryDO;
 
+    @Autowired
+    private SettingsService settingsService;
+
     /**
      * Získání oprávnění uživatele.
      *
@@ -56,6 +62,23 @@ public class UserController {
     public UserInfoVO getUserDetail() {
         final UserDetail userDetail = userService.getLoggedUserDetail();
         return factoryVO.createUserInfo(userDetail);
+    }
+
+    /**
+     * Uložit nastavení uživatele.
+     *
+     * @param settings Seznam nastavení uživatele.
+     */
+    @RequestMapping(value = "/detail/settings", method = RequestMethod.PUT)
+    public List<UISettingsVO> setUserSettings(@RequestBody final List<UISettingsVO> settings) {
+        List<UISettings> settingsList = factoryDO.createSettingsList(settings);
+
+        UsrUser user = userService.getLoggedUser();
+        if (user != null && settingsList.size() > 0) {
+            settingsService.setSettings(user, settingsList);
+        }
+
+        return factoryVO.createSettingsList(settingsList);
     }
 
     /**

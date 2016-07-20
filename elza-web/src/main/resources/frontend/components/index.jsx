@@ -80,6 +80,7 @@ exports.OutputSubNodeForm = require('components/arr/OutputSubNodeForm.jsx');
 exports.SubNodeRegister = require('components/arr/SubNodeRegister.jsx');
 exports.AddNodeDropdown = require('components/arr/AddNodeDropdown.jsx');
 exports.FundForm = require('components/arr/FundForm.jsx');
+exports.FundSettingsForm = require('components/arr/FundSettingsForm.jsx');
 exports.VisiblePolicyForm = require('components/arr/VisiblePolicyForm.jsx');
 exports.AddPacketForm = require('components/arr/AddPacketForm.jsx');
 exports.GoToPositionForm = require('components/arr/GoToPositionForm.jsx');

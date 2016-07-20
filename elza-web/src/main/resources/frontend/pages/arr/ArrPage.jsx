@@ -10,7 +10,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {Tabs, Icon, Ribbon, i18n} from 'components/index.jsx';
+import {FundSettingsForm, Tabs, Icon, Ribbon, i18n} from 'components/index.jsx';
 import {
     FundExtendedView,
     BulkActionsDialog,
@@ -28,7 +28,7 @@ import {
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {WebApi} from 'actions/index.jsx';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {showRegisterJp} from 'actions/arr/fund.jsx'
 import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
@@ -36,7 +36,7 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
 import {Utils} from 'components/index.jsx';
-import {isFundRootId} from 'components/arr/ArrUtils.jsx';
+import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
@@ -50,6 +50,8 @@ var Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
+import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
+
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -72,7 +74,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             'getActiveFundId', 'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
             'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
-            'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm');
+            'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm',
+            'handleChangeFundSettingsSubmit');
 
         this.state = {
             developerExpandedSpecsIds: {},
@@ -272,6 +275,60 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.dispatch(routerNavigate('/arr/actions'));
     }
 
+    handleChangeFundSettings() {
+        const {userDetail} = this.props;
+        var activeInfo = this.getActiveInfo();
+
+        let fundId = activeInfo.activeFund.id;
+
+        var settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', fundId);
+        var dataRight = settings.value ? JSON.parse(settings.value) : null;
+        var settings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
+        var dataCenter = settings.value ? JSON.parse(settings.value) : null;
+
+        var init = {
+            rightPanel: {
+                tabs: [
+                    {name: i18n('arr.panel.title.errors'), key: 0, checked: dataRight && dataRight[0] !== undefined ? dataRight[0] : true},
+                    {name: i18n('arr.panel.title.visiblePolicies'), key: 1, checked: dataRight && dataRight[1] !== undefined ? dataRight[1] : true},
+                    {name: i18n('arr.panel.title.packets'), key: 2, checked: dataRight && dataRight[2] !== undefined ? dataRight[2] : true},
+                    {name: i18n('arr.panel.title.files'), key: 3, checked: dataRight && dataRight[3] !== undefined ? dataRight[3] : true},
+                ]
+            },
+            centerPanel: {
+                panels: [
+                    {name: i18n('arr.fund.settings.panel.center.parents'), key: 'parents', checked: dataCenter && dataCenter['parents'] !== undefined ? dataCenter['parents'] : true},
+                    {name: i18n('arr.fund.settings.panel.center.children'), key: 'children', checked: dataCenter && dataCenter['children'] !== undefined ? dataCenter['children'] : true},
+                ]
+            }
+        }
+
+        var form = <FundSettingsForm initialValues={init} onSubmitForm={this.handleChangeFundSettingsSubmit.bind(this)} />;
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.settings.title'), form));
+    }
+
+    handleChangeFundSettingsSubmit(data) {
+        const {userDetail} = this.props;
+        var activeInfo = this.getActiveInfo();
+        let fundId = activeInfo.activeFund.id;
+
+        var settings = userDetail.settings;
+
+        var rightPanelItem = getOneSettings(settings, 'FUND_RIGHT_PANEL', 'FUND', fundId);
+        var value = {};
+        data.rightPanel.tabs.map((item) => {value[item.key] = item.checked;});
+        rightPanelItem.value = JSON.stringify(value);
+        settings = setSettings(settings, rightPanelItem.id, rightPanelItem);
+
+        var centerPanelItem = getOneSettings(settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
+        var value = {};
+        data.centerPanel.panels.map((item) => {value[item.key] = item.checked;});
+        centerPanelItem.value = JSON.stringify(value);
+        settings = setSettings(settings, centerPanelItem.id, centerPanelItem);
+
+        this.dispatch(userDetailsSaveSettings(settings));
+    }
+
     /**
      * Sestavení Ribbonu.
      * @return {Object} view
@@ -307,6 +364,11 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var indexFund = arrRegion.activeIndex;
         if (indexFund !== null) {
             var activeFund = arrRegion.funds[indexFund];
+
+            altActions.push(
+                <Button key="fund-settings" onClick={this.handleChangeFundSettings.bind(this)} ><Icon glyph="fa-wrench"/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.settings.ui')}</span></div>
+                </Button>)
 
             var nodeIndex = activeFund.nodes.activeIndex;
             if (nodeIndex !== null) {
@@ -602,22 +664,34 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var tabContent
         var tabIndex = 0
 
-        items.push({id: tabIndex, title: i18n('arr.panel.title.errors')});
-        if (selected === tabIndex) tabContent = this.renderFundErrors(activeFund)
+        var settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', activeFund.id);
+        var settingsValues = settings.value ? JSON.parse(settings.value) : null;
+
+        if (settingsValues == null || settingsValues[tabIndex]) {
+            items.push({id: tabIndex, title: i18n('arr.panel.title.errors')});
+            if (selected === tabIndex) tabContent = this.renderFundErrors(activeFund)
+        }
         tabIndex++;
 
-        items.push({id: tabIndex, title: i18n('arr.panel.title.visiblePolicies')});
-        if (selected === tabIndex) tabContent = this.renderFundVisiblePolicies(activeFund)
+        if (settingsValues == null || settingsValues[tabIndex]) {
+            items.push({id: tabIndex, title: i18n('arr.panel.title.visiblePolicies')});
+            if (selected === tabIndex) tabContent = this.renderFundVisiblePolicies(activeFund)
+        }
         tabIndex++;
 
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
-            items.push({id: tabIndex, title: i18n('arr.panel.title.packets')});
-            if (selected === tabIndex) tabContent = this.renderFundPackets(activeFund)
+            if (settingsValues == null || settingsValues[tabIndex]) {
+                items.push({id: tabIndex, title: i18n('arr.panel.title.packets')});
+                if (selected === tabIndex) tabContent = this.renderFundPackets(activeFund)
+            }
             tabIndex++;
         }
-        items.push({id: tabIndex, title: i18n('arr.panel.title.files')});
-        if (selected === tabIndex) tabContent = this.renderFundFiles(activeFund)
-        tabIndex++;
+
+        if (settingsValues == null || settingsValues[tabIndex]) {
+            items.push({id: tabIndex, title: i18n('arr.panel.title.files')});
+            if (selected === tabIndex) tabContent = this.renderFundFiles(activeFund)
+            tabIndex++;
+        }
 
         // pouze v developer modu
         if (developer.enabled && node) {

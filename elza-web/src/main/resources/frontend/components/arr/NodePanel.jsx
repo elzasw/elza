@@ -26,6 +26,7 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {Utils} from 'components/index.jsx';
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
@@ -740,13 +741,22 @@ return true
             return <Loading value={i18n('global.data.loading.node')}/>
         }
 
-        var parents = this.renderParents(this.getParentNodes().reverse());
+        var settings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
+        var settingsValues = settings.value ? JSON.parse(settings.value) : null;
+
+        var showParents = settingsValues == null || settingsValues['parents'] == null || settingsValues['parents'];
+        var showChildren = settingsValues == null || settingsValues['children'] == null || settingsValues['children'];
+
+        var parents = showParents ? this.renderParents(this.getParentNodes().reverse()) : null;
         var children;
-        if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
-            children = this.renderChildren(this.getChildNodes());
-        } else {
-            children = <div key='children' className='children'><Loading value={i18n('global.data.loading.node.children')} /></div>
+        if (showChildren) {
+            if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
+                children = this.renderChildren(this.getChildNodes());
+            } else {
+                children = <div key='children' className='children'><Loading value={i18n('global.data.loading.node.children')} /></div>
+            }
         }
+
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
 
         var actions = []

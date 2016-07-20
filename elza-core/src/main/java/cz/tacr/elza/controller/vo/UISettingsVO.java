@@ -1,0 +1,63 @@
+package cz.tacr.elza.controller.vo;
+
+import cz.tacr.elza.api.UISettings.SettingsType;
+import cz.tacr.elza.api.UISettings.EntityType;
+
+/**
+ * VO uživatelského nastavení.
+ *
+ * @author Martin Šlapa
+ * @since 19.07.2016
+ */
+public class UISettingsVO {
+
+    private Integer id;
+
+    private SettingsType settingsType;
+
+    private EntityType entityType;
+
+    private Integer entityId;
+
+    private String value;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(final Integer id) {
+        this.id = id;
+    }
+
+    public SettingsType getSettingsType() {
+        return settingsType;
+    }
+
+    public void setSettingsType(final SettingsType settingsType) {
+        this.settingsType = settingsType;
+    }
+
+    public EntityType getEntityType() {
+        return entityType;
+    }
+
+    public void setEntityType(final EntityType entityType) {
+        this.entityType = entityType;
+    }
+
+    public Integer getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(final Integer entityId) {
+        this.entityId = entityId;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(final String value) {
+        this.value = value;
+    }
+}

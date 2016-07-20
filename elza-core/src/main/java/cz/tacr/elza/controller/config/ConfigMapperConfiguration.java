@@ -782,6 +782,11 @@ public class ConfigMapperConfiguration {
                 .byDefault()
                 .field("templateId", "id")
                 .register();
+
+        mapperFactory.classMap(UISettings.class, UISettingsVO.class)
+                .byDefault()
+                .field("settingsId", "id")
+                .register();
     }
 
     /**
