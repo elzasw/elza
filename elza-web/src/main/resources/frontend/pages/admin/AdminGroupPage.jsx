@@ -15,6 +15,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {WebApi} from 'actions/index.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {renderGroupItem} from "components/admin/adminRenderUtils.jsx"
 
 const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     constructor(props) {
@@ -105,15 +106,6 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
         });
     }
 
-
-    renderListItem(item) {
-        return (
-            <div>
-                <div className='name'>{item.name}</div>
-            </div>
-        )
-    }
-
     render() {
         const {splitter, group} = this.props;
 
@@ -135,7 +127,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
                     ref='groupList'
                     items={group.groups}
                     activeIndex={activeIndex}
-                    renderItemContent={this.renderListItem}
+                    renderItemContent={renderGroupItem}
                     onFocus={this.handleSelect}
                     onSelect={this.handleSelect}
                 />

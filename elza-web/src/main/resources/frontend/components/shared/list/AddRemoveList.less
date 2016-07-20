@@ -22,12 +22,22 @@
     }
 
     .item-list-container {
+        overflow: hidden;
+        overflow-y: auto;
+
         .item-container {
             display: flex;
             flex-direction: row;
+            line-height: 2em;
+            padding: 0 4px;
 
             &:hover {
                 background: @tree-node-label-active-bg
+            }
+
+            .item {
+                flex-grow: 1;
+                max-width: 800px;
             }
 
             .item-actions-container {

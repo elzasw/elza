@@ -309,7 +309,7 @@ const inlineFormSupport = new class {
      * @param dispatch
      * @param action
      */
-    onBlur(state, dispatch, action) {
+    trySave(state, dispatch, action) {
         if (!this.isSupported(action.form)) {
             return;
         }
@@ -396,6 +396,10 @@ const inlineFormMiddleware = function (_ref) {
                     inlineFormSupport.setBigChange(action.form);
                 }
                 next(action);
+
+                if (action.type === "redux-form/REMOVE_ARRAY_VALUE") {
+                    inlineFormSupport.trySave(getState(), dispatch, action);
+                }
             } else if (action.type === "redux-form/CHANGE") {
                 if (inlineFormSupport.isSupported(action.form)) {
                     var newAction = {
@@ -423,7 +427,7 @@ const inlineFormMiddleware = function (_ref) {
 
                 switch (action.type) {
                     case "redux-form/BLUR":
-                        inlineFormSupport.onBlur(getState(), dispatch, action);
+                        inlineFormSupport.trySave(getState(), dispatch, action);
                         break;
                 }
             }

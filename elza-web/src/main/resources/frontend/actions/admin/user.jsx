@@ -5,6 +5,22 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
 import {permissionReceive} from "./permission.jsx"
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+
+export function joinGroups(userId, groupIds) {
+    return (dispatch, getState) => {
+        WebApi.joinGroup(groupIds, [userId])
+            .then(() => {
+                dispatch(modalDialogHide());
+            })
+    }
+}
+
+export function leaveGroup(userId, groupId) {
+    return (dispatch, getState) => {
+        WebApi.leaveGroup(groupId, userId)
+    }
+}
 
 export function isUserAction(action) {
     if (isUserDetailAction(action)) {

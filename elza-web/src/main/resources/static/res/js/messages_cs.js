@@ -582,6 +582,12 @@ var messages = {
     "admin.group.add.code": "Kod",
     "admin.group.add.success": "Skupina byla vvytvořena",
     "admin.group.delete.success" : "Skupina byla smazána",
+    "admin.group.user.add.title" : "Připojení uživatelů do skupiny",
+    "admin.user.group.add.title" : "Zařazení uživatele do skupin",
+    "admin.group.user.action.add" : "Připojit uživatele do skupiny",
+    "admin.user.group.action.add" : "Zařadit uživatele do skupin",
+    "admin.group.user.action.delete" : "Odebrat uživatele ze skupiny",
+    "admin.user.group.action.delete" : "Odebrat zařazení uživatele do skupiny",
 
     "permission.ADMIN": "Administrátor",
     "permission.FUND_RD": "Čtení vybraného AS",

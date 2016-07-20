@@ -15,6 +15,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {WebApi} from 'actions/index.jsx'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
+import {renderUserItem} from "components/admin/adminRenderUtils.jsx"
 
 const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
     constructor(props) {
@@ -23,7 +24,6 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
         this.buildRibbon = this.buildRibbon.bind(this);
 
         this.bindMethods(
-            'renderListItem',
             'handleSearch',
             'handleSearchClear',
             'handleFilterStateChange',
@@ -130,14 +130,6 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
         this.dispatch(usersSearch(user.filterText, {type: e.target.value}))
     }
 
-    renderListItem(item) {
-        return (
-            <div>
-                <div className='name'>{item.party.record.record} ({item.username})</div>
-            </div>
-        )
-    }
-
     render() {
         const {splitter, user} = this.props;
 
@@ -163,7 +155,7 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
                     ref='userList'
                     items={user.users}
                     activeIndex={activeIndex}
-                    renderItemContent={this.renderListItem}
+                    renderItemContent={renderUserItem}
                     onFocus={this.handleSelect}
                     onSelect={this.handleSelect}
                 />

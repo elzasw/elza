@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap'
 import {Icon, AbstractReactComponent, i18n, Loading, AddRemoveList} from 'components/index.jsx';
-import {indexById} from 'stores/app/utils.jsx'
+import {indexById, getIdsList} from 'stores/app/utils.jsx'
 import {dateToString} from 'components/Utils.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {selectFundTab} from 'actions/arr/fund.jsx'
@@ -11,7 +11,11 @@ import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import Permissions from "./Permissions.jsx"
+import SelectUsersForm from "./SelectUsersForm.jsx"
 import {changeGroupPermission} from 'actions/admin/permission.jsx'
+import {joinUsers, leaveUser} from 'actions/admin/group.jsx'
+import {modalDialogShow} from 'actions/global/modalDialog.jsx'
+import {renderUserItem} from "components/admin/adminRenderUtils.jsx"
 
 require('./GroupDetail.less');
 
@@ -19,7 +23,11 @@ const GroupDetail = class GroupDetail extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods("handleSavePermissions");
+        this.bindMethods(
+            "handleSavePermissions",
+            "handleAddUsers",
+            "handleRemoveUser",
+        );
     }
 
     componentDidMount() {
@@ -30,9 +38,21 @@ const GroupDetail = class GroupDetail extends AbstractReactComponent {
 
     handleSavePermissions(data) {
         const {groupDetail} = this.props;
-
-        console.log("handleSavePermissions", data);
         this.dispatch(changeGroupPermission(groupDetail.id, data));
+    }
+
+    handleRemoveUser(user, index) {
+        const {groupDetail} = this.props;
+        this.dispatch(leaveUser(groupDetail.id, user.id));
+    }
+
+    handleAddUsers() {
+        const {groupDetail} = this.props;
+        this.dispatch(modalDialogShow(this, i18n('admin.group.user.add.title'),
+            <SelectUsersForm onSubmitForm={(users) => {
+                this.dispatch(joinUsers(groupDetail.id, getIdsList(users)));
+            }} />
+        ))
     }
 
     render() {
@@ -52,11 +72,11 @@ const GroupDetail = class GroupDetail extends AbstractReactComponent {
                 <h2>{i18n("admin.group.title.users")}</h2>
                 <AddRemoveList
                     items={groupDetail.users}
-                    onAdd={this.handleCreateUserForm}
+                    onAdd={this.handleAddUsers}
                     onRemove={this.handleRemoveUser}
                     addTitle="admin.group.user.action.add"
                     removeTitle="admin.group.user.action.delete"
-                    renderItem={item => <div>{item.party.record.record} ({item.username})</div>}
+                    renderItem={renderUserItem}
                 />
                 <h2>{i18n("admin.group.title.permissions")}</h2>
                 <Permissions
