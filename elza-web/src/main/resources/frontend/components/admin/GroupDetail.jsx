@@ -11,6 +11,7 @@ import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import Permissions from "./Permissions.jsx"
+import {changeGroupPermission} from 'actions/admin/permission.jsx'
 
 require('./GroupDetail.less');
 
@@ -18,7 +19,7 @@ const GroupDetail = class GroupDetail extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        // this.bindMethods('')
+        this.bindMethods("handleSavePermissions");
     }
 
     componentDidMount() {
@@ -27,6 +28,12 @@ const GroupDetail = class GroupDetail extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
     }
 
+    handleSavePermissions(data) {
+        const {groupDetail} = this.props;
+
+        console.log("handleSavePermissions", data);
+        this.dispatch(changeGroupPermission(groupDetail.id, data));
+    }
 
     render() {
         const {groupDetail, focus} = this.props;
@@ -54,7 +61,8 @@ const GroupDetail = class GroupDetail extends AbstractReactComponent {
                 <h2>{i18n("admin.group.title.permissions")}</h2>
                 <Permissions
                     area="GROUP"
-                    permissions={groupDetail.permission.permissions}
+                    initData={{permissions: groupDetail.permissions}}
+                    onSave={this.handleSavePermissions}
                     addTitle="admin.group.permission.action.add"
                     removeTitle="admin.group.permission.action.delete"
                 />

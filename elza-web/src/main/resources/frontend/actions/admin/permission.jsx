@@ -10,6 +10,11 @@ export function changeUserPermission(userId, permissions) {
         WebApi.changeUserPermission(userId, permissions);
     }
 }
+export function changeGroupPermission(groupId, permissions) {
+    return (dispatch, getState) => {
+        WebApi.changeGroupPermission(groupId, permissions);
+    }
+}
 
 export function isPermissionAction(action) {
     switch (action.type) {

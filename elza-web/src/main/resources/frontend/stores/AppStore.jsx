@@ -84,6 +84,11 @@ const inlineFormSupport = new class {
         return formState;
     }
 
+    setAttributes(formName, formState, commonAttrs, fieldAttrs) {
+        const formStateWithAttrs = reduxFormUtils.setAttributes(this.initFields[formName], formState, commonAttrs, fieldAttrs);
+        return formStateWithAttrs;
+    }
+
     // DEEP
     // getValidatedFormState(state, dispatch, action) {
     //     const init = this.init[action.form];
@@ -113,7 +118,12 @@ const inlineFormSupport = new class {
     //     };
     // }
 
-    getMergedFormState2(localFormState, serverFormState, action) {
+    mergeFormState(formName, localFormState, serverFormState, action) {
+        console.log("....MERGE", "local", localFormState, "server", JSON.parse(JSON.stringify(serverFormState)))
+
+        reduxFormUtils.mergeState(this.initFields[formName], localFormState, serverFormState);
+        console.log("....MERGED", serverFormState);
+
         return serverFormState;
     }
 
@@ -316,6 +326,15 @@ const inlineFormSupport = new class {
         var isValid = this.isDataValid(action.form, data);
 
         if (changed && isValid) {
+            // Nastavení příznaku, že data byla odeslána na server, příznak slouží pro pozdější merge
+            const formState = this.getFormState(action.form, state);
+            const newFormState = this.setAttributes(action.form, formState, {sendToServer: true}, {touched: false});
+            dispatch({
+                type: "redux-form/REPLACE_STATE",
+                formState: newFormState,
+            })
+
+            // Odeslání dat na server
             init.onSave(data);
         }
     }
@@ -332,8 +351,10 @@ const inlineFormMiddleware = function (_ref) {
                     // Pokud formulář již existuje, pouze provedeme merge dat
                     if (inlineFormSupport.exists(getState(), dispatch, action)) {  // merge
                         // Uchování aktuálního store pro pozdější merge
+                        // Načtení aktuálních formulářových dat
                         const localFormState = inlineFormSupport.getFormState(action.form, getState());
 
+                        delete getState().form[action.form]
                         // Promítnutí aktuálních nových příchozích dat do store
                         next(action);
 
@@ -341,11 +362,12 @@ const inlineFormMiddleware = function (_ref) {
                         const serverFormState = inlineFormSupport.getFormState(action.form, getState());
 
                         // Provedení merge local a server formuláře a nastavení výsledného store
-                        const mergedState = inlineFormSupport.getMergedFormState2(localFormState, serverFormState, action);
-                        dispatch({
-                            type: "redux-form/REPLACE_STATE",
-                            formState: mergedState,
-                        })
+                        inlineFormSupport.mergeFormState(action.form, localFormState, serverFormState, action);
+                        // !!!!neni potreba, protoze jiz upravujeme serverFormState
+                        // dispatch({
+                        //     type: "redux-form/REPLACE_STATE",
+                        //     formState: serverFormState,
+                        // })
 
                         // Načtení nového merge stavu
                         // const mergedState = inlineFormSupport.getMergedFormState(getState(), dispatch, action);

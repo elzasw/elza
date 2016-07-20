@@ -850,7 +850,11 @@ class WebApi{
     changeUserPermission(userId, permissions) {
         return AjaxUtils.ajaxPost(WebApi.userUrl + "/" + userId + '/permission', null, permissions);
     }
-    
+
+    changeGroupPermission(groupId, permissions) {
+        return AjaxUtils.ajaxPost(WebApi.userUrl + "/group/" + groupId + '/permission', null, permissions);
+    }
+
     findGroup(fulltext, max = 200) {
         return AjaxUtils.ajaxGet(WebApi.userUrl + '/group', {search: fulltext, from: 0, count: max})
             .then(json => ({groups: json.list, groupsCount: json.totalCount}))

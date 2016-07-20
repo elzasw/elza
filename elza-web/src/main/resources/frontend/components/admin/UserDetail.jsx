@@ -14,7 +14,6 @@ import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {usersUserDetailFetchIfNeeded} from 'actions/admin/user.jsx'
 import Permissions from "./Permissions.jsx"
-import Permissions2 from "./Permissions2.jsx"
 import * as perms from 'actions/user/Permission.jsx';
 
 require ('./UserDetail.less');
@@ -67,12 +66,6 @@ const UserDetail = class UserDetail extends AbstractReactComponent {
                     />
                 <h2>{i18n("admin.user.title.permissions")}</h2>
                 <Permissions
-                    area="USER"
-                    permissions={userDetail.permission.permissions}
-                    addTitle="admin.user.permission.action.add"
-                    removeTitle="admin.user.permission.action.delete"
-                    />
-                <Permissions2
                     area="USER"
                     initData={{permissions: userDetail.permissions}}
                     onSave={this.handleSavePermissions}

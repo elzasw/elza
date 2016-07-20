@@ -50,7 +50,7 @@ export default function groupDetail(state = initialState, action = {}) {
                 currentDataKey: action.dataKey,
             }
         case types.GROUPS_GROUP_DETAIL_RECEIVE:
-            var {permissions, ...mainData} = action.data;
+            const {permissions, ...mainData} = action.data;
             return {
                 ...state,
                 ...mainData,
