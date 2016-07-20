@@ -31,6 +31,7 @@ import addPacketForm from './app/arr/form/addPacketForm.jsx';
 import stateRegion from './app/state/stateRegion.jsx';
 import userDetail from './app/user/userDetail.jsx';
 import router from './app/router.jsx';
+import status from './app/status.jsx';
 
 import addPartyForm from './app/party/form/addPartyForm.jsx';
 import partyNameForm from './app/party/form/partyNameForm.jsx';
@@ -49,6 +50,8 @@ const normalizePacketSize = (value, previousValue, allValues, previousAllValues)
     }
     return vv
 };
+
+
 
 
 const rootReducer = combineReducers({
@@ -71,6 +74,7 @@ const rootReducer = combineReducers({
     router,
     userDetail,
     tab,
+    status,
 form: formReducer.plugin({
         fundForm: fundForm,
         outputEditForm: inlineForm,

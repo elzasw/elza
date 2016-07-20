@@ -15,6 +15,7 @@ import {getRoutingKeyType} from 'stores/app/utils.jsx'
 import * as types from 'actions/constants/ActionTypes.js';
 import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {i18n} from 'components/index.jsx';
+import {statusSaving, statusSaved} from 'actions/global/status.jsx'
 
 class ItemFormActions {
     constructor(area) {
@@ -217,22 +218,25 @@ class ItemFormActions {
      * @param {Object} valueLocation konkrétní umístění hodnoty
      */
     _formValueStore(dispatch, getState, versionId, routingKey, valueLocation) {
-        var state = getState();
-        var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
-        var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
+        const state = getState();
+        const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+        const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
-        var refType = subNodeForm.refTypesMap[loc.descItemType.id]
+        const refType = subNodeForm.refTypesMap[loc.descItemType.id]
 
         if (this.descItemNeedStore(loc.descItem, refType)) {
+            dispatch(statusSaving());
             if (typeof loc.descItem.id !== 'undefined') {
                 this._callUpdateDescItem(versionId, subNodeForm.data.parent.version, loc.descItem)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
+                        dispatch(statusSaved());
                     })
             } else {
                 this._callCreateDescItem(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItemType.id, loc.descItem)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'));
+                        dispatch(statusSaved());
                     })
             }
         }

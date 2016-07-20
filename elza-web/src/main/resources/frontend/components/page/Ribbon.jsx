@@ -54,7 +54,7 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
     }
 
     trySetFocus(props) {
-        var {focus} = props
+        const {focus} = props
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, null, 'ribbon')) {
@@ -67,9 +67,9 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
     }
 
     render() {
-        const {userDetail, altSection, itemSection, fundId} = this.props
+        const {userDetail, altSection, itemSection, fundId, status: {saving}} = this.props
 
-        var section = null;
+        let section = null;
 
         // Aktomatické sekce podle vybrané oblasti
         if (this.props.admin) {
@@ -93,7 +93,7 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
             }
         }
         if (this.props.arr) {
-            var arrParts = []
+            const arrParts = []
             if (userDetail.hasArrPage(fundId)) {    // právo na pořádání
                 arrParts.push(<IndexLinkContainer key="ribbon-btn-arr-index" to="/arr"><Button ref='ribbonDefaultFocus'><Icon glyph="fa-sitemap" /><div><span className="btnText">{i18n('ribbon.action.arr.arr')}</span></div></Button></IndexLinkContainer>)
             }
@@ -140,6 +140,7 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
             <RibbonMenu opened onShowHide={this.handleRibbonShowHide}>
                 {partsWithSplit}
                 <RibbonGroup className="large right">
+                    {saving && <span>{i18n('ribbon.saving')}</span>}
                     <DropdownButton bsStyle='default' title={userDetail.username} key='user-menu' id='user-menu'>
                         <MenuItem eventKey="1" onClick={this.handlePasswordChangeForm}>{i18n('ribbon.action.admin.user.passwordChange')}</MenuItem>
                     </DropdownButton>
@@ -166,11 +167,12 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {focus, login, userDetail} = state
+    const {focus, login, userDetail, status} = state;
     return {
         focus,
         login,
         userDetail,
+        status,
     }
 }
 

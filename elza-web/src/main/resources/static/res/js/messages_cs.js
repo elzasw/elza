@@ -100,6 +100,7 @@ var messages = {
 
     "ribbon.action.arr.validation.error.previous": "Předchozí chyba",
     "ribbon.action.arr.validation.error.next": "Další chyba",
+    "ribbon.saving": "Ukládání",
 
     "toast.arr.validation.error.notFound": "Nebyla nalezena další chyba",
 
@@ -372,6 +373,8 @@ var messages = {
     "subNodeForm.descItemType.lock": "Nastavení zamknutí úprav hodnot PP",
     "subNodeForm.descItemType.copyFromPrev": "Kopírovat hodnoty PP z předchozí JP",
     "subNodeForm.addNodeAfter": "JP za",
+
+    "subNodeForm.descItem.edited": "Editováno",
 
     "subNodeForm.descItem.coordinates.action.add": "Nahrát souřadnice",
 

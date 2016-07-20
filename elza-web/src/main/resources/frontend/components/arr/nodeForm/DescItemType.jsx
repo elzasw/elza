@@ -668,7 +668,6 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
                         {parts}
                     </div>
                     {actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions}</div>}
-
                 </div>
             </Shortcuts>
         )
@@ -828,6 +827,10 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             }
         }
 
+        if (descItemType.descItems.filter(i => i.touched).length > 0) {
+            actions.push(<span>{i18n('subNodeForm.descItem.edited')}</span>);
+        }
+
         // Render
         return (
             <div className='desc-item-type-label'>
@@ -873,7 +876,6 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         const {fundId, userDetail, onDescItemRemove, onDescItemAdd, descItemType, refType, infoType, locked, conformityInfo, closed} = this.props;
 
         const label = this.renderLabel();
-
         const showDeleteDescItemType = this.getShowDeleteDescItemType();
         const descItems = descItemType.descItems.map((descItem, descItemIndex) => {
             const actions = [];
@@ -897,7 +899,6 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
                 canModifyDescItem = false
             }
-
             return this.renderDescItem(descItemType, descItem, descItemIndex, actions, !canModifyDescItem)
         });
 
@@ -909,10 +910,10 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
 
         return (
             <Shortcuts name='DescItemType' className={cls} handler={this.handleDescItemTypeShortcuts}>
-                    {label}
-                    <div ref='dragOverContainer' className='desc-item-type-desc-items' onDragOver={this.handleDragOver} onDragLeave={this.handleDragLeave}>
-                        {descItems}
-                    </div>
+                {label}
+                <div ref='dragOverContainer' className='desc-item-type-desc-items' onDragOver={this.handleDragOver} onDragLeave={this.handleDragLeave}>
+                    {descItems}
+                </div>
             </Shortcuts>
         )
     }

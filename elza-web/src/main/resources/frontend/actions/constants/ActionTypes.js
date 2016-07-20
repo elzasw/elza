@@ -408,3 +408,9 @@ export const SET_VISIBLE_POLICY_RECEIVE = 'SET_VISIBLE_POLICY_RECEIVE'
   * Záložky
   */
 export const TAB_SELECT = 'TAB_SELECT'
+
+/**
+ * Status store
+ */
+export const STATUS_SAVING = 'STATUS_SAVING'
+export const STATUS_SAVED = 'STATUS_SAVED'
