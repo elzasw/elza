@@ -98,6 +98,26 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                     <h1>{i18n('arr.fund.outputDefinition.hist')}</h1>
                     {histOutputs}
                 </div>}
+                <div className="versions-container">
+                    <h1>{i18n('arr.fund.version.list')}</h1>
+                    {fundDetail.versions.map((ver, index) => {
+                        if (ver.lockDate) {
+                            return (
+                                <div className='fund-version' key={'fund-version-' +  index}>
+                                    <div className="version-label">{i18n('arr.fund.version', dateToString(new Date(ver.lockDate)))}</div>
+                                    <Button onClick={this.handleShowInArr.bind(this, ver)} bsStyle='link'>{i18n('arr.fund.action.showInArr')}</Button>
+                                </div>
+                            )
+                        } else {
+                            return (
+                                <div className='fund-version' key={'fund-version-' +  index}>
+                                    <div className="version-label">{i18n('arr.fund.currentVersion')}</div>
+                                    <Button onClick={this.handleShowInArr.bind(this, ver)} bsStyle='link'>{i18n('arr.fund.action.openInArr')}</Button>
+                                </div>
+                            )
+                        }
+                    })}
+                </div>
             </div>
         );
     }

@@ -256,7 +256,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
         return (
             <div>
                 <div className='name'>{item.name}</div>
-                <div><Button className='link' onClick={this.handleShowInArr.bind(this, item)} bsStyle='link'>{i18n('arr.fund.action.showInArr')}</Button></div>
+                <div><Button className='link' onClick={this.handleShowInArr.bind(this, item)} bsStyle='link'>{i18n('arr.fund.action.openInArr')}</Button></div>
                 <div>{item.internalCode}</div>
             </div>
         )

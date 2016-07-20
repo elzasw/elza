@@ -215,6 +215,7 @@ var messages = {
     "arr.fund.settings.panel.right.title": "Pravý panel",
 
     "arr.fund.version": "Verze {0}",
+    "arr.fund.version.list": "Verze AS",
     "arr.fund.outputDefinition.active": "Přehled platných AP",
     "arr.fund.outputDefinition.hist": "Přehled historických AP",
     "arr.fund.outputDefinition.action.showPDF": "Zobrazit PDF",
@@ -225,7 +226,8 @@ var messages = {
     "arr.fund.detail.ruleSet": "Pravidla tvorby",
     "arr.fund.action.delete": "Smazat AS",
     "arr.fund.action.delete.confirm": "Opravdu chcete vymazat celý AS {0}?",
-    "arr.fund.action.showInArr": "Zobrazit v pořádání",
+    "arr.fund.action.showInArr": "Zobrazit",
+    "arr.fund.action.openInArr": "Otevřít",
     "arr.fund.extendedSearch": "Rozšířené hledání",
     "arr.fund.extendedSearch.text": "Vyhledat podle rozšířeného hledání...",
     "arr.fund.simpleSearch": "Základní hledání",
