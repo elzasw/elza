@@ -7,7 +7,7 @@ process.env.NODE_ENV = 'development';
 module.exports = {
     entry: [
         'webpack/hot/only-dev-server',
-        ///'react-hot-loader/patch', - HOT3
+        ///'react-hot-loader/patch',// - HOT3
         './index.jsx',
     ],
     debug: true,
