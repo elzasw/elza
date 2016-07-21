@@ -100,7 +100,7 @@ const AddNodeDropdown = class AddNodeDropdown extends AbstractReactComponent {
 };
 
 AddNodeDropdown.propTypes = {
-    title: React.PropTypes.oneOf([React.PropTypes.string,React.PropTypes.object]).isRequired,
+    title: React.PropTypes.any.isRequired,
     glyph: React.PropTypes.string,
     version: React.PropTypes.number.isRequired,
     node: React.PropTypes.object.isRequired,

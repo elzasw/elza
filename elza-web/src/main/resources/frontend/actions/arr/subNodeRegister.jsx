@@ -2,7 +2,7 @@ import {WebApi} from 'actions/index.jsx';
 import {indexById, findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
 
 import * as types from 'actions/constants/ActionTypes.js';
-
+import {savingApiWrapper} from 'actions/global/status.jsx';
 export function isSubNodeRegisterAction(action) {
     switch (action.type) {
         case types.FUND_SUB_NODE_REGISTER_REQUEST:
@@ -115,10 +115,7 @@ export function fundSubNodeRegisterValueDelete(versionId, nodeId, routingKey, in
         })
 
         if (typeof loc.link.id !== 'undefined') {
-            fundSubNodeRegisterDelete(versionId, nodeId, loc.link)
-                    .then(json => {
-                        dispatch(fundSubNodeRegisterResponse(versionId, nodeId, routingKey, index, json, 'DELETE'));
-                    })
+            fundSubNodeRegisterDelete(versionId, nodeId, loc.link);
         }
     }
 }
@@ -136,15 +133,27 @@ export function fundSubNodeRegisterResponse(versionId, nodeId, routingKey, index
 }
 
 export function fundSubNodeRegisterDelete(versionId, nodeId, data) {
-    return WebApi.deleteFundNodeRegister(versionId, nodeId, data);
+    return (dispatch, getState) => {
+        savingApiWrapper(dispatch, WebApi.deleteFundNodeRegister(versionId, nodeId, data)).then(json => {
+            dispatch(fundSubNodeRegisterResponse(versionId, nodeId, routingKey, index, json, 'DELETE'));
+        })
+    }
 }
 
 export function fundSubNodeRegisterCreate(versionId, nodeId, data) {
-    return WebApi.createFundNodeRegister(versionId, nodeId, data);
+    return (dispatch, getState) => {
+        savingApiWrapper(dispatch, WebApi.createFundNodeRegister(versionId, nodeId, data)).then(json => {
+            dispatch(fundSubNodeRegisterResponse(versionId, nodeId, routingKey, index, json, 'CREATE'));
+        })
+    }
 }
 
 export function fundSubNodeRegisterUpdate(versionId, nodeId, data) {
-    return WebApi.updateFundNodeRegister(versionId, nodeId, data);
+    return (dispatch, getState) => {
+        savingApiWrapper(dispatch, WebApi.updateFundNodeRegister(versionId, nodeId, data)).then(json => {
+            dispatch(fundSubNodeRegisterResponse(versionId, nodeId, routingKey, index, json, 'UPDATE'));
+        });
+    }
 }
 
 export function fundSubNodeRegisterValueFocus(versionId, nodeId, routingKey, index) {
@@ -182,16 +191,10 @@ export function fundSubNodeRegisterValueBlur(versionId, nodeId, routingKey, inde
                 }
 
                 if (needUpdate) {
-                    fundSubNodeRegisterUpdate(versionId, nodeId, loc.link)
-                        .then(json => {
-                            dispatch(fundSubNodeRegisterResponse(versionId, nodeId, routingKey, index, json, 'UPDATE'));
-                        })
+                    dispatch(fundSubNodeRegisterUpdate(versionId, nodeId, loc.link))
                 }
             } else {
-                fundSubNodeRegisterCreate(versionId, nodeId, loc.link)
-                    .then(json => {
-                        dispatch(fundSubNodeRegisterResponse(versionId, nodeId, routingKey, index, json, 'CREATE'));
-                    })
+                fundSubNodeRegisterCreate(versionId, nodeId, loc.link);
             }
         }
     }

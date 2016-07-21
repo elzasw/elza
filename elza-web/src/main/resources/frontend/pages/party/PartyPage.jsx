@@ -2,7 +2,7 @@
  * Stránka archivních pomůcek.
  */
 
-require ('./PartyPage.less');
+require('./PartyPage.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -14,21 +14,20 @@ import {RelationForm, AddPartyForm} from 'components/index.jsx';
 import {ButtonGroup, MenuItem, DropdownButton, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {AppStore} from 'stores/index.jsx'
-import {WebApi} from 'actions/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {partyDetailFetch, findPartyFetch, findPartyFetchIfNeeded} from 'actions/party/party.jsx'
 import {partyAdd, insertParty, insertRelation, deleteParty} from 'actions/party/party.jsx'
-var ShortcutsManager = require('react-shortcuts');
-var Shortcuts = require('react-shortcuts/component');
+const ShortcutsManager = require('react-shortcuts');
+const Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components/index.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 
-var keyModifier = Utils.getKeyModifier()
+const keyModifier = Utils.getKeyModifier()
 
-var keymap = {
+const keymap = {
     Party: {
         addParty: keyModifier + 'n',
         addRelation: keyModifier + 't',
@@ -37,14 +36,14 @@ var keymap = {
         area3: keyModifier + '3',
     },
 }
-var shortcutManager = new ShortcutsManager(keymap)
+const shortcutManager = new ShortcutsManager(keymap)
 
 /**
  * PARTY PAGE
  * *********************************************
  * Stránka osob
  */ 
-var PartyPage = class PartyPage extends AbstractReactComponent {
+const PartyPage = class PartyPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.state = {};                                // id gregoriánského kalendáře - TODO: potřeba ho dovypočíst

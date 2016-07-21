@@ -66,7 +66,7 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
     }
 
     render() {
-        const {userDetail, altSection, itemSection, fundId, status: {saving}} = this.props
+        const {userDetail, altSection, itemSection, fundId, status: {saveCounter}} = this.props;
 
         let section = null;
 
@@ -139,7 +139,7 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
             <RibbonMenu opened onShowHide={this.handleRibbonShowHide}>
                 {partsWithSplit}
                 <RibbonGroup className="large right">
-                    {saving && <span>{i18n('ribbon.saving')}</span>}
+                    {saveCounter > 0 && <span>{i18n('ribbon.saving')}</span>}
                     <DropdownButton bsStyle='default' title={userDetail.username} key='user-menu' id='user-menu'>
                         <MenuItem eventKey="1" onClick={this.handlePasswordChangeForm}>{i18n('ribbon.action.admin.user.passwordChange')}</MenuItem>
                     </DropdownButton>
@@ -158,10 +158,7 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
     }
 
     handlePasswordChange(data) {
-        userPasswordChange(data.oldPassword, data.newPassword).then(response => {
-            this.dispatch(addToastrSuccess(i18n('admin.user.passwordChange.success')));
-            this.dispatch(modalDialogHide())
-        });
+        this.dispatch(userPasswordChange(data.oldPassword, data.newPassword));
     }
 }
 

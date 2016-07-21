@@ -2,7 +2,7 @@
  * Stránka archivní soubory.
  */
 
-require ('./FundPage.less')
+require('./FundPage.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -27,12 +27,12 @@ import {selectFundTab} from 'actions/arr/fund.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundsFetchIfNeeded, fundsSelectFund, fundsFundDetailFetchIfNeeded, fundsSearch} from 'actions/fund/fund.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
-import {approveFund, deleteFund, exportFund} from 'actions/arr/fund.jsx'
+import {approveFund, deleteFund, exportFund, updateFund} from 'actions/arr/fund.jsx'
 import {barrier} from 'components/Utils.jsx';
 import {scopesDirty} from 'actions/refTables/scopesData.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 
-var FundPage = class FundPage extends AbstractReactComponent {
+const FundPage = class FundPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -169,9 +169,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
 
         data.id = fundDetail.id;
         this.dispatch(scopesDirty(fundDetail.versionId));
-        WebApi.updateFund(data).then((json) => {
-            this.dispatch(modalDialogHide());
-        })
+        this.dispatch(updateFund(data));
     }
 
     buildRibbon() {

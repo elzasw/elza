@@ -9,7 +9,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Icon, NoFocusButton, AbstractReactComponent, RegistryLabel, Loading, EditRegistryForm, RegistryCoordinates, i18n, FormInput} from 'components/index.jsx';
-import {WebApi, UrlFactory} from 'actions/index.jsx';
+import {UrlFactory} from 'actions/index.jsx';
 import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions/registry/registryRegionList.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {routerNavigate} from 'actions/router.jsx'

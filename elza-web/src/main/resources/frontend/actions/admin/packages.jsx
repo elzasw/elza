@@ -8,6 +8,8 @@ import {WebApi} from 'actions/index.jsx';
 import {i18n, Toastr, LongText} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {savingApiWrapper} from 'actions/global/status.jsx'
+
 
 /**
  * Získání seznamu importovaných balíčků ze serveru.
@@ -59,7 +61,7 @@ export function deletePackage(code) {
 export function importPackage(data) {
     return dispatch => {
         dispatch(importPackageRequest())
-        return WebApi.importPackage(data).then(json => dispatch(importPackageReceive()))
+        return savingApiWrapper(dispatch, WebApi.importPackage(data)).then(json => dispatch(importPackageReceive()))
             .then(json => {
                 addToastrSuccess(i18n("admin.packages.message.import.title"), i18n("admin.packages.message.import.message"));
         });

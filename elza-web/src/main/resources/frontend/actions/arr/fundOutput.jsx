@@ -10,7 +10,7 @@ import {isFundOutputFilesAction} from './fundOutputFiles.jsx';
 import {isFundOutputFunctionsAction} from './fundOutputFunctions.jsx';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
-
+import {savingApiWrapper} from 'actions/global/status.jsx';
 export function isFundOutput(action) {
     if (isFundOutputDetail(action)) {
         return true
@@ -111,7 +111,7 @@ export function fundOutputClone(versionId, outputId) {
 
 export function fundOutputCreate(versionId, data) {
     return (dispatch, getState) => {
-        WebApi.createOutput(versionId, data)
+        savingApiWrapper(dispatch, WebApi.createOutput(versionId, data))
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.output.title.added")));
                 dispatch(modalDialogHide());
@@ -122,7 +122,7 @@ export function fundOutputCreate(versionId, data) {
 
 export function fundOutputEdit(versionId, outputId, data) {
     return (dispatch, getState) => {
-        WebApi.updateOutput(versionId, outputId, data)
+        savingApiWrapper(dispatch, WebApi.updateOutput(versionId, outputId, data))
             .then((json) => {
                 dispatch(modalDialogHide());
             });        
