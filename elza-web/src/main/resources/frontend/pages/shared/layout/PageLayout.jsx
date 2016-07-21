@@ -37,6 +37,7 @@ var PageLayout = class PageLayout extends React.Component {
     render() {
         var cls = classNames({
             'app-container': true,
+            'app-exists-status': this.props.status != null,
             noRibbon: !this.state.ribbonOpened,
             [this.props.className]: true
         });

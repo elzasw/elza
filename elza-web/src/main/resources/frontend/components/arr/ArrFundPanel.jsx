@@ -49,7 +49,7 @@ var ArrFundPanel = class ArrFundPanel extends AbstractReactComponent {
         }
 
         if (readMode) {
-            cls.push('read-node');
+            cls.push('read-mode');
         }
 
         const name = <span className="name">{fund.name}</span>
