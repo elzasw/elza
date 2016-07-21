@@ -90,7 +90,7 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
      * Přidání node před aktuální node a následovné vybrání
      * Využito v dropdown buttonu pro přidání node
      */
-    handleAddNodeBefore(event, scenario) {
+    handleAddNodeBefore(scenario) {
         this.dispatch(addNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, "BEFORE", this.getDescItemTypeCopyIds(), scenario));
     }
 
@@ -101,7 +101,7 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
      * Přidání node za aktuální node a následovné vybrání
      * Využito v dropdown buttonu pro přidání node
      */
-    handleAddNodeAfter(event, scenario) {
+    handleAddNodeAfter(scenario) {
         this.dispatch(addNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, "AFTER", this.getDescItemTypeCopyIds(), scenario))
     }
 
@@ -111,7 +111,7 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
      *
      * Přidání podřízeného záznamu
      */
-    handleAddChildNode(event, scenario) {
+    handleAddChildNode(scenario) {
         this.dispatch(addNode(this.props.selectedSubNode, this.props.selectedSubNode, this.props.versionId, "CHILD", this.getDescItemTypeCopyIds(), scenario));
     }
 
