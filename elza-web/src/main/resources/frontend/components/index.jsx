@@ -88,7 +88,6 @@ exports.ArrPanel = require('components/arr/ArrPanel.jsx');
 exports.ArrFundPanel = require('components/arr/ArrFundPanel.jsx');
 exports.BulkActionsDialog = require('components/arr/BulkActionsDialog.jsx');
 exports.BulkActionsTable = require('components/arr/BulkActionsTable.jsx');
-exports.FundExtendedView = require('components/arr/FundExtendedView.jsx');
 exports.FundTreeMain = require('components/arr/FundTreeMain.jsx');
 exports.FundTreeMovementsLeft = require('components/arr/FundTreeMovementsLeft.jsx');
 exports.FundTreeMovementsRight = require('components/arr/FundTreeMovementsRight.jsx');

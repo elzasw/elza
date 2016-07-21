@@ -66,7 +66,7 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
     }
 
     render() {
-        const {userDetail, altSection, itemSection, fundId, status: {saveCounter}} = this.props;
+        const {subMenu, userDetail, altSection, itemSection, fundId, status: {saveCounter}} = this.props;
 
         let section = null;
 
@@ -95,6 +95,8 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
             const arrParts = []
             if (userDetail.hasArrPage(fundId)) {    // právo na pořádání
                 arrParts.push(<IndexLinkContainer key="ribbon-btn-arr-index" to="/arr"><Button ref='ribbonDefaultFocus'><Icon glyph="fa-sitemap" /><div><span className="btnText">{i18n('ribbon.action.arr.arr')}</span></div></Button></IndexLinkContainer>)
+                arrParts.push(<LinkContainer key="ribbon-btn-arr-dataGrid" to="/arr/dataGrid"><Button><Icon glyph="fa-table" /><div><span className="btnText">{i18n('ribbon.action.arr.dataGrid')}</span></div></Button></LinkContainer>)
+                arrParts.push(<LinkContainer key="ribbon-btn-arr-movements" to="/arr/movements"><Button><Icon glyph="fa-arrows-h" /><div><span className="btnText">{i18n('ribbon.action.arr.movements')}</span></div></Button></LinkContainer>)
             }
                 
             if (userDetail.hasArrOutputPage(fundId)) {    // právo na outputy
@@ -113,16 +115,25 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
         }
 
         const parts = []
-        parts.push(
-            <RibbonGroup key="ribbon-group-main" className="large">
-                <IndexLinkContainer key="ribbon-btn-home" to="/"><Button ref='ribbonDefaultFocus'><Icon glyph="fa-home" /><div><span className="btnText">{i18n('ribbon.action.home')}</span></div></Button></IndexLinkContainer>
-                <LinkContainer key="ribbon-btn-fund" to="/fund"><Button><Icon glyph="fa-paste" /><div><span className="btnText">{i18n('ribbon.action.fund')}</span></div></Button></LinkContainer>
-                <LinkContainer key="ribbon-btn-arr" to="/arr"><Button><Icon glyph="fa-file-text" /><div><span className="btnText">{i18n('ribbon.action.arr')}</span></div></Button></LinkContainer>
-                <LinkContainer key="ribbon-btn-registry" to="/registry"><Button><Icon glyph="fa-th-list" /><div><span className="btnText">{i18n('ribbon.action.registry')}</span></div></Button></LinkContainer>
-                <LinkContainer key="ribbon-btn-party" to="/party"><Button><Icon glyph="fa-users" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
-                <LinkContainer key="ribbon-btn-admin" to="/admin"><Button><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.admin')}</span></div></Button></LinkContainer>
-            </RibbonGroup>
-        )
+        if (subMenu) {  // submenu se šipkou zpět
+            parts.push(
+                <RibbonGroup key="ribbon-group-main" className="large">
+                    <IndexLinkContainer key="ribbon-btn-home" to="/"><Button><Icon glyph="fa-arrow-circle-o-left" /><div><span className="btnText">{i18n('ribbon.action.back')}</span></div></Button></IndexLinkContainer>
+                </RibbonGroup>
+            )
+        } else {    // standardní menu s hlavním rozcestníkem
+            parts.push(
+                <RibbonGroup key="ribbon-group-main" className="large">
+                    <IndexLinkContainer key="ribbon-btn-home" to="/"><Button ref='ribbonDefaultFocus'><Icon glyph="fa-home" /><div><span className="btnText">{i18n('ribbon.action.home')}</span></div></Button></IndexLinkContainer>
+                    <LinkContainer key="ribbon-btn-fund" to="/fund"><Button><Icon glyph="fa-paste" /><div><span className="btnText">{i18n('ribbon.action.fund')}</span></div></Button></LinkContainer>
+                    <LinkContainer key="ribbon-btn-registry" to="/registry"><Button><Icon glyph="fa-th-list" /><div><span className="btnText">{i18n('ribbon.action.registry')}</span></div></Button></LinkContainer>
+                    <LinkContainer key="ribbon-btn-party" to="/party"><Button><Icon glyph="fa-users" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
+                    <LinkContainer key="ribbon-btn-admin" to="/admin"><Button><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.admin')}</span></div></Button></LinkContainer>
+                </RibbonGroup>
+            )
+        }
+                // <LinkContainer key="ribbon-btn-arr" to="/arr"><Button><Icon glyph="fa-file-text" /><div><span className="btnText">{i18n('ribbon.action.arr')}</span></div></Button></LinkContainer>
+
         section && parts.push(section)
         altSection && parts.push(altSection)
         itemSection && parts.push(itemSection)
@@ -170,6 +181,13 @@ function mapStateToProps(state) {
         userDetail,
         status,
     }
+}
+
+Ribbon.propTypes = {
+    subMenu: React.PropTypes.bool.isRequired,
+}
+Ribbon.defaultProps = {
+    subMenu: false,
 }
 
 module.exports = connect(mapStateToProps)(Ribbon);

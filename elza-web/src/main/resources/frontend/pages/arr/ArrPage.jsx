@@ -13,8 +13,9 @@ import {Link, IndexLink} from 'react-router';
 import {FundSettingsForm, Tabs, Icon, Ribbon, i18n, ArrFundPanel} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 
+var ArrParentPage = require("./ArrParentPage.jsx");
+
 import {
-    FundExtendedView,
     BulkActionsDialog,
     RibbonGroup,
     AbstractReactComponent,
@@ -69,17 +70,17 @@ var keymap = {
 }
 var shortcutManager = new ShortcutsManager(keymap)
 
-var ArrPage = class ArrPage extends AbstractReactComponent {
+var ArrPage = class ArrPage extends ArrParentPage {
     constructor(props) {
         super(props);
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
-            'getActiveFundId', 'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
+            'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
             'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
             'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm',
             'handleChangeFundSettingsSubmit',
-            "handleToggleExtendedView"
+            "handleSetExtendedView"
         );
 
         this.state = {
@@ -89,30 +90,16 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(packetTypesFetchIfNeeded());
-        this.dispatch(calendarTypesFetchIfNeeded());
-        this.dispatch(fundsFetchIfNeeded());
-        var activeFund = this.getActiveFund(this.props);
-        if (activeFund !== null) {
-            this.dispatch(packetsFetchIfNeeded(activeFund.id));
-            this.requestFundTreeData(activeFund);
-        }
+        super.componentDidMount();
         this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
+        super.componentWillReceiveProps(nextProps);
         const {tab} = this.props;
         let selected = tab.values['arr-as'];
-        this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(packetTypesFetchIfNeeded());
-        this.dispatch(calendarTypesFetchIfNeeded());
-        this.dispatch(fundsFetchIfNeeded());
         var activeFund = this.getActiveFund(nextProps);
         if (activeFund !== null) {
-            this.dispatch(packetsFetchIfNeeded(activeFund.id));
-            this.requestFundTreeData(activeFund);
-
             if (selected === 1) {
                 this.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId));
             }
@@ -147,10 +134,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
         
         this.trySetFocus(nextProps)
-    }
-
-    requestFundTreeData(activeFund) {
-        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, activeFund.versionId, activeFund.fundTree.expandedIds, activeFund.fundTree.selectedId));
     }
 
     trySetFocus(props) {
@@ -227,20 +210,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         return { shortcuts: shortcutManager };
     }
 
-    getActiveFund(props) {
-        var arrRegion = props.arrRegion;
-        return arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
-    }
-
-    getActiveFundId() {
-        var activeFund = this.getActiveFund(this.props);
-        if (activeFund) {
-            return activeFund.id;
-        } else {
-            return null;
-        }
-    }
-
     /**
      * Načtení informačního objektu o aktuálním zobrazení sekce archvní pomůcky.
      * @return {Object} informace o aktuálním zobrazení sekce archvní pomůcky
@@ -275,7 +244,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     handleRegisterJp() {
         this.dispatch(showRegisterJp(!this.props.arrRegion.showRegisterJp));
     }
-
 
     handleBulkActionsDialog() {
         this.dispatch(modalDialogShow(this, i18n('arr.fund.title.bulkActions'),
@@ -416,7 +384,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
 
         return (
-            <Ribbon arr fundId={activeInfo.activeFund ? activeInfo.activeFund.id : null} altSection={altSection} itemSection={itemSection}/>
+            <Ribbon arr subMenu fundId={activeInfo.activeFund ? activeInfo.activeFund.id : null} altSection={altSection} itemSection={itemSection}/>
         )
     }
 
@@ -495,7 +463,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     renderFundVisiblePolicies(activeFund) {
-
         var nodesPolicy = activeFund.fundNodesPolicy;
 
         if (!nodesPolicy.fetched) {
@@ -763,104 +730,76 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         )
     }
 
-    handleToggleExtendedView() {
-        this.dispatch(fundExtendedView(true));
+    handleSetExtendedView(showExtendedView) {
+        this.dispatch(fundExtendedView(showExtendedView));
     }
 
-    render() {
-        const {focus, splitter, arrRegion, userDetail, ruleSet, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+    renderCenterPanel() {
+        const {arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+        const showRegisterJp = arrRegion.showRegisterJp;
+        const activeFund = this.getActiveFund(this.props);
 
-        var showRegisterJp = arrRegion.showRegisterJp;
-
-        var funds = arrRegion.funds;
-        var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
-
-        var statusHeader;
-
-        if (userDetail.hasArrPage(activeFund ? activeFund.id : null)) { // má právo na tuto stránku
-            var leftPanel;
-            if (!arrRegion.extendedView && activeFund) {
-                leftPanel = (
-                    <FundTreeMain
-                        className="fund-tree-container"
-                        fund = {activeFund}
-                        cutLongLabels={true}
-                        versionId={activeFund.versionId}
-                        {...activeFund.fundTree}
-                        ref='tree'
-                        focus={focus}
-                        actionAddons={<Button onClick={this.handleToggleExtendedView} className='extended-view-toggle'><Icon glyph='fa-arrows-alt'/></Button>}
-                    />
-                )
-            }
-
-            var centerPanel;
-            if (activeFund) {
-                statusHeader = <ArrFundPanel />
-
-                if (arrRegion.extendedView) {   // rozšířené zobrazení stromu AS
-                    centerPanel = (
-                        <FundExtendedView
-                            fund={activeFund}
-                            versionId={activeFund.versionId}
-                            descItemTypes={descItemTypes}
-                            packetTypes={packetTypes}
-                            calendarTypes={calendarTypes}
-                            rulDataTypes={rulDataTypes}
-                            ruleSet={ruleSet}
-                        />
-                    )
-                } else if (activeFund.nodes) {
-                    var packets = [];
-                    var fundId = this.getActiveFundId();
-                    if (fundId && arrRegion.packets[fundId]) {
-                        packets = arrRegion.packets[fundId].items;
-                    }
-
-                    centerPanel = (
-                        <NodeTabs
-                            versionId={activeFund.versionId}
-                            fund={activeFund}
-                            closed={activeFund.closed}
-                            nodes={activeFund.nodes.nodes}
-                            activeIndex={activeFund.nodes.activeIndex}
-                            rulDataTypes={rulDataTypes}
-                            calendarTypes={calendarTypes}
-                            descItemTypes={descItemTypes}
-                            packetTypes={packetTypes}
-                            packets={packets}
-                            fundId={fundId}
-                            showRegisterJp={showRegisterJp}
-                        />
-                    )
-                }
-            } else {
-                centerPanel = (
-                    <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>
-                )
-            }
-
-            var rightPanel;
-            if (activeFund) {
-                rightPanel = this.renderPanel()
-            }
-        } else {
-            centerPanel = <div>{i18n('global.insufficient.right')}</div>
-        }
-
-        return (
-            <Shortcuts name='Arr' handler={this.handleShortcuts}>
-                <PageLayout
-                    splitter={splitter}
-                    className='fa-page'
-                    ribbon={this.buildRibbon()}
-                    leftPanel={leftPanel}
-                    centerPanel={centerPanel}
-                    rightPanel={rightPanel}
-                    status={statusHeader}
+        if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, renderuje se zde
+            return (
+                <FundTreeMain
+                    className="extended-tree"
+                    fund={activeFund}
+                    cutLongLabels={false}
+                    versionId={activeFund.versionId}
+                    {...activeFund.fundTree}
+                    actionAddons={<Button onClick={() => {this.handleSetExtendedView(false)}} className='extended-view-toggle'><Icon glyph='fa-compress'/></Button>}
                 />
-            </Shortcuts>
-        )
+            )
+        } else {    // standardní zobrazení pořádání - záložky node
+            var packets = [];
+            var fundId = activeFund.id;
+            if (fundId && arrRegion.packets[fundId]) {
+                packets = arrRegion.packets[fundId].items;
+            }
+
+            return (
+                <NodeTabs
+                    versionId={activeFund.versionId}
+                    fund={activeFund}
+                    closed={activeFund.closed}
+                    nodes={activeFund.nodes.nodes}
+                    activeIndex={activeFund.nodes.activeIndex}
+                    rulDataTypes={rulDataTypes}
+                    calendarTypes={calendarTypes}
+                    descItemTypes={descItemTypes}
+                    packetTypes={packetTypes}
+                    packets={packets}
+                    fundId={fundId}
+                    showRegisterJp={showRegisterJp}
+                />
+            )
+        }
+    }
+
+    renderLeftPanel() {
+        const {focus, arrRegion} = this.props;
+        const activeFund = this.getActiveFund(this.props);
+
+        if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, ale renderuje se v center panelu, tento bude prázdný
+            return null;
+        } else {    // standardní zobrazení pořádání, strom AS
+            return (
+                <FundTreeMain
+                    className="fund-tree-container"
+                    fund = {activeFund}
+                    cutLongLabels={true}
+                    versionId={activeFund.versionId}
+                    {...activeFund.fundTree}
+                    ref='tree'
+                    focus={focus}
+                    actionAddons={<Button onClick={() => {this.handleSetExtendedView(true)}} className='extended-view-toggle'><Icon glyph='fa-arrows-alt'/></Button>}
+                />
+            )
+        }
+    }
+
+    renderRightPanel() {
+        return this.renderPanel();
     }
 }
 

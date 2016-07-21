@@ -14,6 +14,8 @@ const browserHistory = useRouterHistory(createHistory)({
 
 import {
     ArrPage,
+    ArrDataGridPage,
+    ArrMovementsPage,
     FundActionPage,
     ArrOutputPage,
     HomePage,
@@ -35,6 +37,8 @@ const routes = <Route name="layout" path="/" component={Layout}>
     <Route path="fund" component={FundPage} />
     <Route path="arr">
         <IndexRoute component={ArrPage} />
+        <Route path="dataGrid" component={ArrDataGridPage} />
+        <Route path="movements" component={ArrMovementsPage} />
         <Route path="output" component={ArrOutputPage} />
         <Route path="actions" component={FundActionPage} />
     </Route>

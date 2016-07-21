@@ -323,7 +323,7 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
         }
 
         return (
-            <Ribbon arr altSection={altSection} itemSection={itemSection}/>
+            <Ribbon arr subMenu altSection={altSection} itemSection={itemSection}/>
         )
     }
 

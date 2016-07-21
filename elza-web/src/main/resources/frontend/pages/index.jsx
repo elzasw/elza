@@ -5,6 +5,8 @@ exports.AdminUserPage = require('pages/admin/AdminUserPage.jsx');
 exports.AdminGroupPage = require('pages/admin/AdminGroupPage.jsx');
 
 exports.ArrPage = require('pages/arr/ArrPage.jsx');
+exports.ArrDataGridPage = require('pages/arr/ArrDataGridPage.jsx');
+exports.ArrMovementsPage = require('pages/arr/ArrMovementsPage.jsx');
 exports.FundActionPage = require('pages/arr/FundActionPage.jsx');
 exports.ArrOutputPage = require('pages/arr/ArrOutputPage.jsx');
 

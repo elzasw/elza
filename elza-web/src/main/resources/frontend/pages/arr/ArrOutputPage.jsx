@@ -379,7 +379,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         }
 
         return (
-            <Ribbon arr fundId={fund ? fund.id : null} altSection={altSection} itemSection={itemSection}/>
+            <Ribbon arr subMenu fundId={fund ? fund.id : null} altSection={altSection} itemSection={itemSection}/>
         )
     }
 
