@@ -159,10 +159,7 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
     }
 
     handlePasswordChange(data) {
-        userPasswordChange(data.oldPassword, data.newPassword).then(response => {
-            this.dispatch(addToastrSuccess(i18n('admin.user.passwordChange.success')));
-            this.dispatch(modalDialogHide())
-        });
+        this.dispatch(userPasswordChange(data.oldPassword, data.newPassword));
     }
 }
 

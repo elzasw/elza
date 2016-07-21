@@ -8,7 +8,6 @@ import {Utils, Icon, i18n, AbstractReactComponent, NoFocusButton, FormInput} fro
 import {Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {connect} from 'react-redux'
-import {WebApi} from 'actions/index.jsx';
 import DescItemString from './DescItemString.jsx'
 import DescItemUnitid from './DescItemUnitid.jsx'
 import DescItemText from './DescItemText.jsx'

@@ -9,18 +9,15 @@ import ReactDOM from 'react-dom';
 require('./RegistryPage.less');
 const classNames = require('classnames');
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
 import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
         Search, RegistryPanel, DropDownTree, AddRegistryForm, ImportForm,
         ListBox} from 'components';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
-import {WebApi} from 'actions/index.jsx';
-import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
+import {Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
 import {registryRegionDataSelectRecord,
         registrySearchData,
         registryClearSearch,
@@ -30,15 +27,17 @@ import {registryRegionDataSelectRecord,
         registryCancelMove,
         registryUnsetParents,
         registryRecordUpdate,
-        registryRecordMove
+        registryRecordMove,
+        registryDelete
 } from 'actions/registry/registryRegionData.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {fetchRegistryIfNeeded,
-        registrySetTypesId,
-        fetchRegistry,
-        registryAdd,
-        registryClickNavigation,
-        registryArrReset
+import {
+    fetchRegistryIfNeeded,
+    registrySetTypesId,
+    fetchRegistry,
+    registryAdd,
+    registryClickNavigation,
+    registryArrReset
 } from 'actions/registry/registryRegionList.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 const ShortcutsManager = require('react-shortcuts');
@@ -189,9 +188,7 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
     
     handleDeleteRegistry() {
-        WebApi.deleteRegistry(this.props.registryRegionData.selectedId).then(json => {
-            this.dispatch(registryDeleteRegistry({}));
-        });
+        this.dispatch(registryDelete(this.props.registryRegionData.selectedId));
     }
 
 

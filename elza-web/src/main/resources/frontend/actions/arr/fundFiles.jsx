@@ -2,7 +2,7 @@ import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
-
+import {savingApiWrapper} from 'actions/global/status.jsx';
 export function isFundFilesAction(action) {
     switch (action.type) {
         case types.FUND_FILES_REQUEST:
@@ -72,9 +72,9 @@ export function fundFilesFilterByText(versionId, filterText) {
 
 export function fundFilesCreate(fundId, data, callback = null) {
     return (dispatch, getState) => {
-        var formData = new FormData();
+        const formData = new FormData();
 
-        for (var key in data) {
+        for (const key in data) {
             if (data.hasOwnProperty(key)) {
                 formData.append(key, data[key]);
             }
@@ -83,24 +83,24 @@ export function fundFilesCreate(fundId, data, callback = null) {
         formData.append("fundId", fundId);
         formData.append("@type", ".ArrFileVO");
 
-        WebApi.createFundFile(formData)
+        savingApiWrapper(dispatch, WebApi.createFundFile(formData)
             .then((json) => {
                 callback && callback(json);
                 dispatch(modalDialogHide())
-            })
+        }))
     }
 }
 
 export function fundFilesReplace(fileId, file) {
     return (dispatch, getState) => {
 
-        var formData = new FormData();
+        const formData = new FormData();
 
         formData.append("file", file);
         formData.append("id", fileId);
         formData.append("@type", ".ArrFileVO");
 
-        WebApi.updateFundFile(fileId, formData)
+        savingApiWrapper(dispatch, WebApi.updateFundFile(fileId, formData))
     }
 }
 

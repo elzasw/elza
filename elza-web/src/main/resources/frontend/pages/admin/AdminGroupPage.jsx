@@ -12,7 +12,6 @@ import {PageLayout} from 'pages/index.jsx';
 import {i18n, GroupDetail, Search, ListBox, AbstractReactComponent, AddGroupForm, Icon, RibbonGroup, Loading} from 'components/index.jsx';
 import {groupsFetchIfNeeded, groupsGroupDetailFetchIfNeeded, groupsSelectGroup, groupsSearch, groupCreate, groupDelete} from 'actions/admin/group.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {WebApi} from 'actions/index.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {renderGroupItem} from "components/admin/adminRenderUtils.jsx"
@@ -87,7 +86,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
 
     handleDeleteGroup() {
         const {group:{groupDetail:{id}}} = this.props;
-        groupDelete(id).then(response => {
+        this.dispatch(groupDelete(id)).then(response => {
             this.dispatch(addToastrSuccess(i18n('admin.group.delete.success')));
         });
     }
@@ -97,13 +96,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     }
 
     handleCreateGroup(data) {
-        groupCreate(data.name, data.code).then(response => {
-            this.dispatch(addToastrSuccess(i18n('admin.group.add.success')));
-            this.dispatch(modalDialogHide());
-            this.dispatch(groupsSelectGroup(response.id));
-        }).catch(e => {
-            console.error(e);
-        });
+        this.dispatch(groupCreate(data.name, data.code));
     }
 
     render() {

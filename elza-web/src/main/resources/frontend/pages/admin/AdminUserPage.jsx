@@ -9,11 +9,10 @@ import {connect} from 'react-redux'
 import {PageLayout} from 'pages/index.jsx';
 import {FormControl, Button} from 'react-bootstrap';
 import {i18n, UserDetail, Search, ListBox, AbstractReactComponent, RibbonGroup, Ribbon, Icon, AddUserForm, PasswordForm} from 'components/index.jsx';
-import {usersFetchIfNeeded, usersUserDetailFetchIfNeeded, usersSelectUser, usersSearch, userCreate, adminPasswordChange} from 'actions/admin/user.jsx'
+import {usersFetchIfNeeded, usersUserDetailFetchIfNeeded, usersSelectUser, usersSearch, userCreate, adminPasswordChange, adminUserChangeActive} from 'actions/admin/user.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
-import {WebApi} from 'actions/index.jsx'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 import {renderUserItem} from "components/admin/adminRenderUtils.jsx"
 
@@ -65,13 +64,7 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
     }
 
     handleCreateUser(data) {
-        userCreate(data.username, data.password, data.party.partyId).then(response => {
-            this.dispatch(addToastrSuccess(i18n('admin.user.add.success')));
-            this.dispatch(modalDialogHide());
-            this.dispatch(usersSelectUser(response.id))
-        }).catch(e => {
-            console.error(e);
-        });
+        this.dispatch(userCreate(data.username, data.password, data.party.partyId));
     }
 
     handleChangeUserPasswordForm() {
@@ -80,16 +73,13 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
 
     handleChangeUserPassword(data) {
         const {user: {userDetail: {id}}} = this.props;
-        adminPasswordChange(id, data.password).then(response => {
-            this.dispatch(addToastrSuccess(i18n('admin.user.passwordChange.success')));
-            this.dispatch(modalDialogHide())
-        });
+        this.dispatch(adminPasswordChange(id, data.password));
     }
 
     handleChangeUserActive() {
         if(confirm(i18n('admin.user.changeActive.confirm'))) {
             const {user} = this.props;
-            WebApi.changeActive(user.userDetail.id, !user.userDetail.active);
+            this.dispatch(adminUserChangeActive(user.userDetail.id, !user.userDetail.active));
         }
     }
 

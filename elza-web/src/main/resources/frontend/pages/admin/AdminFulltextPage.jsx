@@ -7,14 +7,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-require ('./AdminFulltextPage.less');
+require('./AdminFulltextPage.less');
 
 import {connect} from 'react-redux'
 import {Ribbon, AdminFulltextReindex} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
-import {WebApi} from 'actions/index.jsx';
 
-var AdminFulltextPage = class AdminFulltextPage extends React.Component {
+const AdminFulltextPage = class AdminFulltextPage extends React.Component {
     constructor(props) {
         super(props);
 
@@ -30,7 +29,7 @@ var AdminFulltextPage = class AdminFulltextPage extends React.Component {
     render() {
         const {splitter} = this.props;
 
-        var centerPanel = (
+        const centerPanel = (
             <div>
                 <AdminFulltextReindex {...this.props.fulltext} />
             </div>

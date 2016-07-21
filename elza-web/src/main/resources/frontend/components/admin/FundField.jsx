@@ -3,7 +3,7 @@
 import React from "react";
 import {WebApi} from "actions/index.jsx";
 import {AbstractReactComponent, Autocomplete} from "components/index.jsx";
-import {connect} from "react-redux"
+import {connect} from "react-redux";
 
 const FundField = class FundField extends AbstractReactComponent {
     constructor(props) {
@@ -11,7 +11,8 @@ const FundField = class FundField extends AbstractReactComponent {
         this.bindMethods(
             "handleChange",
             "handleSearchChange",
-            "focus");
+            "focus"
+        );
 
         this.state = {
             dataList: []

@@ -2,7 +2,7 @@ import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
-
+import {savingApiWrapper} from 'actions/global/status.jsx';
 export function isFundPacketsAction(action) {
     switch (action.type) {
         case types.FUND_PACKETS_REQUEST:
@@ -97,14 +97,14 @@ export function fundPacketsCreate(fundId, type, data, callback = null) {
     return (dispatch, getState) => {
         switch (type) {
             case "SINGLE":
-                WebApi.insertPacket(fundId, data.storageNumber, data.packetTypeId, false)
+                savingApiWrapper(dispatch, WebApi.insertPacket(fundId, data.storageNumber, data.packetTypeId, false))
                     .then((json) => {
                         callback && callback(json);
                         dispatch(modalDialogHide())
                     })
                 break
             case "MORE":
-                WebApi.generatePackets(fundId, data.prefix, data.packetTypeId, data.start, data.size, data.count, null)
+                savingApiWrapper(dispatch, WebApi.generatePackets(fundId, data.prefix, data.packetTypeId, data.start, data.size, data.count, null))
                     .then(() => {
                         dispatch(modalDialogHide())
                     })

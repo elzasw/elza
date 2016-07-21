@@ -10,7 +10,7 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {i18n, AddRegistryForm} from 'components/index.jsx';
 import {registryChangeParent, registryRegionDataSelectRecord, registryUnsetParents} from 'actions/registry/registryRegionData.jsx'
-
+import {savingApiWrapper} from 'actions/global/status.jsx';
 export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null, versionId = null) {
     return (dispatch, getState) => {
         const {registryRegion} = getState();
@@ -134,7 +134,7 @@ export function registryAdd(parentId, versionId, callback, parentName = '', show
             <AddRegistryForm
                 versionId={versionId}
                 showSubmitTypes={showSubmitTypes}
-                onSubmitForm={registryRecordCreate.bind(null, parentId, callback, dispatch)}
+                onSubmitForm={(data, submitType) => (dispatch(registryRecordCreate(parentId, callback, data, submitType)))}
                 parentRecordId={parentId}
             />
             )
@@ -143,11 +143,13 @@ export function registryAdd(parentId, versionId, callback, parentName = '', show
     }
 }
 
-function registryRecordCreate(parentId, callback, dispatch, data, submitType) {
-    WebApi.createRecord(data.record, data.characteristics, data.registerTypeId, parentId, data.scopeId).then(json => {
-        dispatch(modalDialogHide());
-        callback && callback(json, submitType);
-    });
+function registryRecordCreate(parentId, callback, data, submitType) {
+    return (dispatch, getState) => {
+        savingApiWrapper(dispatch, WebApi.createRecord(data.record, data.characteristics, data.registerTypeId, parentId, data.scopeId)).then(json => {
+            dispatch(modalDialogHide());
+            callback && callback(json, submitType);
+        });
+    }
 }
 
 export function registrySelect(recordId, fund = null) {
@@ -185,7 +187,6 @@ export function registryClickNavigation(recordId) {
                 json.parents.push({id: recordId, name: json.record});
 
                 const registry = {
-                    ...registry,
                     registryParentId: recordId,
                     parents: json.parents,
                     typesToRoot: json.typesToRoot,

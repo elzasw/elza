@@ -5,7 +5,7 @@ import {WebApi} from 'actions/index.jsx';
 import {i18n} from 'components/index.jsx';
 import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import * as types from 'actions/constants/ActionTypes.js';
-
+import {savingApiWrapper} from 'actions/global/status.jsx';
 export function registryRegionDataSelectRecord(registry) {
     return {
         type: types.REGISTRY_RECORD_SELECT,
@@ -68,7 +68,7 @@ export function registryRecordMove(data) {
 
 export function registryRecordUpdate(data, callback = null) {
     return (dispatch) => {
-        WebApi.updateRegistry(data).then(json => {
+        savingApiWrapper(dispatch, WebApi.updateRegistry(data)).then(json => {
             dispatch(registryUpdated(json));
             if (callback !== null) {
                 dispatch(callback());
@@ -115,7 +115,7 @@ export function registryVariantUpdate(data) {
             }
         });
         if (needFetch === true) {
-            return WebApi.editRegistryVariant(data).then(json => {
+            return savingApiWrapper(dispatch, WebApi.editRegistryVariant(data)).then(json => {
                 dispatch(receiveRegistryVariantRecord(json));
             });
         }
@@ -137,7 +137,7 @@ export function registryVariantAddRow() {
 
 export function registryVariantCreate(data, variantRecordInternalId) {
     return (dispatch) => {
-        WebApi.addRegistryVariant(data).then(json => {
+        savingApiWrapper(dispatch, WebApi.addRegistryVariant(data)).then(json => {
             dispatch(registryVariantCreated(json, variantRecordInternalId));
         });
     }
@@ -175,7 +175,7 @@ export function registryVariantInternalDelete(variantRecordInternalId) {
 
 export function registryRecordNoteUpdate(data){
     return (dispatch) => {
-        WebApi.updateRegistry(data).then(json => {
+        savingApiWrapper(dispatch, WebApi.updateRegistry(data)).then(json => {
             dispatch(registryRecordNoteUpdated(json));
         });
     };
@@ -191,7 +191,7 @@ export function registryRecordNoteUpdated(json){
 /// Coordinates
 export function registryRecordCoordinatesUpdate(data) {
     return (dispatch, getState) => {
-        return WebApi.updateRegCoordinates(data).then(json => {
+        return savingApiWrapper(dispatch, WebApi.updateRegCoordinates(data)).then(json => {
             dispatch(registryRecordCoordinatesReceive(json));
         });
     }
@@ -212,7 +212,7 @@ export function registryRecordCoordinatesAddRow() {
 
 export function registryRecordCoordinatesCreate(data, coordinatesId) {
     return (dispatch) => {
-        WebApi.createRegCoordinates(data).then(json => {
+        savingApiWrapper(dispatch, WebApi.createRegCoordinates(data)).then(json => {
             dispatch(registryRecordCoordinatesCreated(json, coordinatesId));
         });
     }
@@ -260,10 +260,18 @@ export function registryRecordCoordinatesUpload(file, regRecordId) {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('regRecordId', regRecordId);
-        WebApi.regCoordinatesImport(formData).then(() => {
+        savingApiWrapper(dispatch, WebApi.regCoordinatesImport(formData)).then(() => {
             dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successCoordinates')));
         }).catch(() => {
             dispatch(addToastrDanger(i18n('import.toast.error'), i18n('import.toast.errorCoordinates')));
+        });
+    }
+}
+
+export function registryDelete(id) {
+    return (dispatch, getState) => {
+        WebApi.deleteRegistry(id).then(json => {
+            dispatch(registryDeleteRegistry({}));
         });
     }
 }
