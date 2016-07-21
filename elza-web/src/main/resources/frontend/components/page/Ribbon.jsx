@@ -17,8 +17,7 @@ import {
     PasswordForm,
     AbstractReactComponent,
     ModalDialog,
-    NodeTabs,
-    FundTreeTabs
+    NodeTabs
 } from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';

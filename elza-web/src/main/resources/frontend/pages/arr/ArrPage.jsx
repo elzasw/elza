@@ -10,6 +10,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
+import * as types from 'actions/constants/ActionTypes.js';
 import {FundSettingsForm, Tabs, Icon, Ribbon, i18n} from 'components/index.jsx';
 import {
     FundExtendedView,
@@ -17,19 +18,19 @@ import {
     RibbonGroup,
     AbstractReactComponent,
     NodeTabs,
-    FundTreeTabs,
     ListBox2,
     LazyListBox,
     VisiblePolicyForm,
     Loading,
     FundPackets,
-    FundFiles
+    FundFiles,
+    FundTreeMain
 } from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
-import {showRegisterJp} from 'actions/arr/fund.jsx'
+import {showRegisterJp, fundExtendedView, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
 import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
@@ -45,6 +46,7 @@ import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
+import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
@@ -75,7 +77,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
             'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm',
-            'handleChangeFundSettingsSubmit');
+            'handleChangeFundSettingsSubmit',
+            "handleToggleExtendedView"
+        );
 
         this.state = {
             developerExpandedSpecsIds: {},
@@ -87,9 +91,11 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.dispatch(descItemTypesFetchIfNeeded());
         this.dispatch(packetTypesFetchIfNeeded());
         this.dispatch(calendarTypesFetchIfNeeded());
-        var fundId = this.getActiveFundId();
-        if (fundId !== null) {
-            this.dispatch(packetsFetchIfNeeded(fundId));
+        this.dispatch(fundsFetchIfNeeded());
+        var activeFund = this.getActiveFund(this.props);
+        if (activeFund !== null) {
+            this.dispatch(packetsFetchIfNeeded(activeFund.id));
+            this.requestFundTreeData(activeFund);
         }
         this.trySetFocus(this.props)
     }
@@ -100,12 +106,12 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.dispatch(descItemTypesFetchIfNeeded());
         this.dispatch(packetTypesFetchIfNeeded());
         this.dispatch(calendarTypesFetchIfNeeded());
-        var fundId = this.getActiveFundId();
-        if (fundId !== null) {
-            this.dispatch(packetsFetchIfNeeded(fundId));
-        }
-        var activeFund = this.getActiveInfo(nextProps.arrRegion).activeFund;
-        if (activeFund) {
+        this.dispatch(fundsFetchIfNeeded());
+        var activeFund = this.getActiveFund(nextProps);
+        if (activeFund !== null) {
+            this.dispatch(packetsFetchIfNeeded(activeFund.id));
+            this.requestFundTreeData(activeFund);
+
             if (selected === 1) {
                 this.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId));
             }
@@ -140,6 +146,10 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
         
         this.trySetFocus(nextProps)
+    }
+
+    requestFundTreeData(activeFund) {
+        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, activeFund.versionId, activeFund.fundTree.expandedIds, activeFund.fundTree.selectedId));
     }
 
     trySetFocus(props) {
@@ -216,9 +226,13 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         return { shortcuts: shortcutManager };
     }
 
+    getActiveFund(props) {
+        var arrRegion = props.arrRegion;
+        return arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+    }
+
     getActiveFundId() {
-        var arrRegion = this.props.arrRegion;
-        var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+        var activeFund = this.getActiveFund(this.props);
         if (activeFund) {
             return activeFund.id;
         } else {
@@ -748,6 +762,10 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         )
     }
 
+    handleToggleExtendedView() {
+        this.dispatch(fundExtendedView(true));
+    }
+
     render() {
         const {focus, splitter, arrRegion, userDetail, ruleSet, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
 
@@ -760,14 +778,17 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             var leftPanel;
             if (!arrRegion.extendedView && activeFund) {
                 leftPanel = (
-                    <FundTreeTabs
-                        funds={funds}
-                        activeFund={activeFund}
+                    <FundTreeMain
+                        className="fund-tree-container"
+                        fund = {activeFund}
+                        cutLongLabels={true}
+                        versionId={activeFund.versionId}
+                        {...activeFund.fundTree}
+                        ref='tree'
                         focus={focus}
+                        actionAddons={<Button onClick={this.handleToggleExtendedView} className='extended-view-toggle'><Icon glyph='fa-arrows-alt'/></Button>}
                     />
                 )
-
-
             }
 
             var centerPanel;

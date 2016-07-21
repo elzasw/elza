@@ -12,7 +12,7 @@ import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components/index.jsx';
 import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent,
     ImportForm, ExportForm, Search, ListBox, FundDetail, FundDetailExt} from 'components';
-import {NodeTabs, FundTreeTabs} from 'components/index.jsx';
+import {NodeTabs} from 'components/index.jsx';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'

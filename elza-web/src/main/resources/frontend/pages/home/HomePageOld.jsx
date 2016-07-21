@@ -11,7 +11,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components/index.jsx';
 import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components/index.jsx';
-import {ModalDialog, NodeTabs, FundTreeTabs} from 'components/index.jsx';
+import {ModalDialog, NodeTabs} from 'components/index.jsx';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'

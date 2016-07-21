@@ -72,7 +72,6 @@ exports.NodePanel = require('components/arr/NodePanel.jsx');
 exports.NodeTabs = require('components/arr/NodeTabs.jsx');
 exports.FundDataGrid = require('components/arr/FundDataGrid.jsx');
 exports.FundFilterSettings = require('components/arr/FundFilterSettings.jsx');
-exports.FundTreeTabs = require('components/arr/FundTreeTabs.jsx');
 exports.FundTreeLazy = require('components/arr/FundTreeLazy.jsx');
 exports.SubNodeForm = require('components/arr/SubNodeForm.jsx');
 exports.NodeSubNodeForm = require('components/arr/NodeSubNodeForm.jsx');
