@@ -184,11 +184,16 @@ var ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
     }
 
     renderCenterPanel() {
+        const {userDetail} = this.props;
         const fund = this.getActiveFund(this.props);
+
+        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fund.id);
+        var settingsValues = settings.value != 'false';
+        const readMode = settingsValues;
 
         var leftHasSelection = Object.keys(fund.fundTreeMovementsLeft.selectedIds).length > 0;
         var rightHasSelection = fund.fundTreeMovementsRight.selectedId != null;
-        var active = leftHasSelection && rightHasSelection;
+        var active = leftHasSelection && rightHasSelection && !readMode && !fund.closed;
         var moveUnder = active && this.checkMoveUnder();
         var moveBeforeAfter = active && this.checkMoveBeforeAfter();
 

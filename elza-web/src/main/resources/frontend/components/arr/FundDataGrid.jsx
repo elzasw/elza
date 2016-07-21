@@ -51,6 +51,7 @@ import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {getSpecsIds, hasDescItemTypeValue, createFundRoot} from 'components/arr/ArrUtils.jsx'
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
+import {propsEquals} from 'components/Utils.jsx'
 
 require('./FundDataGrid.less')
 
@@ -181,8 +182,8 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     supportBulkModifications(refType, dataType) {
-
-        return true
+        const {closed} = this.props
+        return !closed;
 /*
         let result
 
@@ -201,7 +202,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     headerColRenderer(col) {
-        const {fundDataGrid} = this.props
+        const {fundDataGrid, readMode} = this.props
 
         var cls = 'cell'
 
@@ -215,7 +216,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         return (
             <div className={cls} title={col.refType.name}>
                 <div className="title">{col.refType.shortcut}</div>
-                {showBulkModifications && <Button onClick={this.handleBulkModifications.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.bulkModifications.action')}><Icon glyph='fa-pencil'/></Button>}
+                {showBulkModifications && !readMode && <Button onClick={this.handleBulkModifications.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.bulkModifications.action')}><Icon glyph='fa-pencil'/></Button>}
                 <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)} title={i18n('arr.fund.filterSettings.action')}><Icon glyph='fa-filter'/></Button>
             </div>
         )
@@ -244,14 +245,13 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         }
-
-        var eqProps = ['versionId', 'descItemTypes', 'ruleSet', 'packetTypes', 'rulDataTypes']
+        var eqProps = ['versionId', 'descItemTypes', 'ruleSet', 'packetTypes', 'rulDataTypes', 'closed', 'readMode']
         if (!propsEquals(this.props, nextProps, eqProps)) {
             return true
         }
 
         var eqProps2 = [
-            'isFetchingFilter', 'fetchedFilter', 'isFetchingData', 'fetchedData', 'pageSize', 'pageIndex',
+            'isFetchingFilter', 'fetchedFilter', 'isFetchingData', 'fetchedData', 'pageSize', 'pageIndex',  'closed', 'readMode',
             'items', 'itemsCount', 'filter', 'visibleColumns', 'initialised', 'columnsOrder', 'columnInfos', 'selectedIds'
         ]
         if (!propsEquals(this.props.fundDataGrid, nextProps.fundDataGrid, eqProps2)) {
@@ -550,7 +550,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
     
     render() {
-        const {fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, packetTypes, dispatch} = this.props;
+        const {fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, packetTypes, dispatch, readMode} = this.props;
         const {cols} = this.state;
 
         if (!descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
@@ -604,6 +604,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                             onSelectedIdsChange={this.handleSelectedIdsChange}
                             onContextMenu={this.handleContextMenu}
                             onEdit={this.handleEdit}
+                            disabled={readMode}
                         />
                         <DataGridPagination
                             itemsCount={fundDataGrid.itemsCount}
@@ -628,6 +629,8 @@ FundDataGrid.propTypes = {
     descItemTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
     ruleSet: React.PropTypes.object.isRequired,
+    readMode: React.PropTypes.bool.isRequired,
+    closed: React.PropTypes.bool.isRequired,
 };
 
 function mapStateToProps(state) {

@@ -99,8 +99,12 @@ var ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
     }
 
     renderCenterPanel() {
-        const {packetTypes, descItemTypes, calendarTypes, rulDataTypes, ruleSet} = this.props;
+        const {packetTypes, descItemTypes, calendarTypes, rulDataTypes, ruleSet, userDetail} = this.props;
         const fund = this.getActiveFund(this.props);
+
+        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fund.id);
+        var settingsValues = settings.value != 'false';
+        const readMode = settingsValues;
 
         return (
             <div className="datagrid-content-container">
@@ -109,6 +113,7 @@ var ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
                     fundId={fund.id}
                     fund={fund}
                     closed={fund.closed}
+                    readMode={readMode}
                     fundDataGrid={fund.fundDataGrid}
                     descItemTypes={descItemTypes}
                     packetTypes={packetTypes}
