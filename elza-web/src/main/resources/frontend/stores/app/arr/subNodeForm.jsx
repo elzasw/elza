@@ -5,6 +5,7 @@ import {createDescItemFromDb, getItemType, updateFormData, createDescItem, conso
 var subNodeFormUtils = require('./subNodeFormUtils.jsx')
 import {validateInt, validateDouble, validateCoordinatePoint} from 'components/validate.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
+import {valuesEquals} from 'components/Utils.jsx'
 
 function getLoc(state, valueLocation) {
     var descItemGroup = state.formData.descItemGroups[valueLocation.descItemGroupIndex];
@@ -197,7 +198,13 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItem.value = action.value;
                     break;
             }
-            loc.descItem.touched = true;
+
+            if (valuesEquals(loc.descItem.value, loc.descItem.prevValue)) {
+                loc.descItem.touched = false;
+            } else {
+                loc.descItem.touched = true;
+            }
+
             loc.descItem.error = validate(loc.descItem, refType);
 
             state.formData = {...state.formData};
