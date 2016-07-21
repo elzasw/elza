@@ -89,7 +89,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
 
     shouldComponentUpdate(nextProps, nextState) {
         return true;
-        const eqProps = ['descItemType', 'rulDataType', 'calendarTypes', 'packetTypes', 'packets', 'locked', 'copy']
+        const eqProps = ['descItemType', 'rulDataType', 'calendarTypes', 'packetTypes', 'packets', 'locked', 'copy', 'readMode']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -110,16 +110,16 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     handleDescItemShortcuts(descItemIndex, action) {
         console.log("#handleDescItemShortcuts", '[' + action + ']', this, 'index', descItemIndex);
 
-        const {locked, descItemType, infoType, onDescItemRemove, onDescItemAdd} = this.props
+        const {locked, readMode, descItemType, infoType, onDescItemRemove, onDescItemAdd} = this.props
 
         switch (action) {
             case 'addDescItem':
-                if (!locked) {   // přidávat hodnoty lze jen pokud není zamčeno
+                if (!locked && !readMode) {   // přidávat hodnoty lze jen pokud není zamčeno
                     onDescItemAdd()
                 }
                 break
             case 'deleteDescItem':
-                if (!locked && infoType.rep === 1) {   // mazat hodnoty lze jen u vícehodnotových atributů a není zamčeno
+                if (!locked && !readMode && infoType.rep === 1) {   // mazat hodnoty lze jen u vícehodnotových atributů a není zamčeno
                     const descItem = descItemType.descItems[descItemIndex]
                     if (this.getShowDeleteDescItem(descItem)) {
                         onDescItemRemove(descItemIndex)
@@ -176,8 +176,8 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
      * @param locked {Boolean}
      * @return {Object} view
      */
-    renderDescItemSpec(key, descItem, descItemIndex, locked) {
-        const {infoType, refType} = this.props;
+    renderDescItemSpec(key, descItem, descItemIndex) {
+        const {infoType, refType, readMode, locked} = this.props;
 
         const options = infoType.specs.map(spec => {
             const fullSpec = {...spec, ...refType.descItemSpecsMap[spec.id]}
@@ -198,6 +198,12 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             onBlur: this.handleBlur.bind(this, descItemIndex),
             onFocus: this.handleFocus.bind(this, descItemIndex),
             disabled: locked
+        }
+
+        if (readMode) {
+            return (
+                <span className="desc-item-spec-label">{refType.descItemSpecsMap[descItem.descItemSpecId].name}</span>
+            )
         }
 
         return (
@@ -520,7 +526,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItem(descItemType, descItem, descItemIndex, actions, locked) {
-        const {refType, fundId, infoType, singleDescItemTypeEdit, rulDataType, calendarTypes, packets, packetTypes, versionId} = this.props;
+        const {refType, readMode, fundId, infoType, singleDescItemTypeEdit, rulDataType, calendarTypes, packets, packetTypes, versionId} = this.props;
 
         let cls = 'desc-item-type-desc-item-container';
         if (actions.length > 0) {
@@ -551,11 +557,12 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             onBlur: this.handleBlur.bind(this, descItemIndex),
             onFocus: this.handleFocus.bind(this, descItemIndex),
             locked: locked,
+            readMode: readMode,
             ref: key
         }
 
         let dragProps;
-        if (Utils.detectIE()) {
+        if (Utils.detectIE() || readMode) {
             dragProps = {};
         } else {
             dragProps = {
@@ -662,7 +669,8 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         return (
             <Shortcuts key={key} name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}>
                 <div className={cls} {...dragProps}>
-                    {infoType.rep == 1 && <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down" glyph="fa-angle-down"/>&nbsp;</div>}
+                    {!readMode && infoType.rep == 1 && <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down" glyph="fa-angle-down"/>&nbsp;</div>}
+
                     <div key="container" className={partsCls}>
                         {parts}
                     </div>
@@ -673,14 +681,14 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     getShowDeleteDescItem(descItem) {
-        const {fundId, userDetail, refType, infoType, descItemType, closed, locked} = this.props;
+        const {fundId, userDetail, refType, infoType, descItemType, closed, locked, readMode} = this.props;
 
         // Pokud nemá právo na pořádání, nelze provádět akci
         if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
             return false
         }
 
-        if (closed || locked) {
+        if (closed || locked || readMode) {
             return false
         }
 
@@ -726,14 +734,14 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     getShowDeleteDescItemType() {
-        const {fundId, userDetail, refType, infoType, descItemType, closed} = this.props;
+        const {fundId, userDetail, refType, infoType, descItemType, closed, readMode} = this.props;
 
         // Pokud nemá právo na pořádání, nelze provádět akci
         if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
             return false
         }
 
-        if (closed) {
+        if (closed || readMode) {
             return false
         }
 
@@ -763,14 +771,15 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
      * @return {Object} view
      */
     renderLabel() {
-        const {fundId, showNodeAddons, userDetail, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, copy, locked, descItemType, infoType, refType, conformityInfo, closed} = this.props;
+        const {fundId, showNodeAddons, userDetail, descItemCopyFromPrevEnabled, singleDescItemTypeEdit,
+            copy, locked, descItemType, infoType, refType, conformityInfo, closed, readMode} = this.props;
 
         const actions = [];
 
         const hasPermission = userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId});
         // Sestavení akcí
         if (hasPermission) {
-            if (showNodeAddons && !closed && !singleDescItemTypeEdit) {
+            if (showNodeAddons && !closed && !readMode && !singleDescItemTypeEdit) {
                 actions.push(
                     <NoFocusButton disabled={!descItemCopyFromPrevEnabled} title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book" onClick={this.handleDescItemTypeCopyFromPrev}><Icon glyph="fa-paste" /></NoFocusButton>,
                     <NoFocusButton title={i18n('subNodeForm.descItemType.copy')} key="copy" onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>,
@@ -808,7 +817,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         }
 
         if (hasPermission) {
-            if (infoType.rep === 1 && !(locked || closed)) {
+            if (infoType.rep === 1 && !(locked || closed || readMode)) {
                 const {onDescItemAdd} = this.props;
                 if (this.props.rulDataType.code === "COORDINATES") {
                     actions.push(<NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus"/></NoFocusButton>,
@@ -872,14 +881,14 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     render() {
-        const {fundId, userDetail, onDescItemRemove, onDescItemAdd, descItemType, refType, infoType, locked, conformityInfo, closed} = this.props;
+        const {fundId, userDetail, onDescItemRemove, onDescItemAdd, descItemType, refType, infoType, locked, conformityInfo, closed, readMode} = this.props;
 
         const label = this.renderLabel();
         const showDeleteDescItemType = this.getShowDeleteDescItemType();
         const descItems = descItemType.descItems.map((descItem, descItemIndex) => {
             const actions = [];
 
-            if (infoType.rep === 1) {
+            if (!readMode && infoType.rep === 1) {
                 actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
             }
 
@@ -892,7 +901,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
                 </OverlayTrigger>);
             }
 
-            let canModifyDescItem = !(locked || closed)
+            let canModifyDescItem = !(locked || closed || readMode)
 
             // Pokud nemá právo na pořádání, nelze provádět akci
             if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
@@ -902,6 +911,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         });
 
         const cls = classNames({
+            'read-mode': readMode,
             'desc-item-type': true,
             active: descItemType.hasFocus,
             ['el-' + infoType.width]: true
@@ -957,6 +967,7 @@ DescItemType.propTypes = {
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
     locked: React.PropTypes.bool.isRequired,
+    readMode: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
     copy: React.PropTypes.bool.isRequired,
     conformityInfo: React.PropTypes.object.isRequired,

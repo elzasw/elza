@@ -27,7 +27,8 @@ import {
     FundOutputFiles,
     FundOutputFunctions,
     RunActionForm,
-    FormInput
+    FormInput,
+    ArrFundPanel
 } from 'components/index.jsx';
 import {Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
@@ -486,8 +487,10 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             packets = arrRegion.packets[fund.id].items;
         }
 
+        var statusHeader;
         if (userDetail.hasArrOutputPage(fund ? fund.id : null)) { // má právo na tuto stránku
             if (fund) {
+                statusHeader = <ArrFundPanel />
                 const fundOutput = fund.fundOutput;
 
                 var activeIndex;
@@ -554,6 +557,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                     leftPanel={leftPanel}
                     centerPanel={centerPanel}
                     rightPanel={rightPanel}
+                    status={statusHeader}
                 />
             </Shortcuts>
         )

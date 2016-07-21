@@ -76,6 +76,11 @@ public class UserController {
         UsrUser user = userService.getLoggedUser();
         if (user != null && settingsList.size() > 0) {
             settingsService.setSettings(user, settingsList);
+        } else {
+            int i = 1;
+            for (UISettings uiSettings : settingsList) {
+                uiSettings.setSettingsId(i++);
+            }
         }
 
         return factoryVO.createSettingsList(settingsList);

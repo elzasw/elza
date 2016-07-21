@@ -8,6 +8,7 @@ import {AbstractReactComponent} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {normalizeInt} from 'components/validate.jsx'
 import {decorateValue} from './DescItemUtils.jsx'
+import DescItemLabel from './DescItemLabel.jsx'
 
 var DescItemInt = class DescItemInt extends AbstractReactComponent {
     constructor(props) {
@@ -29,7 +30,14 @@ var DescItemInt = class DescItemInt extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked} = this.props;
+        const {descItem, locked, readMode} = this.props;
+
+        if (readMode) {
+            return (
+                <DescItemLabel value={descItem.value} />
+            )
+        }
+
         return (
             <div className='desc-item-value'>
                 <input

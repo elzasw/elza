@@ -9,6 +9,7 @@ import {connect} from 'react-redux'
 var classNames = require('classnames');
 import {normalizeDouble} from 'components/validate.jsx'
 import {decorateValue} from './DescItemUtils.jsx'
+import DescItemLabel from './DescItemLabel.jsx'
 
 var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
     constructor(props) {
@@ -61,7 +62,13 @@ var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked} = this.props;
+        const {descItem, locked, readMode} = this.props;
+
+        if (readMode) {
+            return (
+                <DescItemLabel value={descItem.value} />
+            )
+        }
 
         var cls = classNames({
             'form-control': true,

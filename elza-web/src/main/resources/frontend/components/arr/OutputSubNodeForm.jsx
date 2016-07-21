@@ -54,6 +54,7 @@ var OutputSubNodeForm = class OutputSubNodeForm extends AbstractReactComponent {
                     onDescItemTypeCopy={() => {}}
                     formActions={outputFormActions}
                     showNodeAddons={false}
+                    readMode={false}
                 />
             </div>
         )

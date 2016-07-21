@@ -10,8 +10,9 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
+import {FundSettingsForm, Tabs, Icon, Ribbon, i18n, ArrFundPanel} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
-import {FundSettingsForm, Tabs, Icon, Ribbon, i18n} from 'components/index.jsx';
+
 import {
     FundExtendedView,
     BulkActionsDialog,
@@ -774,6 +775,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var funds = arrRegion.funds;
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
 
+        var statusHeader;
+
         if (userDetail.hasArrPage(activeFund ? activeFund.id : null)) { // má právo na tuto stránku
             var leftPanel;
             if (!arrRegion.extendedView && activeFund) {
@@ -793,6 +796,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
             var centerPanel;
             if (activeFund) {
+                statusHeader = <ArrFundPanel />
+
                 if (arrRegion.extendedView) {   // rozšířené zobrazení stromu AS
                     centerPanel = (
                         <FundExtendedView
@@ -852,6 +857,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     leftPanel={leftPanel}
                     centerPanel={centerPanel}
                     rightPanel={rightPanel}
+                    status={statusHeader}
                 />
             </Shortcuts>
         )

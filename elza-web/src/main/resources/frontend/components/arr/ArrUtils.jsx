@@ -137,6 +137,7 @@ export function getNodeParents(nodes, nodeId) {
 export function setSettings(items, id, item) {
     if (items == null) {
         items = [];
+        items.push(item);
         return items;
     }
 
@@ -166,17 +167,16 @@ export function setSettings(items, id, item) {
  * @returns {Object} objekt itemu
  */
 export function getOneSettings(items, type = null, entityType = null, entityId = null) {
-    if (items == null) {
-        return [];
-    }
 
-    for (let i = 0; i < items.length; i++) {
-        let item = items[i];
-        if ((type == null || type == item.settingsType)
-            && (entityType == null || entityType == item.entityType)
-            && (entityId == null || entityId == item.entityId)
-        ) {
-            return item;
+    if (items != null) {
+        for (let i = 0; i < items.length; i++) {
+            let item = items[i];
+            if ((type == null || type == item.settingsType)
+                && (entityType == null || entityType == item.entityType)
+                && (entityId == null || entityId == item.entityId)
+            ) {
+                return item;
+            }
         }
     }
 

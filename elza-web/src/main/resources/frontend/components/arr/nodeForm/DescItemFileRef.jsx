@@ -8,6 +8,7 @@ import {WebApi} from 'actions/index.jsx';
 import {Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/index.jsx';
 import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {Button} from 'react-bootstrap';
+import DescItemLabel from './DescItemLabel.jsx'
 
 var DescItemFileRef = class DescItemFileRef extends AbstractReactComponent {
     constructor(props) {
@@ -70,8 +71,14 @@ var DescItemFileRef = class DescItemFileRef extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked} = this.props;
+        const {descItem, locked, readMode} = this.props;
         var value = descItem.file ? descItem.file : null;
+
+        if (readMode) {
+            return (
+                <DescItemLabel value={value.name} />
+            )
+        }
 
         const footer = this.renderFooter();
 

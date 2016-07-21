@@ -85,6 +85,7 @@ exports.AddPacketForm = require('components/arr/AddPacketForm.jsx');
 exports.GoToPositionForm = require('components/arr/GoToPositionForm.jsx');
 exports.FundBulkModificationsForm = require('components/arr/FundBulkModificationsForm.jsx');
 exports.ArrPanel = require('components/arr/ArrPanel.jsx');
+exports.ArrFundPanel = require('components/arr/ArrFundPanel.jsx');
 exports.BulkActionsDialog = require('components/arr/BulkActionsDialog.jsx');
 exports.BulkActionsTable = require('components/arr/BulkActionsTable.jsx');
 exports.FundExtendedView = require('components/arr/FundExtendedView.jsx');

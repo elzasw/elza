@@ -18,7 +18,8 @@ import {
     RibbonGroup,
     FundNodesAddForm,
     FundNodesList,
-    FormInput
+    FormInput,
+    ArrFundPanel
 } from 'components/index.jsx';
 import {Button} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
@@ -400,8 +401,10 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
 
         var leftPanel
         var centerPanel
+        var statusHeader;
         if (userDetail.hasFundActionPage(fund ? fund.id : null)) { // má právo na tuto stránku
             if (fund) {
+                statusHeader = <ArrFundPanel />
                 leftPanel = <div className='actions-list-container'>{
                     fund.fundAction.list.fetched ?
                     <ListBox
@@ -427,6 +430,7 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}
+                status={statusHeader}
             />
         )
     }

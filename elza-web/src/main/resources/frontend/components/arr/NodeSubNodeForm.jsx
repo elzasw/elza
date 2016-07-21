@@ -17,6 +17,7 @@ import {isFundRootId} from './ArrUtils.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {SubNodeForm} from "components/index.jsx";
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
+import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 
 const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -213,8 +214,13 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
             subNodeForm, conformityInfo, descItemCopyFromPrevEnabled, singleDescItemTypeId} = this.props;
         
         let formActions
+
+        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
+        var settingsValues = settings.value != 'false';
+        const readMode = closed || settingsValues;
+
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
-            if (!closed && !singleDescItemTypeEdit) {
+            if (!readMode && !singleDescItemTypeEdit) {
                 formActions = this.renderFormActions();
             }
         }
@@ -246,6 +252,7 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
                     onDescItemTypeLock={this.handleDescItemTypeLock}
                     onDescItemTypeCopy={this.handleDescItemTypeCopy}
                     formActions={nodeFormActions}
+                    readMode={readMode}
                     showNodeAddons={true}
                     />
             </div>

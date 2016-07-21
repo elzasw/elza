@@ -10,6 +10,7 @@ import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {MenuItem, DropdownButton} from 'react-bootstrap';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+import DescItemLabel from './DescItemLabel.jsx'
 
 const DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     constructor(props) {
@@ -80,8 +81,14 @@ const DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     }
 
     render() {
-        const {userDetail, descItem, locked, singleDescItemTypeEdit} = this.props;
+        const {userDetail, descItem, locked, singleDescItemTypeEdit, readMode} = this.props;
         const value = descItem.party ? descItem.party : null;
+
+        if (readMode) {
+            return (
+                <DescItemLabel onClick={this.handleDetail.bind(this, descItem.party.partyId)} value={value.record.record} />
+            )
+        }
 
         let footer
         if (!singleDescItemTypeEdit) {

@@ -205,6 +205,10 @@ var messages = {
     "arr.fund.packets.action.changeNumbers": "Přečíslovat",
     "arr.fund.packets.action.delete": "Odstranit",
 
+    "arr.fund.panel.lockTitle": "v uzavřené verzi",
+    "arr.fund.panel.allowEdit": "Povolit úpravy",
+    "arr.fund.panel.forbidEdit": "Ukončit režim úprav",
+
     "arr.fund.files.action.add": "Nový soubor",
     "arr.fund.files.action.delete": "Odebrat soubor",
 

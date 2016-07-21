@@ -55,6 +55,7 @@ public interface UISettings<U extends UsrUser> {
      */
     enum SettingsType {
 
+        FUND_READ_MODE(EntityType.FUND),
         FUND_RIGHT_PANEL(EntityType.FUND),
         FUND_CENTER_PANEL(EntityType.FUND);
 

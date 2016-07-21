@@ -48,7 +48,9 @@ var PageLayout = class PageLayout extends React.Component {
                         {this.props.ribbon}
                     </ToggleContent>
                 </div>
-
+                <div className='status-header'>
+                    {this.props.status}
+                </div>
                 <div className='app-content'>
                     {this.props.appContentExt}
 

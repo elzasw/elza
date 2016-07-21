@@ -8,6 +8,7 @@ import {decorateValue, decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {indexById} from 'stores/app/utils.jsx';
 import {Button} from 'react-bootstrap';
+import DescItemLabel from './DescItemLabel.jsx'
 
 var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     constructor(props) {
@@ -122,8 +123,14 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked, packetTypes, packets, singleDescItemTypeEdit} = this.props;
+        const {descItem, locked, packetTypes, packets, singleDescItemTypeEdit, readMode} = this.props;
         var value = descItem.packet ? descItem.packet : null;
+
+        if (readMode) {
+            return (
+                <DescItemLabel value={value.storageNumber} />
+            )
+        }
 
         const footer = this.renderFooter();
 
