@@ -37,6 +37,7 @@ import {
     fundActionFormReset
 } from 'actions/arr/fundAction.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 
 const ActionState = {
     RUNNING: 'RUNNING',
@@ -244,14 +245,14 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
      * Sestavení Ribbonu.
      * @return {Object} view
      */
-    buildRibbon() {
+    buildRibbon(readMode, closed) {
         const fund = this.getFund();
         const {fundAction: {detail, isFormVisible}} = fund;
         const {userDetail} = this.props
 
         var altActions = [];
         if (fund) {
-            if (!isFormVisible) {
+            if (!isFormVisible  && !readMode && !closed) {
                 if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) {
                     altActions.push(
                         <Button key="new-action" onClick={this.handleRibbonNewAction}><Icon glyph="fa-plus-circle"/>
@@ -264,7 +265,7 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
 
         const itemActions = [];
         if (fund) {
-            if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) {
+            if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id}) && !readMode && !closed) {
                 if (isFormVisible) {
                     itemActions.push(
                         <Button key="run-action" onClick={this.handleRibbonCreateAction}><Icon glyph="fa-play"/>
@@ -399,11 +400,19 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
         const {arrRegion, splitter, userDetail} = this.props;
         const fund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : false;
 
+        let closed = false;
+        let readMode = false;
         var leftPanel
         var centerPanel
         var statusHeader;
         if (userDetail.hasFundActionPage(fund ? fund.id : null)) { // má právo na tuto stránku
             if (fund) {
+
+                var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fund.id);
+                var settingsValues = settings.value != 'false';
+                readMode = settingsValues;
+                closed = fund.lockDate != null;
+
                 statusHeader = <ArrFundPanel />
                 leftPanel = <div className='actions-list-container'>{
                     fund.fundAction.list.fetched ?
@@ -427,7 +436,7 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
             <PageLayout
                 className="arr-actions-page"
                 splitter={splitter}
-                ribbon={this.buildRibbon()}
+                ribbon={this.buildRibbon(readMode, closed)}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}
                 status={statusHeader}

@@ -59,6 +59,8 @@ import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
+import {getOneSettings} from 'components/arr/ArrUtils.jsx';
+
 var classNames = require('classnames');
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
@@ -273,13 +275,14 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
      * Sestavení Ribbonu.
      * @return {Object} view
      */
-    buildRibbon() {
+    buildRibbon(readMode, closed) {
         const {userDetail} = this.props;
 
         const fund = this.getActiveFund();
         var itemActions = [];
         var altActions = [];
         if (fund) {
+
             const outputDetail = fund.fundOutput.fundOutputDetail;
             const isDetailIdNotNull = outputDetail.id !== null;
             const isDetailLoaded = outputDetail.fetched && !outputDetail.isFetching;
@@ -289,13 +292,13 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 fundId: fund.id
             });
 
-            if (hasPersmission) {
+            if (hasPersmission && !readMode && !closed) {
                 altActions.push(
                     <Button key="add-output" onClick={this.handleAddOutput}><Icon glyph="fa-plus-circle"/>
                         <div><span className="btnText">{i18n('ribbon.action.arr.output.add')}</span></div>
                     </Button>
                 )
-                if (isDetailIdNotNull && !outputDetail.lockDate) {
+                if (isDetailIdNotNull && !closed) {
                     altActions.push(
                         <Button key="generate-output" onClick={() => {this.handleGenerateOutput(outputDetail.id)}} disabled={!isDetailLoaded || !this.isOutputGeneratingAllowed(outputDetail.outputDefinition)}><Icon glyph="fa-youtube-play" />
                             <div><span className="btnText">{i18n('ribbon.action.arr.output.generate')}</span></div>
@@ -305,8 +308,8 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             }
 
 
-            if (isDetailIdNotNull && isDetailLoaded) {
-                const runnable = !outputDetail.lockDate && outputDetail.outputDefinition.state !== OutputState.FINISHED && outputDetail.outputDefinition.state !== OutputState.OUTDATED;
+            if (isDetailIdNotNull && isDetailLoaded && !readMode) {
+                const runnable = !closed && outputDetail.outputDefinition.state !== OutputState.FINISHED && outputDetail.outputDefinition.state !== OutputState.OUTDATED;
                 if (hasPersmission) {
                     if (runnable) {
                         itemActions.push(
@@ -487,9 +490,18 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
             packets = arrRegion.packets[fund.id].items;
         }
 
+        let closed = false;
+        let readMode = false;
+
         var statusHeader;
         if (userDetail.hasArrOutputPage(fund ? fund.id : null)) { // má právo na tuto stránku
             if (fund) {
+
+                var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fund.id);
+                var settingsValues = settings.value != 'false';
+                readMode = settingsValues;
+                closed = fund.lockDate != null;
+
                 statusHeader = <ArrFundPanel />
                 const fundOutput = fund.fundOutput;
 
@@ -534,6 +546,9 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                     rulDataTypes={rulDataTypes}
                     userDetail={userDetail}
                     fundOutputDetail={fundOutputDetail}
+                    readMode={readMode}
+                    closed={closed}
+
                 />;
 
                 if (fundOutputDetail.id !== null && fundOutputDetail.fetched) {
@@ -553,7 +568,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 <PageLayout
                     splitter={splitter}
                     className='arr-output-page'
-                    ribbon={this.buildRibbon()}
+                    ribbon={this.buildRibbon(readMode, closed)}
                     leftPanel={leftPanel}
                     centerPanel={centerPanel}
                     rightPanel={rightPanel}

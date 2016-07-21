@@ -27,8 +27,8 @@ var OutputSubNodeForm = class OutputSubNodeForm extends AbstractReactComponent {
 
     render() {
         const {versionId, focus, closed, fundId, rulDataTypes, calendarTypes, descItemTypes, packetTypes, packets,
-            subNodeForm} = this.props;
-        
+            subNodeForm, readMode} = this.props;
+
         return (
             <div className="output-item-form-container">
                 <SubNodeForm
@@ -54,7 +54,7 @@ var OutputSubNodeForm = class OutputSubNodeForm extends AbstractReactComponent {
                     onDescItemTypeCopy={() => {}}
                     formActions={outputFormActions}
                     showNodeAddons={false}
-                    readMode={false}
+                    readMode={closed || readMode}
                 />
             </div>
         )
@@ -85,6 +85,7 @@ OutputSubNodeForm.propTypes = {
     packets: React.PropTypes.array.isRequired,
     subNodeForm: React.PropTypes.object.isRequired,
     closed: React.PropTypes.bool.isRequired,
+    readMode: React.PropTypes.bool.isRequired,
     focus: React.PropTypes.object.isRequired,
 }
 
