@@ -201,7 +201,6 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         }
 
         if (readMode) {
-            console.log(111, refType.descItemSpecsMap, descItem, descItem.descItemSpecId)
             let nameVal;
             if (descItem.descItemSpecId == null || descItem.descItemSpecId == "") {
                 nameVal = "";

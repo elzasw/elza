@@ -60,7 +60,7 @@ import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 var keyModifier = Utils.getKeyModifier()
 
 var keymap = {
-    Arr: {
+    ArrParent: {
         bulkActions: keyModifier + 'h',
         registerJp: keyModifier + 'j',
         area1: keyModifier + '1',
@@ -72,7 +72,7 @@ var shortcutManager = new ShortcutsManager(keymap)
 
 var ArrPage = class ArrPage extends ArrParentPage {
     constructor(props) {
-        super(props);
+        super(props, "fa-page");
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
             'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
@@ -798,6 +798,10 @@ var ArrPage = class ArrPage extends ArrParentPage {
         }
     }
 
+    hasPageShowRights(userDetail, activeFund) {
+        return userDetail.hasArrPage(activeFund ? activeFund.id : null);
+    }
+
     renderRightPanel() {
         return this.renderPanel();
     }
@@ -831,10 +835,6 @@ ArrPage.propTypes = {
     focus: React.PropTypes.object.isRequired,
     userDetail: React.PropTypes.object.isRequired,
     ruleSet: React.PropTypes.object.isRequired,
-}
-
-ArrPage.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
 }
 
 module.exports = connect(mapStateToProps)(ArrPage);

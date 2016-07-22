@@ -60,6 +60,7 @@ import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm.jsx
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
+var ArrParentPage = require("./ArrParentPage.jsx");
 
 var classNames = require('classnames');
 var ShortcutsManager = require('react-shortcuts');
@@ -68,7 +69,7 @@ var Shortcuts = require('react-shortcuts/component');
 var keyModifier = Utils.getKeyModifier();
 
 var keymap = {
-    ArrOutput: {
+    ArrParent: {
         area1: keyModifier + '1',
         area2: keyModifier + '2',
         area3: keyModifier + '3'
@@ -77,7 +78,6 @@ var keymap = {
 var shortcutManager = new ShortcutsManager(keymap);
 
 let _selectedTab = 0
-
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -88,12 +88,11 @@ const OutputState = {
     ERROR: 'ERROR' /// Pomocný stav websocketu
 };
 
-const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
+const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     constructor(props) {
-        super(props);
+        super(props, "arr-output-page");
 
         this.bindMethods(
-            'getActiveFund',
             'renderListItem',
             'handleSelect',
             'trySetFocus',
@@ -118,30 +117,25 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(packetTypesFetchIfNeeded());
-        this.dispatch(calendarTypesFetchIfNeeded());
+        super.componentDidMount();
         this.dispatch(templatesFetchIfNeeded());
 
-        const fund = this.getActiveFund(this.props)
+        const fund = this.getActiveFund(this.props);
         if (fund) {
             this.dispatch(fundOutputFetchIfNeeded(fund.versionId));
-            this.dispatch(packetsFetchIfNeeded(fund.id));
             this.dispatch(outputTypesFetchIfNeeded());
         }
         this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(packetTypesFetchIfNeeded());
-        this.dispatch(calendarTypesFetchIfNeeded());
+        super.componentWillReceiveProps(nextProps);
         this.dispatch(templatesFetchIfNeeded());
 
-        const fund = this.getActiveFund(nextProps)
+        const fund = this.getActiveFund(nextProps);
         if (fund) {
             this.dispatch(fundOutputFetchIfNeeded(fund.versionId));
-            this.dispatch(packetsFetchIfNeeded(fund.id));
+            this.dispatch(outputTypesFetchIfNeeded());
         }
         this.trySetFocus(nextProps)
     }
@@ -157,15 +151,6 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
                 focusWasSet()
             }
         }
-    }
-
-    getActiveFund(props = this.props) {
-        const arrRegion = props.arrRegion;
-        
-        if (arrRegion.activeIndex != null) {
-            return arrRegion.funds[arrRegion.activeIndex];
-        }
-        return null;
     }
 
     requestValidationData(isDirty, isFetching, versionId) {
@@ -192,7 +177,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleAddOutput() {
-        const fund = this.getActiveFund();
+        const fund = this.getActiveFund(this.props);
 
         this.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
             <AddOutputForm
@@ -201,7 +186,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleBulkActions() {
-        const fund = this.getActiveFund();
+        const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
 
         this.dispatch(fundActionFormChange(fund.versionId, {nodes: fundOutputDetail.outputDefinition.nodes}));
@@ -210,7 +195,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleOtherActionDialog() {
-        const fund = this.getActiveFund();
+        const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
 
         this.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
@@ -278,7 +263,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     buildRibbon(readMode, closed) {
         const {userDetail} = this.props;
 
-        const fund = this.getActiveFund();
+        const fund = this.getActiveFund(this.props);
         var itemActions = [];
         var altActions = [];
         if (fund) {
@@ -390,7 +375,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleUsageEnd() {
-        const fund = this.getActiveFund()
+        const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail
         if (confirm(i18n('arr.output.usageEnd.confirm'))) {
             this.dispatch(fundOutputUsageEnd(fund.versionId, fundOutputDetail.id))
@@ -398,7 +383,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleDelete() {
-        const fund = this.getActiveFund()
+        const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail
         if (confirm(i18n('arr.output.delete.confirm'))) {
             this.dispatch(fundOutputDelete(fund.versionId, fundOutputDetail.id))
@@ -407,7 +392,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
 
     renderListItem(item, isActive, index) {
         const {outputTypes} = this.props;
-        const fund = this.getActiveFund()
+        const fund = this.getActiveFund(this.props);
         const fundOutput = fund.fundOutput
 
         var temporaryChanged = false
@@ -434,12 +419,13 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleSelect(item) {
-        const fund = this.getActiveFund()
+        const fund = this.getActiveFund(this.props);
         this.dispatch(fundOutputSelectOutput(fund.versionId, item.id))
     }
 
     renderRightPanel() {
-        if (!this.getActiveFund().fundOutput.fundOutputDetail.fetched) {
+        const fund = this.getActiveFund(this.props);
+        if (!fund.fundOutput.fundOutputDetail.fetched) {
             return <span>Not selected</span>;
         }
 
@@ -461,16 +447,18 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         tabIndex++;
 
         return (
-            <Tabs.Container>
+            <div className="fund-output-right-panel-container">
+                <Tabs.Container>
 
-                <Tabs.Tabs items={items}
-                           activeItem={{id: _selectedTab}}
-                           onSelect={this.handleTabSelect}
-                />
-                <Tabs.Content>
-                    {tabContent}
-                </Tabs.Content>
-            </Tabs.Container>
+                    <Tabs.Tabs items={items}
+                               activeItem={{id: _selectedTab}}
+                               onSelect={this.handleTabSelect}
+                    />
+                    <Tabs.Content>
+                        {tabContent}
+                    </Tabs.Content>
+                </Tabs.Container>
+            </div>
         )
     }
 
@@ -478,108 +466,83 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
         return !item.lockDate && item.outputDefinition && item.outputDefinition.state === OutputState.OPEN
     }
 
-    render() {
-        const {focus, arrRegion, splitter, templates, userDetail, rulDataTypes, packetTypes, descItemTypes, calendarTypes} = this.props;
+    renderLeftPanel() {
+        const fund = this.getActiveFund(this.props);
+        const fundOutput = fund.fundOutput;;
 
-        const fund = this.getActiveFund();
-        var leftPanel, rightPanel;
-        let centerPanel;
+        var activeIndex;
+        if (fundOutput.fundOutputDetail.id !== null) {
+            activeIndex = indexById(fundOutput.outputs, fundOutput.fundOutputDetail.id)
+        }
+
+        const filterStates = [];
+        for (const item in OutputState) {
+            if (item === OutputState.ERROR) {
+                continue;
+            }
+            filterStates.push(<option value={item} key={"state" + item}>{i18n('arr.output.list.state.' + item.toLocaleLowerCase())}</option>)
+        }
+
+        return (
+            <div className="fund-output-list-container">
+                <FormInput componentClass="select" onChange={this.handleOutputStateSearch} value={fundOutput.filterState}>
+                    <option value={-1} key="no-filter">{i18n('arr.output.list.state.all')}</option>
+                    {filterStates}
+                </FormInput>
+                <ListBox
+                    className='fund-output-listbox'
+                    ref='fundOutputList'
+                    items={fundOutput.outputs}
+                    activeIndex={activeIndex}
+                    renderItemContent={this.renderListItem}
+                    onFocus={this.handleSelect}
+                    onSelect={this.handleSelect}
+                />
+            </div>
+        )
+    }
+
+    renderCenterPanel() {
+        const {arrRegion, calendarTypes, packetTypes, templates, rulDataTypes, descItemTypes, userDetail} = this.props;
+
+        const fund = this.getActiveFund(this.props);
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail;
 
         var packets = [];
         if (fund && arrRegion.packets[fund.id]) {
             packets = arrRegion.packets[fund.id].items;
         }
 
-        let closed = false;
-        let readMode = false;
-
-        var statusHeader;
-        if (userDetail.hasArrOutputPage(fund ? fund.id : null)) { // má právo na tuto stránku
-            if (fund) {
-
-                var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fund.id);
-                var settingsValues = settings.value != 'false';
-                readMode = settingsValues;
-                closed = fund.lockDate != null;
-
-                statusHeader = <ArrFundPanel />
-                const fundOutput = fund.fundOutput;
-
-                var activeIndex;
-                if (fundOutput.fundOutputDetail.id !== null) {
-                    activeIndex = indexById(fundOutput.outputs, fundOutput.fundOutputDetail.id)
-                }
-                const filterStates = [];
-                for (const item in OutputState) {
-                    if (item === OutputState.ERROR) {
-                        continue;
-                    }
-                    filterStates.push(<option value={item} key={"state" + item}>{i18n('arr.output.list.state.' + item.toLocaleLowerCase())}</option>)
-                }
-                leftPanel = (
-                    <div className="fund-output-list-container">
-                        <FormInput componentClass="select" onChange={this.handleOutputStateSearch} value={fundOutput.filterState}>
-                            <option value={-1} key="no-filter">{i18n('arr.output.list.state.all')}</option>
-                            {filterStates}
-                        </FormInput>
-                        <ListBox
-                            className='fund-output-listbox'
-                            ref='fundOutputList'
-                            items={fundOutput.outputs}
-                            activeIndex={activeIndex}
-                            renderItemContent={this.renderListItem}
-                            onFocus={this.handleSelect}
-                            onSelect={this.handleSelect}
-                        />
-                    </div>
-                );
-                const fundOutputDetail = fund.fundOutput.fundOutputDetail;
-                centerPanel = <ArrOutputDetail
-                    readOnly={!this.isEditable(fundOutputDetail)}
-                    versionId={fund.versionId}
-                    fund={fund}
-                    calendarTypes={calendarTypes}
-                    descItemTypes={descItemTypes}
-                    packetTypes={packetTypes}
-                    templates={templates}
-                    packets={packets}
-                    rulDataTypes={rulDataTypes}
-                    userDetail={userDetail}
-                    fundOutputDetail={fundOutputDetail}
-                    readMode={readMode}
-                    closed={closed}
-
-                />;
-
-                if (fundOutputDetail.id !== null && fundOutputDetail.fetched) {
-                    rightPanel = (
-                        <div className="fund-output-right-panel-container">{this.renderRightPanel()}</div>
-                    )
-                }
-            } else {
-                centerPanel = <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>
-            }
-        } else {
-            centerPanel = <div>{i18n('global.insufficient.right')}</div>
-        }
+        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fund.id);
+        var settingsValues = settings.value != 'false';
+        const readMode = settingsValues;
+        const closed = fund.lockDate != null;
 
         return (
-            <Shortcuts name='ArrOutput' handler={this.handleShortcuts}>
-                <PageLayout
-                    splitter={splitter}
-                    className='arr-output-page'
-                    ribbon={this.buildRibbon(readMode, closed)}
-                    leftPanel={leftPanel}
-                    centerPanel={centerPanel}
-                    rightPanel={rightPanel}
-                    status={statusHeader}
-                />
-            </Shortcuts>
+            <ArrOutputDetail
+                readOnly={!this.isEditable(fundOutputDetail)}
+                versionId={fund.versionId}
+                fund={fund}
+                calendarTypes={calendarTypes}
+                descItemTypes={descItemTypes}
+                packetTypes={packetTypes}
+                templates={templates}
+                packets={packets}
+                rulDataTypes={rulDataTypes}
+                userDetail={userDetail}
+                fundOutputDetail={fundOutputDetail}
+                readMode={readMode}
+                closed={closed}
+            />
         )
     }
 
+    hasPageShowRights(userDetail, activeFund) {
+        return userDetail.hasArrOutputPage(activeFund ? activeFund.id : null);
+    }
+
     renderFunctionsPanel() {
-        const activeFund = this.getActiveFund();
+        const activeFund = this.getActiveFund(this.props);
         const {fundOutput} = activeFund;
         if (fundOutput.fundOutputDetail.fetched) {
             return <FundOutputFunctions
@@ -598,7 +561,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     renderOutputPanel() {
-        const activeFund = this.getActiveFund();
+        const activeFund = this.getActiveFund(this.props);
         const {fundOutput : {fundOutputDetail, fundOutputFiles}} = activeFund;
         if (fundOutputDetail.outputDefinition.outputResultId === null) {
             return <div>{i18n('arr.output.panel.files.notGenerated')}</div>
@@ -625,7 +588,7 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleRevertToOpen() {
-        const fund = this.getActiveFund();
+        const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
         //if (confirm(i18n('arr.output.revert.confirm'))) {
             this.dispatch(fundOutputRevert(fund.versionId, fundOutputDetail.id));
@@ -633,18 +596,18 @@ const ArrOutputPage = class ArrOutputPage extends AbstractReactComponent {
     }
 
     handleClone() {
-        const fund = this.getActiveFund();
+        const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
         this.dispatch(fundOutputClone(fund.versionId, fundOutputDetail.id));
     }
 
     handleOutputStateSearch(e) {
-        const fund = this.getActiveFund();
+        const fund = this.getActiveFund(this.props);
         this.dispatch(fundOutputFilterByState(fund.versionId, e.target.value));
     }
 
     handleFunctionsStateSearch(e) {
-        const fund = this.getActiveFund();
+        const fund = this.getActiveFund(this.props);
         this.dispatch(fundOutputFilterByState(fund.versionId, e.target.value));
     }
 };
@@ -671,10 +634,6 @@ ArrOutputPage.propTypes = {
     arrRegion: React.PropTypes.object.isRequired,
     focus: React.PropTypes.object.isRequired,
     userDetail: React.PropTypes.object.isRequired
-};
-
-ArrOutputPage.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
 };
 
 module.exports = connect(mapStateToProps)(ArrOutputPage);

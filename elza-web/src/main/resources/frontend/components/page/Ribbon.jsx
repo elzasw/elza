@@ -29,6 +29,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {userPasswordChange} from 'actions/admin/user.jsx'
+import {routerNavigate} from "actions/router.jsx"
 
 const Ribbon = class Ribbon extends AbstractReactComponent {
     constructor(props) {
@@ -38,7 +39,8 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
             'trySetFocus',
             'handleLogout',
             'handlePasswordChangeForm',
-            'handlePasswordChange'
+            'handlePasswordChange',
+            'handleBack'
         )
 
         this.state = {};
@@ -63,6 +65,10 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
                 })
             }
         }
+    }
+
+    handleBack() {
+        this.dispatch(routerNavigate("/~arr"));
     }
 
     render() {
@@ -118,7 +124,9 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
         if (subMenu) {  // submenu se šipkou zpět
             parts.push(
                 <RibbonGroup key="ribbon-group-main" className="large">
-                    <IndexLinkContainer key="ribbon-btn-home" to="/"><Button><Icon glyph="fa-arrow-circle-o-left" /><div><span className="btnText">{i18n('ribbon.action.back')}</span></div></Button></IndexLinkContainer>
+                    {false && <IndexLinkContainer key="ribbon-btn-home" to="/"><Button><Icon glyph="fa-arrow-circle-o-left" /><div><span className="btnText">{i18n('ribbon.action.back')}</span></div></Button></IndexLinkContainer>}
+                    {false && <IndexLinkContainer key="ribbon-btn-home" to="/"><Button className="large"><Icon glyph="fa-arrow-circle-o-left" /></Button></IndexLinkContainer>}
+                    <Button className="large" onClick={this.handleBack} title={i18n('ribbon.action.back')}><Icon glyph="fa-arrow-circle-o-left" /></Button>
                 </RibbonGroup>
             )
         } else {    // standardní menu s hlavním rozcestníkem

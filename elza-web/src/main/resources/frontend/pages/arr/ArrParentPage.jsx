@@ -55,12 +55,15 @@ import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
 var ArrParentPage = class ArrParentPage extends AbstractReactComponent {
-    constructor(props) {
+    constructor(props, layoutClassName) {
         super(props);
 
         this.bindMethods(
             'buildRibbon',
+            'handleShortcuts',
         );
+
+        this.layoutClassName = layoutClassName;
 
         this.state = {
         };
@@ -99,6 +102,11 @@ var ArrParentPage = class ArrParentPage extends AbstractReactComponent {
         return arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
     }
 
+    // Pokud ma stranka klavesove zkratky, musi se tato metoda prekryt a vratit zkratky pro nazev ArrParent!!!
+    getChildContext() {
+        return {shortcuts: new ShortcutsManager({ArrParent: {aaa: "123"}})}
+    }
+
     /**
      * Sestavení Ribbonu. Pro překrytí.
      * @return {Object} view
@@ -118,6 +126,11 @@ var ArrParentPage = class ArrParentPage extends AbstractReactComponent {
         return null;
     }
 
+    // Nutne prekryt, activeFund muze but null, pokud se vrati true, stranka bude zobrazena, jinak se zobrazi, ze na ni nema pravo
+    hasPageShowRights(userDetail, activeFund) {
+        console.error("Method hasPageShowRights must be overriden!");
+    }
+
     render() {
         const {splitter, arrRegion, userDetail, ruleSet, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
 
@@ -127,7 +140,7 @@ var ArrParentPage = class ArrParentPage extends AbstractReactComponent {
         var leftPanel;
         var rightPanel;
 
-        if (userDetail.hasArrPage(activeFund ? activeFund.id : null)) { // má právo na tuto stránku
+        if (this.hasPageShowRights(userDetail, activeFund)) {   // má právo na tuto stránku
             var centerPanel;
             if (activeFund) {
                 statusHeader = <ArrFundPanel />
@@ -151,15 +164,18 @@ var ArrParentPage = class ArrParentPage extends AbstractReactComponent {
         }
 
         return (
-            <PageLayout
-                splitter={splitter}
-                className='fa-page'
-                ribbon={this.buildRibbon()}
-                centerPanel={centerPanel}
-                leftPanel={leftPanel}
-                rightPanel={rightPanel}
-                status={statusHeader}
-            />
+            <Shortcuts name='ArrParent' handler={this.handleShortcuts}>
+                <PageLayout
+                    splitter={splitter}
+                    _className='fa-page'
+                    className={this.layoutClassName}
+                    ribbon={this.buildRibbon()}
+                    centerPanel={centerPanel}
+                    leftPanel={leftPanel}
+                    rightPanel={rightPanel}
+                    status={statusHeader}
+                />
+            </Shortcuts>
         )
     }
 }
@@ -176,5 +192,9 @@ ArrParentPage.propTypes = {
     userDetail: React.PropTypes.object.isRequired,
     ruleSet: React.PropTypes.object.isRequired,
 }
+
+ArrParentPage.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
+};
 
 module.exports = ArrParentPage;

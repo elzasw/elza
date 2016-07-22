@@ -61,7 +61,7 @@ import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
 var ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
     constructor(props) {
-        super(props);
+        super(props, "fa-page");
 
         this.bindMethods(
             'handleMoveUnder',
@@ -181,6 +181,10 @@ var ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
         return (
             <Ribbon arr subMenu fundId={activeFund ? activeFund.id : null} altSection={altSection} itemSection={itemSection}/>
         )
+    }
+
+    hasPageShowRights(userDetail, activeFund) {
+        return userDetail.hasArrPage(activeFund ? activeFund.id : null);
     }
 
     renderCenterPanel() {
