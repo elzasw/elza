@@ -94,7 +94,23 @@
                     background: @node-form-item-type-bg;
                     &.active {
                         background: @node-form-item-type-active-bg;
-                    }        
+                        .desc-item-type-label {
+                            .actions{
+                                .btn {
+                                    visibility: visible;
+                                }
+                            }
+                        }
+                    }
+                    &:hover {
+                        .desc-item-type-label {
+                            .actions{
+                                .btn {
+                                    visibility: visible;
+                                }
+                            }
+                        }
+                    }
                     
                     // Dragger
                     .dragger {
@@ -147,6 +163,7 @@
                             .node-form-standard-actions;
 
                             .btn {
+                                visibility: hidden;
                                 padding: 0;
                                 height: 16px;
                                 line-height: 0;
@@ -164,9 +181,16 @@
                                     color: @node-form-actions-color;
                                     background-color:@node-form-actions-hover;
                                 }
+                                .locked {
+                                    visibility: visible;
+                                }
                             }
                         }
 
+                    }
+
+                    &.read-mode .desc-item-type-label {
+                        font-weight: bold;
                     }
 
                     .desc-item-type-desc-items {

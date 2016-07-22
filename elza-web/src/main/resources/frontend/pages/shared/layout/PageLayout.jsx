@@ -12,7 +12,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components/index.jsx';
 import {Splitter, RibbonMenu, ToggleContent, FindindAidFileTree} from 'components/index.jsx';
-import {ModalDialog, NodeTabs, FundTreeTabs} from 'components/index.jsx';
+import {ModalDialog, NodeTabs} from 'components/index.jsx';
 import {ButtonGroup, Button} from 'react-bootstrap';
 import {splitterResize} from 'actions/global/splitter.jsx';
 
@@ -37,6 +37,7 @@ var PageLayout = class PageLayout extends React.Component {
     render() {
         var cls = classNames({
             'app-container': true,
+            'app-exists-status': this.props.status != null,
             noRibbon: !this.state.ribbonOpened,
             [this.props.className]: true
         });
@@ -48,7 +49,9 @@ var PageLayout = class PageLayout extends React.Component {
                         {this.props.ribbon}
                     </ToggleContent>
                 </div>
-
+                <div className='status-header'>
+                    {this.props.status}
+                </div>
                 <div className='app-content'>
                     {this.props.appContentExt}
 

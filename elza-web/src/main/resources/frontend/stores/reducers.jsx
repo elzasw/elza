@@ -23,6 +23,7 @@ import login from './app/global/login.jsx';
 import splitter from './app/global/splitter.jsx';
 import developer from './app/global/developer.jsx';
 import focus from './app/global/focus.jsx';
+import tab from './app/global/tab.jsx';
 import adminRegion from './app/admin/adminRegion.jsx';
 import fundForm from './app/arr/form/fundForm.jsx';
 import inlineForm from './app/form/inlineForm.jsx';
@@ -30,6 +31,7 @@ import addPacketForm from './app/arr/form/addPacketForm.jsx';
 import stateRegion from './app/state/stateRegion.jsx';
 import userDetail from './app/user/userDetail.jsx';
 import router from './app/router.jsx';
+import status from './app/status.jsx';
 
 import addPartyForm from './app/party/form/addPartyForm.jsx';
 import partyNameForm from './app/party/form/partyNameForm.jsx';
@@ -48,6 +50,8 @@ const normalizePacketSize = (value, previousValue, allValues, previousAllValues)
     }
     return vv
 };
+
+
 
 
 const rootReducer = combineReducers({
@@ -69,9 +73,12 @@ const rootReducer = combineReducers({
     stateRegion,
     router,
     userDetail,
-    form: formReducer.plugin({
+    tab,
+    status,
+form: formReducer.plugin({
         fundForm: fundForm,
         outputEditForm: inlineForm,
+        permissionsEditForm: inlineForm,
         addPacketForm: addPacketForm,
         addPartyForm: addPartyForm,
         partyNameForm: partyNameForm,

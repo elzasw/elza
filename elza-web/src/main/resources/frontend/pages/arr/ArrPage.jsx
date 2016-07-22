@@ -10,33 +10,36 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {Tabs, Icon, Ribbon, i18n} from 'components/index.jsx';
+import {FundSettingsForm, Tabs, Icon, Ribbon, i18n, ArrFundPanel} from 'components/index.jsx';
+import * as types from 'actions/constants/ActionTypes.js';
+
+var ArrParentPage = require("./ArrParentPage.jsx");
+
 import {
-    FundExtendedView,
     BulkActionsDialog,
     RibbonGroup,
     AbstractReactComponent,
     NodeTabs,
-    FundTreeTabs,
     ListBox2,
     LazyListBox,
     VisiblePolicyForm,
     Loading,
     FundPackets,
-    FundFiles
+    FundFiles,
+    FundTreeMain
 } from 'components/index.jsx';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {WebApi} from 'actions/index.jsx';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {showRegisterJp} from 'actions/arr/fund.jsx'
+import {modalDialogShow} from 'actions/global/modalDialog.jsx'
+import {showRegisterJp, fundExtendedView, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
 import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
 import {Utils} from 'components/index.jsx';
-import {isFundRootId} from 'components/arr/ArrUtils.jsx';
+import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
@@ -45,17 +48,19 @@ import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
+import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+import {selectTab} from 'actions/global/tab.jsx'
+import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
-var _selectedTab = 0
 
 var keyModifier = Utils.getKeyModifier()
 
 var keymap = {
-    Arr: {
+    ArrParent: {
         bulkActions: keyModifier + 'h',
         registerJp: keyModifier + 'j',
         area1: keyModifier + '1',
@@ -65,15 +70,18 @@ var keymap = {
 }
 var shortcutManager = new ShortcutsManager(keymap)
 
-var ArrPage = class ArrPage extends AbstractReactComponent {
+var ArrPage = class ArrPage extends ArrParentPage {
     constructor(props) {
-        super(props);
+        super(props, "fa-page");
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
-            'getActiveFundId', 'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
+            'handleBulkActionsDialog', 'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
             'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
-            'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm');
+            'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm',
+            'handleChangeFundSettingsSubmit',
+            "handleSetExtendedView"
+        );
 
         this.state = {
             developerExpandedSpecsIds: {},
@@ -82,27 +90,17 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(packetTypesFetchIfNeeded());
-        this.dispatch(calendarTypesFetchIfNeeded());
-        var fundId = this.getActiveFundId();
-        if (fundId !== null) {
-            this.dispatch(packetsFetchIfNeeded(fundId));
-        }
+        super.componentDidMount();
         this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(packetTypesFetchIfNeeded());
-        this.dispatch(calendarTypesFetchIfNeeded());
-        var fundId = this.getActiveFundId();
-        if (fundId !== null) {
-            this.dispatch(packetsFetchIfNeeded(fundId));
-        }
-        var activeFund = this.getActiveInfo(nextProps.arrRegion).activeFund;
-        if (activeFund) {
-            if (_selectedTab === 1) {
+        super.componentWillReceiveProps(nextProps);
+        const {tab} = this.props;
+        let selected = tab.values['arr-as'];
+        var activeFund = this.getActiveFund(nextProps);
+        if (activeFund !== null) {
+            if (selected === 1) {
                 this.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId));
             }
             if (nextProps.developer.enabled) {
@@ -139,29 +137,46 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     trySetFocus(props) {
-        var {focus} = props
-
+        var {focus, tab} = props
+        let selected = tab.values['arr-as'];
         if (canSetFocus()) {
+            console.log("trySetFocus, canSetFocus")
             if (isFocusFor(focus, 'arr', 3)) {
-                switch (_selectedTab) {
+                switch (selected) {
                     case 0:
                         this.refs.fundErrors && this.setState({}, () => {
                             ReactDOM.findDOMNode(this.refs.fundErrors).focus()
+                            focusWasSet()
                         })
                         break
                     case 1:
                         this.refs.fundVisiblePolicies && this.setState({}, () => {
                             ReactDOM.findDOMNode(this.refs.fundVisiblePolicies).focus()
+                            focusWasSet()
                         })
                         break
                     case 2:
-                        this.refs.fundPackets && this.refs.fundPackets.getWrappedInstance().focus()
+                        if (this.refs.fundPackets) {
+                            this.setState({}, () => {
+                                if (this.refs.fundPackets.getWrappedInstance().focus()) {
+                                    focusWasSet()
+                                }
+                            })
+                        }
+                        break
+                    case 3:
+                        if (this.refs.fundFiles) {
+                            this.setState({}, () => {
+                                if (this.refs.fundFiles.getWrappedInstance().focus()) {
+                                    focusWasSet()
+                                }
+                            })
+                        }
                         break
                     default:
-                        ref = null
+                        focusWasSet()
                         break
                 }
-                focusWasSet()
             }
         }
     }
@@ -193,16 +208,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
     getChildContext() {
         return { shortcuts: shortcutManager };
-    }
-
-    getActiveFundId() {
-        var arrRegion = this.props.arrRegion;
-        var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
-        if (activeFund) {
-            return activeFund.id;
-        } else {
-            return null;
-        }
     }
 
     /**
@@ -240,7 +245,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.dispatch(showRegisterJp(!this.props.arrRegion.showRegisterJp));
     }
 
-
     handleBulkActionsDialog() {
         this.dispatch(modalDialogShow(this, i18n('arr.fund.title.bulkActions'),
             <BulkActionsDialog mandatory={false}/>
@@ -252,6 +256,60 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.dispatch(fundActionFormChange(versionId, {nodes: [subNode]}));
         this.dispatch(fundActionFormShow(versionId));
         this.dispatch(routerNavigate('/arr/actions'));
+    }
+
+    handleChangeFundSettings() {
+        const {userDetail} = this.props;
+        var activeInfo = this.getActiveInfo();
+
+        let fundId = activeInfo.activeFund.id;
+
+        var settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', fundId);
+        var dataRight = settings.value ? JSON.parse(settings.value) : null;
+        var settings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
+        var dataCenter = settings.value ? JSON.parse(settings.value) : null;
+
+        var init = {
+            rightPanel: {
+                tabs: [
+                    {name: i18n('arr.panel.title.errors'), key: 0, checked: dataRight && dataRight[0] !== undefined ? dataRight[0] : true},
+                    {name: i18n('arr.panel.title.visiblePolicies'), key: 1, checked: dataRight && dataRight[1] !== undefined ? dataRight[1] : true},
+                    {name: i18n('arr.panel.title.packets'), key: 2, checked: dataRight && dataRight[2] !== undefined ? dataRight[2] : true},
+                    {name: i18n('arr.panel.title.files'), key: 3, checked: dataRight && dataRight[3] !== undefined ? dataRight[3] : true},
+                ]
+            },
+            centerPanel: {
+                panels: [
+                    {name: i18n('arr.fund.settings.panel.center.parents'), key: 'parents', checked: dataCenter && dataCenter['parents'] !== undefined ? dataCenter['parents'] : true},
+                    {name: i18n('arr.fund.settings.panel.center.children'), key: 'children', checked: dataCenter && dataCenter['children'] !== undefined ? dataCenter['children'] : true},
+                ]
+            }
+        }
+
+        var form = <FundSettingsForm initialValues={init} onSubmitForm={this.handleChangeFundSettingsSubmit.bind(this)} />;
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.settings.title'), form));
+    }
+
+    handleChangeFundSettingsSubmit(data) {
+        const {userDetail} = this.props;
+        var activeInfo = this.getActiveInfo();
+        let fundId = activeInfo.activeFund.id;
+
+        var settings = userDetail.settings;
+
+        var rightPanelItem = getOneSettings(settings, 'FUND_RIGHT_PANEL', 'FUND', fundId);
+        var value = {};
+        data.rightPanel.tabs.map((item) => {value[item.key] = item.checked;});
+        rightPanelItem.value = JSON.stringify(value);
+        settings = setSettings(settings, rightPanelItem.id, rightPanelItem);
+
+        var centerPanelItem = getOneSettings(settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
+        var value = {};
+        data.centerPanel.panels.map((item) => {value[item.key] = item.checked;});
+        centerPanelItem.value = JSON.stringify(value);
+        settings = setSettings(settings, centerPanelItem.id, centerPanelItem);
+
+        this.dispatch(userDetailsSaveSettings(settings));
     }
 
     /**
@@ -290,6 +348,11 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         if (indexFund !== null) {
             var activeFund = arrRegion.funds[indexFund];
 
+            altActions.push(
+                <Button key="fund-settings" onClick={this.handleChangeFundSettings.bind(this)} ><Icon glyph="fa-wrench"/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.settings.ui')}</span></div>
+                </Button>)
+
             var nodeIndex = activeFund.nodes.activeIndex;
             if (nodeIndex !== null) {
                 var activeNode = activeFund.nodes.nodes[nodeIndex];
@@ -321,7 +384,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
 
         return (
-            <Ribbon arr fundId={activeInfo.activeFund ? activeInfo.activeFund.id : null} altSection={altSection} itemSection={itemSection}/>
+            <Ribbon arr subMenu fundId={activeInfo.activeFund ? activeInfo.activeFund.id : null} altSection={altSection} itemSection={itemSection}/>
         )
     }
 
@@ -400,7 +463,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     renderFundVisiblePolicies(activeFund) {
-
         var nodesPolicy = activeFund.fundNodesPolicy;
 
         if (!nodesPolicy.fetched) {
@@ -558,19 +620,19 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     handleTabSelect(item) {
-        const {arrRegion} = this.props;
-        _selectedTab = item.id;
+        const {arrRegion, tab} = this.props;
 
-        if (_selectedTab === 1) {
+        this.dispatch(selectTab('arr-as', item.id));
+
+        if (item.id === 1) {
             var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
             this.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId));
         }
-
-        this.setState({});
     }
 
     renderPanel() {
-        const {developer, arrRegion, userDetail} = this.props;
+        const {developer, arrRegion, userDetail, tab} = this.props;
+        let selected = tab.values['arr-as'] ? tab.values['arr-as'] : 0;
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
 
         var node
@@ -584,31 +646,43 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var tabContent
         var tabIndex = 0
 
-        items.push({id: tabIndex, title: i18n('arr.panel.title.errors')});
-        if (_selectedTab === tabIndex) tabContent = this.renderFundErrors(activeFund)
+        var settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', activeFund.id);
+        var settingsValues = settings.value ? JSON.parse(settings.value) : null;
+
+        if (settingsValues == null || settingsValues[tabIndex]) {
+            items.push({id: tabIndex, title: i18n('arr.panel.title.errors')});
+            if (selected === tabIndex) tabContent = this.renderFundErrors(activeFund)
+        }
         tabIndex++;
 
-        items.push({id: tabIndex, title: i18n('arr.panel.title.visiblePolicies')});
-        if (_selectedTab === tabIndex) tabContent = this.renderFundVisiblePolicies(activeFund)
+        if (settingsValues == null || settingsValues[tabIndex]) {
+            items.push({id: tabIndex, title: i18n('arr.panel.title.visiblePolicies')});
+            if (selected === tabIndex) tabContent = this.renderFundVisiblePolicies(activeFund)
+        }
         tabIndex++;
 
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
-            items.push({id: tabIndex, title: i18n('arr.panel.title.packets')});
-            if (_selectedTab === tabIndex) tabContent = this.renderFundPackets(activeFund)
+            if (settingsValues == null || settingsValues[tabIndex]) {
+                items.push({id: tabIndex, title: i18n('arr.panel.title.packets')});
+                if (selected === tabIndex) tabContent = this.renderFundPackets(activeFund)
+            }
             tabIndex++;
         }
-        items.push({id: tabIndex, title: i18n('arr.panel.title.files')});
-        if (_selectedTab === tabIndex) tabContent = this.renderFundFiles(activeFund)
-        tabIndex++;
+
+        if (settingsValues == null || settingsValues[tabIndex]) {
+            items.push({id: tabIndex, title: i18n('arr.panel.title.files')});
+            if (selected === tabIndex) tabContent = this.renderFundFiles(activeFund)
+            tabIndex++;
+        }
 
         // pouze v developer modu
         if (developer.enabled && node) {
             items.push({id: tabIndex, title: i18n('developer.title.descItems')});
-            if (_selectedTab === tabIndex) tabContent = this.renderDeveloperDescItems(activeFund, node)
+            if (selected === tabIndex) tabContent = this.renderDeveloperDescItems(activeFund, node)
             tabIndex++;
 
             items.push({id: tabIndex, title: i18n('developer.title.scenarios')});
-            if (_selectedTab === tabIndex) tabContent = this.renderDeveloperScenarios(activeFund, node)
+            if (selected === tabIndex) tabContent = this.renderDeveloperScenarios(activeFund, node)
             tabIndex++;
         }
         // -----------
@@ -617,7 +691,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             <Tabs.Container>
 
                 <Tabs.Tabs items={items}
-                           activeItem={{id: _selectedTab}}
+                           activeItem={{id: selected}}
                            onSelect={this.handleTabSelect}
                 />
                 <Tabs.Content>
@@ -656,97 +730,85 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         )
     }
 
-    render() {
-        const {focus, splitter, arrRegion, userDetail, ruleSet, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+    handleSetExtendedView(showExtendedView) {
+        this.dispatch(fundExtendedView(showExtendedView));
+    }
 
-        var showRegisterJp = arrRegion.showRegisterJp;
+    renderCenterPanel() {
+        const {arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+        const showRegisterJp = arrRegion.showRegisterJp;
+        const activeFund = this.getActiveFund(this.props);
 
-        var funds = arrRegion.funds;
-        var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
-
-        if (userDetail.hasArrPage(activeFund ? activeFund.id : null)) { // má právo na tuto stránku
-            var leftPanel;
-            if (!arrRegion.extendedView && activeFund) {
-                leftPanel = (
-                    <FundTreeTabs
-                        funds={funds}
-                        activeFund={activeFund}
-                        focus={focus}
-                    />
-                )
-
-
-            }
-
-            var centerPanel;
-            if (activeFund) {
-                if (arrRegion.extendedView) {   // rozšířené zobrazení stromu AS
-                    centerPanel = (
-                        <FundExtendedView
-                            fund={activeFund}
-                            versionId={activeFund.versionId}
-                            descItemTypes={descItemTypes}
-                            packetTypes={packetTypes}
-                            calendarTypes={calendarTypes}
-                            rulDataTypes={rulDataTypes}
-                            ruleSet={ruleSet}
-                        />
-                    )
-                } else if (activeFund.nodes) {
-                    var packets = [];
-                    var fundId = this.getActiveFundId();
-                    if (fundId && arrRegion.packets[fundId]) {
-                        packets = arrRegion.packets[fundId].items;
-                    }
-
-                    centerPanel = (
-                        <NodeTabs
-                            versionId={activeFund.versionId}
-                            fund={activeFund}
-                            closed={activeFund.closed}
-                            nodes={activeFund.nodes.nodes}
-                            activeIndex={activeFund.nodes.activeIndex}
-                            rulDataTypes={rulDataTypes}
-                            calendarTypes={calendarTypes}
-                            descItemTypes={descItemTypes}
-                            packetTypes={packetTypes}
-                            packets={packets}
-                            fundId={fundId}
-                            showRegisterJp={showRegisterJp}
-                        />
-                    )
-                }
-            } else {
-                centerPanel = (
-                    <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>
-                )
-            }
-
-            var rightPanel;
-            if (activeFund) {
-                rightPanel = this.renderPanel()
-            }
-        } else {
-            centerPanel = <div>{i18n('global.insufficient.right')}</div>
-        }
-
-        return (
-            <Shortcuts name='Arr' handler={this.handleShortcuts}>
-                <PageLayout
-                    splitter={splitter}
-                    className='fa-page'
-                    ribbon={this.buildRibbon()}
-                    leftPanel={leftPanel}
-                    centerPanel={centerPanel}
-                    rightPanel={rightPanel}
+        if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, renderuje se zde
+            return (
+                <FundTreeMain
+                    className="extended-tree"
+                    fund={activeFund}
+                    cutLongLabels={false}
+                    versionId={activeFund.versionId}
+                    {...activeFund.fundTree}
+                    actionAddons={<Button onClick={() => {this.handleSetExtendedView(false)}} className='extended-view-toggle'><Icon glyph='fa-compress'/></Button>}
                 />
-            </Shortcuts>
-        )
+            )
+        } else {    // standardní zobrazení pořádání - záložky node
+            var packets = [];
+            var fundId = activeFund.id;
+            if (fundId && arrRegion.packets[fundId]) {
+                packets = arrRegion.packets[fundId].items;
+            }
+
+            return (
+                <NodeTabs
+                    versionId={activeFund.versionId}
+                    fund={activeFund}
+                    closed={activeFund.closed}
+                    nodes={activeFund.nodes.nodes}
+                    activeIndex={activeFund.nodes.activeIndex}
+                    rulDataTypes={rulDataTypes}
+                    calendarTypes={calendarTypes}
+                    descItemTypes={descItemTypes}
+                    packetTypes={packetTypes}
+                    packets={packets}
+                    fundId={fundId}
+                    showRegisterJp={showRegisterJp}
+                />
+            )
+        }
+    }
+
+    renderLeftPanel() {
+        const {focus, arrRegion} = this.props;
+        const activeFund = this.getActiveFund(this.props);
+
+        if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, ale renderuje se v center panelu, tento bude prázdný
+            return null;
+        } else {    // standardní zobrazení pořádání, strom AS
+            return (
+                <FundTreeMain
+                    className="fund-tree-container"
+                    fund = {activeFund}
+                    cutLongLabels={true}
+                    versionId={activeFund.versionId}
+                    {...activeFund.fundTree}
+                    ref='tree'
+                    focus={focus}
+                    actionAddons={<Button onClick={() => {this.handleSetExtendedView(true)}} className='extended-view-toggle'><Icon glyph='fa-arrows-alt'/></Button>}
+                />
+            )
+        }
+    }
+
+    hasPageShowRights(userDetail, activeFund) {
+        return userDetail.hasArrPage(activeFund ? activeFund.id : null);
+    }
+
+    renderRightPanel() {
+        return this.renderPanel();
     }
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, form, focus, developer, userDetail} = state
+    const {splitter, arrRegion, refTables, form, focus, developer, userDetail, tab} = state
     return {
         splitter,
         arrRegion,
@@ -758,6 +820,7 @@ function mapStateToProps(state) {
         descItemTypes: refTables.descItemTypes,
         packetTypes: refTables.packetTypes,
         ruleSet: refTables.ruleSet,
+        tab,
     }
 }
 
@@ -772,10 +835,6 @@ ArrPage.propTypes = {
     focus: React.PropTypes.object.isRequired,
     userDetail: React.PropTypes.object.isRequired,
     ruleSet: React.PropTypes.object.isRequired,
-}
-
-ArrPage.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
 }
 
 module.exports = connect(mapStateToProps)(ArrPage);

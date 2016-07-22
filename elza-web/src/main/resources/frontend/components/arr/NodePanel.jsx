@@ -26,6 +26,7 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {Utils} from 'components/index.jsx';
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
@@ -142,7 +143,10 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     handleAccordionKeyDown(event) {
-        if (document.activeElement === ReactDOM.findDOMNode(this.refs.accordionContent)) { // focus má accordion
+        if (
+            document.activeElement === ReactDOM.findDOMNode(this.refs.accordionContent) ||
+            document.activeElement === ReactDOM.findDOMNode(this.refs.innerAccordionWrapper)
+        ) { // focus má accordion
             if (accordionKeyDownHandlers[event.key]) {
                 accordionKeyDownHandlers[event.key].call(this, event)
             }
@@ -194,13 +198,13 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         if (canSetFocus()) {
             if (isFocusFor(focus, 'arr', 2, 'accordion') || (node.selectedSubNodeId === null && isFocusFor(focus, 'arr', 2))) {
                 this.setState({}, () => {
-                   ReactDOM.findDOMNode(this.refs.accordionContent).focus()
+                   ReactDOM.findDOMNode(this.refs.innerAccordionWrapper).focus()
                    focusWasSet()
                 })
             } else if (isFocusExactFor(focus, 'arr', 2)) {   // jen pokud není třeba focus na něco nižšího, např. prvek formuláře atp
                 // Voláne jen pokud formulář úspěšně focus nenastavil - např. pokud jsou všechna pole formuláře zamčena
                 this.setState({}, () => {
-                    ReactDOM.findDOMNode(this.refs.accordionContent).focus()
+                    ReactDOM.findDOMNode(this.refs.innerAccordionWrapper).focus()
                     focusWasSet()
                 })
             }
@@ -625,7 +629,7 @@ return true
      * @return {Object} view
      */
     renderAccordion(form, recordInfo) {
-        const {node, versionId } = this.props;
+        const {node, versionId, userDetail, fund, fundId} = this.props;
 
         var rows = [];
 
@@ -634,6 +638,44 @@ return true
                 <Button key="prev" onClick={()=>this.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))}><Icon glyph="fa-chevron-left" />{i18n('arr.fund.prev')}</Button>
             )
         }
+
+        var actions = []
+        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+            if (node.nodeInfoFetched && !isFundRootId(node.id) && !closed) {
+                actions.push(
+                    <AddNodeDropdown key="end"
+                                     ref='addNodeChild'
+                                     title={i18n('nodePanel.addSubNode')}
+                                     glyph="fa-plus-circle"
+                                     action={this.handleAddNodeAtEnd}
+                                     node={this.props.node}
+                                     version={fund.versionId}
+                                     direction="CHILD"
+                    />
+                )
+            }
+        }
+        var actionsPanel = (
+            <div key='actions' className='actions-container'>
+                <div key='actions' className='actions'>
+                    {actions}
+                    <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey))}><Icon glyph="fa-backward" />{i18n('arr.fund.subNodes.prevPage')}</div>
+                    <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey))}><Icon glyph="fa-forward" />{i18n('arr.fund.subNodes.nextPage')}</div>
+
+                    <div className='btn btn-default' onClick={this.handleFindPosition} title={i18n('arr.fund.subNodes.findPosition')} ><Icon glyph="fa-hand-o-down" /></div>
+
+                    <Search
+                        tabIndex={-1}
+                        ref='search'
+                        className='search-input'
+                        placeholder={i18n('search.input.search')}
+                        value={node.filterText}
+                        onClear={() => {this.dispatch(fundNodeSubNodeFulltextSearch(''))}}
+                        onSearch={(value) => {this.dispatch(fundNodeSubNodeFulltextSearch(value))}}
+                    />
+                </div>
+            </div>
+        )
 
         for (var a=node.viewStartIndex; (a<node.viewStartIndex + node.pageSize) && (a < node.childNodes.length); a++) {
             var item = node.childNodes[a];
@@ -692,8 +734,13 @@ return true
 
         return (
             <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={this.handleShortcuts}>
-                <div tabIndex={0} className='content-wrapper' ref='accordionContent' onKeyDown={this.handleAccordionKeyDown}>
-                    {rows}
+                <div tabIndex={0} className='inner-wrapper' ref="innerAccordionWrapper" onKeyDown={this.handleAccordionKeyDown}>
+                    <div className="menu-wrapper">
+                        {actionsPanel}
+                    </div>
+                    <div className='content-wrapper' ref='accordionContent'>
+                        {rows}
+                    </div>
                 </div>
             </Shortcuts>
         )
@@ -740,52 +787,23 @@ return true
             return <Loading value={i18n('global.data.loading.node')}/>
         }
 
-        var parents = this.renderParents(this.getParentNodes().reverse());
-        var children;
-        if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
-            children = this.renderChildren(this.getChildNodes());
-        } else {
-            children = <div key='children' className='children'><Loading value={i18n('global.data.loading.node.children')} /></div>
-        }
-        var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
+        var settings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
+        var settingsValues = settings.value ? JSON.parse(settings.value) : null;
 
-        var actions = []
-        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
-            if (node.nodeInfoFetched && !isFundRootId(node.id) && !closed) {
-                actions.push(
-                    <AddNodeDropdown key="end"
-                                    ref='addNodeChild'
-                                     title={i18n('nodePanel.addSubNode')}
-                                     glyph="fa-plus-circle"
-                                     action={this.handleAddNodeAtEnd}
-                                     node={this.props.node}
-                                     version={fund.versionId}
-                                     direction="CHILD"
-                    />
-                )
+        var showParents = settingsValues == null || settingsValues['parents'] == null || settingsValues['parents'];
+        var showChildren = settingsValues == null || settingsValues['children'] == null || settingsValues['children'];
+
+        var parents = showParents ? this.renderParents(this.getParentNodes().reverse()) : null;
+        var children;
+        if (showChildren) {
+            if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
+                children = this.renderChildren(this.getChildNodes());
+            } else {
+                children = <div key='children' className='children'><Loading value={i18n('global.data.loading.node.children')} /></div>
             }
         }
 
-        var actionsPanel = (
-            <div key='actions' className='actions-container'>
-                <div key='actions' className='actions'>
-                    {actions}
-                    <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey))}><Icon glyph="fa-backward" />{i18n('arr.fund.subNodes.prevPage')}</div>
-                    <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey))}><Icon glyph="fa-forward" />{i18n('arr.fund.subNodes.nextPage')}</div>
-
-                    <div className='btn btn-default' onClick={this.handleFindPosition} title={i18n('arr.fund.subNodes.findPosition')} ><Icon glyph="fa-hand-o-down" /></div>
-
-                    <Search
-                        ref='search'
-                        className='search-input'
-                        placeholder={i18n('search.input.search')}
-                        value={node.filterText}
-                        onClear={() => {this.dispatch(fundNodeSubNodeFulltextSearch(''))}}
-                        onSearch={(value) => {this.dispatch(fundNodeSubNodeFulltextSearch(value))}}
-                    />
-                </div>
-            </div>
-        )
+        var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
 
         var form;
         if (node.subNodeForm.fetched && calendarTypes.fetched && descItemTypes.fetched) {
@@ -849,7 +867,6 @@ return true
         return (
             <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts}>
                 <div key='main' className='main'>
-                    {actionsPanel}
                     {parents}
                     {this.renderAccordion(form, record)}
                     {children}

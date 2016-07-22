@@ -160,7 +160,9 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
     }
 
     render() {
-        const {fundOutputDetail, outputTypes, templates, fund, versionId, packets, packetTypes, descItemTypes, calendarTypes, rulDataTypes} = this.props;
+        const {fundOutputDetail, focus,
+            fund, versionId, packets, packetTypes, descItemTypes,
+            calendarTypes, rulDataTypes, closed, readMode} = this.props;
 
         if (fundOutputDetail.id === null) {
             return <div className='arr-output-detail-container'></div>
@@ -185,6 +187,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
                     subNodeForm={fundOutputDetail.subNodeForm}
                     closed={!this.isEditable()}
                     focus={focus}
+                    readMode={closed || readMode}
                 />
             )
         } else {
@@ -196,7 +199,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
                 <div className={"arr-output-detail-container"}>
                     <div className="output-definition-commons">
                         <OutputInlineForm
-                            disabled={!this.isEditable()}
+                            disabled={closed || readMode || !this.isEditable()}
                             initData={fundOutputDetail.outputDefinition}
                             onSave={this.handleSaveOutput}
                             />
@@ -211,7 +214,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
                             nodes={fundOutputDetail.outputDefinition.nodes}
                             onDeleteNode={this.handleRemoveNode}
                             onAddNode={this.handleAddNodes}
-                            readOnly={!this.isEditable()}
+                            readOnly={closed || readMode || !this.isEditable()}
                         />
                     </div>
 
@@ -241,6 +244,8 @@ ArrOutputDetail.propTypes = {
     packets: React.PropTypes.array.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     userDetail: React.PropTypes.object.isRequired,
+    closed: React.PropTypes.bool.isRequired,
+    readMode: React.PropTypes.bool.isRequired,
     fundOutputDetail: React.PropTypes.object.isRequired,
 };
 

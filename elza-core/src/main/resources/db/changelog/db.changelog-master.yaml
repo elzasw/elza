@@ -95,3 +95,5 @@ databaseChangeLog:
      file: db/changelog/db.changelog-1.46.xml
   - include:
      file: db/changelog/db.changelog-1.47.xml
+  - include:
+     file: db/changelog/db.changelog-1.48.xml

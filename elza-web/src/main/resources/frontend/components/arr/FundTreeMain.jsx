@@ -147,11 +147,13 @@ return true
     }
 
     render() {
-        const {fund, cutLongLabels} = this.props;
+        const {actionAddons, className, fund, cutLongLabels} = this.props;
 
         return (
             <FundTreeLazy 
                 ref='tree'
+                className={className}
+                actionAddons={actionAddons}
                 {...this.props}
                 cutLongLabels={cutLongLabels}
                 onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MAIN, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, node))}}

@@ -10,6 +10,8 @@ import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import {OverlayTrigger, Tooltip} from 'react-bootstrap';
+import DescItemLabel from './DescItemLabel.jsx'
+import {indexById} from 'stores/app/utils.jsx'
 
 var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
     constructor(props) {
@@ -45,7 +47,19 @@ var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked} = this.props;
+        const {descItem, locked, readMode, calendarTypes} = this.props;
+
+        if (readMode) {
+
+            let index = indexById(calendarTypes.items, descItem.calendarTypeId);
+
+            let calendar = calendarTypes.items[index].name;
+
+
+            return (
+                <DescItemLabel value={calendar + ": " + descItem.value} />
+            )
+        }
 
         let tooltip = <Tooltip id='tt'>
                         <b>Formát datace</b><br />

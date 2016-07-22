@@ -236,3 +236,25 @@ export function fundOutputStateChangeToastr(versionId, entityId, state) {
         }
     }
 }
+
+
+export function userChange(userIds) {
+    return {
+        type: types.CHANGE_USER,
+        userIds
+    }
+}
+
+export function groupChange(ids) {
+    return {
+        type: types.CHANGE_GROUP,
+        ids
+    }
+}
+
+export function groupDelete(id) {
+    return {
+        type: types.GROUP_DELETE,
+        id
+    }
+}

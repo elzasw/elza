@@ -5,6 +5,25 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
 import {permissionReceive} from "./permission.jsx"
+import {i18n} from 'components/index.jsx'
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {savingApiWrapper} from 'actions/global/status.jsx';
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+
+export function joinGroups(userId, groupIds) {
+    return (dispatch, getState) => {
+        WebApi.joinGroup(groupIds, [userId])
+            .then(() => {
+                dispatch(modalDialogHide());
+            })
+    }
+}
+
+export function leaveGroup(userId, groupId) {
+    return (dispatch, getState) => {
+        WebApi.leaveGroup(groupId, userId)
+    }
+}
 
 export function isUserAction(action) {
     if (isUserDetailAction(action)) {
@@ -141,6 +160,43 @@ function usersUserDetailReceive(data) {
         })
         
         // Oprávnění z detailu
-        dispatch(permissionReceive("USER", data.permissions));
+        // dispatch(permissionReceive("USER", data.permissions));
+    }
+}
+
+
+export function userCreate(username, password, partyId) {
+    return (dispatch, getState) => {
+        savingApiWrapper(dispatch, WebApi.createUser(username, password, partyId)).then(response => {
+            dispatch(addToastrSuccess(i18n('admin.user.add.success')));
+            dispatch(modalDialogHide());
+            dispatch(usersSelectUser(response.id))
+        }).catch(e => {
+            console.error(e);
+        });
+    }
+}
+
+export function userPasswordChange(oldPass, newPass) {
+    return (dispatch, getState) => {
+        savingApiWrapper(dispatch, WebApi.changePasswordUser(oldPass, newPass)).then(response => {
+            dispatch(addToastrSuccess(i18n('admin.user.passwordChange.success')));
+            dispatch(modalDialogHide())
+        });
+    }
+}
+
+export function adminPasswordChange(userId, newPassword) {
+    return (dispatch, getState) => {
+        savingApiWrapper(dispatch, WebApi.changePassword(userId, newPassword)).then(response => {
+            dispatch(addToastrSuccess(i18n('admin.user.passwordChange.success')));
+            dispatch(modalDialogHide())
+        });
+    }
+}
+
+export function adminUserChangeActive(userId, active) {
+    return (dispatch, getState) => {
+        savingApiWrapper(dispatch, WebApi.changeActive(userId, active))
     }
 }

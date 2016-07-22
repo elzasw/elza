@@ -65,6 +65,12 @@ export default function group(state = initialState, action = {}) {
                 groups: action.data.groups,
                 groupsCount: action.data.groupsCount,
             }
+        case types.GROUP_DELETE:
+        case types.CHANGE_GROUP:
+            return {
+                currentDataKey: '',
+                groupDetail: groupDetail(state.groupDetail, action)
+            }
         default:
             return state
     }

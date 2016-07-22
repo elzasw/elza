@@ -284,7 +284,7 @@ const AddPartyForm = class AddPartyForm extends AbstractReactComponent {
             <div>
                 <Modal.Body>
                     <ul className="errors">
-                        {this.state.errors.map(i=> {return <li>{i}</li>})}
+                        {this.state.errors.map((i,index) => {return <li key={"error" + index}>{i}</li>})}
                     </ul>
                     <form>
                         <div className="line">

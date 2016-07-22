@@ -5,23 +5,26 @@ const initialState = {
     callback: null
 }
 
-export default function login(state = initialState, action) {
+export default function login(state = initialState, action = {}) {
     switch (action.type) {
         case types.LOGIN_SUCCESS:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 logged: true,
                 callback: null
-            })
+            }
         case types.LOGIN_FAIL:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 logged: false,
                 callback: action.callback
-            })
+            }
         case types.LOGOUT:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 logged: false,
                 callback: null
-            })
+            }
         default:
             return state
     }

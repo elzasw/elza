@@ -4,18 +4,29 @@ import {AbstractReactComponent} from 'components/index.jsx'
 
 const FormInput = class FormInput extends AbstractReactComponent {
     render() {
-        const {label, error, touched, value, ...otherProps} = this.props;
+        const {label, error, touched, value, inline, ...otherProps} = this.props;
+
         const hasError = touched && error;
-        return <FormGroup validationState={hasError ? 'error' : ''}>
+        let inlineProps = {};
+        if (inline) {
+            error && (inlineProps.title = error);
+        }
+
+        return <FormGroup validationState={hasError ? 'error' : null}>
             {label && <ControlLabel>{label}</ControlLabel>}
             <FormControl
                 ref='input'
                 value={value}
                 onChange={this.handleChange}
                 {...otherProps}
+                {...inlineProps}
             />
-            {hasError && <HelpBlock>{error}</HelpBlock>}
+            {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
         </FormGroup>
+    }
+
+    static defaultProps = {
+        inline: false
     }
 }
 

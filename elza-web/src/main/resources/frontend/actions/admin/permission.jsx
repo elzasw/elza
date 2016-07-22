@@ -5,6 +5,17 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
 
+export function changeUserPermission(userId, permissions) {
+    return (dispatch, getState) => {
+        WebApi.changeUserPermission(userId, permissions);
+    }
+}
+export function changeGroupPermission(groupId, permissions) {
+    return (dispatch, getState) => {
+        WebApi.changeGroupPermission(groupId, permissions);
+    }
+}
+
 export function isPermissionAction(action) {
     switch (action.type) {
         case types.PERMISSIONS_PERMISSION_CHANGE:

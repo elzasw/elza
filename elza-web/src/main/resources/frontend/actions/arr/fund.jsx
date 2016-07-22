@@ -10,7 +10,7 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {nodesRequest, nodesReceive} from 'actions/arr/node.jsx'
 import {createFundRoot, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {fundsSelectFund} from 'actions/fund/fund.jsx'
-
+import {savingApiWrapper} from 'actions/global/status.jsx';
 /**
  * Fetch dat pro otevřené záložky AS, pokud je potřeba - např. název atp.
  */
@@ -66,12 +66,20 @@ export function fundsReceive(funds) {
  */
 export function createFund(data) {
     return dispatch => {
-        return WebApi.createFund(data.name, data.ruleSetId, data.institutionId, data.internalCode, data.dateRange)
+        return savingApiWrapper(dispatch, WebApi.createFund(data.name, data.ruleSetId, data.institutionId, data.internalCode, data.dateRange))
             .then((fund) => {
                 dispatch(addToastrSuccess(i18n("arr.fund.title.added")));
                 dispatch(modalDialogHide());
                 dispatch(fundsSelectFund(fund.id))
             });
+    }
+}
+
+export function updateFund(data) {
+    return dispatch => {
+        return savingApiWrapper(dispatch, WebApi.updateFund(data)).then((response) => {
+            dispatch(modalDialogHide());
+        });
     }
 }
 
@@ -82,7 +90,7 @@ export function createFund(data) {
  */
 export function approveFund(versionId, dateRange) {
     return dispatch => {
-        return WebApi.approveVersion(versionId, dateRange)
+        return savingApiWrapper(dispatch, WebApi.approveVersion(versionId, dateRange))
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.fund.title.approved")));
                 dispatch(approveFundResult(json.versionId))

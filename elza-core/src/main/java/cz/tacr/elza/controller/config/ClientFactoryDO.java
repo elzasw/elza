@@ -836,4 +836,15 @@ public class ClientFactoryDO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.mapAsList(permissions, UsrPermission.class);
     }
+
+    /**
+     * Převod seznamu nastavení VO na DO.
+     *
+     * @param settings seznam nastavení
+     * @return seznam DO
+     */
+    public List<UISettings> createSettingsList(final List<UISettingsVO> settings) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.mapAsList(settings, UISettings.class);
+    }
 }

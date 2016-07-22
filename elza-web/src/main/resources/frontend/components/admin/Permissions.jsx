@@ -1,62 +1,116 @@
+/**
+ * Formulář inline editace oprávnění.
+ */
+
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {Button} from 'react-bootstrap'
+import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, AddRemoveList, i18n, FormInput} from 'components/index.jsx';
+import {decorateFormField} from 'components/form/FormUtils.jsx'
+import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx'
+import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
+import {initForm} from "actions/form/inlineForm.jsx"
+import {indexById} from 'stores/app/utils.jsx'
+import FundField from './FundField.jsx'
+import ScopeField from './ScopeField.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-import {permissionBlur, permissionAdd, permissionChange, permissionReceive, permissionRemove} from 'actions/admin/permission.jsx'
 
 require('./Permissions.less');
 
-const Permissions = class Permissions extends AbstractReactComponent {
+/**
+ * Validace formuláře.
+ */
+const validate = (values, props) => {
+    const errors = {};
+
+    errors.permissions = values.permissions.map(permission => {
+        var result = {}
+
+        if (!permission.permission) {
+            result.permission = i18n("global.validation.required");
+        } else {
+            const permInfo = perms.all[permission.permission]
+            if (permInfo) {
+                if (permInfo.fund && !permission.fund) {
+                    result.fund = i18n("global.validation.required");
+                }
+                if (permInfo.scope && !permission.scope) {
+                    result.scope = i18n("global.validation.required");
+                }
+            }
+        }
+
+        return result;
+    });
+
+    return errors;
+};
+
+const Permissions2 = class Permissions2 extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods(
             "renderPermission",
-            "handleChangePermission",
-            "handleChangeValue",
             "handleAdd",
             "handleRemove",
+            "handlePermissionChange",
         );
+
+        this.state = {
+            scopes: this.getScopes(props)
+        };
     }
 
     componentDidMount() {
+        this.props.initForm(this.props.onSave);
     }
 
     componentWillReceiveProps(nextProps) {
+        this.setState({
+            scopes: this.getScopes(nextProps)
+        });
+    }
+
+    getScopes(props) {
+        const {scopesData} = props;
+        const scopeIndex = indexById(scopesData.scopes, null, 'versionId');
+        let scopes;
+        if (scopeIndex !== null) {
+            scopes = scopesData.scopes[scopeIndex].scopes;
+        } else {
+            scopes = [];
+        }
+        return scopes;
     }
 
     handleAdd() {
-        const {area} = this.props;
-        this.dispatch(permissionAdd(area));
+        const {fields: {permissions}} = this.props;
+        permissions.addField({});
     }
-    
+
     handleRemove(permission, index) {
-        const {area} = this.props;
-        this.dispatch(permissionRemove(area, index));
+        const {fields: {permissions}} = this.props;
+        permissions.removeField(index);
     }
-    
-    handleChangePermission(permission, index, e) {
-        const {area} = this.props;
-        const value = e.target.value;
-        this.dispatch(permissionChange(area, index, {...permission, permission: value}));
-    }
-    
-    handleChangeValue(e) {
-        const value = e.target.value;
+
+    handlePermissionChange(permission, event) {
+        // Při změně případně vynulujeme doplňující hodnoty - např. odkaz na fund nebo scope
+        permission.fund.onChange(null);
+        permission.scope.onChange(null);
+
+        // Vlastní změna hodnoty permission
+        permission.permission.onChange(event);
     }
 
     renderPermission(permission, index) {
-        const {area} = this.props;
-        const permInfo = perms.all[permission.permission]
-
+        const {scopes} = this.state;
+        const permInfo = perms.all[permission.permission.value]
         const permInput = (
             <FormInput
                 componentClass="select"
-                value={permission.permission}
-                onChange={this.handleChangePermission.bind(this, permission, index)}
-                onBlur={() => this.dispatch(permissionBlur(area, index))}
+                {...permission.permission}
+                onChange={this.handlePermissionChange.bind(this, permission)}
+                inline
             >
                 <option />
                 {Object.keys(perms.all).map(perm => {
@@ -69,20 +123,18 @@ const Permissions = class Permissions extends AbstractReactComponent {
         if (permInfo && (permInfo.fund || permInfo.scope)) {
             if (permInfo.fund) {
                 permValue = (
-                    <FormInput
-                        type="text"
-                        value={permission.fundId}
-                        onChange={this.handleChangeValue.bind(this, permission, index)}
-                        onBlur={() => this.dispatch(permissionBlur(area, index))}
+                    <FundField
+                        {...permission.fund}
+                        inline
                     />
                 )
             } else if (permInfo.scope) {
                 permValue = (
-                    <FormInput
+                    <ScopeField
                         type="text"
-                        value={permission.scopeId}
-                        onChange={this.handleChangeValue.bind(this, permission, index)}
-                        onBlur={() => this.dispatch(permissionBlur(area, index))}
+                        {...permission.scope}
+                        inline
+                        scopes={scopes}
                     />
                 )
             }
@@ -99,12 +151,12 @@ const Permissions = class Permissions extends AbstractReactComponent {
     }
 
     render() {
-        const {permissions, addTitle, removeTitle} = this.props;
+        const {fields: {permissions}, addTitle, removeTitle} = this.props;
 
         return (
             <AddRemoveList
                 className="permissions-container"
-                items={permissions}
+                items={[...permissions]}
                 onAdd={this.handleAdd}
                 onRemove={this.handleRemove}
                 addTitle={addTitle}
@@ -115,15 +167,30 @@ const Permissions = class Permissions extends AbstractReactComponent {
     }
 };
 
-Permissions.propTypes = {
-    permissions: React.PropTypes.array.isRequired,
+Permissions2.propTypes = {
     area: React.PropTypes.string.isRequired,
+    scopesData: React.PropTypes.object.isRequired,
+    addTitle: React.PropTypes.string.isRequired,
+    removeTitle: React.PropTypes.string.isRequired,
+    initData: React.PropTypes.object,
+    onSave: React.PropTypes.func.isRequired,
 };
 
-function mapStateToProps(state) {
-    return {
-    }
-}
-
-module.exports = connect(mapStateToProps)(Permissions);
-
+const fields = [
+    "permissions[].id",
+    "permissions[].permission",
+    "permissions[].fund",
+    "permissions[].scope",
+];
+module.exports = reduxForm({
+        form: 'permissionsEditForm',
+        fields,
+        validate,
+    },(state, props) => {
+        return {
+            initialValues: props.initData,
+            scopesData: state.refTables.scopesData,
+        }
+    },
+    {initForm: (onSave) => (initForm("permissionsEditForm", validate, onSave))}
+)(Permissions2);

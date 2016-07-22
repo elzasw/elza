@@ -9,6 +9,7 @@ import ReactDOM from 'react-dom';
 import {AbstractReactComponent} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
+import DescItemLabel from './DescItemLabel.jsx'
 
 var DescItemText = class DescItemText extends AbstractReactComponent {
     constructor(props) {
@@ -22,7 +23,13 @@ var DescItemText = class DescItemText extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked} = this.props;
+        const {descItem, locked, readMode} = this.props;
+
+        if (readMode) {
+            return (
+                <DescItemLabel value={descItem.value} />
+            )
+        }
 
         return (
             <div className='desc-item-value'>

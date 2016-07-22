@@ -1,0 +1,30 @@
+.datagrid-content-container {
+    height: 100%;
+
+    padding: 5px 4px;
+
+    display: flex;
+    width: 100%;
+    border-left: none;
+
+    .fund-datagrid-container-wrap {
+        position: relative;
+        flex-grow: 1;
+        .fund-datagrid-container {
+            overflow: hidden;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            height: 100%;
+            .actions-container {
+                flex-shrink: 0;
+            }
+            .grid-container {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+            }
+        }
+    }
+}

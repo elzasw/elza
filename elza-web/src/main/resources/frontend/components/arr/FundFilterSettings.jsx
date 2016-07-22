@@ -125,7 +125,7 @@ const renderUnitdateFields = (calendarTypes, fields) => {
     }
 }
 
-var FundFilterSettings = class FundFilterSettings extends AbstractReactComponent {
+const FundFilterSettings = class FundFilterSettings extends AbstractReactComponent {
     constructor(props) {
         super(props);
 

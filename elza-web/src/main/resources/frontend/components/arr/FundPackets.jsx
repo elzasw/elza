@@ -136,7 +136,12 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
     }
 
     focus() {
-        this.refs.listBox.focus()
+        if (this.refs.listBox) {
+            this.refs.listBox.focus()
+            return true;
+        } else {
+            return false;
+        }
     }
 
     render() {

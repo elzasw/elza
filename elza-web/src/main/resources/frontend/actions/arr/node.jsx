@@ -7,7 +7,7 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
 import {indexById, findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
 import {createFundRoot, isFundRootId} from 'components/arr/ArrUtils.jsx'
-
+import {savingApiWrapper} from 'actions/global/status.jsx';
 export function isNodeAction(action) {
     switch (action.type) {
         case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT:
@@ -167,7 +167,7 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
             lastUpdate: indexNode.lastUpdate,
             version: indexNode.version
         };
-        return WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName).then((json) => {
+        return savingApiWrapper(dispatch, WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName)).then((json) => {
             dispatch(fundNodeChangeAdd(versionId, json.node, indexNode, json.parentNode, direction));
             dispatch(fundSelectSubNode(versionId, json.node.id, json.parentNode));
         });

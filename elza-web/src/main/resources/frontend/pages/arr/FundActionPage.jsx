@@ -4,6 +4,8 @@
 
 require('./FundActionPage.less');
 
+var ArrParentPage = require("./ArrParentPage.jsx");
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
@@ -18,7 +20,8 @@ import {
     RibbonGroup,
     FundNodesAddForm,
     FundNodesList,
-    FormInput
+    FormInput,
+    ArrFundPanel
 } from 'components/index.jsx';
 import {Button} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
@@ -36,6 +39,7 @@ import {
     fundActionFormReset
 } from 'actions/arr/fundAction.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 
 const ActionState = {
     RUNNING: 'RUNNING',
@@ -46,10 +50,10 @@ const ActionState = {
     INTERRUPTED: 'INTERRUPTED'
 };
 
-const FundActionPage = class FundActionPage extends AbstractReactComponent {
+const FundActionPage = class FundActionPage extends ArrParentPage {
 
     constructor(props) {
-        super(props);
+        super(props, "arr-actions-page");
 
         this.bindMethods(
             'handleListBoxActionSelect',
@@ -65,12 +69,8 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
         this.state = {};
     }
 
-    getFund(props = this.props) {
-        return props.arrRegion.activeIndex !== null ? props.arrRegion.funds[props.arrRegion.activeIndex] : false;
-    }
-
     componentDidMount() {
-        const fund = this.getFund();
+        const fund = this.getActiveFund(this.props);
         if (fund) {
             this.dispatch(fundActionFetchListIfNeeded(fund.versionId));
             this.dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
@@ -79,7 +79,7 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const fund = this.getFund(nextProps);
+        const fund = this.getActiveFund(nextProps);
         if(fund) {
             this.dispatch(fundActionFetchListIfNeeded(fund.versionId));
             this.dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
@@ -87,97 +87,19 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
         }
     }
 
-    renderCenter(fund) {
-        if (!fund) {
-            return <div className='text-center center-container'>{i18n('arr.fundAction.noFa')}</div>;
-        }
-        const {fundAction: {detail, isFormVisible, config, form}, versionId} = fund;
-
-        if (isFormVisible) {
-            if (config.isFetching && !config.fetched) {
-                return <Loading />
-            }
-
-            var description = null;
-            if (form.code !== null) {
-                const index = indexById(config.data, form.code, 'code');
-                if (index !== null) {
-                    const text = config.data[index].description;
-                    description = <div>
-                        <div>Popis</div>
-                        <div>{text}</div>
-                    </div>
-                }
-            }
-            
-            return <div>
-                <h2>{i18n('arr.fundAction.form.newAction')}</h2>
-                <div>
-                <FormInput componentClass="select"
-                       label={i18n('arr.fundAction.form.type')}
-                       key='code-action'
-                       ref='code-action'
-                       className='form-control'
-                       value={form.code}
-                       onChange={(e) => {this.dispatch(fundActionFormChange(versionId, {code: e.target.value}))}}
-                       >
-                    <option key="novalue" />
-                    {config.data.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}
-                </FormInput>
-                </div>
-                {description}
-                <h2>{i18n("arr.fundAction.title.nodes")}</h2>
-                <FundNodesList
-                    nodes={form.nodes}
-                    onAddNode={this.handleFormNodesAdd}
-                    onDeleteNode={this.handleFormNodeDelete}
-                />
-            </div>
-        }
-
-        if (detail) {
-            if (detail.isFetching && !detail.fetched) {
-                return <Loading />
-            }
-            if (detail.fetched) {
-                const {data} = detail;
-                const config = this.getConfigByCode(data.code);
-                let date = null;
-                if (data.datePlanned) {
-                    date = dateTimeToString(new Date(data.datePlanned));
-                } else if (data.dateStarted) {
-                    date = dateTimeToString(new Date(data.dateStarted));
-                } else if (data.dateFinished) {
-                    date = dateTimeToString(new Date(data.dateFinished));
-                }
-
-                return <div className='detail'>
-                    <div>
-                        <h1>{config.name}</h1>
-                        <h3>{FundActionPage.getStateIcon(data.state)} {FundActionPage.getStateTranslation(data.state)}
-                            <small>{date}</small>
-                        </h3>
-                    </div>
-                    <div><textarea className='config' readOnly={true} value=""/></div>
-                    {data.error ? <div><h3>{i18n('arr.fundAction.error')}</h3>
-                        <div>{data.error}</div>
-                    </div> : ''}
-                    <FundNodesList
-                        nodes={data.nodes}
-                        readOnly
-                    />
-                </div>
-            }
-        }
+    hasPageShowRights(userDetail, activeFund) {
+        return userDetail.hasFundActionPage(activeFund ? activeFund.id : null);
     }
 
     handleRibbonFormClear() {
-        const {versionId} = this.getFund();
+        const fund = this.getActiveFund(this.props);
+        const {versionId} = fund;
         this.dispatch(fundActionFormReset(versionId));
     } // Form reset
 
     handleRibbonCopyAction() {
-        const {fundAction: {detail: {data}}, versionId} = this.getFund();
+        const fund = this.getActiveFund(this.props);
+        const {fundAction: {detail: {data}}, versionId} = fund;
         this.dispatch(fundActionFormChange(versionId, {
             nodes: data.nodes,
             code: data.code
@@ -186,33 +108,39 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
     }
 
     handleRibbonCreateAction() {
-        const {fundAction: {form}, versionId} = this.getFund();
+        const fund = this.getActiveFund(this.props);
+        const {fundAction: {form}, versionId} = fund;
         if (form.code !== '' && form.nodes && form.nodes.length > 0) {
             this.dispatch(fundActionFormSubmit(versionId))
         }
     }
 
     handleRibbonInterruptAction() {
-        const {fundAction: {detail: {currentDataKey}}} = this.getFund();
+        const fund = this.getActiveFund(this.props);
+        const {fundAction: {detail: {currentDataKey}}} = fund;
         this.dispatch(funcActionActionInterrupt(currentDataKey));
     }
 
     handleRibbonNewAction() {
-        const {versionId} = this.getFund();
+        const fund = this.getActiveFund(this.props);
+        const {versionId} = fund;
         this.dispatch(fundActionFormShow(versionId))
     }
 
     handleListBoxActionSelect(item) {
-        const {versionId} = this.getFund();
+        const fund = this.getActiveFund(this.props);
+        const {versionId} = fund;
         this.dispatch(fundActionActionSelect(versionId, item.id))
     }
 
     handleFormNodesAdd() {
-        const {versionId} = this.getFund();
+        const fund = this.getActiveFund(this.props);
+        const {versionId} = fund;
         this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesAddForm
                 onSubmitForm={(nodeIds, nodes) => {
-                    const {fundAction:{form}} = this.getFund();
+                    const fund = this.getActiveFund(this.props);
+                    const {fundAction:{form}} = fund;
                     const newNodes = [
                         ...form.nodes
                     ];
@@ -227,7 +155,8 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
     }
 
     handleFormNodeDelete(item) {
-        const {fundAction:{form}, versionId} = this.getFund();
+        const fund = this.getActiveFund(this.props);
+        const {fundAction:{form}, versionId} = fund;
         const index = indexById(form.nodes, item.id);
         if (index !== null) {
             this.dispatch(fundActionFormChange(versionId, {
@@ -243,14 +172,20 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
      * Sestavení Ribbonu.
      * @return {Object} view
      */
-    buildRibbon() {
-        const fund = this.getFund();
-        const {fundAction: {detail, isFormVisible}} = fund;
+    buildRibbon(readMode, closed) {
+        const fund = this.getActiveFund(this.props);
         const {userDetail} = this.props
+
+        var detail = false;
+        var isFormVisible = false;
+        if (fund) {
+            detail = fund.fundAction.detail;
+            isFormVisible = fund.fundAction.isFormVisible;
+        }
 
         var altActions = [];
         if (fund) {
-            if (!isFormVisible) {
+            if (!isFormVisible  && !readMode && !closed) {
                 if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) {
                     altActions.push(
                         <Button key="new-action" onClick={this.handleRibbonNewAction}><Icon glyph="fa-plus-circle"/>
@@ -263,7 +198,7 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
 
         const itemActions = [];
         if (fund) {
-            if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) {
+            if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id}) && !readMode && !closed) {
                 if (isFormVisible) {
                     itemActions.push(
                         <Button key="run-action" onClick={this.handleRibbonCreateAction}><Icon glyph="fa-play"/>
@@ -321,12 +256,13 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
         }
 
         return (
-            <Ribbon arr altSection={altSection} itemSection={itemSection}/>
+            <Ribbon arr subMenu altSection={altSection} itemSection={itemSection}/>
         )
     }
 
     getConfigByCode(code) {
-        const configs = this.getFund().fundAction.config.data;
+        const fund = this.getActiveFund(this.props);
+        const configs = fund.fundAction.config.data;
         const index = indexById(configs, code, 'code');
         if (index !== null) {
             return configs[index];
@@ -373,7 +309,6 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
         }
     }
 
-
     renderRowItem(item) {
         const icon = FundActionPage.getStateIcon(item.state);
         const config = this.getConfigByCode(item.code);
@@ -394,16 +329,12 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
         )
     }
 
-    render() {
-        const {arrRegion, splitter, userDetail} = this.props;
-        const fund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : false;
+    renderLeftPanel() {
+        const fund = this.getActiveFund(this.props);
 
-        var leftPanel
-        var centerPanel
-        if (userDetail.hasFundActionPage(fund ? fund.id : null)) { // má právo na tuto stránku
-            if (fund) {
-                leftPanel = <div className='actions-list-container'>{
-                    fund.fundAction.list.fetched ?
+        return (
+            <div className='actions-list-container'>{
+                fund.fundAction.list.fetched ?
                     <ListBox
                         className='actions-listbox'
                         key='actions-list'
@@ -413,22 +344,92 @@ const FundActionPage = class FundActionPage extends AbstractReactComponent {
                         onSelect={this.handleListBoxActionSelect}
                         onFocus={this.handleListBoxActionSelect}
                     /> : <Loading />}
-                </div>;
+            </div>
+        )
+    }
+
+    renderCenterPanel() {
+        const fund = this.getActiveFund(this.props);
+        const {fundAction: {detail, isFormVisible, config, form}, versionId} = fund;
+
+        if (isFormVisible) {
+            if (config.isFetching && !config.fetched) {
+                return <Loading />
             }
-            centerPanel = <div className='center-container'>{this.renderCenter(fund)}</div>;
-        } else {
-            centerPanel = <div className='text-center'>{i18n('global.insufficient.right')}</div>
+
+            var description = null;
+            if (form.code !== null) {
+                const index = indexById(config.data, form.code, 'code');
+                if (index !== null) {
+                    const text = config.data[index].description;
+                    description = <div>
+                        <div>Popis</div>
+                        <div>{text}</div>
+                    </div>
+                }
+            }
+
+            return <div className='center-container'>
+                <h2>{i18n('arr.fundAction.form.newAction')}</h2>
+                <div>
+                    <FormInput componentClass="select"
+                               label={i18n('arr.fundAction.form.type')}
+                               key='code-action'
+                               ref='code-action'
+                               className='form-control'
+                               value={form.code}
+                               onChange={(e) => {this.dispatch(fundActionFormChange(versionId, {code: e.target.value}))}}
+                    >
+                        <option key="novalue" />
+                        {config.data.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}
+                    </FormInput>
+                </div>
+                {description}
+                <h2>{i18n("arr.fundAction.title.nodes")}</h2>
+                <FundNodesList
+                    nodes={form.nodes}
+                    onAddNode={this.handleFormNodesAdd}
+                    onDeleteNode={this.handleFormNodeDelete}
+                />
+            </div>
         }
 
-        return (
-            <PageLayout
-                className="arr-actions-page"
-                splitter={splitter}
-                ribbon={this.buildRibbon()}
-                leftPanel={leftPanel}
-                centerPanel={centerPanel}
-            />
-        )
+        if (detail) {
+            if (detail.isFetching && !detail.fetched) {
+                return <Loading />
+            }
+            if (detail.fetched) {
+                const {data} = detail;
+                const config = this.getConfigByCode(data.code);
+                let date = null;
+                if (data.datePlanned) {
+                    date = dateTimeToString(new Date(data.datePlanned));
+                } else if (data.dateStarted) {
+                    date = dateTimeToString(new Date(data.dateStarted));
+                } else if (data.dateFinished) {
+                    date = dateTimeToString(new Date(data.dateFinished));
+                }
+
+                return <div className='center-container'>
+                    <div className='detail'>
+                        <div>
+                            <h1>{config.name}</h1>
+                            <h3>{FundActionPage.getStateIcon(data.state)} {FundActionPage.getStateTranslation(data.state)}
+                                <small>{date}</small>
+                            </h3>
+                        </div>
+                        <div><textarea className='config' readOnly={true} value=""/></div>
+                        {data.error ? <div><h3>{i18n('arr.fundAction.error')}</h3>
+                            <div>{data.error}</div>
+                        </div> : ''}
+                        <FundNodesList
+                            nodes={data.nodes}
+                            readOnly
+                        />
+                    </div>
+                </div>
+            }
+        }
     }
 };
 

@@ -49,6 +49,11 @@ function getSetFromIdsList(list) {
 }
 exports.getSetFromIdsList = getSetFromIdsList
 
+function getIdsList(objectList, attrName="id") {
+    return objectList.map(obj => obj[attrName]);
+}
+exports.getIdsList = getIdsList
+
 function indexById(arr, id, attrName = 'id') {
     if (arr == null) {
         return null;

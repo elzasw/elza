@@ -15,6 +15,7 @@ import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
+import cz.tacr.elza.service.SettingsService;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import org.apache.commons.collections4.CollectionUtils;
@@ -98,6 +99,9 @@ public class ClientFactoryVO {
     private OutputService outputService;
 
     @Autowired
+    private SettingsService settingsService;
+
+    @Autowired
     private BulkActionNodeRepository bulkActionNodeRepository;
 
     /**
@@ -108,7 +112,23 @@ public class ClientFactoryVO {
     public UserInfoVO createUserInfo(final UserDetail userDetail) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         UserInfoVO result = mapper.map(userDetail, UserInfoVO.class);
+        UsrUser user = userRepository.findByUsername(userDetail.getUsername());
+        if (user != null) {
+            List<UISettings> settings = settingsService.getSettings(user);
+            result.setSettings(mapper.mapAsList(settings, UISettingsVO.class));
+        }
         return result;
+    }
+
+    /**
+     * Vytvoření nastavení.
+     *
+     * @param settings nastavení
+     * @return
+     */
+    public List<UISettingsVO> createSettingsList(final List<UISettings> settings) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.mapAsList(settings, UISettingsVO.class);
     }
 
     /**
@@ -1356,7 +1376,7 @@ public class ClientFactoryVO {
         UsrUserVO result = mapper.map(user, UsrUserVO.class);
 
         // Načtení oprávnění
-        List<UsrPermission> permissions = permissionRepository.findByUser(user);
+        List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
         result.setPermissions(createPermissionList(permissions));
 
         // Načtení členství ve skupinách
@@ -1379,7 +1399,7 @@ public class ClientFactoryVO {
         UsrGroupVO result = mapper.map(group, UsrGroupVO.class);
 
         // Načtení oprávnění
-        List<UsrPermission> permissions = permissionRepository.findByGroup(group);
+        List<UsrPermission> permissions = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
         result.setPermissions(createPermissionList(permissions));
 
         // Přiřazení uživatelé

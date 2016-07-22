@@ -665,6 +665,8 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ScenarioOfNewLevel.class, ScenarioOfNewLevelVO.class).byDefault().register();
 
         mapperFactory.classMap(ArrFund.class, ArrFundVO.class).byDefault().field("fundId", "id").register();
+        mapperFactory.classMap(ArrFund.class, ArrFundBaseVO.class).byDefault().field("fundId", "id").register();
+
         mapperFactory.classMap(ArrFundVersion.class, ArrFundVersionVO.class).byDefault().field(
                 "fundVersionId", "id").
                 exclude("arrangementType").register();
@@ -779,6 +781,11 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(RulTemplate.class, RulTemplateVO.class)
                 .byDefault()
                 .field("templateId", "id")
+                .register();
+
+        mapperFactory.classMap(UISettings.class, UISettingsVO.class)
+                .byDefault()
+                .field("settingsId", "id")
                 .register();
     }
 

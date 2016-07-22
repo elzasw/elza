@@ -5,6 +5,24 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
 import {permissionReceive} from "./permission.jsx"
+import {savingApiWrapper} from 'actions/global/status.jsx'
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+
+export function joinUsers(groupId, userIds) {
+    return (dispatch, getState) => {
+        WebApi.joinGroup([groupId], userIds)
+            .then(() => {
+                dispatch(modalDialogHide());
+            })
+    }
+}
+
+export function leaveUser(groupId, userId) {
+    return (dispatch, getState) => {
+        WebApi.leaveGroup(groupId, userId)
+    }
+}
 
 export function isGroupAction(action) {
     if (isGroupDetailAction(action)) {
@@ -137,6 +155,24 @@ function groupsGroupDetailReceive(data) {
         })
 
         // Oprávnění z detailu
-        dispatch(permissionReceive("GROUP", data.permissions));
+        // dispatch(permissionReceive("GROUP", data.permissions));
     }    
+}
+
+export function groupCreate(name, code) {
+    return (dispatch, getState) => {
+        savingApiWrapper(WebApi.createGroup(name,code)).then(response => {
+            dispatch(addToastrSuccess(i18n('admin.group.add.success')));
+            dispatch(modalDialogHide());
+            dispatch(groupsSelectGroup(response.id));
+        }).catch(e => {
+            console.error(e);
+        });
+    }
+}
+
+export function groupDelete(id) {
+    return (dispatch, getState) => {
+        savingApiWrapper(dispatch, WebApi.deleteGroup(id));
+    }
 }

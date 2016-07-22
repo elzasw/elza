@@ -38,23 +38,12 @@ const initialState = {
 }
 
 function selectFundTab(state, action) {
-    var index = indexById(state.funds, action.fund.versionId, "versionId");
-    if (index == null) {    // není zatím v seznamu, přidáme jí tam
-        return {
-            ...state,
-            funds: [
-                ...state.funds,
-                fundInitState(action.fund)
-            ],
-            activeIndex: state.funds.length
-        }
-    } else if (index !== state.activeIndex) {
-        return {
-            ...state,
-            activeIndex: index
-        }
-    } else {
-        return state;
+    return {
+        ...state,
+        funds: [
+            fundInitState(action.fund)
+        ],
+        activeIndex: 0
     }
 }
 

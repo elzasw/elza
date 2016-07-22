@@ -2,6 +2,7 @@
 
 @header-height: 64px;
 @header-minimized-height: 12px;
+@header-status-height: 34px;
 @ribbon-show-hide-toggle-font-size: 11px;
 @finding-tree-minimized-width: 32px;
 @finding-tree-toggle-width: 12px;
@@ -26,6 +27,7 @@
 
 // Header toggle
 .app-container {
+
     &.noRibbon {
         .app-header {
             height: @header-minimized-height;
@@ -35,6 +37,24 @@
         }
         .app-content {
             height: calc(~"100% - "@header-minimized-height);
+        }
+    }
+
+    &.app-exists-status {
+        .app-content {
+            height: calc(~"100% - "@header-height + @header-status-height);
+        }
+    }
+
+    &.noRibbon.app-exists-status {
+        .app-header {
+            height: @header-minimized-height;
+            .ribbon-toggle-container {
+                border-bottom: none;
+            }
+        }
+        .app-content {
+            height: calc(~"100% - "@header-minimized-height + @header-status-height);
         }
     }
 

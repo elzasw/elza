@@ -9,6 +9,7 @@ import {connect} from 'react-redux'
 import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {MenuItem, Button} from 'react-bootstrap';
 import * as perms from 'actions/user/Permission.jsx';
+import DescItemLabel from './DescItemLabel.jsx'
 
 var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     constructor(props) {
@@ -76,8 +77,14 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     }
 
     render() {
-        const {userDetail, descItem, locked, singleDescItemTypeEdit} = this.props;
+        const {userDetail, descItem, locked, singleDescItemTypeEdit, readMode} = this.props;
         var value = descItem.record ? descItem.record : null;
+
+        if (readMode) {
+            return (
+                <DescItemLabel onClick={this.handleDetail.bind(this, descItem.record.recordId)} value={value.record} />
+            )
+        }
 
         var footer
         if (!singleDescItemTypeEdit) {

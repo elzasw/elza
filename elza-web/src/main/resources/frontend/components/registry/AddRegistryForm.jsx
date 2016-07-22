@@ -36,7 +36,7 @@ const validate = (values, props) => {
     return errors;
 };
 
-var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
+const AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.state = {
@@ -44,6 +44,11 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
         };
 
     }
+
+    static propTypes = {
+        versionId: React.PropTypes.number,
+        showSubmitTypes: React.PropTypes.bool.isRequired
+    };
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(getRegistryRecordTypesIfNeeded());
@@ -104,12 +109,12 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
         const itemsForDropDownTree = registryRegionRecordTypes.item ? registryRegionRecordTypes.item : [];
 
 
-        var registerTypesIdValue = registerTypeId.value;
+        let registerTypesIdValue = registerTypeId.value;
         if (registryRegion.registryTypesId && !registerTypeId.value && this.isValueUseable(registryRegionRecordTypes.item, registryRegion.registryTypesId)){
             registerTypesIdValue = registryRegion.registryTypesId;
         }
 
-        var scopeIdValue = scopeId.value;
+        let scopeIdValue = scopeId.value;
         if (!scopeId.value) {
             let index = scopesData.scopes ? indexById(scopesData.scopes, versionId, 'versionId') : false;
             if (index && scopesData.scopes[index].scopes) {
@@ -149,11 +154,10 @@ module.exports = reduxForm({
     form: 'addRegistryForm',
     fields: ['record', 'characteristics', 'registerTypeId', 'scopeId'],
 },state => ({
-        initialValues: state.form.addRegistryForm.initialValues,
-        refTables: state.refTables,
-        registryRegion: state.registryRegion,
-        registryRegionRecordTypes: state.registryRegionRecordTypes
-
+    initialValues: state.form.addRegistryForm.initialValues,
+    refTables: state.refTables,
+    registryRegion: state.registryRegion,
+    registryRegionRecordTypes: state.registryRegionRecordTypes
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addRegistryForm', data})}
 )(AddRegistryForm);

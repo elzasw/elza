@@ -127,6 +127,91 @@ export function getNodeParents(nodes, nodeId) {
 }
 
 /**
+ * Uložení nastavení.
+ *
+ * @param items seznam itemů
+ * @param id    id konkrétního nastavení
+ * @param item  položka, kterou ukládám
+ * @returns {Array} seznam itemů
+ */
+export function setSettings(items, id, item) {
+    if (items == null) {
+        items = [];
+        items.push(item);
+        return items;
+    }
+
+    if (id == null) {
+        items.push(item);
+        return items;
+    }
+
+    for (let i = 0; i < items.length; i++) {
+        let item = items[i];
+        if (item.id == id) {
+            items[i] = item;
+            break;
+        }
+    }
+
+    return items;
+}
+
+/**
+ * Vrací konkrétní položku nastavení.
+ *
+ * @param items      seznam itemů
+ * @param type       typ nastavení
+ * @param entityType typ entity
+ * @param entityId   identifikátor entity
+ * @returns {Object} objekt itemu
+ */
+export function getOneSettings(items, type = null, entityType = null, entityId = null) {
+
+    if (items != null) {
+        for (let i = 0; i < items.length; i++) {
+            let item = items[i];
+            if ((type == null || type == item.settingsType)
+                && (entityType == null || entityType == item.entityType)
+                && (entityId == null || entityId == item.entityId)
+            ) {
+                return item;
+            }
+        }
+    }
+
+    return {entityType: entityType, entityId: entityId, settingsType: type, value: null}
+}
+
+/**
+ * Získání uživatelského nastavení.
+ *
+ * @param items      seznam itemů
+ * @param type       typ nastavení
+ * @param entityType typ entity
+ * @param entityId   identifikátor entity
+ * @returns {Array} seznam itemů
+ */
+export function getSettings(items, type = null, entityType = null, entityId = null) {
+    var result = [];
+
+    if (items == null) {
+        return result;
+    }
+
+    items.map((item) => {
+        if ((type == null || type == item.settingsType)
+            && (entityType == null || entityType == item.entityType)
+            && (entityId == null || entityId == item.entityId)
+        ) {
+            result.push(item);
+        }
+    });
+
+    return result;
+}
+
+/**
  * Vytvoření virtuálního kořenového uzlu pro kořenový uzel AS.
  * @param {Object} fund fund
  * @return {Object} virtuální kořenový uzel pro kořenový uzel AS

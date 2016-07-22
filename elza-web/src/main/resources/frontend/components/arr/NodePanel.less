@@ -91,25 +91,38 @@
             margin-top: @parts-margin;
             height: @node-panel-content-height;
 
-            .content-wrapper {
+            .inner-wrapper {
                 height: 100%;
-                overflow: auto;
-                overflow-x: hidden;
                 border: 1px solid @node-panel-border;
 
+                display: flex;
+                flex-direction: column;
+
+                .menu-wrapper {
+
+                }
+
+                .content-wrapper {
+                    height: 100%;
+                    overflow: auto;
+                    overflow-x: hidden;
+                }
+
                 &:focus {
-                    .accordion-item {
-                        &.focused {
-                            .accordion-header-container {
-                                .accordion-header {
-                                    background: @accordion-header-bg-opened;
+                    .content-wrapper {
+                        .accordion-item {
+                            &.focused {
+                                .accordion-header-container {
+                                    .accordion-header {
+                                        background: @accordion-header-bg-opened;
+                                    }
                                 }
                             }
-                        }                        
+                        }
                     }
                 }
             }
-            
+
             .accordion-item:first-child {
                 &.opened {
                     margin-top: 0;

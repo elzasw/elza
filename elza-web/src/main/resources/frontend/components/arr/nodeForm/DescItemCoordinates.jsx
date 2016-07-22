@@ -9,7 +9,7 @@ import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import {Button, OverlayTrigger, Tooltip} from 'react-bootstrap';
-
+import DescItemLabel from './DescItemLabel.jsx'
 
 require('./DescItemCoordinates.less');
 
@@ -49,7 +49,14 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
     }
 
     render() {
-        const {descItem, locked, repeatable, onUpload} = this.props;
+        const {descItem, locked, repeatable, onUpload, readMode} = this.props;
+
+        if (readMode) {
+            return (
+                <DescItemLabel value={descItem.value} />
+            )
+        }
+
         const tooltip = <Tooltip id='tt'>{i18n('subNodeForm.formatPointCoordinates')}</Tooltip>;
         return (
             <div className="desc-item-value-coordinates">

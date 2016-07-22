@@ -74,7 +74,7 @@ var Search = class Search extends React.Component {
     }
 
     render() {                          // metoda pro renderovani obsahu komponenty
-        const {textAreaInput, placeholder} = this.props
+        const {textAreaInput, tabIndex, placeholder} = this.props
 
         var cls = "search-container";   // třída komponenty                 
         if (this.props.className) {
@@ -108,6 +108,7 @@ var Search = class Search extends React.Component {
                 <div className='search-input'>
                     {textAreaInput ? <FormInput
                         componentClass='textarea'
+                        tabIndex={tabIndex}
                         value={this.state.filterText}
                         ref="input"
                         labelClassName="label-class"
@@ -116,6 +117,7 @@ var Search = class Search extends React.Component {
                         onKeyUp={this.handleKeyUp}
                     />:<FormInput
                         type='text'
+                        tabIndex={tabIndex}
                         value={this.state.filterText}
                         ref="input"
                         labelClassName="label-class"

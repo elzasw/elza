@@ -2,7 +2,7 @@
  * Stránka archivní soubory.
  */
 
-require ('./FundPage.less')
+require('./FundPage.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -12,7 +12,7 @@ import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components/index.jsx';
 import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent,
     ImportForm, ExportForm, Search, ListBox, FundDetail, FundDetailExt} from 'components';
-import {NodeTabs, FundTreeTabs} from 'components/index.jsx';
+import {NodeTabs} from 'components/index.jsx';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
@@ -27,12 +27,12 @@ import {selectFundTab} from 'actions/arr/fund.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundsFetchIfNeeded, fundsSelectFund, fundsFundDetailFetchIfNeeded, fundsSearch} from 'actions/fund/fund.jsx'
 import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
-import {approveFund, deleteFund, exportFund} from 'actions/arr/fund.jsx'
+import {approveFund, deleteFund, exportFund, updateFund} from 'actions/arr/fund.jsx'
 import {barrier} from 'components/Utils.jsx';
 import {scopesDirty} from 'actions/refTables/scopesData.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 
-var FundPage = class FundPage extends AbstractReactComponent {
+const FundPage = class FundPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -169,9 +169,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
 
         data.id = fundDetail.id;
         this.dispatch(scopesDirty(fundDetail.versionId));
-        WebApi.updateFund(data).then((json) => {
-            this.dispatch(modalDialogHide());
-        })
+        this.dispatch(updateFund(data));
     }
 
     buildRibbon() {
@@ -256,7 +254,7 @@ var FundPage = class FundPage extends AbstractReactComponent {
         return (
             <div>
                 <div className='name'>{item.name}</div>
-                <div><Button className='link' onClick={this.handleShowInArr.bind(this, item)} bsStyle='link'>{i18n('arr.fund.action.showInArr')}</Button></div>
+                <div><Button className='link' onClick={this.handleShowInArr.bind(this, item)} bsStyle='link'>{i18n('arr.fund.action.openInArr')}</Button></div>
                 <div>{item.internalCode}</div>
             </div>
         )

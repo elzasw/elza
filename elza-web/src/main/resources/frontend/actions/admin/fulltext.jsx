@@ -9,7 +9,7 @@ import * as types from 'actions/constants/ActionTypes.js';
  
  /**
  * Získání stavu indexování ze serveru.
- * @returns {dispatch} dispatch
+ * @returns function dispatch
  */
 export function getIndexStateFetch() {
     return dispatch => {

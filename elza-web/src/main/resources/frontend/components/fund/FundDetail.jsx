@@ -56,21 +56,10 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
         const activeVersionIndex = indexById(fundDetail.versions, null, 'lockChange');
         const ruleIndex = indexById(ruleSet.items, fundDetail.versions[activeVersionIndex].ruleSetId);
         const rule = instIndex !== null ? ruleSet.items[ruleIndex].name : '';
-
+        const ver = fundDetail.versions[activeVersionIndex];
         return (
             <div className='fund-detail-container'>
-                <FundDetailTree
-                    className='fund-detail-tree'
-                    fund = {fundDetail}
-                    cutLongLabels={true}
-                    versionId={fundDetail.versionId}
-                    {...fundDetail.fundTree}
-                    ref='tree'
-                    focus={focus}
-                />
-
                 <div className='fund-detail-info'>
-                    <small>{i18n('arr.fund.detail')}</small>
                     <h1>{fundDetail.name}</h1>
                     <div>
                         <label>{i18n('arr.fund.detail.internalCode')}:</label>
@@ -85,26 +74,7 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
                         <label>{i18n('arr.fund.detail.ruleSet')}:</label>
                         <span>{rule}</span>
                     </div>
-                    <hr className="fund-detail-split" />
-                    <div className="versions-container">
-                        {fundDetail.versions.map((ver, index) => {
-                            if (ver.lockDate) {
-                                return (
-                                    <div className='fund-version' key={'fund-version-' +  index}>
-                                        <div className="version-label">{i18n('arr.fund.version', dateToString(new Date(ver.lockDate)))}</div>
-                                        <Button onClick={this.handleShowInArr.bind(this, ver)} bsStyle='link'>{i18n('arr.fund.action.showInArr')}</Button>
-                                    </div>
-                                )
-                            } else {
-                                return (
-                                    <div className='fund-version' key={'fund-version-' +  index}>
-                                        <div className="version-label">{i18n('arr.fund.currentVersion')}</div>
-                                        <Button onClick={this.handleShowInArr.bind(this, ver)} bsStyle='link'>{i18n('arr.fund.action.showInArr')}</Button>
-                                    </div>
-                                )
-                            }
-                        })}
-                    </div>
+                    <Button className='fund-detail-button' onClick={this.handleShowInArr.bind(this, ver)}>{i18n('arr.fund.action.openInArr')}</Button>
                 </div>
             </div>
         );

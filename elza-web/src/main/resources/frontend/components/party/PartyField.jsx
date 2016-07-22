@@ -27,8 +27,13 @@ const PartyField = class PartyField extends AbstractReactComponent {
         this.dispatch(refPartyTypesFetchIfNeeded());
     }
 
+    /**
+     * Zajistíme vrácení onChange pouze objekt nebo null
+     * @param id
+     * @param valueObj
+     */
     handleChange(id, valueObj) {
-        this.props.onChange(valueObj.id ? valueObj : null);
+        this.props.onChange(valueObj.partyId ? valueObj : null);
     }
 
     handleSearchChange(text) {
@@ -69,7 +74,7 @@ const PartyField = class PartyField extends AbstractReactComponent {
         const {refTables} = this.props;
         return (
             <div className="create-party">
-                <DropdownButton noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>}>
+                <DropdownButton id="party-field" noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>}>
                     {refTables.partyTypes.items.map(i=> {return <MenuItem key={'party' + i.partyTypeId} onClick={this.handleCreateParty.bind(this, i.partyTypeId)} eventKey={i.partyTypeId}>{i.name}</MenuItem>})}
                 </DropdownButton>
             </div>
@@ -81,7 +86,8 @@ const PartyField = class PartyField extends AbstractReactComponent {
     }
 
     render() {
-        const {userDetail, locked, value, ...otherProps} = this.props;
+        // onChange nutno excludnout z other props - jinak by vlezno na autocomplete a přestal by fugnovat event on Change na komponentě
+        const {userDetail, locked, value, onChange, ...otherProps} = this.props;
 
         let footer
         if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR)) {

@@ -32,13 +32,33 @@
             width: 100%;
             white-space: nowrap;
             padding-right: 40px;
+            .section {
+                > span:first-of-type {
+                    padding-left: 3px;
+                }
 
-            .node-form-standard-actions;
-            .btn {
-                margin-right: 8px;
-                &.dropdown-toggle {
-                    padding: 0 3px 0 3px;
-                    margin-left: -8px;
+                display:inline-block;
+                border-right: 1px @node-form-actions-hover solid;
+
+                &:last-of-type {
+                    border-right: none;
+                }
+
+                > .btn {
+                    margin-right: 8px;
+                }
+
+                .node-form-standard-actions;
+                .btn {
+                    &.dropdown-toggle {
+                        padding: 0 3px 0 3px;
+                        margin-left: -8px;
+                    }
+                }
+                .btn-group {
+                    > .btn:first-of-type {
+                        margin-right: 8px;
+                    }
                 }
             }
         }

@@ -5,10 +5,10 @@
 'use strict'
 
 // Import css Bootstrapu
-require ('./elza-styles.less');
+require('./elza-styles.less');
 
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { render } from 'react-dom';
 import { createHistory, useBasename } from 'history'
 import { Route, Link, History, Lifecycle } from 'react-router'
 import { Utils } from 'components/index.jsx';
@@ -18,15 +18,15 @@ import {userDetailChange} from 'actions/user/userDetail.jsx'
 
 // Globální init
 Utils.init();
-var es6promise = require('es6-promise');
+const es6promise = require('es6-promise');
 //var es5Shim = require('es5-shim');
 
 // Nastavení neomezeného počtu listenerů pro event emitter - v ELZA je emitter použit pro klávesové zkratky, kde je více listenerů
-var EventEmitter = require('events').EventEmitter;
+const EventEmitter = require('events').EventEmitter;
 EventEmitter.defaultMaxListeners = 0
 
 // Web socket
-var websocket = require('./websocket');
+const websocket = require('./websocket');
 
 function xx() {
     setTimeout(fc, 1000)
@@ -91,7 +91,7 @@ function scheduleStoreSave() {
 scheduleStoreSave();
 
 // seznam callbacků, které kvůli nepříhlášení se musí ještě vykonat
-var calbacks = [];
+let calbacks = [];
 
 const login = (callback) => {
     calbacks.push(callback);
@@ -102,15 +102,15 @@ const login = (callback) => {
 }
 
 // zjištění všech metod z api
-var methods = Object.getOwnPropertyNames(WebApiCls.prototype);
+const methods = Object.getOwnPropertyNames(WebApiCls.prototype);
 
 // přetížení všech metod ve WebApi, původní metody mají prefix podtržítka
-for(var i in  methods) {
-    var method =  methods[i];
+for(const i in  methods) {
+    const method =  methods[i];
     WebApi["_" + method] = WebApi[method];
     WebApi[method] = (...x) => {
         return new Promise((resolve, reject) => {
-            var ret = WebApi["_" + x[0]].call(...x);
+            const ret = WebApi["_" + x[0]].call(...x);
 
             ret.then((json) => {
                 resolve(json);
@@ -125,7 +125,9 @@ for(var i in  methods) {
             });
         });
 
-    }.bind(this, method);
+    }
+    WebApi[method] = WebApi[method].bind(this, method);
+
 }
 
 // Načtení oprávnění a jeho uložení do store po přihlášení
@@ -135,5 +137,27 @@ WebApi.getUserDetail()
     })
 
 // Aplikace
-var Router = require('./router');
-Router.start();
+import {AppContainer} from 'react-hot-loader'
+//import Redbox from 'redbox-react'
+import Root from './router';
+
+render(
+    //<AppContainer errorReporter={Redbox}><Root store={AppStore.store} /></AppContainer>,
+    <Root store={AppStore.store} />,
+    document.getElementById('content')
+);
+
+
+if (process.env.NODE_ENV === 'development' && module.hot) {
+    // Accept changes to this file for hot reloading.
+    module.hot.accept();
+    // Any changes to our routes will cause a hotload re-render.
+    module.hot.accept('./router.jsx', () => {
+        const NewRoot = require('./router').default;
+        render(
+            //<AppContainer errorReporter={Redbox}><NewRoot store={AppStore.store} /></AppContainer>, //HOT 3
+            <NewRoot store={AppStore.store} />, /// HOT 1
+            document.getElementById('content')
+        )
+    });
+}

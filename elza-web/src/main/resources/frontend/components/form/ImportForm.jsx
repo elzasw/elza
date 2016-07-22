@@ -5,16 +5,14 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Autocomplete, Icon, FormInput} from 'components/index.jsx';
-import {Modal, Button} from 'react-bootstrap';
+import {Modal, Button, Checkbox} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx';
 import {decorateFormField} from 'components/form/FormUtils.jsx';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {WebApi} from 'actions/index.jsx';
-import {modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {importForm} from 'actions/global/global.jsx';
 
 const validate = (values, props) => {
     const errors = {};
@@ -38,7 +36,7 @@ const validate = (values, props) => {
     return errors;
 };
 
-var ImportForm = class ImportForm extends AbstractReactComponent {
+const ImportForm = class ImportForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.state = {defaultScopes: [], transformationNames: [], isRunning: false};
@@ -75,11 +73,12 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
         this.setState({
             isRunning: true,
         });
-        var data = Object.assign({}, {
+
+        const data = {
             xmlFile: values.xmlFile[0],
-            importDataFormat: this.props.fund ? 'FUND' : this.props.record ? 'RECORD' : 'PARTY',
+            importDataFormat: this.props.fund ? 'FUND' : (this.props.record ? 'RECORD' : 'PARTY'),
             stopOnError: values.stopOnError && values.stopOnError == 1 ? values.stopOnError : false
-        });
+        };
 
         if (values.ruleSetId) {
             data.ruleSetId = values.ruleSetId;
@@ -102,20 +101,15 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
             }
         }
 
-        var formData = new FormData();
+        const formData = new FormData();
 
-        for (var key in data) {
+        for (const key in data) {
             if (data.hasOwnProperty(key)) {
                 formData.append(key, data[key]);
             }
         }
-        WebApi.xmlImport(formData).then(() => {
-            const messageType = this.props.fund ? 'Fund' : this.props.record ? 'Record' : 'Party';
-            this.dispatch(modalDialogHide());
-            this.dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.success' + messageType)));
-        }).catch(() => {
-            this.dispatch(modalDialogHide());
-        });
+        const messageType = this.props.fund ? 'Fund' : this.props.record ? 'Record' : 'Party';
+        this.dispatch(importForm(formData, messageType));
     }
 
     render() {
@@ -189,8 +183,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                                         </FormInput>
                                     </div>
                                 }
-                                <FormInput type="checkbox"
-                                       label={i18n('import.stopOnError')} {...stopOnError} {...decorateFormField(stopOnError)} />
+                                <Checkbox{...stopOnError} {...decorateFormField(stopOnError)}>{i18n('import.stopOnError')}</Checkbox>
 
                                 <label>{i18n('import.file')}</label>
                                 <FormInput type="file" {...xmlFile} {...decorateFormField(xmlFile)} value={null}/>

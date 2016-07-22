@@ -2,10 +2,11 @@
 
 @rowHeight: 16px;
 
-@TREE_TOP_PADDING: 20px;    // nutné definovat i v komponentě!
+@TREE_TOP_PADDING: 23px;    // nutné definovat i v komponentě!
 
 .fa-tree-lazy-main-container {
     height: 100%;
+
 
     .fa-tree-lazy-container {
         height: 100%;
@@ -96,20 +97,38 @@
             }
         }
 
-        .btn {
+        .fa-tree-lazy-actions {
             position: absolute;
-            border: none;
-            background: transparent;
-            &.tree-collapse {
-                top: 0;
-                right: 0;
+            top: 0;
+
+            display: flex;
+            justify-content: flex-end;
+
+            .btn {
+                border: none;
+                background: transparent;
                 .icon {
                     padding: 0 5px 0 0;
                 }
-            }
-            &:hover{
-                background: @node-form-actions-hover;
-            }
+                &:hover{
+                    background: @node-form-actions-hover;
+                }            }
         }
+
+        //.btn {
+        //    position: absolute;
+        //    border: none;
+        //    background: transparent;
+        //    &.tree-collapse {
+        //        top: 0;
+        //        right: 0;
+        //        .icon {
+        //            padding: 0 5px 0 0;
+        //        }
+        //    }
+        //    &:hover{
+        //        background: @node-form-actions-hover;
+        //    }
+        //}
     }
 }

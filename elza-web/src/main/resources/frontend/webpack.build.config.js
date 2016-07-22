@@ -62,7 +62,8 @@ module.exports = {
         }),
         new webpack.DefinePlugin({
             __DEVTOOLS__: false,
-            __SHOW_DEVTOOLS__: false
+            __SHOW_DEVTOOLS__: false,
+            __DEV__: false
         })
     ]    
 }

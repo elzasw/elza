@@ -38,7 +38,7 @@ const RegistryLabel = class RegistryLabel extends AbstractReactComponent {
     }
 
     focus() {
-        this.refs.input.getInputDOMNode().focus()
+        ReactDOM.findDOMNode(this.refs.input.refs.input).focus()
     }
 
     render() {

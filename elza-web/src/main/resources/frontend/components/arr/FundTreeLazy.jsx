@@ -10,7 +10,6 @@ import {connect} from 'react-redux'
 import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, Loading, Icon, SearchWithGoto} from 'components/index.jsx';
 import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 var classNames = require('classnames');
-import {ResizeStore} from 'stores/index.jsx';
 import {propsEquals} from 'components/Utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, getNodeParent, getNodeFirstChild} from 'components/arr/ArrUtils.jsx'
@@ -19,7 +18,7 @@ import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, g
 const TREE_NAME_MAX_CHARS = 60
 
 // Odsazení odshora, musí být definováno, jinak nefunguje ensureItemVisible
-const TREE_TOP_PADDING = 20
+const TREE_TOP_PADDING = 23
 
 var keyDownHandlers = {
     ArrowUp: function(e) {
@@ -106,9 +105,6 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.unsubscribe = ResizeStore.listen(status => {
-            this.setState({});
-        });
         this.setState({treeContainer: ReactDOM.findDOMNode(this.refs.treeContainer)});
     }
 
@@ -122,7 +118,7 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
     }
 
     componentWillUnmount() {
-        this.unsubscribe();
+        //this.unsubscribe();
     }
 
     focus() {
@@ -217,7 +213,7 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
     }
 
     render() {
-        const {className, multipleSelection, onFulltextNextItem, onFulltextPrevItem, onFulltextSearch, onFulltextChange, filterText, searchedIds, filterCurrentIndex, filterResult} = this.props;
+        const {className, actionAddons, multipleSelection, onFulltextNextItem, onFulltextPrevItem, onFulltextSearch, onFulltextChange, filterText, searchedIds, filterCurrentIndex, filterResult} = this.props;
 
         var index;
         if (this.props.ensureItemVisible) {
@@ -250,7 +246,10 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
                     />
                 </div>
                 <div className='fa-tree-lazy-container' ref="treeContainer" onKeyDown={this.handleKeyDown} tabIndex={0}>
-                    <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
+                    <div className="fa-tree-lazy-actions">
+                        <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
+                        {actionAddons}
+                    </div>
                     {this.state.treeContainer && <VirtualList
                         scrollTopPadding={TREE_TOP_PADDING}
                         tagName='div'
@@ -287,6 +286,7 @@ FundTreeLazy.propTypes = {
     onNodeDoubleClick: React.PropTypes.func,
     onOpenCloseNode: React.PropTypes.func,
     onContextMenu: React.PropTypes.func,
+    actionAddons: React.PropTypes.object,
 }
 
 module.exports = connect(null, null, null, { withRef: true })(FundTreeLazy);

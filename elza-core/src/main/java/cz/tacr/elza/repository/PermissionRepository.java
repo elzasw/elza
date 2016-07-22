@@ -29,9 +29,9 @@ public interface PermissionRepository extends JpaRepository<UsrPermission, Integ
     @Query("SELECT p FROM usr_permission p LEFT JOIN FETCH p.scope s LEFT JOIN FETCH p.fund f WHERE p.user = :user OR p.group.groupId IN (SELECT gu.group.groupId FROM usr_group_user gu WHERE gu.user = :user)")
     List<UsrPermission> getAllPermissions(@Param("user") UsrUser user);
 
-    List<UsrPermission> findByUser(UsrUser user);
+    List<UsrPermission> findByUserOrderByPermissionIdAsc(UsrUser user);
 
-    List<UsrPermission> findByGroup(UsrGroup group);
+    List<UsrPermission> findByGroupOrderByPermissionIdAsc(UsrGroup group);
 
     void deleteByGroup(UsrGroup group);
 }

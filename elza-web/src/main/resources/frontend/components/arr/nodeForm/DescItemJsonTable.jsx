@@ -10,6 +10,7 @@ import {Input} from 'react-bootstrap'
 import {decorateValue} from './DescItemUtils.jsx'
 import DescItemJsonTableCellForm from './DescItemJsonTableCellForm.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import DescItemLabel from './DescItemLabel.jsx'
 
 require ("./DescItemJsonTable.less")
 
@@ -185,7 +186,7 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked, onFocus, onDownload} = this.props;
+        const {descItem, locked, onFocus, onDownload, readMode} = this.props;
         const {rows, cols} = this.state;
 
         var actions = [];
@@ -209,7 +210,7 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
                     staticColumns={true}
                     onEdit={this.handleEdit}
                     onDelete={this.handleDelete}
-                    locked={locked}
+                    disabled={locked || readMode}
                     />
                 <div className='desc-item-value-actions'>
                     {actions}

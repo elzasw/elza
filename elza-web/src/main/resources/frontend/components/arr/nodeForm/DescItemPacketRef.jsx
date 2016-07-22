@@ -1,3 +1,4 @@
+require('./DescItemPacketRef.less')
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -6,12 +7,22 @@ import {connect} from 'react-redux'
 import {decorateValue, decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {indexById} from 'stores/app/utils.jsx';
+import {Button} from 'react-bootstrap';
+import DescItemLabel from './DescItemLabel.jsx'
 
 var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('packetName', 'findType', 'focus', 'handleSearchChange', 'handleChange', 'renderPacket', 'handleKeyUp');
+        this.bindMethods('packetName',
+            'findType',
+            'focus',
+            'handleSearchChange',
+            'handleChange',
+            'renderPacket',
+            'handleKeyUp',
+            'handleFundPackets',
+            'handleCreatePacket');
 
         this.state = {packetTypes: []};
     }
@@ -79,14 +90,50 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
         }
     }
 
+    handleFundPackets() {
+        if (this.props.onFundPackets) {
+            this.refs.focusEl.closeMenu();
+            this.props.onFundPackets();
+        } else {
+            console.warn("undefined onFundPackets");
+        }
+    }
+
+    handleCreatePacket() {
+        if (this.props.onCreatePacket) {
+            this.refs.focusEl.closeMenu();
+            this.props.onCreatePacket();
+        } else {
+            console.warn("undefined onCreatePacket");
+        }
+    }
+
     handleChange(id, valueObj) {
         this.props.onChange(valueObj);
     }
 
+    renderFooter() {
+        const {refTables} = this.props;
+        return (
+            <div className="create-packet">
+                <Button onClick={this.handleCreatePacket}><Icon glyph='fa-plus'/>{i18n('arr.fund.packets.action.add.single')}</Button>
+                <Button onClick={this.handleFundPackets}>{i18n('arr.panel.title.packets')}</Button>
+            </div>
+        )
+    }
+
     render() {
-        const {descItem, locked, packetTypes, packets, singleDescItemTypeEdit} = this.props;
+        const {descItem, locked, packetTypes, packets, singleDescItemTypeEdit, readMode} = this.props;
         var value = descItem.packet ? descItem.packet : null;
-        console.log(value);
+
+        if (readMode) {
+            return (
+                <DescItemLabel value={value.storageNumber} />
+            )
+        }
+
+        const footer = this.renderFooter();
+
         return (
             <div className='desc-item-value desc-item-value-parts'>
                 {false && <select
@@ -114,6 +161,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                     onChange={this.handleChange}
                     renderItem={this.renderPacket}
                     getItemName={(item) => item ? item.storageNumber : ''}
+                    footer={footer}
                 />
 
             </div>

@@ -4,12 +4,12 @@
  * @param selectedId int vstupní parametr, pomocí kterého načte detail / editaci konkrétního záznamu z rejstříku
  * 
 **/
-require ('./RegistryPanel.less');
+require('./RegistryPanel.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Icon, NoFocusButton, AbstractReactComponent, RegistryLabel, Loading, EditRegistryForm, RegistryCoordinates, i18n, FormInput} from 'components/index.jsx';
-import {WebApi, UrlFactory} from 'actions/index.jsx';
+import {UrlFactory} from 'actions/index.jsx';
 import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions/registry/registryRegionList.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {routerNavigate} from 'actions/router.jsx'
@@ -33,15 +33,15 @@ import {
 } from 'actions/registry/registryRegionData.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {Utils} from 'components/index.jsx';
-var ShortcutsManager = require('react-shortcuts');
-var Shortcuts = require('react-shortcuts/component');
+const ShortcutsManager = require('react-shortcuts');
+const Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 
-var keyModifier = Utils.getKeyModifier();
+const keyModifier = Utils.getKeyModifier();
 
-var keymap = {
+const keymap = {
     RegistryPanel: {
         editRecord: keyModifier + 'e',
         goToPartyPerson: keyModifier + 'b',
@@ -51,9 +51,9 @@ var keymap = {
         deleteRegistryVariant: keyModifier + 'd'
     }
 };
-var shortcutManager = new ShortcutsManager(keymap);
+const shortcutManager = new ShortcutsManager(keymap);
 
-var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
+const RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.bindMethods(
@@ -102,7 +102,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
 
     trySetFocus(props) {
-        var {focus} = props;
+        const {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, 'registry', 2, 'variantRecords')) {   // focus na konkrétní variantní rejstříkové heslo
@@ -181,7 +181,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         if(confirm(i18n('registry.deleteRegistryQuestion'))) {
             // Zjištění nového indexu focusu po smazání - zjisšťujeme zde, abychom měli aktuální stav store
             const {registryRegionData} = this.props;
-            var setFocusFunc;
+            let setFocusFunc;
             if (index + 1 < registryRegionData.item.variantRecords.length) {    // má položku za, nový index bude aktuální
                 setFocusFunc = () => setFocus('registry', 2, 'variantRecords', {index: index})
             } else if (index > 0) { // má položku před
@@ -210,7 +210,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         if(confirm(i18n('registry.deleteCoordinatesQuestion'))) {
             // Zjištění nového indexu focusu po smazání - zjisšťujeme zde, abychom měli aktuální stav store
             const {registryRegionData} = this.props;
-            var setFocusFunc;
+            let setFocusFunc;
             if (index + 1 < registryRegionData.item.coordinates.length) {    // má položku za, nový index bude aktuální
                 setFocusFunc = () => setFocus('registry', 2, 'coordinates', {index: index})
             } else if (index > 0) { // má položku před
@@ -257,7 +257,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         if (!element.target.value) {
             return false;
         }
-        var data = {record: element.target.value, regRecordId: this.props.registryRegionData.item.recordId};
+        const data = {record: element.target.value, regRecordId: this.props.registryRegionData.item.recordId};
         this.dispatch(registryVariantCreate(data, item.variantRecordInternalId));
     }
 
@@ -340,7 +340,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     canEdit() {
         const {userDetail, registryRegionData: { item, fetched }} = this.props;
 
-        var canEdit = fetched && !item.partyId
+        let canEdit = fetched && !item.partyId
 
         // Pokud nemá oprávnění, zakážeme editaci
         if (fetched && !userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: item ? item.scopeId : null})) {
@@ -352,7 +352,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
     render() {
         const {selectedId, registryRegionData: { item, fetched }} = this.props;
-        var detailRegistry = false;
+        let detailRegistry = false;
         if (fetched) {
             const disableEdit = !this.canEdit();
 
@@ -400,9 +400,9 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                                 <label>{i18n('registry.detail.variantRegistry')}</label>
                                 {
                                     item.variantRecords && item.variantRecords.map((item, index) => {
-                                        var variantKey;
-                                        var blurField = this.handleVariantBlur.bind(this, item);
-                                        var clickDelete = this.handleVariantDelete.bind(this, item, index);
+                                        let variantKey;
+                                        let blurField = this.handleVariantBlur.bind(this, item);
+                                        const clickDelete = this.handleVariantDelete.bind(this, item, index);
 
                                         if (!item.variantRecordId) {
                                             variantKey = 'internalId' + item.variantRecordInternalId;
@@ -489,9 +489,7 @@ function mapStateToProps(state) {
 
 
 RegistryPanel.propTypes = {
-    registryRegionData: React.PropTypes.object.isRequired,
-    focus: React.PropTypes.object.isRequired,
-    userDetail: React.PropTypes.object.isRequired
+    selectedId: React.PropTypes.number
 };
 
 RegistryPanel.childContextTypes = {

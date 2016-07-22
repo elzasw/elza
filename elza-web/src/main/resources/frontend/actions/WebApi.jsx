@@ -825,6 +825,10 @@ class WebApi{
         return AjaxUtils.ajaxGet(WebApi.userUrl + '/detail');
     }
 
+    setUserSettings(settings) {
+        return AjaxUtils.ajaxPut(WebApi.userUrl + '/detail/settings', null, settings);
+    }
+
     login(username, password) {
         return AjaxUtils.ajaxCallRaw('/login', {}, 'POST', 'username=' + username + '&password=' + password, 'application/x-www-form-urlencoded');
     }
@@ -842,7 +846,15 @@ class WebApi{
         return AjaxUtils.ajaxGet(WebApi.userUrl + '', {search: fulltext, active, disabled, from: 0, count: max})
             .then(json => ({users: json.list, usersCount: json.totalCount}))
     }
-    
+
+    changeUserPermission(userId, permissions) {
+        return AjaxUtils.ajaxPost(WebApi.userUrl + "/" + userId + '/permission', null, permissions);
+    }
+
+    changeGroupPermission(groupId, permissions) {
+        return AjaxUtils.ajaxPost(WebApi.userUrl + "/group/" + groupId + '/permission', null, permissions);
+    }
+
     findGroup(fulltext, max = 200) {
         return AjaxUtils.ajaxGet(WebApi.userUrl + '/group', {search: fulltext, from: 0, count: max})
             .then(json => ({groups: json.list, groupsCount: json.totalCount}))

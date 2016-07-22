@@ -1,38 +1,47 @@
 /**
  * Stránka pro správu uživatelů.
  */
-require ('./AdminUserPage.less');
+require('./AdminUserPage.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Ribbon} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
-import {Input} from 'react-bootstrap';
-import {i18n, UserDetail, Search, ListBox, AbstractReactComponent} from 'components/index.jsx';
-import {usersFetchIfNeeded, usersUserDetailFetchIfNeeded, usersSelectUser, usersSearch} from 'actions/admin/user.jsx'
+import {FormControl, Button} from 'react-bootstrap';
+import {i18n, UserDetail, Search, ListBox, AbstractReactComponent, RibbonGroup, Ribbon, Icon, AddUserForm, PasswordForm} from 'components/index.jsx';
+import {usersFetchIfNeeded, usersUserDetailFetchIfNeeded, usersSelectUser, usersSearch, userCreate, adminPasswordChange, adminUserChangeActive} from 'actions/admin/user.jsx'
 import {indexById} from 'stores/app/utils.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
+import {renderUserItem} from "components/admin/adminRenderUtils.jsx"
 
-var AdminUserPage = class AdminUserPage extends AbstractReactComponent{
+const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
     constructor(props) {
         super(props);
 
         this.buildRibbon = this.buildRibbon.bind(this);
 
         this.bindMethods(
-            'renderListItem',
             'handleSearch',
             'handleSearchClear',
             'handleFilterStateChange',
             'handleSelect',
+            'handleCreateUserForm',
+            'handleCreateUser',
+            'handleChangeUserActive',
+            'handleChangeUserPasswordForm',
+            'handleChangeUserPassword',
         );
     }
 
     componentWillReceiveProps(nextProps) {
+        this.dispatch(requestScopesIfNeeded())
         this.dispatch(usersFetchIfNeeded())
     }
 
     componentDidMount() {
+        this.dispatch(requestScopesIfNeeded())
         this.dispatch(usersFetchIfNeeded())
     }
 
@@ -50,9 +59,59 @@ var AdminUserPage = class AdminUserPage extends AbstractReactComponent{
         this.dispatch(usersSearch('', user.filterState))
     }
 
+    handleCreateUserForm() {
+        this.dispatch(modalDialogShow(this, i18n('admin.user.add.title'), <AddUserForm onSubmitForm={this.handleCreateUser} />))
+    }
+
+    handleCreateUser(data) {
+        this.dispatch(userCreate(data.username, data.password, data.party.partyId));
+    }
+
+    handleChangeUserPasswordForm() {
+        this.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm admin={true} onSubmitForm={this.handleChangeUserPassword} />))
+    }
+
+    handleChangeUserPassword(data) {
+        const {user: {userDetail: {id}}} = this.props;
+        this.dispatch(adminPasswordChange(id, data.password));
+    }
+
+    handleChangeUserActive() {
+        if(confirm(i18n('admin.user.changeActive.confirm'))) {
+            const {user} = this.props;
+            this.dispatch(adminUserChangeActive(user.userDetail.id, !user.userDetail.active));
+        }
+    }
+
     buildRibbon() {
+        const {user} = this.props;
+
+        const altActions = [];
+        const itemActions = [];
+        altActions.push(
+            <Button key="add-user" onClick={this.handleCreateUserForm}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.admin.user.add')}</span></div></Button>
+        );
+
+        if (user.userDetail.id !== null) {
+            itemActions.push(
+                <Button key="change-active-user" onClick={this.handleChangeUserActive}><Icon glyph={user.userDetail.active ? 'fa-ban' : 'fa-check'} /><div><span className="btnText">{user.userDetail.active ? i18n('ribbon.action.admin.user.deactivate') : i18n('ribbon.action.admin.user.activate')}</span></div></Button>
+            )
+            itemActions.push(
+                <Button key="password-change-user" onClick={this.handleChangeUserPasswordForm}><Icon glyph='fa-key' /><div><span className="btnText">{i18n('ribbon.action.admin.user.passwordChange')}</span></div></Button>
+            )
+        }
+
+        let altSection;
+        if (altActions.length > 0) {
+            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>
+        }
+        let itemSection;
+        if (itemActions.length > 0) {
+            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>
+        }
+
         return (
-            <Ribbon admin {...this.props} />
+            <Ribbon admin {...this.props}  altSection={altSection} itemSection={itemSection} />
         )
     }
 
@@ -61,23 +120,15 @@ var AdminUserPage = class AdminUserPage extends AbstractReactComponent{
         this.dispatch(usersSearch(user.filterText, {type: e.target.value}))
     }
 
-    renderListItem(item) {
-        return (
-            <div>
-                <div className='name'>{item.party.record.record} ({item.username})</div>
-            </div>
-        )
-    }
-
     render() {
         const {splitter, user} = this.props;
 
-        var activeIndex
+        let activeIndex
         if (user.userDetail.id !== null) {
             activeIndex = indexById(user.users, user.userDetail.id)
         }
 
-        var leftPanel = (
+        const leftPanel = (
             <div className="user-list-container">
                 <Search
                     onSearch={this.handleSearch}
@@ -85,23 +136,23 @@ var AdminUserPage = class AdminUserPage extends AbstractReactComponent{
                     placeholder={i18n('search.input.search')}
                     value={user.filterText}
                 />
-                <Input type="select" value={user.filterState.type} onChange={this.handleFilterStateChange}>
+                <FormControl componentClass="select" value={user.filterState.type} onChange={this.handleFilterStateChange}>
                     <option value="all">{i18n("admin.user.filter.all")}</option>
                     <option value="onlyActive">{i18n("admin.user.filter.onlyActive")}</option>
-                </Input>
+                </FormControl>
                 <ListBox
                     className='user-listbox'
                     ref='userList'
                     items={user.users}
                     activeIndex={activeIndex}
-                    renderItemContent={this.renderListItem}
+                    renderItemContent={renderUserItem}
                     onFocus={this.handleSelect}
                     onSelect={this.handleSelect}
                 />
             </div>
         )
 
-        var centerPanel = (
+        const centerPanel = (
             <UserDetail
                 userDetail={user.userDetail}
             />

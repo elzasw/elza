@@ -6,21 +6,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-require ('./RegistryPage.less');
+require('./RegistryPage.less');
 const classNames = require('classnames');
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
 import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
         Search, RegistryPanel, DropDownTree, AddRegistryForm, ImportForm,
         ListBox} from 'components';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
-import {WebApi} from 'actions/index.jsx';
-import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
+import {Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
 import {registryRegionDataSelectRecord,
         registrySearchData,
         registryClearSearch,
@@ -30,15 +27,17 @@ import {registryRegionDataSelectRecord,
         registryCancelMove,
         registryUnsetParents,
         registryRecordUpdate,
-        registryRecordMove
+        registryRecordMove,
+        registryDelete
 } from 'actions/registry/registryRegionData.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {fetchRegistryIfNeeded,
-        registrySetTypesId,
-        fetchRegistry,
-        registryAdd,
-        registryClickNavigation,
-        registryArrReset
+import {
+    fetchRegistryIfNeeded,
+    registrySetTypesId,
+    fetchRegistry,
+    registryAdd,
+    registryClickNavigation,
+    registryArrReset
 } from 'actions/registry/registryRegionList.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 const ShortcutsManager = require('react-shortcuts');
@@ -60,9 +59,9 @@ const keymap = {
         area2: keyModifier + '2'
     }
 };
-var shortcutManager = new ShortcutsManager(keymap);
+const shortcutManager = new ShortcutsManager(keymap);
 
-var RegistryPage = class RegistryPage extends AbstractReactComponent {
+const RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.bindMethods(
@@ -108,7 +107,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     trySetFocus(props) {
-        var {focus} = props;
+        const {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
@@ -163,7 +162,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
     handleAddRegistry() {
         const {registryRegion: {registryParentId, panel, parents}} = this.props;
-        var parentName = '';
+        let parentName = '';
 
         if (indexById(parents, registryParentId, 'id') !== null) {
             parentName = parents[indexById(parents, registryParentId, 'id')].name;
@@ -181,7 +180,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleDeleteRegistryDialog(){
-        var result = confirm(i18n('registry.deleteRegistryQuestion'));
+        const result = confirm(i18n('registry.deleteRegistryQuestion'));
         if (result) {
             this.dispatch(this.handleDeleteRegistry());
         }
@@ -189,9 +188,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
     
     handleDeleteRegistry() {
-        WebApi.deleteRegistry(this.props.registryRegionData.selectedId).then(json => {
-            this.dispatch(registryDeleteRegistry({}));
-        });
+        this.dispatch(registryDelete(this.props.registryRegionData.selectedId));
     }
 
 
@@ -380,8 +377,8 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     renderListItem(item) {
         const {registryRegion: {parents, typesToRoot, selectedId, registryParentId, registryTypesId}} = this.props;
 
-        var parentsShown = [];
-        var parentsTypeShown = [];
+        const parentsShown = [];
+        const parentsTypeShown = [];
         if (parents && parents.length > 0) {
             parents.map((val) => {
                 parentsShown.push(val.id);
@@ -397,9 +394,9 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             'search-result-row': 'search-result-row'
         });
 
-        var doubleClick = this.handleDoubleClick.bind(this, item);
-        var iconName = 'fa-folder';
-        var clsItem = 'registry-list-icon-record';
+        let doubleClick = this.handleDoubleClick.bind(this, item);
+        let iconName = 'fa-folder';
+        let clsItem = 'registry-list-icon-record';
 
         if (item.hierarchical === false) {
             iconName = 'fa-file-o';
@@ -448,7 +445,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     render() {
         const {splitter, registryRegion: {records, selectedId, registryTypesId, parents, typesToRoot, panel, fetched, filterText, registryParentId}} = this.props;
 
-        var regListBox = <div className='search-norecord'>{i18n('registry.listNoRecord')}</div>
+        let regListBox = <div className='search-norecord'>{i18n('registry.listNoRecord')}</div>
         if (records.length) {
             const activeIndex = indexById(records, selectedId, 'recordId')
             regListBox = <ListBox
@@ -462,7 +459,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             />
         }
 
-        var navParents = null;
+        let navParents = null;
 
         if (registryTypesId !== null && parents && parents.length > 0) {
             const tmpParents = parents.slice();
