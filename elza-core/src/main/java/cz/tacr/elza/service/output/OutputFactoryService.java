@@ -238,7 +238,7 @@ public class OutputFactoryService {
         fund.setInstitution(institution);
 
         // zařadit items přímo přiřazené na output
-        final List<ArrOutputItem> outputItems = outputService.getOutputItems(arrFundVersion, arrOutput.getOutputDefinition());
+        final List<ArrOutputItem> outputItems = outputService.getOutputItemsInner(arrFundVersion, arrOutput.getOutputDefinition());
         outputItems.stream().forEach(arrOutputItem -> {
             final ArrItem arrItem = itemRepository.findOne(arrOutputItem.getItemId());
             final AbstractItem item = getItem(arrItem, output, null);

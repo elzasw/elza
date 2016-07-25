@@ -1147,6 +1147,18 @@ public class OutputService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrOutputItem> getOutputItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                               final ArrOutputDefinition outputDefinition) {
+        return getOutputItemsInner(fundVersion, outputDefinition);
+    }
+
+    /**
+     * Vyhledání hodnot atributu výstupu.
+     *
+     * @param fundVersion      verze AS
+     * @param outputDefinition pojmenovaný výstup
+     * @return seznam hodnot atrubutů
+     */
+    public List<ArrOutputItem> getOutputItemsInner(final ArrFundVersion fundVersion,
+                                                   final ArrOutputDefinition outputDefinition) {
         List<ArrOutputItem> itemList;
 
         if (fundVersion.getLockChange() == null) {

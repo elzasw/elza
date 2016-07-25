@@ -170,6 +170,9 @@ public class ParUnitdate implements cz.tacr.elza.api.ParUnitdate<ArrCalendarType
 
     @Override
     public void formatAppend(final String format) {
+        if (this.format == null) {
+            this.format = "";
+        }
         this.format += format;
     }
 
