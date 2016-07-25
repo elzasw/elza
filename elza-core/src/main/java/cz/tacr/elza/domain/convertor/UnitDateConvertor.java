@@ -266,7 +266,7 @@ public class UnitDateConvertor {
                 ret = convertDateTime(format, unitdate, first);
                 break;
             default:
-                throw new IllegalStateException();
+                throw new IllegalStateException("Neexistující formát: " + format);
         }
 
         ret = addEstimate(ret, unitdate, first);

@@ -1099,9 +1099,13 @@ public class PackageService {
 
     private void importTemplatesFiles(Map<String, ByteArrayInputStream> mapEntry, File dirTemplates, List<RulTemplate> rulTemplateActual) throws IOException {
         for (RulTemplate template : rulTemplateActual) {
-            final String templateDir = ZIP_DIR_TEMPLATES + File.separator + template.getDirectory();
-            final String templateZipKeyDir = templateDir + File.separator;
-            Set<String> templateFileKeys = mapEntry.keySet().stream().filter(key -> key.contains(templateZipKeyDir) && !key.equals(templateZipKeyDir)).map(key -> key.replace(templateZipKeyDir, "")).collect(Collectors.toSet());
+            final String templateDir = ZIP_DIR_TEMPLATES + "/" + template.getDirectory();
+            final String templateZipKeyDir = templateDir + "/";
+            Set<String> templateFileKeys = mapEntry.keySet()
+                    .stream()
+                    .filter(key -> key.startsWith(templateZipKeyDir) && !key.equals(templateZipKeyDir))
+                    .map(key -> key.replace(templateZipKeyDir, ""))
+                    .collect(Collectors.toSet());
             File dirFile = new File(dirTemplates + File.separator + template.getDirectory());
             if (!dirFile.exists() && !dirFile.mkdirs()) {
                 throw new IOException("Nepodařilo se vytvořit složku.");

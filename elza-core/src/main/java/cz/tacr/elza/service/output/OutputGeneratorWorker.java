@@ -183,7 +183,7 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
             ).start();
 
             // Uložení do výstupní struktury a DMS
-            storeOutputInDms(arrOutputDefinition, rulTemplate, new ReaderInputStream(in, Charset.defaultCharset()), OUTFILE_SUFFIX_CVS, DmsService.MIME_TYPE_APPLICATION_PDF);
+            storeOutputInDms(arrOutputDefinition, rulTemplate, new ReaderInputStream(in, Charset.defaultCharset()), OUTFILE_SUFFIX_CVS, DmsService.MIME_TYPE_TEXT_CVS);
 
         } catch (IOException e) {
             throw new IllegalStateException("Nepodařilo se uložit výstup.", e);
@@ -268,7 +268,7 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
             }).start();
 
             // Uložení do výstupní struktury a DMS
-            storeOutputInDms(arrOutputDefinition, rulTemplate, in, OUTFILE_SUFFIX_PDF, DmsService.MIME_TYPE_APPLICATION_PDF);
+            storeOutputInDms(arrOutputDefinition, rulTemplate, inm, OUTFILE_SUFFIX_PDF, DmsService.MIME_TYPE_APPLICATION_PDF);
 
         } catch (JRException e) {
             throw new IllegalStateException("Nepodařilo se vytisknout report.", e);
