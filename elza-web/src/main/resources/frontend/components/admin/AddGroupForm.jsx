@@ -37,7 +37,7 @@ const AddGroupForm = class AddGroupForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {name, code}, handleSubmit, onClose} = this.props;
+        const {fields: {name, code, description}, create, handleSubmit, onClose} = this.props;
 
         const submitForm = submitReduxForm.bind(this, validate);
 
@@ -45,12 +45,14 @@ const AddGroupForm = class AddGroupForm extends AbstractReactComponent {
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit(submitForm)}>
-                        <FormInput label={i18n('admin.group.add.name')} type="text" {...name} />
-                        <FormInput label={i18n('admin.group.add.code')} type="text" {...code} />
+                        <FormInput label={i18n('admin.group.title.name')} type="text" {...name} />
+                        {create && <FormInput label={i18n('admin.group.title.code')} type="text" {...code} />}
+                        {!create && <FormInput disabled label={i18n('admin.group.title.code')} type="text" {...code} />}
+                        <FormInput componentClass="textarea" label={i18n('admin.group.title.description')} type="text" {...description} />
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.create')}</Button>
+                    <Button onClick={handleSubmit(submitForm)}>{i18n(create ? 'global.action.create' : 'global.action.update')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
@@ -62,8 +64,13 @@ AddGroupForm.propTypes = {};
 
 module.exports = reduxForm({
         form: 'addGroupForm',
-        fields: ['name', 'code'],
-})(AddGroupForm);
+        fields: ['name', 'code', 'description'],
+    },(state, props) => {
+        return {
+            initialValues: props.initData,
+        }
+    }
+)(AddGroupForm);
 
 
 

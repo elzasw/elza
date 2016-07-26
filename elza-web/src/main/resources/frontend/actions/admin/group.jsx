@@ -160,9 +160,19 @@ function groupsGroupDetailReceive(data) {
     }    
 }
 
-export function groupCreate(name, code) {
+export function groupUpdate(groupId, name, description) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.createGroup(name,code)).then(response => {
+        savingApiWrapper(dispatch, WebApi.updateGroup(groupId, name, description)).then(response => {
+            dispatch(modalDialogHide());
+        }).catch(e => {
+            console.error(e);
+        });
+    }
+}
+
+export function groupCreate(name, code, description) {
+    return (dispatch, getState) => {
+        savingApiWrapper(dispatch, WebApi.createGroup(name, code, description)).then(response => {
             dispatch(addToastrSuccess(i18n('admin.group.add.success')));
             dispatch(modalDialogHide());
             dispatch(groupsSelectGroup(response.id));

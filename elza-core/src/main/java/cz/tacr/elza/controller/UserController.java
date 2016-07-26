@@ -248,7 +248,7 @@ public class UserController {
     }
 
     /**
-     * Vytvořené skupiny.
+     * Vytvoření skupiny.
      *
      * @param params parametry pro vytvoření skupiny
      * @return vytvořená skupina
@@ -256,7 +256,7 @@ public class UserController {
     @RequestMapping(value = "/group", method = RequestMethod.POST)
     @Transactional
     public UsrGroupVO createGroup(@RequestBody CreateGroup params) {
-        UsrGroup group = userService.createGroup(params.getName(), params.getCode());
+        UsrGroup group = userService.createGroup(params.getName(), params.getCode(), params.getDescription());
         return factoryVO.createGroup(group, true, true);
     }
 
@@ -288,11 +288,6 @@ public class UserController {
     public UsrGroupVO changeGroup(@PathVariable(value = "groupId") final Integer groupId,
                                   @RequestBody final ChangeGroup params) {
         UsrGroup group = userService.getGroup(groupId);
-
-        if (group == null) {
-            throw new IllegalArgumentException("Skupina neexistuje");
-        }
-
         group = userService.changeGroup(group, params.getName(), params.getDescription());
         return factoryVO.createGroup(group, true, true);
     }
@@ -416,6 +411,9 @@ public class UserController {
          */
         private String code;
 
+        /** Popis. */
+        private String description;
+
         public CreateGroup() {
         }
 
@@ -438,6 +436,14 @@ public class UserController {
 
         public void setCode(final String code) {
             this.code = code;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
         }
     }
 

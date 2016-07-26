@@ -253,11 +253,13 @@ public class UserService {
      *
      * @param name název skupiny
      * @param code kód skupiny
+     * @param description popis skupiny
      * @return skupina
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public UsrGroup createGroup(@NotEmpty final String name,
-                                @NotEmpty final String code) {
+                                @NotEmpty final String code,
+                                final String description) {
         UsrGroup group = groupRepository.findOneByCode(code);
         if (group != null) {
             throw new IllegalArgumentException("Skupina s kódem již existuje");
@@ -266,6 +268,7 @@ public class UserService {
         group = new UsrGroup();
         group.setName(name);
         group.setCode(code);
+        group.setDescription(description);
 
         groupRepository.save(group);
         createGroupEvent(group);
