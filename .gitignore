@@ -52,3 +52,4 @@ elza-web/config/elza.yaml
 /elza-web/work/
 /elza-core/work/
 
+/run.bat
