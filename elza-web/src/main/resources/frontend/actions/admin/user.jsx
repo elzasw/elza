@@ -177,6 +177,18 @@ export function userCreate(username, password, partyId) {
     }
 }
 
+export function userUpdate(id, username, password) {
+    return (dispatch) => {
+        savingApiWrapper(dispatch, WebApi.updateUser(id, username, password)).then(response => {
+            dispatch(addToastrSuccess(i18n('admin.user.update.success')));
+            dispatch(modalDialogHide());
+            dispatch(usersSelectUser(response.id))
+        }).catch(e => {
+            console.error(e);
+        });
+    }
+}
+
 export function userPasswordChange(oldPass, newPass) {
     return (dispatch, getState) => {
         savingApiWrapper(dispatch, WebApi.changePasswordUser(oldPass, newPass)).then(response => {

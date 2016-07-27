@@ -323,6 +323,34 @@ public class UserService {
         return group;
     }
 
+
+    /**
+     * Změna uživatele.
+     *
+     * @param user     upravovaný uživatel
+     * @param username uživatelské jméno
+     * @param password heslo (v plaintextu)
+     * @return upravený uživatel
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
+    public UsrUser changeUser(@NotNull final UsrUser user,
+                              @NotEmpty final String username,
+                              @NotEmpty final String password) {
+
+        String passwordDB = encodePassword(user.getUsername(), password);
+        if (!passwordDB.equals(user.getPassword())) {
+            throw new IllegalArgumentException("Neplatné heslo");
+        }
+
+        user.setUsername(username);
+        user.setPassword(encodePassword(username, password));
+
+        userRepository.save(user);
+
+        changeUserEvent(user);
+        return user;
+    }
+
     /**
      * Vytvoření uživatele.
      *

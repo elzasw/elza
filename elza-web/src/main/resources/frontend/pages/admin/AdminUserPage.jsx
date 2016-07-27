@@ -9,7 +9,14 @@ import {connect} from 'react-redux'
 import {PageLayout} from 'pages/index.jsx';
 import {FormControl, Button} from 'react-bootstrap';
 import {i18n, UserDetail, Search, ListBox, AbstractReactComponent, RibbonGroup, Ribbon, Icon, AddUserForm, PasswordForm} from 'components/index.jsx';
-import {usersFetchIfNeeded, usersUserDetailFetchIfNeeded, usersSelectUser, usersSearch, userCreate, adminPasswordChange, adminUserChangeActive} from 'actions/admin/user.jsx'
+import {usersFetchIfNeeded,
+    usersUserDetailFetchIfNeeded,
+    usersSelectUser,
+    usersSearch,
+    userCreate,
+    userUpdate,
+    adminPasswordChange,
+    adminUserChangeActive} from 'actions/admin/user.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
@@ -32,6 +39,8 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
             'handleChangeUserActive',
             'handleChangeUserPasswordForm',
             'handleChangeUserPassword',
+            'handleChangeUsernameForm',
+            'handleUpdateUser',
         );
     }
 
@@ -60,7 +69,7 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
     }
 
     handleCreateUserForm() {
-        this.dispatch(modalDialogShow(this, i18n('admin.user.add.title'), <AddUserForm onSubmitForm={this.handleCreateUser} />))
+        this.dispatch(modalDialogShow(this, i18n('admin.user.add.title'), <AddUserForm create onSubmitForm={this.handleCreateUser} />))
     }
 
     handleCreateUser(data) {
@@ -74,6 +83,16 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
     handleChangeUserPassword(data) {
         const {user: {userDetail: {id}}} = this.props;
         this.dispatch(adminPasswordChange(id, data.password));
+    }
+
+    handleUpdateUser(data) {
+        const {user: {userDetail: {id}}} = this.props;
+        this.dispatch(userUpdate(id, data.username, data.password));
+    }
+
+    handleChangeUsernameForm() {
+        const {user} = this.props;
+        this.dispatch(modalDialogShow(this, i18n('admin.user.update.title'), <AddUserForm initData={user.userDetail} onSubmitForm={this.handleUpdateUser} />))
     }
 
     handleChangeUserActive() {
@@ -98,6 +117,9 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
             )
             itemActions.push(
                 <Button key="password-change-user" onClick={this.handleChangeUserPasswordForm}><Icon glyph='fa-key' /><div><span className="btnText">{i18n('ribbon.action.admin.user.passwordChange')}</span></div></Button>
+            )
+            itemActions.push(
+                <Button key="username-change-user" onClick={this.handleChangeUsernameForm}><Icon glyph='fa-edit' /><div><span className="btnText">{i18n('ribbon.action.admin.user.edit')}</span></div></Button>
             )
         }
 
