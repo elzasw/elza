@@ -208,7 +208,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
                 nameVal = refType.descItemSpecsMap[descItem.descItemSpecId].name;
             }
             return (
-                <span className="desc-item-spec-label">{nameVal}</span>
+                <span key={key} className="desc-item-spec-label">{nameVal}</span>
             )
         }
 
@@ -674,7 +674,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         //{actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions.map(i => <span>{i}<Icon glyph="fa-save" /></span>)}</div>}
         return (
             <Shortcuts key={key} name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}>
-                <div className={cls} {...dragProps}>
+                <div key="container" className={cls} {...dragProps}>
                     {!readMode && infoType.rep == 1 && <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down" glyph="fa-angle-down"/>&nbsp;</div>}
 
                     <div key="container" className={partsCls}>
@@ -826,32 +826,34 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             if (infoType.rep === 1 && !(locked || closed || readMode)) {
                 const {onDescItemAdd} = this.props;
                 if (this.props.rulDataType.code === "COORDINATES") {
-                    actions.push(<NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus"/></NoFocusButton>,
-                        <NoFocusButton onClick={this.handleCoordinatesUploadButtonClick} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-upload"/></NoFocusButton>,
-                        <FormInput className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload}/>
+                    actions.push(
+                        <NoFocusButton key="add" onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus"/></NoFocusButton>,
+                        <NoFocusButton key="upload" onClick={this.handleCoordinatesUploadButtonClick} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-upload"/></NoFocusButton>,
+                        <FormInput key="upload-field" className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload}/>
                     );
                 } else if (this.props.rulDataType.code === "JSON_TABLE") {
-                    actions.push(<NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton>,
-                        <NoFocusButton onClick={this.handleJsonTableUploadButtonClick} title={i18n('subNodeForm.descItem.jsonTable.action.upload')}><Icon glyph="fa-upload" /></NoFocusButton>,
-                        <FormInput className="hidden" accept="text/csv" type="file" ref='uploadInput' onChange={this.handleJsonTableUploadUpload} />
+                    actions.push(
+                        <NoFocusButton key="add" onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton>,
+                        <NoFocusButton key="upload" onClick={this.handleJsonTableUploadButtonClick} title={i18n('subNodeForm.descItem.jsonTable.action.upload')}><Icon glyph="fa-upload" /></NoFocusButton>,
+                        <FormInput key="upload-field" className="hidden" accept="text/csv" type="file" ref='uploadInput' onChange={this.handleJsonTableUploadUpload} />
                     );
                 } else {
-                    actions.push(<NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton>);
+                    actions.push(<NoFocusButton key="add" onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton>);
                 }
             }
         }
 
         if (descItemType.descItems.filter(i => i.touched).length > 0) {
-            actions.push(<span>{i18n('subNodeForm.descItem.edited')}</span>);
+            actions.push(<span key="edited">{i18n('subNodeForm.descItem.edited')}</span>);
         }
 
         // Render
         return (
-            <div className='desc-item-type-label'>
-                <div className='title' title={titleText}>
+            <div key="label" className='desc-item-type-label'>
+                <div key="title" className='title' title={titleText}>
                     {refType.shortcut}
                 </div>
-                <div className='actions'>
+                <div key="actions" className='actions'>
                     {actions}
                 </div>
             </div>

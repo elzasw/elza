@@ -177,7 +177,7 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
     }
 
     handlePasswordChange(data) {
-        this.dispatch(userPasswordChange(data.oldPassword, data.newPassword));
+        this.dispatch(userPasswordChange(data.oldPassword, data.password));
     }
 }
 

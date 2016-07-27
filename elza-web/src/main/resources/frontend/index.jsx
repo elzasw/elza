@@ -47,6 +47,14 @@ if (IE !== false) {
         }
     })();
 }
+/*
+ IE Doesn't have a .startsWith either?
+ */
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (str){
+        return this.lastIndexOf(str, 0) === 0;
+    };
+}
 
 //setTimeout(fc, 1500)
 

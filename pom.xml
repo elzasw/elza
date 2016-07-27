@@ -306,8 +306,8 @@
             <url>http://www.hibernatespatial.org/repository</url>
         </repository>
         <repository>
-            <id>MapFish - HatBox</id>
-            <url>http://dev.mapfish.org/maven/repository</url>
+            <id>Geo solutions</id>
+            <url>http://maven.geo-solutions.it</url>
         </repository>
         <repository>
             <id>jboss</id>

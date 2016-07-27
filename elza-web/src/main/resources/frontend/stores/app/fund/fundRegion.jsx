@@ -23,6 +23,15 @@ export default function fundRegion(state = initialState, action = {}) {
     }
 
     switch (action.type) {
+
+        case types.LOGOUT:
+        case types.LOGIN_SUCCESS: {
+            if (action.reset) {
+                return initialState;
+            }
+            return state;
+        }
+
         case types.STORE_SAVE:
             return {
                 fundDetail: fundDetail(state.fundDetail, action)

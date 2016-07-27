@@ -17,7 +17,14 @@ import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 const validate = (values, props) => {
     const errors = {};
 
-    for (let field of ['party', 'username', 'password', 'passwordAgain'] ) {
+    let fields = ['username', 'password'];
+
+    if (props.create) {
+        fields.push('party');
+        fields.push('passwordAgain');
+    }
+
+    for (let field of  fields) {
         if (!values[field]) {
             errors[field] = i18n('global.validation.required');
         }
@@ -39,7 +46,7 @@ const AddUserForm = class AddUserForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {username, password, passwordAgain, party}, handleSubmit, onClose} = this.props;
+        const {fields: {username, password, passwordAgain, party}, create, handleSubmit, onClose} = this.props;
 
         const submitForm = submitReduxForm.bind(this, validate);
 
@@ -47,14 +54,14 @@ const AddUserForm = class AddUserForm extends AbstractReactComponent {
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit(submitForm)}>
-                        <PartyField label={i18n('admin.user.add.party')} {...party} />
-                        <FormInput label={i18n('admin.user.add.username')} autocomplete="off" type="text" {...username} />
-                        <FormInput label={i18n('admin.user.password')} autocomplete="off" type="password" {...password} />
-                        <FormInput label={i18n('admin.user.passwordAgain')} autocomplete="off" type="password" {...passwordAgain} />
+                        {create && <PartyField label={i18n('admin.user.add.party')} {...party} />}
+                        <FormInput label={i18n('admin.user.add.username')} autoComplete="off" type="text" {...username} />
+                        <FormInput label={i18n('admin.user.password')} autoComplete="off" type="password" {...password} />
+                        {create && <FormInput label={i18n('admin.user.passwordAgain')} autocomplete="off" type="password" {...passwordAgain} />}
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.create')}</Button>
+                    <Button onClick={handleSubmit(submitForm)}>{i18n(create ? 'global.action.create' : 'global.action.update')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
@@ -67,7 +74,12 @@ AddUserForm.propTypes = {};
 module.exports = reduxForm({
         form: 'addUserForm',
         fields: ['username', 'password', 'passwordAgain', 'party'],
-    }, state => ({initialValues: {fields: {party:{value:null}}}}),
+    }
+    ,(state, props) => {
+        return {
+            initialValues: props.initData,
+        }
+    },
     {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addUserForm', data})}
 )(AddUserForm);
 

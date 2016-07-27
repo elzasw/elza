@@ -864,12 +864,21 @@ class WebApi{
         return AjaxUtils.ajaxGet(WebApi.userUrl + '/' + userId);
     }
 
-    createGroup(name, code) {
+    createGroup(name, code, description) {
         const params = {
             name: name,
-            code: code
+            code: code,
+            description
         }
         return AjaxUtils.ajaxPost(WebApi.userUrl + '/group', null, params);
+    }
+
+    updateGroup(groupId, name, description) {
+        const data = {
+            name,
+            description,
+        }
+        return AjaxUtils.ajaxPut(WebApi.userUrl + '/group/' + groupId, null, data);
     }
 
     changeGroup(groupId, name, descriptiom) {
@@ -903,6 +912,14 @@ class WebApi{
             partyId: partyId
         }
         return AjaxUtils.ajaxPost(WebApi.userUrl, null, params);
+    }
+
+    updateUser(id, username, password) {
+        const params = {
+            username: username,
+            password: password,
+        }
+        return AjaxUtils.ajaxPut(WebApi.userUrl + '/' + id, null, params);
     }
 
     changePasswordUser(oldPassword, newPassword) {

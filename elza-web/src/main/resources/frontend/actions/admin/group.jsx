@@ -5,6 +5,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
 import {permissionReceive} from "./permission.jsx"
+import {i18n} from 'components/index.jsx'
 import {savingApiWrapper} from 'actions/global/status.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
@@ -159,9 +160,19 @@ function groupsGroupDetailReceive(data) {
     }    
 }
 
-export function groupCreate(name, code) {
+export function groupUpdate(groupId, name, description) {
     return (dispatch, getState) => {
-        savingApiWrapper(WebApi.createGroup(name,code)).then(response => {
+        savingApiWrapper(dispatch, WebApi.updateGroup(groupId, name, description)).then(response => {
+            dispatch(modalDialogHide());
+        }).catch(e => {
+            console.error(e);
+        });
+    }
+}
+
+export function groupCreate(name, code, description) {
+    return (dispatch, getState) => {
+        savingApiWrapper(dispatch, WebApi.createGroup(name, code, description)).then(response => {
             dispatch(addToastrSuccess(i18n('admin.group.add.success')));
             dispatch(modalDialogHide());
             dispatch(groupsSelectGroup(response.id));

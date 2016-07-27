@@ -10,7 +10,7 @@ import {Button} from 'react-bootstrap';
 import {Ribbon} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
 import {i18n, GroupDetail, Search, ListBox, AbstractReactComponent, AddGroupForm, Icon, RibbonGroup, Loading} from 'components/index.jsx';
-import {groupsFetchIfNeeded, groupsGroupDetailFetchIfNeeded, groupsSelectGroup, groupsSearch, groupCreate, groupDelete} from 'actions/admin/group.jsx'
+import {groupsFetchIfNeeded, groupsGroupDetailFetchIfNeeded, groupsSelectGroup, groupsSearch, groupUpdate, groupCreate, groupDelete} from 'actions/admin/group.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
@@ -28,7 +28,9 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
             'handleSearchClear',
             'handleSelect',
             'handleCreateGroupForm',
+            'handleEditGroupForm',
             'handleCreateGroup',
+            'handleUpdateGroup',
             'handleDeleteGroup',
         );
     }
@@ -68,6 +70,9 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
             itemActions.push(
                 <Button key="delete-group" onClick={this.handleDeleteGroup}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('ribbon.action.admin.group.delete')}</span></div></Button>
             );
+            itemActions.push(
+                <Button key="edit-group" onClick={this.handleEditGroupForm}><Icon glyph="fa-edit" /><div><span className="btnText">{i18n('ribbon.action.admin.group.edit')}</span></div></Button>
+            );
         }
 
         let altSection;
@@ -92,11 +97,21 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     }
 
     handleCreateGroupForm() {
-        this.dispatch(modalDialogShow(this, i18n('admin.group.add.title'), <AddGroupForm onSubmitForm={this.handleCreateGroup} />))
+        this.dispatch(modalDialogShow(this, i18n('admin.group.add.title'), <AddGroupForm create onSubmitForm={this.handleCreateGroup} />))
+    }
+
+    handleEditGroupForm() {
+        const {group} = this.props;
+        this.dispatch(modalDialogShow(this, i18n('admin.group.edit.title'), <AddGroupForm initData={group.groupDetail} onSubmitForm={this.handleUpdateGroup} />))
     }
 
     handleCreateGroup(data) {
-        this.dispatch(groupCreate(data.name, data.code));
+        this.dispatch(groupCreate(data.name, data.code, data.description));
+    }
+
+    handleUpdateGroup(data) {
+        const {group:{groupDetail:{id}}} = this.props;
+        this.dispatch(groupUpdate(id, data.name, data.description));
     }
 
     render() {

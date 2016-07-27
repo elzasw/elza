@@ -429,15 +429,15 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
 
             /// TODO - asi použít Checkbox místo input
             content = (
-                <div className='cell-container'>
+                <div key="content" className='cell-container'>
                     <input type='checkbox' checked={checked} onChange={this.handleCheckboxChange.bind(this, row, rowIndex)} />
                 </div>
             )
         } else {
             if (col.cellRenderer) {
-                content = <div className='cell-container'>{col.cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus)}</div>
+                content = <div key="content" className='cell-container'>{col.cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus)}</div>
             } else {
-                content = <div className='cell-container'><div className='value'>{row[col.dataName]}</div></div>
+                content = <div key="content" className='cell-container'><div key={colIndex} className='value'>{row[col.dataName]}</div></div>
             }
         }
 
@@ -451,7 +451,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
 
         return (
             <td
-                key={colIndex}
+                key={rowIndex + '-' + colIndex}
                 ref={rowIndex + '-' + colIndex}
                 className={colCls + cellCls}
                 style={style}
@@ -489,13 +489,13 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
         var content
 
         if (col._rowCheck) {    // speciální slupeček pro označování řádků
-            content = <div className='cell-container'></div>
+            content = <div key="content" className='cell-container'></div>
         } else {
             if (col.headerColRenderer) {
-                content = <div className='cell-container'>{col.headerColRenderer(col)}</div>
+                content = <div key="content" className='cell-container'>{col.headerColRenderer(col)}</div>
             } else {
                 content = (
-                    <div className='cell-container'>
+                    <div key="content" className='cell-container'>
                         <div className='value' title={col.desc}>{col.title}</div>
                     </div>
                 )
@@ -506,7 +506,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
 
         var resizer;
         if (!staticColumns && (typeof col.resizeable === 'undefined' || col.resizeable !== false)) {
-            resizer = <Resizer onMouseDown={this.handleResizerMouseDown.bind(this, colIndex)} />
+            resizer = <Resizer key="resizer" onMouseDown={this.handleResizerMouseDown.bind(this, colIndex)} />
         }
 
         var style = { width: colWidths[colIndex], maxWidth: colWidths[colIndex] };
@@ -560,7 +560,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
 
         var ret = (
             <div ref="dataGrid" className={cls} onKeyDown={this.handleKeyDown} {...tabIndexProp} onFocus={onFocus} onBlur={onBlur}>
-                <div ref='header' className='header-container'>
+                <div ref='header' key="header" className='header-container'>
                     <table className="header-table" style={headerStyle}>
                         <thead>
                             <tr>
@@ -571,7 +571,7 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
                         </thead>
                     </table>
                 </div>
-                <div ref='body' className='body-container' onScroll={this.handleScroll}>
+                <div ref='body' key="body" className='body-container' onScroll={this.handleScroll}>
                     <table className="body-table" style={bodyStyle}>
                         <tbody>
                             {rows.map((row, rowIndex) => {
@@ -589,7 +589,6 @@ var DataGrid = class DataGrid extends AbstractReactComponent {
                                 return (
                                     <tr key={rowIndex} className={rowCls}>
                                         {cells}
-                                        {false && staticColumns && <td key={-1} className='td-empty-scroll' />}
                                         {staticColumns && <td key={-1} />}
                                     </tr>
                                 )

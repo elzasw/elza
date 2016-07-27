@@ -67,7 +67,7 @@ function changeSearchedIndex(state, newIndex) {
 export default function fundDataGrid(state = initialState, action = {}) {
     if (nodeFormActions.isSubNodeFormAction(action, "NODE")) {
         var result = {
-            ...state, 
+            ...state,
             subNodeForm: subNodeForm(state.subNodeForm, action),
         };
         return consolidateState(state, result);
@@ -91,7 +91,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 searchedCurrentIndex: 0,
                 cellFocus: {row: 0, col: 0},
             }
-        case types.STORE_SAVE:
+        case types.STORE_SAVE: {
             const {pageSize, initialised, pageIndex, filter, visibleColumns, columnsOrder, columnInfos} = state;
 
             return {
@@ -103,11 +103,19 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 columnsOrder,
                 columnInfos,
             }
-        case types.FUND_FUND_DATA_GRID_INIT:
-            var visibleColumns = {}
-            action.initData.visibleColumns.forEach(id => {
-                visibleColumns[id] = true;
-            })
+        }
+        case types.FUND_FUND_DATA_GRID_INIT: {
+            let visibleColumns;
+                visibleColumns = {}
+            // Pokud visible column již jsou, nechají se, jinak se inicializují z akce, kde jsou implcitní nastavené v pravidlech
+            if (state.visibleColumns && Object.keys(state.visibleColumns) > 0) {    // je definovaný
+                visibleColumns = state.visibleColumns;
+            } else {    // není definováno, vezmeme z nastavení v pravidlech
+                visibleColumns = {}
+                action.initData.visibleColumns.forEach(id => {
+                    visibleColumns[id] = true;
+                })
+            }
 
             return {
                 ...state,
@@ -119,6 +127,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 isFetchingData: false,
                 fetchedData: false,
             }
+        }
         case types.FUND_FUND_DATA_GRID_CHANGE_SELECTED_ROW_INDEXES:
             return {
                 ...state,
@@ -269,4 +278,3 @@ export default function fundDataGrid(state = initialState, action = {}) {
             return state
     }
 }
-
