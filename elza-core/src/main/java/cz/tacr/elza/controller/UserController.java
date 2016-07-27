@@ -102,6 +102,28 @@ public class UserController {
     }
 
     /**
+     * Upravení uživatele.
+     *
+     * @param params parametry pro úpravu uživatele
+     * @return upravený uživatel
+     */
+    @RequestMapping(value = "/{userId}",method = RequestMethod.PUT)
+    @Transactional
+    public UsrUserVO changeUser(@PathVariable("userId") final Integer userId,
+                                @RequestBody final CreateUser params) {
+        Assert.notNull(params);
+
+        UsrUser user = userService.getUser(userId);
+
+        if (user == null) {
+            throw new IllegalArgumentException("Uživatel neexistuje");
+        }
+
+        user = userService.changeUser(user, params.getUsername(), params.getPassword());
+        return factoryVO.createUser(user);
+    }
+
+    /**
      * Změna hesla uživatele - administrace.
      *
      * @param userId uživate, kterému měníme heslo

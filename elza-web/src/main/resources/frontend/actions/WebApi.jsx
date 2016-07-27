@@ -914,6 +914,14 @@ class WebApi{
         return AjaxUtils.ajaxPost(WebApi.userUrl, null, params);
     }
 
+    updateUser(id, username, password) {
+        const params = {
+            username: username,
+            password: password,
+        }
+        return AjaxUtils.ajaxPut(WebApi.userUrl + '/' + id, null, params);
+    }
+
     changePasswordUser(oldPassword, newPassword) {
         const params = {
             oldPassword: oldPassword,
