@@ -11,6 +11,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {AppActions} from 'stores/index.jsx';
 import {deleteCreator, updateParty} from 'actions/party/party.jsx'
 import {refPartyListFetchIfNeeded} from 'actions/refTables/partyList.jsx'
+import {indexById} from 'stores/app/utils.jsx'
 
 /**
  * PARTY DETAIL CREATORS
@@ -77,14 +78,21 @@ const PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompo
      */ 
     addCreator(data) {
         const party = this.props.partyRegion.selectedPartyData;                   // aktuálně upravovaná osoba
-        party.creators[party.creators.length] = {                               // nového autora vložíme na konec seznamu autorů
-            partyId: data.creatorId,
-            record:{
-                record: data.creatorName
-            },
-            '@type': '.ParPartyVO'
-        };
-        this.dispatch(updateParty(party));                                      // aurtor se uloží a osoba znovu načte     
+
+        // Přidáme jen pokud již přidaný není
+        if (indexById(party.creators, data.creatorId, "partyId") === null) {
+            party.creators[party.creators.length] = {                               // nového autora vložíme na konec seznamu autorů
+                partyId: data.creatorId,
+                record:{
+                    record: data.creatorName,
+                    ["@class"]: ".RegRecordVO"
+                },
+                "@type": data["@type"]
+            };
+            this.dispatch(updateParty(party));                                      // aurtor se uloží a osoba znovu načte
+        } else {
+            this.dispatch(modalDialogHide());
+        }
     }
 
     /**

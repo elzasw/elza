@@ -44,10 +44,12 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
      * @params event - událost která změnu vyvolala
      */
     updateValue(id, valueObj){
+        console.log(valueObj)
         var value = id;                                               // hodnota změněného pole formuláře
         var data = this.state.data;
         data.creatorId = value;
         data.creatorName = valueObj.name;
+        data["@type"] = valueObj["@type"];
 
         this.setState({
             data : data                                                                     // uložení změn do state
@@ -109,6 +111,7 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
                                 id: party.partyId,
                                 name: party.record.record,
                                 type: party.partyType.name,
+                                "@type": party["@type"],
                                 from: party.from,
                                 to: party.to,
                                 characteristics: party.record.characteristics
@@ -124,6 +127,14 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
      * Vykreslení formuláře
      */
     render() {
+        const {data} = this.state;
+
+        let value;
+        if (typeof data.creatorId !== "undefined" && data.creatorId !== null) {
+            value = {id: data.creatorId, name: data.creatorName};
+        } else {
+            value = null;
+        }
 
         return (
             <div>
@@ -143,6 +154,7 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
                                 onSearchChange={this.handleSearchChange}
                                 onChange={this.updateValue}
                                 renderItem={this.props.renderParty}
+                                value={value}
                                  />
 
                     </form>
