@@ -1,6 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
 import {userDetailChange, userDetailClear} from 'actions/user/userDetail.jsx'
+import {routerNavigate} from "actions/router.jsx"
 
 export function loginFail(callback) {
     return {
@@ -10,12 +11,19 @@ export function loginFail(callback) {
 }
 
 export function loginSuccess() {
-    return dispatch => {
-        dispatch({
-            type: types.LOGIN_SUCCESS
-        })
+    return (dispatch, getState) => {
+        let state = getState();
         WebApi.getUserDetail()
             .then(userDetail => {
+                let action = {
+                    type: types.LOGIN_SUCCESS,
+                    reset: false,
+                }
+                if (state.userDetail.id != userDetail.id) {
+                    dispatch(routerNavigate('/'));
+                    action.reset = true;
+                }
+                dispatch(action)
                 dispatch(userDetailChange(userDetail))
             })
     }
@@ -23,15 +31,18 @@ export function loginSuccess() {
 
 export function logout() {
     return dispatch => {
+        dispatch(routerNavigate('/'));
         return WebApi.logout()
             .then(() => {
                 dispatch({
-                    type: types.LOGOUT
+                    type: types.LOGOUT,
+                    reset: true,
                 });
                 dispatch(userDetailClear())
             }).catch(() => {
                 dispatch({
-                    type: types.LOGOUT
+                    type: types.LOGOUT,
+                    reset: true,
                 });
                 dispatch(userDetailClear())
             });

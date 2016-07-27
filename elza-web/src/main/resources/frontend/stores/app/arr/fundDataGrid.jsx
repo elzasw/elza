@@ -108,7 +108,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
             let visibleColumns;
                 visibleColumns = {}
             // Pokud visible column již jsou, nechají se, jinak se inicializují z akce, kde jsou implcitní nastavené v pravidlech
-            if (store.visibleColumns && Object.keys(store.visibleColumns) > 0) {    // je definovaný
+            if (state.visibleColumns && Object.keys(state.visibleColumns) > 0) {    // je definovaný
                 visibleColumns = state.visibleColumns;
             } else {    // není definováno, vezmeme z nastavení v pravidlech
                 visibleColumns = {}
