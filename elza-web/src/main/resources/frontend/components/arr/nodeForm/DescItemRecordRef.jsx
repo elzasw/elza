@@ -81,9 +81,15 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
         var value = descItem.record ? descItem.record : null;
 
         if (readMode) {
-            return (
-                <DescItemLabel onClick={this.handleDetail.bind(this, descItem.record.recordId)} value={value.record} />
-            )
+            if (value) {
+                return (
+                    <DescItemLabel onClick={this.handleDetail.bind(this, descItem.record.recordId)} value={value.record} />
+                )
+            } else {
+                return (
+                    <DescItemLabel value="" />
+                )
+            }
         }
 
         var footer

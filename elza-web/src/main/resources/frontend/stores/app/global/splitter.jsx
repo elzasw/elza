@@ -9,11 +9,18 @@ export default function splitter(state = initialState, action) {
     switch (action.type) {
         case types.STORE_STATE_DATA_INIT:
             if (action.storageData.splitter) {
-                return {
+                const resultState = {
                     ...state,
                     leftWidth: action.storageData.splitter.leftWidth,
                     rightWidth: action.storageData.splitter.rightWidth,
                 }
+                if (typeof resultState.leftWidth == "undefined" || resultState.leftWidth <0 || resultState.leftWidth >= 4000) {
+                    resultState.leftWidth = initialState.leftWidth;
+                }
+                if (typeof resultState.rightWidth == "undefined" || resultState.rightWidth <0 || resultState.rightWidth >= 4000) {
+                    resultState.rightWidth = initialState.rightWidth;
+                }
+                return resultState;
             } else {
                 return state;
             }

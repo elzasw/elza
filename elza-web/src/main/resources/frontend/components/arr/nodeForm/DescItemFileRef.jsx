@@ -75,9 +75,16 @@ var DescItemFileRef = class DescItemFileRef extends AbstractReactComponent {
         var value = descItem.file ? descItem.file : null;
 
         if (readMode) {
-            return (
-                <DescItemLabel value={value.name} />
-            )
+            if (value) {
+                return (
+                    <DescItemLabel value={value.name} />
+                )
+            } else {
+                return (
+                    <DescItemLabel value="" />
+                )
+
+            }
         }
 
         const footer = this.renderFooter();

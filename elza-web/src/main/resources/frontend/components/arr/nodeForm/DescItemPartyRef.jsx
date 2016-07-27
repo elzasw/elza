@@ -85,9 +85,15 @@ const DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
         const value = descItem.party ? descItem.party : null;
 
         if (readMode) {
-            return (
-                <DescItemLabel onClick={this.handleDetail.bind(this, descItem.party.partyId)} value={value.record.record} />
-            )
+            if (value) {
+                return (
+                    <DescItemLabel onClick={this.handleDetail.bind(this, descItem.party.partyId)} value={value.record.record} />
+                )
+            } else {
+                return (
+                    <DescItemLabel value="" />
+                )
+            }
         }
 
         let footer

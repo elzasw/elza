@@ -128,7 +128,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
 
         if (readMode) {
             return (
-                <DescItemLabel value={value.storageNumber} />
+                <DescItemLabel value={value ? value.storageNumber : ""} />
             )
         }
 

@@ -50,15 +50,17 @@ var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
         const {descItem, locked, readMode, calendarTypes} = this.props;
 
         if (readMode) {
-
             let index = indexById(calendarTypes.items, descItem.calendarTypeId);
-
-            let calendar = calendarTypes.items[index].name;
-
-
-            return (
-                <DescItemLabel value={calendar + ": " + descItem.value} />
-            )
+            if (index !== null) {
+                let calendar = calendarTypes.items[index].name;
+                return (
+                    <DescItemLabel value={calendar + ": " + descItem.value}/>
+                )
+            } else {
+                return (
+                    <DescItemLabel value="" />
+                )
+            }
         }
 
         let tooltip = <Tooltip id='tt'>

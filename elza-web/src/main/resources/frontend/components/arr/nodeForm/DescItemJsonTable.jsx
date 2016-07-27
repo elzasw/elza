@@ -42,7 +42,8 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
                 title: colDef.name,
                 desc: colDef.name,
                 width: colDef.width,
-                widthPercent: true,cellRenderer: this.cellRenderer,
+                widthPercent: true,
+                cellRenderer: this.cellRenderer,
                 colDef: colDef,
             })
         })
@@ -147,7 +148,7 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
 
     cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus) {
         return (
-            <div className='value'>{row.values[col.colDef.code]}</div>
+            <div key={colIndex} className='value'>{row.values[col.colDef.code]}</div>
         )
     }
 
@@ -173,13 +174,13 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
         var actions = [];
 
         if (!locked) {
-            actions.push(<NoFocusButton className="remove" onClick={this.handleRemoveRow.bind(this, row, rowIndex)} title={i18n("subNodeForm.descItem.jsonTable.action.removeRow")}>
+            actions.push(<NoFocusButton key="remove" className="remove" onClick={this.handleRemoveRow.bind(this, row, rowIndex)} title={i18n("subNodeForm.descItem.jsonTable.action.removeRow")}>
                 <Icon glyph="fa-remove"/>
             </NoFocusButton>)
         }
 
         return (
-            <div className='value'>
+            <div key={colIndex} className='value'>
                 {actions}
             </div>
         )
@@ -191,15 +192,16 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
 
         var actions = [];
 
-        actions.push(<NoFocusButton onClick={onDownload} title={i18n('subNodeForm.descItem.jsonTable.action.download')}><Icon glyph="fa-download" /></NoFocusButton>)
+        actions.push(<NoFocusButton key="download" onClick={onDownload} title={i18n('subNodeForm.descItem.jsonTable.action.download')}><Icon glyph="fa-download" /></NoFocusButton>)
 
         if (!locked) {
-            actions.push(<NoFocusButton onClick={this.handleAddRow} title={i18n('subNodeForm.descItem.jsonTable.action.addRow')}><Icon glyph="fa-plus" /></NoFocusButton>)
+            actions.push(<NoFocusButton key="add" onClick={this.handleAddRow} title={i18n('subNodeForm.descItem.jsonTable.action.addRow')}><Icon glyph="fa-plus" /></NoFocusButton>)
         }
 
         return (
             <div className='desc-item-value desc-item-value-table'>
                 <DataGrid
+                    key="grid"
                     ref='dataGrid'
                     rows={rows}
                     cols={cols}
@@ -212,7 +214,10 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
                     onDelete={this.handleDelete}
                     disabled={locked || readMode}
                     />
-                <div className='desc-item-value-actions'>
+                <div
+                    key="actions"
+                    className='desc-item-value-actions'
+                >
                     {actions}
                 </div>
             </div>
