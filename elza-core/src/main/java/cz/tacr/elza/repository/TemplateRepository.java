@@ -1,7 +1,9 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.RulPackage;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -17,6 +19,7 @@ public interface TemplateRepository extends ElzaJpaRepository<RulTemplate, Integ
 
     void deleteByRulPackage(RulPackage rulPackage);
 
-    RulTemplate findByCode(String packetTypeCode);
+    RulTemplate findByCode(String templateCode);
 
+    List<RulTemplate> findByOutputType(RulOutputType outputType, Sort sort);
 }

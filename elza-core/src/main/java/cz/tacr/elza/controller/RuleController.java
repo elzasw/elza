@@ -79,7 +79,6 @@ public class RuleController {
     public List<RulRuleSetVO> getRuleSets() {
         return factoryVo.createRuleSetList(ruleSetRepository.findAll());
     }
-
     @RequestMapping(value = "/dataTypes", method = RequestMethod.GET)
     public List<RulDataTypeVO> getDataTypes() {
         List<RulDataType> dataTypes = dataTypeRepository.findAll();
@@ -93,8 +92,8 @@ public class RuleController {
     }
 
     @RequestMapping(value = "/templates", method = RequestMethod.GET)
-    public List<RulTemplateVO> getTemplates() {
-        List<RulTemplate> templates = ruleService.getTemplates();
+    public List<RulTemplateVO> getTemplates(@RequestParam(value = "code", required = false) final String outputTypeCode) {
+        List<RulTemplate> templates = ruleService.getTemplates(outputTypeCode);
         return factoryVo.createTemplates(templates);
     }
 
