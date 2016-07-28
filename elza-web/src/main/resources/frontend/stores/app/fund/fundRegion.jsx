@@ -91,7 +91,7 @@ export default function fundRegion(state = initialState, action = {}) {
                 fetching: false,
                 fetched: true,
                 funds: action.data.funds,
-                fundsCount: action.data.fundsCount,
+                fundsCount: action.data.fundCount,
             }
         default:
             return state

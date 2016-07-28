@@ -12,7 +12,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
 import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
-        Search, RegistryPanel, DropDownTree, AddRegistryForm, ImportForm,
+        Search, SearchWithGoto, RegistryPanel, DropDownTree, AddRegistryForm, ImportForm,
         ListBox} from 'components';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
@@ -443,7 +443,7 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     render() {
-        const {splitter, registryRegion: {records, selectedId, registryTypesId, parents, typesToRoot, panel, fetched, filterText, registryParentId}} = this.props;
+        const {splitter, registryRegion: {countRecords, records, selectedId, registryTypesId, parents, typesToRoot, panel, fetched, filterText, registryParentId}} = this.props;
 
         let regListBox = <div className='search-norecord'>{i18n('registry.listNoRecord')}</div>
         if (records.length) {
@@ -516,6 +516,16 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
                         onClear={this.handleSearchClear}
                         placeholder={i18n('search.input.search')}
                         filterText={filterText}
+                        />
+                    <SearchWithGoto
+                        onFulltextSearch={this.handleSearch}
+                        onClear={this.handleSearchClear}
+                        placeholder={i18n('search.input.search')}
+                        filterText={filterText}
+                        showFilterResult={true}
+                        type="INFO"
+                        itemsCount={records.length}
+                        allItemsCount={countRecords}
                         />
                 </div>
                 <div className='registry-list-breadcrumbs' key='breadcrumbs'>{navParents}</div>

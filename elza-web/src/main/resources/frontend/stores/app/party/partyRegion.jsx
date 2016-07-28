@@ -12,6 +12,7 @@ const initialState = {
     fetchedDetail: false,
     filterText: "",
     items: [],
+    itemsCount: 0,
     panel: panel(),
     selectedPartyID : null,
     selectedPartyData: null,
@@ -42,6 +43,7 @@ export default function partyRegion(state = initialState, action) {
                 isFetchingDetail: false,
                 fetchedDetail: false,
                 items: [],
+                itemsCount: 0,
                 selectedPartyData: null,
                 partyTypes: [],
                 ...action.partyRegion
@@ -71,6 +73,7 @@ export default function partyRegion(state = initialState, action) {
                 isFetchingSearch: false,
                 fetchedSearch: true,
                 items: action.items,
+                itemsCount: action.itemsCount,
                 filterText: action.filterText,
             })
         case types.PARTY_DETAIL_REQUEST:

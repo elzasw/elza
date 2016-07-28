@@ -100,7 +100,7 @@ class WebApi{
             partyTypeId: null,
             versionId: versionId
         }).then(json=>{
-            return json.recordList;
+            return {records: json.recordList, recordsCount: json.count};
         });
     }
 

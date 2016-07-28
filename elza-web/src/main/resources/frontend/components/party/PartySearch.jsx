@@ -7,7 +7,7 @@ require('./PartySearch.less');
 import React from 'react';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
-import {ListBox, AbstractReactComponent, Search, i18n, ArrPanel} from 'components/index.jsx';
+import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel} from 'components/index.jsx';
 import {AppActions} from 'stores/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded, partyArrReset} from 'actions/party/party.jsx'
@@ -129,7 +129,16 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
         return  <div className="party-list">
                     <div>
                         {arrPanel}
-                        <Search placeholder={i18n('search.input.search')} onSearch={this.handleSearch} filterText={this.props.filterText} onClear={this.handleClearSearch}/>
+                        <SearchWithGoto
+                            onFulltextSearch={this.handleSearch}
+                            onClear={this.handleClearSearch}
+                            placeholder={i18n('search.input.search')}
+                            filterText={this.props.filterText}
+                            showFilterResult={true}
+                            type="INFO"
+                            itemsCount={partyList ? partyList.length : 0}
+                            allItemsCount={partyRegion.itemsCount}
+                        />
                     </div>
                     <div className="partySearch">
                         {partyListRows}
