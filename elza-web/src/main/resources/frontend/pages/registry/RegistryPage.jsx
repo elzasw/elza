@@ -12,7 +12,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
 import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
-        Search, SearchWithGoto, RegistryPanel, DropDownTree, AddRegistryForm, ImportForm,
+        SearchWithGoto, RegistryPanel, DropDownTree, AddRegistryForm, ImportForm,
         ListBox} from 'components';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
@@ -511,12 +511,6 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
                 <div className='registry-list-header-container'>
                     {arrPanel}
                     {dropDownForSearch}
-                    <Search
-                        onSearch={this.handleSearch}
-                        onClear={this.handleSearchClear}
-                        placeholder={i18n('search.input.search')}
-                        filterText={filterText}
-                        />
                     <SearchWithGoto
                         onFulltextSearch={this.handleSearch}
                         onClear={this.handleSearchClear}
