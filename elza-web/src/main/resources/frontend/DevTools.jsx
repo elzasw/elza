@@ -5,11 +5,13 @@ import LogMonitor from 'redux-devtools-log-monitor';
 import DockMonitor from 'redux-devtools-dock-monitor';
 import FilterableLogMonitor from 'redux-devtools-filterable-log-monitor'
 import FilterMonitor from 'redux-devtools-filter-actions';
+import Dispatcher from 'redux-devtools-dispatch';
 
 export default createDevTools(
-    <DockMonitor toggleVisibilityKey="ctrl-h" changePositionKey="ctrl-q" defaultIsVisible={__SHOW_DEVTOOLS__}>
+    <DockMonitor toggleVisibilityKey="ctrl-h" changePositionKey="ctrl-q" defaultIsVisible={__SHOW_DEVTOOLS__} changeMonitorKey="ctrl-e">
         <FilterMonitor blacklist={['STORE_STATE_DATA']}>
-            <FilterableLogMonitor/>
+            <FilterableLogMonitor />
         </FilterMonitor>
+        <Dispatcher/>
     </DockMonitor>
 )
