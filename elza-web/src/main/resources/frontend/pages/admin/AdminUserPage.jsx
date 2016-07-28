@@ -20,8 +20,9 @@ import {usersFetchIfNeeded,
 import {indexById} from 'stores/app/utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
-import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
-import {renderUserItem} from "components/admin/adminRenderUtils.jsx"
+import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
+import {renderUserItem} from 'components/admin/adminRenderUtils.jsx';
+import {partyAdd} from 'actions/party/party.jsx'
 
 const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
     constructor(props) {
@@ -41,6 +42,7 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
             'handleChangeUserPassword',
             'handleChangeUsernameForm',
             'handleUpdateUser',
+            'handlePartyAdd',
         );
     }
 
@@ -68,8 +70,12 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
         this.dispatch(usersSearch('', user.filterState))
     }
 
+    handlePartyAdd(partyTypeId, callback) {
+        this.dispatch(partyAdd(partyTypeId, null, callback));
+    };
+
     handleCreateUserForm() {
-        this.dispatch(modalDialogShow(this, i18n('admin.user.add.title'), <AddUserForm create onSubmitForm={this.handleCreateUser} />))
+        this.dispatch(modalDialogShow(this, i18n('admin.user.add.title'), <AddUserForm create onSubmitForm={this.handleCreateUser} onCreateParty={this.handlePartyAdd} />))
     }
 
     handleCreateUser(data) {

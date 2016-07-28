@@ -1,4 +1,4 @@
-require('./PartyField.less')
+require('./PartyField.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -10,8 +10,26 @@ import {connect} from 'react-redux'
 import {MenuItem, DropdownButton, Button} from 'react-bootstrap';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+import {partySelect, partyAdd} from 'actions/party/party.jsx'
+import {routerNavigate} from 'actions/router.jsx'
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {indexById} from 'stores/app/utils.jsx'
 
 const PartyField = class PartyField extends AbstractReactComponent {
+
+    static defaultProps = {
+        detail: false
+    };
+
+    static PropTypes = {
+        detail: React.PropTypes.bool.isRequired,
+        value: React.PropTypes.object,
+        onChange: React.PropTypes.func.isRequired,
+        onDetail: React.PropTypes.func,
+        onCreate: React.PropTypes.func.isRequired,
+        versionId: React.PropTypes.number
+    };
+
     constructor(props) {
         super(props);
         this.bindMethods('handleChange', 'renderParty', 'handleSearchChange', 'renderFooter', 'handleDetail', 'focus');
@@ -53,7 +71,7 @@ const PartyField = class PartyField extends AbstractReactComponent {
     }
 
     renderParty(item, isHighlighted, isSelected) {
-        var cls = 'item';
+        let cls = 'item';
         if (isHighlighted) {
             cls += ' focus'
         }
@@ -75,27 +93,33 @@ const PartyField = class PartyField extends AbstractReactComponent {
         return (
             <div className="create-party">
                 <DropdownButton id="party-field" noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>}>
-                    {refTables.partyTypes.items.map(i=> {return <MenuItem key={'party' + i.partyTypeId} onClick={this.handleCreateParty.bind(this, i.partyTypeId)} eventKey={i.partyTypeId}>{i.name}</MenuItem>})}
+                    {refTables.partyTypes.items.map(i=> {return <MenuItem key={'party' + i.partyTypeId} onClick={() => this.handleCreateParty(i.partyTypeId)} eventKey={i.partyTypeId}>{i.name}</MenuItem>})}
                 </DropdownButton>
             </div>
         )
     }
 
     handleDetail(partyId) {
-        this.props.onDetail(partyId);
+        if (this.props.onDetail) {
+            this.props.onDetail(partyId);
+        } else {
+            this.dispatch(modalDialogHide());
+            this.dispatch(partySelect(partyId, null));
+            this.dispatch(routerNavigate('party'));
+        }
     }
 
     render() {
-        // onChange nutno excludnout z other props - jinak by vlezno na autocomplete a přestal by fugnovat event on Change na komponentě
-        const {userDetail, locked, value, onChange, ...otherProps} = this.props;
+        /** onChange nutno excludnout z other props - jinak by vlezno na autocomplete a přestal by fugnovat event on Change na komponentě **/
+        const {userDetail, locked, value, onChange, ...otherProps, detail} = this.props;
 
-        let footer
+        let footer;
         if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR)) {
             footer = this.renderFooter()
         }
 
         const actions = [];
-        if (value && value.id) {
+        if (value && value.partyId && detail) {
             if (userDetail.hasOne(perms.REG_SCOPE_RD_ALL, {type: perms.REG_SCOPE_RD, scopeId: value.record.scopeId})) {
                 actions.push(<div onClick={this.handleDetail.bind(this, value.partyId)}
                                   className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
@@ -122,16 +146,8 @@ const PartyField = class PartyField extends AbstractReactComponent {
     }
 }
 
-PartyField.propTypes = {
-    value: React.PropTypes.object,
-    onChange: React.PropTypes.func.isRequired,
-    onDetail: React.PropTypes.func.isRequired,
-    onCreate: React.PropTypes.func.isRequired,
-    versionId: React.PropTypes.number
-}
-
 function mapStateToProps(state) {
-    const {refTables, userDetail} = state
+    const {refTables, userDetail} = state;
     return {
         refTables,
         userDetail,
