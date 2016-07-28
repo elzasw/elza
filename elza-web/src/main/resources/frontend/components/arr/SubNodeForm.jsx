@@ -11,7 +11,6 @@ import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPar
     AddFileForm} from 'components';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import DescItemType from './nodeForm/DescItemType.jsx'
 import {partySelect, partyAdd} from 'actions/party/party.jsx'
 import {registrySelect, registryAdd} from 'actions/registry/registryRegionList.jsx'
@@ -20,7 +19,7 @@ import {setInputFocus} from 'components/Utils.jsx'
 import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {UrlFactory} from 'actions/index.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
-import {modalDialogShow} from 'actions/global/modalDialog.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {fundPacketsCreate} from 'actions/arr/fundPackets.jsx'
 import {fundFilesCreate} from 'actions/arr/fundFiles.jsx'
 var classNames = require('classnames');

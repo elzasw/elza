@@ -11,7 +11,7 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
 import ReactDOM from 'react-dom'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
-require ('./Scope.less');
+require('./Scope.less');
 import {indexById} from 'stores/app/utils.jsx';
 
 
@@ -20,7 +20,7 @@ import {indexById} from 'stores/app/utils.jsx';
  *  @param versionId zadat null nebo id verze
  *  <Scope versionId={null} label='Scope'/>
  **/
-var Scope = class Scope extends AbstractReactComponent {
+const Scope = class Scope extends AbstractReactComponent {
     constructor(props) {
         super(props);
     }
@@ -30,12 +30,12 @@ var Scope = class Scope extends AbstractReactComponent {
     }
 
     render() {
-        var data = [];
-        let index = indexById(this.props.store.scopes, this.props.versionId, 'versionId');
-        if (index !== null && this.props.store.scopes[index].scopes) {
-            data = this.props.store.scopes[index].scopes;
+        let data = [];
+        const {store: {scopes}, ...other} = this.props;
+        const index = indexById(scopes, this.props.versionId, 'versionId');
+        if (index !== null && scopes[index].scopes) {
+            data = scopes[index].scopes;
         }
-        var {refTables, ...other} = this.props;
 
         return (
             <FormInput componentClass='select' options={data} {...other}>
