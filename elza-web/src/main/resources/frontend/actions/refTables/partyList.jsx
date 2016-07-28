@@ -25,7 +25,7 @@ export function refPartyListFetch() {
     return dispatch => {
         dispatch(refPartyListRequest())
         return WebApi.findParty('')
-            .then(json => dispatch(refPartyListReceive(json)));
+            .then(json => dispatch(refPartyListReceive(json.records)));
     }
 }
 

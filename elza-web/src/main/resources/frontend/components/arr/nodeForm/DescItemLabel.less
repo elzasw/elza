@@ -1,20 +1,31 @@
 @import "~variables.less";
 
-.desc-item-label-value {
-  white-space: normal;
-  max-height: 60px;
-  overflow: auto;
-}
+.desc-item-type-desc-item-container {
+  display: flex;
 
-.desc-item-spec-label {
-  padding-right: 3px;
+  .desc-item-label-value {
+    flex-grow: 1;
+    width: 100%;
 
-  &:not(:last-child) {
     white-space: normal;
-    font-style: italic;
+    max-height: 60px;
+    overflow: auto;
+    width: 100%;
   }
 
-  &:not(:last-child)::after {
-    content: ":";
+  .desc-item-spec-label {
+    flex-shrink: 0;
+    white-space: nowrap;
+
+    padding-right: 3px;
+
+    &:not(:last-child) {
+      white-space: normal;
+      font-style: italic;
+    }
+
+    &:not(:last-child)::after {
+      content: ":";
+    }
   }
 }

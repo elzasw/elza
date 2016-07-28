@@ -3,6 +3,7 @@
  */
 
 require('./ArrPage.less');
+require('./ArrParentPage.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -168,7 +169,7 @@ var ArrParentPage = class ArrParentPage extends AbstractReactComponent {
                 <PageLayout
                     splitter={splitter}
                     _className='fa-page'
-                    className={this.layoutClassName}
+                    className={this.layoutClassName ? ("arr-abstract-page " + this.layoutClassName) : "arr-abstract-page"}
                     ribbon={this.buildRibbon()}
                     centerPanel={centerPanel}
                     leftPanel={leftPanel}

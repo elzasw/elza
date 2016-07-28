@@ -11,7 +11,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components/index.jsx';
 import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent,
-    ImportForm, ExportForm, Search, ListBox, FundDetail, FundDetailExt} from 'components';
+    ImportForm, ExportForm, SearchWithGoto, ListBox, FundDetail, FundDetailExt} from 'components';
 import {NodeTabs} from 'components/index.jsx';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
@@ -282,13 +282,17 @@ const FundPage = class FundPage extends AbstractReactComponent {
         
         const leftPanel = (
             <div className="fund-list-container">
-                <Search
-                    onSearch={this.handleSearch}
+                <SearchWithGoto
+                    onFulltextSearch ={this.handleSearch}
                     onClear={this.handleSearchClear}
                     placeholder={i18n('search.input.search')}
-                    value={fundRegion.filterText}
-                    />
-                <ListBox 
+                    filterText={fundRegion.filterText}
+                    showFilterResult={true}
+                    type="INFO"
+                    itemsCount={fundRegion.funds.length}
+                    allItemsCount={fundRegion.fundsCount}
+                />
+                <ListBox
                     className='fund-listbox'
                     ref='fundList'
                     items={fundRegion.funds}

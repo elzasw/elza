@@ -130,7 +130,8 @@ export function clearPartyDetail() {
 export function findPartyReceive(filterText, json) {
     return {
         type: types.PARTY_FIND_PARTY_RECEIVE,
-        items:json,
+        items: json.records,
+        itemsCount: json.recordsCount,
         filterText: filterText
     }
 }

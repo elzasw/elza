@@ -426,7 +426,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     renderRightPanel() {
         const fund = this.getActiveFund(this.props);
         if (!fund.fundOutput.fundOutputDetail.fetched) {
-            return <span>Not selected</span>;
+            return <span></span>;
         }
 
         // Záložky a obsah aktuálně vybrané založky
