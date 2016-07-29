@@ -29,14 +29,13 @@ const AddUserForm = class AddUserForm extends AbstractReactComponent {
     static validate(values, props) {
         const errors = {};
 
-        let fields = ['username', 'password'];
+        let fields = ['username', 'password', 'passwordAgain'];
 
         if (props.create) {
             fields.push('party');
-            fields.push('passwordAgain');
         }
 
-        for (let field of  fields) {
+        for (let field of fields) {
             if (!values[field]) {
                 errors[field] = i18n('global.validation.required');
             }
@@ -78,8 +77,8 @@ const AddUserForm = class AddUserForm extends AbstractReactComponent {
                     <form onSubmit={handleSubmit(submitForm)}>
                         {create && <PartyField label={i18n('admin.user.add.party')} {...party}  onCreate={this.handlePartyCreate} detail={false} />}
                         <FormInput label={i18n('admin.user.add.username')} autoComplete="off" type="text" {...username} />
-                        <FormInput label={i18n('admin.user.password')} autoComplete="off" type="password" {...password} />
-                        {create && <FormInput label={i18n('admin.user.passwordAgain')} autoComplete="off" type="password" {...passwordAgain} />}
+                        <FormInput label={i18n(create ? 'admin.user.password' : 'admin.user.newPassword' )} autoComplete="off" type="password" {...password} />
+                        <FormInput label={i18n('admin.user.passwordAgain')} autoComplete="off" type="password" {...passwordAgain} />
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
