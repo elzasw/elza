@@ -66,6 +66,11 @@ export default function fundRegion(state = initialState, action = {}) {
                 currentDataKey: '',
                 fundDetail: fundDetail(state.fundDetail, action),
             }
+        case types.OUTPUT_STATE_CHANGE:
+            return {
+                ...state,
+                fundDetail: fundDetail(state.fundDetail, action),
+            }
         case types.FUNDS_SELECT_FUND:
         case types.FUNDS_FUND_DETAIL_REQUEST:
         case types.FUNDS_FUND_DETAIL_RECEIVE:
@@ -91,7 +96,7 @@ export default function fundRegion(state = initialState, action = {}) {
                 fetching: false,
                 fetched: true,
                 funds: action.data.funds,
-                fundsCount: action.data.fundsCount,
+                fundsCount: action.data.fundCount,
             }
         default:
             return state

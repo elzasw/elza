@@ -1,27 +1,36 @@
+import template from './template';
 import * as types from 'actions/constants/ActionTypes.js';
 
 const initialState = {
-    isFetching: false,
-    fetched: false,
-    dirty: false,
-    items: []
+    items: {}
 };
 
 export default function templates(state = initialState, action = {}) {
     switch (action.type) {
-        case types.REF_TEMPLATES_REQUEST:
+        case types.REF_TEMPLATES_REQUEST:{
+            const {code} = action;
+            const initTemplate = state.items.hasOwnProperty(code) ? state.items[code] : template();
             return {
-                ...state,
-                isFetching: true
-            };
-        case types.REF_TEMPLATES_RECEIVE:
+                items: {
+                    ...state.items,
+                    [code]: template(initTemplate, action)
+                }
+            }
+        }
+        case types.REF_TEMPLATES_RECEIVE:{
+            const {code} = action;
+            if (!state.items.hasOwnProperty(code)) {
+                return state;
+            }
             return {
-                ...state, isFetching: false,
-                fetched: true,
-                dirty: false,
-                items: action.items,
-                lastUpdated: action.receivedAt
-            };
+                items: {
+                    ...state.items,
+                    [code]: template(state.items[code], action)
+                }
+            }
+        }
+        case types.CHANGE_PACKAGE:
+            return initialState;
         default:
             return state
     }

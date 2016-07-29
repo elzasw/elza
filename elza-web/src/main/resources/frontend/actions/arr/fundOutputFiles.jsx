@@ -14,8 +14,8 @@ export function isFundOutputFilesAction(action) {
     }
 }
 
-function _dataGridKey(state) {
-    return '-filterText' + state.filterText
+function _dataKey(outputResultId, state) {
+    return outputResultId + '-filterText' + state.filterText
 }
 
 export function fetchFundOutputFilesIfNeeded(versionId, outputResultId) {
@@ -27,7 +27,10 @@ export function fetchFundOutputFilesIfNeeded(versionId, outputResultId) {
         }
 
         const fundOutputFiles = fund.fundOutput.fundOutputFiles;
-        const dataKey = _dataGridKey(fundOutputFiles);
+        if (!fundOutputFiles) {
+            return;
+        }
+        const dataKey = _dataKey(outputResultId, fundOutputFiles);
         if (fundOutputFiles.currentDataKey !== dataKey) {
             dispatch(_dataRequest(versionId, dataKey));
 
@@ -36,7 +39,7 @@ export function fetchFundOutputFilesIfNeeded(versionId, outputResultId) {
                 const newFund = objectById(state.arrRegion.funds, versionId, 'versionId');
                 if (newFund !== null) {
                     const newFundOutputFiles = fund.fundOutput.fundOutputFiles;
-                    const newDataKey = _dataGridKey(newFundOutputFiles);
+                    const newDataKey = _dataKey(outputResultId, newFundOutputFiles);
                     if (newDataKey === dataKey) {
                         dispatch(_dataReceive(versionId, response))
                     }

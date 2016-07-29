@@ -6,39 +6,11 @@ import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemSettings;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecExt;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeAction;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
-import cz.tacr.elza.repository.DefaultItemTypeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemSettingsRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeActionRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.TemplateRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.utils.ObjectListIterator;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 import org.apache.commons.collections4.CollectionUtils;
@@ -121,6 +93,8 @@ public class RuleService {
 
     @Autowired
     private ItemSettingsRepository itemSettingsRepository;
+    @Autowired
+    private OutputTypeRepository outputTypeRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
@@ -178,8 +152,14 @@ public class RuleService {
      * Načtení seznamu všech šablon, seřazeného podle názvu.
      * @return seznam šablon
      */
-    public List<RulTemplate> getTemplates() {
-        return templateRepository.findAll(new Sort(Sort.Direction.ASC, RulTemplate.NAME));
+    public List<RulTemplate> getTemplates(final String outputTypeCode) {
+        if (outputTypeCode == null) {
+            return templateRepository.findAll(new Sort(Sort.Direction.ASC, RulTemplate.NAME));
+        }
+        RulOutputType outputType = outputTypeRepository.findByCode(outputTypeCode);
+        Assert.notNull(outputType, "Typ outputu s kodem '" + outputTypeCode + "' nebyl nalezen");
+
+        return templateRepository.findByOutputType(outputType, new Sort(Sort.Direction.ASC, RulTemplate.NAME));
     }
 
 

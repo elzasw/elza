@@ -71,7 +71,10 @@ const PartyEntities = class PartyEntities extends AbstractReactComponent {
         for(let i = 0; i<data.entities.length; i++){                                // projdeme data entit z formuláře
             entities[entities.length] = {                                           // a přidáme je do seznamu nových entit
                 source: data.entities[i].sources,                                   // poznámka ke vztahu o zdrojích dat
-                record: {recordId: data.entities[i].record.id},                                    // rejstříková položka
+                record: {
+                    "@class": ".RegRecordVO",
+                    recordId: data.entities[i].record.id
+                },                                    // rejstříková položka
                 roleType: {roleTypeId: data.entities[i].roleTypeId},                // typ vztahu osoby a rejstříkové položky
                 relationEntityId: data.entities[i].relationEntityId                 // identifikátor entity vztahu
             }

@@ -12,6 +12,10 @@ import {routerNavigate} from 'actions/router.jsx'
 require('./FundDetailExt.less');
 
 const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
+    static PropTypes = {
+        fundDetail: React.PropTypes.object.isRequired,
+    }
+
     constructor(props) {
         super(props);
 
@@ -121,10 +125,6 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
             </div>
         );
     }
-}
-
-FundDetailExt.propTypes = {
-    fundDetail: React.PropTypes.object.isRequired,
 }
 
 module.exports = connect()(FundDetailExt);

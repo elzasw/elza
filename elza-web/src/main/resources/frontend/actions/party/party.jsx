@@ -130,7 +130,8 @@ export function clearPartyDetail() {
 export function findPartyReceive(filterText, json) {
     return {
         type: types.PARTY_FIND_PARTY_RECEIVE,
-        items:json,
+        items: json.records,
+        itemsCount: json.recordsCount,
         filterText: filterText
     }
 }
@@ -271,19 +272,6 @@ export function partyAdd(partyTypeId, versionId, callback, showSubmitTypes = fal
         const state = getState();
         const partyTypeCode = getPartyTypeById(partyTypeId, state.refTables.partyTypes.items).code;
 
-        const data = {                        // data předávaná do formuláře osoby
-            partyTypeId: partyTypeId,       // identifikátor typu osoby (osoba, rod, událost, ..)
-            partyTypeCode: partyTypeCode,
-            from: {
-                textDate: "",
-                calendarTypeId: state.partyRegion.gregorianCalendarId
-            },
-            to: {
-                textDate: "",
-                calendarTypeId: state.partyRegion.gregorianCalendarId
-            },
-            complements: []
-        }
         let label;
         switch(partyTypeCode){                                        // podle typu osoby bude různý nadpis
             case "PERSON": label = i18n('party.addParty'); break;   // rod
@@ -293,19 +281,19 @@ export function partyAdd(partyTypeId, versionId, callback, showSubmitTypes = fal
             default: label = i18n('party.addParty');
         }
 
-        dispatch(modalDialogShow(this, label, <AddPartyForm initData={data} showSubmitTypes={showSubmitTypes} versionId={versionId} onSave={partyAddSubmit.bind(null, callback, dispatch)} />));
+        dispatch(modalDialogShow(this, label, <AddPartyForm partyTypeCode={partyTypeCode} partyTypeId={partyTypeId} showSubmitTypes={showSubmitTypes} versionId={versionId} onSubmitForm={partyAddSubmit.bind(null, callback, dispatch)} />));
     }
 }
 
-function partyAddSubmit(callback, dispatch, data, submitType) {
-    var partyType = '';                                     // typ osoby - je potreba uvest i jako specialni klivcove slovo
+function partyAddSubmit(callback, dispatch, submitType, data) {
+    let partyType = '';                                     // typ osoby - je potreba uvest i jako specialni klivcove slovo
     switch(data.partyTypeId){
         case 1: partyType = '.ParPersonVO'; break;          // typ osoby osoba
         case 2: partyType = '.ParDynastyVO'; break;         // typ osoby rod
         case 3: partyType = '.ParPartyGroupVO'; break;      // typ osoby korporace
         case 4: partyType = '.ParEventVO'; break;           // typ osoby docasna korporace - udalost
     }
-    var party = {                                           // objekt osoby
+    const party = {                                           // objekt osoby
         '@type': partyType,                                 // typ osoby - speciální klíčové slovo
         partyType: {                                        // typ osoby
             partyTypeId: data.partyTypeId                   // identikátor typu osoby
@@ -321,7 +309,7 @@ function partyAddSubmit(callback, dispatch, data, submitType) {
         to: data.to,                                        // datace do
         partyNames : [{                                     // jména osoby
             nameFormType: {                                 // typ formy jména
-                nameFormTypeId: data.nameFormTypeId         // identifikátor typu jména osoby
+                nameFormTypeId: parseInt(data.nameFormTypeId) // identifikátor typu jména osoby
             },
             displayName: data.mainPart,
             mainPart: data.mainPart,                        // hlavní část jména
@@ -333,11 +321,11 @@ function partyAddSubmit(callback, dispatch, data, submitType) {
             to: data.to,                                    // datace do
             partyNameComplements: data.complements          // doplnky jména
         }]
-    }
-    if(party.from.textDate == "" || party.from.textDate == null || party.from.textDate == undefined){
+    };
+    if(party.from && (party.from.textDate == "" || party.from.textDate == null || party.from.textDate == undefined)){
         party.from = null;                                  // pokud není zadaný textová část data, celý datum se ruší
     }
-    if(party.to.textDate == "" || party.to.textDate == null || party.to.textDate == undefined){
+    if(party.to && (party.to.textDate == "" || party.to.textDate == null || party.to.textDate == undefined)){
         party.to = null;                                    // pokud není zadaný textová část data, celý datum se ruší
     }
 

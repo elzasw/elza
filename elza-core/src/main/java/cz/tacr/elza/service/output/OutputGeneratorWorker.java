@@ -124,7 +124,7 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
         ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
         final ArrOutputDefinition arrOutputDefinition = arrOutput.getOutputDefinition();
         final RulTemplate rulTemplate = arrOutputDefinition.getTemplate();
-        Assert.notNull(rulTemplate, "Nepodařilo se najít definici šablony.");
+        Assert.notNull(rulTemplate, "Výstup nemá definovanou šablonu (ArrOutputDefinition.template je null).");
 
         // sestavení outputu
         logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} spuštěno", arrOutputId);

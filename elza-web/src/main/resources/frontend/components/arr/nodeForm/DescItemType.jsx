@@ -804,7 +804,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             const messages = missings.map(missing => missing.description);
             const tooltip = <Tooltip id="messages">{messages}</Tooltip>
             actions.push(<OverlayTrigger key="state" placement="right" overlay={tooltip}>
-                <div className='btn btn-default'><Icon glyph="fa-exclamation-triangle" /></div>
+                <div className='btn btn-default'><Icon className="messages" glyph="fa-exclamation-triangle" /></div>
             </OverlayTrigger>);
         }
 
@@ -843,10 +843,6 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             }
         }
 
-        if (descItemType.descItems.filter(i => i.touched).length > 0) {
-            actions.push(<span key="edited">{i18n('subNodeForm.descItem.edited')}</span>);
-        }
-
         // Render
         return (
             <div key="label" className='desc-item-type-label'>
@@ -856,6 +852,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
                 <div key="actions" className='actions'>
                     {actions}
                 </div>
+                {descItemType.descItems.filter(i => i.touched).length > 0 && <span key="edited" className="desc-item-type-edited">{i18n('subNodeForm.descItem.edited')}</span>}
             </div>
         )
     }

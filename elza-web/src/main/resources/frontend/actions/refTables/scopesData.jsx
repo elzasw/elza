@@ -35,7 +35,6 @@ export function requestScopesIfNeeded(versionId = null) {
                 return dispatch(requestScopes(versionId));
             }
         } else {
-            console.log('unknown');
             dispatch(scopesFetching(versionId));
             return dispatch(requestScopes(versionId));
         }

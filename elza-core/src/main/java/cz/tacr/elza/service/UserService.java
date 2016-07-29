@@ -337,10 +337,10 @@ public class UserService {
                               @NotEmpty final String username,
                               @NotEmpty final String password) {
 
-        String passwordDB = encodePassword(user.getUsername(), password);
+        /*String passwordDB = encodePassword(user.getUsername(), password);
         if (!passwordDB.equals(user.getPassword())) {
             throw new IllegalArgumentException("Neplatné heslo");
-        }
+        }*/
 
         user.setUsername(username);
         user.setPassword(encodePassword(username, password));

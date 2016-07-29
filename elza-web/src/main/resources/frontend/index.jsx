@@ -60,7 +60,8 @@ if (!String.prototype.startsWith) {
 
 // Načtení dat z local storage = vrácení aplikace do předchozího stavu
 import {AppStore} from 'stores/index.jsx';
-import {storeSave, storeRestoreFromStorage} from 'actions/store/store.jsx';
+import {storeRestoreFromStorage} from 'actions/store/store.jsx';
+import {storeSave} from 'actions/store/storeEx.jsx';
 AppStore.store.dispatch(storeRestoreFromStorage());
 
 // Globální vypnutí focus na split buttony

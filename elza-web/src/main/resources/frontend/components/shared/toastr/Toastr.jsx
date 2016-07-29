@@ -50,14 +50,17 @@ const Toastr = class Toastr extends AbstractReactComponent {
     }
 
     render() {
-        const rows = this.props.store.toasts.map((t, index) => <Alert
+        const rows = this.props.store.toasts.map((t, index) => {
+            if (t.time != null) {
+                setTimeout(() => this.handleDismiss(index), t.time);
+            }
+            return <Alert
                     key={'toast-' + index}
                     bsStyle={t.style}
                     bsSize={t.size ? t.size : "lg"}
                     className={t.visible && "fade"}
                     closeLabel={i18n('global.action.close')}
                     onDismiss={() => (this.handleDismiss(index))}
-                    dismissAfter={t.time}
                 >
                     {Toastr.getIconStyle(t.style)}
                     <div className="content">
@@ -65,7 +68,7 @@ const Toastr = class Toastr extends AbstractReactComponent {
                         <div>{t.message}</div>
                     </div>
             </Alert>
-        );
+        });
 
         return (
             <div className="toastrAlertBox">

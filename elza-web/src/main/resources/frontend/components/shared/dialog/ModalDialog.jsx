@@ -5,9 +5,9 @@ import {ModalDialogWrapper, AbstractReactComponent} from 'components/index.jsx';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 
-require ('./ModalDialog.less')
+require('./ModalDialog.less')
 
-var ModalDialog = class extends AbstractReactComponent {
+const ModalDialog = class ModalDialog extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -15,17 +15,16 @@ var ModalDialog = class extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.visible && !nextProps.visible) {
+        /*if (this.props.visible && !nextProps.visible) {
             this.refs.wrapper.dialogWillHide();
-        }
+        }*/
     }
 
     shouldComponentUpdate(nextProps, nextState) {
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['visible', 'content', 'title']
-        return !propsEquals(this.props, nextProps, eqProps);
+        return this.props.items.length  !== nextProps.items.length; // || !propsEquals(this.props.items, nextProps, ['content', 'title']);
     }
 
     // closeType:
@@ -35,34 +34,25 @@ var ModalDialog = class extends AbstractReactComponent {
         // console.log("_closeType", closeType);
         this.dispatch(modalDialogHide());
 
-        const {onClose} = this.props
-        onClose && onClose(closeType)
+        const {items} = this.props
+        items.length > 0 && items[0].onClose && items[0].onClose(closeType)
     }
 
     render() {
-        if (!this.props.visible) {
+        if (this.props.items.length < 1) {
             return <div></div>;
         }
-        var style = {};
+        const dialog = this.props.items[0];
 
-        var children = React.Children.map(this.props.content, (el) => {
-            return React.cloneElement(el, {
+        const children = React.Children.map(dialog.content, (el) => React.cloneElement(el, {
                 onClose: this.handleClose.bind(this, "DIALOG_CONTENT")
             })
-        });
+        );
 
-        return (
-            <ModalDialogWrapper className={this.props.dialogClassName} ref='wrapper' title={this.props.title} onHide={this.handleClose.bind(this, "DIALOG")}>
-                {children}
-            </ModalDialogWrapper>
-        )
+        return <ModalDialogWrapper className={dialog.dialogClassName} ref='wrapper' title={dialog.title} onHide={this.handleClose.bind(this, "DIALOG")}>
+            {children}
+        </ModalDialogWrapper>
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        ...state
-    }
-}
-
-module.exports = connect(mapStateToProps)(ModalDialog);
+module.exports = connect()(ModalDialog);

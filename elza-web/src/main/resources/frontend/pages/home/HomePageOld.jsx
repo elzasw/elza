@@ -16,7 +16,7 @@ import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {createFund} from 'actions/arr/fund.jsx'
-import {storeLoadData, storeSave, storeLoad} from 'actions/store/store.jsx'
+import {storeLoadData, storeLoad} from 'actions/store/store.jsx'
 import {Combobox} from 'react-input-enhancements'
 import {WebApi} from 'actions/index.jsx';
 import {dateToString} from 'components/Utils.jsx'
@@ -352,7 +352,6 @@ var items = getStates();
         var centerPanel = (
             <div className='splitter-home'>
                 {false && <div>
-                    <Button onClick={() => this.dispatch(storeSave())}>STORE</Button>
                     <Button onClick={() => this.dispatch(storeLoad())}>LOAD</Button></div>}
                 {this.renderHistory()}
 

@@ -176,11 +176,11 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
             <div className='fund-packets'>
                 <div className="actions-container">
                     <div className="actions">
-                        <DropdownButton noCaret title={<div><Icon glyph='fa-plus' /> {i18n('arr.fund.packets.action.add')}</div>}>
+                        <DropdownButton id='dropdown-packet' noCaret title={<div><Icon glyph='fa-plus' /> {i18n('arr.fund.packets.action.add')}</div>}>
                             <MenuItem onClick={this.handleAddOne} eventKey='changeNumbers'>{i18n('arr.fund.packets.action.add.single')}</MenuItem>
                             <MenuItem onClick={this.handleAddMany} eventKey='changeNumbers'>{i18n('arr.fund.packets.action.add.more')}</MenuItem>
                         </DropdownButton>
-                        <FixedDropDownButton noCaret pullRight disabled={selectedIds.length === 0} title={<div><Icon glyph='fa-edit' /> {i18n('arr.fund.packets.action.checkedItems')}</div>} className='packetActions'>
+                        <FixedDropDownButton id='dropdown-type' noCaret pullRight disabled={selectedIds.length === 0} title={<div><Icon glyph='fa-edit' /> {i18n('arr.fund.packets.action.checkedItems')}</div>} className='packetActions'>
                             {filterState !== "OPEN" && <MenuItem onClick={this.handleChangeState.bind(this, "OPEN")} eventKey='toOpen'>{i18n('arr.fund.packets.action.changeState.toOpen')}</MenuItem>}
                             {filterState !== "CLOSED" && <MenuItem onClick={this.handleChangeState.bind(this, "CLOSED")} eventKey='toClosed'>{i18n('arr.fund.packets.action.changeState.toClosed')}</MenuItem>}
                             {filterState !== "CANCELED" && <MenuItem onClick={this.handleChangeState.bind(this, "CANCELED")} eventKey='toCanceled'>{i18n('arr.fund.packets.action.changeState.toCanceled')}</MenuItem>}

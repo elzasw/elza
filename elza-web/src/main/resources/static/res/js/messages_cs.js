@@ -37,6 +37,8 @@ var messages = {
 
     "search.input.search": "Vyhledat...",
     "search.not.found": "nenalezeno",
+    "search.found": "({0})",
+    "search.found.more": "({0}/{1})",
 
     "global.validation.required": "Pole je povinné",
 
@@ -86,7 +88,7 @@ var messages = {
     "ribbon.action.admin.developer": "Developer mode",
     "ribbon.action.admin.packages": "Správa balíčků",
     "ribbon.action.admin.user": "Uživatelé",
-    "ribbon.action.admin.user.edit": "Upravit uživatele",
+    "ribbon.action.admin.user.edit": "Upravit jméno",
     "ribbon.action.admin.user.add": "Přidat uživatele",
     "ribbon.action.admin.user.deactivate": "Zneplatnit účet",
     "ribbon.action.admin.user.activate": "Aktivovat",
@@ -393,6 +395,7 @@ var messages = {
     "subNodeForm.addNodeAfter": "JP za",
 
     "subNodeForm.descItem.edited": "Editováno",
+    "subNodeForm.packets.confirm": "Správa obalů je uživatelsky vypnutá, chcete jí zapnout?",
 
     "subNodeForm.descItem.coordinates.action.add": "Nahrát souřadnice",
 
@@ -574,7 +577,7 @@ var messages = {
     "admin.user.permission.action.add": "Přiřadit oprávnění pro uživatele",
 
     "admin.user.add.title": "Vytvoření uživatele",
-    "admin.user.update.title": "Upravení uživatele",
+    "admin.user.update.title": "Upravení jména",
     "admin.user.add.party" : "Osoba",
     "admin.user.add.username" : "Uživatelské jméno",
     "admin.user.add.success" : "Uživatel byl přidán",

@@ -42,6 +42,8 @@ import relationForm from './app/party/form/relationForm.jsx';
 import addRegistryForm from './app/registry/form/addRegistryForm.jsx';
 import editRegistryForm from './app/registry/form/editRegistryForm.jsx';
 
+import addUserForm from './app/admin/addUserForm.jsx';
+
 
 const normalizePacketSize = (value, previousValue, allValues, previousAllValues) => {
     const vv = normalizeInt(value, previousValue, allValues, previousAllValues);
@@ -87,6 +89,7 @@ form: formReducer.plugin({
         relationForm: relationForm,
         addRegistryForm: addRegistryForm,
         editRegistryForm: editRegistryForm,
+        addUserForm,
     }).normalize({
         addPacketForm: {
             'start': normalizeInt,

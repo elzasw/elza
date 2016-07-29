@@ -11,7 +11,6 @@ import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPar
     AddFileForm} from 'components';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import DescItemType from './nodeForm/DescItemType.jsx'
 import {partySelect, partyAdd} from 'actions/party/party.jsx'
 import {registrySelect, registryAdd} from 'actions/registry/registryRegionList.jsx'
@@ -20,10 +19,12 @@ import {setInputFocus} from 'components/Utils.jsx'
 import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {UrlFactory} from 'actions/index.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
-import {modalDialogShow} from 'actions/global/modalDialog.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {fundPacketsCreate} from 'actions/arr/fundPackets.jsx'
 import {fundFilesCreate} from 'actions/arr/fundFiles.jsx'
 var classNames = require('classnames');
+import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
+import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -422,9 +423,35 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param descItemIndex {Integer} index honodty atributu v seznamu
      */
     handleFundPackets(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
-        this.dispatch(routerNavigate('arr'));
+        const {fundId, userDetail} = this.props;
+        var settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', fundId);
+        console.warn(0, userDetail.settings);
+        var dataRight = settings.value ? JSON.parse(settings.value) : null;
+
+        var tabExists = dataRight && dataRight[2] !== undefined ? dataRight[2] : true;
+
+        if (!tabExists) {
+            if (confirm(i18n('subNodeForm.packets.confirm'))) {
+                var value = {};
+                if (dataRight) {
+                    dataRight[2] = true;
+                    value = dataRight;
+                } else {
+                    value[2] = true;
+                }
+                settings.value = JSON.stringify(value);
+                settings = setSettings(userDetail.settings, settings.id, settings);
+                console.warn(1, settings);
+                this.dispatch(userDetailsSaveSettings(settings));
+            } else {
+                return;
+            }
+        }
+
+        this.dispatch(routerNavigate('/arr'));
         this.dispatch(selectTab('arr-as', 2));
         this.dispatch(setFocus('arr', 3, null, null));
+
     }
 
     /**
@@ -796,7 +823,10 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
+    const {userDetail} = state
+
     return {
+        userDetail
     }
 }
 

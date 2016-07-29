@@ -26,20 +26,17 @@ const FormInput = class FormInput extends AbstractReactComponent {
     }
 
     static defaultProps = {
-        inline: false
+        inline: false,
+        feedback: false
+    };
+
+    static PropTypes = {
+        label: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.object]),
+        error: React.PropTypes.string,
+        touched: React.PropTypes.bool.isRequired,
+        feedback: React.PropTypes.bool,
+        placeholder: React.PropTypes.bool,
     }
-}
-
-FormInput.propsTypes = {
-    label: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.object]),
-    error: React.PropTypes.string,
-    touched: React.PropTypes.bool.isRequired,
-    feedback: React.PropTypes.bool,
-    placeholder: React.PropTypes.bool,
-};
-
-FormInput.defaultProps = {
-    feedback: false
 };
 
 module.exports = FormInput;
