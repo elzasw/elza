@@ -125,10 +125,14 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
      */ 
     addRelation(data) {
         var entities = [];                                                          // seznam entit vztahu
+        console.log(data.entities);
         for(var i = 0; i<data.entities.length; i++){                                // projdeme data entit z formuláře
             entities[entities.length] = {                                           // a přidáme je do seznamu nových entit
                 source: data.entities[i].sources,                                   // poznámka ke vztahu o zdrojích dat
-                record: {recordId: data.entities[i].record.id},
+                record: {
+                    "@class": ".RegRecordVO",
+                    recordId: data.entities[i].record.id
+                },
                 roleType: {roleTypeId: data.entities[i].roleTypeId}                 // typ vztahu osoby a rejstříkové položky
             }
         }  
@@ -148,6 +152,7 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
         if(relation.to.textDate == "" || relation.to.textDate == null || relation.to.textDate == undefined){  
             relation.to = null;                                                   // pokud není zadaný textová část data, celý datum se ruší
         }
+        console.log(relation);
         this.dispatch(insertRelation(relation, this.props.partyRegion.selectedPartyID));  //uložení vztahu a znovunačtení osoby             
     }
 
