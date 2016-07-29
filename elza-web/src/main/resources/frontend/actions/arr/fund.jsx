@@ -11,6 +11,8 @@ import {nodesRequest, nodesReceive} from 'actions/arr/node.jsx'
 import {createFundRoot, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {fundsSelectFund} from 'actions/fund/fund.jsx'
 import {savingApiWrapper} from 'actions/global/status.jsx';
+import {storeLoadData} from 'actions/store/store.jsx'
+
 /**
  * Fetch dat pro otevřené záložky AS, pokud je potřeba - např. název atp.
  */
@@ -114,13 +116,30 @@ export function exportFund(fundId, transformationName) {
 }
 
 /**
- * Vybrání záložky pro strom AS.
+ * Vybrání záložky pro strom AS. Pokud již AS byla dříva otevřena, použije se nastavení z tohoto otevření - obdobně jako otevřením AS z home stránky.
  * @param {Object} fund finding aid objekt s informací o verzi
  */
 export function selectFundTab(fund) {
-    return {
-        type: types.FUND_SELECT_FUND_TAB,
-        fund,
+    return (dispatch, getState) => {
+        // Dohledání dříve otevřeného fundo v konkrétní verzi
+        var itemFound = null;
+        const state = getState();
+        const {stateRegion: {arrRegionFront}} = state;
+        for (let a=0; a<arrRegionFront.length; a++) {
+            const item = arrRegionFront[a];
+            if (item.id === fund.id) {
+                itemFound = item;
+                break;
+            }
+        }
+        if (itemFound) {
+            dispatch(storeLoadData('ARR_REGION_FUND', itemFound, true));
+        } else {
+            dispatch({
+                type: types.FUND_SELECT_FUND_TAB,
+                fund,
+            })
+        }
     }
 }
 

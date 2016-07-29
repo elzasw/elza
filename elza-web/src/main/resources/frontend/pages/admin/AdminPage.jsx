@@ -16,7 +16,7 @@ import {RibbonGroup, RibbonSplit, i18n, Icon, Ribbon, ModalDialog, NodeTabs, Par
 import {ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {developerSet} from 'actions/global/developer.jsx'
-import {resetLocalStorage} from 'actions/store/store.jsx'
+import {resetLocalStorage} from 'actions/store/storeEx.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 
 const AdminPage = class AdminPage extends AbstractReactComponent {
