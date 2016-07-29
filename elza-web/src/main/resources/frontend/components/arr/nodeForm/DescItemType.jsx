@@ -804,7 +804,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             const messages = missings.map(missing => missing.description);
             const tooltip = <Tooltip id="messages">{messages}</Tooltip>
             actions.push(<OverlayTrigger key="state" placement="right" overlay={tooltip}>
-                <div className='btn btn-default'><Icon glyph="fa-exclamation-triangle" /></div>
+                <div className='btn btn-default'><Icon className="messages" glyph="fa-exclamation-triangle" /></div>
             </OverlayTrigger>);
         }
 
