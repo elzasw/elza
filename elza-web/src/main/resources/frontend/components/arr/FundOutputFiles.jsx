@@ -57,7 +57,7 @@ const FundOutputFiles = class FundOutputFiles extends AbstractReactComponent {
     render() {
         const {filterText, isFetching, data} = this.props;
 
-        if (isFetching) {
+        if (isFetching || !data) {
             return <Loading/>
         }
 
