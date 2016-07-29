@@ -19,7 +19,7 @@ class UrlFactory {
     }
 
     static exportFund(versionId, transformationName) {
-        return WebApi.importUrl + '/fund/' + versionId + '?transformationName=' + encodeURIComponent(transformationName);
+        return WebApi.exportUrl + '/fund/' + versionId + '?transformationName=' + encodeURIComponent(transformationName);
     }
 
     static exportRegCoordinate(objectId) {
@@ -516,8 +516,8 @@ class WebApi{
                 });
     }
 
-    getTemplates() {
-        return AjaxUtils.ajaxGet(WebApi.ruleUrl + '/templates');
+    getTemplates(code = null) {
+        return AjaxUtils.ajaxGet(WebApi.ruleUrl + '/templates', code ? {code} : null);
     }
 
     getRegisterTypes(partyTypeId) {

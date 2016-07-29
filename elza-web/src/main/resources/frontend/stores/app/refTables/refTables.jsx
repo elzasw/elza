@@ -150,7 +150,8 @@ export default function refTables(state = initialState, action = {}) {
                 packetTypes: packetTypes(state.packetTypes, action),
                 ruleSet: ruleSet(state.ruleSet, action),
                 descItemTypes: descItemTypes(state.descItemTypes, action),
-                outputTypes: outputTypes(state.outputTypes, action)
+                outputTypes: outputTypes(state.outputTypes, action),
+                templates: templates(state.templates, action)
             }
         }
         default:

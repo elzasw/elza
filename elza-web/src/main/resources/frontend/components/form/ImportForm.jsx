@@ -37,13 +37,17 @@ const validate = (values, props) => {
 };
 
 const ImportForm = class ImportForm extends AbstractReactComponent {
+
+    static PropTypes = {
+        party: React.PropTypes.bool,
+        record: React.PropTypes.bool,
+        fund: React.PropTypes.bool
+    };
+
     constructor(props) {
         super(props);
         this.state = {defaultScopes: [], transformationNames: [], isRunning: false};
         this.bindMethods('save');
-    }
-
-    componentWillReceiveProps(nextProps) {
     }
 
     componentDidMount() {
@@ -134,8 +138,7 @@ const ImportForm = class ImportForm extends AbstractReactComponent {
                             <form onSubmit={handleSubmit(this.save)}>
                                 {
                                     <div>
-                                        <FormInput componentClass="select"
-                                               label={i18n('import.transformationName')} {...transformationName} {...decorateFormField(transformationName)}>
+                                        <FormInput componentClass="select" label={i18n('import.transformationName')} {...transformationName}>
                                             <option key='blankName'/>
                                             {this.state.transformationNames.map((i, index)=> {
                                                 return <option key={index+'name'} value={i}>{i}</option>
@@ -144,6 +147,7 @@ const ImportForm = class ImportForm extends AbstractReactComponent {
                                         <Autocomplete
                                             {...recordScope}
                                             {...decorateFormField(recordScope)}
+                                            help={null} /// TODO odstranit z decorateFormField help
                                             tags={this.props.fund == true}
                                             label={i18n('import.registryScope')}
                                             items={this.state.defaultScopes}
@@ -204,13 +208,6 @@ const ImportForm = class ImportForm extends AbstractReactComponent {
         )
     }
 };
-
-ImportForm.propTypes = {
-    party: React.PropTypes.bool,
-    record: React.PropTypes.bool,
-    fund: React.PropTypes.bool
-};
-
 
 module.exports = reduxForm({
     form: 'importForm',
