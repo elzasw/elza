@@ -13,6 +13,7 @@
 **/
 
 import React from 'react';
+import ReactDOM from 'react-dom';
 //import ReactDOM from 'react-dom';
 import {Button} from 'react-bootstrap';
 import {Icon, i18n, AbstractReactComponent} from 'components/index.jsx';
@@ -54,6 +55,10 @@ const DropDownTree = class DropDownTree extends AbstractReactComponent {
             'preselectValue',
             'handleOpenClose',
             'renderNode',
+            "handleBlur",
+            "handleDocumentClick",
+            "closeMenu",
+            "handleFocus",
         );
 
         const opened = [
@@ -64,7 +69,8 @@ const DropDownTree = class DropDownTree extends AbstractReactComponent {
         this.state = {
             opened,                                             // seznam rozbalenych uzlu
             label: label != '' ? label : this.props.label,              // pokud je vybraná nějaká položka, vypíše se její název, jinak se vypíše defaultní popisek
-            value : this.props.value                                    // id vybrane položky
+            value : this.props.value,                                    // id vybrane položky
+            hasFocus: false,
         };
     }
 
@@ -83,7 +89,13 @@ const DropDownTree = class DropDownTree extends AbstractReactComponent {
 
     }
 
+    componentWillMount() {
+        this._ignoreBlur = false
+    }
+
     componentDidMount() {
+        document.addEventListener("mousedown", this.handleDocumentClick, false)
+
         const {value} = this.props;
         if (value) {
             this.setState({value});
@@ -93,6 +105,10 @@ const DropDownTree = class DropDownTree extends AbstractReactComponent {
         } else {
             this.preselectValue(this.props);
         }
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener("mousedown", this.handleDocumentClick, false)
     }
 
     preselectValue(nextProps) {
@@ -129,6 +145,11 @@ const DropDownTree = class DropDownTree extends AbstractReactComponent {
     }
 
     handleItemSelect(item, e) {
+        var el = ReactDOM.findDOMNode(this.refs.toggleButton);
+        this._ignoreBlur = true;
+        el.focus();
+        this._ignoreBlur = false;
+
         this.handleOpenClose(e);
         this.setState({
             label: item.name,
@@ -137,6 +158,52 @@ const DropDownTree = class DropDownTree extends AbstractReactComponent {
         if (this.props.onChange) {
             this.props.onChange(item.id, item);
         }
+    }
+
+    isUnderEl(parentEl, el) {
+        while (el !== null) {
+            if (el === parentEl) {
+                return true;
+            }
+            el = el.parentNode;
+        }
+        return false;
+    }
+
+    handleDocumentClick(e) {
+        var el1 = ReactDOM.findDOMNode(this.refs.toggleButton);
+        var el2 = ReactDOM.findDOMNode(this.refs.treeMenu);
+
+        var el = e.target;
+        var inside = false;
+        while (el !== null) {
+            if (el === el1 || el === el2) {
+                inside = true;
+                break;
+            }
+            el = el.parentNode;
+        }
+
+        if (!inside) {
+            var el = el1;
+            if (this.state.hasFocus && document.activeElement !== el) {   // víme, že má focus, ale nemá focus vlastní input, budeme simulovat blur
+                this._ignoreBlur = true;
+                el.focus();
+                this._ignoreBlur = false;
+                el.blur();
+            }
+            this._ignoreBlur = false;
+            this.closeMenu();
+        } else if (this.state.hasFocus && (this.isUnderEl(el2, e.target))) {
+            this._ignoreBlur = true;
+        } else {
+            this._ignoreBlur = false;
+        }
+    }
+
+    closeMenu() {
+        const menu = $(ReactDOM.findDOMNode(this.refs.dropDownTree)).find('.menu');
+        menu.hide();
     }
 
     handleOpenClose(e) {
@@ -197,10 +264,39 @@ const DropDownTree = class DropDownTree extends AbstractReactComponent {
             opened: opened
         }
     }
+    
+    handleBlur(e) {
+        if (!this._ignoreBlur) {
+            this.setState({hasFocus: false})
+            this.closeMenu(true);
+            this.props.onBlur && this.props.onBlur(e);
+        } else {
+            this._ignoreBlur = false;
+        }
+    }
+
+    handleFocus() {
+        if (this.state.hasFocus) {
+            return;
+        }
+
+        this.setState({hasFocus: true})
+
+        if (!this._ignoreBlur) {
+            this.props.onFocus && this.props.onFocus();
+        } else {
+            this._ignoreBlur = false;
+        }
+        return true;
+        if (this._ignoreBlur) {
+            return
+        }
+        this.setState({isOpen: true})
+    }
 
     // metoda pro renderovani obsahu komponenty
     render() {
-        const {nullValue, items, onFocus, onBlur, disabled} = this.props;
+        const {nullValue, items, onFocus, disabled} = this.props;
 
         const bootInfo = getBootstrapInputComponentInfo(this.props);
 
@@ -217,19 +313,21 @@ const DropDownTree = class DropDownTree extends AbstractReactComponent {
         const tree = itemsData.map(this.renderNode);
 
         return (
-            <div className={cls}>
+            <div className={cls} ref="dropDownTree">
                 {this.props.label && <label className='control-label'>{this.props.label}</label>}
                 <Button
                     className='form-control'
                     onClick={this.handleOpenClose}
                     onFocus={onFocus}
-                    onBlur={onBlur}
+                    onFocus={this.handleFocus}
+                    onBlur={this.handleBlur}
                     disabled={disabled}
+                    ref="toggleButton"
                 >
                     <div className='dropDownTree-label'>{this.state.label}</div>
                     <Icon glyph='fa-caret-down' />
                 </Button>
-                <ul className='menu'>
+                <ul className='menu' ref="treeMenu">
                     {tree}
                 </ul>
                 {this.props.hasFeedback && <span className={'glyphicon form-control-feedback glyphicon-' + bootInfo.feedbackIcon}></span>}
