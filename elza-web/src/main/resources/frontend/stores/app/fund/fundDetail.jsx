@@ -62,6 +62,16 @@ export default function fundDetail(state = initialState, action = {}) {
                 currentDataKey: ''
             }
         }
+        case types.OUTPUT_STATE_CHANGE: {
+            if (action.versionId === state.versionId) {
+                return {
+                    ...state,
+                    currentDataKey: ''
+                }
+            } else {
+                return state;
+            }
+        }
         case types.FUNDS_SELECT_FUND:
             if (state.id !== action.id) {
                 return {
