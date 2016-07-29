@@ -395,6 +395,7 @@ var messages = {
     "subNodeForm.addNodeAfter": "JP za",
 
     "subNodeForm.descItem.edited": "Editováno",
+    "subNodeForm.packets.confirm": "Správa obalů je uživatelsky vypnutá, chcete jí zapnout?",
 
     "subNodeForm.descItem.coordinates.action.add": "Nahrát souřadnice",
 
