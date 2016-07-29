@@ -17,6 +17,9 @@ function _fundDetailDataKey(fundDetail) {
     }
 }
 
+/**
+ * Vybere daný fond pro zobrazení. Pokud již daný fond byl otevřen, použije nastavení jeho posledního zobrazení.
+ */
 export function fundsSelectFund(id) {
     return {
         type: types.FUNDS_SELECT_FUND,

@@ -571,7 +571,6 @@ function calculateScrollbarWidth() {
 
         // Get the scrollbar width
         _scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
-        console.warn("DDDDDDDDDDDDDDDDDDDDDDDDDDDDD", _scrollbarWidth);
 
         // Delete the DIV
         document.body.removeChild(scrollDiv);

@@ -38,7 +38,7 @@ export default function fundOutputDetail(state = initialState, action = {}) {
             }
         }
         case types.OUTPUT_STATE_CHANGE:{
-            if (action.outputId === state.id) {
+            if (state.fetched && action.outputId === state.outputDefinition.id) {
                 return {
                     ...state,
                     currentDataKey: '',
