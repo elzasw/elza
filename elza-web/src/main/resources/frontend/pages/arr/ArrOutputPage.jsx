@@ -371,7 +371,8 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     isOutputGeneratingAllowed(outputDefinition) {
         return outputDefinition &&
             outputDefinition.outputResultId == null &&
-            outputDefinition.state === OutputState.OPEN
+            outputDefinition.state === OutputState.OPEN &&
+            outputDefinition.nodes.length > 0
     }
 
     handleUsageEnd() {
