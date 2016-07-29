@@ -88,7 +88,7 @@ var messages = {
     "ribbon.action.admin.developer": "Developer mode",
     "ribbon.action.admin.packages": "Správa balíčků",
     "ribbon.action.admin.user": "Uživatelé",
-    "ribbon.action.admin.user.edit": "Upravit uživatele",
+    "ribbon.action.admin.user.edit": "Upravit jméno",
     "ribbon.action.admin.user.add": "Přidat uživatele",
     "ribbon.action.admin.user.deactivate": "Zneplatnit účet",
     "ribbon.action.admin.user.activate": "Aktivovat",
@@ -576,7 +576,7 @@ var messages = {
     "admin.user.permission.action.add": "Přiřadit oprávnění pro uživatele",
 
     "admin.user.add.title": "Vytvoření uživatele",
-    "admin.user.update.title": "Upravení uživatele",
+    "admin.user.update.title": "Upravení jména",
     "admin.user.add.party" : "Osoba",
     "admin.user.add.username" : "Uživatelské jméno",
     "admin.user.add.success" : "Uživatel byl přidán",
