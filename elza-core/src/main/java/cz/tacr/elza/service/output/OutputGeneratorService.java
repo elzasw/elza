@@ -118,6 +118,12 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
                                @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) {
         ArrOutputResult outputResult = outputResultRepository.findByOutputDefinition(arrOutput.getOutputDefinition());
         Assert.isNull(outputResult, "Tento výstup byl již vygenerován.");
+
+        if (outputQueue.stream().anyMatch(i -> arrOutput.getOutputId().equals(i.getArrOutputId())) ||
+                (worker != null && worker.getArrOutputId().equals(arrOutput.getOutputId()))) {
+            throw new IllegalStateException("Tento výstup je již ve frontě generování");
+        }
+
         setStateAndSave(arrOutput.getOutputDefinition(), OutputState.GENERATING);
         publishOutputStateEvent(arrOutput.getOutputDefinition(), null);
         outputQueue.add(getWorker(arrOutput, userId));
