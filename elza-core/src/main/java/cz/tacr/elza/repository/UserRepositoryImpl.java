@@ -1,8 +1,6 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.EntityManager;
@@ -58,7 +56,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     }
 
     @Override
-    public FilteredResult<UsrUser> findUserByTextAndStateCount(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults) {
+    public FilteredResult<UsrUser> findUserByTextAndStateCount(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
         CriteriaQuery<UsrUser> query = builder.createQuery(UsrUser.class);
@@ -81,6 +79,25 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             query.where(condition).orderBy(order1, order2);
 
             queryCount.where(conditionCount);
+        }
+
+        if (excludedGroupId != null) {
+            Join groupUsers = user.join(UsrUser.USR_GROUP_USERS, JoinType.LEFT);
+            Join groupUsersCount = userCount.join(UsrUser.USR_GROUP_USERS, JoinType.LEFT);
+            Join group = groupUsers.join(UsrGroupUser.GROUP, JoinType.LEFT);
+            Join groupCount = groupUsersCount.join(UsrGroupUser.GROUP, JoinType.LEFT);
+            query.where(
+                builder.or(
+                    builder.notEqual(group.get(UsrGroup.GROUP_ID), excludedGroupId),
+                    builder.isNull(group.get(UsrGroup.GROUP_ID))
+                )
+            );
+            queryCount.where(
+                builder.or(
+                    builder.notEqual(groupCount.get(UsrGroup.GROUP_ID), excludedGroupId),
+                    builder.isNull(groupCount.get(UsrGroup.GROUP_ID))
+                )
+            );
         }
 
         List<UsrUser> list = entityManager.createQuery(query)

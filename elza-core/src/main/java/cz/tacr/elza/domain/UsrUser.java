@@ -3,9 +3,11 @@ package cz.tacr.elza.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Implementace {@link cz.tacr.elza.api.UsrUser}.
@@ -26,6 +28,10 @@ public class UsrUser implements cz.tacr.elza.api.UsrUser<ParParty>, Serializable
     @JoinColumn(name = "partyId", nullable = false)
     private ParParty party;
 
+    @RestResource(exported = false)
+    @OneToMany(mappedBy = "user")
+    private List<UsrGroupUser> usrGroupUsers;
+
     @Column(length = 250, nullable = false, unique = true)
     private String username;
 
@@ -43,6 +49,7 @@ public class UsrUser implements cz.tacr.elza.api.UsrUser<ParParty>, Serializable
     public static final String USERNAME = "username";
     public static final String DESCRIPTION = "description";
     public static final String ACTIVE = "active";
+    public static final String USR_GROUP_USERS = "usrGroupUsers";
 
     @Override
     public Integer getUserId() {

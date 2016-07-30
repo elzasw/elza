@@ -13,7 +13,15 @@ import UserField from "./UserField.jsx"
 import Tags from "components/form/Tags.jsx"
 import {renderUserItem} from "components/admin/adminRenderUtils.jsx"
 
-var SelectUsersForm = class SelectUsersForm extends AbstractReactComponent {
+const SelectUsersForm = class SelectUsersForm extends AbstractReactComponent {
+    static PropTypes = {
+        excludedGroupId: React.PropTypes.number
+    };
+
+    static defaultProps = {
+        excludedGroupId: null
+    };
+
     constructor(props) {
         super(props);
 
@@ -25,9 +33,6 @@ var SelectUsersForm = class SelectUsersForm extends AbstractReactComponent {
         this.state = {
             users: [],
         };
-    }
-
-    componentWillReceiveProps(nextProps) {
     }
 
     handleRemoveUser(user, userIndex) {
@@ -56,7 +61,7 @@ var SelectUsersForm = class SelectUsersForm extends AbstractReactComponent {
     }
 
     render() {
-        const {onSubmitForm, onClose} = this.props;
+        const {onSubmitForm, onClose, excludedGroupId} = this.props;
         const {users} = this.state;
 
         return (
@@ -66,7 +71,8 @@ var SelectUsersForm = class SelectUsersForm extends AbstractReactComponent {
                         <UserField
                             tags
                             onChange={this.handleChange}
-                            />
+                            excludedGroupId={excludedGroupId}
+                        />
                         <Tags
                             items={users}
                             renderItem={renderUserItem}

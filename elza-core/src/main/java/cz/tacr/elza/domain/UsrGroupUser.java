@@ -18,6 +18,9 @@ import java.io.Serializable;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class UsrGroupUser implements cz.tacr.elza.api.UsrGroupUser<UsrUser, UsrGroup>, Serializable {
 
+    public static final String GROUP = "group";
+    public static final String USER = "user";
+
     @Id
     @GeneratedValue
     private Integer groupUserId;
