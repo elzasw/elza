@@ -241,7 +241,7 @@ public class UserController {
                                                 @RequestParam("disabled") final Boolean disabled,
                                                 @RequestParam("from") final Integer from,
                                                 @RequestParam("count") final Integer count,
-                                                @RequestParam("excludedGroupId") final Integer excludedGroupId
+                                                @RequestParam(value = "excludedGroupId", required = false) final Integer excludedGroupId
     ) {
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
