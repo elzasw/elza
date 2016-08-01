@@ -28,10 +28,6 @@ public class UsrUser implements cz.tacr.elza.api.UsrUser<ParParty>, Serializable
     @JoinColumn(name = "partyId", nullable = false)
     private ParParty party;
 
-    @RestResource(exported = false)
-    @OneToMany(mappedBy = "user")
-    private List<UsrGroupUser> usrGroupUsers;
-
     @Column(length = 250, nullable = false, unique = true)
     private String username;
 
@@ -45,11 +41,11 @@ public class UsrUser implements cz.tacr.elza.api.UsrUser<ParParty>, Serializable
     private String description;
 
     /* Konstanty pro vazby a fieldy. */
+    public static final String USER_ID = "userId";
     public static final String PARTY = "party";
     public static final String USERNAME = "username";
     public static final String DESCRIPTION = "description";
     public static final String ACTIVE = "active";
-    public static final String USR_GROUP_USERS = "usrGroupUsers";
 
     @Override
     public Integer getUserId() {
