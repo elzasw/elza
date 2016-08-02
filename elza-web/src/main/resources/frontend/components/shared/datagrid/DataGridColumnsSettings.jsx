@@ -163,6 +163,7 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
                     <div className={cls} >
                         <div className='panels-container'>
                             <div className='left'>
+                                <h4>{i18n('arr.fund.columnSettings.available')}</h4>
                                 <ListBox
                                     items={available}
                                     multiselect
@@ -179,6 +180,7 @@ var DataGridColumnsSettings = class DataGridColumnsSettings extends AbstractReac
                                 </div>
                             </div>
                             <div className='right'>
+                                <h4>{i18n('arr.fund.columnSettings.visible')}</h4>
                                 <ListBox
                                     items={visible}
                                     sortable

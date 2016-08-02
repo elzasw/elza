@@ -247,6 +247,10 @@ var messages = {
     "arr.fund.filterSettings.updateData.action": "Aktualizovat data podle filtru",
     "arr.fund.columnSettings.title": "Nastavení sloupců",
     "arr.fund.columnSettings.action": "Nastavit zobrazení sloupců",
+
+    "arr.fund.columnSettings.available" : "Dostupné",
+    "arr.fund.columnSettings.visible" : "Vybrané",
+
     "arr.fund.bulkModifications.action": "Hromadná úprava prvku popisu",
     "arr.fund.bulkModifications.findAndRFeplace.findText": "Najít",
     "arr.fund.bulkModifications.findAndRFeplace.replaceText": "Nahradit",
