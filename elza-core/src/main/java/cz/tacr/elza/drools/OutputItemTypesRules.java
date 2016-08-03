@@ -5,11 +5,9 @@ import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.drools.model.ActiveLevel;
-import cz.tacr.elza.drools.model.Level;
-import cz.tacr.elza.drools.service.ModelFactory;
-import cz.tacr.elza.drools.service.ScriptModelFactory;
 import org.kie.api.runtime.StatelessKieSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +26,8 @@ import java.util.List;
  */
 @Component
 public class OutputItemTypesRules extends Rules {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private RulesExecutor rulesExecutor;
@@ -51,8 +51,13 @@ public class OutputItemTypesRules extends Rules {
     	final RulRuleSet rulRuleSet = version.getRuleSet();
 
         Path path;
-        List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                rulRuleSet, RulRule.RuleType.OUTPUT_ATTRIBUTE_TYPES);
+        List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeAndOutputTypeOrderByPriorityAsc(
+                rulRuleSet, RulRule.RuleType.OUTPUT_ATTRIBUTE_TYPES, outputDefinition.getOutputType());
+
+        if (rulPackageRules.size() == 0) {
+            logger.warn("Při vykonávání OutputItemTypesRules.execute() nebyly nalezeny žádná pravidla pro typ výstupu '"
+                    + outputDefinition.getOutputType().getCode() + "'");
+        }
 
         for (RulRule rulPackageRule : rulPackageRules) {
             path = Paths.get(rulesExecutor.getRootPath() + File.separator + rulPackageRule.getFilename());
