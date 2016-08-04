@@ -32,6 +32,7 @@ public class UsrGroup implements cz.tacr.elza.api.UsrGroup, Serializable {
     private String description;
 
     /* Konstanty pro vazby a fieldy. */
+    public static final String GROUP_ID = "groupId";
     public static final String CODE = "code";
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";

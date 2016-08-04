@@ -121,6 +121,11 @@ class OutputGeneratorWorker implements Callable<OutputGeneratorWorker> {
      */
     private void generateOutput() {
         logger.info("Spuštěno generování výstupu pro arr_output id={}", arrOutputId);
+        try {
+            Thread.sleep(20000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
         final ArrOutputDefinition arrOutputDefinition = arrOutput.getOutputDefinition();
         final RulTemplate rulTemplate = arrOutputDefinition.getTemplate();

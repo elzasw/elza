@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.RulOutputType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -28,4 +29,8 @@ public interface RuleRepository extends JpaRepository<RulRule, Integer> {
 
     List<RulRule> findByRuleSetAndRuleTypeOrderByPriorityAsc(RulRuleSet rulRuleSet,
                                                                      RulRule.RuleType attributeTypes);
+
+    List<RulRule> findByRuleSetAndRuleTypeAndOutputTypeOrderByPriorityAsc(RulRuleSet rulRuleSet,
+                                                                          RulRule.RuleType attributeTypes,
+                                                                          RulOutputType outputType);
 }

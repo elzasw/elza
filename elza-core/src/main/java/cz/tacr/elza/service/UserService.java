@@ -597,12 +597,12 @@ public class UserService {
      * @return výsledky hledání
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
-    public FilteredResult<UsrUser> findUser(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults) {
+    public FilteredResult<UsrUser> findUser(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
         }
 
-        return userRepository.findUserByTextAndStateCount(search, active, disabled, firstResult, maxResults);
+        return userRepository.findUserByTextAndStateCount(search, active, disabled, firstResult, maxResults, excludedGroupId);
     }
 
     /**

@@ -3,9 +3,11 @@ package cz.tacr.elza.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Implementace {@link cz.tacr.elza.api.UsrUser}.
@@ -39,6 +41,7 @@ public class UsrUser implements cz.tacr.elza.api.UsrUser<ParParty>, Serializable
     private String description;
 
     /* Konstanty pro vazby a fieldy. */
+    public static final String USER_ID = "userId";
     public static final String PARTY = "party";
     public static final String USERNAME = "username";
     public static final String DESCRIPTION = "description";

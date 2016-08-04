@@ -842,8 +842,8 @@ class WebApi{
             .then(json => ({funds: json.list, fundCount: json.count}))
     }
 
-    findUser(fulltext, active, disabled, max = 200) {
-        return AjaxUtils.ajaxGet(WebApi.userUrl + '', {search: fulltext, active, disabled, from: 0, count: max})
+    findUser(fulltext, active, disabled, max = 200, groupId = null) {
+        return AjaxUtils.ajaxGet(WebApi.userUrl + '', {search: fulltext, active, disabled, from: 0, count: max, excludedGroupId: groupId})
             .then(json => ({users: json.list, usersCount: json.totalCount}))
     }
 

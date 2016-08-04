@@ -3,7 +3,7 @@ package cz.tacr.elza.api;
 import java.io.Serializable;
 
 
-public interface RulRule<P extends RulPackage, RS extends RulRuleSet> extends Serializable {
+public interface RulRule<P extends RulPackage, RS extends RulRuleSet, OT extends RulOutputType> extends Serializable {
 
     /**
      * Typy pravidel.
@@ -87,5 +87,15 @@ public interface RulRule<P extends RulPackage, RS extends RulRuleSet> extends Se
      * @param priority priorita vykonávání
      */
     void setPriority(Integer priority);
+
+    /**
+     * @return typ výstupu
+     */
+    RulOutputType getOutputType();
+
+    /**
+     * @param outputType typ výstupu
+     */
+    void setOutputType(OT outputType);
 
 }

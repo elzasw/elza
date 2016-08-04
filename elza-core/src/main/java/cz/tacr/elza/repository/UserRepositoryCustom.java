@@ -17,7 +17,8 @@ public interface UserRepositoryCustom {
      * @param disabled    zakázaní uživatelé
      * @param firstResult od jakého záznamu
      * @param maxResults  maximální počet vrácených záznamů
+     * @param excludedGroupId Id skupiny která bude vynechána z vyhledávání
      * @return výsledky hledání
      */
-    FilteredResult<UsrUser> findUserByTextAndStateCount(String search, Boolean active, Boolean disabled, Integer firstResult, Integer maxResults);
+    FilteredResult<UsrUser> findUserByTextAndStateCount(String search, Boolean active, Boolean disabled, Integer firstResult, Integer maxResults, Integer excludedGroupId);
 }

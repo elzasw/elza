@@ -249,7 +249,7 @@ public class PackageService {
             // Zde se může importovat vazba mezi pravidlem a atributem
             processDefaultItemTypes(rulRuleSets, ruleSets, rulDescItemTypes);
 
-            rulPackageRules = processPackageRules(packageRules, rulPackage, mapEntry, rulRuleSets, dirRules);
+            rulPackageRules = processPackageRules(packageRules, rulPackage, mapEntry, rulRuleSets, dirRules, rulOutputTypes);
 
             entityManager.flush();
 
@@ -501,18 +501,20 @@ public class PackageService {
     /**
      * Zpracování pravidel.
      *
-     * @param packageRules importovaných seznam pravidel
-     * @param rulPackage   balíček
-     * @param mapEntry     mapa streamů souborů v ZIP
-     * @param rulRuleSets  seznam pravidel
-     * @param dir          adresář pravidel
+     * @param packageRules   importovaných seznam pravidel
+     * @param rulPackage     balíček
+     * @param mapEntry       mapa streamů souborů v ZIP
+     * @param rulRuleSets    seznam pravidel
+     * @param dir            adresář pravidel
+     * @param rulOutputTypes seznam typů výstupů
      * @return seznam pravidel
      */
     private List<RulRule> processPackageRules(final PackageRules packageRules,
-                                                      final RulPackage rulPackage,
-                                                      final Map<String, ByteArrayInputStream> mapEntry,
-                                                      final List<RulRuleSet> rulRuleSets,
-                                                      final File dir) {
+                                              final RulPackage rulPackage,
+                                              final Map<String, ByteArrayInputStream> mapEntry,
+                                              final List<RulRuleSet> rulRuleSets,
+                                              final File dir,
+                                              final List<RulOutputType> rulOutputTypes) {
 
         List<RulRule> rulPackageRules = packageRulesRepository.findByRulPackage(rulPackage);
         List<RulRule> rulRuleNew = new ArrayList<>();
@@ -529,7 +531,7 @@ public class PackageService {
                     item = new RulRule();
                 }
 
-                convertRulPackageRule(rulPackage, packageRule, item, rulRuleSets);
+                convertRulPackageRule(rulPackage, packageRule, item, rulRuleSets, rulOutputTypes);
                 rulRuleNew.add(item);
             }
         }
@@ -560,16 +562,17 @@ public class PackageService {
 
     /**
      * Převod VO na DAO pravidla.
-     *
-     * @param rulPackage     balíček
+     *  @param rulPackage     balíček
      * @param packageRule    VO pravidla
      * @param rulPackageRule DAO pravidla
      * @param rulRuleSets    seznam pravidel
+     * @param rulOutputTypes seznam typů outputů
      */
     private void convertRulPackageRule(final RulPackage rulPackage,
                                        final PackageRule packageRule,
                                        final RulRule rulPackageRule,
-                                       final List<RulRuleSet> rulRuleSets) {
+                                       final List<RulRuleSet> rulRuleSets,
+                                       final List<RulOutputType> rulOutputTypes) {
 
         rulPackageRule.setPackage(rulPackage);
         rulPackageRule.setFilename(packageRule.getFilename());
@@ -587,8 +590,21 @@ public class PackageService {
         } else {
             throw new IllegalStateException("Kód " + packageRule.getRuleSet() + " neexistuje v RulRuleSet");
         }
-
         rulPackageRule.setRuleSet(item);
+
+        String outputTypeCode = packageRule.getOutputType();
+        if (outputTypeCode != null) {
+            RulOutputType outputType = rulOutputTypes.stream()
+                    .filter(ot -> ot.getCode().equals(outputTypeCode))
+                    .findFirst().orElse(null);
+
+            if (outputType == null) {
+                throw new IllegalStateException("Kód '" + outputTypeCode + "' neexistuje v RulOutputType");
+            }
+            rulPackageRule.setOutputType(outputType);
+        } else {
+            rulPackageRule.setOutputType(null);
+        }
 
     }
 
@@ -1943,6 +1959,7 @@ public class PackageService {
         packageRule.setPriority(rulPackageRule.getPriority());
         packageRule.setRuleSet(rulPackageRule.getRuleSet().getCode());
         packageRule.setRuleType(rulPackageRule.getRuleType());
+        packageRule.setOutputType(rulPackageRule.getOutputType() == null ? null : rulPackageRule.getOutputType().getCode());
     }
 
     /**

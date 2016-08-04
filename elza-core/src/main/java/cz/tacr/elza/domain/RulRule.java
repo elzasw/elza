@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "rul_rule")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulRule implements cz.tacr.elza.api.RulRule<RulPackage, RulRuleSet> {
+public class RulRule implements cz.tacr.elza.api.RulRule<RulPackage, RulRuleSet, RulOutputType> {
 
     @Id
     @GeneratedValue
@@ -47,6 +47,9 @@ public class RulRule implements cz.tacr.elza.api.RulRule<RulPackage, RulRuleSet>
     @Column(nullable = false)
     private Integer priority;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulOutputType.class)
+    @JoinColumn(name = "outputTypeId", nullable = true)
+    private RulOutputType outputType;
 
     @Override
     public Integer getRuleId() {
@@ -106,5 +109,15 @@ public class RulRule implements cz.tacr.elza.api.RulRule<RulPackage, RulRuleSet>
     @Override
     public void setPriority(final Integer priority) {
         this.priority = priority;
+    }
+
+    @Override
+    public RulOutputType getOutputType() {
+        return outputType;
+    }
+
+    @Override
+    public void setOutputType(final RulOutputType outputType) {
+        this.outputType = outputType;
     }
 }
