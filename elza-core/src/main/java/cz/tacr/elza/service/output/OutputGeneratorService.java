@@ -11,6 +11,7 @@ import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
@@ -52,14 +53,14 @@ import java.util.stream.Collectors;
  */
 
 @Service
-public class OutputGeneratorService implements ListenableFutureCallback<OutputGeneratorWorker> {
+public class OutputGeneratorService implements ListenableFutureCallback<OutputGeneratorWorkerAbstract> {
 
-    public static final String OUTPUT_WEBSOCKET_ERROR_STATE = "ERROR";
+    private static final String OUTPUT_WEBSOCKET_ERROR_STATE = "ERROR";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private Queue<OutputGeneratorWorker> outputQueue = new LinkedList<>(); // fronta outputů ke zpracování
-    private OutputGeneratorWorker worker = null; // aktuálně zpracovávaný output
+    private Queue<OutputGeneratorWorkerAbstract> outputQueue = new LinkedList<>(); // fronta outputů ke zpracování
+    private OutputGeneratorWorkerAbstract worker = null; // aktuálně zpracovávaný output
 
     @Autowired
     private ArrangementService arrangementService;
@@ -140,6 +141,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
             worker = outputQueue.poll();
 
             ListenableFuture future = taskExecutor.submitListenable(worker);
+            //noinspection unchecked
             future.addCallback(this);
         }
     }
@@ -152,8 +154,11 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
      * @param userId ID uživatele pod kterým bude vytvořená změna arrChange související s generováním
      * @return worker pro úlohu
      */
-    private OutputGeneratorWorker getWorker(ArrOutput output, Integer userId) {
-        final OutputGeneratorWorker generatorWorker = workerFactory.getOutputGeneratorWorker();
+    private OutputGeneratorWorkerAbstract getWorker(ArrOutput output, Integer userId) {
+        final ArrOutputDefinition arrOutputDefinition = output.getOutputDefinition();
+        final RulTemplate rulTemplate = arrOutputDefinition.getTemplate();
+
+        final OutputGeneratorWorkerAbstract generatorWorker = workerFactory.getOutputGeneratorWorker(rulTemplate.getEngine());
         generatorWorker.init(output.getOutputId(), userId);
         return generatorWorker;
     }
@@ -194,7 +199,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     }
 
     @Override
-    public void onSuccess(final OutputGeneratorWorker result) {
+    public void onSuccess(final OutputGeneratorWorkerAbstract result) {
         TransactionTemplate tmpl = new TransactionTemplate(txManager);
 
         // načítání dat v samostatné transakci

@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.output;
 
+import cz.tacr.elza.api.RulTemplate.Engine;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.print.Node;
@@ -12,7 +13,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
- * Factory metoda pro vytváření objektů s dependency injections.
+ * Factory metoda pro vytváření objektů {@link OutputGeneratorWorkerJasper} a objektů vytvářených při jeho běhu s dependency injections.
  *
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 29.6.16
@@ -20,16 +21,24 @@ import org.springframework.stereotype.Component;
 @SuppressWarnings("SpringJavaAutowiringInspection")
 @Component
 @Configuration
-public class OutputGeneratorWorkerFactory {
+class OutputGeneratorWorkerFactory {
 
 
     /**
      * @return vytvořený objekt s provedeným dependency injections
+     * @param rulTemplateEngine
      */
     @Bean
     @Scope("prototype")
-    public OutputGeneratorWorker getOutputGeneratorWorker() {
-        return new OutputGeneratorWorker();
+    public OutputGeneratorWorkerAbstract getOutputGeneratorWorker(final Engine rulTemplateEngine) {
+        // skutečné vytvoření workeru na základě typu output
+        if (Engine.JASPER.equals(rulTemplateEngine)) {
+            return new OutputGeneratorWorkerJasper();
+        } else if (Engine.FREEMARKER.equals(rulTemplateEngine)) {
+            return new OutputGeneratorWorkerFreemarker();
+        } else {
+            throw new IllegalStateException("Nepodporovaný typ výstupu: " + rulTemplateEngine.toString());
+        }
     }
 
     /**
