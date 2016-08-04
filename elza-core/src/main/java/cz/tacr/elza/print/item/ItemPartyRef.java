@@ -1,7 +1,7 @@
 package cz.tacr.elza.print.item;
 
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.print.Node;
+import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Output;
 import cz.tacr.elza.print.party.Party;
 
@@ -11,8 +11,8 @@ import cz.tacr.elza.print.party.Party;
  */
 public class ItemPartyRef extends AbstractItem<Party> {
 
-    public ItemPartyRef(ArrItem arrItem, Output output, Node node, Party value) {
-        super(arrItem, output, node);
+    public ItemPartyRef(ArrItem arrItem, Output output, NodeId nodeId, Party value) {
+        super(arrItem, output, nodeId);
         setValue(value);
     }
 

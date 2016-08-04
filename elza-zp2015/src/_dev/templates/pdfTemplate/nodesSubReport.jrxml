@@ -13,10 +13,9 @@
 	<import value="java.util.stream.*"/>
 	<import value="java.util.*"/>
 	<import value="cz.tacr.elza.print.item.*"/>
-	<import value="cz.tacr.elza.print.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
+	<import value="cz.tacr.elza.print.*"/>
 	<parameter name="output" class="cz.tacr.elza.print.Output" isForPrompting="false"/>
-	<field name="items" class="java.util.List"/>
 	<field name="depth" class="java.lang.Integer"/>
 	<field name="node" class="cz.tacr.elza.print.Node"/>
 	<background>

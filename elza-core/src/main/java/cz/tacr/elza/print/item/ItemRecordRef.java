@@ -1,7 +1,7 @@
 package cz.tacr.elza.print.item;
 
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.print.Node;
+import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Output;
 import cz.tacr.elza.print.Record;
 
@@ -12,8 +12,8 @@ import cz.tacr.elza.print.Record;
 public class ItemRecordRef extends AbstractItem<Record> {
 
 
-    public ItemRecordRef(ArrItem arrItem, Output output, Node node, Record value) {
-        super(arrItem, output, node);
+    public ItemRecordRef(ArrItem arrItem, Output output, NodeId nodeId, Record value) {
+        super(arrItem, output, nodeId);
         setValue(value);
         value.setItem(this);
     }
