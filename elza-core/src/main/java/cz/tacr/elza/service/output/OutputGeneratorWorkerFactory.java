@@ -1,5 +1,10 @@
 package cz.tacr.elza.service.output;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import cz.tacr.elza.api.RulTemplate.Engine;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RegRecord;
@@ -7,10 +12,6 @@ import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Output;
 import cz.tacr.elza.print.Record;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 /**
  * Factory metoda pro vytváření objektů {@link OutputGeneratorWorkerJasper} a objektů vytvářených při jeho běhu s dependency injections.
@@ -26,18 +27,17 @@ class OutputGeneratorWorkerFactory {
 
     /**
      * @return vytvořený objekt s provedeným dependency injections
-     * @param rulTemplateEngine
      */
     @Bean
     @Scope("prototype")
-    public OutputGeneratorWorkerAbstract getOutputGeneratorWorker(final Engine rulTemplateEngine) {
+    public OutputGeneratorWorkerAbstract getOutputGeneratorWorker(final Engine engine) {
         // skutečné vytvoření workeru na základě typu output
-        if (Engine.JASPER.equals(rulTemplateEngine)) {
+        if (Engine.JASPER.equals(engine)) {
             return new OutputGeneratorWorkerJasper();
-        } else if (Engine.FREEMARKER.equals(rulTemplateEngine)) {
+        } else if (Engine.FREEMARKER.equals(engine)) {
             return new OutputGeneratorWorkerFreemarker();
         } else {
-            throw new IllegalStateException("Nepodporovaný typ výstupu: " + rulTemplateEngine.toString());
+            throw new IllegalStateException("Nepodporovaný typ výstupu: " + engine.toString());
         }
     }
 
@@ -49,7 +49,7 @@ class OutputGeneratorWorkerFactory {
      */
     @Bean
     @Scope("prototype")
-    public Record getRecord(Output output, NodeId nodeId, RegRecord record) {
+    public Record getRecord(final Output output, final NodeId nodeId, final RegRecord record) {
         return new Record(output, nodeId, record);
     }
 
@@ -59,7 +59,7 @@ class OutputGeneratorWorkerFactory {
      */
     @Bean
     @Scope("prototype")
-    public Output getOutput(ArrOutput arrOutput) {
+    public Output getOutput(final ArrOutput arrOutput) {
         return new Output(arrOutput);
     }
 
@@ -74,7 +74,7 @@ class OutputGeneratorWorkerFactory {
      */
     @Bean
     @Scope("prototype")
-    public NodeId getNodeId(Output output, Integer arrNodeId, Integer arrLevelId, Integer parentNodeId) {
+    public NodeId getNodeId(final Output output, final Integer arrNodeId, final Integer arrLevelId, final Integer parentNodeId) {
         return new NodeId(output, arrNodeId, arrLevelId, parentNodeId);
     }
 
@@ -86,7 +86,7 @@ class OutputGeneratorWorkerFactory {
      */
     @Bean
     @Scope("prototype")
-    public Node getNode(NodeId nodeId, Output output) {
+    public Node getNode(final NodeId nodeId, final Output output) {
         return new Node(nodeId, output);
     }
 }

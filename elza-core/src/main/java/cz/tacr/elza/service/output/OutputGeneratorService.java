@@ -1,6 +1,31 @@
 package cz.tacr.elza.service.output;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.Assert;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
+
 import com.google.common.collect.Sets;
+
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
@@ -21,28 +46,6 @@ import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.util.Assert;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
-
-import javax.annotation.Nullable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.stream.Collectors;
 
 /**
  * Zajišťuje asynchronní generování výstupu a jeho uložení do dms na základě vstupní definice.
@@ -154,12 +157,12 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
      * @param userId ID uživatele pod kterým bude vytvořená změna arrChange související s generováním
      * @return worker pro úlohu
      */
-    private OutputGeneratorWorkerAbstract getWorker(ArrOutput output, Integer userId) {
+    private OutputGeneratorWorkerAbstract getWorker(final ArrOutput output, final Integer userId) {
         final ArrOutputDefinition arrOutputDefinition = output.getOutputDefinition();
         final RulTemplate rulTemplate = arrOutputDefinition.getTemplate();
 
         final OutputGeneratorWorkerAbstract generatorWorker = workerFactory.getOutputGeneratorWorker(rulTemplate.getEngine());
-        generatorWorker.init(output.getOutputId(), userId);
+        generatorWorker.init(output.getOutputId(), userId, rulTemplate);
         return generatorWorker;
     }
 
@@ -178,13 +181,13 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         );
     }
 
-    private void setStateAndSave(ArrOutputDefinition arrOutputDefinition, OutputState state) {
+    private void setStateAndSave(final ArrOutputDefinition arrOutputDefinition, final OutputState state) {
         arrOutputDefinition.setState(state);
         outputDefinitionRepository.save(arrOutputDefinition);
     }
 
     @Override
-    public void onFailure(Throwable ex) {
+    public void onFailure(final Throwable ex) {
         final Integer arrOutputId = worker.getArrOutputId();
         if (worker != null && worker.getArrOutputId() != null) {
             ArrOutput arrOutput = outputRepository.findOne(worker.getArrOutputId());
@@ -205,7 +208,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         // načítání dat v samostatné transakci
         tmpl.execute(new TransactionCallbackWithoutResult() {
             @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
+            protected void doInTransactionWithoutResult(final TransactionStatus status) {
                 final Integer arrOutputId = result.getArrOutputId();
                 final ArrChange change = result.getChange();
                 ArrOutput arrOutput = outputRepository.findOne(arrOutputId);

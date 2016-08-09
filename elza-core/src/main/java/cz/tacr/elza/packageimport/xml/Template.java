@@ -1,6 +1,10 @@
 package cz.tacr.elza.packageimport.xml;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
 
 /**
  * VO Template.
@@ -27,11 +31,17 @@ public class Template {
     @XmlElement(name = "directory", required = true)
     private String directory;
 
+    @XmlAttribute(name = "mime-type", required = true)
+    private String mimeType;
+
+    @XmlAttribute(name = "extension", required = true)
+    private String extension;
+
     public String getOutputType() {
         return outputType;
     }
 
-    public void setOutputType(String outputType) {
+    public void setOutputType(final String outputType) {
         this.outputType = outputType;
     }
 
@@ -55,7 +65,7 @@ public class Template {
         return engine;
     }
 
-    public void setEngine(String engine) {
+    public void setEngine(final String engine) {
         this.engine = engine;
     }
 
@@ -63,7 +73,23 @@ public class Template {
         return directory;
     }
 
-    public void setDirectory(String directory) {
+    public void setDirectory(final String directory) {
         this.directory = directory;
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(final String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(final String extension) {
+        this.extension = extension;
     }
 }

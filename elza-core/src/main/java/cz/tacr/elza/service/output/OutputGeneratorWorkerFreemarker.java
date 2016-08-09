@@ -1,18 +1,5 @@
 package cz.tacr.elza.service.output;
 
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.print.Output;
-import cz.tacr.elza.service.DmsService;
-import freemarker.cache.FileTemplateLoader;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import org.apache.commons.io.input.ReaderInputStream;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +9,19 @@ import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.io.input.ReaderInputStream;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.print.Output;
+import freemarker.cache.FileTemplateLoader;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 
 /**
  * Zajišťuje generování výstupu a jeho uložení do dms na základě vstupní definice - část generování specifická pro freemarker.
@@ -36,20 +36,9 @@ class OutputGeneratorWorkerFreemarker extends OutputGeneratorWorkerAbstract {
 
     private static final String FREEMARKER_TEMPLATE_SUFFIX = ".ftl";
     private static final String FREEMARKER_MAIN_TEMPLATE = MAIN_TEMPLATE_BASE_NAME + FREEMARKER_TEMPLATE_SUFFIX;
-    private static final String OUTFILE_SUFFIX_CVS = ".cvs";
 
     @Override
-    protected String getOutfileSuffix() {
-        return OUTFILE_SUFFIX_CVS;
-    }
-
-    @Override
-    protected String getMimeType() {
-        return DmsService.MIME_TYPE_TEXT_CVS;
-    }
-
-    @Override
-    protected InputStream getContent(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate, Output output) {
+    protected InputStream getContent(final ArrOutputDefinition arrOutputDefinition, final RulTemplate rulTemplate, final Output output) {
         try {
             // dohledání šablony
             final String rulTemplateDirectory = rulTemplate.getDirectory();

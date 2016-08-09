@@ -1,5 +1,18 @@
 package cz.tacr.elza.service.output;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.concurrent.Callable;
+
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrOutput;
@@ -11,18 +24,6 @@ import cz.tacr.elza.print.Output;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.DmsService;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.Callable;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -51,10 +52,16 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
     private Integer arrOutputId;
     private Integer userId;
     private ArrChange change;
+    private String extension;
+    private String mimeType;
 
-    public void init(Integer outputInProgress, Integer userId) {
+    public void init(final Integer outputInProgress, final Integer userId, final RulTemplate rulTemplate) {
+        Assert.notNull(rulTemplate);
+
         this.arrOutputId = outputInProgress;
         this.userId = userId;
+        this.extension = rulTemplate.getExtension();
+        this.mimeType = rulTemplate.getMimeType();
     }
 
     @Override
@@ -90,21 +97,11 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
 
         // Uložení do výstupní struktury a DMS
         try {
-            storeOutputInDms(arrOutputDefinition, rulTemplate, content, getOutfileSuffix(), getMimeType());
+            storeOutputInDms(arrOutputDefinition, rulTemplate, content);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
-
-    /**
-     * @return příponu vygenerovaného souboru na základě zvolené šablony
-     */
-    protected abstract String getOutfileSuffix();
-
-    /**
-     * @return mimetype vygenerovaného souboru na základě zvolené šablony
-     */
-    protected abstract String getMimeType();
 
     /**
      * Provede vygenerování výstupného souboru.
@@ -120,8 +117,8 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
     /**
      * zajistí uložení výstupu do DB a DMS.
      */
-    private void storeOutputInDms(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate,
-                                  InputStream in, final String outfileSuffix, final String mimeType) throws IOException {
+    private void storeOutputInDms(final ArrOutputDefinition arrOutputDefinition, final RulTemplate rulTemplate,
+                                  final InputStream in) throws IOException {
         change = createChange(userId);
 
         ArrOutputResult outputResult = new ArrOutputResult();
@@ -132,7 +129,7 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
 
         ArrOutputFile dmsFile = new ArrOutputFile();
         dmsFile.setOutputResult(outputResult);
-        dmsFile.setFileName(arrOutputDefinition.getName() + outfileSuffix);
+        dmsFile.setFileName(arrOutputDefinition.getName() + "." + extension);
         dmsFile.setName(arrOutputDefinition.getName());
         dmsFile.setMimeType(mimeType);
         dmsFile.setFileSize(0); // 0 - zajistí refresh po skutečném uložení do souboru na disk
@@ -143,7 +140,7 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
      * @deprecated method only for debug template - DO NOT USE IN PRODUCTION CODE
      */
     @Deprecated
-    private void storeOutputOnDisk(InputStream in) {
+    private void storeOutputOnDisk(final InputStream in) {
         try {
             final FileOutputStream fos = new FileOutputStream("/tmp/output.pdf");
             IOUtils.copy(in, fos);

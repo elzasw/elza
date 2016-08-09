@@ -54,4 +54,12 @@ public interface RulTemplate<P extends RulPackage, O extends RulOutputType> {
      * @param outputType typ outputu
      */
     void setOutputType(O outputType);
+
+    String getMimeType();
+
+    void setMimeType(String mimeType);
+
+    String getExtension();
+
+    void setExtension(String extension);
 }

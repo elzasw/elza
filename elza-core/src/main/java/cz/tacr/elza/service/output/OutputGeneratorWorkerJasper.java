@@ -1,27 +1,5 @@
 package cz.tacr.elza.service.output;
 
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.DmsFile;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.print.Output;
-import cz.tacr.elza.print.item.ItemFile;
-import cz.tacr.elza.print.party.DummyDetail;
-import cz.tacr.elza.service.DmsService;
-import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.pdfbox.io.MemoryUsageSetting;
-import org.apache.pdfbox.multipdf.PDFMergerUtility;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -34,6 +12,28 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.DmsFile;
+import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.print.Output;
+import cz.tacr.elza.print.item.ItemFile;
+import cz.tacr.elza.print.party.DummyDetail;
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 /**
  * Zajišťuje generování výstupu a jeho uložení do dms na základě vstupní definice - část generování specifická pro jasper.
@@ -48,22 +48,11 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
 
     private static final String JASPER_TEMPLATE_SUFFIX = ".jrxml";
     private static final String JASPER_MAIN_TEMPLATE = MAIN_TEMPLATE_BASE_NAME + JASPER_TEMPLATE_SUFFIX;
-    private static final String OUTFILE_SUFFIX_PDF = ".pdf";
 
     private static final int MAX_MERGE_MAIN_MEMORY_BYTES = 100 * 1024 * 1024;
 
     @Override
-    protected String getOutfileSuffix() {
-        return OUTFILE_SUFFIX_PDF;
-    }
-
-    @Override
-    protected String getMimeType() {
-        return DmsService.MIME_TYPE_APPLICATION_PDF;
-    }
-
-    @Override
-    protected InputStream getContent(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate, Output output) {
+    protected InputStream getContent(final ArrOutputDefinition arrOutputDefinition, final RulTemplate rulTemplate, final Output output) {
         try {
             // dohledání šablony
             final String rulTemplateDirectory = rulTemplate.getDirectory();
@@ -105,7 +94,7 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
         }
     }
 
-    private void addSubreports(File templateDir, Map<String, Object> parameters) {
+    private void addSubreports(final File templateDir, final Map<String, Object> parameters) {
         final File[] files = templateDir.listFiles((dir, name) -> name.endsWith(JASPER_TEMPLATE_SUFFIX) && !name.equals(JASPER_MAIN_TEMPLATE));
         Arrays.stream(files).forEach(file -> {
             try {
@@ -116,7 +105,7 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
         });
     }
 
-    private void mergePdfJasperAndAttachements(Output output, PipedInputStream in, PipedOutputStream outm) {
+    private void mergePdfJasperAndAttachements(final Output output, final PipedInputStream in, final PipedOutputStream outm) {
         PDFMergerUtility ut = new PDFMergerUtility();
         ut.addSource(in);
         final List<ItemFile> attachements = output.getAttachements();
@@ -144,7 +133,7 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
         }
     }
 
-    private void renderJasperPdf(File mainJasperTemplate, JasperPrint jasperPrint, PipedOutputStream out) {
+    private void renderJasperPdf(final File mainJasperTemplate, final JasperPrint jasperPrint, final PipedOutputStream out) {
         try {
             JasperExportManager.exportReportToPdfStream(jasperPrint, out);
             out.close();
