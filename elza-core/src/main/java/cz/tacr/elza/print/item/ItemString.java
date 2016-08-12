@@ -1,7 +1,7 @@
 package cz.tacr.elza.print.item;
 
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.print.Node;
+import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Output;
 import org.apache.commons.lang.StringUtils;
 
@@ -12,8 +12,8 @@ import org.apache.commons.lang.StringUtils;
 public class ItemString extends AbstractItem<String> {
 
 
-    public ItemString(ArrItem arrItem, Output output, Node node, String value) {
-        super(arrItem, output, node);
+    public ItemString(ArrItem arrItem, Output output, NodeId nodeId, String value) {
+        super(arrItem, output, nodeId);
         setValue(value);
     }
 

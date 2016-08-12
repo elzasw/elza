@@ -1,25 +1,13 @@
 package cz.tacr.elza.service.output;
 
-import com.google.common.collect.Sets;
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
-import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputResult;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.NodeOutputRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
-import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.OutputResultRepository;
-import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,12 +24,28 @@ import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
-import javax.annotation.Nullable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.stream.Collectors;
+import com.google.common.collect.Sets;
+
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.NodeOutputRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
+import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
  * Zajišťuje asynchronní generování výstupu a jeho uložení do dms na základě vstupní definice.
@@ -52,14 +56,14 @@ import java.util.stream.Collectors;
  */
 
 @Service
-public class OutputGeneratorService implements ListenableFutureCallback<OutputGeneratorWorker> {
+public class OutputGeneratorService implements ListenableFutureCallback<OutputGeneratorWorkerAbstract> {
 
-    public static final String OUTPUT_WEBSOCKET_ERROR_STATE = "ERROR";
+    private static final String OUTPUT_WEBSOCKET_ERROR_STATE = "ERROR";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private Queue<OutputGeneratorWorker> outputQueue = new LinkedList<>(); // fronta outputů ke zpracování
-    private OutputGeneratorWorker worker = null; // aktuálně zpracovávaný output
+    private Queue<OutputGeneratorWorkerAbstract> outputQueue = new LinkedList<>(); // fronta outputů ke zpracování
+    private OutputGeneratorWorkerAbstract worker = null; // aktuálně zpracovávaný output
 
     @Autowired
     private ArrangementService arrangementService;
@@ -140,6 +144,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
             worker = outputQueue.poll();
 
             ListenableFuture future = taskExecutor.submitListenable(worker);
+            //noinspection unchecked
             future.addCallback(this);
         }
     }
@@ -152,9 +157,12 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
      * @param userId ID uživatele pod kterým bude vytvořená změna arrChange související s generováním
      * @return worker pro úlohu
      */
-    private OutputGeneratorWorker getWorker(ArrOutput output, Integer userId) {
-        final OutputGeneratorWorker generatorWorker = workerFactory.getOutputGeneratorWorker();
-        generatorWorker.init(output.getOutputId(), userId);
+    private OutputGeneratorWorkerAbstract getWorker(final ArrOutput output, final Integer userId) {
+        final ArrOutputDefinition arrOutputDefinition = output.getOutputDefinition();
+        final RulTemplate rulTemplate = arrOutputDefinition.getTemplate();
+
+        final OutputGeneratorWorkerAbstract generatorWorker = workerFactory.getOutputGeneratorWorker(rulTemplate.getEngine());
+        generatorWorker.init(output.getOutputId(), userId, rulTemplate);
         return generatorWorker;
     }
 
@@ -173,13 +181,13 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         );
     }
 
-    private void setStateAndSave(ArrOutputDefinition arrOutputDefinition, OutputState state) {
+    private void setStateAndSave(final ArrOutputDefinition arrOutputDefinition, final OutputState state) {
         arrOutputDefinition.setState(state);
         outputDefinitionRepository.save(arrOutputDefinition);
     }
 
     @Override
-    public void onFailure(Throwable ex) {
+    public void onFailure(final Throwable ex) {
         final Integer arrOutputId = worker.getArrOutputId();
         if (worker != null && worker.getArrOutputId() != null) {
             ArrOutput arrOutput = outputRepository.findOne(worker.getArrOutputId());
@@ -194,13 +202,13 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     }
 
     @Override
-    public void onSuccess(final OutputGeneratorWorker result) {
+    public void onSuccess(final OutputGeneratorWorkerAbstract result) {
         TransactionTemplate tmpl = new TransactionTemplate(txManager);
 
         // načítání dat v samostatné transakci
         tmpl.execute(new TransactionCallbackWithoutResult() {
             @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
+            protected void doInTransactionWithoutResult(final TransactionStatus status) {
                 final Integer arrOutputId = result.getArrOutputId();
                 final ArrChange change = result.getChange();
                 ArrOutput arrOutput = outputRepository.findOne(arrOutputId);

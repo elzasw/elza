@@ -1,7 +1,7 @@
 package cz.tacr.elza.print.item;
 
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.print.Node;
+import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Output;
 
 /**
@@ -11,8 +11,8 @@ import cz.tacr.elza.print.Output;
 public class ItemInteger extends AbstractItem<Integer> {
 
 
-    public ItemInteger(ArrItem arrItem, Output output, Node node, Integer value) {
-        super(arrItem, output, node);
+    public ItemInteger(ArrItem arrItem, Output output, NodeId nodeId, Integer value) {
+        super(arrItem, output, nodeId);
         setValue(value);
     }
 

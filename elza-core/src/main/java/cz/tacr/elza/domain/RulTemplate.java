@@ -1,9 +1,21 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
@@ -20,18 +32,24 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
     @GeneratedValue
     private Integer templateId;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = StringLength.LENGTH_50, nullable = false)
     private String code;
 
-    @Column(length = 250, nullable = false)
+    @Column(length = StringLength.LENGTH_250, nullable = false)
     private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 10, nullable = false)
     private Engine engine;
 
-    @Column(length = 250, nullable = false)
+    @Column(length = StringLength.LENGTH_250, nullable = false)
     private String directory;
+
+    @Column(length = StringLength.LENGTH_50, nullable = false)
+    private String mimeType;
+
+    @Column(length = StringLength.LENGTH_50, nullable = false)
+    private String extension;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulOutputType.class)
     @JoinColumn(name = "outputTypeId", nullable = false)
@@ -50,7 +68,7 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
     }
 
     @Override
-    public void setTemplateId(Integer templateId) {
+    public void setTemplateId(final Integer templateId) {
         this.templateId = templateId;
     }
 
@@ -60,7 +78,7 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
     }
 
     @Override
-    public void setCode(String code) {
+    public void setCode(final String code) {
         this.code = code;
     }
 
@@ -70,7 +88,7 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -80,7 +98,7 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
     }
 
     @Override
-    public void setEngine(Engine engine) {
+    public void setEngine(final Engine engine) {
         this.engine = engine;
     }
 
@@ -90,7 +108,7 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
     }
 
     @Override
-    public void setDirectory(String directory) {
+    public void setDirectory(final String directory) {
         this.directory = directory;
     }
 
@@ -110,11 +128,29 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
     }
 
     @Override
-    public void setOutputType(RulOutputType outputType) {
+    public void setOutputType(final RulOutputType outputType) {
         this.outputType = outputType;
     }
 
+    @Override
+    public String getMimeType() {
+        return mimeType;
+    }
 
+    @Override
+    public void setMimeType(final String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    @Override
+    public String getExtension() {
+        return extension;
+    }
+
+    @Override
+    public void setExtension(final String extension) {
+        this.extension = extension;
+    }
     @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof cz.tacr.elza.domain.RulTemplate)) {

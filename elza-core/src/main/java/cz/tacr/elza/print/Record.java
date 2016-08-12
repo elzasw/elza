@@ -25,9 +25,10 @@ import java.util.stream.Collectors;
 @Scope("prototype")
 public class Record implements Comparable<Record> {
     private final Output output; // vazba na nadřazený output
-    private final Node node; // vazba na node, může být null, v takovém případě patří přímo k output
+    private final NodeId nodeId; // vazba na node, může být null, v takovém případě patří přímo k output
     private final RegRecord regRecord;
     private ItemRecordRef item; // vazba na item, může být null
+
     @Autowired
     private OutputService outputService; // interní vazba na service
 
@@ -36,9 +37,9 @@ public class Record implements Comparable<Record> {
     private String characteristics;
     private List<String> variantRecords = new ArrayList<>();
 
-    public Record(@NotNull Output output, Node node, @NotNull RegRecord regRecord) {
+    public Record(@NotNull Output output, NodeId nodeId, @NotNull RegRecord regRecord) {
         this.output = output;
-        this.node = node;
+        this.nodeId = nodeId;
         this.regRecord = regRecord;
     }
 
@@ -53,8 +54,8 @@ public class Record implements Comparable<Record> {
     }
 
     // vrací seznam Node přiřazených přes vazbu arr_node_register
-    List<Node> getNodes() {
-        return output.getNodes().stream()
+    List<NodeId> getNodes() {
+        return output.getNodesFlatModel().stream()
                 .filter(node -> node.getRecords().contains(this))
                 .collect(Collectors.toList());
     }
@@ -68,18 +69,18 @@ public class Record implements Comparable<Record> {
      */
     public String getNodesSerialized(@NotNull Collection<String> codes) {
         List<String> result = new ArrayList<>();
-        final List<Node> nodes = getNodes().stream().distinct().collect(Collectors.toList());
+        final List<NodeId> nodeIds = getNodes().stream().distinct().collect(Collectors.toList());
 
-        nodes.stream().forEach(node1 -> {
+        nodeIds.stream().forEach(nodeId -> {
             String serializedString = "";
             for (String code : codes) {
-                serializedString = node1.getAllItemsAsString(Collections.singletonList(code));
+                serializedString = nodeId.getNode().getAllItemsAsString(Collections.singletonList(code));
                 if (StringUtils.isNotBlank(serializedString)) {
                     break;
                 }
             }
             if (StringUtils.isBlank(serializedString)) {
-                serializedString = "[" + node1.toString() + "]";
+                serializedString = "[" + nodeId.toString() + "]";
             }
             final String trim = StringUtils.trim(serializedString);
             result.add(trim);

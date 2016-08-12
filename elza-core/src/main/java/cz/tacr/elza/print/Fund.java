@@ -3,11 +3,11 @@ package cz.tacr.elza.print;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.print.party.Institution;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import cz.tacr.elza.print.party.Institution;
 
 import java.util.Date;
 
@@ -37,11 +37,9 @@ public class Fund {
     /**
      * @return kořenový node fondu - je vždy ve výstupu, pokud má výstup alespoň jeden přiřazený node
      */
-    public Node getRootNode() {
+    public NodeId getRootNodeId() {
         final ArrNode arrNode = arrFundVersion.getRootNode();
-        return output.getNodes().stream()
-                .filter(node -> node.getArrNode().equals(arrNode)) // node z output oddkazující na odpovídající node ve fundVersion
-                .findFirst().orElse(null); // vrátit první (a jediný) nalezený jinak null
+        return output.getNodesMap().get(arrNode.getNodeId());
     }
 
     public ArrFund getArrFund() {

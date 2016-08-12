@@ -55,7 +55,7 @@ public class OutputItemTypesRules extends Rules {
                 rulRuleSet, RulRule.RuleType.OUTPUT_ATTRIBUTE_TYPES, outputDefinition.getOutputType());
 
         if (rulPackageRules.size() == 0) {
-            logger.warn("Při vykonávání OutputItemTypesRules.execute() nebyly nalezeny žádná pravidla pro typ výstupu '"
+            logger.warn("Při vykonávání OutputItemTypesRules.execute() nebyla nalezena žádná pravidla pro typ výstupu '"
                     + outputDefinition.getOutputType().getCode() + "'");
         }
 

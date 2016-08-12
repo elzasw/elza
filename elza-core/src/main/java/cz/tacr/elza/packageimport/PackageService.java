@@ -1,6 +1,40 @@
 package cz.tacr.elza.packageimport;
 
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import com.google.common.collect.Maps;
+
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulAction;
@@ -20,31 +54,51 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.drools.RulesExecutor;
-import cz.tacr.elza.packageimport.xml.*;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.packageimport.xml.ActionItemType;
+import cz.tacr.elza.packageimport.xml.ActionRecommended;
+import cz.tacr.elza.packageimport.xml.Column;
+import cz.tacr.elza.packageimport.xml.DescItemSpecRegister;
+import cz.tacr.elza.packageimport.xml.ItemSpec;
+import cz.tacr.elza.packageimport.xml.ItemSpecs;
+import cz.tacr.elza.packageimport.xml.ItemType;
+import cz.tacr.elza.packageimport.xml.ItemTypes;
+import cz.tacr.elza.packageimport.xml.OutputType;
+import cz.tacr.elza.packageimport.xml.OutputTypes;
+import cz.tacr.elza.packageimport.xml.PackageAction;
+import cz.tacr.elza.packageimport.xml.PackageActions;
+import cz.tacr.elza.packageimport.xml.PackageInfo;
+import cz.tacr.elza.packageimport.xml.PackageRule;
+import cz.tacr.elza.packageimport.xml.PackageRules;
+import cz.tacr.elza.packageimport.xml.PacketType;
+import cz.tacr.elza.packageimport.xml.PacketTypes;
+import cz.tacr.elza.packageimport.xml.PolicyType;
+import cz.tacr.elza.packageimport.xml.PolicyTypes;
+import cz.tacr.elza.packageimport.xml.RuleSet;
+import cz.tacr.elza.packageimport.xml.RuleSets;
+import cz.tacr.elza.packageimport.xml.Template;
+import cz.tacr.elza.packageimport.xml.Templates;
+import cz.tacr.elza.repository.ActionRecommendedRepository;
+import cz.tacr.elza.repository.ActionRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.DefaultItemTypeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeActionRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.OutputTypeRepository;
+import cz.tacr.elza.repository.PackageRepository;
+import cz.tacr.elza.repository.PacketTypeRepository;
+import cz.tacr.elza.repository.PolicyTypeRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RuleRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
 import cz.tacr.elza.utils.Yaml;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import java.io.*;
-import java.nio.file.Files;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
 
 
 /**
@@ -311,7 +365,7 @@ public class PackageService {
 
     }
 
-    private void cleanBackupTemplates(File dirTemplates, List<RulTemplate> originalRulTemplates) {
+    private void cleanBackupTemplates(final File dirTemplates, final List<RulTemplate> originalRulTemplates) {
         for (RulTemplate rulTemplate : originalRulTemplates) {
             File dirFile = new File(dirTemplates + File.separator + rulTemplate.getDirectory());
             if (dirFile.exists()) {
@@ -1101,7 +1155,7 @@ public class PackageService {
         }
     }
 
-    private void deleteTemplates(File dirTemplates, List<RulTemplate> rulTemplateActual) throws IOException {
+    private void deleteTemplates(final File dirTemplates, final List<RulTemplate> rulTemplateActual) throws IOException {
         for (RulTemplate template : rulTemplateActual) {
             File dirFile = new File(dirTemplates + File.separator + template.getDirectory());
             if (!dirFile.exists()) {
@@ -1113,7 +1167,7 @@ public class PackageService {
         }
     }
 
-    private void importTemplatesFiles(Map<String, ByteArrayInputStream> mapEntry, File dirTemplates, List<RulTemplate> rulTemplateActual) throws IOException {
+    private void importTemplatesFiles(final Map<String, ByteArrayInputStream> mapEntry, final File dirTemplates, final List<RulTemplate> rulTemplateActual) throws IOException {
         for (RulTemplate template : rulTemplateActual) {
             final String templateDir = ZIP_DIR_TEMPLATES + "/" + template.getDirectory();
             final String templateZipKeyDir = templateDir + "/";
@@ -1147,12 +1201,14 @@ public class PackageService {
      * @param rulTemplate  DAO template
      * @param rulOutputTypes seznam typů outputů
      */
-    private void convertRulTemplate(RulPackage rulPackage, Template template, RulTemplate rulTemplate, List<RulOutputType> rulOutputTypes) {
+    private void convertRulTemplate(final RulPackage rulPackage, final Template template, final RulTemplate rulTemplate, final List<RulOutputType> rulOutputTypes) {
         rulTemplate.setName(template.getName());
         rulTemplate.setCode(template.getCode());
         rulTemplate.setEngine(cz.tacr.elza.api.RulTemplate.Engine.valueOf(template.getEngine()));
         rulTemplate.setPackage(rulPackage);
         rulTemplate.setDirectory(template.getDirectory());
+        rulTemplate.setMimeType(template.getMimeType());
+        rulTemplate.setExtension(template.getExtension());
 
         List<RulOutputType> findItems = rulOutputTypes.stream()
                 .filter((r) -> r.getCode().equals(template.getOutputType()))
@@ -1444,7 +1500,7 @@ public class PackageService {
      * @param xmlStream   xml stream
      * @param <T>         typ pro převod
      */
-    private <T> T convertXmlStreamToObject(Class classObject, ByteArrayInputStream xmlStream) {
+    private <T> T convertXmlStreamToObject(final Class classObject, final ByteArrayInputStream xmlStream) {
         Assert.notNull(xmlStream, "Soubor pro třídu " + classObject.toString() + " neexistuje");
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(classObject);
@@ -1644,7 +1700,7 @@ public class PackageService {
 
     }
 
-    private void exportOutputTypes(RulPackage rulPackage, ZipOutputStream zos) throws IOException {
+    private void exportOutputTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
         OutputTypes outputTypes = new OutputTypes();
         List<RulOutputType> rulRuleSets = outputTypeRepository.findByRulPackage(rulPackage);
         List<OutputType> ruleSetList = new ArrayList<>(rulRuleSets.size());
@@ -1659,7 +1715,7 @@ public class PackageService {
         addObjectToZipFile(outputTypes, zos, OUTPUT_TYPE_XML);
     }
 
-    private void exportTemplates(RulPackage rulPackage, ZipOutputStream zos) throws IOException {
+    private void exportTemplates(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
         Templates outputTypes = new Templates();
         List<RulTemplate> rulRuleSets = templateRepository.findByRulPackage(rulPackage);
         List<Template> ruleSetList = new ArrayList<>(rulRuleSets.size());
@@ -1874,6 +1930,8 @@ public class PackageService {
         outputType.setDirectory(rulOutputType.getDirectory());
         outputType.setEngine(rulOutputType.getEngine().toString());
         outputType.setOutputType(rulOutputType.getOutputType().getCode());
+        outputType.setMimeType(rulOutputType.getMimeType());
+        outputType.setExtension(rulOutputType.getExtension());
     }
 
     /**
@@ -1996,7 +2054,7 @@ public class PackageService {
      * @param data objekt souboru (XML)
      * @return převedený dočasný soubor
      */
-    private <T> File convertObjectToXmlFile(T data) {
+    private <T> File convertObjectToXmlFile(final T data) {
         try {
             File file = File.createTempFile(data.getClass().getSimpleName() + "-", ".xml");
             JAXBContext jaxbContext = JAXBContext.newInstance(data.getClass());
@@ -2016,7 +2074,7 @@ public class PackageService {
      * @param file     zdrojový soubor
      * @param zos      stream zip souboru
      */
-    private void addToZipFile(String fileName, File file, ZipOutputStream zos) throws IOException {
+    private void addToZipFile(final String fileName, final File file, final ZipOutputStream zos) throws IOException {
         FileInputStream fis = new FileInputStream(file);
         ZipEntry zipEntry = new ZipEntry(fileName);
         zos.putNextEntry(zipEntry);

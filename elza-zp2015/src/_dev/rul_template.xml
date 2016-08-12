@@ -1,15 +1,15 @@
 <templates>
-    <template code="AP_INVENTORY_FREEMARKER" output-type="AP_INVENTORY">
+    <template code="AP_INVENTORY_FREEMARKER" output-type="AP_INVENTORY" mime-type="text/csv" extension="csv">
         <name>AP inventář FREEMARKER</name>
         <engine>FREEMARKER</engine>
         <directory>freemarker</directory>
     </template>
-    <template code="AP_INVENTORY_JASPER" output-type="AP_INVENTORY">
+    <template code="AP_INVENTORY_JASPER" output-type="AP_INVENTORY" mime-type="application/pdf" extension="pdf">
         <name>AP inventář JASPER</name>
         <engine>JASPER</engine>
         <directory>tstJasper</directory>
     </template>
-    <template code="AP_INVENTORY_PDFTEMPLATE" output-type="AP_INVENTORY">
+    <template code="AP_INVENTORY_PDFTEMPLATE" output-type="AP_INVENTORY" mime-type="application/pdf" extension="pdf">
         <name>AP inventář PDF Template</name>
         <engine>JASPER</engine>
         <directory>pdfTemplate</directory>
