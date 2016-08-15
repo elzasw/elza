@@ -110,8 +110,8 @@
         </coordinate-list>
       </record-coordinates>
       <sub-record-list>
-        <record record-id="recordId-2-1" register-type-code="GEO_UNIT" external-source-code="externalSourceCode 537051127" external-id="externalId 1" local="false">
-          <preferred-name>record 1</preferred-name>
+        <record record-id="recordId-2-1" register-type-code="GEO_WATERS" external-source-code="externalSourceCode 537051127" external-id="externalId 1" local="false">
+          <preferred-name>record 2-1</preferred-name>
           <characteristics>characteristics 1</characteristics>
           <note>comment 1</note>
           <variant-name-list>
@@ -131,8 +131,8 @@
             </coordinate-list>
           </record-coordinates>
           <sub-record-list>
-            <record record-id="recordId-2-1-1" register-type-code="FAMILY_BRANCH" external-source-code="externalSourceCode 2142619247" external-id="externalId 1" local="true">
-              <preferred-name>record 1</preferred-name>
+            <record record-id="recordId-2-1-1" register-type-code="GEO_WATERS" external-source-code="externalSourceCode 2142619247" external-id="externalId 1" local="true">
+              <preferred-name>record 2-1-1</preferred-name>
               <characteristics>characteristics 1</characteristics>
               <note>comment 1</note>
               <variant-name-list>
