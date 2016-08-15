@@ -2,12 +2,14 @@ package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.utils.ObjectListIterator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -58,5 +60,21 @@ public class DataPacketRefRepositoryImpl implements DataPacketRefRepositoryCusto
         query.setParameter("packetIds", packetIds);
         query.setParameter("version", version);
         return query.getFirstResult();
+    }
+
+    @Override
+    public List<ArrPacket> findUsePacketsByPacketIds(final List<Integer> packetIds) {
+        List<ArrPacket> result = new ArrayList<>();
+        ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<>(packetIds);
+        while (nodeIdsIterator.hasNext()) {
+            String hql = "SELECT DISTINCT p FROM arr_data_packet_ref d " +
+                    "JOIN d.packet p " +
+                    "WHERE p.packetId IN :packetIds";
+
+            Query query = entityManager.createQuery(hql);
+            query.setParameter("packetIds", nodeIdsIterator.next());
+            result.addAll(query.getResultList());
+        }
+        return result;
     }
 }
