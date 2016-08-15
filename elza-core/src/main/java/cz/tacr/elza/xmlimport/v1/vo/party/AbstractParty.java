@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -42,6 +43,7 @@ public abstract class AbstractParty {
     private Record record;
 
     /** Kód typu osoby. */
+    @XmlTransient
     private String partyTypeCode;
 
     /** Preferované jméno osoby. */
@@ -91,6 +93,9 @@ public abstract class AbstractParty {
     /** Instituce. */
     @XmlElement(name = "institution")
     private Institution institution;
+
+    public AbstractParty() {
+    }
 
     public AbstractParty(final PartyType partyType) {
         Assert.notNull(partyType);
