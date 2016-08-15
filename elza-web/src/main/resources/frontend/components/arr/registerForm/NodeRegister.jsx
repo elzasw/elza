@@ -1,18 +1,15 @@
-//require ('./DescItemRecordRef.less')
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components/index.jsx';
-import {connect} from 'react-redux'
 import {decorateValue} from './../nodeForm/DescItemUtils.jsx'
 
 import {MenuItem, Button} from 'react-bootstrap';
 
-require ('./NodeRegister.less')
+require('./NodeRegister.less')
 
-var NodeRegister = class NodeRegister extends AbstractReactComponent {
+export default class NodeRegister extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.bindMethods('handleChange', 'renderRecord', 'handleSearchChange', 'renderFooter', 'handleCreateRecord');
@@ -79,7 +76,7 @@ var NodeRegister = class NodeRegister extends AbstractReactComponent {
         var footer = this.renderFooter();
         var value = item.record ? {id: item.record.recordId, name: item.record.record} : null;
 
-        var actions = new Array;
+        const actions = [];
 
         if (item.record) {
             actions.push(<div onClick={this.handleDetail.bind(this, item.record.recordId)} className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
@@ -105,5 +102,3 @@ var NodeRegister = class NodeRegister extends AbstractReactComponent {
         )
     }
 }
-
-module.exports = connect()(NodeRegister);

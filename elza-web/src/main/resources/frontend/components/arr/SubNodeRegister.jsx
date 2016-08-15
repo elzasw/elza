@@ -5,21 +5,30 @@ import ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, Loading, NoFocusButton} from 'components/index.jsx';
 import {connect} from 'react-redux'
 
-import {fundSubNodeRegisterValueDelete, fundSubNodeRegisterValueAdd,
-        fundSubNodeRegisterValueFocus, fundSubNodeRegisterValueBlur, fundSubNodeRegisterValueChange} from 'actions/arr/subNodeRegister.jsx'
+import {
+    fundSubNodeRegisterValueDelete,
+    fundSubNodeRegisterValueAdd,
+    fundSubNodeRegisterValueFocus,
+    fundSubNodeRegisterValueBlur,
+    fundSubNodeRegisterValueChange
+} from 'actions/arr/subNodeRegister.jsx'
 import {registrySelect, registryAdd} from 'actions/registry/registryRegionList.jsx'
 import NodeRegister from './registerForm/NodeRegister.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 
-var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
+const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
+    PropTypes = {
+        register: React.PropTypes.object.isRequired,
+        selectedSubNodeId: React.PropTypes.number.isRequired,
+        routingKey: React.PropTypes.number.isRequired,
+        closed: React.PropTypes.bool.isRequired,
+        nodeId: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
+    };
+
     constructor(props) {
         super(props);
 
         this.bindMethods('renderLink', 'renderForm', 'handleAddClick');
-
-    }
-
-    componentDidMount() {
 
     }
 
@@ -36,8 +45,9 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     /**
      * Vytvoření hesla po vyplnění formuláře.
      *
-     * @param valueLocation pozice hodnoty atributu
-     * @param form {Object} data z formuláře
+     * @param index {number} pozice hodnoty atributu
+     * @param data {Object} data z formuláře
+     * @param submitType {String} typ odeslání
      */
     handleCreatedRecord(index, data, submitType) {
         const {versionId, selectedSubNodeId, routingKey, fund} = this.props;
@@ -83,6 +93,7 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
 
     renderLink(link, index) {
         const {closed, versionId} = this.props;
+        console.log(link);
         return (
                 <div className="link" key={"link-" + index}>
                     <NodeRegister onFocus={this.handleFocus.bind(this, index)}
@@ -102,6 +113,7 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
         const {register, closed} = this.props;
 
         var links = [];
+        console.log(register.formData);
         register.formData.nodeRegisters.forEach((link, index) => links.push(this.renderLink(link, index)));
 
         return (
@@ -132,7 +144,7 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
             </div>
         )
     }
-}
+};
 
 function mapStateToProps(state) {
     const {arrRegion} = state
@@ -146,12 +158,4 @@ function mapStateToProps(state) {
     }
 }
 
-SubNodeRegister.propTypes = {
-    register: React.PropTypes.object.isRequired,
-    selectedSubNodeId: React.PropTypes.number.isRequired,
-    routingKey: React.PropTypes.number.isRequired,
-    closed: React.PropTypes.bool.isRequired,
-    nodeId: React.PropTypes.oneOfType(React.PropTypes.number, React.PropTypes.string),
-}
-
-module.exports = connect(mapStateToProps)(SubNodeRegister);
+export default connect(mapStateToProps)(SubNodeRegister);

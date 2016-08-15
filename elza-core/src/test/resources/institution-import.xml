@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ns2:xml-import xmlns:ns2="http://v1_0_0.import.elza.tacr.cz">
   <record-list>
-    <record record-id="recordId-0" register-type-code="PERSON" external-source-code="externalSourceCode 1341799512" external-id="externalId 0" local="false">
+    <record record-id="recordId-0" register-type-code="PERSON_INDIVIDUAL" external-source-code="externalSourceCode 1341799512" external-id="externalId 0" local="false">
       <preferred-name>record 0</preferred-name>
       <characteristics>characteristics 0</characteristics>
       <note>comment 0</note>
@@ -22,7 +22,7 @@
         </coordinate-list>
       </record-coordinates>
     </record>
-    <record record-id="recordId-1" register-type-code="GEO_SEA_FORMATION" external-source-code="externalSourceCode 1097950573" external-id="externalId 1" local="false">
+    <record record-id="recordId-1" register-type-code="FAMILY_BRANCH" external-source-code="externalSourceCode 1097950573" external-id="externalId 1" local="false">
       <preferred-name>record 1</preferred-name>
       <characteristics>characteristics 1</characteristics>
       <note>comment 1</note>
@@ -43,7 +43,7 @@
         </coordinate-list>
       </record-coordinates>
       <sub-record-list>
-        <record record-id="recordId-1-1" register-type-code="GEO_FORMATION" external-source-code="externalSourceCode 226261935" external-id="externalId 1" local="false">
+        <record record-id="recordId-1-1" register-type-code="FAMILY_BRANCH" external-source-code="externalSourceCode 226261935" external-id="externalId 1" local="false">
           <preferred-name>record 1</preferred-name>
           <characteristics>characteristics 1</characteristics>
           <note>comment 1</note>
@@ -64,7 +64,7 @@
             </coordinate-list>
           </record-coordinates>
           <sub-record-list>
-            <record record-id="recordId-1-1-1" register-type-code="BRANCH" external-source-code="externalSourceCode 747662184" external-id="externalId 1" local="true">
+            <record record-id="recordId-1-1-1" register-type-code="FAMILY_BRANCH" external-source-code="externalSourceCode 747662184" external-id="externalId 1" local="true">
               <preferred-name>record 1</preferred-name>
               <characteristics>characteristics 1</characteristics>
               <note>comment 1</note>
@@ -89,7 +89,7 @@
         </record>
       </sub-record-list>
     </record>
-    <record record-id="recordId-2" register-type-code="GEO_WATERS" external-source-code="externalSourceCode 1015647040" external-id="externalId 2" local="false">
+    <record record-id="recordId-2" register-type-code="EVENT_EVENT" external-source-code="externalSourceCode 1015647040" external-id="externalId 2" local="false">
       <preferred-name>record 2</preferred-name>
       <characteristics>characteristics 2</characteristics>
       <note>comment 2</note>
@@ -156,9 +156,76 @@
         </record>
       </sub-record-list>
     </record>
+    <record record-id="recordId-3" register-type-code="ORGANIZATION" external-source-code="externalSourceCode 1097950573" external-id="externalId 1" local="false">
+      <preferred-name>record 3</preferred-name>
+      <characteristics>characteristics 1</characteristics>
+      <note>comment 1</note>
+      <variant-name-list>
+        <variant-name>
+          <variant-name>variantRecord 0</variant-name>
+        </variant-name>
+      </variant-name-list>
+      <record-coordinates area-type="line" system="WGS84">
+        <note>note</note>
+        <coordinate-list>
+          <coordinate position="0">
+            <coordinate>point 0</coordinate>
+          </coordinate>
+          <coordinate position="1">
+            <coordinate>point 1</coordinate>
+          </coordinate>
+        </coordinate-list>
+      </record-coordinates>
+      <sub-record-list>
+        <record record-id="recordId-3-1" register-type-code="ORGANIZATION" external-source-code="externalSourceCode 226261935" external-id="externalId 1" local="false">
+          <preferred-name>record 3-1</preferred-name>
+          <characteristics>characteristics 1</characteristics>
+          <note>comment 1</note>
+          <variant-name-list>
+            <variant-name>
+              <variant-name>variantRecord 0</variant-name>
+            </variant-name>
+          </variant-name-list>
+          <record-coordinates area-type="line" system="WGS84">
+            <note>note</note>
+            <coordinate-list>
+              <coordinate position="0">
+                <coordinate>point 0</coordinate>
+              </coordinate>
+              <coordinate position="1">
+                <coordinate>point 1</coordinate>
+              </coordinate>
+            </coordinate-list>
+          </record-coordinates>
+          <sub-record-list>
+            <record record-id="recordId-3-1-1" register-type-code="BRANCH" external-source-code="externalSourceCode 747662184" external-id="externalId 1" local="true">
+              <preferred-name>record 3</preferred-name>
+              <characteristics>characteristics 1</characteristics>
+              <note>comment 1</note>
+              <variant-name-list>
+                <variant-name>
+                  <variant-name>variantRecord 0</variant-name>
+                </variant-name>
+              </variant-name-list>
+              <record-coordinates area-type="line" system="WGS84">
+                <note>note</note>
+                <coordinate-list>
+                  <coordinate position="0">
+                    <coordinate>point 0</coordinate>
+                  </coordinate>
+                  <coordinate position="1">
+                    <coordinate>point 1</coordinate>
+                  </coordinate>
+                </coordinate-list>
+              </record-coordinates>
+            </record>
+          </sub-record-list>
+        </record>
+      </sub-record-list>
+    </record>
   </record-list>
   <party-list>
-    <person party-id="partyId-0" record-id="recordId-2" party-type-code="EVENT">
+    <person party-id="partyId-0" record-id="recordId-0" party-type-code="PERSON">
       <preferred-name party-name-form-type-code="1">
         <main-part>mainPart 0</main-part>
         <other-part>otherPart 0</other-part>
@@ -177,7 +244,7 @@
           <party-name-complement party-name-complement-type-code="2">
             <complement>complement</complement>
           </party-name-complement>
-          <party-name-complement party-name-complement-type-code="10">
+          <party-name-complement party-name-complement-type-code="5">
             <complement>complement</complement>
           </party-name-complement>
         </party-name-complement-list>
@@ -230,7 +297,7 @@
       </relation-list>
       <characteristics>characteristics</characteristics>
     </person>
-    <dynasty party-id="partyId-1" record-id="recordId-1" party-type-code="PERSON">
+    <dynasty party-id="partyId-1" record-id="recordId-1" party-type-code="DYNASTY">
       <preferred-name party-name-form-type-code="7">
         <main-part>mainPart 1</main-part>
         <other-part>otherPart 1</other-part>
@@ -306,7 +373,7 @@
       <characteristics>characteristics</characteristics>
       <genealogy>rod</genealogy>
     </dynasty>
-    <event party-id="partyId-2" record-id="recordId-0" party-type-code="GROUP_PARTY">
+    <event party-id="partyId-2" record-id="recordId-2" party-type-code="EVENT">
       <preferred-name party-name-form-type-code="23">
         <main-part>mainPart 2</main-part>
         <other-part>otherPart 2</other-part>
@@ -325,7 +392,7 @@
           <party-name-complement party-name-complement-type-code="2">
             <complement>complement</complement>
           </party-name-complement>
-          <party-name-complement party-name-complement-type-code="10">
+          <party-name-complement party-name-complement-type-code="5">
             <complement>complement</complement>
           </party-name-complement>
         </party-name-complement-list>
@@ -346,10 +413,10 @@
             <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
           </valid-to>
           <party-name-complement-list>
-            <party-name-complement party-name-complement-type-code="7">
+            <party-name-complement party-name-complement-type-code="5">
               <complement>complement</complement>
             </party-name-complement>
-            <party-name-complement party-name-complement-type-code="2">
+            <party-name-complement party-name-complement-type-code="4">
               <complement>complement</complement>
             </party-name-complement>
           </party-name-complement-list>
@@ -369,7 +436,7 @@
             <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
           </valid-to>
           <party-name-complement-list>
-            <party-name-complement party-name-complement-type-code="6">
+            <party-name-complement party-name-complement-type-code="2">
               <complement>complement</complement>
             </party-name-complement>
             <party-name-complement party-name-complement-type-code="4">
@@ -392,7 +459,7 @@
             <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
           </valid-to>
           <party-name-complement-list>
-            <party-name-complement party-name-complement-type-code="10">
+            <party-name-complement party-name-complement-type-code="5">
               <complement>complement</complement>
             </party-name-complement>
             <party-name-complement party-name-complement-type-code="4">
@@ -415,7 +482,7 @@
             <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
           </valid-to>
           <party-name-complement-list>
-            <party-name-complement party-name-complement-type-code="1">
+            <party-name-complement party-name-complement-type-code="2">
               <complement>complement</complement>
             </party-name-complement>
             <party-name-complement party-name-complement-type-code="5">
@@ -472,7 +539,7 @@
       </relation-list>
       <characteristics>characteristics</characteristics>
     </event>
-    <party-group party-id="partyId-3" record-id="recordId-1" party-type-code="GROUP_PARTY">
+    <party-group party-id="partyId-3" record-id="recordId-3" party-type-code="GROUP_PARTY">
       <institution internal-code="in1" type-code="DEFAULT"/>
       <preferred-name party-name-form-type-code="3">
         <main-part>mainPart 3</main-part>
@@ -492,7 +559,7 @@
           <party-name-complement party-name-complement-type-code="4">
             <complement>complement</complement>
           </party-name-complement>
-          <party-name-complement party-name-complement-type-code="10">
+          <party-name-complement party-name-complement-type-code="5">
             <complement>complement</complement>
           </party-name-complement>
         </party-name-complement-list>
