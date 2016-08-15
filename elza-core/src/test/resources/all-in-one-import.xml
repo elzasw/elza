@@ -223,7 +223,7 @@
                     <party-name-complement party-name-complement-type-code="2">
                         <complement>complement</complement>
                     </party-name-complement>
-                    <party-name-complement party-name-complement-type-code="10">
+                    <party-name-complement party-name-complement-type-code="1">
                         <complement>complement</complement>
                     </party-name-complement>
                 </party-name-complement-list>
@@ -371,7 +371,7 @@
                     <party-name-complement party-name-complement-type-code="2">
                         <complement>complement</complement>
                     </party-name-complement>
-                    <party-name-complement party-name-complement-type-code="10">
+                    <party-name-complement party-name-complement-type-code="6">
                         <complement>complement</complement>
                     </party-name-complement>
                 </party-name-complement-list>
@@ -392,7 +392,7 @@
                         <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
                     </valid-to>
                     <party-name-complement-list>
-                        <party-name-complement party-name-complement-type-code="7">
+                        <party-name-complement party-name-complement-type-code="6">
                             <complement>complement</complement>
                         </party-name-complement>
                         <party-name-complement party-name-complement-type-code="2">
@@ -438,7 +438,7 @@
                         <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
                     </valid-to>
                     <party-name-complement-list>
-                        <party-name-complement party-name-complement-type-code="10">
+                        <party-name-complement party-name-complement-type-code="2">
                             <complement>complement</complement>
                         </party-name-complement>
                         <party-name-complement party-name-complement-type-code="4">
@@ -461,7 +461,7 @@
                         <specific-date-to>2016-02-23T18:53:22.235+01:00</specific-date-to>
                     </valid-to>
                     <party-name-complement-list>
-                        <party-name-complement party-name-complement-type-code="1">
+                        <party-name-complement party-name-complement-type-code="2">
                             <complement>complement</complement>
                         </party-name-complement>
                         <party-name-complement party-name-complement-type-code="5">
@@ -537,7 +537,7 @@
                     <party-name-complement party-name-complement-type-code="4">
                         <complement>complement</complement>
                     </party-name-complement>
-                    <party-name-complement party-name-complement-type-code="10">
+                    <party-name-complement party-name-complement-type-code="2">
                         <complement>complement</complement>
                     </party-name-complement>
                 </party-name-complement-list>

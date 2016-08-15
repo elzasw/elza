@@ -1250,10 +1250,9 @@ public class XmlImportService {
         ParComplementType parComplementType = partyComplementTypes.stream().
                 filter(ct -> ct.getCode().equals(partyNameComplementTypeCode)).
                 findFirst().
-                get();
-        if (parComplementType == null) {
-            throw new PartyImportException("Neexistuje typ doplňku jména s kódem " + partyNameComplementTypeCode);
-        }
+                orElseThrow(() ->
+                    new PartyImportException("Neexistuje typ doplňku jména s kódem " + partyNameComplementTypeCode)
+                );
         parPartyNameComplement.setComplementType(parComplementType);
         parPartyNameComplement.setPartyName(parPartyName);
         return parPartyNameComplement;
