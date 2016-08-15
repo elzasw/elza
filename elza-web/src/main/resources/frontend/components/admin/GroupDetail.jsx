@@ -51,7 +51,7 @@ const GroupDetail = class GroupDetail extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('admin.group.user.add.title'),
             <SelectUsersForm onSubmitForm={(users) => {
                 this.dispatch(joinUsers(groupDetail.id, getIdsList(users)));
-            }} />
+            }} excludedGroupId={groupDetail.id} />
         ))
     }
 

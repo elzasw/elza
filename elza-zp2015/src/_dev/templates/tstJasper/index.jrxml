@@ -56,7 +56,7 @@
 				<subreportParameter name="itemsSubReport">
 					<subreportParameterExpression><![CDATA[$P{itemsSubReport}]]></subreportParameterExpression>
 				</subreportParameter>
-				<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($P{output}.getNodes())]]></dataSourceExpression>
+				<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($P{output}.getNodesFlatModel())]]></dataSourceExpression>
 				<subreportExpression><![CDATA[$P{nodesSubReport}]]></subreportExpression>
 			</subreport>
 		</band>

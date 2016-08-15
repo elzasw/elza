@@ -5,12 +5,28 @@ import {connect} from "react-redux"
 import {renderUserItem} from "./adminRenderUtils.jsx"
 
 const UserField = class UserField extends AbstractReactComponent {
+    static defaultProps = {
+        tags: false,
+        excludedGroupId: null
+    };
+
+    static PropTypes = {
+        value: React.PropTypes.object,
+        onChange: React.PropTypes.func.isRequired,
+        inline: React.PropTypes.bool,
+        touched: React.PropTypes.bool,
+        error: React.PropTypes.string,
+        tags: React.PropTypes.bool,
+        excludedGroupId: React.PropTypes.number,
+    };
+
     constructor(props) {
         super(props);
         this.bindMethods(
             "handleChange",
             "handleSearchChange",
-            "focus");
+            "focus"
+        );
 
         this.state = {
             dataList: []
@@ -19,9 +35,6 @@ const UserField = class UserField extends AbstractReactComponent {
 
     focus() {
         this.refs.autocomplete.focus()
-    }
-
-    componentDidMount() {
     }
 
     /**
@@ -36,7 +49,7 @@ const UserField = class UserField extends AbstractReactComponent {
     handleSearchChange(text) {
         text = text == "" ? null : text;
 
-        WebApi.findUser(text, true, false).then(json => {
+        WebApi.findUser(text, true, false, 200, this.props.excludedGroupId).then(json => {
             this.setState({
                 dataList: json.users
             })
@@ -65,21 +78,4 @@ const UserField = class UserField extends AbstractReactComponent {
     }
 }
 
-UserField.propTypes = {
-    value: React.PropTypes.object,
-    onChange: React.PropTypes.func.isRequired,
-    inline: React.PropTypes.bool,
-    touched: React.PropTypes.bool,
-    error: React.PropTypes.string,
-    tags: React.PropTypes.bool,
-}
-
-UserField.defaultProps = {
-    tags: false,
-}
-
-function mapStateToProps(state) {
-    return {
-    }
-}
-module.exports = connect(mapStateToProps, null, null, { withRef: true })(UserField);
+module.exports = connect(null, null, null, { withRef: true })(UserField);

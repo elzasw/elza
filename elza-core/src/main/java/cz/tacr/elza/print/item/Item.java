@@ -3,7 +3,7 @@ package cz.tacr.elza.print.item;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.print.ItemSpec;
 import cz.tacr.elza.print.ItemType;
-import cz.tacr.elza.print.Node;
+import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Output;
 
 /**
@@ -22,7 +22,7 @@ public interface Item<T> {
     /**
      * @return node na který je item navázán, pokud je null, jde o navázání přímo na output
      */
-    Node getNode();
+    NodeId getNodeId();
 
     /**
      * @return output na který je item navázán

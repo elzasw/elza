@@ -2502,15 +2502,17 @@ public abstract class AbstractControllerTest extends AbstractTest {
     * @return seznam s celkovým počtem
     */
     protected FilteredResultVO findUser(@Nullable final String search,
-                                                   final Boolean active,
-                                                   final Boolean disabled,
-                                                   final Integer from,
-                                                   final Integer count) {
+                                                    final Boolean active,
+                                                    final Boolean disabled,
+                                                    final Integer from,
+                                                    final Integer count,
+                                                    final Integer excludedGroupId) {
         return get(spec -> spec.queryParam("active", active)
                 .queryParam("search", search)
                 .queryParam("from", from)
                 .queryParam("count", count)
-                .queryParam("disabled", disabled), FIND_USER).as(FilteredResultVO.class);
+                .queryParam("disabled", disabled)
+                .queryParam("excludedGroupId", excludedGroupId), FIND_USER).as(FilteredResultVO.class);
     }
 
     /**

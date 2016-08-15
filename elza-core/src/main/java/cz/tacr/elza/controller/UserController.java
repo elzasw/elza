@@ -240,13 +240,14 @@ public class UserController {
                                                 @RequestParam("active") final Boolean active,
                                                 @RequestParam("disabled") final Boolean disabled,
                                                 @RequestParam("from") final Integer from,
-                                                @RequestParam("count") final Integer count
+                                                @RequestParam("count") final Integer count,
+                                                @RequestParam(value = "excludedGroupId", required = false) final Integer excludedGroupId
     ) {
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
         }
 
-        FilteredResult<UsrUser> users = userService.findUser(search, active, disabled, from, count);
+        FilteredResult<UsrUser> users = userService.findUser(search, active, disabled, from, count, excludedGroupId);
         List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList());
         return new FilteredResultVO<>(resultVo, users.getTotalCount());
     }

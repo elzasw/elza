@@ -1,18 +1,16 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrOutputFile;
-import cz.tacr.elza.domain.ArrOutputResult;
-import cz.tacr.elza.domain.DmsFile;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventStringInVersion;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -21,9 +19,24 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.io.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrOutputFile;
+import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.DmsFile;
+import cz.tacr.elza.repository.FileRepository;
+import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundFileRepository;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.OutputFileRepository;
+import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventStringInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
  * Dms Service
@@ -35,7 +48,6 @@ import java.util.zip.ZipOutputStream;
 public class DmsService {
 
     public static final String MIME_TYPE_APPLICATION_PDF = "application/pdf";
-    public static final String MIME_TYPE_TEXT_CVS = "text/csv";
 
     /**
      * Složka se soubory DMS
@@ -266,7 +278,7 @@ public class DmsService {
      * @param file dms file
      * @return cesta
      */
-    public String getFilePath(DmsFile file) {
+    public String getFilePath(final DmsFile file) {
         return dmsFileDirectory + File.separator + file.getFileId();
     }
 
@@ -276,7 +288,7 @@ public class DmsService {
      * @param fileId id souboru
      * @return soubor
      */
-    public DmsFile getFile(Integer fileId) {
+    public DmsFile getFile(final Integer fileId) {
         Assert.notNull(fileId);
         return fileRepository.getOneCheckExist(fileId);
     }
@@ -289,7 +301,7 @@ public class DmsService {
      * @param count  počet
      * @return filtrovaný list
      */
-    public FilteredResult<DmsFile> findDmsFiles(String search, Integer from, Integer count) {
+    public FilteredResult<DmsFile> findDmsFiles(final String search, final Integer from, final Integer count) {
         return fileRepository.findByText(search, from, count);
     }
 
@@ -320,12 +332,12 @@ public class DmsService {
      * @return filtrovaný list
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL})
-    public FilteredResult<ArrOutputFile> findOutputFiles(String search, Integer outputResultId, Integer from, Integer count) {
+    public FilteredResult<ArrOutputFile> findOutputFiles(final String search, final Integer outputResultId, final Integer from, final Integer count) {
         Assert.notNull(outputResultId);
         return outputFileRepository.findByTextAndResult(search, outputResultRepository.getOneCheckExist(outputResultId), from, count);
     }
 
-    public File getOutputFilesZip(ArrOutputResult result) {
+    public File getOutputFilesZip(final ArrOutputResult result) {
 
         File file = null;
         FileOutputStream fos = null;
@@ -381,7 +393,7 @@ public class DmsService {
      * @param file     zdrojový soubor
      * @param zos      stream zip souboru
      */
-    private void addToZipFile(String fileName, File file, ZipOutputStream zos) throws IOException {
+    private void addToZipFile(final String fileName, final File file, final ZipOutputStream zos) throws IOException {
         FileInputStream fis = new FileInputStream(file);
         ZipEntry zipEntry = new ZipEntry(fileName);
         zos.putNextEntry(zipEntry);

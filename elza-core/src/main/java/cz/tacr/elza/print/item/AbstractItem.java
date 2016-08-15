@@ -3,7 +3,7 @@ package cz.tacr.elza.print.item;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.print.ItemSpec;
 import cz.tacr.elza.print.ItemType;
-import cz.tacr.elza.print.Node;
+import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Output;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -22,17 +22,17 @@ import javax.validation.constraints.NotNull;
 public abstract class AbstractItem<T> implements Item<T> {
     private final ArrItem arrItem; // odkaz na zdrojovou položku
     private final Output output; // vazba na output
-    private final Node node; // vazba na node, může být null, v takovém případě patří přímo k output
+    private final NodeId nodeId; // vazba na node, může být null, v takovém případě patří přímo k output
 
     private ItemType type;
     private ItemSpec specification;
     private Integer position;
     private T value;
 
-    protected AbstractItem(@NotNull ArrItem arrItem, @NotNull Output output, Node node) {
+    protected AbstractItem(@NotNull ArrItem arrItem, @NotNull Output output, NodeId nodeId) {
         this.arrItem = arrItem;
         this.output = output;
-        this.node = node;
+        this.nodeId = nodeId;
     }
 
     @Override
@@ -62,8 +62,8 @@ public abstract class AbstractItem<T> implements Item<T> {
         return arrItem;
     }
 
-    public Node getNode() {
-        return node;
+    public NodeId getNodeId() {
+        return nodeId;
     }
 
     public Output getOutput() {

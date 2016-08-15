@@ -3,7 +3,7 @@ package cz.tacr.elza.print.item;
 
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.print.Node;
+import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Output;
 
 import java.io.File;
@@ -21,8 +21,8 @@ public class ItemFile extends AbstractItem<File> {
     private String mimeType;
     private Integer pagesCount;
 
-    public ItemFile(ArrItem arrItem, Output output, Node node, ArrFile value) {
-        super(arrItem, output, node);
+    public ItemFile(ArrItem arrItem, Output output, NodeId nodeId, ArrFile value) {
+        super(arrItem, output, nodeId);
         setValue(value.getFile());
         this.fileId = value.getFileId();
     }

@@ -13,6 +13,7 @@ import java.util.List;
  */
 @Entity(name = "arr_output_result")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"outputDefinitionId"}))
 public class ArrOutputResult implements cz.tacr.elza.api.ArrOutputResult<ArrOutputDefinition, RulTemplate, ArrChange, ArrOutputFile> {
 
     @Id

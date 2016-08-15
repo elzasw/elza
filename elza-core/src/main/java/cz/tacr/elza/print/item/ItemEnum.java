@@ -1,7 +1,7 @@
 package cz.tacr.elza.print.item;
 
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.print.Node;
+import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Output;
 
 /**
@@ -10,8 +10,8 @@ import cz.tacr.elza.print.Output;
  */
 public class ItemEnum extends AbstractItem<String> {
 
-    public ItemEnum(ArrItem arrItem, Output output, Node node, String value) {
-        super(arrItem, output, node);
+    public ItemEnum(ArrItem arrItem, Output output, NodeId nodeId, String value) {
+        super(arrItem, output, nodeId);
         setValue(value);
     }
 

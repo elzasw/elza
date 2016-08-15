@@ -1,19 +1,11 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +50,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     }
 
     @Override
-    public FilteredResult<UsrUser> findUserByTextAndStateCount(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults) {
+    public FilteredResult<UsrUser> findUserByTextAndStateCount(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
         CriteriaQuery<UsrUser> query = builder.createQuery(UsrUser.class);
@@ -81,6 +73,23 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             query.where(condition).orderBy(order1, order2);
 
             queryCount.where(conditionCount);
+        }
+
+        if (excludedGroupId != null) {
+            final Subquery<UsrUser> subquery = query.subquery(UsrUser.class);
+            final Root<UsrGroupUser> groupUserSubq = subquery.from(UsrGroupUser.class);
+            subquery.select(groupUserSubq.get(UsrGroupUser.USER_ID));
+            subquery.where(builder.equal(groupUserSubq.get(UsrGroupUser.GROUP_ID), excludedGroupId));
+
+            query.where(builder.not(builder.in(user.get(UsrUser.USER_ID)).value(subquery)));
+
+
+            final Subquery<UsrUser> subqueryCount = queryCount.subquery(UsrUser.class);
+            final Root<UsrGroupUser> groupUserCountSubq = subqueryCount.from(UsrGroupUser.class);
+            subqueryCount.select(groupUserCountSubq.get(UsrGroupUser.USER_ID));
+            subqueryCount.where(builder.equal(groupUserCountSubq.get(UsrGroupUser.GROUP_ID), excludedGroupId));
+
+            queryCount.where(builder.not(builder.in(userCount.get(UsrUser.USER_ID)).value(subqueryCount)));
         }
 
         List<UsrUser> list = entityManager.createQuery(query)

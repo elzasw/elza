@@ -29,7 +29,7 @@ public class UserControllerTest extends AbstractControllerTest {
     public static final String USER = "user1";
     public static final String PASS = "pass";
     public static final String PASS_NEW = "pass_new";
-    public static final String NAME_GROUP_CHANGe = "Skupina 1x";
+    public static final String NAME_GROUP_CHANGE = "Skupina 1x";
     public static final String DESCRIPTION = "popis";
     public static final String GROUP_NAME = "Skupina 1";
     public static final String GROUP_CODE = "SK1";
@@ -51,7 +51,7 @@ public class UserControllerTest extends AbstractControllerTest {
         UsrUserVO user = createUser();
 
         // vyhledání uživatele
-        FilteredResultVO<UsrUserVO> dataUser = findUser(null, true, true, 0, 10);
+        FilteredResultVO<UsrUserVO> dataUser = findUser(null, true, true, 0, 10, null);
         Assert.notNull(dataUser);
         Assert.isTrue(dataUser.getTotalCount() == 1);
         Assert.isTrue(dataUser.getList().get(0).getId().equals(user.getId()));
@@ -77,10 +77,10 @@ public class UserControllerTest extends AbstractControllerTest {
         Assert.notNull(group);
         Assert.notNull(group.getId());
 
-        UsrGroupVO groupChange = changeGroup(group.getId(), new UserController.ChangeGroup(NAME_GROUP_CHANGe, DESCRIPTION));
+        UsrGroupVO groupChange = changeGroup(group.getId(), new UserController.ChangeGroup(NAME_GROUP_CHANGE, DESCRIPTION));
         Assert.notNull(groupChange);
         Assert.isTrue(groupChange.getId().equals(group.getId()));
-        Assert.isTrue(groupChange.getName().equals(NAME_GROUP_CHANGe));
+        Assert.isTrue(groupChange.getName().equals(NAME_GROUP_CHANGE));
         Assert.isTrue(groupChange.getDescription().equals(DESCRIPTION));
 
         // vyhledání skupiny
@@ -93,7 +93,16 @@ public class UserControllerTest extends AbstractControllerTest {
         groupIds.add(group.getId());
         Set<Integer> userIds = new HashSet<>();
         userIds.add(user.getId());
+
+        //Kontrola počtu uživatelů před přidáním
+        FilteredResultVO<UsrUserVO> findUsers = findUser(null, true, false, 0, 10, group.getId());
+        Assert.isTrue(findUsers.getTotalCount() == 1);
+
         joinGroup(groupIds, userIds);
+
+        //Konstrola počtu uživatelů s vynechanou skupinou po přidání do skupiny
+        findUsers = findUser(null, true, false, 0, 10, group.getId());
+        Assert.isTrue(findUsers.getTotalCount() == 0);
 
         group = getGroup(group.getId());
         Assert.isTrue(group.getUsers().size() == 1);

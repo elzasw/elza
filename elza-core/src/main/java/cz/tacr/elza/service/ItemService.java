@@ -1046,4 +1046,15 @@ public class ItemService implements InitializingBean {
 
         BeanUtils.copyProperties(from, to, ignoreProperties);
     }
+
+    /**
+     * Načte z DB item dle příslušného typu
+     *
+     * @param itemId ID požadovaného itemu
+     * @return item dle příslušného typu
+     */
+    public ArrItem loadDataById(Integer itemId) {
+        final ArrItem arrItem = itemRepository.findOne(itemId);
+        return loadData(arrItem);
+    }
 }
