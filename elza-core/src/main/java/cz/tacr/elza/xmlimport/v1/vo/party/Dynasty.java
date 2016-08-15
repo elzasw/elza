@@ -21,11 +21,15 @@ public class Dynasty extends AbstractParty {
     @XmlElement(name = "genealogy", required = true)
     private String genealogy;
 
+    public Dynasty() {
+        super(PartyType.DYNASTY);
+    }
+
     public String getGenealogy() {
         return genealogy;
     }
 
-    public void setGenealogy(String genealogy) {
+    public void setGenealogy(final String genealogy) {
         this.genealogy = genealogy;
     }
 }

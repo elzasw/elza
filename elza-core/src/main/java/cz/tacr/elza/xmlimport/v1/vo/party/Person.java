@@ -16,4 +16,7 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 @XmlType(name = "person", namespace = NamespaceInfo.NAMESPACE)
 public class Person extends AbstractParty {
 
+    public Person() {
+        super(PartyType.PERSON);
+    }
 }

@@ -225,7 +225,7 @@
     </record>
   </record-list>
   <party-list>
-    <person party-id="partyId-0" record-id="recordId-0" party-type-code="PERSON">
+    <person party-id="partyId-0" record-id="recordId-0">
       <preferred-name party-name-form-type-code="1">
         <main-part>mainPart 0</main-part>
         <other-part>otherPart 0</other-part>
@@ -297,7 +297,7 @@
       </relation-list>
       <characteristics>characteristics</characteristics>
     </person>
-    <dynasty party-id="partyId-1" record-id="recordId-1" party-type-code="DYNASTY">
+    <dynasty party-id="partyId-1" record-id="recordId-1">
       <preferred-name party-name-form-type-code="7">
         <main-part>mainPart 1</main-part>
         <other-part>otherPart 1</other-part>
@@ -373,7 +373,7 @@
       <characteristics>characteristics</characteristics>
       <genealogy>rod</genealogy>
     </dynasty>
-    <event party-id="partyId-2" record-id="recordId-2" party-type-code="EVENT">
+    <event party-id="partyId-2" record-id="recordId-2">
       <preferred-name party-name-form-type-code="23">
         <main-part>mainPart 2</main-part>
         <other-part>otherPart 2</other-part>
@@ -539,7 +539,7 @@
       </relation-list>
       <characteristics>characteristics</characteristics>
     </event>
-    <party-group party-id="partyId-3" record-id="recordId-3" party-type-code="GROUP_PARTY">
+    <party-group party-id="partyId-3" record-id="recordId-3">
       <institution internal-code="in1" type-code="DEFAULT"/>
       <preferred-name party-name-form-type-code="3">
         <main-part>mainPart 3</main-part>

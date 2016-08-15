@@ -16,4 +16,8 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 @XmlType(name = "event", namespace = NamespaceInfo.NAMESPACE)
 public class Event extends AbstractParty {
 
+    public Event() {
+        super(PartyType.EVENT);
+    }
+
 }

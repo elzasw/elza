@@ -17,9 +17,6 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.xml.bind.JAXBException;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemJsonTable;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -35,21 +32,72 @@ import com.vividsolutions.jts.io.WKTReader;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.api.vo.XmlImportType;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParCreator;
+import cz.tacr.elza.domain.ParDynasty;
+import cz.tacr.elza.domain.ParEvent;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.ParInstitutionType;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroup;
+import cz.tacr.elza.domain.ParPartyGroupIdentifier;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPerson;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.RegExternalSource;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
 import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
@@ -85,6 +133,7 @@ import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemDecimal;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemEnum;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemFormattedText;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemInteger;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemJsonTable;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPacketRef;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPartyRef;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemRecordRef;
@@ -1045,7 +1094,9 @@ public class XmlImportService {
     }
 
     private void importPartyNames(final AbstractParty party, final ParParty parParty, final boolean stopOnError) throws InvalidDataException, PartyImportException {
-        ParPartyName parPartyName = importPartyName(party.getPreferredName(), parParty, stopOnError);
+        List<ParComplementType> partyComplementTypes = complementTypeRepository.findComplementTypesByPartyType(parParty.getPartyType());
+
+        ParPartyName parPartyName = importPartyName(party.getPreferredName(), parParty, stopOnError, partyComplementTypes);
         parParty.setPreferredName(parPartyName);
 
 
@@ -1053,7 +1104,7 @@ public class XmlImportService {
         if (variantNames != null) {
             List<ParPartyName> partyNames = new ArrayList<ParPartyName>(variantNames.size());
             for (PartyName variantName : variantNames) {
-                ParPartyName newPartyName = importPartyName(variantName, parParty, stopOnError);
+                ParPartyName newPartyName = importPartyName(variantName, parParty, stopOnError, partyComplementTypes);
                 partyNames.add(newPartyName);
             }
 
@@ -1107,7 +1158,8 @@ public class XmlImportService {
         return parDynasty;
     }
 
-    private void fillCommonAttributes(final ParParty parParty, final AbstractParty party, final Map<String, RegRecord> xmlIdIntIdRecordMap)
+    private void fillCommonAttributes(final ParParty parParty, final AbstractParty party,
+            final Map<String, RegRecord> xmlIdIntIdRecordMap)
         throws PartyImportException, InvalidDataException {
         String partyTypeCode = party.getPartyTypeCode();
         ParPartyType partyType = partyTypeRepository.findPartyTypeByCode(partyTypeCode);
@@ -1121,6 +1173,12 @@ public class XmlImportService {
         RegRecord regRecord = xmlIdIntIdRecordMap.get(recordId);
         if (regRecord == null) {
             throw new IllegalStateException("Rejsříkové heslo s identifikátorem " + recordId + " nebylo nalezeno.");
+        }
+
+        ParPartyType registerPartyType = regRecord.getRegisterType().getPartyType();
+        if (registerPartyType != null && !registerPartyType.equals(partyType)) {
+            throw new IllegalStateException("Typ osoby " + partyType.getCode()
+                + " se neshoduje s typem osoby na rejstříku osoby " + registerPartyType.getCode());
         }
         parParty.setRecord(regRecord);
 
@@ -1136,7 +1194,7 @@ public class XmlImportService {
         parParty.setTo(importComplexDate(party.getFromDate()));
     }
 
-    private ParPartyName importPartyName(final PartyName partyName, final ParParty parParty, final boolean stopOnError) throws InvalidDataException, PartyImportException {
+    private ParPartyName importPartyName(final PartyName partyName, final ParParty parParty, final boolean stopOnError, final List<ParComplementType> partyComplementTypes) throws InvalidDataException, PartyImportException {
         ParPartyName parPartyName = new ParPartyName();
 
         parPartyName.setNote(partyName.getNote());
@@ -1162,7 +1220,7 @@ public class XmlImportService {
             List<ParPartyNameComplement> parPartyNameComplements = new ArrayList<ParPartyNameComplement>(partyNameComplements.size());
             for (PartyNameComplement partyNameComplement : partyNameComplements) {
                 try {
-                    ParPartyNameComplement parPartyNameComplement = createPartyNameComplement(parPartyName, partyNameComplement, stopOnError);
+                    ParPartyNameComplement parPartyNameComplement = createPartyNameComplement(parPartyName, partyNameComplement, stopOnError, partyComplementTypes);
 
                     partyNameComplementRepository.save(parPartyNameComplement);
                     parPartyNameComplements.add(parPartyNameComplement);
@@ -1183,12 +1241,16 @@ public class XmlImportService {
     }
 
     private ParPartyNameComplement createPartyNameComplement(final ParPartyName parPartyName,
-            final PartyNameComplement partyNameComplement, final boolean stopOnError) throws PartyImportException, InvalidDataException {
+            final PartyNameComplement partyNameComplement, final boolean stopOnError,
+            final List<ParComplementType> partyComplementTypes) throws PartyImportException, InvalidDataException {
         ParPartyNameComplement parPartyNameComplement = new ParPartyNameComplement();
         parPartyNameComplement.setComplement(XmlImportUtils.trimStringValue(partyNameComplement.getComplement(), StringLength.LENGTH_1000, stopOnError));
 
         String partyNameComplementTypeCode = partyNameComplement.getPartyNameComplementTypeCode();
-        ParComplementType parComplementType = complementTypeRepository.findByCode(partyNameComplementTypeCode);
+        ParComplementType parComplementType = partyComplementTypes.stream().
+                filter(ct -> ct.getCode().equals(partyNameComplementTypeCode)).
+                findFirst().
+                get();
         if (parComplementType == null) {
             throw new PartyImportException("Neexistuje typ doplňku jména s kódem " + partyNameComplementTypeCode);
         }

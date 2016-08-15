@@ -7,7 +7,6 @@ import org.apache.commons.lang.math.RandomUtils;
 
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.RegExternalSource;
@@ -45,8 +44,6 @@ public class XmlDataGeneratorConfig {
     private int packetCount;
     /** Konec nastavení. */
 
-    private List<ParPartyType> partyTypes;
-
     private List<ParPartyNameFormType> partyNameFormTypes;
 
     private List<ParComplementType> complementTypes;
@@ -80,7 +77,7 @@ public class XmlDataGeneratorConfig {
         return recordCount;
     }
 
-    public void setRecordCount(int recordCount) {
+    public void setRecordCount(final int recordCount) {
         this.recordCount = recordCount;
     }
 
@@ -88,7 +85,7 @@ public class XmlDataGeneratorConfig {
         return variantRecordCount;
     }
 
-    public void setVariantRecordCount(int variantRecordCount) {
+    public void setVariantRecordCount(final int variantRecordCount) {
         this.variantRecordCount = variantRecordCount;
     }
 
@@ -96,7 +93,7 @@ public class XmlDataGeneratorConfig {
         return partyCount;
     }
 
-    public void setPartyCount(int partyCount) {
+    public void setPartyCount(final int partyCount) {
         this.partyCount = partyCount;
     }
 
@@ -104,7 +101,7 @@ public class XmlDataGeneratorConfig {
         return childrenCount;
     }
 
-    public void setChildrenCount(int childrenCount) {
+    public void setChildrenCount(final int childrenCount) {
         this.childrenCount = childrenCount;
     }
 
@@ -112,7 +109,7 @@ public class XmlDataGeneratorConfig {
         return treeDepth;
     }
 
-    public void setTreeDepth(int treeDepth) {
+    public void setTreeDepth(final int treeDepth) {
         this.treeDepth = treeDepth;
     }
 
@@ -120,7 +117,7 @@ public class XmlDataGeneratorConfig {
         return descItemsCount;
     }
 
-    public void setDescItemsCount(int descItemsCount) {
+    public void setDescItemsCount(final int descItemsCount) {
         this.descItemsCount = descItemsCount;
     }
 
@@ -128,7 +125,7 @@ public class XmlDataGeneratorConfig {
         return valid;
     }
 
-    public void setValid(boolean valid) {
+    public void setValid(final boolean valid) {
         this.valid = valid;
     }
 
@@ -136,7 +133,7 @@ public class XmlDataGeneratorConfig {
         return eventCount;
     }
 
-    public void setEventCount(int eventCount) {
+    public void setEventCount(final int eventCount) {
         this.eventCount = eventCount;
     }
 
@@ -144,7 +141,7 @@ public class XmlDataGeneratorConfig {
         return partyGroupIdCount;
     }
 
-    public void setPartyGroupIdCount(int partyGroupIdCount) {
+    public void setPartyGroupIdCount(final int partyGroupIdCount) {
         this.partyGroupIdCount = partyGroupIdCount;
     }
 
@@ -152,24 +149,12 @@ public class XmlDataGeneratorConfig {
         return partyNameComplementsCount;
     }
 
-    public void setPartyNameComplementsCount(int partyNameComplementsCount) {
+    public void setPartyNameComplementsCount(final int partyNameComplementsCount) {
         this.partyNameComplementsCount = partyNameComplementsCount;
     }
 
     public int getPacketCount() {
         return packetCount;
-    }
-
-    public String getRandomPartyTypeCode() {
-        if (CollectionUtils.isEmpty(partyTypes)) {
-            return "partyTypeCode " + RandomUtils.nextInt();
-        }
-
-        return partyTypes.get(RandomUtils.nextInt(partyTypes.size())).getCode();
-    }
-
-    public void setPartyTypes(List<ParPartyType> partyTypes) {
-        this.partyTypes = partyTypes;
     }
 
     public String getRandomPartyNameFormTypeCode() {
@@ -180,7 +165,7 @@ public class XmlDataGeneratorConfig {
         return partyNameFormTypes.get(RandomUtils.nextInt(partyNameFormTypes.size())).getCode();
     }
 
-    public void setPartyNameFormTypes(List<ParPartyNameFormType> partyNameFormTypes) {
+    public void setPartyNameFormTypes(final List<ParPartyNameFormType> partyNameFormTypes) {
         this.partyNameFormTypes = partyNameFormTypes;
     }
 
@@ -192,7 +177,7 @@ public class XmlDataGeneratorConfig {
         return complementTypes.get(RandomUtils.nextInt(complementTypes.size())).getCode();
     }
 
-    public void setComplementTypes(List<ParComplementType> complementTypes) {
+    public void setComplementTypes(final List<ParComplementType> complementTypes) {
         this.complementTypes = complementTypes;
     }
 
@@ -204,7 +189,7 @@ public class XmlDataGeneratorConfig {
         return relationTypes.get(RandomUtils.nextInt(relationTypes.size()));
     }
 
-    public void setRelationTypes(List<ParRelationType> relationTypes) {
+    public void setRelationTypes(final List<ParRelationType> relationTypes) {
         this.relationTypes = relationTypes;
     }
 
@@ -216,7 +201,7 @@ public class XmlDataGeneratorConfig {
         return relationRoleTypes.get(RandomUtils.nextInt(relationRoleTypes.size())).getCode();
     }
 
-    public void setRelationRoleTypes(List<ParRelationRoleType> relationRoleTypes) {
+    public void setRelationRoleTypes(final List<ParRelationRoleType> relationRoleTypes) {
         this.relationRoleTypes = relationRoleTypes;
     }
 
@@ -228,7 +213,7 @@ public class XmlDataGeneratorConfig {
         return registerTypes.get(RandomUtils.nextInt(registerTypes.size())).getCode();
     }
 
-    public void setRegisterTypes(List<RegRegisterType> registerTypes) {
+    public void setRegisterTypes(final List<RegRegisterType> registerTypes) {
         this.registerTypes = registerTypes;
     }
 
@@ -240,7 +225,7 @@ public class XmlDataGeneratorConfig {
         return externalSources.get(RandomUtils.nextInt(externalSources.size())).getCode();
     }
 
-    public void setExternalSources(List<RegExternalSource> externalSources) {
+    public void setExternalSources(final List<RegExternalSource> externalSources) {
         this.externalSources = externalSources;
     }
 
