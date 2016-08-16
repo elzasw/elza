@@ -95,14 +95,17 @@ const AddPartyForm = class AddPartyForm extends AbstractReactComponent {
         this.dispatch(requestScopesIfNeeded(null));
 
         const scope = scopes.filter(i => i.versionId === null);
-        !this.state.initialized &&
-        partyNameFormTypes.fetched &&
-        !partyNameFormTypes.isFetching &&
-        partyTypes.fetched &&
-        !partyTypes.isFetching &&
-        scope.length > 0 &&
-        this.loadData(props);
 
+        // Inicializace pokud všechny podmínky OK pak spustí loadData
+        !this.state.initialized &&
+            partyNameFormTypes.fetched &&
+            !partyNameFormTypes.isFetching &&
+            partyTypes.fetched &&
+            !partyTypes.isFetching &&
+            scopes.length > 0 &&
+            scope.length > 0 &&
+            !scope[0].isFetching &&
+            this.loadData(props);
     }
 
     /**
@@ -231,7 +234,7 @@ const AddPartyForm = class AddPartyForm extends AbstractReactComponent {
     }
 }
 
-module.exports = reduxForm({
+export default reduxForm({
         form: 'addPartyForm',
         fields: fields,
     }, state => ({
@@ -240,4 +243,4 @@ module.exports = reduxForm({
         recordTypes: state.registryRegionRecordTypes
     }),
     {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addPartyForm', data}),}
-)(AddPartyForm)
+)(AddPartyForm);

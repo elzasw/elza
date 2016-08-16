@@ -69,8 +69,8 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
         this.dispatch(fundSubNodeRegisterValueAdd(this.props.versionId, this.props.selectedSubNodeId, this.props.routingKey));
     }
 
-    handleChange(index, recordId) {
-        this.dispatch(fundSubNodeRegisterValueChange(this.props.versionId, this.props.selectedSubNodeId, this.props.routingKey, index, recordId));
+    handleChange(index, record) {
+        this.dispatch(fundSubNodeRegisterValueChange(this.props.versionId, this.props.selectedSubNodeId, this.props.routingKey, index, record));
     }
 
     handleDetail(index, recordId) {
@@ -93,7 +93,7 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
 
     renderLink(link, index) {
         const {closed, versionId} = this.props;
-        console.log(link);
+
         return (
                 <div className="link" key={"link-" + index}>
                     <NodeRegister onFocus={this.handleFocus.bind(this, index)}
@@ -103,6 +103,7 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
                                   closed={closed}
                                   onCreateRecord={this.handleCreateRecord.bind(this, index)}
                                   item={link}
+                                  value={link.value ? link.value : null}
                                   versionId={versionId} />
                     {!closed && <NoFocusButton key="delete" onClick={this.handleRemove.bind(this, index)} ><Icon glyph="fa-times" /></NoFocusButton>}
                 </div>
@@ -112,16 +113,10 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     renderForm() {
         const {register, closed} = this.props;
 
-        var links = [];
-        console.log(register.formData);
-        register.formData.nodeRegisters.forEach((link, index) => links.push(this.renderLink(link, index)));
-
-        return (
-                <div className="register-form">
-                    <div className='links'>{links}</div>
-                    {!closed && <div className='action'><NoFocusButton onClick={this.handleAddClick}><Icon glyph="fa-plus" /></NoFocusButton></div>}
-                </div>
-        );
+        return <div className="register-form">
+            <div className='links'>{register.formData.nodeRegisters.map(this.renderLink)}</div>
+            {!closed && <div className='action'><NoFocusButton onClick={this.handleAddClick}><Icon glyph="fa-plus" /></NoFocusButton></div>}
+        </div>
 
     }
 
@@ -129,18 +124,10 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
 
         const {register} = this.props;
 
-        var form;
-
-        if (register.fetched) {
-            form = this.renderForm();
-        } else {
-            form = <Loading value={i18n('global.data.loading.register')} />
-        }
-
         return (
             <div className='node-register'>
                 <div className='node-register-title'>{i18n('subNodeRegister.title')}</div>
-                {form}
+                {register.fetched ? this.renderForm() : <Loading value={i18n('global.data.loading.register')} />}
             </div>
         )
     }
@@ -148,7 +135,7 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
 
 function mapStateToProps(state) {
     const {arrRegion} = state
-    var fund = null;
+    let fund = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
     }

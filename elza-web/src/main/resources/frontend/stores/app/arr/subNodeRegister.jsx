@@ -2,62 +2,50 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {i18n} from 'components/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 
-function getLoc(state, index) {
-    return {link: state.formData.nodeRegisters[index]};
-}
+const getLoc = (state, index)  => ({link: {...state.formData.nodeRegisters[index]}})
 
 const initialState = {
     isFetching: false,
     fetched: false,
     dirty: false,
-    data: null,
-    getLoc: getLoc
-}
+    //data: null,
+    formData: {
+        node: null,
+        nodeRegisters: null
+    },
+    getLoc
+};
 
-function updateFormData(state) {
-
-    var formData = {nodeRegisters: [], node: state.data.node};
-
-    state.data.nodeRegisters.forEach(item => {
-
-        var formItem = {
-            ...item,
-            prevValue: item.value,
-            hasFocus: false,
-            touched: false,
-            visited: false,
-            error: {hasError:false}
-        }
-
-        formData.nodeRegisters.push(formItem);
-    });
-
-    state.formData = formData;
-}
-
-export default function subNodeRegister(state = initialState, action) {
+export default function subNodeRegister(state = initialState, action = {}) {
     switch (action.type) {
-
         case types.FUND_SUB_NODE_REGISTER_REQUEST:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 isFetching: true,
-            })
-
+            };
         case types.FUND_SUB_NODE_REGISTER_RECEIVE:
-            var result = Object.assign({}, state, {
+            return {
+                ...state,
                 isFetching: false,
                 fetched: true,
                 dirty: false,
-                data: action.data,
-            });
+                //data: action.data,
+                formData: {
+                    ...state.formData,
+                    node: action.data.node,
+                    nodeRegisters: action.data.nodeRegisters.map(item => ({
+                        ...item,
+                        prevValue: item.value,
+                        hasFocus: false,
+                        touched: false,
+                        visited: false,
+                        error: {hasError: false}
+                    })),
+                }
+            };
+        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:{
 
-            updateFormData(result);
-
-            return result;
-
-        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:
-
-            var loc = getLoc(state, action.index);
+            const loc = getLoc(state, action.index);
 
             switch (action.operationType) {
                 case 'DELETE':
@@ -72,70 +60,95 @@ export default function subNodeRegister(state = initialState, action) {
                     break;
             }
 
-            state.formData.nodeRegisters.forEach(link => link.node = action.data.node);
-            state.formData.node = action.data.node;
-            state.formData = {...state.formData};
-            return {...state};
-
+            return {
+                ...state,
+                formData: {
+                    node: action.data.node,
+                    nodeRegisters: state.formData.nodeRegisters.map(i => {i.node = action.data.node; return i})
+                }
+            }
+        }
         case types.FUND_SUB_NODE_REGISTER_VALUE_DELETE:
-
-            state.formData.nodeRegisters = [
-                ...state.formData.nodeRegisters.slice(0, action.index),
-                ...state.formData.nodeRegisters.slice(action.index + 1)
-            ];
-
-            return {...state};
-
+            return {
+                ...state,
+                formData: {
+                    nodeRegisters: [
+                        ...state.formData.nodeRegisters.slice(0, action.index),
+                        ...state.formData.nodeRegisters.slice(action.index + 1)
+                    ]
+                }
+            };
         case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
-            var link = state.formData.nodeRegisters[action.index];
-            link.value = action.value;
-            link.touched = true;
-            state.formData.nodeRegisters[action.index] = link;
-            state.formData.nodeRegisters = [...state.formData.nodeRegisters];
-            return {...state};
-
+            return {
+                ...state,
+                formData: {
+                    nodeRegisters: [
+                        ...state.formData.nodeRegisters.slice(0, action.index),
+                        {
+                            ...state.formData.nodeRegisters[action.index],
+                            value: action.record.recordId,
+                            record: action.record,
+                            touched: true
+                        },
+                        ...state.formData.nodeRegisters.slice(action.index+1)
+                    ]
+                }
+            };
         case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
-
-            var link = state.formData.nodeRegisters[action.index];
-
-            link.visited = false;
-            link.hasFocus = false;
-
-            state.formData.nodeRegisters[action.index] = data;
-
-            return {...state}
-
+            return {
+                ...state,
+                formData: {
+                    nodeRegisters: [
+                        ...state.formData.nodeRegisters.slice(0, action.index),
+                        {
+                            ...state.formData.nodeRegisters[action.index],
+                            visited: false,
+                            hasFocus: false
+                        },
+                        ...state.formData.nodeRegisters.slice(action.index+1)
+                    ]
+                }
+            };
         case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
-
-            var link = state.formData.nodeRegisters[action.index];
-
-            link.visited = true;
-            link.hasFocus = true;
-            link.hasFocus = true;
-            link.hasFocus = true;
-
-            state.formData.nodeRegisters[action.index] = data;
-
-            return {...state}
-
-        case types.FUND_SUB_NODE_REGISTER_VALUE_ADD:
-
-            var formItem = {
-                node: state.formData.node,
+            return {
+                ...state,
+                formData: {
+                    nodeRegisters: [
+                        ...state.formData.nodeRegisters.slice(0, action.index),
+                        {
+                            ...state.formData.nodeRegisters[action.index],
+                            visited: true,
+                            hasFocus: true
+                        },
+                        ...state.formData.nodeRegisters.slice(action.index+1)
+                    ]
+                }
+            };
+        case types.FUND_SUB_NODE_REGISTER_VALUE_ADD:{
+            const formItem = {
+                node: {...state.formData.node},
+                nodeId: state.formData.node.id,
                 value: null,
                 prevValue: null,
                 hasFocus: false,
                 touched: false,
                 visited: false,
                 error: {hasError:false}
+            };
+
+            return {
+                ...state,
+                formData: {
+                    ...state.formData,
+                    nodeRegisters: [
+                        ...state.formData.nodeRegisters,
+                        formItem
+                    ]
+                }
             }
-
-            state.formData.nodeRegisters.push(formItem);
-
-            return {...state};
+        }
         case types.CHANGE_NODES:
-            return {...state, dirty: true}
-
+            return {...state, dirty: true};
         default:
             return state
     }

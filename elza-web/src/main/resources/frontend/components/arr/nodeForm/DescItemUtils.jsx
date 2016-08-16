@@ -17,8 +17,8 @@ export function _decorateValue(component, active, error, locked, additionalClass
         className: cls,
         title: error,
         disabled: locked,
-        onFocus: () => component.props.onFocus(),
-        onBlur: () => component.props.onBlur()
+        onFocus: (e) => component.props.onFocus(e),
+        onBlur: (e) => component.props.onBlur(e)
     }
 }
 /**

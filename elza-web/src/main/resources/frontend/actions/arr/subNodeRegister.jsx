@@ -21,8 +21,7 @@ export function isSubNodeRegisterAction(action) {
 
 export function fundSubNodeRegisterFetchIfNeeded(versionId, nodeId, routingKey) {
     return (dispatch, getState) => {
-        var state = getState();
-        var subNodeRegister = getSubNodeRegister(state, versionId, routingKey);
+        const subNodeRegister = getSubNodeRegister(getState(), versionId, routingKey);
         if (subNodeRegister != null) {
             if ((!subNodeRegister.fetched || subNodeRegister.dirty) && !subNodeRegister.isFetching) {
                 return dispatch(fundSubNodeRegisterFetch(versionId, nodeId, routingKey));
@@ -60,7 +59,7 @@ export function fundSubNodeRegisterRequest(versionId, nodeId, routingKey) {
 }
 
 function getSubNodeRegister(state, versionId, routingKey) {
-    var node = getNode(state, versionId, routingKey);
+    const node = getNode(state, versionId, routingKey);
     if (node !== null) {
         return node.subNodeRegister;
     } else {
@@ -69,7 +68,7 @@ function getSubNodeRegister(state, versionId, routingKey) {
 }
 
 function getNode(state, versionId, routingKey) {
-    var r = findByRoutingKeyInGlobalState(state, versionId, routingKey);
+    const r = findByRoutingKeyInGlobalState(state, versionId, routingKey);
     if (r != null) {
         return r.node;
     }
@@ -86,25 +85,21 @@ export function fundSubNodeRegisterValueAdd(versionId, nodeId, routingKey) {
     }
 }
 
-export function fundSubNodeRegisterValueChange(versionId, nodeId, routingKey, index, value) {
-    return (dispatch, getState) => {
-        dispatch({
-            type: types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE,
-            versionId,
-            nodeId,
-            routingKey,
-            index,
-            value,
-            dispatch
-        })
+export function fundSubNodeRegisterValueChange(versionId, nodeId, routingKey, index, record) {
+    return {
+        type: types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE,
+        versionId,
+        nodeId,
+        routingKey,
+        index,
+        record
     }
 }
 
 export function fundSubNodeRegisterValueDelete(versionId, nodeId, routingKey, index) {
     return (dispatch, getState) => {
-        var state = getState();
-        var subNodeRegister = getSubNodeRegister(state, versionId, routingKey);
-        var loc = subNodeRegister.getLoc(subNodeRegister, index);
+        const subNodeRegister = getSubNodeRegister(getState(), versionId, routingKey);
+        const loc = subNodeRegister.getLoc(subNodeRegister, index);
 
         dispatch({
             type: types.FUND_SUB_NODE_REGISTER_VALUE_DELETE,
@@ -115,7 +110,7 @@ export function fundSubNodeRegisterValueDelete(versionId, nodeId, routingKey, in
         })
 
         if (typeof loc.link.id !== 'undefined') {
-            fundSubNodeRegisterDelete(versionId, nodeId, loc.link);
+            fundSubNodeRegisterDelete(versionId, nodeId, loc.link, routingKey, index);
         }
     }
 }
@@ -132,7 +127,7 @@ export function fundSubNodeRegisterResponse(versionId, nodeId, routingKey, index
     }
 }
 
-export function fundSubNodeRegisterDelete(versionId, nodeId, data) {
+export function fundSubNodeRegisterDelete(versionId, nodeId, data, routingKey, index) {
     return (dispatch, getState) => {
         savingApiWrapper(dispatch, WebApi.deleteFundNodeRegister(versionId, nodeId, data)).then(json => {
             dispatch(fundSubNodeRegisterResponse(versionId, nodeId, routingKey, index, json, 'DELETE'));
@@ -140,7 +135,7 @@ export function fundSubNodeRegisterDelete(versionId, nodeId, data) {
     }
 }
 
-export function fundSubNodeRegisterCreate(versionId, nodeId, data) {
+export function fundSubNodeRegisterCreate(versionId, nodeId, data, routingKey, index) {
     return (dispatch, getState) => {
         savingApiWrapper(dispatch, WebApi.createFundNodeRegister(versionId, nodeId, data)).then(json => {
             dispatch(fundSubNodeRegisterResponse(versionId, nodeId, routingKey, index, json, 'CREATE'));
@@ -148,7 +143,7 @@ export function fundSubNodeRegisterCreate(versionId, nodeId, data) {
     }
 }
 
-export function fundSubNodeRegisterUpdate(versionId, nodeId, data) {
+export function fundSubNodeRegisterUpdate(versionId, nodeId, data, routingKey, index) {
     return (dispatch, getState) => {
         savingApiWrapper(dispatch, WebApi.updateFundNodeRegister(versionId, nodeId, data)).then(json => {
             dispatch(fundSubNodeRegisterResponse(versionId, nodeId, routingKey, index, json, 'UPDATE'));
@@ -177,24 +172,14 @@ export function fundSubNodeRegisterValueBlur(versionId, nodeId, routingKey, inde
             receivedAt: Date.now()
         });
 
-        var state = getState();
-        var subNodeRegister = getSubNodeRegister(state, versionId, routingKey);
-        var loc = subNodeRegister.getLoc(subNodeRegister, index);
-
+        const subNodeRegister = getSubNodeRegister(getState(), versionId, routingKey);
+        const loc = subNodeRegister.getLoc(subNodeRegister, index);
         if (!loc.link.error.hasError && loc.link.touched) {
-            if (typeof loc.link.id !== 'undefined') {
-                // Jen pokud se hodnota nebo specifikace změnila
-                var needUpdate = false;
-
-                if (loc.link.value != loc.link.prevValue) {
-                    needUpdate = true;
-                }
-
-                if (needUpdate) {
-                    dispatch(fundSubNodeRegisterUpdate(versionId, nodeId, loc.link))
-                }
+            // Jen pokud je již vytvořená a pokud se hodnota nebo specifikace změnila
+            if (typeof loc.link.id !== 'undefined' && loc.link.value != loc.link.prevValue) {
+                dispatch(fundSubNodeRegisterUpdate(versionId, nodeId, loc.link, routingKey, index))
             } else {
-                fundSubNodeRegisterCreate(versionId, nodeId, loc.link);
+                dispatch(fundSubNodeRegisterCreate(versionId, nodeId, loc.link, routingKey, index));
             }
         }
     }
