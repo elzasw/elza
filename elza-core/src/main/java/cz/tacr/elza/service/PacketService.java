@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
@@ -242,7 +243,16 @@ public class PacketService {
         Assert.notNull(packetIds);
         Assert.isTrue(packetIds.length > 0, "Musí být alespoň jeden ke smazání");
 
-        ObjectListIterator<Integer> packetIdsIterator = new ObjectListIterator<>(Arrays.asList(packetIds));
+        List<Integer> integers = Arrays.asList(packetIds);
+        List<ArrPacket> usePackets = dataPacketRefRepository.findUsePacketsByPacketIds(integers);
+
+        if (usePackets.size() > 0) {
+            throw new IllegalArgumentException("Nelze smazat obaly (" +
+                    String.join(", ", usePackets.stream().map(ArrPacket::getStorageNumber).collect(Collectors.toList()))
+                    + "), protože existují navázané entity.");
+        }
+
+        ObjectListIterator<Integer> packetIdsIterator = new ObjectListIterator<>(integers);
         while (packetIdsIterator.hasNext()) {
             packetRepository.deletePackets(fund, packetIdsIterator.next());
         }

@@ -10,10 +10,12 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.util.Assert;
 
 import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
@@ -41,7 +43,7 @@ public abstract class AbstractParty {
     private Record record;
 
     /** Kód typu osoby. */
-    @XmlAttribute(name = "party-type-code", required = true)
+    @XmlTransient
     private String partyTypeCode;
 
     /** Preferované jméno osoby. */
@@ -92,11 +94,20 @@ public abstract class AbstractParty {
     @XmlElement(name = "institution")
     private Institution institution;
 
+    public AbstractParty() {
+    }
+
+    public AbstractParty(final PartyType partyType) {
+        Assert.notNull(partyType);
+
+        this.partyTypeCode = partyType.getCode();
+    }
+
     public String getPartyId() {
         return partyId;
     }
 
-    public void setPartyId(String partyId) {
+    public void setPartyId(final String partyId) {
         this.partyId = partyId;
     }
 
@@ -104,23 +115,18 @@ public abstract class AbstractParty {
         return record;
     }
 
-    public void setRecord(Record record) {
+    public void setRecord(final Record record) {
         this.record = record;
     }
 
     public String getPartyTypeCode() {
         return partyTypeCode;
     }
-
-    public void setPartyTypeCode(String partyTypeCode) {
-        this.partyTypeCode = partyTypeCode;
-    }
-
     public PartyName getPreferredName() {
         return preferredName;
     }
 
-    public void setPreferredName(PartyName prefferedName) {
+    public void setPreferredName(final PartyName prefferedName) {
         this.preferredName = prefferedName;
     }
 
@@ -128,7 +134,7 @@ public abstract class AbstractParty {
         return fromDate;
     }
 
-    public void setFromDate(ComplexDate fromDate) {
+    public void setFromDate(final ComplexDate fromDate) {
         this.fromDate = fromDate;
     }
 
@@ -136,7 +142,7 @@ public abstract class AbstractParty {
         return toDate;
     }
 
-    public void setToDate(ComplexDate toDate) {
+    public void setToDate(final ComplexDate toDate) {
         this.toDate = toDate;
     }
 
@@ -144,7 +150,7 @@ public abstract class AbstractParty {
         return history;
     }
 
-    public void setHistory(String history) {
+    public void setHistory(final String history) {
         this.history = history;
     }
 
@@ -152,7 +158,7 @@ public abstract class AbstractParty {
         return sourceInformations;
     }
 
-    public void setSourceInformations(String sourceInformations) {
+    public void setSourceInformations(final String sourceInformations) {
         this.sourceInformations = sourceInformations;
     }
 
@@ -160,7 +166,7 @@ public abstract class AbstractParty {
         return variantNames;
     }
 
-    public void setVariantNames(List<PartyName> variantNames) {
+    public void setVariantNames(final List<PartyName> variantNames) {
         this.variantNames = variantNames;
     }
 
@@ -168,7 +174,7 @@ public abstract class AbstractParty {
         return creators;
     }
 
-    public void setCreators(List<AbstractParty> creators) {
+    public void setCreators(final List<AbstractParty> creators) {
         this.creators = creators;
     }
 
@@ -176,7 +182,7 @@ public abstract class AbstractParty {
         return events;
     }
 
-    public void setEvents(List<Relation> events) {
+    public void setEvents(final List<Relation> events) {
         this.events = events;
     }
 
@@ -184,7 +190,7 @@ public abstract class AbstractParty {
         return characteristics;
     }
 
-    public void setCharacteristics(String characteristics) {
+    public void setCharacteristics(final String characteristics) {
         this.characteristics = characteristics;
     }
 
@@ -192,7 +198,7 @@ public abstract class AbstractParty {
         return institution;
     }
 
-    public void setInstitution(Institution institution) {
+    public void setInstitution(final Institution institution) {
         this.institution = institution;
     }
 

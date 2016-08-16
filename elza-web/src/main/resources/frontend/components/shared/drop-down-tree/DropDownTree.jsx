@@ -269,7 +269,7 @@ const DropDownTree = class DropDownTree extends AbstractReactComponent {
         if (!this._ignoreBlur) {
             this.setState({hasFocus: false})
             this.closeMenu(true);
-            this.props.onBlur && this.props.onBlur(e);
+            this.props.onBlur && this.props.onBlur(this.state.value);
         } else {
             this._ignoreBlur = false;
         }
@@ -318,7 +318,6 @@ const DropDownTree = class DropDownTree extends AbstractReactComponent {
                 <Button
                     className='form-control'
                     onClick={this.handleOpenClose}
-                    onFocus={onFocus}
                     onFocus={this.handleFocus}
                     onBlur={this.handleBlur}
                     disabled={disabled}

@@ -237,13 +237,13 @@ const PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
         return  <div className="partyNames">
             <table>
                 <tbody>
-                    {party.partyNames.map(i=> {
+                    {party.partyNames.map(i => {
                         let cls = "name column";
                         if(i.prefferedName) {
                             cls += " text-bold";
                         }
 
-                        const allowedDeleteOrSelect = i.prefferedName || !canEdit;
+                        const allowedDeleteOrSelect = !i.prefferedName && canEdit;
                         return <tr key={'partyName' + i.partyNameId} className="name">
                         <td className={cls}>{i.displayName}</td>
                             <td className="buttons">

@@ -127,7 +127,7 @@ export function selectFundTab(fund) {
         const {stateRegion: {arrRegionFront}} = state;
         for (let a=0; a<arrRegionFront.length; a++) {
             const item = arrRegionFront[a];
-            if (item.id === fund.id) {
+            if (item.id === fund.id && item.versionId === fund.versionId) {
                 itemFound = item;
                 break;
             }
