@@ -75,7 +75,6 @@ const DropDownTree = class DropDownTree extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        console.log("will", nextProps.value);
         if (!(nextProps.preselect && this.preselectValue(nextProps))) {
             const label = this.getItemLabel(nextProps.value, nextProps.items);
             this.setState({
