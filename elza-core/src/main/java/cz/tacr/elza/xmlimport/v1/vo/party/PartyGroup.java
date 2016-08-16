@@ -41,11 +41,15 @@ public class PartyGroup extends AbstractParty {
     @XmlElementWrapper(name = "party-group-id-list")
     private List<PartyGroupId> partyGroupIds;
 
+    public PartyGroup() {
+        super(PartyType.PARTY_GROUP);
+    }
+
     public String getScope() {
         return scope;
     }
 
-    public void setScope(String scope) {
+    public void setScope(final String scope) {
         this.scope = scope;
     }
 
@@ -53,7 +57,7 @@ public class PartyGroup extends AbstractParty {
         return foundingNorm;
     }
 
-    public void setFoundingNorm(String foundingNorm) {
+    public void setFoundingNorm(final String foundingNorm) {
         this.foundingNorm = foundingNorm;
     }
 
@@ -61,7 +65,7 @@ public class PartyGroup extends AbstractParty {
         return scopeNorm;
     }
 
-    public void setScopeNorm(String scopeNorm) {
+    public void setScopeNorm(final String scopeNorm) {
         this.scopeNorm = scopeNorm;
     }
 
@@ -69,7 +73,7 @@ public class PartyGroup extends AbstractParty {
         return organization;
     }
 
-    public void setOrganization(String organization) {
+    public void setOrganization(final String organization) {
         this.organization = organization;
     }
 
@@ -77,7 +81,7 @@ public class PartyGroup extends AbstractParty {
         return partyGroupIds;
     }
 
-    public void setPartyGroupIds(List<PartyGroupId> partyGroupIds) {
+    public void setPartyGroupIds(final List<PartyGroupId> partyGroupIds) {
         this.partyGroupIds = partyGroupIds;
     }
 }

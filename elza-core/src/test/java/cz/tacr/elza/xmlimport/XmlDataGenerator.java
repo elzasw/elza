@@ -6,12 +6,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import cz.tacr.elza.api.ArrPacket;
 import org.apache.commons.lang.math.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.api.ArrPacket;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
@@ -113,7 +113,6 @@ public class XmlDataGenerator {
     }
 
     private void initValues(final XmlDataGeneratorConfig config) {
-        config.setPartyTypes(partyTypeRepository.findAll());
         config.setPartyNameFormTypes(partyNameFormTypeRepository.findAll());
         config.setComplementTypes(complementTypeRepository.findAll());
         config.setRelationTypes(relationTypeRepository.findAll());
@@ -134,7 +133,7 @@ public class XmlDataGenerator {
         return packets;
     }
 
-    private Packet createPacket(int index) {
+    private Packet createPacket(final int index) {
         Packet packet = new Packet();
 
         packet.setState(ArrPacket.State.OPEN);
@@ -154,8 +153,8 @@ public class XmlDataGenerator {
      *
      * @return archivní pomůcka
      */
-    private Fund createFund(final XmlDataGeneratorConfig config, List<Record> records, List<AbstractParty> parties,
-                            List<Packet> packets) {
+    private Fund createFund(final XmlDataGeneratorConfig config, final List<Record> records, final List<AbstractParty> parties,
+                            final List<Packet> packets) {
         Fund fa = new Fund();
         fa.setName("Import z XML");
         fa.setArrangementTypeCode("arr type code");
@@ -176,7 +175,7 @@ public class XmlDataGenerator {
      *
      * @return kořenový uzel
      */
-    private Level createLevelTree(List<Record> records, List<AbstractParty> parties, List<Packet> packets, XmlDataGeneratorConfig config) {
+    private Level createLevelTree(final List<Record> records, final List<AbstractParty> parties, final List<Packet> packets, final XmlDataGeneratorConfig config) {
         nodes++;
         Level rootLevel = new Level();
         rootLevel.setPosition(1);
@@ -198,8 +197,8 @@ public class XmlDataGenerator {
      *
      * @return hodnoty uzlu
      */
-    private List<AbstractDescItem> createDescItems(List<Record> records, List<AbstractParty> parties, List<Packet> packets,
-            XmlDataGeneratorConfig config) {
+    private List<AbstractDescItem> createDescItems(final List<Record> records, final List<AbstractParty> parties, final List<Packet> packets,
+            final XmlDataGeneratorConfig config) {
         List<AbstractDescItem> values = new ArrayList<AbstractDescItem>(config.getDescItemsCount());
 
         for (int i = 0; i < config.getDescItemsCount(); i++) {
@@ -248,7 +247,7 @@ public class XmlDataGenerator {
         return values;
     }
 
-    private DescItemCoordinates createValueCoordinates(int position) {
+    private DescItemCoordinates createValueCoordinates(final int position) {
         DescItemCoordinates value = new DescItemCoordinates();
         fillCommonValueFields(value, position);
         value.setValue("coordinates " + position);
@@ -256,7 +255,7 @@ public class XmlDataGenerator {
         return value;
     }
 
-    private DescItemDecimal createValueDecimal(int position, int descItemCount) {
+    private DescItemDecimal createValueDecimal(final int position, final int descItemCount) {
         DescItemDecimal value = new DescItemDecimal();
         fillCommonValueFields(value, position);
         value.setValue(new BigDecimal(descItemCount * position));
@@ -264,7 +263,7 @@ public class XmlDataGenerator {
         return value;
     }
 
-    private DescItemFormattedText createValueFormattedText(int position) {
+    private DescItemFormattedText createValueFormattedText(final int position) {
         DescItemFormattedText value = new DescItemFormattedText();
         fillCommonValueFields(value, position);
         value.setValue("formatted text " + position);
@@ -272,7 +271,7 @@ public class XmlDataGenerator {
         return value;
     }
 
-    private DescItemInteger createValueInteger(int position) {
+    private DescItemInteger createValueInteger(final int position) {
         DescItemInteger value = new DescItemInteger();
         fillCommonValueFields(value, position);
         value.setValue(position);
@@ -280,7 +279,7 @@ public class XmlDataGenerator {
         return value;
     }
 
-    private DescItemPartyRef createValuePartyRef(int position, List<AbstractParty> parties) {
+    private DescItemPartyRef createValuePartyRef(final int position, final List<AbstractParty> parties) {
         DescItemPartyRef value = new DescItemPartyRef();
         fillCommonValueFields(value, position);
 
@@ -289,7 +288,7 @@ public class XmlDataGenerator {
         return value;
     }
 
-    private DescItemRecordRef createValueRecordRef(int position, List<Record> records) {
+    private DescItemRecordRef createValueRecordRef(final int position, final List<Record> records) {
         DescItemRecordRef value = new DescItemRecordRef();
         fillCommonValueFields(value, position);
         value.setRecord(records.get(RandomUtils.nextInt(records.size())));
@@ -297,7 +296,7 @@ public class XmlDataGenerator {
         return value;
     }
 
-    private DescItemString createValueString(int position) {
+    private DescItemString createValueString(final int position) {
         DescItemString value = new DescItemString();
         fillCommonValueFields(value, position);
         value.setValue("string " + position);
@@ -305,7 +304,7 @@ public class XmlDataGenerator {
         return value;
     }
 
-    private DescItemText createValueText(int position) {
+    private DescItemText createValueText(final int position) {
         DescItemText value = new DescItemText();
         fillCommonValueFields(value, position);
         value.setValue("text " + position);
@@ -313,7 +312,7 @@ public class XmlDataGenerator {
         return value;
     }
 
-    private DescItemUnitDate createValueUnitDate(int position) {
+    private DescItemUnitDate createValueUnitDate(final int position) {
         DescItemUnitDate value = new DescItemUnitDate();
         fillCommonValueFields(value, position);
         value.setCalendarTypeCode("calendarTypeCode " + position);
@@ -325,7 +324,7 @@ public class XmlDataGenerator {
         return value;
     }
 
-    private DescItemUnitId createValueUnitId(int position) {
+    private DescItemUnitId createValueUnitId(final int position) {
         DescItemUnitId value = new DescItemUnitId();
         fillCommonValueFields(value, position);
         value.setValue("unitId " + position);
@@ -333,7 +332,7 @@ public class XmlDataGenerator {
         return value;
     }
 
-    private DescItemPacketRef createValuePacketRef(int position, List<Packet> packets) {
+    private DescItemPacketRef createValuePacketRef(final int position, final List<Packet> packets) {
         DescItemPacketRef value = new DescItemPacketRef();
         fillCommonValueFields(value, position);
         value.setPacket(packets.get(RandomUtils.nextInt(packets.size())));
@@ -341,20 +340,20 @@ public class XmlDataGenerator {
         return value;
     }
 
-    private DescItemEnum createValueEnum(int position) {
+    private DescItemEnum createValueEnum(final int position) {
         DescItemEnum value = new DescItemEnum();
         fillCommonValueFields(value, position);
 
         return value;
     }
 
-    private void fillCommonValueFields(AbstractDescItem value, int position) {
+    private void fillCommonValueFields(final AbstractDescItem value, final int position) {
         value.setDescItemSpecCode("descItemSpecCode");
         value.setDescItemTypeCode("descItemTypeCode");
         value.setPosition(position);
     }
 
-    private List<Level> createChildren(int depth, List<Record> records, List<AbstractParty> parties, List<Packet> packets, XmlDataGeneratorConfig config) {
+    private List<Level> createChildren(final int depth, final List<Record> records, final List<AbstractParty> parties, final List<Packet> packets, final XmlDataGeneratorConfig config) {
         if (depth < 1) {
             return null;
         }
@@ -405,7 +404,7 @@ public class XmlDataGenerator {
      *
      * @return rejstříkové heslo
      */
-    private Record createRecord(XmlDataGeneratorConfig config, int index, String parentId) {
+    private Record createRecord(final XmlDataGeneratorConfig config, final int index, final String parentId) {
         Record record = new Record();
         record.setCharacteristics("characteristics " + index);
         record.setNote("comment " + index);
@@ -449,7 +448,7 @@ public class XmlDataGenerator {
         return recordCoordinates;
     }
 
-    private List<Coordinate> createCoordinates(int count) {
+    private List<Coordinate> createCoordinates(final int count) {
         List<Coordinate> coordinates = new ArrayList<Coordinate>(2);
 
         for (int i = 0; i < count; i++) {
@@ -469,7 +468,7 @@ public class XmlDataGenerator {
      *
      * @return seznam variantních rejstříkových hesel
      */
-    private List<VariantRecord> createVariantRecords(int variantRecordCount) {
+    private List<VariantRecord> createVariantRecords(final int variantRecordCount) {
         List<VariantRecord> variantRecords = new ArrayList<VariantRecord>(variantRecordCount);
         for (int i = 0; i < variantRecordCount; i++) {
             VariantRecord variantRecord = createVariantRecord(i);
@@ -486,7 +485,7 @@ public class XmlDataGenerator {
      *
      * @return variantní rejstříkové heslo
      */
-    private VariantRecord createVariantRecord(int index) {
+    private VariantRecord createVariantRecord(final int index) {
         VariantRecord variantRecord = new VariantRecord();
         variantRecord.setVariantName("variantRecord " + index);
         return variantRecord;
@@ -500,7 +499,7 @@ public class XmlDataGenerator {
      *
      * @return seznam osob
      */
-    private List<AbstractParty> createParties(List<Record> records, XmlDataGeneratorConfig config) {
+    private List<AbstractParty> createParties(final List<Record> records, final XmlDataGeneratorConfig config) {
         List<AbstractParty> parties = new ArrayList<AbstractParty>(config.getPartyCount());
         for (int i = 0; i < config.getPartyCount(); i++) {
             int position = i % 4;
@@ -524,7 +523,7 @@ public class XmlDataGenerator {
         return parties;
     }
 
-    private PartyGroup createPartyGroup(List<Record> records, int index, XmlDataGeneratorConfig config, List<AbstractParty> parties) {
+    private PartyGroup createPartyGroup(final List<Record> records, final int index, final XmlDataGeneratorConfig config, final List<AbstractParty> parties) {
         PartyGroup partyGroup = new PartyGroup();
 
         fillParentFields(records, index, partyGroup, config, parties);
@@ -538,7 +537,7 @@ public class XmlDataGenerator {
         return partyGroup;
     }
 
-    private List<PartyGroupId> createPartyGroupIds(XmlDataGeneratorConfig config) {
+    private List<PartyGroupId> createPartyGroupIds(final XmlDataGeneratorConfig config) {
         List<PartyGroupId> partyGroupIds = new ArrayList<PartyGroupId>(config.getPartyGroupIdCount());
         for (int i = 0; i < config.getPartyGroupIdCount(); i++) {
             partyGroupIds.add(createPartyGroupId(i));
@@ -547,7 +546,7 @@ public class XmlDataGenerator {
         return partyGroupIds;
     }
 
-    private PartyGroupId createPartyGroupId(int i) {
+    private PartyGroupId createPartyGroupId(final int i) {
         PartyGroupId partyGroupId = new PartyGroupId();
 
         partyGroupId.setId("id " + i);
@@ -559,7 +558,7 @@ public class XmlDataGenerator {
         return partyGroupId;
     }
 
-    private Event createEvent(List<Record> records, int index, XmlDataGeneratorConfig config, List<AbstractParty> parties) {
+    private Event createEvent(final List<Record> records, final int index, final XmlDataGeneratorConfig config, final List<AbstractParty> parties) {
         Event temporaryEvent = new Event();
 
         fillParentFields(records, index, temporaryEvent, config, parties);
@@ -567,7 +566,7 @@ public class XmlDataGenerator {
         return temporaryEvent;
     }
 
-    private Dynasty createDynasty(List<Record> records, int index, XmlDataGeneratorConfig config, List<AbstractParty> parties) {
+    private Dynasty createDynasty(final List<Record> records, final int index, final XmlDataGeneratorConfig config, final List<AbstractParty> parties) {
         Dynasty dynasty = new Dynasty();
 
         fillParentFields(records, index, dynasty, config, parties);
@@ -585,17 +584,16 @@ public class XmlDataGenerator {
      *
      * @return osoba
      */
-    private Person createPerson(List<Record> records, int index, XmlDataGeneratorConfig config, List<AbstractParty> parties) {
+    private Person createPerson(final List<Record> records, final int index, final XmlDataGeneratorConfig config, final List<AbstractParty> parties) {
         Person party = new Person();
         fillParentFields(records, index, party, config, parties);
 
         return party;
     }
 
-    private void fillParentFields(List<Record> records, int index, AbstractParty party, XmlDataGeneratorConfig config,
-            List<AbstractParty> parties) {
+    private void fillParentFields(final List<Record> records, final int index, final AbstractParty party, final XmlDataGeneratorConfig config,
+            final List<AbstractParty> parties) {
         party.setPartyId("partyId-" + index);
-        party.setPartyTypeCode(config.getRandomPartyTypeCode());
 
         party.setRecord(records.get(RandomUtils.nextInt(records.size())));
         party.setPreferredName(createPartyName(index, config));
@@ -622,7 +620,7 @@ public class XmlDataGenerator {
         party.setCharacteristics("characteristics");
     }
 
-    private List<Relation> createEvents(List<Record> records, XmlDataGeneratorConfig config) {
+    private List<Relation> createEvents(final List<Record> records, final XmlDataGeneratorConfig config) {
         List<Relation> events = new ArrayList<Relation>(config.getEventCount());
         for (int i = 0; i < config.getEventCount(); i++) {
             events.add(createEvent(records, i, config));
@@ -631,7 +629,7 @@ public class XmlDataGenerator {
         return events;
     }
 
-    private Relation createEvent(List<Record> records, int index, XmlDataGeneratorConfig config) {
+    private Relation createEvent(final List<Record> records, final int index, final XmlDataGeneratorConfig config) {
         Relation event = new Relation();
 
         ParRelationType randomRelationType = config.getRandomRelationType();
@@ -653,7 +651,7 @@ public class XmlDataGenerator {
         return event;
     }
 
-    private List<RoleType> createRoleTypes(List<Record> records, XmlDataGeneratorConfig config) {
+    private List<RoleType> createRoleTypes(final List<Record> records, final XmlDataGeneratorConfig config) {
         List<RoleType> roleTypes = new ArrayList<RoleType>(1);
 
         RoleType roleType = new RoleType();
@@ -675,7 +673,7 @@ public class XmlDataGenerator {
         return complexDate;
     }
 
-    private List<AbstractParty> createCreators(List<AbstractParty> parties) {
+    private List<AbstractParty> createCreators(final List<AbstractParty> parties) {
         List<AbstractParty> creators = new ArrayList<AbstractParty>(1);
 
         creators.add(parties.get(RandomUtils.nextInt(parties.size())));
@@ -691,7 +689,7 @@ public class XmlDataGenerator {
      *
      * @return jméno osoby
      */
-    private PartyName createPartyName(int index, XmlDataGeneratorConfig config) {
+    private PartyName createPartyName(final int index, final XmlDataGeneratorConfig config) {
         PartyName partyName = new PartyName();
 
         partyName.setNote("anotation " + index);
@@ -707,7 +705,7 @@ public class XmlDataGenerator {
         return partyName;
     }
 
-    private List<PartyNameComplement> createPartyNameComplements(XmlDataGeneratorConfig config) {
+    private List<PartyNameComplement> createPartyNameComplements(final XmlDataGeneratorConfig config) {
         List<PartyNameComplement> partyNameComplements = new ArrayList<PartyNameComplement>(config.getPartyNameComplementsCount());
         for (int i = 0; i < config.getEventCount(); i++) {
             partyNameComplements.add(createPartyNameComplement(config));
@@ -716,7 +714,7 @@ public class XmlDataGenerator {
         return partyNameComplements;
     }
 
-    private PartyNameComplement createPartyNameComplement(XmlDataGeneratorConfig config) {
+    private PartyNameComplement createPartyNameComplement(final XmlDataGeneratorConfig config) {
         PartyNameComplement partyNameComplement = new PartyNameComplement();
 
         partyNameComplement.setComplement("complement");

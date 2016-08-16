@@ -125,7 +125,7 @@ var keyDownHandlers = {
     }
 }
 
-var Autocomplete = class Autocomplete extends AbstractReactComponent {
+export default class Autocomplete extends AbstractReactComponent {
     constructor(props) {
         super();
 
@@ -168,8 +168,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this._performAutoCompleteOnUpdate = true
-
+        this._performAutoCompleteOnUpdate = true;
         this.setState(this.getStateFromProps(this.props, nextProps, this.state));
     }
 
@@ -526,7 +525,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
         if (!this.state.isOpen && this.state.highlightedIndex === null && this.state.inputStrValue === this.props.getItemName(this.state.value)) {
             // Není třeba nastavovat state
             if (callBlurAfterSetState) {
-                this.props.onBlur && this.props.onBlur();
+                this.props.onBlur && this.props.onBlur(this.state.value);
             }
             return;
         }
@@ -540,16 +539,17 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
         this.setState(addState, () => {
             //ReactDOM.findDOMNode(this.refs.input).select()
             if (callBlurAfterSetState) {
-                this.props.onBlur && this.props.onBlur();
+                this.props.onBlur && this.props.onBlur(this.state.value);
             }
         })
 
-return
+        /// Konec
+        return
 
-
+        /*
         if (!this.state.isOpen) {
             if (callBlurAfterSetState) {
-                this.props.onBlur && this.props.onBlur();
+                this.props.onBlur && this.props.onBlur(this.state.value);
             }
             return;
         }
@@ -563,9 +563,9 @@ return
         this.setState(addState, () => {
             //ReactDOM.findDOMNode(this.refs.input).select()
             if (callBlurAfterSetState) {
-                this.props.onBlur && this.props.onBlur();
+                this.props.onBlur && this.props.onBlur(this.state.value);
             }
-        })
+        })*/
     }
 
     handleInputClick() {
@@ -687,5 +687,3 @@ Autocomplete.propTypes = {
     touched: React.PropTypes.bool,
     error: React.PropTypes.string,
 }
-
-module.exports = Autocomplete

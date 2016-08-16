@@ -1,8 +1,19 @@
 var webpack = require('webpack');
 var path = require('path');
+var fs = require('fs');
 
 process.env.BABEL_ENV = 'development';
 process.env.NODE_ENV = 'development';
+
+function fileExist(filePath){
+    try {
+        fs.statSync(filePath);
+    } catch(err) {
+        if(err.code == 'ENOENT') return false;
+    }
+    return true;
+}
+
 
 module.exports = {
     entry: [
@@ -69,7 +80,7 @@ module.exports = {
             jQuery: "jquery"
         }),
         new webpack.DefinePlugin({
-            __DEVTOOLS__: true,
+            __DEVTOOLS__: fileExist('.dev'),
             __SHOW_DEVTOOLS__: false,
             __DEV__: true
         })

@@ -129,7 +129,7 @@ const AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
                         <Scope disabled={this.state.disabled} versionId={versionId} label={i18n('registry.scopeClass')} {...scopeId} value={scopeIdValue} {...decorateFormField(scopeId)}/>
                         <DropDownTree
                             label={i18n('registry.add.type')}
-                            items = {itemsForDropDownTree}
+                            items={itemsForDropDownTree}
                             addRegistryRecord={true}
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
