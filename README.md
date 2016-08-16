@@ -51,6 +51,10 @@ mvn exec:exec -Pfrontend-dev
 Po sestavení dojde ke spuštění embedded aplikačního serveru Tomcat.
 Uživatelské rozhraní najdete na adrese http://localhost:8080 - není možné přistupovat z jiného počítače (sestavte a zprovozněte war v Tomcat).
 
+#### Debug nástroje - redux-tools
+V projektu elza-web v adresáři ```src/main/resources/frontend``` pokud vytvoříme soubor ```.dev``` a spustíme server frontendu, tak po stisku ctrl+h se zobrazí logovací nástroje redux storu.
+Pomocí stisku ctrl+q se mění umístění panelu nástrojů.
+
 
 ### Sestavení a spuštění war v Tomcat
 ```
