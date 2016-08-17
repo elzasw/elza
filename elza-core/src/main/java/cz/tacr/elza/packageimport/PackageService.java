@@ -291,9 +291,11 @@ public class PackageService {
             PacketTypes packetTypes = convertXmlStreamToObject(PacketTypes.class, mapEntry.get(PACKET_TYPE_XML));
 
             processPacketTypes(packetTypes, rulPackage);
-            List<RulOutputType> rulOutputTypes = processOutputTypes(outputTypes, templates, rulPackage, mapEntry, dirTemplates);
 
             List<RulRuleSet> rulRuleSets = processRuleSets(ruleSets, rulPackage);
+            rulPackageRules = processPackageRules(packageRules, rulPackage, mapEntry, rulRuleSets, dirRules);
+
+            List<RulOutputType> rulOutputTypes = processOutputTypes(outputTypes, templates, rulPackage, mapEntry, dirTemplates, rulPackageRules);
 
             processPolicyTypes(policyTypes, rulPackage, rulRuleSets);
 
@@ -303,7 +305,6 @@ public class PackageService {
             // Zde se může importovat vazba mezi pravidlem a atributem
             processDefaultItemTypes(rulRuleSets, ruleSets, rulDescItemTypes);
 
-            rulPackageRules = processPackageRules(packageRules, rulPackage, mapEntry, rulRuleSets, dirRules, rulOutputTypes);
 
             entityManager.flush();
 
@@ -543,13 +544,33 @@ public class PackageService {
      * @param rulPackage    balíček
      * @param outputType    VO packet
      * @param rulOutputType DAO packet
+     * @param rulRuleList   seznam souborů s pravidly
      */
     private void convertRulOutputType(final RulPackage rulPackage,
                                       final OutputType outputType,
-                                      final RulOutputType rulOutputType) {
+                                      final RulOutputType rulOutputType,
+                                      final List<RulRule> rulRuleList) {
         rulOutputType.setPackage(rulPackage);
         rulOutputType.setCode(outputType.getCode());
         rulOutputType.setName(outputType.getName());
+
+        String filename = outputType.getFilename();
+        if (filename != null) {
+            RulRule rule = rulRuleList.stream()
+                    .filter(r -> r.getFilename().equals(filename))
+                    .findFirst().orElse(null);
+
+            if (rule == null) {
+                throw new IllegalStateException("Soubor '" + filename + "' neexistuje v RulRule");
+            }
+            if (!rule.getRuleType().equals(RulRule.RuleType.OUTPUT_ATTRIBUTE_TYPES)) {
+                throw new IllegalStateException("Typ u souboru '" + filename + "' musí být OUTPUT_ATTRIBUTE_TYPES");
+            }
+            rulOutputType.setRule(rule);
+        } else {
+            rulOutputType.setRule(null);
+        }
+
     }
 
     /**
@@ -560,15 +581,13 @@ public class PackageService {
      * @param mapEntry       mapa streamů souborů v ZIP
      * @param rulRuleSets    seznam pravidel
      * @param dir            adresář pravidel
-     * @param rulOutputTypes seznam typů výstupů
      * @return seznam pravidel
      */
     private List<RulRule> processPackageRules(final PackageRules packageRules,
                                               final RulPackage rulPackage,
                                               final Map<String, ByteArrayInputStream> mapEntry,
                                               final List<RulRuleSet> rulRuleSets,
-                                              final File dir,
-                                              final List<RulOutputType> rulOutputTypes) {
+                                              final File dir) {
 
         List<RulRule> rulPackageRules = packageRulesRepository.findByRulPackage(rulPackage);
         List<RulRule> rulRuleNew = new ArrayList<>();
@@ -585,7 +604,7 @@ public class PackageService {
                     item = new RulRule();
                 }
 
-                convertRulPackageRule(rulPackage, packageRule, item, rulRuleSets, rulOutputTypes);
+                convertRulPackageRule(rulPackage, packageRule, item, rulRuleSets);
                 rulRuleNew.add(item);
             }
         }
@@ -620,44 +639,29 @@ public class PackageService {
      * @param packageRule    VO pravidla
      * @param rulPackageRule DAO pravidla
      * @param rulRuleSets    seznam pravidel
-     * @param rulOutputTypes seznam typů outputů
      */
     private void convertRulPackageRule(final RulPackage rulPackage,
                                        final PackageRule packageRule,
                                        final RulRule rulPackageRule,
-                                       final List<RulRuleSet> rulRuleSets,
-                                       final List<RulOutputType> rulOutputTypes) {
+                                       final List<RulRuleSet> rulRuleSets) {
 
         rulPackageRule.setPackage(rulPackage);
         rulPackageRule.setFilename(packageRule.getFilename());
         rulPackageRule.setPriority(packageRule.getPriority());
         rulPackageRule.setRuleType(packageRule.getRuleType());
 
-        List<RulRuleSet> findItems = rulRuleSets.stream()
-                .filter((r) -> r.getCode().equals(packageRule.getRuleSet()))
-                .collect(Collectors.toList());
-
-        RulRuleSet item;
-
-        if (findItems.size() > 0) {
-            item = findItems.get(0);
-        } else {
-            throw new IllegalStateException("Kód " + packageRule.getRuleSet() + " neexistuje v RulRuleSet");
-        }
-        rulPackageRule.setRuleSet(item);
-
-        String outputTypeCode = packageRule.getOutputType();
-        if (outputTypeCode != null) {
-            RulOutputType outputType = rulOutputTypes.stream()
-                    .filter(ot -> ot.getCode().equals(outputTypeCode))
+        String ruleSetCode = packageRule.getRuleSet();
+        if (ruleSetCode != null) {
+            RulRuleSet ruleSet = rulRuleSets.stream()
+                    .filter(rs -> rs.getCode().equals(ruleSetCode))
                     .findFirst().orElse(null);
 
-            if (outputType == null) {
-                throw new IllegalStateException("Kód '" + outputTypeCode + "' neexistuje v RulOutputType");
+            if (ruleSet == null) {
+                throw new IllegalStateException("Kód '" + ruleSetCode + "' neexistuje v RulRuleSet");
             }
-            rulPackageRule.setOutputType(outputType);
+            rulPackageRule.setRuleSet(ruleSet);
         } else {
-            rulPackageRule.setOutputType(null);
+            rulPackageRule.setRuleSet(null);
         }
 
     }
@@ -1056,17 +1060,19 @@ public class PackageService {
     /**
      * Zpracování typů atributů.
      *
-     * @param outputTypes       seznam importovaných typů
-     * @param templates       seznam importovaných specifikací
-     * @param rulPackage      balíček
+     * @param outputTypes  seznam importovaných typů
+     * @param templates    seznam importovaných specifikací
+     * @param rulPackage   balíček
      * @param dirTemplates
-     * @return                výsledný seznam atributů v db
+     * @param rulRuleList  seznam souborů s pravidly
+     * @return výsledný seznam atributů v db
      */
     private List<RulOutputType> processOutputTypes(final OutputTypes outputTypes,
                                                    final Templates templates,
                                                    final RulPackage rulPackage,
                                                    final Map<String, ByteArrayInputStream> mapEntry,
-                                                   final File dirTemplates) {
+                                                   final File dirTemplates,
+                                                   final List<RulRule> rulRuleList) {
 
         List<RulOutputType> rulOutputTypes = outputTypeRepository.findByRulPackage(rulPackage);
         List<RulOutputType> rulOutputTypesNew = new ArrayList<>();
@@ -1082,7 +1088,7 @@ public class PackageService {
                     item = new RulOutputType();
                 }
 
-                convertRulOutputType(rulPackage, outputType, item);
+                convertRulOutputType(rulPackage, outputType, item, rulRuleList);
                 rulOutputTypesNew.add(item);
             }
         }
@@ -1916,6 +1922,7 @@ public class PackageService {
     private void convertOutputType(final RulOutputType rulOutputType, final OutputType outputType) {
         outputType.setCode(rulOutputType.getCode());
         outputType.setName(rulOutputType.getName());
+        outputType.setFilename(rulOutputType.getRule() == null ? null : rulOutputType.getRule().getFilename());
     }
 
     /**
@@ -2015,9 +2022,8 @@ public class PackageService {
     private void convertPackageRule(final RulRule rulPackageRule, final PackageRule packageRule) {
         packageRule.setFilename(rulPackageRule.getFilename());
         packageRule.setPriority(rulPackageRule.getPriority());
-        packageRule.setRuleSet(rulPackageRule.getRuleSet().getCode());
+        packageRule.setRuleSet(rulPackageRule.getRuleSet() == null ? null : rulPackageRule.getRuleSet().getCode());
         packageRule.setRuleType(rulPackageRule.getRuleType());
-        packageRule.setOutputType(rulPackageRule.getOutputType() == null ? null : rulPackageRule.getOutputType().getCode());
     }
 
     /**

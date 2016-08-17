@@ -38,7 +38,6 @@ public class OutputItemTypesRules extends Rules {
      * @param rulDescItemTypeExtList seznam všech atributů
      */
     public synchronized List<RulItemTypeExt> execute(final ArrOutputDefinition outputDefinition,
-                                                     final ArrFundVersion version,
                                                      final List<RulItemTypeExt> rulDescItemTypeExtList)
             throws Exception
     {
@@ -48,19 +47,17 @@ public class OutputItemTypesRules extends Rules {
         facts.add(outputDefinition);
         facts.add(outputDefinition.getOutputType());
 
-    	final RulRuleSet rulRuleSet = version.getRuleSet();
+        RulRule rule = outputDefinition.getOutputType().getRule();
 
-        Path path;
-        List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeAndOutputTypeOrderByPriorityAsc(
-                rulRuleSet, RulRule.RuleType.OUTPUT_ATTRIBUTE_TYPES, outputDefinition.getOutputType());
-
-        if (rulPackageRules.size() == 0) {
-            logger.warn("Při vykonávání OutputItemTypesRules.execute() nebyla nalezena žádná pravidla pro typ výstupu '"
+        if (rule == null) {
+            logger.warn("Při vykonávání OutputItemTypesRules.execute() nebyly nalezeny pravidla pro typ výstupu '"
                     + outputDefinition.getOutputType().getCode() + "'");
-        }
+        } else {
+            if (!rule.getRuleType().equals(RulRule.RuleType.OUTPUT_ATTRIBUTE_TYPES)) {
+                throw new IllegalStateException("Neplatný typ pravidel pro výstup: " + rule.getRuleType().name());
+            }
 
-        for (RulRule rulPackageRule : rulPackageRules) {
-            path = Paths.get(rulesExecutor.getRootPath() + File.separator + rulPackageRule.getFilename());
+            Path path = Paths.get(rulesExecutor.getRootPath() + File.separator + rule.getFilename());
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, facts);
         }

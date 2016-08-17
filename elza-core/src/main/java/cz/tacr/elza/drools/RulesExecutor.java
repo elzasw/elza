@@ -94,14 +94,12 @@ public class RulesExecutor implements InitializingBean {
      *
      * @param outputDefinition       definice výstupu
      * @param rulDescItemTypeExtList seznam všech atributů
-     * @param version                verze AP
      * @return seznam typů atributů odpovídající pravidlům
      */
     public List<RulItemTypeExt> executeOutputItemTypesRules(final ArrOutputDefinition outputDefinition,
-                                                          final List<RulItemTypeExt> rulDescItemTypeExtList,
-                                                          final ArrFundVersion version) {
+                                                          final List<RulItemTypeExt> rulDescItemTypeExtList) {
         try {
-            return outputItemTypesRules.execute(outputDefinition, version, rulDescItemTypeExtList);
+            return outputItemTypesRules.execute(outputDefinition, rulDescItemTypeExtList);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return rulDescItemTypeExtList;

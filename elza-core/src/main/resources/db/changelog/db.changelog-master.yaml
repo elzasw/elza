@@ -105,3 +105,5 @@ databaseChangeLog:
      file: db/changelog/db.changelog-1.51.xml
   - include:
      file: db/changelog/db.changelog-1.52.xml
+  - include:
+     file: db/changelog/db.changelog-1.53.xml

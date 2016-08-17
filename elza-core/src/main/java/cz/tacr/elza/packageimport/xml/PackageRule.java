@@ -19,14 +19,11 @@ import cz.tacr.elza.api.RulRule;
 @XmlType(name = "package-rule")
 public class PackageRule {
 
-    @XmlAttribute(name = "rule-set", required = true)
+    @XmlAttribute(name = "rule-set", required = false)
     private String ruleSet;
 
     @XmlAttribute(name = "filename", required = true)
     private String filename;
-
-    @XmlAttribute(name = "output-type")
-    private String outputType;
 
     @XmlElement(name = "rule-type", required = true)
     private RulRule.RuleType ruleType;
@@ -48,14 +45,6 @@ public class PackageRule {
 
     public void setFilename(final String filename) {
         this.filename = filename;
-    }
-
-    public String getOutputType() {
-        return outputType;
-    }
-
-    public void setOutputType(final String outputType) {
-        this.outputType = outputType;
     }
 
     public RulRule.RuleType getRuleType() {
