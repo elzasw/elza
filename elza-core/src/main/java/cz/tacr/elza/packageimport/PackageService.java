@@ -563,9 +563,9 @@ public class PackageService {
             if (rule == null) {
                 throw new IllegalStateException("Soubor '" + filename + "' neexistuje v RulRule");
             }
-            if (!rule.getRuleType().equals(RulRule.RuleType.OUTPUT_ATTRIBUTE_TYPES)) {
+            /*if (!rule.getRuleType().equals(RulRule.RuleType.OUTPUT_ATTRIBUTE_TYPES)) {
                 throw new IllegalStateException("Typ u souboru '" + filename + "' musí být OUTPUT_ATTRIBUTE_TYPES");
-            }
+            }*/
             rulOutputType.setRule(rule);
         } else {
             rulOutputType.setRule(null);
