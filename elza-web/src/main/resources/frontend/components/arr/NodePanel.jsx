@@ -628,7 +628,7 @@ return true
      * @param form {Object} editační formulář, pokud je k dispozici (k dispozici je, pokud je nějaká položka Accordion vybraná)
      * @return {Object} view
      */
-    renderAccordion(form, recordInfo) {
+    renderAccordion(form, recordInfo, readMode) {
         const {node, versionId, userDetail, fund, fundId} = this.props;
 
         var rows = [];
@@ -640,7 +640,7 @@ return true
         }
 
         var actions = []
-        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+        if (!readMode && userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
             if (node.nodeInfoFetched && !isFundRootId(node.id) && !closed) {
                 actions.push(
                     <AddNodeDropdown key="end"
@@ -793,6 +793,10 @@ return true
         var showParents = settingsValues == null || settingsValues['parents'] == null || settingsValues['parents'];
         var showChildren = settingsValues == null || settingsValues['children'] == null || settingsValues['children'];
 
+        settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
+        settingsValues = settings.value != 'false';
+        const readMode = closed || settingsValues;
+
         var parents = showParents ? this.renderParents(this.getParentNodes().reverse()) : null;
         var children;
         if (showChildren) {
@@ -843,6 +847,7 @@ return true
                 closed={closed}
                 onAddDescItemType={this.handleAddDescItemType}
                 onVisiblePolicy={this.handleVisiblePolicy}
+                readMode={readMode}
             />
         } else {
             form = <Loading value={i18n('global.data.loading.form')}/>
@@ -857,7 +862,8 @@ return true
                         selectedSubNodeId={node.selectedSubNodeId}
                         routingKey={node.routingKey}
                         register={node.subNodeRegister}
-                        closed={closed}/>
+                        closed={closed}
+                        readMode={readMode}/>
         }
 
         var cls = classNames({
@@ -868,7 +874,7 @@ return true
             <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts}>
                 <div key='main' className='main'>
                     {parents}
-                    {this.renderAccordion(form, record)}
+                    {this.renderAccordion(form, record, readMode)}
                     {children}
                 </div>
             </Shortcuts>
