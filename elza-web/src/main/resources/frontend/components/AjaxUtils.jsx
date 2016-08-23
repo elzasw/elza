@@ -106,6 +106,12 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
                         validation: true,
                         data: xhr.responseJSON
                     };
+                } else if (xhr.status == 405) {
+                    result = {
+                        type: 'controller',
+                        controller: true,
+                        data: xhr.responseJSON
+                    };
                 } else if (xhr.status == 401) {
                     result = {
                         type: 'unauthorized',
@@ -217,7 +223,13 @@ function ajaxCall(url, params, method, data) {
                         validation: true,
                         data: xhr.responseJSON
                     };
-                } else if (xhr.status == 401) {
+                } else if (xhr.status == 405) {
+                    result = {
+                        type: 'controller',
+                        controller: true,
+                        data: xhr.responseJSON
+                    };
+                }  else if (xhr.status == 401) {
                     result = {
                         type: 'unauthorized',
                         unauthorized: true,

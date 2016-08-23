@@ -211,6 +211,7 @@ var messages = {
     "arr.fund.packets.action.changeState.toCanceled": "Změnit stav na: Zrušený",
     "arr.fund.packets.action.changeNumbers": "Přečíslovat",
     "arr.fund.packets.action.delete": "Odstranit",
+    "arr.fund.packets.action.delete.problem": "Odstranění obalů se nezdařilo",
 
     "arr.fund.panel.lockTitle": "v uzavřené verzi",
     "arr.fund.panel.allowEdit": "Povolit úpravy",
