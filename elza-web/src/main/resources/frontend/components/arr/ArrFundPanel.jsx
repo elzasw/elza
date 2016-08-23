@@ -9,6 +9,7 @@ import {Button} from 'react-bootstrap';
 import {dateToString} from 'components/Utils.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
+import * as perms from 'actions/user/Permission.jsx';
 
 var classNames = require('classnames');
 
@@ -35,10 +36,12 @@ var ArrFundPanel = class ArrFundPanel extends AbstractReactComponent {
         var cls = ['arr-fund-panel'];
         var action;
 
-        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fund.id);
+        var fundId = fund.id;
+
+        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
         var readMode = settings.value != 'false';
 
-        if (fund.lockDate) {
+        if (fund.lockDate || !userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
             readMode = true;
         } else {
             if (readMode) {
