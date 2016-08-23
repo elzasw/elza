@@ -47,7 +47,7 @@ const AddNodeDropdown = class AddNodeDropdown extends AbstractReactComponent {
                          tabIndex={-1}
                          id={`dropdown-${key}`}
                          key={key}
-                         onSelect={() => {action()}}
+                         onSelect={(item) => {action(item)}}
                          onClick={(isOpen) => {this.handleToggle(isOpen, false)}} // Klik na tlačítko
                          onToggle={(isOpen) => {this.handleToggle(isOpen, true)}} // Klik na dropdown
                          open={open}
