@@ -38,13 +38,13 @@ export function logout() {
                     type: types.LOGOUT,
                     reset: true,
                 });
-                dispatch(userDetailClear())
+                //dispatch(userDetailClear())
             }).catch(() => {
                 dispatch({
                     type: types.LOGOUT,
                     reset: true,
                 });
-                dispatch(userDetailClear())
+                //dispatch(userDetailClear())
             });
     }
 }
