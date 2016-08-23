@@ -1,13 +1,14 @@
 package cz.tacr.elza.print;
 
-import cz.tacr.elza.api.ArrCalendarType;
-import cz.tacr.elza.api.IUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+
+import cz.tacr.elza.api.ArrCalendarType;
+import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
 /**
  * Rozšiřuje {@link UnitDateText} o strukturovaný zápis datumu.
@@ -29,19 +30,19 @@ public class UnitDate extends UnitDateText implements IUnitdate {
     /**
      * @return hodnota valueText
      */
+    @Override
     public String serialize() {
         if (StringUtils.isNotBlank(getValueText())) {
             return super.serialize();
-        } else {
-            return UnitDateConvertor.convertToString(this);
         }
+        return UnitDateConvertor.convertToString(this);
     }
 
     public String getCalendar() {
         return calendar;
     }
 
-    public void setCalendar(String calendar) {
+    public void setCalendar(final String calendar) {
         this.calendar = calendar;
     }
 
@@ -49,52 +50,62 @@ public class UnitDate extends UnitDateText implements IUnitdate {
         return calendarCode;
     }
 
-    public void setCalendarCode(String calendarCode) {
+    public void setCalendarCode(final String calendarCode) {
         this.calendarCode = calendarCode;
     }
 
+    @Override
     public String getFormat() {
         return format;
     }
 
-    public void setFormat(String format) {
+    @Override
+    public void setFormat(final String format) {
         this.format = format;
     }
 
     @Override
-    public void formatAppend(String format) {
+    public void formatAppend(final String format) {
         this.format += format;
     }
 
+    @Override
     public String getValueFrom() {
         return valueFrom;
     }
 
-    public void setValueFrom(String valueFrom) {
+    @Override
+    public void setValueFrom(final String valueFrom) {
         this.valueFrom = valueFrom;
     }
 
+    @Override
     public Boolean getValueFromEstimated() {
         return valueFromEstimated;
     }
 
-    public void setValueFromEstimated(Boolean valueFromEstimated) {
+    @Override
+    public void setValueFromEstimated(final Boolean valueFromEstimated) {
         this.valueFromEstimated = valueFromEstimated;
     }
 
+    @Override
     public String getValueTo() {
         return valueTo;
     }
 
-    public void setValueTo(String valueTo) {
+    @Override
+    public void setValueTo(final String valueTo) {
         this.valueTo = valueTo;
     }
 
+    @Override
     public Boolean getValueToEstimated() {
         return valueToEstimated;
     }
 
-    public void setValueToEstimated(Boolean valueToEstimated) {
+    @Override
+    public void setValueToEstimated(final Boolean valueToEstimated) {
         this.valueToEstimated = valueToEstimated;
     }
 
@@ -104,7 +115,7 @@ public class UnitDate extends UnitDateText implements IUnitdate {
     }
 
     @Override
-    public void setCalendarType(ArrCalendarType calendarType) {
+    public void setCalendarType(final ArrCalendarType calendarType) {
         this.calendarType = calendarType;
     }
 

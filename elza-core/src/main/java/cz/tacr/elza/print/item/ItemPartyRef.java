@@ -1,8 +1,6 @@
 package cz.tacr.elza.print.item;
 
-import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.print.NodeId;
-import cz.tacr.elza.print.Output;
 import cz.tacr.elza.print.party.Party;
 
 /**
@@ -11,14 +9,12 @@ import cz.tacr.elza.print.party.Party;
  */
 public class ItemPartyRef extends AbstractItem<Party> {
 
-    public ItemPartyRef(ArrItem arrItem, Output output, NodeId nodeId, Party value) {
-        super(arrItem, output, nodeId);
-        setValue(value);
+    public ItemPartyRef(final NodeId nodeId, final Party value) {
+        super(nodeId, value);
     }
 
     @Override
     public String serializeValue() {
         return getValue().serialize();
     }
-
 }

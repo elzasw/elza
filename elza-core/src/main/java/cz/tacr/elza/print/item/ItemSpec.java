@@ -1,10 +1,11 @@
-package cz.tacr.elza.print;
+package cz.tacr.elza.print.item;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
 public class ItemSpec {
+
     public String name;
     public String shortcut;
     public String description;
@@ -14,7 +15,7 @@ public class ItemSpec {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(final String code) {
         this.code = code;
     }
 
@@ -22,7 +23,7 @@ public class ItemSpec {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(final String description) {
         this.description = description;
     }
 
@@ -30,7 +31,7 @@ public class ItemSpec {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -38,7 +39,7 @@ public class ItemSpec {
         return shortcut;
     }
 
-    public void setShortcut(String shortcut) {
+    public void setShortcut(final String shortcut) {
         this.shortcut = shortcut;
     }
 }

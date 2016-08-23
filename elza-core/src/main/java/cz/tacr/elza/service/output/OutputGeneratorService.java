@@ -214,13 +214,20 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
                 ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
                 ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
                 List<ArrNodeOutput> nodesList = nodeOutputRepository.findByOutputDefinition(arrOutputDefinition);
-                Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(nodesList.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet()), Sets.newHashSet(change), false, true);
+                Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(
+                        nodesList.stream().
+                            map(ArrNodeOutput::getNode).
+                            collect(Collectors.toSet()),
+                        Sets.newHashSet(change), false, true);
 
+                OutputState outputState;
                 if (arrChangeBooleanMap.containsKey(change) && arrChangeBooleanMap.get(change)) {
-                    setStateAndSave(arrOutputDefinition, OutputState.OUTDATED);
+                    outputState = OutputState.OUTDATED;
                 } else {
-                    setStateAndSave(arrOutputDefinition, OutputState.FINISHED);
+                    outputState = OutputState.FINISHED;
                 }
+                setStateAndSave(arrOutputDefinition, outputState);
+
                 publishOutputStateEvent(arrOutputDefinition, null);
                 worker = null;
                 logger.info("Generování výstupu pro arr_output id=" + arrOutputId + " dokončeno úspěšně.", arrOutputId);

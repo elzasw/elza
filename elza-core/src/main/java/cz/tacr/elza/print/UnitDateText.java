@@ -12,6 +12,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  *         Date: 22.6.16
  */
 public class UnitDateText {
+
     private String valueText;
 
     /**
@@ -25,7 +26,7 @@ public class UnitDateText {
         return valueText;
     }
 
-    public void setValueText(String valueText) {
+    public void setValueText(final String valueText) {
         this.valueText = valueText;
     }
 

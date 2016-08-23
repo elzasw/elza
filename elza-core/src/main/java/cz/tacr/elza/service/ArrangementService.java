@@ -1,6 +1,37 @@
 package cz.tacr.elza.service;
 
+import java.text.Normalizer;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.google.common.collect.Iterables;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
@@ -66,34 +97,6 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import javax.annotation.Nullable;
-import java.text.Normalizer;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 
 /**
@@ -721,7 +724,7 @@ public class ArrangementService {
      * @param node    uzel
      * @return seznam hodnot atributů
      */
-    public List<ArrDescItem> getArrDescItemsInternal(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion version, ArrNode node) {
+    public List<ArrDescItem> getArrDescItemsInternal(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version, final ArrNode node) {
         List<ArrDescItem> itemList;
 
         if (version.getLockChange() == null) {
@@ -731,6 +734,26 @@ public class ArrangementService {
         }
 
         return descItemFactory.getDescItems(itemList);
+    }
+
+    /**
+     * Získání hodnot atributů podle verze AP a uzlu.
+     * <b> Metoda nekontroluje oprávnění. </b>
+     *
+     * @param version verze AP
+     * @param node    uzel
+     * @return seznam hodnot atributů
+     */
+    public List<ArrDescItem> getArrDescItems(final ArrFundVersion version, final ArrNode node) {
+        List<ArrDescItem> itemList;
+
+        if (version.getLockChange() == null) {
+            itemList = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
+        } else {
+            itemList = descItemRepository.findByNodeAndChange(node, version.getLockChange());
+        }
+
+        return itemList;
     }
 
 

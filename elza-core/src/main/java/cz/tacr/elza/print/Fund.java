@@ -1,15 +1,14 @@
 package cz.tacr.elza.print;
 
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.print.party.Institution;
+import java.util.Date;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-import java.util.Date;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.print.party.Institution;
 
 /**
  * Při tisku se vytvoří 1 instance
@@ -18,8 +17,7 @@ import java.util.Date;
  *         Date: 22.6.16
  */
 public class Fund {
-    private final Output output; // vazba na nadřazený output
-    private final ArrFund arrFund; // vazba na DB
+
     private final ArrFundVersion arrFundVersion; // vazba na DB
 
     private String name;
@@ -27,10 +25,10 @@ public class Fund {
     private Date createDate;
     private String dateRange;
     private Institution institution;
+    private NodeId rootNodeId;
 
-    public Fund(Output output, ArrFund arrFund, ArrFundVersion arrFundVersion) {
-        this.output = output;
-        this.arrFund = arrFund;
+    public Fund(final NodeId rootNodeId, final ArrFundVersion arrFundVersion) {
+        this.rootNodeId = rootNodeId;
         this.arrFundVersion = arrFundVersion;
     }
 
@@ -38,12 +36,7 @@ public class Fund {
      * @return kořenový node fondu - je vždy ve výstupu, pokud má výstup alespoň jeden přiřazený node
      */
     public NodeId getRootNodeId() {
-        final ArrNode arrNode = arrFundVersion.getRootNode();
-        return output.getNodesMap().get(arrNode.getNodeId());
-    }
-
-    public ArrFund getArrFund() {
-        return arrFund;
+        return rootNodeId;
     }
 
     public ArrFundVersion getArrFundVersion() {
@@ -54,7 +47,7 @@ public class Fund {
         return institution;
     }
 
-    public void setInstitution(Institution institution) {
+    public void setInstitution(final Institution institution) {
         this.institution = institution;
     }
 
@@ -62,7 +55,7 @@ public class Fund {
         return createDate;
     }
 
-    public void setCreateDate(Date createDate) {
+    public void setCreateDate(final Date createDate) {
         this.createDate = createDate;
     }
 
@@ -70,7 +63,7 @@ public class Fund {
         return dateRange;
     }
 
-    public void setDateRange(String dateRange) {
+    public void setDateRange(final String dateRange) {
         this.dateRange = dateRange;
     }
 
@@ -78,7 +71,7 @@ public class Fund {
         return internalCode;
     }
 
-    public void setInternalCode(String internalCode) {
+    public void setInternalCode(final String internalCode) {
         this.internalCode = internalCode;
     }
 
@@ -86,7 +79,7 @@ public class Fund {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -103,5 +96,9 @@ public class Fund {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
+    }
+
+    public void setRootNodeId(final NodeId rootNodeId) {
+        this.rootNodeId = rootNodeId;
     }
 }

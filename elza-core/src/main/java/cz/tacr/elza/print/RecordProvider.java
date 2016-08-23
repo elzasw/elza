@@ -17,5 +17,5 @@ public interface RecordProvider {
      /**
       * @return seznam podřízených objektů obsahujících další recordy
       */
-     public List<? extends RecordProvider> getRecordProviderChildern();
+     public List<? extends RecordProvider> getRecordProviderChildren();
 }

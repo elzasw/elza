@@ -1,8 +1,10 @@
 package cz.tacr.elza.service.output;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
@@ -121,19 +123,32 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
                                   final InputStream in) throws IOException {
         change = createChange(userId);
 
-        ArrOutputResult outputResult = new ArrOutputResult();
-        outputResult.setChange(change);
-        outputResult.setOutputDefinition(arrOutputDefinition);
-        outputResult.setTemplate(rulTemplate);
+        ArrOutputResult outputResult = createOutputResult(arrOutputDefinition, rulTemplate);
         outputResultRepository.save(outputResult);
 
+        ArrOutputFile dmsFile = createDmsFile(arrOutputDefinition, outputResult);
+        dmsService.createFile(dmsFile, in); // zajistí prezentaci výstupu na klienta
+    }
+
+    private ArrOutputFile createDmsFile(final ArrOutputDefinition arrOutputDefinition, final ArrOutputResult outputResult) {
         ArrOutputFile dmsFile = new ArrOutputFile();
         dmsFile.setOutputResult(outputResult);
         dmsFile.setFileName(arrOutputDefinition.getName() + "." + extension);
         dmsFile.setName(arrOutputDefinition.getName());
         dmsFile.setMimeType(mimeType);
         dmsFile.setFileSize(0); // 0 - zajistí refresh po skutečném uložení do souboru na disk
-        dmsService.createFile(dmsFile, in); // zajistí prezentaci výstupu na klienta
+        return dmsFile;
+    }
+
+    private ArrOutputResult createOutputResult(final ArrOutputDefinition arrOutputDefinition,
+            final RulTemplate rulTemplate) {
+        ArrOutputResult outputResult = new ArrOutputResult();
+
+        outputResult.setChange(change);
+        outputResult.setOutputDefinition(arrOutputDefinition);
+        outputResult.setTemplate(rulTemplate);
+
+        return outputResult;
     }
 
     /**
@@ -160,11 +175,27 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
         return bulkActionService.createChange(userId);
     }
 
-    Integer getArrOutputId() {
+    public Integer getArrOutputId() {
         return arrOutputId;
     }
 
     public ArrChange getChange() {
         return change;
+    }
+
+    protected File getTemplate(final RulTemplate rulTemplate, final String templateName) {
+        File templateDir = getTemplatesDir(rulTemplate);
+
+        final File mainTemplate = Paths.get(templateDir.getAbsolutePath(), templateName).toFile();
+        Assert.isTrue(mainTemplate.exists(), "Nepodařilo se najít definici hlavní šablony.");
+
+        return mainTemplate;
+    }
+
+    protected File getTemplatesDir(final RulTemplate rulTemplate) {
+        final String rulTemplateDirectory = rulTemplate.getDirectory();
+        final File templateDir = Paths.get(templatesDir, rulTemplateDirectory).toFile();
+        Assert.isTrue(templateDir.exists() && templateDir.isDirectory(), "Nepodařilo se najít adresář s definicí šablony: " + templateDir.getAbsolutePath());
+        return templateDir;
     }
 }

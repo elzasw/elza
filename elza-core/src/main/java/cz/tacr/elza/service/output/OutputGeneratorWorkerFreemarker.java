@@ -6,14 +6,12 @@ import java.io.InputStream;
 import java.io.PipedReader;
 import java.io.PipedWriter;
 import java.nio.charset.Charset;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.input.ReaderInputStream;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulTemplate;
@@ -41,12 +39,7 @@ class OutputGeneratorWorkerFreemarker extends OutputGeneratorWorkerAbstract {
     protected InputStream getContent(final ArrOutputDefinition arrOutputDefinition, final RulTemplate rulTemplate, final Output output) {
         try {
             // dohledání šablony
-            final String rulTemplateDirectory = rulTemplate.getDirectory();
-            final File templateDir = Paths.get(templatesDir, rulTemplateDirectory).toFile();
-            Assert.isTrue(templateDir.exists() && templateDir.isDirectory(), "Nepodařilo se najít adresář s definicí šablony: " + templateDir.getAbsolutePath());
-
-            final File mainFreemarkerTemplate = Paths.get(templateDir.getAbsolutePath(), FREEMARKER_MAIN_TEMPLATE).toFile();
-            Assert.isTrue(mainFreemarkerTemplate.exists(), "Nepodařilo se najít definici hlavní šablony.");
+            final File mainFreemarkerTemplate = getTemplate(rulTemplate, FREEMARKER_MAIN_TEMPLATE);
 
             Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
             // Export do výstupu - pouze příprava procesu pro renderování - reálně proběhne až při čtení z in v dms
@@ -76,5 +69,4 @@ class OutputGeneratorWorkerFreemarker extends OutputGeneratorWorkerAbstract {
             throw new IllegalStateException("Nepodařilo se uložit výstup.", e);
         }
     }
-
 }

@@ -1,20 +1,22 @@
 package cz.tacr.elza.print.party;
 
-import cz.tacr.elza.print.UnitDateText;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-import java.util.ArrayList;
-import java.util.List;
+import cz.tacr.elza.print.UnitDateText;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
 public class PartyName {
+
     private String mainPart;
     private String otherPart;
     private String note;
@@ -47,7 +49,7 @@ public class PartyName {
         return degreeAfter;
     }
 
-    public void setDegreeAfter(String degreeAfter) {
+    public void setDegreeAfter(final String degreeAfter) {
         this.degreeAfter = degreeAfter;
     }
 
@@ -55,7 +57,7 @@ public class PartyName {
         return degreeBefore;
     }
 
-    public void setDegreeBefore(String degreeBefore) {
+    public void setDegreeBefore(final String degreeBefore) {
         this.degreeBefore = degreeBefore;
     }
 
@@ -63,7 +65,7 @@ public class PartyName {
         return mainPart;
     }
 
-    public void setMainPart(String mainPart) {
+    public void setMainPart(final String mainPart) {
         this.mainPart = mainPart;
     }
 
@@ -71,7 +73,7 @@ public class PartyName {
         return note;
     }
 
-    public void setNote(String note) {
+    public void setNote(final String note) {
         this.note = note;
     }
 
@@ -79,7 +81,7 @@ public class PartyName {
         return otherPart;
     }
 
-    public void setOtherPart(String otherPart) {
+    public void setOtherPart(final String otherPart) {
         this.otherPart = otherPart;
     }
 
@@ -87,7 +89,7 @@ public class PartyName {
         return validFrom;
     }
 
-    public void setValidFrom(UnitDateText validFrom) {
+    public void setValidFrom(final UnitDateText validFrom) {
         this.validFrom = validFrom;
     }
 
@@ -95,7 +97,7 @@ public class PartyName {
         return validTo;
     }
 
-    public void setValidTo(UnitDateText validTo) {
+    public void setValidTo(final UnitDateText validTo) {
         this.validTo = validTo;
     }
 
