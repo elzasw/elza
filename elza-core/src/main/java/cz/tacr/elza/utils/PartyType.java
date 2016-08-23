@@ -1,4 +1,4 @@
-package cz.tacr.elza.xmlimport.v1.vo.party;
+package cz.tacr.elza.utils;
 
 import org.springframework.util.Assert;
 
@@ -28,5 +28,15 @@ public enum PartyType {
 
     public String getCode() {
         return code;
+    }
+
+    public static PartyType getByCode(final String partyTypeCode) {
+        for (PartyType type : values()) {
+            if (type.getCode().equalsIgnoreCase(partyTypeCode)) {
+                return type;
+            }
+        }
+
+        throw new IllegalStateException("Neznámý typ osoby " + partyTypeCode);
     }
 }

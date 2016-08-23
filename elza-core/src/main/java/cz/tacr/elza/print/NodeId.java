@@ -1,59 +1,63 @@
 package cz.tacr.elza.print;
 
-import cz.tacr.elza.service.output.OutputFactoryService;
-import org.apache.commons.lang.builder.CompareToBuilder;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
+
+import org.apache.commons.lang.builder.CompareToBuilder;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.util.Assert;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-@Scope("prototype")
 public class NodeId implements RecordProvider, Comparable<NodeId> {
+
     private final Output output; // vazba na parent output
-    private final Integer arrNodeId; // vazba na DB objekt, povinný údaj
-    private final Integer arrLevelId; // vazba na DB objekt, povinný údaj
+    private final int arrNodeId; // vazba na DB objekt, povinný údaj
 
     private Integer parentNodeId = null; // vazba na parentNode
-    private Set<NodeId> childNodeIds = new HashSet<>(); // vazba na child nodes
-    private Integer position;
-    private Integer depth;
-
-    @Autowired
-    private OutputFactoryService outputFactoryService;
+    private Set<NodeId> childNodeIds = new TreeSet<>((o1, o2) -> (
+            Integer.valueOf(o1.getPosition()).compareTo(Integer.valueOf(o2.getPosition())))); // vazba na child nodes
+    private int position;
+    private int depth;
 
     /**
      * Konstruktor s povinnými hodnotami
      * @param output vazba na output
      * @param arrNodeId ID definice DB uzlu, z něhož se vychází
-     * @param arrLevelId ID definice DB uzlu, z něhož se vychází
      * @param parentNodeId ID parent Node
+     * @param depth hloubka uzlu od kořene
+     * @param position pozice uzlu
      */
-    public NodeId(Output output, Integer arrNodeId, Integer arrLevelId, Integer parentNodeId) {
+    public NodeId(final Output output, final int arrNodeId, final Integer parentNodeId, final int position,
+            final int depth) {
+        Assert.notNull(position);
+        Assert.notNull(depth);
+
         this.output = output;
         this.arrNodeId = arrNodeId;
-        this.arrLevelId = arrLevelId;
         this.parentNodeId = parentNodeId;
+        this.position = position;
+        this.depth = depth;
     }
 
     /**
      * @return dohledá v output.modes node, který je nadřazený tomuto. Pokud není nalezen nebo neexistuje vrací null.
      */
     public NodeId getParent() {
-        return output.getNodesMap().get(parentNodeId);
+        if (parentNodeId == null) {
+            return null;
+        }
+        return output.getNodeId(parentNodeId);
     }
 
-    public void setParentNodeId(Integer parentNodeId) {
+    public void setParentNodeId(final Integer parentNodeId) {
         this.parentNodeId = parentNodeId;
     }
 
@@ -78,7 +82,7 @@ public class NodeId implements RecordProvider, Comparable<NodeId> {
         }
     }
 
-    public Integer getArrNodeId() {
+    public int getArrNodeId() {
         return arrNodeId;
     }
 
@@ -86,16 +90,8 @@ public class NodeId implements RecordProvider, Comparable<NodeId> {
         return depth;
     }
 
-    public void setDepth(Integer depth) {
-        this.depth = depth;
-    }
-
     public Integer getPosition() {
         return position;
-    }
-
-    public void setPosition(Integer position) {
-        this.position = position;
     }
 
     @Override
@@ -104,7 +100,7 @@ public class NodeId implements RecordProvider, Comparable<NodeId> {
     }
 
     @Override
-    public List<NodeId> getRecordProviderChildern() {
+    public List<NodeId> getRecordProviderChildren() {
         return new ArrayList<>(getChildren());
     }
 
@@ -128,11 +124,14 @@ public class NodeId implements RecordProvider, Comparable<NodeId> {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ").add(depth.toString()).add(position.toString()).toString();
+        return new StringJoiner(", ").
+                add(Integer.toString(depth)).
+                add(Integer.toString(position)).
+                toString();
     }
 
     @Override
-    public int compareTo(NodeId o) {
+    public int compareTo(final NodeId o) {
         return CompareToBuilder.reflectionCompare(this, o);
     }
 }

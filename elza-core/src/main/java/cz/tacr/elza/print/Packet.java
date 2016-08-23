@@ -1,5 +1,7 @@
 package cz.tacr.elza.print;
 
+import java.util.StringJoiner;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -7,13 +9,12 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-import java.util.StringJoiner;
-
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
 public class Packet implements Comparable<Packet> {
+
     private String type;
     private String typeCode;
     private String typeShortcut;
@@ -40,18 +41,12 @@ public class Packet implements Comparable<Packet> {
         if (StringUtils.isNotBlank(type)) {
             sj.add(type);
         }
-//        if (StringUtils.isNotBlank(typeCode)) {
-//            sj.add(typeCode);
-//        }
         if (StringUtils.isNotBlank(typeShortcut)) {
             sj.add(typeShortcut);
         }
         if (StringUtils.isNotBlank(storageNumber)) {
             sj.add(storageNumber);
         }
-//        if (StringUtils.isNotBlank(state)) {
-//            sj.add(state);
-//        }
         return sj.toString();
     }
 
@@ -59,7 +54,7 @@ public class Packet implements Comparable<Packet> {
         return state;
     }
 
-    public void setState(String state) {
+    public void setState(final String state) {
         this.state = state;
     }
 
@@ -67,7 +62,7 @@ public class Packet implements Comparable<Packet> {
         return storageNumber;
     }
 
-    public void setStorageNumber(String storageNumber) {
+    public void setStorageNumber(final String storageNumber) {
         this.storageNumber = storageNumber;
     }
 
@@ -75,7 +70,7 @@ public class Packet implements Comparable<Packet> {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(final String type) {
         this.type = type;
     }
 
@@ -83,7 +78,7 @@ public class Packet implements Comparable<Packet> {
         return typeCode;
     }
 
-    public void setTypeCode(String typeCode) {
+    public void setTypeCode(final String typeCode) {
         this.typeCode = typeCode;
     }
 
@@ -91,7 +86,7 @@ public class Packet implements Comparable<Packet> {
         return typeShortcut;
     }
 
-    public void setTypeShortcut(String typeShortcut) {
+    public void setTypeShortcut(final String typeShortcut) {
         this.typeShortcut = typeShortcut;
     }
 
@@ -111,7 +106,7 @@ public class Packet implements Comparable<Packet> {
     }
 
     @Override
-    public int compareTo(Packet o) {
+    public int compareTo(final Packet o) {
         return CompareToBuilder.reflectionCompare(this, o);
     }
 }

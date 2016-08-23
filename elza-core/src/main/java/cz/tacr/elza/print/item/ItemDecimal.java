@@ -1,10 +1,8 @@
 package cz.tacr.elza.print.item;
 
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.print.NodeId;
-import cz.tacr.elza.print.Output;
-
 import java.math.BigDecimal;
+
+import cz.tacr.elza.print.NodeId;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -12,14 +10,12 @@ import java.math.BigDecimal;
  */
 public class ItemDecimal extends AbstractItem<BigDecimal> {
 
-    public ItemDecimal(ArrItem arrItem, Output output, NodeId nodeId, BigDecimal value) {
-        super(arrItem, output, nodeId);
-        setValue(value);
+    public ItemDecimal(final NodeId nodeId, final BigDecimal value) {
+        super(nodeId, value);
     }
 
     @Override
     public String serializeValue() {
         return getValue().toString();
     }
-
 }

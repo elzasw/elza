@@ -1,17 +1,12 @@
 package cz.tacr.elza.print.item;
 
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.print.ItemSpec;
-import cz.tacr.elza.print.ItemType;
-import cz.tacr.elza.print.NodeId;
-import cz.tacr.elza.print.Output;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-import javax.validation.constraints.NotNull;
+import cz.tacr.elza.print.NodeId;
 
 /**
  * Abstraktní základ se společnými metodami pro Items.
@@ -20,8 +15,6 @@ import javax.validation.constraints.NotNull;
  *         Date: 22.6.16
  */
 public abstract class AbstractItem<T> implements Item<T> {
-    private final ArrItem arrItem; // odkaz na zdrojovou položku
-    private final Output output; // vazba na output
     private final NodeId nodeId; // vazba na node, může být null, v takovém případě patří přímo k output
 
     private ItemType type;
@@ -29,10 +22,9 @@ public abstract class AbstractItem<T> implements Item<T> {
     private Integer position;
     private T value;
 
-    protected AbstractItem(@NotNull ArrItem arrItem, @NotNull Output output, NodeId nodeId) {
-        this.arrItem = arrItem;
-        this.output = output;
+    protected AbstractItem(final NodeId nodeId, final T value) {
         this.nodeId = nodeId;
+        this.value = value;
     }
 
     @Override
@@ -45,29 +37,21 @@ public abstract class AbstractItem<T> implements Item<T> {
         return position;
     }
 
-    public void setPosition(Integer position) {
+    public void setPosition(final Integer position) {
         this.position = position;
     }
 
     @Override
-    public int compareToItemViewOrderPosition(Item o) {
+    public int compareToItemViewOrderPosition(final Item o) {
         return new CompareToBuilder()
-                .append(getArrItem().getItemType().getViewOrder(), o.getArrItem().getItemType().getViewOrder())
-                .append(getArrItem().getPosition(), o.getArrItem().getPosition())
+                .append(type.getViewOrder(), o.getType().getViewOrder())
+                .append(position, o.getPosition())
                 .toComparison();
     }
 
     @Override
-    public ArrItem getArrItem() {
-        return arrItem;
-    }
-
     public NodeId getNodeId() {
         return nodeId;
-    }
-
-    public Output getOutput() {
-        return output;
     }
 
     @Override
@@ -75,7 +59,7 @@ public abstract class AbstractItem<T> implements Item<T> {
         return specification;
     }
 
-    public void setSpecification(ItemSpec specification) {
+    public void setSpecification(final ItemSpec specification) {
         this.specification = specification;
     }
 
@@ -84,7 +68,7 @@ public abstract class AbstractItem<T> implements Item<T> {
         return type;
     }
 
-    public void setType(ItemType type) {
+    public void setType(final ItemType type) {
         this.type = type;
     }
 
@@ -93,7 +77,7 @@ public abstract class AbstractItem<T> implements Item<T> {
         return value;
     }
 
-    public void setValue(T value) {
+    public void setValue(final T value) {
         this.value = value;
     }
 
@@ -127,6 +111,4 @@ public abstract class AbstractItem<T> implements Item<T> {
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
     }
-
-
 }

@@ -5,13 +5,14 @@ package cz.tacr.elza.print.party;
  *         Date: 22.6.16
  */
 public class Dynasty extends Party {
+
     private String genealogy;
 
     public String getGenealogy() {
         return genealogy;
     }
 
-    public void setGenealogy(String genealogy) {
+    public void setGenealogy(final String genealogy) {
         this.genealogy = genealogy;
     }
 }

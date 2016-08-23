@@ -10,6 +10,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  *         Date: 22.6.16
  */
 public class Institution {
+
     private String code;
     private String type;
     private String typeCode;
@@ -19,7 +20,7 @@ public class Institution {
         return partyGroup;
     }
 
-    public void setPartyGroup(PartyGroup partyGroup) {
+    public void setPartyGroup(final PartyGroup partyGroup) {
         this.partyGroup = partyGroup;
     }
 
@@ -27,7 +28,7 @@ public class Institution {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(final String code) {
         this.code = code;
     }
 
@@ -35,7 +36,7 @@ public class Institution {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(final String type) {
         this.type = type;
     }
 
@@ -43,7 +44,7 @@ public class Institution {
         return typeCode;
     }
 
-    public void setTypeCode(String typeCode) {
+    public void setTypeCode(final String typeCode) {
         this.typeCode = typeCode;
     }
 

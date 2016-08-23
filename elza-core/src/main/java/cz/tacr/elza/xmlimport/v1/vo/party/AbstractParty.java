@@ -17,6 +17,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.utils.PartyType;
 import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
 import cz.tacr.elza.xmlimport.v1.vo.record.Record;

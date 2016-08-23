@@ -1,21 +1,22 @@
 package cz.tacr.elza.print.party;
 
-import cz.tacr.elza.print.Record;
-import cz.tacr.elza.print.UnitDateText;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-import java.util.ArrayList;
-import java.util.List;
+import cz.tacr.elza.print.Record;
+import cz.tacr.elza.print.UnitDateText;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class Party {
+public abstract class Party {
 
     private PartyName preferredName;
     private List<PartyName> names = new ArrayList<>();
@@ -47,7 +48,7 @@ public class Party {
         return characteristics;
     }
 
-    public void setCharacteristics(String characteristics) {
+    public void setCharacteristics(final String characteristics) {
         this.characteristics = characteristics;
     }
 
@@ -55,7 +56,7 @@ public class Party {
         return history;
     }
 
-    public void setHistory(String history) {
+    public void setHistory(final String history) {
         this.history = history;
     }
 
@@ -63,7 +64,7 @@ public class Party {
         return names;
     }
 
-    public void setNames(List<PartyName> names) {
+    public void setNames(final List<PartyName> names) {
         this.names = names;
     }
 
@@ -71,7 +72,7 @@ public class Party {
         return preferredName;
     }
 
-    public void setPreferredName(PartyName preferredName) {
+    public void setPreferredName(final PartyName preferredName) {
         this.preferredName = preferredName;
     }
 
@@ -79,7 +80,7 @@ public class Party {
         return record;
     }
 
-    public void setRecord(Record record) {
+    public void setRecord(final Record record) {
         this.record = record;
     }
 
@@ -87,7 +88,7 @@ public class Party {
         return sourceInformation;
     }
 
-    public void setSourceInformation(String sourceInformation) {
+    public void setSourceInformation(final String sourceInformation) {
         this.sourceInformation = sourceInformation;
     }
 
@@ -95,7 +96,7 @@ public class Party {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(final String type) {
         this.type = type;
     }
 
@@ -103,7 +104,7 @@ public class Party {
         return typeCode;
     }
 
-    public void setTypeCode(String typeCode) {
+    public void setTypeCode(final String typeCode) {
         this.typeCode = typeCode;
     }
 
@@ -111,7 +112,7 @@ public class Party {
         return unitdateFrom;
     }
 
-    public void setUnitdateFrom(UnitDateText unitdateFrom) {
+    public void setUnitdateFrom(final UnitDateText unitdateFrom) {
         this.unitdateFrom = unitdateFrom;
     }
 
@@ -119,7 +120,7 @@ public class Party {
         return unitdateTo;
     }
 
-    public void setUnitdateTo(UnitDateText unitdateTo) {
+    public void setUnitdateTo(final UnitDateText unitdateTo) {
         this.unitdateTo = unitdateTo;
     }
 

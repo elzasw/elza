@@ -1,12 +1,10 @@
 package cz.tacr.elza.print.item;
 
 
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.print.NodeId;
-import cz.tacr.elza.print.Output;
-
 import java.io.File;
+
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.print.NodeId;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -21,9 +19,8 @@ public class ItemFile extends AbstractItem<File> {
     private String mimeType;
     private Integer pagesCount;
 
-    public ItemFile(ArrItem arrItem, Output output, NodeId nodeId, ArrFile value) {
-        super(arrItem, output, nodeId);
-        setValue(value.getFile());
+    public ItemFile(final NodeId nodeId, final ArrFile value) {
+        super(nodeId, value.getFile());
         this.fileId = value.getFileId();
     }
 
@@ -31,7 +28,7 @@ public class ItemFile extends AbstractItem<File> {
         return fileId;
     }
 
-    public void setFileId(Integer fileId) {
+    public void setFileId(final Integer fileId) {
         this.fileId = fileId;
     }
 
@@ -39,7 +36,7 @@ public class ItemFile extends AbstractItem<File> {
     public String serializeValue() {
         return getName() + " (" + getFileName() + ")";
     }
-    
+
     public File getFile() {
         return getValue();
     }
@@ -48,7 +45,7 @@ public class ItemFile extends AbstractItem<File> {
         return fileName;
     }
 
-    public void setFileName(String fileName) {
+    public void setFileName(final String fileName) {
         this.fileName = fileName;
     }
 
@@ -56,7 +53,7 @@ public class ItemFile extends AbstractItem<File> {
         return fileSize;
     }
 
-    public void setFileSize(Integer fileSize) {
+    public void setFileSize(final Integer fileSize) {
         this.fileSize = fileSize;
     }
 
@@ -64,7 +61,7 @@ public class ItemFile extends AbstractItem<File> {
         return mimeType;
     }
 
-    public void setMimeType(String mimeType) {
+    public void setMimeType(final String mimeType) {
         this.mimeType = mimeType;
     }
 
@@ -72,7 +69,7 @@ public class ItemFile extends AbstractItem<File> {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -80,7 +77,7 @@ public class ItemFile extends AbstractItem<File> {
         return pagesCount;
     }
 
-    public void setPagesCount(Integer pagesCount) {
+    public void setPagesCount(final Integer pagesCount) {
         this.pagesCount = pagesCount;
     }
 }
