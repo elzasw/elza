@@ -56,9 +56,11 @@ import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
 export default class ArrParentPage extends AbstractReactComponent {
+
     static childContextTypes = {
         shortcuts: React.PropTypes.object.isRequired
     };
+
     static propTypes = {
         splitter: React.PropTypes.object.isRequired,
         arrRegion: React.PropTypes.object.isRequired,
@@ -70,7 +72,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         focus: React.PropTypes.object.isRequired,
         userDetail: React.PropTypes.object.isRequired,
         ruleSet: React.PropTypes.object.isRequired,
-    }
+    };
 
     constructor(props, layoutClassName) {
         super(props);

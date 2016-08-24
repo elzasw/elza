@@ -34,7 +34,7 @@ import {routerNavigate} from "actions/router.jsx"
 const Ribbon = class Ribbon extends AbstractReactComponent {
 
     static propTypes = {
-        subMenu: React.PropTypes.bool.isRequired,
+        subMenu: React.PropTypes.bool,
     };
     static defaultProps = {
         subMenu: false,
