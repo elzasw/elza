@@ -4,7 +4,7 @@
 
 require('./FundActionPage.less');
 
-var ArrParentPage = require("./ArrParentPage.jsx");
+const ArrParentPage = require("./ArrParentPage.jsx");
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -51,6 +51,8 @@ const ActionState = {
 };
 
 const FundActionPage = class FundActionPage extends ArrParentPage {
+
+    static propTypes = {};
 
     constructor(props) {
         super(props, "arr-actions-page");
@@ -353,7 +355,7 @@ const FundActionPage = class FundActionPage extends ArrParentPage {
         const {fundAction: {detail, isFormVisible, config, form}, versionId} = fund;
 
         if (isFormVisible) {
-            if (config.isFetching && !config.fetched) {
+            if (config.isFetching || !config.fetched) {
                 return <Loading />
             }
 
@@ -403,12 +405,13 @@ const FundActionPage = class FundActionPage extends ArrParentPage {
                 const config = this.getConfigByCode(data.code);
                 let date = null;
                 if (data.datePlanned) {
-                    date = dateTimeToString(new Date(data.datePlanned));
+                    date = data.datePlanned;
                 } else if (data.dateStarted) {
-                    date = dateTimeToString(new Date(data.dateStarted));
+                    date = data.dateStarted;
                 } else if (data.dateFinished) {
-                    date = dateTimeToString(new Date(data.dateFinished));
+                    date = data.dateFinished;
                 }
+                date = dateTimeToString(new Date(date));
 
                 return <div className='center-container'>
                     <div className='detail'>
@@ -424,7 +427,7 @@ const FundActionPage = class FundActionPage extends ArrParentPage {
                         </div> : ''}
                         <FundNodesList
                             nodes={data.nodes}
-                            readOnly
+                            readOnly={true}
                         />
                     </div>
                 </div>
@@ -432,8 +435,6 @@ const FundActionPage = class FundActionPage extends ArrParentPage {
         }
     }
 };
-
-FundActionPage.propTypes = {};
 
 function mapStateToProps(state) {
     const {arrRegion, splitter, userDetail} = state;
@@ -444,4 +445,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(FundActionPage);
+export default connect(mapStateToProps)(FundActionPage);

@@ -48,26 +48,38 @@ import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
-var ShortcutsManager = require('react-shortcuts');
-var Shortcuts = require('react-shortcuts/component');
+const ShortcutsManager = require('react-shortcuts');
+const Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
-var ArrParentPage = class ArrParentPage extends AbstractReactComponent {
+export default class ArrParentPage extends AbstractReactComponent {
+    static childContextTypes = {
+        shortcuts: React.PropTypes.object.isRequired
+    };
+    static propTypes = {
+        splitter: React.PropTypes.object.isRequired,
+        arrRegion: React.PropTypes.object.isRequired,
+        developer: React.PropTypes.object.isRequired,
+        rulDataTypes: React.PropTypes.object.isRequired,
+        calendarTypes: React.PropTypes.object.isRequired,
+        descItemTypes: React.PropTypes.object.isRequired,
+        packetTypes: React.PropTypes.object.isRequired,
+        focus: React.PropTypes.object.isRequired,
+        userDetail: React.PropTypes.object.isRequired,
+        ruleSet: React.PropTypes.object.isRequired,
+    }
+
     constructor(props, layoutClassName) {
         super(props);
 
-        this.bindMethods(
-            'buildRibbon',
-            'handleShortcuts',
-        );
+        this.bindMethods('buildRibbon');
 
         this.layoutClassName = layoutClassName;
 
-        this.state = {
-        };
+        this.state = {};
     }
 
     componentDidMount() {
@@ -180,22 +192,3 @@ var ArrParentPage = class ArrParentPage extends AbstractReactComponent {
         )
     }
 }
-
-ArrParentPage.propTypes = {
-    splitter: React.PropTypes.object.isRequired,
-    arrRegion: React.PropTypes.object.isRequired,
-    developer: React.PropTypes.object.isRequired,
-    rulDataTypes: React.PropTypes.object.isRequired,
-    calendarTypes: React.PropTypes.object.isRequired,
-    descItemTypes: React.PropTypes.object.isRequired,
-    packetTypes: React.PropTypes.object.isRequired,
-    focus: React.PropTypes.object.isRequired,
-    userDetail: React.PropTypes.object.isRequired,
-    ruleSet: React.PropTypes.object.isRequired,
-}
-
-ArrParentPage.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
-};
-
-module.exports = ArrParentPage;

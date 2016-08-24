@@ -12,32 +12,38 @@ import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {usersUserDetailFetchIfNeeded} from 'actions/admin/user.jsx'
 
-require ('./AddRemoveList.less');
+require('./AddRemoveList.less');
 
-var AddRemoveList = class AddRemoveList extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+export default class AddRemoveList extends AbstractReactComponent {
 
-        this.bindMethods("handleRemove");
-    }
+    static propTypes = {
+        items: React.PropTypes.array.isRequired,
+        onAdd: React.PropTypes.func.isRequired,
+        onRemove: React.PropTypes.func.isRequired,
+        renderItem: React.PropTypes.func.isRequired,
+        addTitle: React.PropTypes.string,
+        removeTitle: React.PropTypes.string,
+        readOnly: React.PropTypes.bool.isRequired,
+    };
 
-    componentDidMount() {
-    }
+    static defaultProps = {
+        addTitle: "global.action.add",
+        removeTitle: "global.action.remove",
+        readOnly: false,
+        renderItem: (item) => <div>{item.name}</div>
+    };
 
-    componentWillReceiveProps(nextProps) {
-    }
-
-    handleRemove(item, index) {
+    handleRemove = (item, index) => {
         const {onRemove} = this.props;
         onRemove(item, index);
-    }
+    };
 
     render() {
         const {items, readOnly, className, onAdd, renderItem, addTitle, removeTitle} = this.props;
 
         const groups = items.map((item, index) => {
             return (
-                <div className="item-container">
+                <div className="item-container" key={"item-" + index}>
                     {renderItem(item, index)}
                     {!readOnly && <div className="item-actions-container">
                         <NoFocusButton className="remove" onClick={this.handleRemove.bind(this, item, index)} title={i18n(removeTitle)}>
@@ -46,7 +52,7 @@ var AddRemoveList = class AddRemoveList extends AbstractReactComponent {
                     </div>}
                 </div>
             )
-        })
+        });
 
         return (
             <div className={className ? "list-add-remove-container " + className : "list-add-remove-container"}>
@@ -62,28 +68,3 @@ var AddRemoveList = class AddRemoveList extends AbstractReactComponent {
         )        
     }
 };
-
-AddRemoveList.propTypes = {
-    items: React.PropTypes.array.isRequired,
-    onAdd: React.PropTypes.func.isRequired,
-    onRemove: React.PropTypes.func.isRequired,
-    renderItem: React.PropTypes.func.isRequired,
-    addTitle: React.PropTypes.string,
-    removeTitle: React.PropTypes.string,
-    readOnly: React.PropTypes.bool.isRequired,
-};
-
-AddRemoveList.defaultProps = {
-    addTitle: "global.action.add",
-    removeTitle: "global.action.remove",
-    readOnly: false,
-    renderItem: (item) => <div>{item.name}</div>
-};
-
-function mapStateToProps(state) {
-    return {
-    }
-}
-
-module.exports = connect(mapStateToProps)(AddRemoveList);
-
