@@ -214,8 +214,13 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     handleShortcuts(action) {
         console.log("#handleShortcuts", '[' + action + ']', this);
 
-        const {node, focus} = this.props
+        const {node, closed, userDetail, fundId} = this.props
         const index = indexById(node.childNodes, node.selectedSubNodeId)
+
+        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
+        var settingsValues = settings.value != 'false';
+        const readMode = closed || settingsValues;
+
 
         switch (action) {
             case 'prevItem':
@@ -231,11 +236,10 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 }
                 break
             case 'searchItem':
-                this.refs.search.getInput().getInputDOMNode().focus()
+                ReactDOM.findDOMNode(this.refs.search.getInput().refs.input).focus()
                 break
             case 'addDescItemType':
-                const {node} = this.props
-                if (node.selectedSubNodeId !== null) {
+                if (node.selectedSubNodeId !== null && !readMode) {
                     this.handleAddDescItemType()
                 }
                 break
@@ -246,16 +250,24 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 }
                 break
             case 'addNodeAfter':
-                this.refs.subNodeForm.getWrappedInstance().addNodeAfterClick()
+                if (!readMode) {
+                    this.refs.subNodeForm.getWrappedInstance().addNodeAfterClick()
+                }
                 break
             case 'addNodeBefore':
-                this.refs.subNodeForm.getWrappedInstance().addNodeBeforeClick()
+                if (!readMode) {
+                    this.refs.subNodeForm.getWrappedInstance().addNodeBeforeClick()
+                }
                 break
             case 'addNodeChild':
-                this.refs.subNodeForm.getWrappedInstance().addNodeChildClick()
+                if (!readMode) {
+                    this.refs.subNodeForm.getWrappedInstance().addNodeChildClick()
+                }
                 break
             case 'addNodeEnd':
-                this.refs.addNodeChild.handleToggle(true, false)
+                if (!readMode) {
+                    this.refs.addNodeChild.handleToggle(true, false)
+                }
                 break
         }
     }

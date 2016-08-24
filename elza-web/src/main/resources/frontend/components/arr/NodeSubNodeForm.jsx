@@ -35,6 +35,9 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
             "handleDescItemTypeUnlockAll",
             "getNodeSetting",
             "initFocus",
+            'addNodeAfterClick',
+            'addNodeBeforeClick',
+            'addNodeChildClick',
         );
     }
 
@@ -150,6 +153,19 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
             }
         }
         return itemsToCopy;
+    }
+
+
+    addNodeAfterClick() {
+        this.refs.addNodeAfter.handleToggle(true, false)
+    }
+
+    addNodeBeforeClick() {
+        this.refs.addNodeBefore.handleToggle(true, false)
+    }
+
+    addNodeChildClick() {
+        this.refs.addNodeChild.handleToggle(true, false)
     }
 
     /**
