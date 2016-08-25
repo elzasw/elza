@@ -40,6 +40,9 @@ import {
 } from 'actions/arr/fundAction.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
+const ShortcutsManager = require('react-shortcuts');
+import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import {Utils} from 'components/index.jsx';
 
 const ActionState = {
     RUNNING: 'RUNNING',
@@ -49,6 +52,16 @@ const ActionState = {
     ERROR: 'ERROR',
     INTERRUPTED: 'INTERRUPTED'
 };
+
+const keyModifier = Utils.getKeyModifier()
+
+var keymap = ArrParentPage.mergeKeymap({
+    ArrParent: {
+        newAction: keyModifier + '+'
+    }
+});
+
+const shortcutManager = new ShortcutsManager(keymap)
 
 const FundActionPage = class FundActionPage extends ArrParentPage {
 
@@ -86,6 +99,21 @@ const FundActionPage = class FundActionPage extends ArrParentPage {
             this.dispatch(fundActionFetchListIfNeeded(fund.versionId));
             this.dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
             this.dispatch(fundActionFetchDetailIfNeeded(fund.versionId));
+        }
+    }
+
+    getChildContext() {
+        return { shortcuts: shortcutManager };
+    }
+
+    handleShortcuts(action) {
+        console.log("#handleShortcuts FundActionPage", '[' + action + ']', this);
+        switch (action) {
+            case 'newAction':
+                this.handleRibbonNewAction();
+                break;
+            default:
+                super.handleShortcuts(action);
         }
     }
 

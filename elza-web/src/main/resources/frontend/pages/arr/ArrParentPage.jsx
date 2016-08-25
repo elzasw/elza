@@ -55,10 +55,32 @@ import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
+const keyModifier = Utils.getKeyModifier()
+
 export default class ArrParentPage extends AbstractReactComponent {
 
     static childContextTypes = {
         shortcuts: React.PropTypes.object.isRequired
+    };
+
+    static keymap = {
+        ArrParent: {
+            back: keyModifier + 'z',
+            arr: keyModifier + 'a',
+            dataGrid: keyModifier + 't',
+            movements: keyModifier + 'm',
+            actions: keyModifier + 'h',
+            output: keyModifier + 'o',
+        },
+    };
+
+    static mergeKeymap = (keys) => {
+        return {
+            ArrParent:{
+                ...ArrParentPage.keymap.ArrParent,
+                ...keys.ArrParent
+            }
+        }
     };
 
     static propTypes = {
@@ -77,11 +99,40 @@ export default class ArrParentPage extends AbstractReactComponent {
     constructor(props, layoutClassName) {
         super(props);
 
-        this.bindMethods('buildRibbon');
+        this.bindMethods('buildRibbon', 'handleShortcuts');
 
         this.layoutClassName = layoutClassName;
 
         this.state = {};
+    }
+
+    handleShortcuts(action) {
+        console.log("#handleShortcuts ArrParentPage", '[' + action + ']', this);
+        switch (action) {
+            case 'back':
+                this.dispatch(routerNavigate("/~arr"));
+                break;
+            case 'arr':
+                this.dispatch(routerNavigate('/arr'));
+                this.dispatch(setFocus('arr', 1))
+                break;
+            case 'movements':
+                this.dispatch(routerNavigate('/arr/movements'));
+                this.dispatch(setFocus(null, 1))
+                break;
+            case 'dataGrid':
+                this.dispatch(routerNavigate('/arr/dataGrid'));
+                this.dispatch(setFocus(null, 1))
+                break;
+            case 'output':
+                this.dispatch(routerNavigate('/arr/output'));
+                this.dispatch(setFocus('fund-output', 1))
+                break;
+            case 'actions':
+                this.dispatch(routerNavigate('/arr/actions'));
+                this.dispatch(setFocus('fund-action', 1))
+                break;
+        }
     }
 
     componentDidMount() {

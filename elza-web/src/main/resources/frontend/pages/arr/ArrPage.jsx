@@ -57,20 +57,20 @@ import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
 
-var keyModifier = Utils.getKeyModifier()
+const keyModifier = Utils.getKeyModifier()
 
-var keymap = {
+const keymap = ArrParentPage.mergeKeymap({
     ArrParent: {
-        bulkActions: keyModifier + 'h',
         registerJp: keyModifier + 'j',
         area1: keyModifier + '1',
         area2: keyModifier + '2',
         area3: keyModifier + '3',
     },
-}
-var shortcutManager = new ShortcutsManager(keymap)
+});
 
-var ArrPage = class ArrPage extends ArrParentPage {
+const shortcutManager = new ShortcutsManager(keymap)
+
+const ArrPage = class ArrPage extends ArrParentPage {
     constructor(props) {
         super(props, "fa-page");
 
@@ -186,11 +186,8 @@ var ArrPage = class ArrPage extends ArrParentPage {
     }
 
     handleShortcuts(action) {
-        console.log("#handleShortcuts", '[' + action + ']', this);
+        console.log("#handleShortcuts ArrPage", '[' + action + ']', this);
         switch (action) {
-            case 'bulkActions':
-                this.handleBulkActionsDialog()
-                break
             case 'registerJp':
                 this.handleRegisterJp()
                 break
@@ -203,6 +200,8 @@ var ArrPage = class ArrPage extends ArrParentPage {
             case 'area3':
                 this.dispatch(setFocus('arr', 3))
                 break
+            default:
+                super.handleShortcuts(action);
         }
     }
 

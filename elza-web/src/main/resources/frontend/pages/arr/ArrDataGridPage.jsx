@@ -57,7 +57,13 @@ import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
-var ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
+
+const keyModifier = Utils.getKeyModifier()
+const keymap = ArrParentPage.mergeKeymap({});
+
+const shortcutManager = new ShortcutsManager(keymap)
+
+const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
     constructor(props) {
         super(props, "fa-page");
     }
@@ -100,6 +106,15 @@ var ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
 
     hasPageShowRights(userDetail, activeFund) {
         return userDetail.hasArrPage(activeFund ? activeFund.id : null);
+    }
+
+    getChildContext() {
+        return { shortcuts: shortcutManager };
+    }
+
+    handleShortcuts(action) {
+        console.log("#handleShortcuts ArrDataGridPage", '[' + action + ']', this);
+        super.handleShortcuts(action);
     }
 
     renderCenterPanel() {
