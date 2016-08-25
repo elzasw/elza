@@ -692,6 +692,15 @@ public class UserService {
     }
 
     /**
+     * Vyhledá list uživatelů podle osoby
+     * @param party osoba
+     * @return list uživatelů
+     */
+    public List<UsrUser> findUsersByParty(final ParParty party) {
+        return userRepository.findByParty(party);
+    }
+
+    /**
      * Event změněného uživatele.
      *
      * @param user uživatel
@@ -755,5 +764,4 @@ public class UserService {
     private void deleteGroupEvent(final UsrGroup group) {
         eventNotificationService.publishEvent(new EventId(EventType.GROUP_DELETE, group.getGroupId()));
     }
-
 }

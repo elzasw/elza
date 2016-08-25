@@ -527,6 +527,7 @@ var messages = {
     "party.nameValidTo": "Působnost do",
     "party.name.from": "Datace použití jména od",
     "party.name.to": "Datace použití jména do",
+    "party.delete.error": "Odstranění osoby se nezdařilo",
     "party.delete.confirm": "Opravdu chcete smazat tuto osobu?",
     "party.delete.button": "Smazat osobu",
     "party.relation.class": "Třída vztahu",

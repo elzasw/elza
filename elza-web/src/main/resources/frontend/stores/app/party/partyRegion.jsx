@@ -22,7 +22,6 @@ const initialState = {
 
 export default function partyRegion(state = initialState, action) {
     switch (action.type) {
-
         //case types.LOGOUT:
         case types.LOGIN_SUCCESS: {
             if (action.reset) {
@@ -30,8 +29,7 @@ export default function partyRegion(state = initialState, action) {
             }
             return state;
         }
-
-        case types.STORE_LOAD:
+        case types.STORE_LOAD:{
             if (!action.partyRegion) {
                 return state;
             }
@@ -47,11 +45,12 @@ export default function partyRegion(state = initialState, action) {
                 selectedPartyData: null,
                 partyTypes: [],
                 ...action.partyRegion
-            }
-        case types.STORE_SAVE:
+            };
+        }
+        case types.STORE_SAVE:{
             const {selectedPartyData, filterText, selectedPartyID} = state;
 
-            var _info
+            let _info
             if (selectedPartyData && selectedPartyData.partyId === selectedPartyID) {
                 _info = {name: selectedPartyData.record.record, desc: selectedPartyData.record.characteristics}
             } else {
@@ -62,109 +61,114 @@ export default function partyRegion(state = initialState, action) {
                 _info,
                 filterText,
                 selectedPartyID
-            }
+            };
+        }
         case types.PARTY_FIND_PARTY_REQUEST:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 isFetchingSearch: true,
-            })
+            };
         case types.PARTY_FIND_PARTY_RECEIVE:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 dirtySearch: false,
                 isFetchingSearch: false,
                 fetchedSearch: true,
                 items: action.items,
                 itemsCount: action.itemsCount,
                 filterText: action.filterText,
-            })
+            };
         case types.PARTY_DETAIL_REQUEST:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 isFetchingDetail: true,
-            })
+            };
         case types.PARTY_DETAIL_RECEIVE:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 dirty: false,
                 isFetchingDetail: false,
                 fetchedDetail: true,
                 selectedPartyData: action.selectedPartyData,
                 selectedPartyID: action.selectedPartyID,
-            })
+            };
         case types.PARTY_DETAIL_CLEAR:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 selectedPartyData: null,
                 selectedPartyID: null,
-            })
-        case types.PARTY_UPDATED:
-            var isDirty = action.partyId === state.selectedPartyID;
-            console.log("partyUpdate", isDirty, state);
-
-            if (isDirty) {
-                return Object.assign({}, state, {
-                    dirty: isDirty
-                })
+            };
+        case types.PARTY_UPDATED:{
+            if (action.partyId === state.selectedPartyID) {
+                return {
+                    ...state,
+                    dirty: true
+                }
             }
 
             return state;
-
-        case types.CHANGE_PARTY_DELETED:
-            var isDirty = false;
-            var selectedPartyID = state.selectedPartyID == action.partyId ? null : state.selectedPartyID;
-
+        }
+        case types.CHANGE_PARTY_DELETED:{
             if (state.items) {
-                state.items.forEach(item => {
+                for (let item of state.items) {
                     if (item.partyId == action.partyId) {
-                        isDirty = true;
-                    }
-                });
-            }
-
-            if (isDirty) {
-                return Object.assign({}, state, {
-                    dirty: isDirty,
-                    isFetchingSearch: false,
-                    fetchedSearch: false,
-                    selectedPartyID: selectedPartyID
-                })
-            }
-
-            return state;
-
-        case types.PARTY_SELECT:
-            var result = {...state};
-            result.panel = panel(result.panel, action);
-            result.selectedPartyID = action.partyId;
-            result.dirty = true;
-            result.dirtySearch = true;
-            result.filterText = "";
-            return consolidateState(state, result);
-
-        case types.PARTY_ARR_RESET:
-            var result = {...state};
-            result.panel = panel(result.panel, action);
-            result.selectedPartyID = null;
-            result.selectedPartyData = null;
-            result.fetchedSearch = false;
-            result.fetchedDetail = false;
-            result.filterText = "";
-            return consolidateState(state, result);
-
-            case types.CHANGE_REGISTRY_UPDATE:
-                if(state.items){
-                    var recordIds = {};
-                    for(var i = 0; i < action.changedIds.length;i++){
-                        recordIds[action.changedIds[i]] = 1;
-                    }
-                    //projdeme všechny zobrazené osoby a pokud je zobreno aktualizovane heslo,musíme přenačíst seznam
-                    for(var i = 0; i < state.items.length;i++){
-                        if(recordIds[state.items[i].record.recordId] === 1){
-                            return Object.assign({}, state, {
-                                dirtySearch: true
-                            });
+                        const selectedPartyID = state.selectedPartyID == action.partyId ? null : state.selectedPartyID;
+                        const selectedPartyData = state.selectedPartyID == action.partyId ? null : state.selectedPartyData;
+                        return {
+                            ...state,
+                            dirty: true,
+                            isFetchingSearch: false,
+                            fetchedSearch: false,
+                            selectedPartyID,
+                            selectedPartyData
                         }
                     }
                 }
+            }
+
             return state;
-
-
+        }
+        case types.PARTY_SELECT:{
+            const result = {
+                ...state,
+                panel: panel(state.panel, action),
+                selectedPartyID: action.partyId,
+                dirty: true,
+                dirtySearch: true,
+                filterText: "",
+            };
+            return consolidateState(state, result);
+        }
+        case types.PARTY_ARR_RESET:{
+            const result = {
+                ...state,
+                panel: panel(state.panel, action),
+                selectedPartyID: null,
+                selectedPartyData: null,
+                fetchedSearch: false,
+                fetchedDetail: false,
+                filterText: "",
+            };
+            return consolidateState(state, result);
+        }
+        case types.CHANGE_REGISTRY_UPDATE:{
+            if(state.items) {
+                const recordIds = {};
+                for(let i = 0; i < action.changedIds.length;i++){
+                    recordIds[action.changedIds[i]] = 1;
+                }
+                //projdeme všechny zobrazené osoby a pokud je zobreno aktualizovane heslo,musíme přenačíst seznam
+                for(let i = 0; i < state.items.length;i++){
+                    if(recordIds[state.items[i].record.recordId] === 1) {
+                        return {
+                            ...state,
+                            dirtySearch: true
+                        };
+                    }
+                }
+            }
+            return state;
+        }
         default:
             return state
     }
