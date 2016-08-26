@@ -35,6 +35,9 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
             "handleDescItemTypeUnlockAll",
             "getNodeSetting",
             "initFocus",
+            'addNodeAfterClick',
+            'addNodeBeforeClick',
+            'addNodeChildClick',
         );
     }
 
@@ -152,6 +155,19 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
         return itemsToCopy;
     }
 
+
+    addNodeAfterClick() {
+        this.refs.addNodeAfter.handleToggle(true, false)
+    }
+
+    addNodeBeforeClick() {
+        this.refs.addNodeBefore.handleToggle(true, false)
+    }
+
+    addNodeChildClick() {
+        this.refs.addNodeChild.handleToggle(true, false)
+    }
+
     /**
      * Renderování globálních akcí pro formulář.
      * @return {Object} view
@@ -211,13 +227,9 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
     render() {
         const {singleDescItemTypeEdit, userDetail} = this.props;
         const {versionId, focus, closed, fundId, routingKey, rulDataTypes, calendarTypes, descItemTypes, packetTypes, packets,
-            subNodeForm, conformityInfo, descItemCopyFromPrevEnabled, singleDescItemTypeId} = this.props;
+            subNodeForm, conformityInfo, descItemCopyFromPrevEnabled, singleDescItemTypeId, readMode} = this.props;
         
         let formActions
-
-        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
-        var settingsValues = settings.value != 'false';
-        const readMode = closed || settingsValues;
 
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
             if (!readMode && !singleDescItemTypeEdit) {
@@ -299,6 +311,7 @@ NodeSubNodeForm.propTypes = {
     onVisiblePolicy: React.PropTypes.func.isRequired,
     singleDescItemTypeId: React.PropTypes.number,
     singleDescItemTypeEdit: React.PropTypes.bool,
+    readMode: React.PropTypes.bool,
 }
 
 module.exports = connect(mapStateToProps, null, null, { withRef: true })(NodeSubNodeForm);

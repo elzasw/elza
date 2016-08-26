@@ -53,6 +53,7 @@ var Layout = class Layout extends AbstractReactComponent {
                 break
             case 'party':
                 this.dispatch(routerNavigate('/party'))
+                this.dispatch(setFocus('party', 1, 'tree'))
                 break
             case 'registry':
                 this.dispatch(routerNavigate('/registry'))

@@ -68,13 +68,14 @@ var Shortcuts = require('react-shortcuts/component');
 
 var keyModifier = Utils.getKeyModifier();
 
-var keymap = {
+var keymap = ArrParentPage.mergeKeymap({
     ArrParent: {
+        newOutput: keyModifier + '+',
         area1: keyModifier + '1',
         area2: keyModifier + '2',
         area3: keyModifier + '3'
     }
-};
+});
 var shortcutManager = new ShortcutsManager(keymap);
 
 let _selectedTab = 0
@@ -158,8 +159,11 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     handleShortcuts(action) {
-        console.log("#handleShortcuts", '[' + action + ']', this);
+        console.log("#handleShortcuts ArrOutputPage", '[' + action + ']', this);
         switch (action) {
+            case 'newOutput':
+                this.handleAddOutput();
+                break;
             case 'area1':
                 this.dispatch(setFocus('fund-output', 1));
                 break;
@@ -169,6 +173,8 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             case 'area3':
                 this.dispatch(setFocus('fund-output', 3));
                 break
+            default:
+                super.handleShortcuts(action);
         }
     }
 
@@ -249,7 +255,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
         var submit = (data) => {
             this.dispatch(modalDialogHide());
-            this.dispatch(outputFormActions.fundSubNodeFormDescItemTypeAdd(fund.versionId, null, data.descItemTypeId));
+            this.dispatch(outputFormActions.fundSubNodeFormDescItemTypeAdd(fund.versionId, null, data.descItemTypeId.id));
         };
         // Modální dialog
         var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;

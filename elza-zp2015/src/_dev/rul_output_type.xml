@@ -8,7 +8,7 @@
     <output-type code="LABELS">
         <name>Štítky</name>
     </output-type>
-    <output-type code="INVENTORY">
+    <output-type code="INVENTORY" filename="ZP2015_AvailableItems.drl">
         <name>Soupis</name>
     </output-type>
 </output-types>

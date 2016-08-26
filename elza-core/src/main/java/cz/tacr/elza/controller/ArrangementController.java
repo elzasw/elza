@@ -695,7 +695,7 @@ public class ArrangementController {
 
         List<RulItemTypeExt> itemTypes;
         try {
-            itemTypes = ruleService.getOutputItemTypes(outputDefinition, version);
+            itemTypes = ruleService.getOutputItemTypes(outputDefinition);
         } catch (Exception e) {
             itemTypes = new ArrayList<>();
         }

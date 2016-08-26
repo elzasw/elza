@@ -32,6 +32,14 @@ import {userPasswordChange} from 'actions/admin/user.jsx'
 import {routerNavigate} from "actions/router.jsx"
 
 const Ribbon = class Ribbon extends AbstractReactComponent {
+
+    static propTypes = {
+        subMenu: React.PropTypes.bool,
+    };
+    static defaultProps = {
+        subMenu: false,
+    };
+
     constructor(props) {
         super(props);
 
@@ -41,7 +49,7 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
             'handlePasswordChangeForm',
             'handlePasswordChange',
             'handleBack'
-        )
+        );
 
         this.state = {};
     }
@@ -179,7 +187,7 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
     handlePasswordChange(data) {
         this.dispatch(userPasswordChange(data.oldPassword, data.password));
     }
-}
+};
 
 function mapStateToProps(state) {
     const {focus, login, userDetail, status} = state;
@@ -191,11 +199,4 @@ function mapStateToProps(state) {
     }
 }
 
-Ribbon.propTypes = {
-    subMenu: React.PropTypes.bool.isRequired,
-}
-Ribbon.defaultProps = {
-    subMenu: false,
-}
-
-module.exports = connect(mapStateToProps)(Ribbon);
+export default connect(mapStateToProps)(Ribbon);

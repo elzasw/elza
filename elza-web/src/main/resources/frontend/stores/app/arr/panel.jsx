@@ -5,30 +5,34 @@ const panelInitialState = {
     id: null,
     name: null,
     versionId: null
-}
+};
 
 export function panel(state = panelInitialState, action = {}) {
     switch (action.type) {
-
         case types.PARTY_SELECT:
-        case types.REGISTRY_SELECT:
-            var result = {...state};
-            var fund = action.fa;
-            if (fund != null) {
-                result.id = fund.id;
-                result.name = fund.name;
-                result.versionId = fund.versionId;
+        case types.REGISTRY_SELECT:{
+            const fund = action.fa;
+            if (fund) {
+                const result = {
+                    ...state,
+                    id: fund.id,
+                    name: fund.name,
+                    versionId: fund.versionId,
+                };
+                return consolidateState(state, result);
             }
-            return consolidateState(state, result);
-
+            return state;
+        }
         case types.REGISTRY_ARR_RESET:
-        case types.PARTY_ARR_RESET:
-            var result = {...state};
-            result.id = null;
-            result.name = null;
-            result.versionId = null;
+        case types.PARTY_ARR_RESET: {
+            const result = {
+                ...state,
+                id: null,
+                name: null,
+                versionId: null,
+            };
             return consolidateState(state, result);
-
+        }
         default:
             return state;
     }

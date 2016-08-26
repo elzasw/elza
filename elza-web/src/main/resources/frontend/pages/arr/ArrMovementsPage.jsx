@@ -59,7 +59,12 @@ import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
-var ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
+const keyModifier = Utils.getKeyModifier()
+const keymap = ArrParentPage.mergeKeymap({});
+
+const shortcutManager = new ShortcutsManager(keymap)
+
+const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
     constructor(props) {
         super(props, "fa-page");
 
@@ -82,6 +87,15 @@ var ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
     getDestNode() {
         const fund = this.getActiveFund(this.props);
         return fund.fundTreeMovementsRight.nodes[indexById(fund.fundTreeMovementsRight.nodes, fund.fundTreeMovementsRight.selectedId)];
+    }
+
+    getChildContext() {
+        return { shortcuts: shortcutManager };
+    }
+
+    handleShortcuts(action) {
+        console.log("#handleShortcuts ArrMovementsPage", '[' + action + ']', this);
+        super.handleShortcuts(action);
     }
 
     getMoveInfo() {

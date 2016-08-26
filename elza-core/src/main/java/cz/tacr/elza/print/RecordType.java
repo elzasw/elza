@@ -10,10 +10,11 @@ import org.apache.commons.lang.builder.ToStringStyle;
  *         Date: 27.6.16
  */
 public class RecordType {
+
     private String name;
     private String code;
-    private Integer countRecords = 0;
-    private Integer countDirectRecords = 0;
+    private int countRecords = 0;
+    private int countDirectRecords = 0;
 
     /**
      * Metoda pro získání hodnoty do fieldu v Jasper.
@@ -29,23 +30,23 @@ public class RecordType {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(final String code) {
         this.code = code;
     }
 
-    public Integer getCountDirectRecords() {
+    public int getCountDirectRecords() {
         return countDirectRecords;
     }
 
-    public void setCountDirectRecords(Integer countDirectRecords) {
+    public void setCountDirectRecords(final int countDirectRecords) {
         this.countDirectRecords = countDirectRecords;
     }
 
-    public Integer getCountRecords() {
+    public int getCountRecords() {
         return countRecords;
     }
 
-    public void setCountRecords(Integer countRecords) {
+    public void setCountRecords(final int countRecords) {
         this.countRecords = countRecords;
     }
 
@@ -53,7 +54,7 @@ public class RecordType {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 

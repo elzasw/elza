@@ -30,7 +30,7 @@ public class RulRule implements cz.tacr.elza.api.RulRule<RulPackage, RulRuleSet,
     private Integer ruleId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
-    @JoinColumn(name = "ruleSetId", nullable = false)
+    @JoinColumn(name = "ruleSetId", nullable = true)
     private RulRuleSet ruleSet;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
@@ -46,10 +46,6 @@ public class RulRule implements cz.tacr.elza.api.RulRule<RulPackage, RulRuleSet,
 
     @Column(nullable = false)
     private Integer priority;
-
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulOutputType.class)
-    @JoinColumn(name = "outputTypeId", nullable = true)
-    private RulOutputType outputType;
 
     @Override
     public Integer getRuleId() {
@@ -111,13 +107,4 @@ public class RulRule implements cz.tacr.elza.api.RulRule<RulPackage, RulRuleSet,
         this.priority = priority;
     }
 
-    @Override
-    public RulOutputType getOutputType() {
-        return outputType;
-    }
-
-    @Override
-    public void setOutputType(final RulOutputType outputType) {
-        this.outputType = outputType;
-    }
 }

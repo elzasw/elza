@@ -1,8 +1,6 @@
 package cz.tacr.elza.print.item;
 
-import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.print.NodeId;
-import cz.tacr.elza.print.Output;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -10,9 +8,8 @@ import cz.tacr.elza.print.Output;
  */
 public class ItemEnum extends AbstractItem<String> {
 
-    public ItemEnum(ArrItem arrItem, Output output, NodeId nodeId, String value) {
-        super(arrItem, output, nodeId);
-        setValue(value);
+    public ItemEnum(final NodeId nodeId, final String value) {
+        super(nodeId, value);
     }
 
     @Override
@@ -24,5 +21,4 @@ public class ItemEnum extends AbstractItem<String> {
     public String serialize() {
         return serializeValue();
     }
-
 }

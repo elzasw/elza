@@ -566,20 +566,11 @@ public class RuleService {
      * Získání rozšířených typů hodnot atributů se specifikacemi.
      * Používá výchozí strategie
      *
-     * @param fundVersionId      identifikátor verze archivní pomůcky
      * @param outputDefinitionId identifikátor výstupu
      * @return seznam typů hodnot atributů se specifikacemi
      */
-    public List<RulItemTypeExt> getOutputItemTypes(final Integer fundVersionId,
-                                                   final Integer outputDefinitionId) {
-        Assert.notNull(fundVersionId);
+    public List<RulItemTypeExt> getOutputItemTypes(final Integer outputDefinitionId) {
         Assert.notNull(outputDefinitionId);
-
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-
-        if (version == null) {
-            throw new IllegalArgumentException("Verze archivni pomucky neexistuje");
-        }
 
         ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
 
@@ -587,17 +578,16 @@ public class RuleService {
             throw new IllegalArgumentException("Výstup neexistuje");
         }
 
-        return getOutputItemTypes(outputDefinition, version);
+        return getOutputItemTypes(outputDefinition);
     }
 
     /**
      * Vrací typy atributu.
      *
      * @param outputDefinition výstup
-     * @param fundVersion      verze AS
      * @return seznam typů
      */
-    public List<RulItemTypeExt> getOutputItemTypes(final ArrOutputDefinition outputDefinition, final ArrFundVersion fundVersion) {
+    public List<RulItemTypeExt> getOutputItemTypes(final ArrOutputDefinition outputDefinition) {
         List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes();
 
         List<RulItemTypeAction> itemTypeActions = itemTypeActionRepository.findAll();
@@ -622,6 +612,6 @@ public class RuleService {
             }
         }
 
-        return rulesExecutor.executeOutputItemTypesRules(outputDefinition, rulDescItemTypeExtList, fundVersion);
+        return rulesExecutor.executeOutputItemTypesRules(outputDefinition, rulDescItemTypeExtList);
     }
 }

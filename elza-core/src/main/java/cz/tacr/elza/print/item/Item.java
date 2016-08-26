@@ -1,10 +1,6 @@
 package cz.tacr.elza.print.item;
 
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.print.ItemSpec;
-import cz.tacr.elza.print.ItemType;
 import cz.tacr.elza.print.NodeId;
-import cz.tacr.elza.print.Output;
 
 /**
  * Rozhranní pro tiskový Item. Implementováno dle jednotlivých datových typů.
@@ -15,19 +11,9 @@ import cz.tacr.elza.print.Output;
 public interface Item<T> {
 
     /**
-     * @return původní uložený item, ze kterého tiskový objekt vychází
-     */
-    ArrItem getArrItem();
-
-    /**
      * @return node na který je item navázán, pokud je null, jde o navázání přímo na output
      */
     NodeId getNodeId();
-
-    /**
-     * @return output na který je item navázán
-     */
-    Output getOutput();
 
     /**
      * @return typ item, odpovídá rul_item_type (+rul_data_type)

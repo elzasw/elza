@@ -15,6 +15,9 @@ public class OutputType {
     @XmlAttribute(name = "code", required = true)
     private String code;
 
+    @XmlAttribute(name = "filename", required = false)
+    private String filename;
+
     @XmlElement(name = "name", required = true)
     private String name;
 
@@ -24,6 +27,14 @@ public class OutputType {
 
     public void setCode(final String code) {
         this.code = code;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(final String filename) {
+        this.filename = filename;
     }
 
     public String getName() {

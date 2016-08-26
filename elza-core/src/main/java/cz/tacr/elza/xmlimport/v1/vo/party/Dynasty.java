@@ -5,6 +5,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import cz.tacr.elza.utils.PartyType;
 import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 
 /**

@@ -10,6 +10,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {i18n, AddPartyForm} from 'components/index.jsx';
 import {getPartyTypeById} from 'actions/refTables/partyTypes.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
+import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 
 
 /**
@@ -70,6 +71,12 @@ export function deleteParty(partyId, filterText) {
                 dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
                 dispatch(clearPartyDetail());
                 dispatch(findPartyFetch(filterText));       // znovu načtení leveho panelu s vyfiltrovanými osobami (aby zmizela ta smazaná)
+            }).catch((err) => {
+                if (err.controller) {
+                    dispatch(addToastrWarning(i18n('party.delete.error'), err.data.message));
+                } else {
+                    reject(err);
+                }
             });
     }
 }

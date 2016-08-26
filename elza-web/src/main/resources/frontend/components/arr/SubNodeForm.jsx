@@ -55,9 +55,6 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'trySetFocus', 
             'initFocus', 
             'getFlatDescItemTypes',
-            'addNodeAfterClick', 
-            'addNodeBeforeClick', 
-            'addNodeChildClick', 
             'handleJsonTableDownload'
         );
     }
@@ -283,9 +280,15 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         const {subNodeForm: {formData}} = this.props
         var descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex]
         var index = descItemType.descItems.length
+
+        // pokud není opakovatelný, nelze přidat další položku
+        if (descItemType.rep !== 1) {
+            return;
+        }
+
         var setFocusFunc = () => setFocus('arr', 2, 'subNodeForm', {descItemTypeId: descItemType.id, descItemObjectId: null, descItemIndex: index})
 
-        // Smazání hodnoty
+        // Přidání hodnoty
         this.dispatch(this.props.formActions.fundSubNodeFormValueAdd(this.props.versionId, this.props.routingKey, valueLocation));
 
         // Nyní pošleme focus
@@ -786,18 +789,6 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 readMode={readMode}
             />
         )
-    }
-
-    addNodeAfterClick() {
-        this.refs.addNodeAfter.handleToggle(true, false)
-    }
-
-    addNodeBeforeClick() {
-        this.refs.addNodeBefore.handleToggle(true, false)
-    }
-
-    addNodeChildClick() {
-        this.refs.addNodeChild.handleToggle(true, false)
     }
 
     render() {

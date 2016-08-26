@@ -1,27 +1,23 @@
 package cz.tacr.elza.service.output;
 
 import java.time.ZoneId;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.CompareToBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -43,14 +39,16 @@ import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrItemUnitid;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ParDynasty;
+import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPerson;
 import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -58,8 +56,6 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.print.Fund;
-import cz.tacr.elza.print.ItemSpec;
-import cz.tacr.elza.print.ItemType;
 import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Output;
@@ -69,6 +65,7 @@ import cz.tacr.elza.print.RecordType;
 import cz.tacr.elza.print.UnitDate;
 import cz.tacr.elza.print.UnitDateText;
 import cz.tacr.elza.print.item.AbstractItem;
+import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemCoordinates;
 import cz.tacr.elza.print.item.ItemDecimal;
 import cz.tacr.elza.print.item.ItemEnum;
@@ -78,21 +75,29 @@ import cz.tacr.elza.print.item.ItemJsonTable;
 import cz.tacr.elza.print.item.ItemPacketRef;
 import cz.tacr.elza.print.item.ItemPartyRef;
 import cz.tacr.elza.print.item.ItemRecordRef;
+import cz.tacr.elza.print.item.ItemSpec;
 import cz.tacr.elza.print.item.ItemString;
 import cz.tacr.elza.print.item.ItemText;
+import cz.tacr.elza.print.item.ItemType;
 import cz.tacr.elza.print.item.ItemUnitId;
 import cz.tacr.elza.print.item.ItemUnitdate;
+import cz.tacr.elza.print.party.Dynasty;
+import cz.tacr.elza.print.party.Event;
 import cz.tacr.elza.print.party.Institution;
 import cz.tacr.elza.print.party.Party;
 import cz.tacr.elza.print.party.PartyGroup;
 import cz.tacr.elza.print.party.PartyName;
+import cz.tacr.elza.print.party.Person;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyGroupRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
+import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.service.OutputService;
+import cz.tacr.elza.utils.PartyType;
+import cz.tacr.elza.utils.ProxyUtils;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
@@ -112,7 +117,6 @@ public class OutputFactoryService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private MapperFactory mapperFactory;
     private MapperFacade mapper;
 
     @Autowired
@@ -130,9 +134,6 @@ public class OutputFactoryService {
     @Autowired
     private NodeRepository nodeRepository;
 
-//    @Autowired
-//    private ItemRepository itemRepository;
-
     @Autowired
     private ItemService itemService;
 
@@ -140,11 +141,14 @@ public class OutputFactoryService {
     private OutputService outputService;
 
     @Autowired
+    private ArrangementService arrangementService;
+
+    @Autowired
     private NodeRegisterRepository nodeRegisterRepository;
 
     public OutputFactoryService() {
         // inicializace mapperů
-        this.mapperFactory = new DefaultMapperFactory.Builder().build();
+        MapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
 
         mapperFactory.classMap(ArrItemUnitdate.class, UnitDate.class)
                 .customize(new CustomMapper<ArrItemUnitdate, UnitDate>() {
@@ -171,8 +175,6 @@ public class OutputFactoryService {
      * @param arrOutput databázová položka s definicí požadovaného výstupu
      * @return struktura pro použití v šablonách
      */
-    @Bean
-    @Scope("prototype")
     public Output createOutput(final ArrOutput arrOutput) {
         // naplnit output
         final Output output = outputGeneratorFactory.getOutput(arrOutput);
@@ -183,33 +185,57 @@ public class OutputFactoryService {
 
         // fund
         final ArrFund arrFund = arrOutput.getOutputDefinition().getFund();
-        final ArrFundVersion arrFundVersion = arrFund.getVersions().parallelStream()
-                .filter(fundVersion -> fundVersion.getLockChange() == null)
-                .findFirst().orElse(null);
-        Assert.notNull(arrFundVersion, "Musí existovat právě jedna odemčená verze.");
-
-        Fund fund = new Fund(output, arrFund, arrFundVersion);
-        fund.setName(arrFund.getName());
-        fund.setCreateDate(Date.from(arrFund.getCreateDate().atZone(ZoneId.systemDefault()).toInstant()));
-        fund.setDateRange(arrFundVersion.getDateRange());
-        fund.setInternalCode(arrFund.getInternalCode());
+        ArrFundVersion arrFundVersion = arrangementService.getOpenVersionByFundId(arrFund.getFundId());
+        final Fund fund = createFund(null, arrFund, arrFundVersion);
         output.setFund(fund);
 
         // zařadit do výstupu rootNode fundu
         final ArrNode arrFundRootNode = arrFundVersion.getRootNode();
-        final Integer rootArrNodeId = arrFundRootNode.getNodeId();
-        output.getNodesMap().put(rootArrNodeId, getNodeId(rootArrNodeId, output, rootArrNodeId, null));
+        ArrLevel arrRootLevel = levelRepository.findNodeInRootTreeByNodeId(arrFundRootNode, arrFundRootNode, arrFundVersion.getLockChange());
+        NodeId rootNodeId = createNodeId(arrRootLevel, output, null);
+        fund.setRootNodeId(rootNodeId);
 
         // plnit institution
         final ParInstitution arrFundInstitution = arrFund.getInstitution();
-        final Institution institution = new Institution();
-        institution.setTypeCode(arrFundInstitution.getInstitutionType().getCode());
-        institution.setType(arrFundInstitution.getInstitutionType().getName());
-        institution.setCode(arrFundInstitution.getInternalCode());
+        final Institution institution = createInstitution(arrFundInstitution, output);
+        fund.setInstitution(institution);
 
-        // partyGroup k instituci
+        // zařadit items přímo přiřazené na output
+        addOutputItems(arrOutput, output, arrFundVersion);
+
+        // zařadit strom nodes
+        createNodeIdTree(arrOutput, output);
+
+        return output;
+    }
+
+    private void createNodeIdTree(final ArrOutput arrOutput, final Output output) {
+        List<ArrNode> nodes = outputService.getNodesForOutput(arrOutput);
+        nodes.sort((n1, n2) -> n1.getNodeId().compareTo(n2.getNodeId()));
+
+        ArrChange lockChange = output.getArrFundVersion().getLockChange();
+        ArrNode rootNode = nodeRepository.findOne(output.getFund().getRootNodeId().getArrNodeId());
+        for (ArrNode arrNode : nodes) {
+            output.addDirectNodeIdentifier(arrNode.getNodeId());
+
+            ArrLevel arrLevel = levelRepository.findNodeInRootTreeByNodeId(arrNode, rootNode, lockChange);
+            addParentNodeByNode(arrLevel, output);
+        }
+    }
+
+    /**
+     * Naplní do výstupu hodnoty atributů přiřazené na definicivýstupu.
+     */
+    private void addOutputItems(final ArrOutput arrOutput, final Output output, final ArrFundVersion arrFundVersion) {
+        final List<ArrOutputItem> outputItems = outputService.getOutputItemsInner(arrFundVersion, arrOutput.getOutputDefinition());
+        for (ArrOutputItem arrOutputItem : outputItems) {
+            final AbstractItem item = getItem(arrOutputItem.getItemId(), output, null);
+            output.getItems().add(item);
+        };
+    }
+
+    private PartyGroup createPartyGroup(final Output output, final ParParty parParty) {
         final PartyGroup partyGroup = new PartyGroup();
-        final ParParty parParty = arrFundInstitution.getParty();
         final ParPartyGroup parPartyGroup = partyGroupRepository.findOne(parParty.getPartyId());
         partyGroup.setScope(parPartyGroup.getScope());
         partyGroup.setFoundingNorm(parPartyGroup.getFoundingNorm());
@@ -225,43 +251,57 @@ public class OutputFactoryService {
         partyGroup.setUnitdateFrom(createUnitDateText(parParty.getFrom()));
         partyGroup.setUnitdateTo(createUnitDateText(parParty.getTo()));
         partyGroup.setPreferredName(createPartyName(parParty.getPreferredName()));
-        partyNameRepository.findByParty(parParty).stream()
-                .filter(parPartyName -> !parPartyName.getPartyNameId().equals(parParty.getPreferredName().getPartyNameId())) // kromě preferovaného jména
-                .forEach(parPartyName -> partyGroup.getNames().add(createPartyName(parPartyName)));
 
+        List<ParPartyName> partyNames = parParty.getPartyNames();
+        if (CollectionUtils.isNotEmpty(partyNames)) {
+            List<ParPartyName> namesToCreate = new ArrayList<>(partyNames);
+            namesToCreate.remove(parParty.getPreferredName());
 
+            for (ParPartyName parPartyName : namesToCreate) {
+                PartyName partyName = createPartyName(parPartyName);
+                partyGroup.getNames().add(partyName);
+            }
+        }
+
+        Record partyRecord = createRecord(output, parParty);
+        partyGroup.setRecord(partyRecord);
+
+        return partyGroup;
+    }
+
+    private Record createRecord(final Output output, final ParParty parParty) {
         final RegRecord parPartyRecord = parParty.getRecord();
-        Record partyRecord = new Record(output, null, parPartyRecord);
+        Record partyRecord = new Record(output);
         partyRecord.setRecord(parPartyRecord.getRecord());
         partyRecord.setCharacteristics(parPartyRecord.getCharacteristics());
         parPartyRecord.getVariantRecordList().stream().forEach(regVariantRecord -> partyRecord.getVariantRecords().add(regVariantRecord.getRecord()));
 
         partyRecord.setType(getRecordTypeByPartyRecord(output, parPartyRecord));
-        partyGroup.setRecord(partyRecord);
+        return partyRecord;
+    }
 
+    private Institution createInstitution(final ParInstitution arrFundInstitution, final Output output) {
+        final Institution institution = new Institution();
+        institution.setTypeCode(arrFundInstitution.getInstitutionType().getCode());
+        institution.setType(arrFundInstitution.getInstitutionType().getName());
+        institution.setCode(arrFundInstitution.getInternalCode());
+
+        // partyGroup k instituci
+        final ParParty parParty = arrFundInstitution.getParty();
+        final PartyGroup partyGroup = createPartyGroup(output, parParty);
         institution.setPartyGroup(partyGroup);
 
-        fund.setInstitution(institution);
+        return institution;
+    }
 
-        // zařadit items přímo přiřazené na output
-        final List<ArrOutputItem> outputItems = outputService.getOutputItemsInner(arrFundVersion, arrOutput.getOutputDefinition());
-        outputItems.stream().forEach(arrOutputItem -> {
-            final ArrItem arrItem = itemService.loadDataById(arrOutputItem.getItemId());
-            final AbstractItem item = getItem(arrItem.getItemId(), output, null);
-            item.setPosition(arrItem.getPosition());
-            output.getItems().add(item);
-        });
+    private Fund createFund(final NodeId rootNodeId, final ArrFund arrFund, final ArrFundVersion arrFundVersion) {
+        Fund fund = new Fund(rootNodeId, arrFundVersion);
+        fund.setName(arrFund.getName());
+        fund.setCreateDate(Date.from(arrFund.getCreateDate().atZone(ZoneId.systemDefault()).toInstant()));
+        fund.setDateRange(arrFundVersion.getDateRange());
+        fund.setInternalCode(arrFund.getInternalCode());
 
-        // zařadit strom nodes
-        // final Set<Node> nodes = new LinkedHashSet<>(output.getNodes()); // jako první použít již zařazený rootnode
-        outputService.getNodesForOutput(arrOutput).stream()
-                .sorted((o1, o2) -> new CompareToBuilder()
-                        .append(o1.getNodeId(), o2.getNodeId())
-                        .toComparison())
-                .forEach(arrNode -> addParentNodeByNode(arrNode.getNodeId(), output));
-        // output.getNodesMap().putAll(nodes);
-
-        return output;
+        return fund;
     }
 
     /**
@@ -299,43 +339,24 @@ public class OutputFactoryService {
      * Metoda vytvoří strukturu nodů vč. nadřazených až k rootu a vč. stromu všech potomků
      * Ke každému node vytvoří i příslušné items.
      *
-     * @param arrNodeId node přímo přiřazený k outputu
+     * @param arrLevel node přímo přiřazený k outputu
      * @param output  výstup, ke kterému se budou nody zařazovat
      */
-    private void addParentNodeByNode(final Integer arrNodeId, final Output output) {
-//        final Set<Node> nodes = new LinkedHashSet<>();
-        // získat node vč potomků a atributů
-        getNodeIdWithChildern(arrNodeId, output, null);
-
+    private void addParentNodeByNode(final ArrLevel arrLevel, final Output output) {
         // získat seznam rodičů node a zařadit
         final ArrFundVersion arrFundVersion = output.getFund().getArrFundVersion();
-        final List<ArrLevel> levelList = levelRepository.findAllParentsByNodeAndVersion(nodeRepository.findOne(arrNodeId), arrFundVersion);
-        levelList.stream()
-                .map(arrLevel -> getNodeId(arrNodeId, output, output.getFund().getRootNodeId().getArrNodeId(), null))
-                .forEach(node -> output.getNodesMap().put(node.getArrNodeId(), node));
+        ArrNode arrNode = arrLevel.getNode();
+        final List<ArrLevel> levelList = levelRepository.findAllParentsByNodeAndVersion(arrNode, arrFundVersion);
+        levelList.sort((l1, l2) -> l1.getNode().getNodeId().compareTo(l2.getNode().getNodeId()));
 
-        // vytvořit návaznosti směrem k rootu
-        final List<Integer> parentIds = levelList.stream()
-                .map(arrLevel -> arrLevel.getNode().getNodeId())
-                .sorted(Collections.reverseOrder())
-                .collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(parentIds)) {
-            // nastavit na node první položku parentlistu
-            output.getNodesMap().get(arrNodeId).setParentNodeId(parentIds.get(0)); // parent
-            output.getNodesMap().get(parentIds.get(0)).getChildren().add(output.getNodesMap().get(arrNodeId)); // child
-
-            // nastavit další položky v parentlistu až ke kořenu
-            for (int i = 0; i < (parentIds.size() - 1); i++) {
-                final NodeId nodeIdChild = output.getNodesMap().get(parentIds.get(i));
-                final NodeId nodeIdParent = output.getNodesMap().get(parentIds.get(i + 1));
-                nodeIdChild.setParentNodeId(nodeIdParent.getArrNodeId());
-                nodeIdParent.getChildren().add(nodeIdChild);
-            }
+        for (ArrLevel arrParentLevel : levelList) {
+            ArrNode parentNode = arrParentLevel.getNodeParent();
+            createNodeId(arrParentLevel, output, parentNode);
         }
 
-        // zařadit vlastní uzel a potomky
-//        nodes.addAll(nodeWithChildernAndAttributes);
-//        return nodes;
+        // získat node vč potomků a atributů
+        ArrNode parentNode = levelList.get(levelList.size() - 1).getNode();
+        getNodeIdWithChildren(arrLevel, output, parentNode);
     }
 
     /**
@@ -345,49 +366,49 @@ public class OutputFactoryService {
      * @param arrNodeId zdrojový node
      * @param output  výstup, ke kterému se budou nody zařazovat
      */
-    private void getNodeIdWithChildern(final Integer arrNodeId, final Output output, final Integer parentNodeId) {
-        final NodeId nodeId = getNodeId(arrNodeId, output, output.getFund().getRootNodeId().getArrNodeId(), parentNodeId);
-        output.getNodesMap().put(arrNodeId, nodeId);
+    private void getNodeIdWithChildren(final ArrLevel arrLevel, final Output output, final ArrNode parentNode) {
+        ArrNode arrNode = arrLevel.getNode();
+        createNodeId(arrLevel, output, parentNode);
 
-        // získat childern
-        final ArrNode rootArrNode = nodeRepository.findOne(output.getFund().getRootNodeId().getArrNodeId());
+        // získat children
         final ArrFundVersion arrFundVersion = output.getFund().getArrFundVersion();
         final ArrChange arrChange = arrFundVersion.getLockChange();
-        Assert.notNull(rootArrNode, "Nelze určit kořenový node výstupu.");
-        final List<ArrLevel> allChildrenByNode = levelRepository.findAllChildrenByNode(nodeRepository.findOne(arrNodeId), arrChange);
-        allChildrenByNode.stream()
-                .forEach(arrLevel -> {
-                    final Integer childNodeId = arrLevel.getNode().getNodeId();
-                    getNodeIdWithChildern(childNodeId, output, arrNodeId);
-                    nodeId.getChildren().add(output.getNodesMap().get(childNodeId));
-                });
+
+        final List<ArrLevel> allChildrenByNode = levelRepository.findByParentNode(arrNode, arrChange);
+        for (ArrLevel arrChildLevel : allChildrenByNode) {
+            getNodeIdWithChildren(arrChildLevel, output, arrNode);
+        }
     }
 
     /**
-     * Vytvoří node vč. celého stromu potomků.
-     * Ke každému node vytvoří i příslušné items.
+     * Vytvoří {@link NodeId}.
      *
-     * @param arrNodeId     zdrojový node
+     * @param arrLevel    zdrojová úroveň
      * @param output      výstup, ke kterému se budou nody zařazovat
-     * @param rootArrNodeId kořenový node výstupu (definovaný jako kořenový ve fundu v outputu)
-     * @param parentNodeId ID pro odkaz na nadřazený uzel
+     * @param parentNode  nadřazený uzel
      * @return node vč. items
      */
-    private NodeId getNodeId(final Integer arrNodeId, final Output output, @NotNull final Integer rootArrNodeId, final Integer parentNodeId) {
-        final ArrFundVersion arrFundVersion = output.getFund().getArrFundVersion();
-        final ArrChange arrChange = arrFundVersion.getLockChange();
-        Assert.notNull(rootArrNodeId, "Nelze určit kořenový node výstupu.");
-        final ArrNode arrNode = nodeRepository.findOne(arrNodeId);
-        final ArrNode rootArrNode = nodeRepository.findOne(rootArrNodeId);
+    private NodeId createNodeId(final ArrLevel arrLevel, final Output output, final ArrNode arrParentNode) {
+        NodeId parent = null;
+        Integer depth = 1;
+        if (arrParentNode != null) {
+            parent = output.getNodeId(arrParentNode.getNodeId());
+            depth = parent.getDepth() + 1;
+        }
+        Integer parentNodeId = null;
+        if (arrParentNode != null) {
+            parentNodeId = arrParentNode.getNodeId();
+        }
+        Integer nodeIdentifier = arrLevel.getNode().getNodeId();
+        Integer position = arrLevel.getPosition();
+        final NodeId nodeId = outputGeneratorFactory.getNodeId(output, nodeIdentifier, parentNodeId, position, depth);
 
-        final ArrLevel arrLevel = levelRepository.findNodeInRootTreeByNodeId(arrNode, rootArrNode, arrChange);
-        final NodeId nodeId = outputGeneratorFactory.getNodeId(output, arrNodeId, arrLevel.getLevelId(), parentNodeId);
-        nodeId.setPosition(arrLevel.getPosition());
+        output.getRecords().addAll(getRecordsByNodeId(output, nodeId));
 
-        final List<ArrLevel> levelList = levelRepository.findAllParentsByNodeAndVersion(arrNode, arrFundVersion);
-        nodeId.setDepth(levelList.size() + 1);
-        getRecordByNodeId(output, nodeId);
-
+        output.addNodeId(nodeId);
+        if (parent != null) {
+            parent.getChildren().add(nodeId);
+        }
         return nodeId;
     }
 
@@ -408,13 +429,43 @@ public class OutputFactoryService {
      * @return seznam registers navázaných přímo k node
      */
     @Transactional(readOnly = true)
-    public List<Record> getRecordByNodeId(final Output output, final NodeId nodeId) {
-        return nodeRegisterRepository.findByNode(nodeRepository.findOne(nodeId.getArrNodeId())).stream()
-                .map(ArrNodeRegister::getRecord)
-                .map(regRecord -> getRecordByNode(output, nodeId, regRecord))
-                .collect(Collectors.toList());
+    public List<Record> getRecordsByNodeId(final Output output, final NodeId nodeId) {
+        ArrNode arrNode = nodeRepository.findOne(nodeId.getArrNodeId());
+        List<RegRecord> regRecords = nodeRegisterRepository.findRecordsByNode(arrNode);
+
+        List<Record> records = new ArrayList<>(regRecords.size());
+        for (RegRecord regRecord : regRecords) {
+            Record record = createRecord(output, regRecord);
+            records.add(record);
+        }
+        return records;
     }
 
+    /**
+     * Vrátí hodnoty přiřazené nodu.
+     *
+     * @param output output na který jsou registers navázané
+     * @param nodeId node na které jsou registers navázané
+     *
+     * @return seznam hodnot
+     */
+    @Transactional(readOnly = true)
+    public List<Item> getItemsByNodeId(final Output output, final NodeId nodeId) {
+        final ArrFundVersion arrFundVersion = output.getArrFundVersion();
+        final ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId.getArrNodeId());
+
+        // zajistí naplnění cache, pokud není načteno
+        final List<ArrDescItem> descItems = arrangementService.getArrDescItems(arrFundVersion, arrNode);
+        List<Item> items = new ArrayList<>(descItems.size());
+        for (ArrDescItem arrDescItem : descItems) {
+            AbstractItem item = getItem(arrDescItem.getItemId(), output, nodeId);
+            items.add(item);
+
+        }
+        items.sort((i1,i2) -> (i1.compareToItemViewOrderPosition(i2)));
+
+        return items;
+    }
     /**
      * Vytvoří item podle zdrojového typu.
      *
@@ -426,84 +477,96 @@ public class OutputFactoryService {
     @Transactional(readOnly = true)
     public AbstractItem getItem(final Integer arrItemId, final Output output, final NodeId nodeId) {
         final ArrItem arrItem = itemService.loadDataById(arrItemId);
-        final RulItemType rulItemType = arrItem.getItemType();
-        final RulItemSpec rulItemSpec = arrItem.getItemSpec();
+        final AbstractItem item = getItemByType(output, nodeId, arrItem);
 
         // založit itemSpec
-        final ItemSpec itemSpec = new ItemSpec();
+        final RulItemSpec rulItemSpec = arrItem.getItemSpec();
         if (rulItemSpec != null) {
-            itemSpec.setName(rulItemSpec.getName());
-            itemSpec.setShortcut(rulItemSpec.getShortcut());
-            itemSpec.setDescription(rulItemSpec.getDescription());
-            itemSpec.setCode(rulItemSpec.getCode());
+            final ItemSpec itemSpec = createItemSpec(rulItemSpec);
+            item.setSpecification(itemSpec);
         }
 
         // založit itemType
+        final RulItemType rulItemType = arrItem.getItemType();
+        final ItemType itemType = createItemType(rulItemType);
+        item.setType(itemType);
+
+        return item;
+    }
+
+    private ItemType createItemType(final RulItemType rulItemType) {
         final ItemType itemType = new ItemType();
         itemType.setName(rulItemType.getName());
         itemType.setDataType(rulItemType.getDataType().getCode());
         itemType.setShortcut(rulItemType.getShortcut());
         itemType.setDescription(rulItemType.getDescription());
         itemType.setCode(rulItemType.getCode());
+        itemType.setViewOrder(rulItemType.getViewOrder());
+        return itemType;
+    }
 
-        final AbstractItem item;
-        final ArrItemData itemData = arrItem.getItem();
-        item = getItemByType(output, nodeId, arrItem, itemData);
-        item.setType(itemType);
-        item.setSpecification(itemSpec);
-
-        return item;
+    private ItemSpec createItemSpec(final RulItemSpec rulItemSpec) {
+        final ItemSpec itemSpec = new ItemSpec();
+        itemSpec.setName(rulItemSpec.getName());
+        itemSpec.setShortcut(rulItemSpec.getShortcut());
+        itemSpec.setDescription(rulItemSpec.getDescription());
+        itemSpec.setCode(rulItemSpec.getCode());
+        return itemSpec;
     }
 
     /**
      * Vytvoří item podle zdrojového typu.
      *
-     * @param arrItem  zdrojový item
-     * @param itemData zdrojová data k itemu
+     * @param arrItem zdrojová item
      * @param output   výstup, ke kterému se budou items zařazovat
      * @param nodeId     node, ke kterému se budou nody zařazovat, pokud je null jde o itemy přiřazené přímo k output
      * @return item
      */
-    private AbstractItem getItemByType(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemData itemData) {
+    private AbstractItem getItemByType(final Output output, final NodeId nodeId, final ArrItem arrItem) {
+        final ArrItemData itemData = arrItem.getItem();
+
         AbstractItem item;
         if (itemData instanceof ArrItemUnitid) {
-            item = getItemUnitid(output, nodeId, arrItem, (ArrItemUnitid) itemData);
+            item = getItemUnitid(nodeId, (ArrItemUnitid) itemData);
         } else if (itemData instanceof ArrItemUnitdate) {
-            item = getItemUnitdate(output, nodeId, arrItem, (ArrItemUnitdate) itemData);
+            item = getItemUnitdate(nodeId, (ArrItemUnitdate) itemData);
         } else if (itemData instanceof ArrItemText) {
-            item = getItemUnitText(output, nodeId, arrItem, (ArrItemText) itemData);
+            item = getItemUnitText(nodeId, (ArrItemText) itemData);
         } else if (itemData instanceof ArrItemString) {
-            item = getItemUnitString(output, nodeId, arrItem, (ArrItemString) itemData);
+            item = getItemUnitString(nodeId, (ArrItemString) itemData);
         } else if (itemData instanceof ArrItemRecordRef) {
-            item = getItemUnitRecordRef(output, nodeId, arrItem, (ArrItemRecordRef) itemData);
+            item = getItemUnitRecordRef(output, nodeId, (ArrItemRecordRef) itemData);
         } else if (itemData instanceof ArrItemPartyRef) {
-            item = getItemUnitPartyRef(output, nodeId, arrItem, (ArrItemPartyRef) itemData);
+            item = getItemUnitPartyRef(output, nodeId, (ArrItemPartyRef) itemData);
         } else if (itemData instanceof ArrItemPacketRef) {
-            item = getItemUnitPacketRef(output, nodeId, arrItem, (ArrItemPacketRef) itemData);
+            item = getItemUnitPacketRef(nodeId, (ArrItemPacketRef) itemData);
         } else if (itemData instanceof ArrItemJsonTable) {
-            item = getItemUnitJsonTable(output, nodeId, arrItem, (ArrItemJsonTable) itemData);
+            item = getItemUnitJsonTable(nodeId, (ArrItemJsonTable) itemData);
         } else if (itemData instanceof ArrItemInt) {
-            item = getItemUnitInteger(output, nodeId, arrItem, (ArrItemInt) itemData);
+            item = getItemUnitInteger(nodeId, (ArrItemInt) itemData);
         } else if (itemData instanceof ArrItemFormattedText) {
-            item = getItemUnitFormatedText(output, nodeId, arrItem, (ArrItemFormattedText) itemData);
+            item = getItemUnitFormatedText(nodeId, (ArrItemFormattedText) itemData);
         } else if (itemData instanceof ArrItemFileRef) {
-            item = getItemFile(output, nodeId, arrItem, (ArrItemFileRef) itemData);
+            item = getItemFile(nodeId, (ArrItemFileRef) itemData);
         } else if (itemData instanceof ArrItemEnum) {
-            item = getItemUnitEnum(output, nodeId, arrItem, (ArrItemEnum) itemData);
+            item = getItemUnitEnum(nodeId, (ArrItemEnum) itemData);
         } else if (itemData instanceof ArrItemDecimal) {
-            item = getItemUnitDecimal(output, nodeId, arrItem, (ArrItemDecimal) itemData);
+            item = getItemUnitDecimal(nodeId, (ArrItemDecimal) itemData);
         } else if (itemData instanceof ArrItemCoordinates) {
-            item = getItemUnitCoordinates(output, nodeId, arrItem, (ArrItemCoordinates) itemData);
+            item = getItemUnitCoordinates(nodeId, (ArrItemCoordinates) itemData);
         } else {
             logger.warn("Neznámý datový typ hodnoty Item ({}) je zpracován jako string.", itemData.getClass().getName());
-            item = new ItemString(arrItem, output, nodeId, itemData.toString());
+            item = new ItemString(nodeId, itemData.toString());
         }
+
+        item.setPosition(arrItem.getPosition());
+
         return item;
     }
 
-    private AbstractItem getItemFile(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemFileRef itemData) {
+    private AbstractItem getItemFile(final NodeId nodeId, final ArrItemFileRef itemData) {
         final ArrFile arrFile = itemData.getFile();
-        final ItemFile itemFile = new ItemFile(arrItem, output, nodeId, arrFile);
+        final ItemFile itemFile = new ItemFile(nodeId, arrFile);
         itemFile.setName(arrFile.getName());
         itemFile.setFileName(arrFile.getFileName());
         itemFile.setFileSize(arrFile.getFileSize());
@@ -513,35 +576,35 @@ public class OutputFactoryService {
         return itemFile;
     }
 
-    private AbstractItem getItemUnitString(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemString itemData) {
-        return new ItemString(arrItem, output, nodeId, itemData.getValue());
+    private AbstractItem getItemUnitString(final NodeId nodeId, final ArrItemString itemData) {
+        return new ItemString(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitRecordRef(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemRecordRef itemData) {
-        final Record record = getRecordByItem(output, nodeId, itemData);
-        return new ItemRecordRef(arrItem, output, nodeId, record);
+    private AbstractItem getItemUnitRecordRef(final Output output, final NodeId nodeId, final ArrItemRecordRef itemData) {
+        final Record record = getRecordByItem(output, itemData);
+        return new ItemRecordRef(nodeId, record);
     }
 
-    private Record getRecordByItem(final Output output, final NodeId nodeId, final ArrItemRecordRef itemData) {
-        Record record = getRecord(output, nodeId, itemData.getRecord());
+    private Record getRecordByItem(final Output output, final ArrItemRecordRef itemData) {
+        Record record = getRecord(output, itemData.getRecord());
         record.setType(getRecordTypeByItem(output, itemData));
         return record;
     }
 
-    private Record getRecordByNode(final Output output, final NodeId nodeId, final RegRecord regRecord) {
-        Record record =  getRecord(output, nodeId, regRecord);
+    private Record createRecord(final Output output, final RegRecord regRecord) {
+        Record record =  getRecord(output, regRecord);
         record.setType(getRecordTypeByNode(output, regRecord.getRegisterType()));
         return record;
     }
 
     private Record getRecordByParty(final Output output, final RegRecord partyRecord) {
-        Record record = getRecord(output, null, partyRecord);
+        Record record = getRecord(output, partyRecord);
         record.setType(getRecordTypeByPartyRecord(output, partyRecord));
         return record;
     }
 
-    private Record getRecord(@NotNull final Output output, final NodeId nodeId, @NotNull final RegRecord regRecord) {
-        Record record = outputGeneratorFactory.getRecord(output, nodeId, regRecord);
+    private Record getRecord(@NotNull final Output output, @NotNull final RegRecord regRecord) {
+        Record record = outputGeneratorFactory.getRecord(output);
         record.setRecord(regRecord.getRecord());
         record.setCharacteristics(regRecord.getCharacteristics());
         regRecord.getVariantRecordList().stream().forEach(regVariantRecord -> record.getVariantRecords().add(regVariantRecord.getRecord()));
@@ -578,10 +641,72 @@ public class OutputFactoryService {
         return recordType;
     }
 
-
-    private AbstractItem getItemUnitPartyRef(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemPartyRef itemData) {
+    private AbstractItem getItemUnitPartyRef(final Output output, final NodeId nodeId, final ArrItemPartyRef itemData) {
         final ParParty parParty = itemData.getParty();
-        Party party = new Party();
+        String partyTypeCode = parParty.getPartyType().getCode();
+        PartyType partyType = PartyType.getByCode(partyTypeCode);
+
+        Party party;
+        switch (partyType) {
+            case DYNASTY:
+                ParDynasty parDynasty = ProxyUtils.deproxy(parParty);
+                party = createDynasty(parDynasty, output);
+                break;
+            case EVENT:
+                ParEvent parEvent = ProxyUtils.deproxy(parParty);
+                party = createEvent(parEvent, output);
+                break;
+            case PARTY_GROUP:
+                ParPartyGroup parPartyGroup = ProxyUtils.deproxy(parParty);
+                party = createPartyGroup(parPartyGroup, output);
+                break;
+            case PERSON:
+                ParPerson parPerson = ProxyUtils.deproxy(parParty);
+                party = createPerson(parPerson, output);
+                break;
+            default :
+                throw new IllegalStateException("Neznámý typ osoby " + partyType.getCode());
+        }
+
+        return new ItemPartyRef(nodeId, party);
+    }
+
+    private Person createPerson(final ParPerson parPerson, final Output output) {
+        Person person = new Person();
+        fillCommonPartyAttributes(person, parPerson, output);
+
+        return person;
+    }
+
+    private PartyGroup createPartyGroup(final ParPartyGroup parPartyGroup, final Output output) {
+        PartyGroup partyGroup = new PartyGroup();
+        fillCommonPartyAttributes(partyGroup, parPartyGroup, output);
+
+        partyGroup.setFoundingNorm(parPartyGroup.getFoundingNorm());
+        partyGroup.setOrganization(parPartyGroup.getOrganization());
+        partyGroup.setScope(parPartyGroup.getScope());
+        partyGroup.setScopeNorm(parPartyGroup.getScopeNorm());
+
+        return partyGroup;
+    }
+
+    private Event createEvent(final ParEvent parEvent, final Output output) {
+        Event event = new Event();
+        fillCommonPartyAttributes(event, parEvent, output);
+
+        return event;
+    }
+
+    private Dynasty createDynasty(final ParDynasty parDynasty, final Output output) {
+        Dynasty dynasty = new Dynasty();
+        fillCommonPartyAttributes(dynasty, parDynasty, output);
+
+        dynasty.setGenealogy(parDynasty.getGenealogy());
+
+        return dynasty;
+    }
+
+    private void fillCommonPartyAttributes(final Party party, final ParParty parParty, final Output output) {
         party.setPreferredName(createPartyName(parParty.getPreferredName()));
         partyNameRepository.findByParty(parParty).stream()
                 .filter(parPartyName -> !parPartyName.getPartyNameId().equals(parParty.getPreferredName().getPartyNameId())) // kromě preferovaného jména
@@ -594,11 +719,9 @@ public class OutputFactoryService {
         party.setUnitdateTo(createUnitDateText(parParty.getTo()));
         party.setType(parParty.getPartyType().getName());
         party.setTypeCode(parParty.getPartyType().getCode());
-
-        return new ItemPartyRef(arrItem, output, nodeId, party);
     }
 
-    private AbstractItem getItemUnitPacketRef(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemPacketRef itemData) {
+    private AbstractItem getItemUnitPacketRef(final NodeId nodeId, final ArrItemPacketRef itemData) {
         final ArrPacket arrPacket = itemData.getPacket();
         Packet packet = new Packet();
         packet.setType(arrPacket.getPacketType().getName());
@@ -606,43 +729,43 @@ public class OutputFactoryService {
         packet.setTypeShortcut(arrPacket.getPacketType().getShortcut());
         packet.setStorageNumber(arrPacket.getStorageNumber());
         packet.setState(arrPacket.getState().name());
-        return new ItemPacketRef(arrItem, output, nodeId, packet);
+        return new ItemPacketRef(nodeId, packet);
     }
 
-    private AbstractItem getItemUnitJsonTable(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemJsonTable itemData) {
-        return new ItemJsonTable(arrItem, output, nodeId, itemData.getValue());
+    private AbstractItem getItemUnitJsonTable(final NodeId nodeId, final ArrItemJsonTable itemData) {
+        return new ItemJsonTable(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitFormatedText(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemFormattedText itemData) {
-        return new ItemText(arrItem, output, nodeId, itemData.getValue());
+    private AbstractItem getItemUnitFormatedText(final NodeId nodeId, final ArrItemFormattedText itemData) {
+        return new ItemText(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitInteger(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemInt itemData) {
-        return new ItemInteger(arrItem, output, nodeId, itemData.getValue());
+    private AbstractItem getItemUnitInteger(final NodeId nodeId, final ArrItemInt itemData) {
+        return new ItemInteger(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitEnum(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemEnum itemData) {
-        return new ItemEnum(arrItem, output, nodeId, itemData.toString());
+    private AbstractItem getItemUnitEnum(final NodeId nodeId, final ArrItemEnum itemData) {
+        return new ItemEnum(nodeId, itemData.toString());
     }
 
-    private AbstractItem getItemUnitDecimal(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemDecimal itemData) {
-        return new ItemDecimal(arrItem, output, nodeId, itemData.getValue());
+    private AbstractItem getItemUnitDecimal(final NodeId nodeId, final ArrItemDecimal itemData) {
+        return new ItemDecimal(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitCoordinates(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemCoordinates itemData) {
-        return new ItemCoordinates(arrItem, output, nodeId, itemData.getValue());
+    private AbstractItem getItemUnitCoordinates(final NodeId nodeId, final ArrItemCoordinates itemData) {
+        return new ItemCoordinates(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitText(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemText itemData) {
-        return new ItemText(arrItem, output, nodeId, itemData.getValue());
+    private AbstractItem getItemUnitText(final NodeId nodeId, final ArrItemText itemData) {
+        return new ItemText(nodeId, itemData.getValue());
     }
 
-    private AbstractItem getItemUnitdate(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemUnitdate itemData) {
+    private AbstractItem getItemUnitdate(final NodeId nodeId, final ArrItemUnitdate itemData) {
         UnitDate data = mapper.map(itemData, UnitDate.class);
-        return new ItemUnitdate(arrItem, output, nodeId, data);
+        return new ItemUnitdate(nodeId, data);
     }
 
-    private AbstractItem getItemUnitid(final Output output, final NodeId nodeId, final ArrItem arrItem, final ArrItemUnitid itemData) {
-        return new ItemUnitId(arrItem, output, nodeId, itemData.getValue());
+    private AbstractItem getItemUnitid(final NodeId nodeId, final ArrItemUnitid itemData) {
+        return new ItemUnitId(nodeId, itemData.getValue());
     }
 }

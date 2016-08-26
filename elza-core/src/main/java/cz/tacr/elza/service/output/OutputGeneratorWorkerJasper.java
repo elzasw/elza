@@ -6,9 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,22 +16,20 @@ import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.print.Output;
 import cz.tacr.elza.print.item.ItemFile;
-import cz.tacr.elza.print.party.DummyDetail;
 import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 /**
  * Zajišťuje generování výstupu a jeho uložení do dms na základě vstupní definice - část generování specifická pro jasper.
@@ -55,12 +51,7 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
     protected InputStream getContent(final ArrOutputDefinition arrOutputDefinition, final RulTemplate rulTemplate, final Output output) {
         try {
             // dohledání šablony
-            final String rulTemplateDirectory = rulTemplate.getDirectory();
-            final File templateDir = Paths.get(templatesDir, rulTemplateDirectory).toFile();
-            Assert.isTrue(templateDir.exists() && templateDir.isDirectory(), "Nepodařilo se najít adresář s definicí šablony: " + templateDir.getAbsolutePath());
-
-            final File mainJasperTemplate = Paths.get(templateDir.getAbsolutePath(), JASPER_MAIN_TEMPLATE).toFile();
-            Assert.isTrue(mainJasperTemplate.exists(), "Nepodařilo se najít definici hlavní šablony.");
+            final File mainJasperTemplate = getTemplate(rulTemplate, JASPER_MAIN_TEMPLATE);
 
             JasperReport jasperReport = JasperCompileManager.compileReport(mainJasperTemplate.getAbsolutePath());
 
@@ -69,11 +60,10 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
             parameters.put("output", output);
 
             // subreporty
-            addSubreports(templateDir, parameters);
+            addSubreports(rulTemplate, parameters);
 
             // DataSource
-//            JRDataSource dataSource = new JREmptyDataSource();
-            JRDataSource dataSource = new JRBeanCollectionDataSource(Collections.singletonList(new DummyDetail()));
+            JRDataSource dataSource = new JREmptyDataSource();
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
 
             // Export to PDF - pouze příprava procesu pro renderování - reálně proběhne až při čtení z in v dms
@@ -94,7 +84,8 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
         }
     }
 
-    private void addSubreports(final File templateDir, final Map<String, Object> parameters) {
+    private void addSubreports(final RulTemplate rulTemplate, final Map<String, Object> parameters) {
+        File templateDir = getTemplatesDir(rulTemplate);
         final File[] files = templateDir.listFiles((dir, name) -> name.endsWith(JASPER_TEMPLATE_SUFFIX) && !name.equals(JASPER_MAIN_TEMPLATE));
         Arrays.stream(files).forEach(file -> {
             try {
@@ -141,6 +132,4 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
             throw new IllegalStateException("Nepodařilo se vyrenderovat PDF ze šablony " + mainJasperTemplate.getAbsolutePath() + ".", e);
         }
     }
-
-
 }

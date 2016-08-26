@@ -1,8 +1,6 @@
 package cz.tacr.elza.print.item;
 
-import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.print.NodeId;
-import cz.tacr.elza.print.Output;
 import cz.tacr.elza.print.UnitDate;
 
 /**
@@ -11,14 +9,12 @@ import cz.tacr.elza.print.UnitDate;
  */
 public class ItemUnitdate extends AbstractItem<UnitDate> {
 
-    public ItemUnitdate(ArrItem arrItem, Output output, NodeId nodeId, UnitDate value) {
-        super(arrItem, output, nodeId);
-        setValue(value);
+    public ItemUnitdate(final NodeId nodeId, final UnitDate value) {
+        super(nodeId, value);
     }
 
     @Override
     public String serializeValue() {
         return getValue().serialize();
     }
-
 }

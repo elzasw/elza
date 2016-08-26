@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrUser;
 import org.springframework.data.jpa.repository.Query;
@@ -21,4 +22,7 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
 
     @Query("select ugu.user from usr_group_user ugu where ugu.group = :group")
     List<UsrUser> findByGroup(@Param("group") UsrGroup group);
+
+
+    List<UsrUser> findByParty(ParParty party);
 }

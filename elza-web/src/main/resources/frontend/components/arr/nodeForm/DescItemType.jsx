@@ -176,8 +176,8 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
      * @param locked {Boolean}
      * @return {Object} view
      */
-    renderDescItemSpec(key, descItem, descItemIndex) {
-        const {infoType, refType, readMode, locked} = this.props;
+    renderDescItemSpec(key, descItem, descItemIndex, locked) {
+        const {infoType, refType, readMode} = this.props;
 
         const options = infoType.specs.map(spec => {
             const fullSpec = {...spec, ...refType.descItemSpecsMap[spec.id]}
@@ -906,7 +906,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
                 </OverlayTrigger>);
             }
 
-            let canModifyDescItem = !(locked || closed || readMode)
+            let canModifyDescItem = !(locked || closed)
 
             // Pokud nemá právo na pořádání, nelze provádět akci
             if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
