@@ -37,12 +37,12 @@ public class ParPartyGroupIdentifier implements cz.tacr.elza.api.ParPartyGroupId
     private Integer partyGroupIdentifierId;
 
     @RestResource(exported = false)
-    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
+    @OneToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "toUnitdateId")
     private ParUnitdate to;
 
     @RestResource(exported = false)
-    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
+    @OneToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "fromUnitdateId")
     private ParUnitdate from;
 

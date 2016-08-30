@@ -80,12 +80,12 @@ public abstract class ArrItem<T extends ArrItemData> implements cz.tacr.elza.api
     private Integer descItemObjectId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemType.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulItemType.class)
     @JoinColumn(name = "itemTypeId", nullable = false)
     private RulItemType itemType;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemSpec.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulItemSpec.class)
     @JoinColumn(name = "itemSpecId", nullable = true)
     private RulItemSpec itemSpec;
 

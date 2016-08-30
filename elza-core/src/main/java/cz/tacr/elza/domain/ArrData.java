@@ -50,11 +50,11 @@ public abstract class ArrData implements cz.tacr.elza.api.ArrData<RulDataType, A
     @GeneratedValue
     private Integer dataId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDataType.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulDataType.class)
     @JoinColumn(name = "dataTypeId", nullable = false)
     private RulDataType dataType;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrItem.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrItem.class)
     @JoinColumn(name = "itemId", nullable = true)
     private ArrItem item;
 

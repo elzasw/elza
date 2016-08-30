@@ -1,5 +1,16 @@
 package cz.tacr.elza.print;
 
+import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.item.ItemRecordRef;
+import cz.tacr.elza.service.output.OutputFactoryService;
+import cz.tacr.elza.utils.AppContext;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.CompareToBuilder;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.util.Assert;
+
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -8,30 +19,17 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotNull;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.CompareToBuilder;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.print.item.Item;
-import cz.tacr.elza.print.item.ItemRecordRef;
-import cz.tacr.elza.service.output.OutputFactoryService;
-import cz.tacr.elza.utils.AppContext;
-
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class Node implements RecordProvider, Comparable<Node> {
+public class Node implements RecordProvider, Comparable<Node>, NodesOrder {
 
     private final NodeId nodeId; // vazba na node
     private final Output output;
 
-    private List<Item> items = null; // seznam všech atributů node - cache plněná při prním přístupu
-    private List<Record> records = null; // seznam všech registry node - cache plněná při prvním přístupu
+    private List<Item> items = new ArrayList<>();
+    private List<Record> records = new ArrayList<>();
 
     private OutputFactoryService outputFactoryService = AppContext.getBean(OutputFactoryService.class);
 
@@ -130,11 +128,6 @@ public class Node implements RecordProvider, Comparable<Node> {
      * @return všechny Items přiřazené na node.
      */
     public List<Item> getItems() {
-        // zajistí naplnění cache, pokud není načteno
-        if (items == null) {
-            items = outputFactoryService.getItemsByNodeId(output, this.getNodeId());
-        }
-
         return items;
     }
 
@@ -152,12 +145,7 @@ public class Node implements RecordProvider, Comparable<Node> {
 
     @Override
     public List<Record> getRecords() {
-        // registers navázané k node - inicializovat
-        if (records == null) {
-            records = outputFactoryService.getRecordsByNodeId(output, this.getNodeId());
-        }
-
-        final List<Record> recordList = new ArrayList<>(this.records); // interně navázané recordy jako první
+        final List<Record> recordList = new ArrayList<>(records); // interně navázané recordy jako první
 
         // recordy z itemů
         for (Item item : getItems()) {
@@ -170,9 +158,13 @@ public class Node implements RecordProvider, Comparable<Node> {
         return recordList;
     }
 
+    public List<Record> getNodeRecords() {
+        return records;
+    }
+
     @Override
-    public List<NodeId> getRecordProviderChildren() {
-        return new ArrayList<>(getChildren());
+    public IteratorNodes getRecordProviderChildren() {
+        return new IteratorNodes(output, new ArrayList<>(getChildren()), outputFactoryService, Output.MAX_CACHED_NODES);
     }
 
     @Override
@@ -201,5 +193,29 @@ public class Node implements RecordProvider, Comparable<Node> {
     @Override
     public int compareTo(final Node o) {
         return CompareToBuilder.reflectionCompare(this, o);
+    }
+
+    @Override
+    public IteratorNodes getNodesDFS() {
+        return new IteratorNodes(output, output.getNodesChildsModel(nodeId), outputFactoryService, Output.MAX_CACHED_NODES);
+    }
+
+    @Override
+    public IteratorNodes getNodesBFS() {
+        List<NodeId> nodeIds = output.getNodesChildsModel(nodeId);
+        nodeIds.sort((o1, o2) -> new CompareToBuilder()
+                .append(o1.getDepth(), o2.getDepth())  // nejprve nejvyšší nody
+                .append(o1.getParent(), o2.getParent()) // pak sezkupit dle parenta
+                .append(o1.getPosition(), o2.getPosition()) // pak dle pořadí
+                .toComparison());
+        return new IteratorNodes(output, nodeIds, outputFactoryService, Output.MAX_CACHED_NODES);
+    }
+
+    public void setItems(final List<Item> items) {
+        this.items = items;
+    }
+
+    public void setRecords(final List<Record> records) {
+        this.records = records;
     }
 }

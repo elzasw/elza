@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
+<!-- 2016-08-30T10:17:52 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" pageWidth="595" pageHeight="842" whenNoDataType="NoDataSection" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" uuid="2acce9de-86aa-486a-bdd3-4e7e9dd187cd">
 	<property name="ireport.zoom" value="1.2100000000000004"/>
 	<property name="ireport.x" value="0"/>
@@ -92,7 +94,7 @@
 					<textElement verticalAlignment="Middle" markup="none">
 						<font pdfEncoding="Cp1250"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$P{output}.getFund().getRootNodeId().getNode().getItemsValueByCode("ZP2015_UNIT_ID")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$P{output}.getNode($P{output}.getFund().getRootNodeId()).getItemsValueByCode("ZP2015_NAD")]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement key="staticText-7" style="caption" positionType="Float" x="0" y="0" width="121" height="20" uuid="b74dbb94-354c-4dbc-9026-e3f3f2e4ac1d"/>
@@ -254,7 +256,7 @@
 				<subreportParameter name="output">
 					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
 				</subreportParameter>
-				<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($P{output}.getNodesFlatModel())]]></dataSourceExpression>
+				<dataSourceExpression><![CDATA[new JRDataIterableNodes($P{output}.getNodesDFS())]]></dataSourceExpression>
 				<subreportExpression><![CDATA[$P{nodesSubReport}]]></subreportExpression>
 			</subreport>
 		</band>
@@ -286,7 +288,7 @@
 			<componentElement>
 				<reportElement positionType="Float" x="19" y="90" width="520" height="20" uuid="ccf9ab82-bd40-46d4-9030-349c2fa75d07"/>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
-					<datasetRun subDataset="dataset2" uuid="d7f9f17f-f367-48c0-8002-f4876787baa3">
+					<datasetRun subDataset="dataset2" uuid="45b9313d-7bf0-4e9d-9bf8-504ba1b05577">
 						<datasetParameter name="output">
 							<datasetParameterExpression><![CDATA[$P{output}]]></datasetParameterExpression>
 						</datasetParameter>

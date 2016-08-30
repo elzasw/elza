@@ -3,8 +3,9 @@ package cz.tacr.elza.print;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -42,10 +43,20 @@ public class Record implements Comparable<Record> {
     }
 
     // vrací seznam Node přiřazených přes vazbu arr_node_register
-    public List<NodeId> getNodes() {
-        return output.getNodesFlatModel().stream()
-                .filter(node -> node.getRecords().contains(this))
-                .collect(Collectors.toList());
+    public Map<NodeId, Node> getNodes() {
+
+        IteratorNodes iterator = output.getNodesBFS();
+
+        Map<NodeId, Node> nodes = new LinkedHashMap<>();
+        while (iterator.hasNext()) {
+            Node node = iterator.next();
+            if (node.getRecords().contains(this)) {
+                NodeId nodeId = iterator.getActualNodeId();
+                nodes.put(nodeId, node);
+            }
+        }
+
+        return nodes;
     }
 
     /**
@@ -57,22 +68,24 @@ public class Record implements Comparable<Record> {
      */
     public String getNodesSerialized(@NotNull final Collection<String> codes) {
         List<String> result = new ArrayList<>();
-        final List<NodeId> nodeIds = getNodes().stream().distinct().collect(Collectors.toList());
+        final Map<NodeId, Node> nodes = getNodes();
 
-        nodeIds.stream().forEach(nodeId -> {
+        for (Map.Entry<NodeId, Node> nodeIdNodeEntry : nodes.entrySet()) {
+
             String serializedString = "";
             for (String code : codes) {
-                serializedString = nodeId.getNode().getAllItemsAsString(Collections.singletonList(code));
+                serializedString = nodeIdNodeEntry.getValue().getAllItemsAsString(Collections.singletonList(code));
                 if (StringUtils.isNotBlank(serializedString)) {
                     break;
                 }
             }
             if (StringUtils.isBlank(serializedString)) {
-                serializedString = "[" + nodeId.toString() + "]";
+                serializedString = "[" + nodeIdNodeEntry.getKey().toString() + "]";
             }
             final String trim = StringUtils.trim(serializedString);
             result.add(trim);
-        });
+        }
+
 
         return StringUtils.join(result, ", ");
     }

@@ -62,11 +62,11 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
     @JoinColumn(name = "relationTypeId", nullable = false)
     private ParRelationType complementType;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "fromUnitdateId")
     private ParUnitdate from;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "toUnitdateId")
     private ParUnitdate to;
 
