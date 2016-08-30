@@ -29,7 +29,7 @@ public class ArrDataPacketRef extends ArrData implements cz.tacr.elza.api.ArrDat
     public static final String PACKET = "packet";
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrPacket.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrPacket.class)
     @JoinColumn(name = "packetId", nullable = false)
     private ArrPacket packet;
 

@@ -21,6 +21,7 @@ import java.util.List;
 public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrNode<ArrFund>, Comparable<ArrNode> {
 
     public static final String FUND = "fund";
+    public static final String NODE_ID = "nodeId";
 
     @Id
     @GeneratedValue

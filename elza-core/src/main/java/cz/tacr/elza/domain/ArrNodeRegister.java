@@ -1,8 +1,10 @@
 package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -16,6 +18,11 @@ import javax.persistence.ManyToOne;
 @Entity(name = "arr_node_register")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrNodeRegister implements cz.tacr.elza.api.ArrNodeRegister<ArrNode, RegRecord, ArrChange> {
+
+    public static final String NODE_ID = "nodeId";
+    public static final String NODE = "node";
+    public static final String RECORD = "record";
+    public static final String DELETE_CHANGE = "deleteChange";
 
     @Id
     @GeneratedValue
@@ -41,6 +48,9 @@ public class ArrNodeRegister implements cz.tacr.elza.api.ArrNodeRegister<ArrNode
     @JoinColumn(name = "deleteChangeId", nullable = true)
     private ArrChange deleteChange;
 
+    @Column(insertable = false, updatable = false)
+    @ReadOnlyProperty
+    private Integer nodeId;
 
     @Override
     public Integer getNodeRegisterId() {
@@ -60,6 +70,7 @@ public class ArrNodeRegister implements cz.tacr.elza.api.ArrNodeRegister<ArrNode
     @Override
     public void setNode(ArrNode node) {
         this.node = node;
+        this.nodeId = node != null ? node.getNodeId() : null;
     }
 
     @Override
@@ -95,5 +106,9 @@ public class ArrNodeRegister implements cz.tacr.elza.api.ArrNodeRegister<ArrNode
     @Override
     public String toString() {
         return "ArrNodeRegister pk=" + nodeRegisterId;
+    }
+
+    public Integer getNodeId() {
+        return nodeId;
     }
 }

@@ -51,25 +51,25 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     private Integer partyId;
 
     @RestResource(exported = false)
-    @OneToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
+    @OneToOne(fetch = FetchType.EAGER, targetEntity = RegRecord.class)
     @JoinColumn(name = "recordId", nullable = false)
     private RegRecord record;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyType.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParPartyType.class)
     @JoinColumn(name = "partyTypeId", nullable = false)
     private ParPartyType partyType;
 
     @RestResource(exported = false)
-    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParPartyName.class)
+    @OneToOne(fetch = FetchType.EAGER, targetEntity = ParPartyName.class)
     @JoinColumn(name = "preferredNameId")
     private ParPartyName preferredName;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "fromUnitdateId")
     private ParUnitdate from;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "toUnitdateId")
     private ParUnitdate to;
 

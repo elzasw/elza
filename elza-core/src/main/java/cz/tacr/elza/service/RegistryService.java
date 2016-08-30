@@ -785,4 +785,13 @@ public class RegistryService {
         return regRecordRepository.findOne(recordId);
     }
 
+    /**
+     * Vyhledání rejstříkových hesel k požadovaným jednotkám popisu.
+     *
+     * @param nodeIds identifikátory jednotky popisu
+     * @return mapa - klíč identifikátor jed. popisu, hodnota - seznam rejstříkových hesel
+     */
+    public Map<Integer, List<RegRecord>> findByNodes(final Collection<Integer> nodeIds) {
+        return nodeRegisterRepository.findByNodes(nodeIds);
+    }
 }

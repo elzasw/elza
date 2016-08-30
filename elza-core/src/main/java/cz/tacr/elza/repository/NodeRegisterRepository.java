@@ -1,21 +1,20 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.RegRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.RegRecord;
+import java.util.List;
 
 
 /**
  * Respozitory pro vazby mezi node a heslem rejstříku.
  */
 @Repository
-public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, Integer> {
+public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, Integer>, NodeRegisterRepositoryCustom {
 
     /**
      * Pro otevženou verzi.

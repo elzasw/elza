@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
+<!-- 2016-08-30T09:16:41 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="testPage" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" uuid="e4e74b89-1678-4125-a689-ecc77099410f">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -7,8 +9,8 @@
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
-	<import value="net.sf.jasperreports.engine.data.*"/>
 	<import value="cz.tacr.elza.print.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
 	<subDataset name="dataset1" uuid="7b8280ff-aa78-4c6b-a65b-cffb61acfa71">
 		<field name="serialized" class="java.lang.String"/>
 	</subDataset>
@@ -56,7 +58,7 @@
 				<subreportParameter name="itemsSubReport">
 					<subreportParameterExpression><![CDATA[$P{itemsSubReport}]]></subreportParameterExpression>
 				</subreportParameter>
-				<dataSourceExpression><![CDATA[new JRBeanCollectionDataSource($P{output}.getNodesFlatModel())]]></dataSourceExpression>
+				<dataSourceExpression><![CDATA[new JRDataIterableNodes($P{output}.getNodesDFS())]]></dataSourceExpression>
 				<subreportExpression><![CDATA[$P{nodesSubReport}]]></subreportExpression>
 			</subreport>
 		</band>

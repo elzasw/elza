@@ -1265,6 +1265,16 @@ public class ArrangementService {
     }
 
     /**
+     * Vyhledání hodnot atributů k požadovaným jednotkám popisu.
+     *
+     * @param nodeIds identifikátory jednotky popisu
+     * @return mapa - klíč identifikátor jed. popisu, hodnota - seznam hodnot atributu
+     */
+    public Map<Integer, List<ArrDescItem>> findByNodes(final Collection<Integer> nodeIds) {
+        return descItemRepository.findByNodes(nodeIds);
+    }
+
+    /**
      * Rekurzivní procházení a přidávání JP s chybou
      *
      * @param nodeIds           seznam chybných JP (postupně přidávaný)

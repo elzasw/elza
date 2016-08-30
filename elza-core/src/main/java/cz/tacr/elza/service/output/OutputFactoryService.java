@@ -1,20 +1,5 @@
 package cz.tacr.elza.service.output;
 
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -58,6 +43,7 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.print.Fund;
 import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.NodeId;
+import cz.tacr.elza.print.NodeLoader;
 import cz.tacr.elza.print.Output;
 import cz.tacr.elza.print.Packet;
 import cz.tacr.elza.print.Record;
@@ -89,13 +75,14 @@ import cz.tacr.elza.print.party.PartyGroup;
 import cz.tacr.elza.print.party.PartyName;
 import cz.tacr.elza.print.party.Person;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyGroupRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.service.OutputService;
+import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.utils.ObjectListIterator;
 import cz.tacr.elza.utils.PartyType;
 import cz.tacr.elza.utils.ProxyUtils;
 import ma.glasnost.orika.CustomMapper;
@@ -104,6 +91,26 @@ import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import ma.glasnost.orika.metadata.MappingDirection;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.validation.constraints.NotNull;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Factory pro vytvoření struktury pro výstupy
@@ -113,7 +120,7 @@ import ma.glasnost.orika.metadata.MappingDirection;
  */
 
 @Service
-public class OutputFactoryService {
+public class OutputFactoryService implements NodeLoader {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -144,7 +151,7 @@ public class OutputFactoryService {
     private ArrangementService arrangementService;
 
     @Autowired
-    private NodeRegisterRepository nodeRegisterRepository;
+    private RegistryService registryService;
 
     public OutputFactoryService() {
         // inicializace mapperů
@@ -354,16 +361,20 @@ public class OutputFactoryService {
             createNodeId(arrParentLevel, output, parentNode);
         }
 
-        // získat node vč potomků a atributů
-        ArrNode parentNode = levelList.get(levelList.size() - 1).getNode();
-        getNodeIdWithChildren(arrLevel, output, parentNode);
+        if (levelList.size() > 0) {
+            // získat node vč potomků a atributů
+            ArrNode parentNode = levelList.get(levelList.size() - 1).getNode();
+            getNodeIdWithChildren(arrLevel, output, parentNode);
+        } else {
+            getNodeIdWithChildren(arrLevel, output, null);
+        }
     }
 
     /**
      * Vytvoří node vč. celého stromu potomků.
      * Ke každému node vytvoří i příslušné items.
      *
-     * @param arrNodeId zdrojový node
+     * @param arrLevel zdrojový level
      * @param output  výstup, ke kterému se budou nody zařazovat
      */
     private void getNodeIdWithChildren(final ArrLevel arrLevel, final Output output, final ArrNode parentNode) {
@@ -385,7 +396,7 @@ public class OutputFactoryService {
      *
      * @param arrLevel    zdrojová úroveň
      * @param output      výstup, ke kterému se budou nody zařazovat
-     * @param parentNode  nadřazený uzel
+     * @param arrParentNode  nadřazený uzel
      * @return node vč. items
      */
     private NodeId createNodeId(final ArrLevel arrLevel, final Output output, final ArrNode arrParentNode) {
@@ -401,11 +412,9 @@ public class OutputFactoryService {
         }
         Integer nodeIdentifier = arrLevel.getNode().getNodeId();
         Integer position = arrLevel.getPosition();
-        final NodeId nodeId = outputGeneratorFactory.getNodeId(output, nodeIdentifier, parentNodeId, position, depth);
+        NodeId nodeId = outputGeneratorFactory.getNodeId(output, nodeIdentifier, parentNodeId, position, depth);
 
-        output.getRecords().addAll(getRecordsByNodeId(output, nodeId));
-
-        output.addNodeId(nodeId);
+        nodeId = output.addNodeId(nodeId);
         if (parent != null) {
             parent.getChildren().add(nodeId);
         }
@@ -421,51 +430,6 @@ public class OutputFactoryService {
         return outputGeneratorFactory.getNode(nodeId, output);
     }
 
-    /**
-     * Vrací registers navázané přímo k node.
-     *
-     * @param output output na který jsou registers navázané
-     * @param nodeId node na které jsou registers navázané
-     * @return seznam registers navázaných přímo k node
-     */
-    @Transactional(readOnly = true)
-    public List<Record> getRecordsByNodeId(final Output output, final NodeId nodeId) {
-        ArrNode arrNode = nodeRepository.findOne(nodeId.getArrNodeId());
-        List<RegRecord> regRecords = nodeRegisterRepository.findRecordsByNode(arrNode);
-
-        List<Record> records = new ArrayList<>(regRecords.size());
-        for (RegRecord regRecord : regRecords) {
-            Record record = createRecord(output, regRecord);
-            records.add(record);
-        }
-        return records;
-    }
-
-    /**
-     * Vrátí hodnoty přiřazené nodu.
-     *
-     * @param output output na který jsou registers navázané
-     * @param nodeId node na které jsou registers navázané
-     *
-     * @return seznam hodnot
-     */
-    @Transactional(readOnly = true)
-    public List<Item> getItemsByNodeId(final Output output, final NodeId nodeId) {
-        final ArrFundVersion arrFundVersion = output.getArrFundVersion();
-        final ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId.getArrNodeId());
-
-        // zajistí naplnění cache, pokud není načteno
-        final List<ArrDescItem> descItems = arrangementService.getArrDescItems(arrFundVersion, arrNode);
-        List<Item> items = new ArrayList<>(descItems.size());
-        for (ArrDescItem arrDescItem : descItems) {
-            AbstractItem item = getItem(arrDescItem.getItemId(), output, nodeId);
-            items.add(item);
-
-        }
-        items.sort((i1,i2) -> (i1.compareToItemViewOrderPosition(i2)));
-
-        return items;
-    }
     /**
      * Vytvoří item podle zdrojového typu.
      *
@@ -768,4 +732,113 @@ public class OutputFactoryService {
     private AbstractItem getItemUnitid(final NodeId nodeId, final ArrItemUnitid itemData) {
         return new ItemUnitId(nodeId, itemData.getValue());
     }
+
+    /**
+     * Načtení požadovaných uzlů (JP) společně s daty.
+     *
+     * @param output  výstup
+     * @param nodeIds seznam identifikátorů uzlů, které načítáme
+     * @return mapa - klíč identifikátor uzlu, hodnota uzel
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Integer, Node> loadNodes(final Output output, final Collection<NodeId> nodeIds) {
+        Map<Integer, Node> mapNodes = nodeIds.stream().map(nodeId -> getNode(nodeId, output)).collect(Collectors.toMap(Node::getArrNodeId, Function.identity()));
+
+        fillItems(output, nodeIds, mapNodes);
+        fillRecords(output, nodeIds, mapNodes);
+
+        return mapNodes;
+    }
+
+    /**
+     * Načtení rejstříkových hesel k jednotkám popisu.
+     *
+     * @param output    output pod který node patří
+     * @param nodeIds   seznam identifikátorů uzlů, které načítáme
+     * @param mapNodes  mapa uzlů, do kterých ukládáme
+     */
+    private void fillRecords(final Output output, final Collection<NodeId> nodeIds, final Map<Integer, Node> mapNodes) {
+        Map<Integer, List<RegRecord>> recordsByNode = registryService.findByNodes(mapNodes.keySet());
+        for (NodeId nodeId : nodeIds) {
+            int arrNodeId = nodeId.getArrNodeId();
+            List<RegRecord> regRecords = recordsByNode.get(arrNodeId);
+            List<Record> records;
+            if (regRecords == null) {
+                records = Collections.<Record>emptyList();
+            } else {
+                records = regRecords.stream().map(regRecord -> createRecord(output, regRecord)).collect(Collectors.toList());
+            }
+            Node node = mapNodes.get(arrNodeId);
+            node.setRecords(records);
+        }
+    }
+
+    /**
+     * Načtení hodnot atributu k jednotkám popisu.
+     *
+     * @param output   output pod který node patří
+     * @param nodeIds  seznam identifikátorů uzlů, které načítáme
+     * @param mapNodes mapa uzlů, do kterých ukládáme
+     */
+    private void fillItems(final Output output, final Collection<NodeId> nodeIds, final Map<Integer, Node> mapNodes) {
+        Map<Integer, List<ArrDescItem>> descItemsByNode = arrangementService.findByNodes(mapNodes.keySet());
+
+        List<ArrDescItem> allDescItems = new LinkedList<>();
+        for (List<ArrDescItem> items : descItemsByNode.values()) {
+            allDescItems.addAll(items);
+        }
+
+        ObjectListIterator<ArrDescItem> iterator = new ObjectListIterator<>(allDescItems);
+
+        while (iterator.hasNext()) {
+            List<ArrDescItem> descItems = iterator.next();
+            itemService.loadData(descItems);
+        }
+
+        Map<Integer, ItemType> itemTypeMap = new HashMap<>();
+        Map<Integer, ItemSpec> itemSpecMap = new HashMap<>();
+
+        for (NodeId nodeId : nodeIds) {
+            int arrNodeId = nodeId.getArrNodeId();
+            List<ArrDescItem> descItems = descItemsByNode.get(arrNodeId);
+
+            List<Item> items;
+            if (descItems == null) {
+                items = Collections.<Item>emptyList();
+            } else {
+                items = descItems.stream()
+                        .map(arrDescItem -> {
+                            AbstractItem itemByType = getItemByType(output, nodeId, arrDescItem);
+
+                            RulItemSpec rulItemSpec = arrDescItem.getItemSpec();
+                            if (rulItemSpec != null) {
+                                Integer itemSpecId = rulItemSpec.getItemSpecId();
+                                ItemSpec itemSpec = itemSpecMap.get(itemSpecId);
+                                if (itemSpec == null) {
+                                    itemSpec = createItemSpec(rulItemSpec);
+                                    itemSpecMap.put(itemSpecId, itemSpec);
+                                }
+                                itemByType.setSpecification(itemSpec);
+                            }
+
+                            RulItemType rulItemType = arrDescItem.getItemType();
+                            Integer itemTypeId = rulItemType.getItemTypeId();
+                            ItemType itemType = itemTypeMap.get(itemTypeId);
+                            if (itemType == null) {
+                                itemType = createItemType(rulItemType);
+                                itemTypeMap.put(itemTypeId, itemType);
+                            }
+                            itemByType.setType(itemType);
+
+                            return itemByType;
+                        }).collect(Collectors.toList());
+            }
+            items.sort((i1,i2) -> (i1.compareToItemViewOrderPosition(i2)));
+            Node node = mapNodes.get(arrNodeId);
+            node.setItems(items);
+        }
+    }
+
+
 }

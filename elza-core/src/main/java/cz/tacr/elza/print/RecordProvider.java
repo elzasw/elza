@@ -12,10 +12,10 @@ public interface RecordProvider {
      /**
       * @return seznam všech recordů vázaných přímo na objektu
       */
-     public List<Record> getRecords();
+     List<Record> getRecords();
 
      /**
-      * @return seznam podřízených objektů obsahujících další recordy
+      * @return iterátor podřízených objektů obsahujících další recordy
       */
-     public List<? extends RecordProvider> getRecordProviderChildren();
+     IteratorNodes getRecordProviderChildren();
 }

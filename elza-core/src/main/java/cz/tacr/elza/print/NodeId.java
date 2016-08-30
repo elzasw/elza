@@ -16,7 +16,7 @@ import org.springframework.util.Assert;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class NodeId implements RecordProvider, Comparable<NodeId> {
+public class NodeId implements Comparable<NodeId> {
 
     private final Output output; // vazba na parent output
     private final int arrNodeId; // vazba na DB objekt, povinný údaj
@@ -68,20 +68,6 @@ public class NodeId implements RecordProvider, Comparable<NodeId> {
         return childNodeIds;
     }
 
-    /**
-     * Metoda pro získání skutečné hodnoty do fieldu.
-     * Umožní na položce v detailu volat metody sám nad sebou (nejen implicitně zpřístupněné gettery).
-     *
-     * @return odkaz sám na sebe
-     */
-    public Node getNode() {
-        try {
-            return output.getNodeCache().get(this.arrNodeId);
-        } catch (ExecutionException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
     public int getArrNodeId() {
         return arrNodeId;
     }
@@ -92,16 +78,6 @@ public class NodeId implements RecordProvider, Comparable<NodeId> {
 
     public Integer getPosition() {
         return position;
-    }
-
-    @Override
-    public List<Record> getRecords() {
-        return getNode().getRecords();
-    }
-
-    @Override
-    public List<NodeId> getRecordProviderChildren() {
-        return new ArrayList<>(getChildren());
     }
 
     @Override
