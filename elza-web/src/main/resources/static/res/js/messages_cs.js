@@ -352,6 +352,14 @@ var messages = {
     "arr.fund.internalCode": "Interní kod",
     "arr.fund.dateRange": "Časový rozsah",
 
+    "arr.fund.addNode": "Přidat jednotku popisu",
+    "arr.fund.addNode.direction": "Umístění",
+    "arr.fund.addNode.before": "Před",
+    "arr.fund.addNode.after": "Za",
+    "arr.fund.addNode.child": "Pod",
+    "arr.fund.addNode.atEnd": "Na konec",
+    "arr.fund.addNode.scenario": "Typ jednotky popisu",
+
     "arr.fund.subNodes.prevPage": "Předchozí stránka",
     "arr.fund.subNodes.nextPage": "Další stránka",
     "arr.fund.subNodes.findPosition": "Přejít na JP podle pořadového čísla",
@@ -428,8 +436,6 @@ var messages = {
 
     "subNodeForm.section.jp" : "Záznam:",
     "subNodeForm.section.item" : "Položka:",
-
-    "nodePanel.addSubNode": "Přidat JP na konec",
 
     "subNodeRegister.title": "Rejstříková hesla",
     "subNodeRegister.title.add": "Přidání hesla",

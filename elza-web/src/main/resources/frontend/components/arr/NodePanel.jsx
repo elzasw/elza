@@ -9,7 +9,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown,
-        Search, GoToPositionForm, VisiblePolicyForm} from 'components';
+        AddNodeForm, Search, GoToPositionForm, VisiblePolicyForm} from 'components';
 import {Button, Tooltip, OverlayTrigger, Input} from 'react-bootstrap';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
@@ -132,7 +132,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd',
-            'renderRowItem', 'handleFindPosition', 'handleFindPositionSubmit',
+            'renderRowItem', 'handleAddSubNode', 'handleFindPosition', 'handleFindPositionSubmit',
             'handleShortcuts', 'trySetFocus', 'handleAddDescItemType', 'handleAccordionKeyDown', 'handleVisiblePolicy',
             'ensureItemVisibleNoForm'
             );
@@ -624,6 +624,18 @@ return true
     }
 
     /**
+     * Akce pro přidání JP
+     */
+    handleAddSubNode() {
+        var handleSubmit = (form) => {
+        };
+        this.dispatch(modalDialogShow(this, i18n('arr.fund.addNode'),
+                <AddNodeForm handleSubmit={handleSubmit} node='' direction='CHILD'/>
+            )
+        );
+    }
+
+    /**
      * Renderování Accordion.
      * @param form {Object} editační formulář, pokud je k dispozici (k dispozici je, pokud je nějaká položka Accordion vybraná)
      * @return {Object} view
@@ -658,6 +670,7 @@ return true
         var actionsPanel = (
             <div key='actions' className='actions-container'>
                 <div key='actions' className='actions'>
+                    <Button onClick={this.handleAddSubNode}>Add JP Dialog</Button>
                     {actions}
                     <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey))}><Icon glyph="fa-backward" />{i18n('arr.fund.subNodes.prevPage')}</div>
                     <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey))}><Icon glyph="fa-forward" />{i18n('arr.fund.subNodes.nextPage')}</div>

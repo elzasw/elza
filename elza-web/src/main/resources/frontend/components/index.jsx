@@ -83,6 +83,7 @@ exports.FundSettingsForm = require('components/arr/FundSettingsForm.jsx');
 exports.VisiblePolicyForm = require('components/arr/VisiblePolicyForm.jsx');
 exports.AddPacketForm = require('components/arr/AddPacketForm.jsx');
 exports.GoToPositionForm = require('components/arr/GoToPositionForm.jsx');
+exports.AddNodeForm = require('components/arr/nodeForm/AddNodeForm.jsx');
 exports.FundBulkModificationsForm = require('components/arr/FundBulkModificationsForm.jsx');
 exports.ArrPanel = require('components/arr/ArrPanel.jsx');
 exports.ArrFundPanel = require('components/arr/ArrFundPanel.jsx');
