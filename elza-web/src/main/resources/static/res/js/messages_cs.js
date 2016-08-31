@@ -427,7 +427,7 @@ var messages = {
     "subNodeForm.descItem.jsonTable.action.upload": "Nahrát data",
 
     "subNodeForm.section.jp" : "Záznam:",
-    "subNodeForm.section.item" : "Položka:",
+    "subNodeForm.section.item" : "Prvek popisu",
 
     "nodePanel.addSubNode": "Přidat JP na konec",
 

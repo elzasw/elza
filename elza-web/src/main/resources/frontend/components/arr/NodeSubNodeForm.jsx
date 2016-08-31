@@ -22,11 +22,8 @@ import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        
+
         this.bindMethods(
-            "handleAddNodeBefore",
-            "handleAddNodeAfter",
-            "handleAddChildNode",
             "renderFormActions",
             "handleDeleteNode",
             "handleDescItemTypeCopyFromPrev",
@@ -49,15 +46,15 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
         }
 
         return nodeSetting
-    }    
-    
+    }
+
     /**
      * Odebrání všech zámků pro všechny atributy
      */
     handleDescItemTypeUnlockAll() {
         this.dispatch(unlockAllDescItemType(this.props.nodeId));
-    }    
-    
+    }
+
     /**
      * Přidání/odebrání opakovaného pro atribut.
      * @param descItemTypeId {String} id atributu
@@ -69,8 +66,8 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
         } else {
             this.dispatch(nocopyDescItemType(this.props.nodeId, descItemTypeId));
         }
-    }    
-    
+    }
+
     /**
      * Přidání/odebrání zámku pro atribut.
      * @param descItemTypeId {String} id atributu
@@ -82,39 +79,9 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
         } else {
             this.dispatch(unlockDescItemType(this.props.nodeId, descItemTypeId));
         }
-    }    
-
-    /**
-     * @param event Event selectu
-     * @param scenario id vybraného scénáře
-     *
-     * Přidání node před aktuální node a následovné vybrání
-     * Využito v dropdown buttonu pro přidání node
-     */
-    handleAddNodeBefore(scenario) {
-        this.dispatch(addNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, "BEFORE", this.getDescItemTypeCopyIds(), scenario));
     }
 
-    /**
-     * @param event Event selectu
-     * @param scenario name vybraného scénáře
-     *
-     * Přidání node za aktuální node a následovné vybrání
-     * Využito v dropdown buttonu pro přidání node
-     */
-    handleAddNodeAfter(scenario) {
-        this.dispatch(addNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, "AFTER", this.getDescItemTypeCopyIds(), scenario))
-    }
 
-    /**
-     * @param event Event selectu
-     * @param scenario id vybraného scénáře
-     *
-     * Přidání podřízeného záznamu
-     */
-    handleAddChildNode(scenario) {
-        this.dispatch(addNode(this.props.selectedSubNode, this.props.selectedSubNode, this.props.versionId, "CHILD", this.getDescItemTypeCopyIds(), scenario));
-    }
 
     handleDeleteNode() {
         if (window.confirm('Opravdu chcete smazat tento JP?')) {
@@ -136,8 +103,8 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
             descItemTypeIndex,
         }
         this.dispatch(nodeFormActions.fundSubNodeFormValuesCopyFromPrev(this.props.versionId, this.props.selectedSubNode.id, this.props.selectedSubNode.version, descItemTypeId, routingKey, valueLocation));
-    }    
-    
+    }
+
     /**
      * Vrátí pole ke zkopírování
      */
@@ -159,45 +126,22 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
     renderFormActions() {
         const notRoot = !isFundRootId(this.props.nodeId);
         return (
-            <div className='node-form-actions-container'>
+            <div ref="nodeToolbar" className='node-form-actions-container'>
                 <div className='node-form-actions'>
                     <div className='section'>
-                        <span>{i18n('subNodeForm.section.jp')}</span>
+                        <NoFocusButton onClick={this.props.onAddDescItemType}><Icon glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}</NoFocusButton>
+                    </div>
+                    <div className='section'>
+                        <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}>
+                            <Icon glyph="fa-unlock"/>
+                        </NoFocusButton>
+                        <NoFocusButton onClick={this.props.onVisiblePolicy}>
+                            <Icon glyph="fa-eye"/>
+                        </NoFocusButton>
                         {notRoot &&
-                            [<AddNodeDropdown key="before"
-                                             ref='addNodeBefore'
-                                             action={this.handleAddNodeBefore}
-                                             title={<span className="fa-stack fa-stack-right-bottom"><Icon glyph='fa-plus'/><Icon glyph='fa-arrow-up'/></span>}
-                                             node={this.props.selectedSubNode}
-                                             version={this.props.versionId}
-                                             direction="BEFORE"
-                            />,
-                            <AddNodeDropdown key="after"
-                                             ref='addNodeAfter'
-                                             title={<span className="fa-stack fa-stack-right-bottom"><Icon glyph='fa-plus'/><Icon glyph='fa-arrow-down'/></span>}
-                                             action={this.handleAddNodeAfter}
-                                             node={this.props.selectedSubNode}
-                                             version={this.props.versionId}
-                                             direction="AFTER"
-                            />]
-                        }
-                        <AddNodeDropdown key="child"
-                                     ref='addNodeChild'
-                                     title={<span className="fa-stack fa-stack-right-bottom"><Icon glyph='fa-plus'/><Icon glyph='fa-arrow-right'/></span>}
-                                     action={this.handleAddChildNode}
-                                     node={this.props.selectedSubNode}
-                                     version={this.props.versionId}
-                                     direction="CHILD"
-                        />
-                        {notRoot && <NoFocusButton onClick={this.handleDeleteNode}><Icon glyph="fa-trash"/></NoFocusButton>}
-                    </div>
-                    <div className='section'>
-                        <span>{i18n('subNodeForm.section.item')}</span>
-                        <NoFocusButton onClick={this.props.onAddDescItemType}><Icon glyph="fa-plus"/></NoFocusButton>
-                        <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Icon glyph="fa-unlock"/></NoFocusButton>
-                    </div>
-                    <div className='section'>
-                        <NoFocusButton onClick={this.props.onVisiblePolicy}><Icon glyph="fa-eye"/>{i18n('subNodeForm.visiblePolicy')}</NoFocusButton>
+                        <NoFocusButton onClick={this.handleDeleteNode}>
+                            <Icon glyph="fa-trash"/>
+                        </NoFocusButton>}
                     </div>
                 </div>
             </div>
@@ -212,11 +156,13 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
         const {singleDescItemTypeEdit, userDetail} = this.props;
         const {versionId, focus, closed, fundId, routingKey, rulDataTypes, calendarTypes, descItemTypes, packetTypes, packets,
             subNodeForm, conformityInfo, descItemCopyFromPrevEnabled, singleDescItemTypeId} = this.props;
-        
-        let formActions
 
+        let formActions
+        console.log("--- NodeSubNodeForm ---")
         var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
+        console.log(settings);
         var settingsValues = settings.value != 'false';
+        console.log("settings "+settingsValues);
         const readMode = closed || settingsValues;
 
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
@@ -224,9 +170,8 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
                 formActions = this.renderFormActions();
             }
         }
-
         const nodeSetting = this.getNodeSetting();
-
+        console.log("--- END NodeSubNodeForm ---")
         return (
             <div className="node-item-form-container">
                 {formActions}

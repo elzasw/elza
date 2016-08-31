@@ -75,6 +75,7 @@ exports.FundFilterSettings = require('components/arr/FundFilterSettings.jsx');
 exports.FundTreeLazy = require('components/arr/FundTreeLazy.jsx');
 exports.SubNodeForm = require('components/arr/SubNodeForm.jsx');
 exports.NodeSubNodeForm = require('components/arr/NodeSubNodeForm.jsx');
+exports.NodeActionsBar = require('components/arr/NodeActionsBar.jsx');
 exports.OutputSubNodeForm = require('components/arr/OutputSubNodeForm.jsx');
 exports.SubNodeRegister = require('components/arr/SubNodeRegister.jsx');
 exports.AddNodeDropdown = require('components/arr/AddNodeDropdown.jsx');
@@ -91,6 +92,8 @@ exports.BulkActionsTable = require('components/arr/BulkActionsTable.jsx');
 exports.FundTreeMain = require('components/arr/FundTreeMain.jsx');
 exports.FundTreeMovementsLeft = require('components/arr/FundTreeMovementsLeft.jsx');
 exports.FundTreeMovementsRight = require('components/arr/FundTreeMovementsRight.jsx');
+exports.AddNodeCross = require('components/arr/AddNodeCross.jsx');
+exports.AddNodeCrossButton = require('components/arr/AddNodeCrossButton.jsx');
 
 exports.PartySearch = require('components/party/PartySearch.jsx');
 exports.PartyDetail = require('components/party/PartyDetail.jsx');
