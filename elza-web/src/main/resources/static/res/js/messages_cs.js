@@ -435,7 +435,7 @@ var messages = {
     "subNodeForm.descItem.jsonTable.action.upload": "Nahrát data",
 
     "subNodeForm.section.jp" : "Záznam:",
-    "subNodeForm.section.item" : "Položka:",
+    "subNodeForm.section.item" : "Prvek popisu",
 
     "subNodeRegister.title": "Rejstříková hesla",
     "subNodeRegister.title.add": "Přidání hesla",
