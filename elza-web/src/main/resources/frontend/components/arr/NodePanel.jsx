@@ -8,9 +8,9 @@ const PARENT_CHILD_MAX_LENGTH = 250
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown, AddNodeCross, NodeActionsBar,
-        AddNodeForm, Search, GoToPositionForm, VisiblePolicyForm} from 'components';
-import {Button, Tooltip, OverlayTrigger, Input} from 'react-bootstrap';
+import {Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, NodeActionsBar,
+        VisiblePolicyForm} from 'components';
+import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
 import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo.jsx'
@@ -132,8 +132,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'renderChildren', 'handleOpenItem', 'handleSetVisiblePolicy',
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
-            'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd',
-            'renderRowItem', 'handleAddSubNode', 'handleFindPosition', 'handleFindPositionSubmit',
+            'renderAccordion', 'renderState', 'transformConformityInfo', 'renderRowItem',
             'handleShortcuts', 'trySetFocus', 'handleAddDescItemType', 'handleAccordionKeyDown', 'handleVisiblePolicy',
             'ensureItemVisibleNoForm', 'handleScroll'
             );
@@ -530,17 +529,6 @@ return true
     }
 
     /**
-     * Přidání JP na konec do aktuálního node
-     * Využito v dropdown buttonu pro přidání node
-     *
-     * @param event Event selectu
-     * @param scenario name vybraného scénáře
-     */
-    handleAddNodeAtEnd(event, scenario) {
-        this.dispatch(addNode(this.props.node, this.props.node, this.props.fund.versionId, "CHILD", this.getDescItemTypeCopyIds(), scenario));
-    }
-
-    /**
      * Vrátí pole ke zkopírování
      */
     getDescItemTypeCopyIds() {
@@ -638,18 +626,6 @@ return true
                         {icon}
                     </div>
                 </OverlayTrigger>
-        );
-    }
-
-    /**
-     * Akce pro přidání JP
-     */
-    handleAddSubNode() {
-        var handleSubmit = (form) => {
-        };
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.addNode'),
-                <AddNodeForm handleSubmit={handleSubmit} node='' direction='CHILD'/>
-            )
         );
     }
 

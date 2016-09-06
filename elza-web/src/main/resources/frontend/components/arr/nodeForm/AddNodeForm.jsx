@@ -11,93 +11,102 @@ import {connect} from 'react-redux'
 import * as types from 'actions/constants/ActionTypes.js';
 import {AbstractReactComponent, i18n, FormInput, Loading} from 'components/index.jsx';
 import {Modal, Button, Radio, FormGroup, ControlLabel} from 'react-bootstrap';
-import {reduxForm} from 'redux-form';
-import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import {WebApi} from 'actions/index.jsx';
 
 require ('./AddNodeForm.less');
-
-const INIT_STATE = {
-    items: undefined,
-    loading: false,
-};
-
-const validate = (values, props) => {
-    const errors = {};
-    if (!values.direction) {
-        errors.direction = i18n('global.validation.required');
-    }
-
-    return errors;
-};
 
 var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.state = INIT_STATE;
+        this.bindMethods('handleDirectionChange');
+        this.state = { // initial states
+            scenarios: undefined,
+            loading: false
+        };
     }
 
     /**
      * Načte scénáře a vrátí je pro zobrazení
      */
-    loadScenarios() {
-        if (!this.state.loading) {
+    handleDirectionChange(e) {
+        var newDirection = e.target.value;
+        if(newDirection === '') { // direction is not selected
             this.setState({
-                ...this.state,
-                loading: true
+                scenarios: undefined
             });
-            const {node, version, direction} = this.props;
-            WebApi.getNodeAddScenarios(node, version, direction).then((result) => {
-                if (result.length > 1) {
-                    this.setState({
-                        ...this.state,
-                        items: result,
-                        loading: false
-                    }, ()=>{this.focusFirstMenuItem()});
-                } else if (result.length === 1) {
-                    this.props.action(undefined, result[0].name);
-                    this.setState(INIT_STATE);
-                } else {
-                    this.props.action();
-                    this.setState(INIT_STATE);
-                }
-            });
-        } else {
-            this.setState({
-                ...this.state,
-                items: undefined,
-            });
+            return;
         }
+        // direction is selected
+        this.setState({
+            loading: true
+        });
+        const {node, versionId} = this.props;
+        // nastavi odpovidajiciho rodice a direction pro dotaz
+        let no, di;
+        if(newDirection == 'ATEND') { // u prvku na konec seznamu
+            no = node;
+            di = 'CHILD';
+        } else {
+            no = node.subNodeForm.data.parent;
+            di = newDirection;
+        }
+        // ajax dotaz na scenare
+        WebApi.getNodeAddScenarios(no, versionId, di).then(
+            (result) => { // resolved
+                this.setState({
+                    scenarios: result,
+                    loading: false
+                });
+            },
+            (reason) => { // rejected
+                this.setState({
+                    scenarios: undefined,
+                    loading: false
+                });
+            }
+        );
+    }
+
+    componentDidMount() {
+        
     }
 
     render() {
-        const {fields:{direction}, handleSubmit, onClose, initDirection} = this.props;
-        const {items, loading} = this.state;
-        const submitForm = submitReduxForm.bind(this, validate);
+        const {handleSubmit, onClose, node, versionId, initDirection} = this.props;
+        const {scenarios, loading} = this.state;
+
+        var scnRadios= [];
+        if(scenarios) {
+            for (var i = 0; i < scenarios.length; i++) {
+                scnRadios.push(<Radio key={'scns-' + i} name='scns' value={scenarios[i].name}>{scenarios[i].name}</Radio>);
+            }
+        } else {
+            scnRadios.push(<div>{i18n('arr.fund.addNode.noDirection')}</div>);
+        }
 
         return(
             <div>
                 <Modal.Body>
-                    <form onSubmit={handleSubmit(submitForm)}>
-                        <FormInput componentClass='select' label={i18n('arr.fund.addNode.direction')} {...direction} {...decorateFormField(direction)}>
-                            <option />
-                            <option value='before' key='before'>{i18n('arr.fund.addNode.before')}</option>
-                            <option value='after' key='after'>{i18n('arr.fund.addNode.after')}</option>
-                            <option value='child' key='child'>{i18n('arr.fund.addNode.child')}</option>
-                            <option value='atEnd' key='atEnd'>{i18n('arr.fund.addNode.atEnd')}</option>
+                    <form onSubmit={handleSubmit}>
+                        <FormInput componentClass='select' disabled={loading} label={i18n('arr.fund.addNode.direction')} defaultValue={initDirection} onChange={this.handleDirectionChange}>
+                            <option value=''/>
+                            <option value='BEFORE' key='BEFORE'>{i18n('arr.fund.addNode.before')}</option>
+                            <option value='AFTER' key='AFTER'>{i18n('arr.fund.addNode.after')}</option>
+                            <option value='CHILD' key='CHILD'>{i18n('arr.fund.addNode.child')}</option>
+                            <option value='ATEND' key='ATEND'>{i18n('arr.fund.addNode.atEnd')}</option>
                         </FormInput>
                         <FormGroup>
                             <ControlLabel>{i18n('arr.fund.addNode.scenario')}</ControlLabel>
                             {loading ? <Loading /> :
-                                <FormGroup>
-                                    <Radio name='a'>a</Radio>
-                                    <Radio name='a'>b</Radio>
+                                <FormGroup key='Scenarios'>
+                                    {scnRadios}
                                 </FormGroup>
                             }
                         </FormGroup>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.store')}</Button>
+                    <Button onClick={handleSubmit}>{i18n('global.action.store')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
@@ -107,10 +116,7 @@ var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
 
 AddNodeForm.propTypes = {
     node: React.PropTypes.object.isRequired,
-    direction: React.PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND', ''])
+    initDirection: React.PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND', ''])
 };
 
-module.exports = reduxForm({
-    form: 'addNodeForm',
-    fields: ['direction']
-})(AddNodeForm);
+module.exports = connect()(AddNodeForm);

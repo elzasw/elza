@@ -359,6 +359,7 @@ var messages = {
     "arr.fund.addNode.child": "Pod",
     "arr.fund.addNode.atEnd": "Na konec",
     "arr.fund.addNode.scenario": "Typ jednotky popisu",
+    "arr.fund.addNode.noDirection": "Nebylo vybráno umístění.",
 
     "arr.fund.subNodes.prevPage": "Předchozí stránka",
     "arr.fund.subNodes.nextPage": "Další stránka",

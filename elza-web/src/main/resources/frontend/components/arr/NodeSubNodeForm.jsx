@@ -158,11 +158,8 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
             subNodeForm, conformityInfo, descItemCopyFromPrevEnabled, singleDescItemTypeId} = this.props;
 
         let formActions
-        console.log("--- NodeSubNodeForm ---")
         var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
-        console.log(settings);
         var settingsValues = settings.value != 'false';
-        console.log("settings "+settingsValues);
         const readMode = closed || settingsValues;
 
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
@@ -171,7 +168,6 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
             }
         }
         const nodeSetting = this.getNodeSetting();
-        console.log("--- END NodeSubNodeForm ---")
         return (
             <div className="node-item-form-container">
                 {formActions}

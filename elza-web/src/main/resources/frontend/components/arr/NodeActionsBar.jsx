@@ -2,6 +2,7 @@
  * Lišta akcí pro jednotku popisu
  *
  * @author Jakub Randák
+ * @author Tomáš Pytelka
  * @since 31.8.2016
  */
 
@@ -17,13 +18,14 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx';
 
 require ('./NodePanel.less');
-require ("./NodeActionsBar.less")
+require ('./NodeActionsBar.less');
 
 const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.bindMethods('handleFindPosition', 'handleFindPositionSubmit');
     }
+
     /**
      * Akce po úspěšném vybrání pozice JP z formuláře.
      *
@@ -55,13 +57,13 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
                 )
         )
     }
-    render(){
+
+    render() {
       const {node, versionId, userDetail, fundId, closed, selectedSubNodeNumber} = this.props;
-      console.log(node);
       return(
         <div key='actions' className='actions-container'>
             <div key='actions' className='actions'>
-                <AddNodeCross node={node} userDetail={userDetail} fundId={fundId} closed={closed}/>
+                <AddNodeCross node={node} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
                 <div className="button-wrap">
                     <div className="left-side">
                         <Search
@@ -103,16 +105,15 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
                 </div>
             </div>
         </div>
-      )
+      );
     }
+};
 
-  }
-
-  NodeActionsBar.propTypes = {
+NodeActionsBar.propTypes = {
       node: React.PropTypes.any.isRequired,
       versionId: React.PropTypes.any.isRequired,
       userDetail: React.PropTypes.object.isRequired,
       fundId: React.PropTypes.any.isRequired,
       closed: React.PropTypes.any.isRequired
-  };
+};
 module.exports = connect()(NodeActionsBar);
