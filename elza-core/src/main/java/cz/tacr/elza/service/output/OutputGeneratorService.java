@@ -128,8 +128,14 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
             throw new IllegalStateException("Tento výstup je již ve frontě generování");
         }
 
-        setStateAndSave(arrOutput.getOutputDefinition(), OutputState.GENERATING);
-        publishOutputStateEvent(arrOutput.getOutputDefinition(), null);
+        ArrOutputDefinition outputDefinition = arrOutput.getOutputDefinition();
+
+        if (outputDefinition.getTemplate() == null) {
+            throw new IllegalStateException("Nelze spustit generování, protože výstup nemá vybranou šablonu");
+        }
+
+        setStateAndSave(outputDefinition, OutputState.GENERATING);
+        publishOutputStateEvent(outputDefinition, null);
         outputQueue.add(getWorker(arrOutput, userId));
         runNextOutput(); // zkusí sputit frontu
     }

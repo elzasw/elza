@@ -378,6 +378,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         return outputDefinition &&
             outputDefinition.outputResultId == null &&
             outputDefinition.state === OutputState.OPEN &&
+            outputDefinition.templateId != null &&
             outputDefinition.nodes.length > 0
     }
 
