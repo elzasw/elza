@@ -130,7 +130,7 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
 
             let nodeId;
             if (activeNode.id != null && (typeof activeNode.id === 'string' || activeNode.id instanceof String)) {
-                nodeId = parseInt(activeNode.id.replace("ROOT_", ""));
+                nodeId = null;
             } else {
                 nodeId = activeNode.id;
             }

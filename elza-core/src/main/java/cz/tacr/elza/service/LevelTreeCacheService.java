@@ -1334,7 +1334,17 @@ public class LevelTreeCacheService {
         Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
 
         if (nodeId == null) {
-            return new HashSet<>(versionTreeCache.keySet());
+            Set<Integer> nodeIds = new HashSet<>();
+            if (depth == Depth.ONE_LEVEL) {
+                for (Map.Entry<Integer, TreeNode> integerTreeNodeEntry : versionTreeCache.entrySet()) {
+                    if (integerTreeNodeEntry.getValue().getParent() == null) {
+                        nodeIds.add(integerTreeNodeEntry.getKey());
+                    }
+                }
+            } else {
+                nodeIds.addAll(versionTreeCache.keySet());
+            }
+            return nodeIds;
         }
 
         Assert.notNull(depth);
