@@ -1,9 +1,11 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -43,4 +45,8 @@ public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefin
 
     @Query("SELECT no FROM arr_output_definition no JOIN no.outputs o WHERE o.outputId=?1")
     ArrOutputDefinition findByOutputId(Integer outputId);
+
+    @Modifying
+    @Query("UPDATE arr_output_definition o SET o.state = ?2, o.error = ?3 WHERE o.state IN ?1")
+    int setStateFromStateWithError(List<OutputState> statesToFind, OutputState stateToSet, String errorMessage);
 }
