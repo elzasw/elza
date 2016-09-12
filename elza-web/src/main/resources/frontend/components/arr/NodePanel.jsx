@@ -541,7 +541,7 @@ return true
      * @param event Event selectu
      * @param scenario name vybraného scénáře
      */
-    handleAddNodeAtEnd(event, scenario) {
+    handleAddNodeAtEnd(scenario) {
         this.dispatch(addNode(this.props.node, this.props.node, this.props.fund.versionId, "CHILD", this.getDescItemTypeCopyIds(), scenario));
     }
 
