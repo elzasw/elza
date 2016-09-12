@@ -114,6 +114,13 @@ export function changeParty(partyId) {
     }
 }
 
+export function changePartyCreate(partyId) {
+    return {
+        type: types.PARTY_CREATED,
+        partyId: partyId
+    }
+}
+
 export function changePartyDelete(partyId) {
     return {
         type: types.CHANGE_PARTY_DELETED,

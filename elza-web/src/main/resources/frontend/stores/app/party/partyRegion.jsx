@@ -98,6 +98,14 @@ export default function partyRegion(state = initialState, action) {
                 selectedPartyData: null,
                 selectedPartyID: null,
             };
+
+        case types.PARTY_CREATED: {
+            return {
+                ...state,
+                dirtySearch: true
+            }
+        }
+
         case types.PARTY_UPDATED:{
             if (action.partyId === state.selectedPartyID) {
                 return {

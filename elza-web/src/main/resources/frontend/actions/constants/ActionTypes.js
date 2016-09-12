@@ -191,6 +191,7 @@ export const PARTY_DETAIL_RECEIVE = 'PARTY_DETAIL_RECIVE'           // dokončen
 export const PARTY_DETAIL_CLEAR = 'PARTY_DETAIL_CLEAR'              // zrusi zobrazeni detailu osoby
 
 export const PARTY_UPDATED = 'PARTY_UPDATED'                     // provedena aktualizace osoby
+export const PARTY_CREATED = 'PARTY_CREATED'
 export const PARTY_SELECT = 'PARTY_SELECT'
 export const PARTY_ARR_RESET = 'PARTY_ARR_RESET'
 
