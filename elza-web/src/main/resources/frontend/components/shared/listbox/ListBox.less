@@ -22,10 +22,16 @@
                 padding: 0 3px;
             }
             .name {
-                white-space: nowrap;
-                text-overflow: ellipsis;
-                overflow: hidden;
                 flex-shrink: 1;
+                position:  relative;
+                width: 100%;
+                span {
+                    position: absolute;
+                    width: 100%;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                }
             }
         }
         &:hover {

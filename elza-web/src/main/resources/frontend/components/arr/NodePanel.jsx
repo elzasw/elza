@@ -477,7 +477,7 @@ return true
         var icon = item.icon ? <Icon className="node-icon" glyph={getGlyph(item.icon)} /> : ''
         var levels = <span className="reference-mark">{createReferenceMarkString(item)}</span>
         var name = item.name ? item.name : <i>{i18n('fundTree.node.name.undefined', item.id)}</i>;
-        name = <span title={name} className="name">{name}</span>
+        name = <span title={name} className="name"><span>{name}</span></span>
 
         const click = typeof item.id !== 'undefined' ? onClick.bind(this, item) : null
 
