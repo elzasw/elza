@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedReader;
 import java.io.PipedWriter;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -64,7 +64,7 @@ class OutputGeneratorWorkerFreemarker extends OutputGeneratorWorkerAbstract {
                 }
             }).start();
 
-            return new ReaderInputStream(in, Charset.defaultCharset());
+            return new ReaderInputStream(in, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new IllegalStateException("Nepodařilo se uložit výstup.", e);
         }
