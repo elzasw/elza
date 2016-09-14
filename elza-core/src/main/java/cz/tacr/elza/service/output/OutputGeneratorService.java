@@ -128,8 +128,14 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
             throw new IllegalStateException("Tento výstup je již ve frontě generování");
         }
 
-        setStateAndSave(arrOutput.getOutputDefinition(), OutputState.GENERATING);
-        publishOutputStateEvent(arrOutput.getOutputDefinition(), null);
+        ArrOutputDefinition outputDefinition = arrOutput.getOutputDefinition();
+
+        if (outputDefinition.getTemplate() == null) {
+            throw new IllegalStateException("Nelze spustit generování, protože výstup nemá vybranou šablonu");
+        }
+
+        setStateAndSave(outputDefinition, OutputState.GENERATING);
+        publishOutputStateEvent(outputDefinition, null);
         outputQueue.add(getWorker(arrOutput, userId));
         runNextOutput(); // zkusí sputit frontu
     }
@@ -193,11 +199,19 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
             ArrOutput arrOutput = outputRepository.findOne(worker.getArrOutputId());
             ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
             arrOutputDefinition.setError(ex.getLocalizedMessage());
+            StringBuilder stringBuffer = new StringBuilder();
+            stringBuffer.append(ex.getMessage()).append("\n");
+            Throwable cause = ex.getCause();
+            while(cause != null && stringBuffer.length() < 1000) {
+                stringBuffer.append(cause.getMessage()).append("\n");
+                cause = cause.getCause();
+            }
+            arrOutputDefinition.setError(stringBuffer.length() > 1000 ? stringBuffer.substring(0, 1000) : stringBuffer.toString());
             setStateAndSave(arrOutputDefinition, OutputState.OPEN);
             publishOutputStateEvent(arrOutputDefinition, OUTPUT_WEBSOCKET_ERROR_STATE);
         }
         worker = null;
-        logger.error("Generování výstupu pro arr_output id="+arrOutputId+" dokončeno s chybou.", ex);
+        logger.error("Generování výstupu pro arr_output id=" + arrOutputId + " dokončeno s chybou.", ex);
         runNextOutput();
     }
 
@@ -226,6 +240,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
                 } else {
                     outputState = OutputState.FINISHED;
                 }
+                arrOutputDefinition.setError(null);
                 setStateAndSave(arrOutputDefinition, outputState);
 
                 publishOutputStateEvent(arrOutputDefinition, null);

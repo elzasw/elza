@@ -248,6 +248,8 @@ public class PartyService {
 
         ParPartyType partyType = partyTypeRepository.findOne(newParty.getPartyType().getPartyTypeId());
 
+        boolean created = newParty.getPartyId() == null;
+
         ParParty saveParty;
         if (newParty.getPartyId() == null) {
             saveParty = newParty;
@@ -297,7 +299,7 @@ public class PartyService {
         ParParty result = partyRepository.save(saveParty);
         entityManager.flush();
 
-        EventType eventType = newParty.getPartyId() == null ? EventType.PARTY_CREATE : EventType.PARTY_UPDATE;
+        EventType eventType = created ? EventType.PARTY_CREATE : EventType.PARTY_UPDATE;
         eventNotificationService.publishEvent(EventFactory.createIdEvent(eventType, result.getPartyId()));
 
         return result;
