@@ -15,4 +15,8 @@
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>1</priority>
     </package-rule>
+    <package-rule filename="ZP2015_AP_MANIP_SEZNAM.drl" rule-set="ZP2015">
+        <rule-type>OUTPUT_ATTRIBUTE_TYPES</rule-type>
+        <priority>1</priority>
+    </package-rule>
 </package-rules>

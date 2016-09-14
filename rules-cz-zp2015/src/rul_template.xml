@@ -1,0 +1,7 @@
+<templates>
+    <template code="AP_MANIP_SEZNAM" output-type="AP_MANIP_SEZNAM" mime-type="text/html" extension="html">
+        <name>AP MANIP</name>
+        <engine>FREEMARKER</engine>
+        <directory>AP_MANIP_SEZNAM_FREEMARKER</directory>
+    </template>
+</templates>

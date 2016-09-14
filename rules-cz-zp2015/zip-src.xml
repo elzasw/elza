@@ -11,9 +11,6 @@
       <directory>${project.basedir}/src</directory>
       <outputDirectory>.</outputDirectory>
       <useDefaultExcludes>true</useDefaultExcludes>
-      <excludes>
-        <exclude>_dev/**</exclude>
-      </excludes>
     </fileSet>
   </fileSets>
 </assembly>
