@@ -1,0 +1,374 @@
+package SimpleDev;
+
+import cz.tacr.elza.api.RulItemSpec;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.drools.model.AvailableDescItems;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.DescItem;
+
+import java.util.Arrays;
+import java.util.Set;
+import cz.tacr.elza.api.RulItemType;
+
+//
+// Otazky:
+// - Jak pridat kopii prvku? Jde o to mit moznost postupne pridavat 
+//   dostupne specifikace samostatnymi pravidly
+// Priklad: 
+// - addWithAllSpec
+// - addWithoutSpec - ?kde je vzit pozdeji?
+
+// Nastaveni vychozi neopakovatelnosti atributu
+rule "U atributu je zapotrebi nove explicitne nastavit neopakovatelnost"
+salience 100 
+no-loop
+when
+	$itemType : RulItemTypeExt(code in ("SRD_ARRANGEMENT_TYPE", "SRD_LEVEL_TYPE", "SRD_FOLDER_TYPE",
+		"SRD_UNIT_TYPE", "SRD_UNIT_COUNT", "SRD_UNIT_ID", "SRD_SERIAL_NUMBER", "SRD_TITLE",
+		"SRD_FORMAL_TITLE", "SRD_UNIT_DATE_PRE", "SRD_UNIT_DATE", "SRD_UNIT_DATE_POST",
+		"SRD_UNIT_DATE_TEXT", "SRD_UNIT_HIST", "SRD_UNIT_ARR", "SRD_UNIT_CONTENT",
+		"SRD_UNIT_SOURCE", "SRD_FUTURE_UNITS", "SRD_UNIT_ACCESS", "SRD_UNIT_INFO_RIGHTS",
+		"SRD_UNIT_COPY_RIGHTS", "SRD_UNIT_CURRENT_STATUS", "SRD_COPY_SOURCE",
+		"SRD_RELATED_UNITS", "SRD_EXISTING_COPY", "SRD_INTERNAL_NOTE", 
+		"SRD_ARRANGE_RULES", "SRD_ITEM_TITLE", "SRD_STORAGE_COND", "SRD_SIZE", "SRD_SCALE",		
+		"SRD_EXERQUE", "SRD_PAINTING_CHAR", "SRD_CORROBORATION", "SRD_IMPRINT_COUNT",
+		"SRD_IMPRINT_ORDER", "SRD_LEGEND", "SRD_MOVIE_LENGTH", "SRD_RECORD_LENGTH",
+		"SRD_COLL_EXTENT_LENGTH", "SRD_NAD"))
+then
+    $itemType.setRepeatable(false);
+end
+
+rule "Atribut SRD_LEVEL_TYPE je povinný vždy"
+salience 100 
+no-loop
+when
+	$itemType : RulItemTypeExt(code == "SRD_LEVEL_TYPE")
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+rule "Atribut SRD_LEVEL_TYPE, SRD_LEVEL_ROOT"
+no-loop
+when
+	$itemType : RulItemTypeExt(code == "SRD_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent==null )
+	$itemSpec : RulItemSpecExt(code == "SRD_LEVEL_ROOT") from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.REQUIRED);
+end
+
+// Dílčí list je možný pokud je rodič kořen
+rule "Dílčí list pod kořenem"
+no-loop
+when
+	$itemType : RulItemTypeExt(code == "SRD_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
+	DescItem(type=="SRD_LEVEL_TYPE" && specCode=="SRD_LEVEL_ROOT" ) from $parentDescItems
+	$itemSpec : RulItemSpecExt(code == "SRD_LEVEL_SECTION") from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+// Serie - možná pokud je rodič root nebo dílčí list
+rule "Serie - možná pokud je rodič root nebo dílčí list"
+no-loop 
+when
+	$itemType : RulItemTypeExt(code == "SRD_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
+	DescItem(type=="SRD_LEVEL_TYPE" && specCode in ("SRD_LEVEL_ROOT", "SRD_LEVEL_SECTION") ) from $parentDescItems
+	$itemSpec : RulItemSpecExt(code == "SRD_LEVEL_SERIES") from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+// Pokud je rodic série, tak může být série, složka nebo jednotlivost
+rule "Atribut SRD_LEVEL_TYPE, SRD_LEVEL_SERIES"
+no-loop
+when
+	$itemType : RulItemTypeExt(code == "SRD_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
+	DescItem(type=="SRD_LEVEL_TYPE" && specCode=="SRD_LEVEL_SERIES" ) from $parentDescItems
+	$itemSpec : RulItemSpecExt(code == "SRD_LEVEL_SERIES" || code == "SRD_LEVEL_FOLDER" || code == "SRD_LEVEL_ITEM") from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+// Pokud je rodič složka, tak může být složka nebo jednotlivost pokud sourozenec neexistuje
+rule "Atribut SRD_LEVEL_TYPE u rodice je SRD_LEVEL_FOLDER, nema sourozence"
+no-loop
+when
+	$itemType : RulItemTypeExt(code == "SRD_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore==null && siblingAfter==null)
+	DescItem(type=="SRD_LEVEL_TYPE" && specCode=="SRD_LEVEL_FOLDER" ) from $parentDescItems
+	$itemSpec : RulItemSpecExt(code == "SRD_LEVEL_FOLDER" || code == "SRD_LEVEL_ITEM") from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+// Pokud je rodič složka a má sourozence pred, tak je stejného typu jako oni
+rule "Atribut SRD_LEVEL_TYPE u rodice je SRD_LEVEL_FOLDER, ma sourozence pred"
+no-loop
+when
+	$itemType : RulItemTypeExt(code == "SRD_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore!=null && $siblingDescItems: siblingBefore.descItems)
+	DescItem(type=="SRD_LEVEL_TYPE" && specCode=="SRD_LEVEL_FOLDER" ) from $parentDescItems
+	DescItem(type=="SRD_LEVEL_TYPE" && $specCode: specCode) from $siblingDescItems
+	$itemSpec : RulItemSpecExt(code == $specCode) from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.REQUIRED);
+end
+
+// Pokud je rodič složka a má sourozence za, tak je stejného typu jako oni
+rule "Atribut SRD_LEVEL_TYPE u rodice je SRD_LEVEL_FOLDER, ma sourozence za"
+no-loop
+when
+	$itemType : RulItemTypeExt(code == "SRD_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingAfter!=null && $siblingDescItems: siblingAfter.descItems)
+	DescItem(type=="SRD_LEVEL_TYPE" && specCode=="SRD_LEVEL_FOLDER" ) from $parentDescItems
+	DescItem(type=="SRD_LEVEL_TYPE" && $specCode: specCode) from $siblingDescItems
+	$itemSpec : RulItemSpecExt(code == $specCode) from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.REQUIRED);
+end
+
+// Pokud je rodič jednotlivost, tak je část
+rule "Atribut SRD_LEVEL_TYPE u rodice je SRD_LEVEL_ITEM"
+no-loop
+when
+	$itemType : RulItemTypeExt(code == "SRD_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
+	DescItem(type=="SRD_LEVEL_TYPE" && (specCode=="SRD_LEVEL_ITEM"||specCode=="SRD_LEVEL_PART") ) from $parentDescItems
+	$itemSpec : RulItemSpecExt(code == "SRD_LEVEL_PART" ) from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.REQUIRED);
+end
+
+// Číslo NAD na kořeni a dílčím listu
+rule "NAD na kořeni a dílčím listu"
+no-loop
+when
+	$activeLevel : ActiveLevel( )
+	DescItem(type=="SRD_LEVEL_TYPE" && specCode in ("SRD_LEVEL_ROOT", "SRD_LEVEL_SECTION") ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code == "SRD_NAD")
+then
+	$itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+// Složka musí mít uveden typ
+rule "Složka musí mít uveden typ"
+salience 100
+no-loop
+when
+	$activeLevel : ActiveLevel( parent!=null  )
+	DescItem(type=="SRD_LEVEL_TYPE" && specCode=="SRD_LEVEL_FOLDER" ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code == "SRD_FOLDER_TYPE")
+	$itemSpec : RulItemSpecExt(code == "SRD_FOLDER_LOGICAL" ) from $itemType.rulItemSpecList
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+	$itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+// Pokud je nadřazená složka s uvedenim EJ nebo hromadina, potom musí být logická
+rule "Musí být logická složka, pokud nadřazená složka je s uvedenim EJ nebo hromadina"
+no-loop
+when
+	$activeLevel : ActiveLevel( parent!=null  )
+	DescItem(type=="SRD_LEVEL_TYPE" && specCode=="SRD_LEVEL_FOLDER" ) from $activeLevel.descItems
+	$level : Level( this!=$activeLevel )
+	DescItem(type=="SRD_FOLDER_TYPE" && (specCode=="SRD_FOLDER_SINGLE_TYPE" || specCode=="SRD_FOLDER_UNITS" ) ) from $level.descItems
+	$itemType : RulItemTypeExt(code == "SRD_FOLDER_TYPE")
+	$itemSpec : RulItemSpecExt(code == "SRD_FOLDER_LOGICAL" ) from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.REQUIRED);
+end
+
+// Pokud je nadřazená složka bez uvedeni EJ nebo hromadina, potom muze byt hromadina nebo s uvedenim EJ
+rule "Může být hromadina nebo s uvedením EJ, pokud nemá nadřazenou složku nebo jen logické"
+no-loop
+when
+	$activeLevel : ActiveLevel( )
+	DescItem(type=="SRD_LEVEL_TYPE" && specCode=="SRD_LEVEL_FOLDER" ) from $activeLevel.descItems
+	// neexistje nadrizeny level typu slozka
+	not ( $level : Level( this!=$activeLevel ) and
+	     DescItem(type=="SRD_LEVEL_TYPE" && specCode=="SRD_LEVEL_FOLDER" ) from $level.descItems and
+	     DescItem(type=="SRD_FOLDER_TYPE" && specCode!="SRD_FOLDER_LOGICAL" ) from $level.descItems )
+	$itemType : RulItemTypeExt(code == "SRD_FOLDER_TYPE")
+	$itemSpec : RulItemSpecExt(code != "SRD_FOLDER_LOGICAL" ) from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+// Typ pořádání - lze nastavit do úrovně složka
+rule "Typ pořádání"
+no-loop
+when
+  $activeLevel : ActiveLevel( )
+  DescItem(type=="SRD_LEVEL_TYPE" && specCode in ("SRD_LEVEL_ROOT", "SRD_LEVEL_SECTION", "SRD_LEVEL_SERIES", "SRD_LEVEL_FOLDER") ) from $activeLevel.descItems
+  $itemType : RulItemTypeExt(code == "SRD_ARRANGEMENT_TYPE")
+  $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+  $itemType.setType(RulItemType.Type.POSSIBLE);
+  $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+// Složka manipulačního seznamu
+rule "Složka manipulačního seznamu"
+no-loop
+when
+	// nesmi jiz mit deti
+	$activeLevel : ActiveLevel( !hasChildren )
+	DescItem(type=="SRD_ARRANGEMENT_TYPE" && specCode=="SRD_ARRANGEMENT_MAN") from $activeLevel.descItems 
+	DescItem(type=="SRD_FOLDER_TYPE" && specCode=="SRD_FOLDER_UNITS" ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code == "SRD_EXTRA_UNITS")
+then
+	$itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+// Pořadové číslo povinné pokud je určen způsob pořádání
+rule "Pořadové číslo - povinné"
+no-loop
+when
+	$activeLevel : ActiveLevel( )
+	DescItem(type=="SRD_ARRANGEMENT_TYPE" && specCode in ("SRD_ARRANGEMENT_MAN", "SRD_ARRANGEMENT_INV", "SRD_ARRANGEMENT_KAT") ) from $activeLevel.descItems 
+	$itemType : RulItemTypeExt(code == "SRD_SERIAL_NUMBER")
+then
+	$itemType.setType(RulItemType.Type.POSSIBLE);
+	$itemType.setPolicyTypeCode("SERIAL_NO");
+end
+
+// referenční označení v INV|KAT - povinné pro uzly mimo kořen
+rule "Referenční označení - povinné"
+no-loop
+when
+	$activeLevel: ActiveLevel( parent!=null )
+	DescItem(type=="SRD_ARRANGEMENT_TYPE" && specCode in ("SRD_ARRANGEMENT_INV", "SRD_ARRANGEMENT_KAT") ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code == "SRD_UNIT_ID")
+then
+	$itemType.setType(RulItemType.Type.POSSIBLE);
+	$itemType.setPolicyTypeCode("REF_NO");
+end
+
+// Složka/Jednotlivost - lze zadat vždy ukládací jednotku
+rule "Ukládací jednotka na složce - volitelně"
+no-loop
+when
+	$activeLevel: ActiveLevel( )
+	DescItem(type=="SRD_LEVEL_TYPE" && (specCode=="SRD_LEVEL_FOLDER"||specCode=="SRD_LEVEL_ITEM") ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code == "SRD_STORAGE_ID")
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+// Pravidlo se vyhodnocuje později - po nastavení volitelnosti
+rule "Ukládací jednotka na složce - povině"
+salience -100
+no-loop
+when
+	$activeLevel: ActiveLevel( )
+	DescItem(type=="SRD_FOLDER_TYPE" && (specCode=="SRD_FOLDER_UNITS"||specCode=="SRD_FOLDER_SINGLE_TYPE") ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code == "SRD_STORAGE_ID")
+then
+	$itemType.setType(RulItemType.Type.REQUIRED);
+	$itemType.setPolicyTypeCode("STORAGE_ID");
+end
+
+// Druh archiválie povinně - u složky s jednotlivostmi
+rule "Druh archiválie - povinně u složky"
+no-loop
+when
+	$activeLevel: ActiveLevel( )
+	$descItem : DescItem(type=="SRD_FOLDER_TYPE" && specCode=="SRD_FOLDER_SINGLE_TYPE" ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code == "SRD_UNIT_TYPE" || code == "SRD_UNIT_COUNT")
+then
+	$itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+// Druh archiválie povinně - u jednotlivosti
+rule "Druh archiválie - povinně u jednotlivosti"
+no-loop
+when
+	$activeLevel: ActiveLevel( )
+	$descItem : DescItem(type=="SRD_LEVEL_TYPE" && specCode=="SRD_LEVEL_ITEM" ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code == "SRD_UNIT_TYPE")
+then
+	$itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+// Obsah/Regest
+rule "Obsah/regest - doporučený pro složku a níže"
+when
+    $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="SRD_LEVEL_TYPE" && specCode in ("SRD_LEVEL_FOLDER", "SRD_LEVEL_ITEM", "SRD_LEVEL_PART") ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code in ( "SRD_TITLE" ) )
+then
+	$itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "Obsah/regest - povinný pro sérii"
+when
+    $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="SRD_LEVEL_TYPE" && specCode in ("SRD_LEVEL_SERIES") ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code in ( "SRD_TITLE" ) )
+then
+	$itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+// Vždy možné prvky popisu
+rule "Univerzální prvky popisu - možné"
+no-loop
+when
+	$itemType : RulItemTypeExt(code in
+	( "SRD_FORMAL_TITLE", "SRD_ORIGINATOR", "SRD_OTHER_ID" ) )
+then
+	$itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+// Datace - strojová
+rule "Datace - strojová - možná na složce a níže"
+no-loop
+when
+	$activeLevel: ActiveLevel( )
+	$itemType : RulItemTypeExt(code in
+	( "SRD_UNIT_DATE_PRE", "SRD_UNIT_DATE", "SRD_UNIT_DATE_POST" ) )
+	$descItem : DescItem(type=="SRD_LEVEL_TYPE" && specCode in ("SRD_LEVEL_FOLDER", "SRD_LEVEL_ITEM", "SRD_LEVEL_PART") ) from $activeLevel.descItems
+then
+	$itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+// Datace - textová
+// Dotaz: v jakých úrovních?
+rule "Datace - textová"
+no-loop
+when
+	$activeLevel: ActiveLevel( )
+	//not DescItem(type=="SRD_UNIT_DATE_TEXT" ) from $activeLevel.descItems
+	//not DescItem(type in ( "SRD_UNIT_DATE_PRE", "SRD_UNIT_DATE", "SRD_UNIT_DATE_POST" ) ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code=="SRD_UNIT_DATE_TEXT")
+	$descItem : DescItem(type=="SRD_LEVEL_TYPE" && specCode in ("SRD_LEVEL_FOLDER", "SRD_LEVEL_ITEM", "SRD_LEVEL_PART") ) from $activeLevel.descItems
+then
+   	$itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+// Standarní datace je doporučená pro poslední složku a část jednotlivosti (bez potomků)
+rule "Datace - strojová - doporučení"
+salience -100
+no-loop
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	$itemType : RulItemTypeExt(code in ( "SRD_UNIT_DATE" ) )
+	$descItem : DescItem(type=="SRD_LEVEL_TYPE" && specCode in ("SRD_LEVEL_FOLDER", "SRD_LEVEL_ITEM") ) from $activeLevel.descItems
+then
+	$itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "Druh arhivalie"
+no-loop
+when
+	$activeLevel: ActiveLevel( )
+	$descItem : DescItem(type=="SRD_UNIT_TYPE" && specCode=="SRD_UNIT_TYPE_LIO" ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code=="SRD_UNIT_DATE_TEXT")
+then
+   	$itemType.setType(RulItemType.Type.REQUIRED);
+end

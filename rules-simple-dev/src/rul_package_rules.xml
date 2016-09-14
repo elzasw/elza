@@ -1,0 +1,22 @@
+<package-rules>
+    <package-rule filename="SRD_Validation.drl" rule-set="SIMPLE-DEV">
+        <rule-type>CONFORMITY_INFO</rule-type>
+        <priority>1</priority>
+    </package-rule>
+    <package-rule filename="SRD_NewLevel.drl" rule-set="SIMPLE-DEV">
+        <rule-type>NEW_LEVEL</rule-type>
+        <priority>1</priority>
+    </package-rule>
+    <package-rule filename="SRD_ChangeImpact.drl" rule-set="SIMPLE-DEV">
+        <rule-type>CONFORMITY_IMPACT</rule-type>
+        <priority>1</priority>
+    </package-rule>
+    <package-rule filename="SRD_AvailableItems.drl" rule-set="SIMPLE-DEV">
+        <rule-type>ATTRIBUTE_TYPES</rule-type>
+        <priority>1</priority>
+    </package-rule>
+    <package-rule filename="SRD_OutputAvailableItems.drl" rule-set="SIMPLE-DEV">
+        <rule-type>OUTPUT_ATTRIBUTE_TYPES</rule-type>
+        <priority>1</priority>
+    </package-rule>
+</package-rules>

@@ -1,0 +1,29 @@
+<package-actions>
+    <package-action filename="SRD_VALIDATION.yaml" />
+
+    <package-action filename="SRD_GENERATOR_SERIAL_NUMBER.yaml">
+        <action-recommendeds>
+            <action-recommended output-type="SRD_INVENTORY" />
+            <action-recommended output-type="SRD_ADHOC" />
+        </action-recommendeds>
+    </package-action>
+
+    <package-action filename="SRD_GENERATOR_UNIT_ID.yaml">
+        <action-recommendeds>
+            <action-recommended output-type="SRD_INVENTORY" />
+            <action-recommended output-type="SRD_ADHOC" />
+        </action-recommendeds>
+
+        <action-item-types>
+            <action-item-type item-type="SRD_STATISTICS" />
+            <action-item-type item-type="SRD_IMPRINT_COUNT" />
+        </action-item-types>
+    </package-action>
+
+    <package-action filename="SRD_GENERATOR_MULTIPLE.yaml">
+        <action-recommendeds>
+            <action-recommended output-type="SRD_INVENTORY" />
+            <action-recommended output-type="SRD_ADHOC" />
+        </action-recommendeds>
+    </package-action>
+</package-actions>

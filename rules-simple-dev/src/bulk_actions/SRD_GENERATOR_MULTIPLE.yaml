@@ -1,0 +1,54 @@
+name: Vícenásobný generátor
+code_type_bulk_action: GENERATOR_MULTIPLE
+rule_code: SIMPLE-DEV
+
+action:
+  - DATACE_RANGE
+    input_types:
+      - SRD_UNIT_DATE
+    output_type: SRD_TITLE
+
+  - NODE_COUNT
+    output_type: SRD_UNIT_COUNT
+    apply_parents: false
+
+  - NODE_COUNT
+    output_type: SRD_UNIT_COUNT
+
+  - TEXT_AGGREGATION
+    ignore_duplicate: false
+    input_types:
+      - SRD_TITLE
+      - SRD_UNIT_DATE_TEXT
+      - SRD_LEGEND
+    output_type: SRD_TITLE
+
+  - COPY
+    input_types:
+      - SRD_TITLE
+    output_type: SRD_TITLE
+
+  - TABLE_STATISTIC
+    input_types:
+      - SRD_TITLE
+    output_type: SRD_STATISTICS
+    output_table_code: KEY
+    output_table_type: TEXT
+
+  - UNIT_COUNT
+    output_type: SRD_UNIT_COUNT
+
+    find_1: SRD_LEVEL_TYPE SRD_LEVEL_ITEM
+    under: SRD_LEVEL_TYPE SRD_LEVEL_SERIES
+    unit_extra: SRD_UNIT_TYPE SRD_UNIT_TYPE_KTT
+    unit_extra_count: SRD_UNIT_COUNT
+
+    find_2: SRD_FOLDER_TYPE SRD_FOLDER_LOGICAL
+    find_3: SRD_FOLDER_TYPE SRD_FOLDER_UNITS
+    find_4: SRD_FOLDER_TYPE SRD_FOLDER_SINGLE_TYPE
+    value2: SRD_UNIT_COUNT
+
+    exclude_hierarchical: SRD_FOLDER_TYPE SRD_FOLDER_UNITS
+    value: SRD_STORAGE_ID
+    extra: SRD_EXTRA_UNITS
+
