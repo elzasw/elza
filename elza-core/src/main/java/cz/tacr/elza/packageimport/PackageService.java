@@ -1514,7 +1514,7 @@ public class PackageService {
             T xml = (T) unmarshaller.unmarshal(xmlStream);
             return xml;
         } catch (Exception e) {
-            throw new IllegalStateException("Chyba při mapování XML souboru", e);
+            throw new IllegalStateException("Chyba při mapování XML souboru pro třídu " + classObject.toString(), e);
         }
     }
 
