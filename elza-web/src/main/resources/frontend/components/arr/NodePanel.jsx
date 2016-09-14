@@ -221,6 +221,15 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         var settingsValues = settings.value != 'false';
         const readMode = closed || settingsValues;
 
+        const actionWithBlur = (action) => {
+            const el = document.activeElement;
+            if (el && el.blur) {
+                el.blur();
+            }
+            setTimeout(() => {
+                action();
+            }, 220);
+        }
 
         switch (action) {
             case 'prevItem':
@@ -245,28 +254,30 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 break
             case 'closeItem':
                 if (node.selectedSubNodeId !== null) {
-                    this.handleCloseItem(node.childNodes[index])
-                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                    actionWithBlur(() => {
+                        this.handleCloseItem(node.childNodes[index])
+                        this.dispatch(setFocus('arr', 2, 'accordion'))
+                    });
                 }
                 break
             case 'addNodeAfter':
                 if (!readMode) {
-                    this.refs.subNodeForm.getWrappedInstance().addNodeAfterClick()
+                    actionWithBlur(() => {this.refs.subNodeForm.getWrappedInstance().addNodeAfterClick()});
                 }
                 break
             case 'addNodeBefore':
                 if (!readMode) {
-                    this.refs.subNodeForm.getWrappedInstance().addNodeBeforeClick()
+                    actionWithBlur(() => {this.refs.subNodeForm.getWrappedInstance().addNodeBeforeClick()});
                 }
                 break
             case 'addNodeChild':
                 if (!readMode) {
-                    this.refs.subNodeForm.getWrappedInstance().addNodeChildClick()
+                    actionWithBlur(() => {this.refs.subNodeForm.getWrappedInstance().addNodeChildClick()});
                 }
                 break
             case 'addNodeEnd':
                 if (!readMode) {
-                    this.refs.addNodeChild.handleToggle(true, false)
+                    actionWithBlur(() => {this.refs.addNodeChild.handleToggle(true, false)});
                 }
                 break
         }
