@@ -1,5 +1,5 @@
 <output-types>
-    <output-type code="AP_MANIP_SEZNAM" filename="ZP2015_AP_MANIP_SEZNAM.drl">
+    <output-type code="ZP2015_MANIP_SEZNAM" filename="ZP2015_MANIP_SEZNAM.drl">
         <name>AP - manipulační seznam</name>
     </output-type>
     <output-type code="AP_UPLNA"> <!--filename="ZP2015_AP_UPLNA.drl"-->

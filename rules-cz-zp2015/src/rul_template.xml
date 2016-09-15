@@ -1,7 +1,7 @@
 <templates>
-    <template code="AP_MANIP_SEZNAM" output-type="AP_MANIP_SEZNAM" mime-type="text/html" extension="html">
-        <name>AP MANIP</name>
+    <template code="ZP2015_MANIP_SEZNAM_TXT_FREEMARKER" output-type="ZP2015_MANIP_SEZNAM" mime-type="text/plain" extension="txt">
+        <name>Manipulační seznam, textový výstup</name>
         <engine>FREEMARKER</engine>
-        <directory>AP_MANIP_SEZNAM_FREEMARKER</directory>
+        <directory>ZP2015_MANIP_SEZNAM_TXT_FREEMARKER</directory>
     </template>
 </templates>
