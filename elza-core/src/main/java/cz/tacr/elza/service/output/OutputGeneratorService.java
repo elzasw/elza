@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -58,12 +59,11 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 @Service
 public class OutputGeneratorService implements ListenableFutureCallback<OutputGeneratorWorkerAbstract> {
 
-    private static final String OUTPUT_WEBSOCKET_ERROR_STATE = "ERROR";
+    public static final String OUTPUT_WEBSOCKET_ERROR_STATE = "ERROR";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private Queue<OutputGeneratorWorkerAbstract> outputQueue = new LinkedList<>(); // fronta outputů ke zpracování
-    private OutputGeneratorWorkerAbstract worker = null; // aktuálně zpracovávaný output
 
     @Autowired
     private ArrangementService arrangementService;
@@ -90,7 +90,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     private OutputGeneratorWorkerFactory workerFactory;
 
     @Autowired
-    @Qualifier("threadPoolTaskExecutor")
+    @Qualifier("threadPoolTaskExecutorOG")
     private ThreadPoolTaskExecutor taskExecutor;
 
     @Value("${elza.templates.templatesDir}")
@@ -123,8 +123,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         ArrOutputResult outputResult = outputResultRepository.findByOutputDefinition(arrOutput.getOutputDefinition());
         Assert.isNull(outputResult, "Tento výstup byl již vygenerován.");
 
-        if (outputQueue.stream().anyMatch(i -> arrOutput.getOutputId().equals(i.getArrOutputId())) ||
-                (worker != null && worker.getArrOutputId().equals(arrOutput.getOutputId()))) {
+        if (outputQueue.stream().anyMatch(i -> arrOutput.getOutputId().equals(i.getArrOutputId()))) {
             throw new IllegalStateException("Tento výstup je již ve frontě generování");
         }
 
@@ -136,22 +135,25 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
 
         setStateAndSave(outputDefinition, OutputState.GENERATING);
         publishOutputStateEvent(outputDefinition, null);
-        outputQueue.add(getWorker(arrOutput, userId));
+        outputQueue.add(createWorker(arrOutput, userId));
         runNextOutput(); // zkusí sputit frontu
     }
 
 
     /**
-     * Podívá se do fronty úkolů a zda aktuálně probíhá generování,
-     * pokud generování NEprobíhá a existuje ve frontě existujuje zařazená úloha, bude spuštěna.
+     * Podívá se do fronty úkolů a pokusí se předat poolu vláken task. Pokud je poolem odmítnut, tak se vrací do fronty.
      */
     private void runNextOutput() {
-        if ((worker == null) && CollectionUtils.isNotEmpty(outputQueue)) {
-            worker = outputQueue.poll();
-
-            ListenableFuture future = taskExecutor.submitListenable(worker);
-            //noinspection unchecked
-            future.addCallback(this);
+        if (CollectionUtils.isNotEmpty(outputQueue)) {
+            OutputGeneratorWorkerAbstract task = outputQueue.poll();
+            try {
+                ListenableFuture future = taskExecutor.submitListenable(task);
+                //noinspection unchecked
+                future.addCallback(this);
+            } catch (RejectedExecutionException e) {
+                // pokud je pool plný, vracím do fronty
+                outputQueue.add(task);
+            }
         }
     }
 
@@ -163,7 +165,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
      * @param userId ID uživatele pod kterým bude vytvořená změna arrChange související s generováním
      * @return worker pro úlohu
      */
-    private OutputGeneratorWorkerAbstract getWorker(final ArrOutput output, final Integer userId) {
+    private OutputGeneratorWorkerAbstract createWorker(final ArrOutput output, final Integer userId) {
         final ArrOutputDefinition arrOutputDefinition = output.getOutputDefinition();
         final RulTemplate rulTemplate = arrOutputDefinition.getTemplate();
 
@@ -194,24 +196,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
 
     @Override
     public void onFailure(final Throwable ex) {
-        final Integer arrOutputId = worker.getArrOutputId();
-        if (worker != null && worker.getArrOutputId() != null) {
-            ArrOutput arrOutput = outputRepository.findOne(worker.getArrOutputId());
-            ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
-            arrOutputDefinition.setError(ex.getLocalizedMessage());
-            StringBuilder stringBuffer = new StringBuilder();
-            stringBuffer.append(ex.getMessage()).append("\n");
-            Throwable cause = ex.getCause();
-            while(cause != null && stringBuffer.length() < 1000) {
-                stringBuffer.append(cause.getMessage()).append("\n");
-                cause = cause.getCause();
-            }
-            arrOutputDefinition.setError(stringBuffer.length() > 1000 ? stringBuffer.substring(0, 1000) : stringBuffer.toString());
-            setStateAndSave(arrOutputDefinition, OutputState.OPEN);
-            publishOutputStateEvent(arrOutputDefinition, OUTPUT_WEBSOCKET_ERROR_STATE);
-        }
-        worker = null;
-        logger.error("Generování výstupu pro arr_output id=" + arrOutputId + " dokončeno s chybou.", ex);
+        logger.error("Generování výstupu  dokončeno s chybou.", ex);
         runNextOutput();
     }
 
@@ -224,27 +209,33 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
             @Override
             protected void doInTransactionWithoutResult(final TransactionStatus status) {
                 final Integer arrOutputId = result.getArrOutputId();
-                final ArrChange change = result.getChange();
                 ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
                 ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
                 List<ArrNodeOutput> nodesList = nodeOutputRepository.findByOutputDefinition(arrOutputDefinition);
-                Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(
-                        nodesList.stream().
-                            map(ArrNodeOutput::getNode).
-                            collect(Collectors.toSet()),
-                        Sets.newHashSet(change), false, true);
+                final ArrChange change = result.getChange();
 
                 OutputState outputState;
-                if (arrChangeBooleanMap.containsKey(change) && arrChangeBooleanMap.get(change)) {
-                    outputState = OutputState.OUTDATED;
+                if (change != null) {
+                    Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(
+                            nodesList.stream().
+                                    map(ArrNodeOutput::getNode).
+                                    collect(Collectors.toSet()),
+                            Sets.newHashSet(change), false, true);
+
+                    if (arrChangeBooleanMap.containsKey(change) && arrChangeBooleanMap.get(change)) {
+                        outputState = OutputState.OUTDATED;
+                    } else {
+                        outputState = OutputState.FINISHED;
+                    }
+                    arrOutputDefinition.setError(null);
                 } else {
-                    outputState = OutputState.FINISHED;
+                    outputState = OutputState.OPEN;
                 }
-                arrOutputDefinition.setError(null);
+
                 setStateAndSave(arrOutputDefinition, outputState);
 
                 publishOutputStateEvent(arrOutputDefinition, null);
-                worker = null;
+
                 logger.info("Generování výstupu pro arr_output id=" + arrOutputId + " dokončeno úspěšně.", arrOutputId);
                 runNextOutput();
             }

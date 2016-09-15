@@ -56,7 +56,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    @Qualifier("threadPoolTaskExecutor")
+    @Qualifier("threadPoolTaskExecutorBA")
     private ThreadPoolTaskExecutor taskExecutor;
 
     @Autowired

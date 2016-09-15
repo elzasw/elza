@@ -79,8 +79,8 @@ public class ElzaCore {
         return new GroovyScriptEvaluator();
     }
 
-    @Bean @Qualifier(value = "threadPoolTaskExecutor")
-    public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
+    @Bean(name = "threadPoolTaskExecutorBA")
+    public ThreadPoolTaskExecutor threadPoolTaskExecutorBulkAction() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(10);
         threadPoolTaskExecutor.setMaxPoolSize(48);
@@ -89,9 +89,19 @@ public class ElzaCore {
         return threadPoolTaskExecutor;
     }
 
-    @Bean @Qualifier(value = "conformityUpdateTaskExecutor")
+    @Bean(name = "threadPoolTaskExecutorOG")
+    public ThreadPoolTaskExecutor threadPoolTaskExecutorOutputGenerator() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(5);
+        threadPoolTaskExecutor.setMaxPoolSize(10);
+        threadPoolTaskExecutor.setQueueCapacity(0);
+        threadPoolTaskExecutor.afterPropertiesSet();
+        return threadPoolTaskExecutor;
+    }
+
+    @Bean(name = "conformityUpdateTaskExecutor")
     public Executor conformityUpdateTaskExecutor() {
-        return threadPoolTaskExecutor();
+        return threadPoolTaskExecutorBulkAction();
     }
 
     @Bean

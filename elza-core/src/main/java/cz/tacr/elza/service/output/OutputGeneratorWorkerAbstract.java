@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
+import cz.tacr.elza.repository.OutputDefinitionRepository;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,10 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
     private OutputRepository outputRepository;
     @Autowired
     private OutputResultRepository outputResultRepository;
+    @Autowired
+    private OutputDefinitionRepository outputDefinitionRepository;
+    @Autowired
+    private OutputGeneratorService outputGeneratorService;
 
     @Autowired
     protected DmsService dmsService;
@@ -81,23 +86,40 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
 
         ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
         final ArrOutputDefinition arrOutputDefinition = arrOutput.getOutputDefinition();
-        final RulTemplate rulTemplate = arrOutputDefinition.getTemplate();
-        Assert.notNull(rulTemplate, "Výstup nemá definovanou šablonu (ArrOutputDefinition.template je null).");
 
-        // sestavení outputu
-        logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} spuštěno", arrOutputId);
-        final Output output = outputFactoryService.createOutput(arrOutput);
-        logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} dokončeno", arrOutputId);
-
-        // skutečné vytvoření výstupného souboru na základě definice
-        logger.info("Spuštěno generování souboru pro arr_output id={}", arrOutputId);
-        final InputStream content = getContent(arrOutputDefinition, rulTemplate, output);
-
-        // Uložení do výstupní struktury a DMS
         try {
+
+            final RulTemplate rulTemplate = arrOutputDefinition.getTemplate();
+            Assert.notNull(rulTemplate, "Výstup nemá definovanou šablonu (ArrOutputDefinition.template je null).");
+
+            // sestavení outputu
+            logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} spuštěno", arrOutputId);
+            final Output output = outputFactoryService.createOutput(arrOutput);
+            logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} dokončeno", arrOutputId);
+
+            // skutečné vytvoření výstupného souboru na základě definice
+            logger.info("Spuštěno generování souboru pro arr_output id={}", arrOutputId);
+            final InputStream content = getContent(arrOutputDefinition, rulTemplate, output);
+
+            // Uložení do výstupní struktury a DMS
             storeOutputInDms(arrOutputDefinition, rulTemplate, content);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
+            arrOutputDefinition.setError(null);
+        } catch (Exception ex) {
+            arrOutputDefinition.setError(ex.getLocalizedMessage());
+            StringBuilder stringBuffer = new StringBuilder();
+            stringBuffer.append(ex.getMessage()).append("\n");
+            Throwable cause = ex.getCause();
+            while(cause != null && stringBuffer.length() < 1000) {
+                stringBuffer.append(cause.getMessage()).append("\n");
+                cause = cause.getCause();
+            }
+            arrOutputDefinition.setError(stringBuffer.length() > 1000 ? stringBuffer.substring(0, 1000) : stringBuffer.toString());
+
+            arrOutputDefinition.setState(ArrOutputDefinition.OutputState.OPEN);
+            outputDefinitionRepository.save(arrOutputDefinition);
+            outputGeneratorService.publishOutputStateEvent(arrOutputDefinition, OutputGeneratorService.OUTPUT_WEBSOCKET_ERROR_STATE);
+
+            logger.error("Generování výstupu pro arr_output id=" + arrOutputId + " dokončeno s chybou.", ex);
         }
     }
 
