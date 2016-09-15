@@ -808,11 +808,16 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             </OverlayTrigger>);
         }
 
-
         if (infoType.cal === 1) {
-            const icon = infoType.calSt ? "fa-flash" : "fa-calculator";
             const title = infoType.calSt ? i18n('subNodeForm.calculate-user') : i18n('subNodeForm.calculate-auto');
-            actions.push(<NoFocusButton onClick={this.handleSwitchCalculating} key="calculate" title={title}><Icon glyph={icon} /></NoFocusButton>);
+            actions.push(<NoFocusButton onClick={this.handleSwitchCalculating} key="calculate" title={title}>
+                {infoType.calSt ?
+                    <span className='fa-stack'>
+                      <Icon glyph='fa-calculator fa-stack-1x' />
+                      <Icon glyph='fa-ban fa-stack-2x' />
+                    </span> : <Icon glyph='fa-calculator' />
+                }
+            </NoFocusButton>);
         }
 
         let titleText = descItemType.name;
