@@ -62,6 +62,7 @@ export default class FundNodesList extends AbstractReactComponent {
 
         return (
             <AddRemoveList
+                className="fund-nodes-list-container"
                 readOnly={readOnly}
                 items={nodes}
                 onAdd={onAddNode}
