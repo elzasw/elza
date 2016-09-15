@@ -210,8 +210,8 @@ const AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                                 <label>{i18n('party.nameComplements')}</label>
                                 {complements.map((complement, index) => <div className="block complement" key={'complement' + index}>
                                         <div className="line">
-                                            <FormInput type="text" {...complement.complement} error={submitFailed && complement.complement.touched && !complement.complement.value ? i18n('global.validation.required') : null} />
-                                            <FormInput componentClass="select" {...complement.complementTypeId} error={submitFailed && complement.complementTypeId.touched && !complement.complementTypeId.value ? i18n('global.validation.required') : null}>
+                                            <FormInput type="text" {...complement.complement}  /> {/*error={submitFailed && complement.complement.touched && !complement.complement.value ? i18n('global.validation.required') : null}*/}
+                                            <FormInput componentClass="select" {...complement.complementTypeId} > {/*error={submitFailed && complement.complementTypeId.touched && !complement.complementTypeId.value ? i18n('global.validation.required') : null}*/}
                                                 <option key='0'/>
                                                 {complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>)}
                                             </FormInput>
@@ -219,7 +219,7 @@ const AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                                         </div>
                                     </div>
                                 )}
-                                <Button className="btn-icon block" onClick={() => {complements.addField()}}><Icon glyph="fa-plus"/></Button>
+                                <Button className="btn-icon block" onClick={() => {complements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
                             </div>
                         </form>
                     </Modal.Body>

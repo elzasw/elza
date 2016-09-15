@@ -276,12 +276,12 @@ public class OutputService {
                 originalOutputDef.getInternalCode() + " (kopie)",
                 originalOutputDef.getTemporary(),
                 originalOutputDef.getOutputType().getOutputTypeId(),
-                originalOutputDef.getTemplate().getTemplateId()
+                originalOutputDef.getTemplate() != null ? originalOutputDef.getTemplate().getTemplateId() : null
         );
 
         final ArrChange change = newOutputDef.getOutputs().get(0).getCreateChange();
         final ArrayList<ArrNodeOutput> newNodes = new ArrayList<>();
-        originalOutputDef.getOutputNodes().stream().forEach(node -> {
+        originalOutputDef.getOutputNodes().forEach(node -> {
             ArrNodeOutput newNode = new ArrNodeOutput();
             newNode.setCreateChange(change);
             newNode.setNode(node.getNode());

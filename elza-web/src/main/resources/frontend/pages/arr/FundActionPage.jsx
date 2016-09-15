@@ -335,7 +335,7 @@ const FundActionPage = class FundActionPage extends ArrParentPage {
             case ActionState.INTERRUPTED:
                 return i18n('arr.fundAction.state.interrupted');
             default:
-                return;
+                return null;
         }
     }
 
