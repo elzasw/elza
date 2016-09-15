@@ -1280,10 +1280,12 @@ public class LevelTreeCacheService {
             if (StringUtils.isNotBlank(nodeType) && StringUtils.isNotBlank(parentType)) {
                 ConfigView.ConfigViewTitlesHierarchy levelTitlesHierarchy = viewTitles
                         .getLevelTitlesHierarchy(nodeType);
-                if (StringUtils.equalsIgnoreCase(nodeType, parentType)) {
-                    separator = levelTitlesHierarchy.getSeparatorOther();
-                } else {
-                    separator = levelTitlesHierarchy.getSeparatorFirst();
+                if (levelTitlesHierarchy != null) {
+                    if (StringUtils.equalsIgnoreCase(nodeType, parentType)) {
+                        separator = levelTitlesHierarchy.getSeparatorOther();
+                    } else {
+                        separator = levelTitlesHierarchy.getSeparatorFirst();
+                    }
                 }
             }
         }
