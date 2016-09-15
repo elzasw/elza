@@ -177,18 +177,18 @@ export default class ArrParentPage extends AbstractReactComponent {
      * Sestavení Ribbonu. Pro překrytí.
      * @return {Object} view
      */
-    buildRibbon() {
+    buildRibbon(readMode, closed) {
     }
 
-    renderLeftPanel() {
+    renderLeftPanel(readMode, closed) {
         return null;
     }
 
-    renderCenterPanel() {
+    renderCenterPanel(readMode, closed) {
         return null;
     }
 
-    renderRightPanel() {
+    renderRightPanel(readMode, closed) {
         return null;
     }
 
@@ -205,10 +205,18 @@ export default class ArrParentPage extends AbstractReactComponent {
         var statusHeader;
         var leftPanel;
         var rightPanel;
+        let readMode = false;
+        let closed = false;
 
         if (this.hasPageShowRights(userDetail, activeFund)) {   // má právo na tuto stránku
             var centerPanel;
             if (activeFund) {
+
+                var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', activeFund.id);
+                var settingsValues = settings.value != 'false';
+                readMode = settingsValues;
+                closed = activeFund.lockDate != null;
+
                 statusHeader = <ArrFundPanel />
 
                 var packets = [];
@@ -217,9 +225,9 @@ export default class ArrParentPage extends AbstractReactComponent {
                     packets = arrRegion.packets[fundId].items;
                 }
 
-                centerPanel = this.renderCenterPanel();
-                leftPanel = this.renderLeftPanel();
-                rightPanel = this.renderRightPanel();
+                centerPanel = this.renderCenterPanel(readMode, closed);
+                leftPanel = this.renderLeftPanel(readMode, closed);
+                rightPanel = this.renderRightPanel(readMode, closed);
             } else {
                 centerPanel = (
                     <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>
@@ -235,7 +243,7 @@ export default class ArrParentPage extends AbstractReactComponent {
                     splitter={splitter}
                     _className='fa-page'
                     className={this.layoutClassName ? ("arr-abstract-page " + this.layoutClassName) : "arr-abstract-page"}
-                    ribbon={this.buildRibbon()}
+                    ribbon={this.buildRibbon(readMode, closed)}
                     centerPanel={centerPanel}
                     leftPanel={leftPanel}
                     rightPanel={rightPanel}

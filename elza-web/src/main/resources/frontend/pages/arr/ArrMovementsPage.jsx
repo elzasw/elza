@@ -175,7 +175,7 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
      * Sestavení Ribbonu.
      * @return {Object} view
      */
-    buildRibbon() {
+    buildRibbon(readMode, closed) {
         const activeFund = this.getActiveFund(this.props);
 
         var altActions = [];
@@ -201,13 +201,9 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
         return userDetail.hasArrPage(activeFund ? activeFund.id : null);
     }
 
-    renderCenterPanel() {
+    renderCenterPanel(readMode, closed) {
         const {userDetail} = this.props;
         const fund = this.getActiveFund(this.props);
-
-        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fund.id);
-        var settingsValues = settings.value != 'false';
-        const readMode = settingsValues;
 
         var leftHasSelection = Object.keys(fund.fundTreeMovementsLeft.selectedIds).length > 0;
         var rightHasSelection = fund.fundTreeMovementsRight.selectedId != null;

@@ -80,7 +80,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
      * Sestavení Ribbonu.
      * @return {Object} view
      */
-    buildRibbon() {
+    buildRibbon(readMode, closed) {
         const {arrRegion} = this.props;
 
         const activeFund = this.getActiveFund(this.props);
@@ -117,13 +117,9 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
         super.handleShortcuts(action);
     }
 
-    renderCenterPanel() {
+    renderCenterPanel(readMode, closed) {
         const {packetTypes, descItemTypes, calendarTypes, rulDataTypes, ruleSet, userDetail} = this.props;
         const fund = this.getActiveFund(this.props);
-
-        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fund.id);
-        var settingsValues = settings.value != 'false';
-        const readMode = settingsValues;
 
         return (
             <div className="datagrid-content-container">

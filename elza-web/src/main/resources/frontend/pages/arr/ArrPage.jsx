@@ -315,8 +315,8 @@ const ArrPage = class ArrPage extends ArrParentPage {
      * Sestavení Ribbonu.
      * @return {Object} view
      */
-    buildRibbon() {
-        const {arrRegion} = this.props;
+    buildRibbon(readMode, closed) {
+        const {arrRegion, userDetail} = this.props;
 
         var activeInfo = this.getActiveInfo();
 
@@ -363,11 +363,15 @@ const ArrPage = class ArrPage extends ArrParentPage {
                         </Button>,
                         <Button key="previous-error" onClick={this.handleErrorNext.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}><Icon glyph="fa-arrow-right"/>
                             <div><span className="btnText">{i18n('ribbon.action.arr.validation.error.next')}</span></div>
-                        </Button>,
-                        <Button key="prepareFundAction" onClick={this.handleOpenFundActionForm.bind(this, activeFund.versionId, activeInfo.activeSubNode)}><Icon glyph="fa-cog"/>
-                            <div><span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span></div>
                         </Button>
-                    )
+                    );
+                    if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: activeFund.id}) && !readMode) {
+                        itemActions.push(
+                            <Button key="prepareFundAction" onClick={this.handleOpenFundActionForm.bind(this, activeFund.versionId, activeInfo.activeSubNode)}><Icon glyph="fa-cog"/>
+                                <div><span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span></div>
+                            </Button>
+                        );
+                    }
                 }
             }
         }
@@ -733,7 +737,7 @@ const ArrPage = class ArrPage extends ArrParentPage {
         this.dispatch(fundExtendedView(showExtendedView));
     }
 
-    renderCenterPanel() {
+    renderCenterPanel(readMode, closed) {
         const {arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
         const showRegisterJp = arrRegion.showRegisterJp;
         const activeFund = this.getActiveFund(this.props);
@@ -775,7 +779,7 @@ const ArrPage = class ArrPage extends ArrParentPage {
         }
     }
 
-    renderLeftPanel() {
+    renderLeftPanel(readMode, closed) {
         const {focus, arrRegion} = this.props;
         const activeFund = this.getActiveFund(this.props);
 

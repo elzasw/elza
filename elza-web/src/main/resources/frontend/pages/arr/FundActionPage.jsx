@@ -359,7 +359,7 @@ const FundActionPage = class FundActionPage extends ArrParentPage {
         )
     }
 
-    renderLeftPanel() {
+    renderLeftPanel(readMode, closed) {
         const fund = this.getActiveFund(this.props);
 
         return (
@@ -378,7 +378,7 @@ const FundActionPage = class FundActionPage extends ArrParentPage {
         )
     }
 
-    renderCenterPanel() {
+    renderCenterPanel(readMode, closed) {
         const fund = this.getActiveFund(this.props);
         const {fundAction: {detail, isFormVisible, config, form}, versionId} = fund;
 

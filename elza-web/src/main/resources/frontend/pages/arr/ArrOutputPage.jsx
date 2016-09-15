@@ -431,7 +431,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         this.dispatch(fundOutputSelectOutput(fund.versionId, item.id))
     }
 
-    renderRightPanel() {
+    renderRightPanel(readMode, closed) {
         const fund = this.getActiveFund(this.props);
         if (!fund.fundOutput.fundOutputDetail.fetched) {
             return <span></span>;
@@ -474,7 +474,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         return !item.lockDate && item.outputDefinition && item.outputDefinition.state === OutputState.OPEN
     }
 
-    renderLeftPanel() {
+    renderLeftPanel(readMode, closed) {
         const fund = this.getActiveFund(this.props);
         const fundOutput = fund.fundOutput;;
 
@@ -510,7 +510,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         )
     }
 
-    renderCenterPanel() {
+    renderCenterPanel(readMode, closed) {
         const {arrRegion, calendarTypes, packetTypes, templates, rulDataTypes, descItemTypes, userDetail} = this.props;
 
         const fund = this.getActiveFund(this.props);
@@ -520,11 +520,6 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         if (fund && arrRegion.packets[fund.id]) {
             packets = arrRegion.packets[fund.id].items;
         }
-
-        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fund.id);
-        var settingsValues = settings.value != 'false';
-        const readMode = settingsValues;
-        const closed = fund.lockDate != null;
 
         return (
             <ArrOutputDetail
