@@ -88,7 +88,7 @@ const FundOutputFunctions = class FundOutputFunctions extends AbstractReactCompo
         const state = FundActionPage.getStateTranslation(item.state);
         let buttons = null;
         if (outputState !== OutputState.FINISHED && outputState !== OutputState.OUTDATED) {
-            if (state == null || ACTION_NOT_RUNNING_STATE.indexOf(item.state)) {
+            if (state != null || ACTION_NOT_RUNNING_STATE.indexOf(item.state) !== -1) {
                 buttons = <Icon glyph="fa-play" onClick={() => this.handleActionRun(item.code)}/>;
             } else if (ACTION_RUNNING_STATE.indexOf(item.state) !== -1) {
                 buttons = <Icon glyph="fa-stop" onClick={() => this.handleActionInterrupt(item.id)}/>
