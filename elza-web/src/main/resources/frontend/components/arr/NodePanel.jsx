@@ -17,7 +17,6 @@ import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo.jsx'
 import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {fundNodeSubNodeFulltextSearch, fundSubNodesNext, fundSubNodesPrev, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node.jsx'
-import {addNode} from 'actions/arr/node.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {createFundRoot, isFundRootId} from './ArrUtils.jsx'
@@ -529,31 +528,6 @@ return true
     }
 
     /**
-     * Vrátí pole ke zkopírování
-     */
-    getDescItemTypeCopyIds() {
-        var itemsToCopy = null;
-        if (this.props.nodeSettings != "undefined") {
-            var nodeIndex = indexById(this.props.nodeSettings.nodes, this.props.node.id);
-            if (nodeIndex != null) {
-                itemsToCopy = this.props.nodeSettings.nodes[nodeIndex].descItemTypeCopyIds;
-            }
-        }
-        return itemsToCopy;
-    }
-
-    getDescItemTypeCopyIds() {
-        let itemsToCopy = null;
-        if (this.props.nodeSettings != "undefined") {
-            const nodeIndex = indexById(this.props.nodeSettings.nodes, this.props.nodeId);
-            if (nodeIndex != null) {
-                itemsToCopy = this.props.nodeSettings.nodes[nodeIndex].descItemTypeCopyIds;
-            }
-        }
-        return itemsToCopy;
-    }
-
-    /**
      * Renderování stavu.
      * @param item {object} na který node v Accordion se kliklo
      * @return {Object} view
@@ -725,7 +699,7 @@ return true
      */
 
     render() {
-        const {developer, calendarTypes, versionId, rulDataTypes, node,
+        const {calendarTypes, versionId, rulDataTypes, node,
                 packetTypes, packets, fundId, userDetail,
                 showRegisterJp, fund, closed, descItemTypes} = this.props;
 
@@ -880,12 +854,10 @@ return true
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, developer, focus, userDetail} = state
+    const {focus, userDetail} = state
     return {
-        nodeSettings: arrRegion.nodeSettings,
-        developer,
         focus,
-        userDetail,
+        userDetail
     }
 }
 
@@ -895,7 +867,6 @@ NodePanel.propTypes = {
     node: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,
-    nodeSettings: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,

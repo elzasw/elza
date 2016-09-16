@@ -9,7 +9,6 @@ import ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyForm, AddRegistryForm,
     AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm, AddNodeDropdown} from 'components';
 import {connect} from 'react-redux'
-import {indexById} from 'stores/app/utils.jsx'
 import {lockDescItemType, unlockDescItemType, unlockAllDescItemType,
     copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting.jsx'
 import {addNode,deleteNode} from '../../actions/arr/node.jsx'
@@ -103,20 +102,6 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
             descItemTypeIndex,
         }
         this.dispatch(nodeFormActions.fundSubNodeFormValuesCopyFromPrev(this.props.versionId, this.props.selectedSubNode.id, this.props.selectedSubNode.version, descItemTypeId, routingKey, valueLocation));
-    }
-
-    /**
-     * Vrátí pole ke zkopírování
-     */
-    getDescItemTypeCopyIds() {
-        let itemsToCopy = null;
-        if (this.props.nodeSettings != "undefined") {
-            const nodeIndex = indexById(this.props.nodeSettings.nodes, this.props.nodeId);
-            if (nodeIndex != null) {
-                itemsToCopy = this.props.nodeSettings.nodes[nodeIndex].descItemTypeCopyIds;
-            }
-        }
-        return itemsToCopy;
     }
 
     /**

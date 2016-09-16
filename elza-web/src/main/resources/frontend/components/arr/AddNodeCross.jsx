@@ -10,32 +10,24 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {WebApi} from 'actions/index.jsx';
-import {isFundRootId} from './ArrUtils.jsx'
-import * as perms from 'actions/user/Permission.jsx';
-import {getOneSettings} from 'components/arr/ArrUtils.jsx';
-import {AbstractReactComponent, Icon, i18n, Loading, AddNodeForm} from 'components/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
+import * as perms from 'actions/user/Permission.jsx';
+import {AbstractReactComponent, Icon, i18n, Loading, AddNodeForm} from 'components/index.jsx';
+import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils.jsx';
 
 require ('./AddNodeCross.less');
 
 const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleAddNode');
+        this.bindMethods('handleAddNode', 'handleAddNodePostSubmit');
     }
 
     /**
-     * Vrátí pole ke zkopírování
+     * Akce po výběru směru a scénáře pro přidání nové JP
      */
-    getDescItemTypeCopyIds() {
-        let itemsToCopy = null;
-        if (this.props.nodeSettings != "undefined") {
-            const nodeIndex = indexById(this.props.nodeSettings.nodes, this.props.nodeId);
-            if (nodeIndex != null) {
-                itemsToCopy = this.props.nodeSettings.nodes[nodeIndex].descItemTypeCopyIds;
-            }
-        }
-        return itemsToCopy;
+    handleAddNodePostSubmit() {
+        this.dispatch(modalDialogHide());
     }
 
     /**
@@ -44,9 +36,8 @@ const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
     handleAddNode(direction) {
         const {node, versionId} = this.props;
 
-        //this.dispatch(addNode(selectedSubNode, parentNode, this.props.versionId, "CHILD", this.getDescItemTypeCopyIds(), scenario));
         this.dispatch(modalDialogShow(this, i18n('arr.fund.addNode'),
-                <AddNodeForm node={node} versionId={versionId} initDirection={direction} handleSubmit={(e) => (console.log(e))}/>
+                <AddNodeForm node={node} versionId={versionId} initDirection={direction} handlePostSubmitActions={this.handleAddNodePostSubmit}/>
             )
         )
     }
