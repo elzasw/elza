@@ -6,7 +6,27 @@ import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemSettings;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeAction;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulRule;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
@@ -22,6 +42,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -479,7 +500,7 @@ public class RuleService {
         ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
                 version.getLockChange());
 
-        List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes();
+        List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes(version.getRuleSet().getPackage());
 
         return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version);
     }
@@ -490,7 +511,24 @@ public class RuleService {
      * @return typy hodnot atributů
      */
     public List<RulItemTypeExt> getAllDescriptionItemTypes() {
-        List<RulItemType> itemTypeList = itemTypeRepository.findAll();
+        return getAllDescriptionItemTypes(null);
+    }
+
+    /**
+     * Získání typů atributů se specifikacemi podle balíčku.
+     *
+     * @param rulPackage balíček, podle kterého filtrujeme, pokud je null, vezmou se všechny
+     * @return typy hodnot atributů
+     */
+    public List<RulItemTypeExt> getAllDescriptionItemTypes(@Nullable final RulPackage rulPackage) {
+
+        List<RulItemType> itemTypeList;
+
+        if (rulPackage == null) {
+            itemTypeList = itemTypeRepository.findAll();
+        } else {
+            itemTypeList = itemTypeRepository.findByRulPackage(rulPackage);
+        }
 
         List<RulItemTypeExt> rulDescItemTypeExtList = createExt(itemTypeList);
 
@@ -588,7 +626,7 @@ public class RuleService {
      * @return seznam typů
      */
     public List<RulItemTypeExt> getOutputItemTypes(final ArrOutputDefinition outputDefinition) {
-        List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes();
+        List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes(outputDefinition.getOutputType().getPackage());
 
         List<RulItemTypeAction> itemTypeActions = itemTypeActionRepository.findAll();
         Map<Integer, RulItemType> itemTypeMap = new HashMap<>();
