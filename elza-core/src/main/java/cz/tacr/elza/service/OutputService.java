@@ -272,8 +272,8 @@ public class OutputService {
         }
 
         final ArrOutputDefinition newOutputDef = createOutputDefinition(fundVersion,
-                originalOutputDef.getName() + " (kopie)",
-                originalOutputDef.getInternalCode() + " (kopie)",
+                originalOutputDef.getName() + " (kopie - "  + LocalDateTime.now().toString() + ")",
+                originalOutputDef.getInternalCode(),
                 originalOutputDef.getTemporary(),
                 originalOutputDef.getOutputType().getOutputTypeId(),
                 originalOutputDef.getTemplate() != null ? originalOutputDef.getTemplate().getTemplateId() : null
