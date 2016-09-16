@@ -6,14 +6,20 @@ import {WebApi} from 'actions/index.jsx';
 
 import * as types from 'actions/constants/ActionTypes.js';
 
+function getDataKey(getState) {
+    const state = getState();
+    return state.arrRegion.funds[state.arrRegion.activeIndex].versionId;
+}
+
 /**
  * Vyžádání dat - aby byla ve store k dispozici.
  */
 export function outputTypesFetchIfNeeded() {
     return (dispatch, getState) => {
-        var state = getState();
-        if ((!state.refTables.outputTypes.fetched || state.refTables.outputTypes.dirty) && !state.refTables.outputTypes.isFetching) {
-            return dispatch(outputTypesFetch());
+        const {refTables:{outputTypes}} = getState();
+        const dataKey = getDataKey(getState);
+        if (dataKey !== outputTypes.currentDataKey || ((!outputTypes.fetched || outputTypes.dirty) && !outputTypes.isFetching)) {
+            return dispatch(outputTypesFetch(dataKey));
         }
     }
 }
@@ -21,31 +27,32 @@ export function outputTypesFetchIfNeeded() {
 /**
  * Nové načtení dat.
  */
-export function outputTypesFetch() {
+export function outputTypesFetch(dataKey) {
     return dispatch => {
-        dispatch(outputTypesRequest())
-        return WebApi.getOutputTypes()
-            .then(json => dispatch(outputTypesReceive(json)));
+        dispatch(outputTypesRequest(dataKey));
+        return WebApi.getOutputTypes(dataKey).then(data => dispatch(outputTypesReceive(data, dataKey)));
     }
 }
 
 /**
  * Nová data byla načtena.
- * @param {Object} json objekt s daty
+ * @param {Object} items objekt s daty
+ * @param dataKey data key
  */
-export function outputTypesReceive(json) {
+export function outputTypesReceive(items, dataKey) {
     return {
         type: types.REF_OUTPUT_TYPES_RECEIVE,
-        items: json,
-        receivedAt: Date.now()
+        items,
+        dataKey
     }
 }
 
 /**
  * Bylo zahájeno nové načítání dat.
  */
-export function outputTypesRequest() {
+export function outputTypesRequest(dataKey) {
     return {
-        type: types.REF_OUTPUT_TYPES_REQUEST
+        type: types.REF_OUTPUT_TYPES_REQUEST,
+        dataKey
     }
 }

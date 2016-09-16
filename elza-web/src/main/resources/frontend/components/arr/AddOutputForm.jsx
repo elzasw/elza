@@ -11,11 +11,11 @@ import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 
-const AddOutputForm = class AddOutputForm extends AbstractReactComponent {
+class AddOutputForm extends AbstractReactComponent {
 
     static defaultProps = {
         create: false
-    }
+    };
 
     static PropTypes = {
         create: React.PropTypes.bool,
@@ -52,12 +52,13 @@ const AddOutputForm = class AddOutputForm extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(outputTypesFetchIfNeeded());
-
     }
 
     render() {
         const {fields: {name, internalCode, temporary, templateId, outputTypeId}, create, handleSubmit, onClose, outputTypes, allTemplates} = this.props;
         const submitForm = submitReduxForm.bind(this, AddOutputForm.validate);
+
+        console.log(outputTypes);
 
         let templates = false;
         if (outputTypeId.value) {
@@ -96,7 +97,7 @@ const AddOutputForm = class AddOutputForm extends AbstractReactComponent {
     }
 }
 
-module.exports = reduxForm({
+export default reduxForm({
         form: 'addOutputForm',
         fields: ['name', 'internalCode', 'temporary', 'outputTypeId', "templateId"],
     },

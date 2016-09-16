@@ -1580,9 +1580,9 @@ public class ArrangementController {
      *
      * @return seznam typů oprávnění
      */
-    @RequestMapping(value = "/output/types", method = RequestMethod.GET)
-    public List<RulOutputTypeVO> getAllPolicyTypes() {
-        List<RulOutputType> outputTypes = outputService.getOutputTypes();
+    @RequestMapping(value = "/output/types/{versionId}", method = RequestMethod.GET)
+    public List<RulOutputTypeVO> getAllPolicyTypes(@PathVariable("versionId") final Integer versionId) {
+        List<RulOutputType> outputTypes = outputService.getOutputTypes(versionId);
         return factoryVo.createOutputTypes(outputTypes);
     }
 

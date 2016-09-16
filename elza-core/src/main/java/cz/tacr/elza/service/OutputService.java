@@ -728,8 +728,9 @@ public class OutputService {
      *
      * @return seznam typů výstupu.
      */
-    public List<RulOutputType> getOutputTypes() {
-        return outputTypeRepository.findAll();
+    public List<RulOutputType> getOutputTypes(final Integer versionId) {
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
+        return outputTypeRepository.findByRulPackage(version.getRuleSet().getPackage());
     }
 
     /**
