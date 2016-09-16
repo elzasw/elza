@@ -1,0 +1,10 @@
+<package-actions>
+    <package-action filename="ZP2015_FUND_VALIDATION.yaml" />
+    <package-action filename="ZP2015_GENERATOR_SERIAL_NUMBER.yaml" />
+    <package-action filename="ZP2015_GENERATOR_UNIT_ID.yaml" />
+    <package-action filename="ZP2015_INTRO_AGGREGATOR.yaml">
+        <action-recommendeds>
+            <action-recommended output-type="ZP2015_MANIP_SEZNAM" />
+        </action-recommendeds>
+    </package-action>
+</package-actions>

@@ -155,24 +155,7 @@ public class ScriptModelFactory {
 
         List<ArrDescItem> descItems = new ArrayList<>();
         for (DescItem descItemVO : newLevelApproach.getDescItems()) {
-            RulItemType rulDescItemType = itemTypeRepository.getOneByCode(descItemVO.getType());
-            Assert.notNull(rulDescItemType);
-            ArrDescItem descItem = new ArrDescItem(descItemFactory.createItemByType(rulDescItemType.getDataType()));
-            descItem.setItemType(rulDescItemType);
-            ArrItemData item = descItem.getItem();
-            if (descItemVO.getSpecCode() != null) {
-                RulItemSpec rulDescItemSpec = itemSpecRepository.getOneByCode(descItemVO.getSpecCode());
-                Assert.notNull(rulDescItemSpec);
-                descItem.setItemSpec(rulDescItemSpec);
-            } else if (descItemVO.getInteger() != null && item instanceof ArrItemInt) {
-                ((ArrItemInt) item).setValue(descItemVO.getInteger());
-            } else if (item instanceof ArrItemEnum) {
-                // ok
-            } else {
-                throw new IllegalStateException("Není definována konverze " + descItemVO + " a " + descItem.getClass().toString());
-            }
-
-            descItems.add(descItem);
+            descItems.add(createDescItem(descItemVO));
         }
 
         scenarioOfNewLevel.setDescItems(descItems);
@@ -181,6 +164,40 @@ public class ScriptModelFactory {
     }
 
     /**
+     * Create new description item from value object
+     * @param descItemVO Source description item
+     * @return
+     */
+	private ArrDescItem<? extends ArrItemData> createDescItem(DescItem descItemVO) {
+		RulItemType rulDescItemType = itemTypeRepository.getOneByCode(descItemVO.getType());
+		Assert.notNull(rulDescItemType, "Item does not exists: " + descItemVO.getType());
+
+		ArrDescItem<? extends ArrItemData> descItem = new ArrDescItem<ArrItemData>(descItemFactory.createItemByType(rulDescItemType.getDataType()));
+		descItem.setItemType(rulDescItemType);
+
+		// set specification
+		ArrItemData item = descItem.getItem();
+		if (descItemVO.getSpecCode() != null) {
+			RulItemSpec rulDescItemSpec = itemSpecRepository.getOneByCode(descItemVO.getSpecCode());
+			Assert.notNull(rulDescItemSpec, "Item specification does not exists: " + descItemVO.getSpecCode());
+			descItem.setItemSpec(rulDescItemSpec);
+		}
+		
+		// set initial value
+		if (descItemVO.getInteger() != null)
+		{
+			if(item instanceof ArrItemInt) {
+				// Set initial value
+				((ArrItemInt) item).setValue(descItemVO.getInteger());
+			} else {
+				throw new IllegalStateException("Initial value cannot be set for item: " + descItemVO.getType());
+			}
+		}
+		return descItem;
+	}
+
+
+	/**
      * Vytvoří fakta pro nově přidávaný level. Načte jeho sousedy.
      * @param level             referenční level
      * @param directionLevel    způsob přídání

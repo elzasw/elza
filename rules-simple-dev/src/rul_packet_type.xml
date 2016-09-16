@@ -1,0 +1,14 @@
+<packet-types>
+    <packet-type code="SRD_BOX">
+        <name>Karton</name>
+        <shortcut>kar</shortcut>
+    </packet-type>
+    <packet-type code="SRD_FASCICLE">
+        <name>Fascikl</name>
+        <shortcut>fas</shortcut>
+    </packet-type>
+    <packet-type code="SRD_DATA_UNIT">
+        <name>Digitální archivní jednotka</name>
+        <shortcut>daj</shortcut>
+    </packet-type>
+</packet-types>
