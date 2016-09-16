@@ -193,7 +193,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/deleteDataValues/{versionId}";
     protected static final String FILTER_UNIQUE_VALUES = ARRANGEMENT_CONTROLLER_URL + "/filterUniqueValues/{versionId}";
     protected static final String OUTPUTS = ARRANGEMENT_CONTROLLER_URL + "/output";
-    protected static final String OUTPUT_TYPES = OUTPUTS + "/types";
+    protected static final String OUTPUT_TYPES = OUTPUTS + "/types/{versionId}";
     protected static final String GET_OUTPUTS = OUTPUTS + "/{fundVersionId}";
     protected static final String GET_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}";
     protected static final String CREATE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}";
@@ -451,9 +451,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Získání seznamu pravidel.
      *
      * @return seznam pravidel
+     * @param versionId verze AP
      */
-    protected List<RulOutputTypeVO> getOutputTypes() {
-        Response response = get(OUTPUT_TYPES);
+    protected List<RulOutputTypeVO> getOutputTypes(Integer versionId) {
+        Response response = get(spec -> spec.pathParam("versionId", versionId), OUTPUT_TYPES);
         return Arrays.asList(response.getBody().as(RulOutputTypeVO[].class));
     }
 

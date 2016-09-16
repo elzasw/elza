@@ -160,7 +160,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ArrOutputExtVO> outputs = getOutputs(fundVersion.getId());
         Assert.isTrue(outputs.size() == 0);
 
-        List<RulOutputTypeVO> outputTypes = getOutputTypes();
+        List<RulOutputTypeVO> outputTypes = getOutputTypes(fundVersion.getId());
         Assert.notEmpty(outputTypes);
 
         ArrOutputDefinitionVO outputDefinition = createNamedOutput(fundVersion, "Test", "TST", false, outputTypes.iterator().next().getId());
