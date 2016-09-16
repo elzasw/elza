@@ -6,7 +6,6 @@ import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, AddRemoveList, i18n, FormInput} from 'components/index.jsx';
 import {decorateFormField} from 'components/form/FormUtils.jsx'
-import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import {initForm} from "actions/form/inlineForm.jsx"
 import {indexById} from 'stores/app/utils.jsx'
@@ -85,7 +84,11 @@ const Permissions2 = class Permissions2 extends AbstractReactComponent {
 
     handleAdd() {
         const {fields: {permissions}} = this.props;
-        permissions.addField({});
+        permissions.addField({
+            permission: null,
+            fund: null,
+            scope: null
+        });
     }
 
     handleRemove(permission, index) {
@@ -165,16 +168,17 @@ const Permissions2 = class Permissions2 extends AbstractReactComponent {
             />
         );
     }
+
+    static propTypes = {
+        area: React.PropTypes.string.isRequired,
+        scopesData: React.PropTypes.object.isRequired,
+        addTitle: React.PropTypes.string.isRequired,
+        removeTitle: React.PropTypes.string.isRequired,
+        initData: React.PropTypes.object,
+        onSave: React.PropTypes.func.isRequired,
+    }
 };
 
-Permissions2.propTypes = {
-    area: React.PropTypes.string.isRequired,
-    scopesData: React.PropTypes.object.isRequired,
-    addTitle: React.PropTypes.string.isRequired,
-    removeTitle: React.PropTypes.string.isRequired,
-    initData: React.PropTypes.object,
-    onSave: React.PropTypes.func.isRequired,
-};
 
 const fields = [
     "permissions[].id",
@@ -182,7 +186,7 @@ const fields = [
     "permissions[].fund",
     "permissions[].scope",
 ];
-module.exports = reduxForm({
+export default reduxForm({
         form: 'permissionsEditForm',
         fields,
         validate,

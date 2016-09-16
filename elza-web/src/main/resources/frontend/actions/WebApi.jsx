@@ -968,8 +968,8 @@ class WebApi{
         return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/deleteFund/' + fundId);
     }
 
-    getOutputTypes() {
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/output/types');
+    getOutputTypes(versionId) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/output/types/' + versionId);
     }
 
     getOutputs(versionId, state) {
