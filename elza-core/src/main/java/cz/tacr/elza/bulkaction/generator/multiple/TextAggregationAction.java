@@ -33,7 +33,7 @@ public class TextAggregationAction extends Action {
     /**
      * Oddělovač záznamů
      */
-    public static final String DELIMITER = "\n\r";
+    public static final String DELIMITER = "\n";
 
     /**
      * Vstupní atributy
