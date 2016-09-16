@@ -19,7 +19,7 @@ public interface TemplateRepository extends ElzaJpaRepository<RulTemplate, Integ
 
     List<RulTemplate> findByRulPackage(RulPackage rulPackage);
 
-    @Query("SELECT template FROM rul_template template WHERE template.package = :rulPackage AND template.deleted = false")
+    @Query("SELECT template FROM rul_template template WHERE template.rulPackage = :rulPackage AND template.deleted = false")
     List<RulTemplate> findByRulPackageAndNotDeleted(@Param(value = "rulPackage") final RulPackage rulPackage);
 
     void deleteByRulPackage(RulPackage rulPackage);
