@@ -515,6 +515,18 @@ public class RuleService {
     }
 
     /**
+     * Vrací typy atributů podle balíčku.
+     *
+     * @param rulPackage balíček
+     * @return seznam typů
+     */
+    public List<String> getItemTypeCodesByPackage(final RulPackage rulPackage) {
+        return itemTypeRepository.findByRulPackage(rulPackage).stream()
+                .map(RulItemType::getCode)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Získání typů atributů se specifikacemi podle balíčku.
      *
      * @param rulPackage balíček, podle kterého filtrujeme, pokud je null, vezmou se všechny

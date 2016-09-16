@@ -22,6 +22,11 @@ public class RulRuleSetVO {
     private String name;
 
     /** Kódy atributů pro zobrazení v gridu hromadných úprav - jaké jsou implicitní atributy a jaké je jejich pořadí. */
+    private List<String> defaultItemTypeCodes;
+
+    /**
+     * Všechny kódy atributů.
+     */
     private List<String> itemTypeCodes;
 
     public Integer getId() {
@@ -63,11 +68,19 @@ public class RulRuleSetVO {
         return ToStringBuilder.reflectionToString(this);
     }
 
+    public List<String> getDefaultItemTypeCodes() {
+        return defaultItemTypeCodes;
+    }
+
+    public void setDefaultItemTypeCodes(final List<String> defaultItemTypeCodes) {
+        this.defaultItemTypeCodes = defaultItemTypeCodes;
+    }
+
     public List<String> getItemTypeCodes() {
         return itemTypeCodes;
     }
 
-    public void setItemTypeCodes(List<String> itemTypeCodes) {
+    public void setItemTypeCodes(final List<String> itemTypeCodes) {
         this.itemTypeCodes = itemTypeCodes;
     }
 }

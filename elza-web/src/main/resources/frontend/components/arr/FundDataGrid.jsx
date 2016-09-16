@@ -95,7 +95,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
             var initData = { visibleColumns: [] }
             var ruleMap = getMapFromList(ruleSet.items);
             var rule = ruleMap[fund.activeVersion.ruleSetId];
-            var codeSet = getSetFromIdsList(rule.itemTypeCodes);
+            var codeSet = getSetFromIdsList(rule.defaultItemTypeCodes);
             descItemTypes.items.forEach(item => {
                 if (codeSet[item.code]) {
                     initData.visibleColumns.push(item.id);
@@ -261,7 +261,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         return false
     }
 
-    getColumnsOrder(fundDataGrid, refTypesMap, dataTypesMap) {
+    getColumnsOrder(fundDataGrid, refTypesMap) {
         // Pořadí sloupečků - musíme brát i variantu, kdy není definované nebo kdy v něm některé atributy chybí
         var columnsOrder = []
         var map = {...refTypesMap}
@@ -276,7 +276,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     buildColumns(fundDataGrid, descItemTypes, rulDataTypes) {
         const refTypesMap = getMapFromList(descItemTypes.items)
         const dataTypesMap = getMapFromList(rulDataTypes.items)
-        const columnsOrder = this.getColumnsOrder(fundDataGrid, refTypesMap, dataTypesMap)
+        const columnsOrder = this.getColumnsOrder(fundDataGrid, refTypesMap)
 
         var cols = []
         columnsOrder.forEach(id => {
@@ -323,20 +323,30 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
     }
 
     handleColumnSettings() {
-        const {fundDataGrid, descItemTypes} = this.props
-        const refTypesMap = getMapFromList(descItemTypes.items)
-        const columnsOrder = this.getColumnsOrder(fundDataGrid, refTypesMap)
-        console.log('columnsOrder', columnsOrder)
-        const visibleColumns = fundDataGrid.visibleColumns
-        console.log('visibleColumns', visibleColumns)
+        const {fundDataGrid, descItemTypes, fund, ruleSet} = this.props;
+
+        var ruleMap = getMapFromList(ruleSet.items);
+        var rule = ruleMap[fund.activeVersion.ruleSetId];
+
+        let itemTypes = [];
+        descItemTypes.items.forEach(item => {
+            if (rule.itemTypeCodes.indexOf(item.code) >= 0) {
+                itemTypes.push(item);
+            }
+        });
+
+        const refTypesMap = getMapFromList(itemTypes);
+        const columnsOrder = this.getColumnsOrder(fundDataGrid, refTypesMap);
+        const visibleColumns = fundDataGrid.visibleColumns;
+
         const columns = columnsOrder.map(id => {
-            const refType = refTypesMap[id]
+            const refType = refTypesMap[id];
             return {
                 id: refType.id,
                 title: refType.shortcut,
-                desc: refType.description,
+                desc: refType.description
             }
-        })
+        });
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.columnSettings.title'),
             <DataGridColumnsSettings
