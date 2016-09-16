@@ -13,7 +13,7 @@
             <column name="deleted" value="false" />
         </update>
 
-        <addNotNullConstraint tableName="rul_template" columnName="deleted" />
+        <addNotNullConstraint tableName="rul_template" columnName="deleted" columnDataType="boolean" />
     </changeSet>
 
 </databaseChangeLog>
