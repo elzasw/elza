@@ -6,10 +6,14 @@
 
     <changeSet id="55" author="compel">
         <addColumn tableName="rul_template">
-            <column name="deleted" type="boolean">
-                <constraints nullable="false"/>
-            </column>
+            <column name="deleted" type="boolean" />
         </addColumn>
+
+        <update tableName="rul_template">
+            <column name="deleted" value="false" />
+        </update>
+
+        <addNotNullConstraint tableName="rul_template" columnName="deleted" />
     </changeSet>
 
 </databaseChangeLog>
