@@ -1,0 +1,14 @@
+<policy-types>
+    <policy-type code="ZP2015_BASIC" rule-set="ZP2015">
+        <name>Základní</name>
+    </policy-type>
+    <policy-type code="ZP2015_STORAGE_ID" rule-set="ZP2015">
+        <name>Ukládací jendotky</name>
+    </policy-type>
+    <policy-type code="ZP2015_REF_NO" rule-set="ZP2015">
+        <name>Referenční označení</name>
+    </policy-type>
+    <policy-type code="ZP2015_SERIAL_NO" rule-set="ZP2015">
+        <name>Pořadové číslo</name>
+    </policy-type>
+</policy-types>

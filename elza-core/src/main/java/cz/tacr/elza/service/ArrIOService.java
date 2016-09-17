@@ -286,7 +286,7 @@ public class ArrIOService {
 
         if (clazz.isAssignableFrom(ArrOutputItem.class)) {
 
-            List<RulItemTypeExt> outputItemTypes = ruleService.getOutputItemTypes(fundVersionId, parentId);
+            List<RulItemTypeExt> outputItemTypes = ruleService.getOutputItemTypes(fundVersionId);
 
             RulItemTypeExt rule = null;
 

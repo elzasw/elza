@@ -29,7 +29,8 @@
         <module>elza-web</module>
         <module>elza-war</module>
         <module>elza-doc</module>
-        <module>elza-zp2015</module>
+        <module>rules-cz-zp2015</module>
+        <module>rules-simple-dev</module>
     </modules>
 
     <dependencyManagement>

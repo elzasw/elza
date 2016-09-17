@@ -3,6 +3,9 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {savingApiWrapper} from 'actions/global/status.jsx';
+import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
+import {i18n} from 'components/index.jsx';
+
 export function isFundPacketsAction(action) {
     switch (action.type) {
         case types.FUND_PACKETS_REQUEST:
@@ -127,7 +130,13 @@ export function fundPacketsDelete(versionId, fundId, ids) {
         WebApi.deletePackets(fundId, ids)
             .then(() => {
                 dispatch(fundPacketsChangeSelection(versionId, []))
-            })
+            }).catch((err) => {
+                if (err.controller) {
+                    dispatch(addToastrWarning(i18n('arr.fund.packets.action.delete.problem'), err.data.message));
+                } else {
+                    reject(err);
+                }
+            });
     }
 }
 

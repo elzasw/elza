@@ -145,7 +145,7 @@ public class Yaml {
             pushbackInputStream.unread(bom, 0, 0);
         }
         if (encoding == null) {
-            reader = new InputStreamReader(pushbackInputStream);
+            reader = new InputStreamReader(pushbackInputStream, "UTF-8");
         } else {
             reader = new InputStreamReader(pushbackInputStream, encoding);
         }

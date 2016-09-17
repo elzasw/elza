@@ -1,0 +1,83 @@
+package SimpleDev;
+
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.DescItemChange;
+import cz.tacr.elza.api.vo.RelatedNodeDirection;
+import cz.tacr.elza.api.vo.NodeTypeOperation;
+
+global java.util.Set results;
+
+rule "Uzel se revaliduje při každé operaci"
+when
+then
+	results.add(RelatedNodeDirection.NODE);
+end
+
+// SRD_STORAGE_ID - každá větev musí mít alespoň jeden obal
+rule "Dopad na všechny potomky při změně: SRD_LEVEL_TYPE, SRD_FOLDER_TYPE, SRD_STORAGE_ID"
+when
+    DescItem(type == "SRD_LEVEL_TYPE" || type=="SRD_FOLDER_TYPE" || type=="SRD_STORAGE_ID" )
+	NodeTypeOperation(this==NodeTypeOperation.SAVE_DESC_ITEM)
+then
+	results.add(RelatedNodeDirection.DESCENDANTS);
+end
+
+// Při vytvoření uzlu se zneplatňuje rodič a sourozenec
+rule "Vytvoření uzlu"
+when
+	NodeTypeOperation( this==NodeTypeOperation.CREATE_NODE )
+then
+	results.add(RelatedNodeDirection.PARENT);
+	results.add(RelatedNodeDirection.SIBLINGS);
+end
+
+rule "Vymazání uzlu"
+when
+	NodeTypeOperation( this==NodeTypeOperation.DELETE_NODE )
+then
+	results.add(RelatedNodeDirection.PARENT);
+	results.add(RelatedNodeDirection.SIBLINGS);
+end
+
+rule "Odpojení uzlu se stejným rodičem"
+when
+	NodeTypeOperation(this==NodeTypeOperation.DISCONNECT_NODE_LOCAL)
+then
+	results.add(RelatedNodeDirection.SIBLINGS);
+end
+
+rule "Připojení uzlu se stejným rodičem"
+when
+	NodeTypeOperation(this==NodeTypeOperation.CONNECT_NODE_LOCAL)
+then
+	results.add(RelatedNodeDirection.SIBLINGS);
+end
+
+rule "DisconnectNode"
+when
+	NodeTypeOperation(this==NodeTypeOperation.DISCONNECT_NODE)
+then
+	results.add(RelatedNodeDirection.PARENT);
+	results.add(RelatedNodeDirection.SIBLINGS);
+end
+
+rule "ConnectNode"
+when
+	NodeTypeOperation(this==NodeTypeOperation.CONNECT_NODE)
+then
+	results.add(RelatedNodeDirection.PARENT);
+	results.add(RelatedNodeDirection.SIBLINGS);
+	results.add(RelatedNodeDirection.DESCENDANTS);
+end
+
+/*
+
+rule "Pokud v SaveDescriptionItems provedu smazání hodnoty SRD_TITLE, tak dopady jsou Node+Descendants"
+when
+    descItem : DescItem(type == "SRD_LEVEL_TYPE", change == DescItemChange.DELETE)
+	eval( nodeTypeOperation.equals(NodeTypeOperation.SAVE_DESC_ITEM) )
+then
+	results.add(RelatedNodeDirection.NODE);
+	results.add(RelatedNodeDirection.DESCENDANTS);
+end
+*/

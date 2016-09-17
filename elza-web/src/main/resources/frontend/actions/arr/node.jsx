@@ -127,7 +127,15 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
             filterText
         })
         if (filterText !== '') {
-            WebApi.findInFundTree(activeFund.versionId, activeNode.id, filterText, 'ONE_LEVEL')
+
+            let nodeId;
+            if (activeNode.id != null && (typeof activeNode.id === 'string' || activeNode.id instanceof String)) {
+                nodeId = null;
+            } else {
+                nodeId = activeNode.id;
+            }
+
+            WebApi.findInFundTree(activeFund.versionId, nodeId, filterText, 'ONE_LEVEL')
                 .then(json => {
                     dispatch(fundNodeSubNodeFulltextResult(activeFund.versionId, activeNode.id, activeNode.routingKey, json));
                     console.log(999, json)

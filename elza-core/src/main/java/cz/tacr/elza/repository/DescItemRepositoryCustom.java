@@ -36,6 +36,13 @@ public interface DescItemRepositoryCustom {
                                                                   RulItemType titleType,
                                                                   @Nullable ArrChange lockChange);
 
+    /**
+     * Vyhledání hodnot atributů k požadovaným jednotkám popisu.
+     *
+     * @param nodeIds identifikátory jednotky popisu
+     * @return mapa - klíč identifikátor jed. popisu, hodnota - seznam hodnot atributu
+     */
+    Map<Integer, List<ArrDescItem>> findByNodes(Collection<Integer> nodeIds);
 
     /**
      * Objekt popisku uzlu.

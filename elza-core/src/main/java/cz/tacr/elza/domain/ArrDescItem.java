@@ -41,7 +41,7 @@ public class ArrDescItem<T extends ArrItemData> extends ArrItem<T> implements cz
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
 

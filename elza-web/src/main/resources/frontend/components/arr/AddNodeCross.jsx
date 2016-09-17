@@ -9,10 +9,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {WebApi} from 'actions/index.jsx';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
+import {addNodeForm} from 'actions/arr/addNodeForm.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import {AbstractReactComponent, Icon, i18n, Loading, AddNodeForm} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils.jsx';
 
 require ('./AddNodeCross.less');
@@ -20,26 +19,15 @@ require ('./AddNodeCross.less');
 const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleAddNode', 'handleAddNodePostSubmit');
+        this.bindMethods('handleAddNode');
     }
 
     /**
-     * Akce po výběru směru a scénáře pro přidání nové JP
-     */
-    handleAddNodePostSubmit() {
-        this.dispatch(modalDialogHide());
-    }
-
-    /**
-     * Přidání podřízeného záznamu
+     * Zavolání dialogu pro přidání záznamu s předdefinovaným směrem
      */
     handleAddNode(direction) {
         const {node, versionId} = this.props;
-
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.addNode'),
-                <AddNodeForm node={node} versionId={versionId} initDirection={direction} handlePostSubmitActions={this.handleAddNodePostSubmit}/>
-            )
-        )
+        this.dispatch(addNodeForm(direction, node, versionId));
     }
 
     renderCross() {

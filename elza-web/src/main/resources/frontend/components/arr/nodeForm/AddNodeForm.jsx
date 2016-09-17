@@ -35,7 +35,7 @@ var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
      * Připravuje hodnoty proměnných rodič, směr pro potřeby API serveru
      * - Přidání JP na konec se mění na přidání dítěte rodiči
      * @param {String} inDirection směr, kterým se má vytvořit nová JP
-     * @param {Object} inNode reprezentující data v akordeonu
+     * @param {Object} inNode uzel pro který je volána akce
      */
     formatDataForServer(inDirection, inNode) {
         var di, no, pno;
@@ -130,11 +130,8 @@ var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
         const {node, versionId, initDirection, handlePostSubmitActions} = this.props;
         var selDi = this.state.selectedDirection;
         var selScn = this.state.selectedScenario;
-        console.log('T');
-        console.log(selScn);
         // nastavi odpovidajiciho rodice a direction pro dotaz
-        var dataServ = this.formatDataForServer(selDi, node)
-        //node.subNodeForm.data.parent;
+        var dataServ = this.formatDataForServer(selDi, node);
         this.dispatch(addNode(dataServ.activeNode, dataServ.parentNode, this.props.versionId, dataServ.direction, this.getDescItemTypeCopyIds(), selScn));
         handlePostSubmitActions();
     }

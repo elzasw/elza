@@ -7,7 +7,7 @@ require('./NodeSubNodeForm.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyForm, AddRegistryForm,
-    AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm, AddNodeDropdown} from 'components';
+    AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm} from 'components';
 import {connect} from 'react-redux'
 import {lockDescItemType, unlockDescItemType, unlockAllDescItemType,
     copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting.jsx'
@@ -140,13 +140,9 @@ const NodeSubNodeForm = class NodeSubNodeForm extends AbstractReactComponent {
     render() {
         const {singleDescItemTypeEdit, userDetail} = this.props;
         const {versionId, focus, closed, fundId, routingKey, rulDataTypes, calendarTypes, descItemTypes, packetTypes, packets,
-            subNodeForm, conformityInfo, descItemCopyFromPrevEnabled, singleDescItemTypeId} = this.props;
+            subNodeForm, conformityInfo, descItemCopyFromPrevEnabled, singleDescItemTypeId, readMode} = this.props;
 
         let formActions
-        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
-        var settingsValues = settings.value != 'false';
-        const readMode = closed || settingsValues;
-
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
             if (!readMode && !singleDescItemTypeEdit) {
                 formActions = this.renderFormActions();
@@ -225,6 +221,7 @@ NodeSubNodeForm.propTypes = {
     onVisiblePolicy: React.PropTypes.func.isRequired,
     singleDescItemTypeId: React.PropTypes.number,
     singleDescItemTypeEdit: React.PropTypes.bool,
+    readMode: React.PropTypes.bool,
 }
 
 module.exports = connect(mapStateToProps, null, null, { withRef: true })(NodeSubNodeForm);

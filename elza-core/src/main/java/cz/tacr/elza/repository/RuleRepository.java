@@ -30,7 +30,4 @@ public interface RuleRepository extends JpaRepository<RulRule, Integer> {
     List<RulRule> findByRuleSetAndRuleTypeOrderByPriorityAsc(RulRuleSet rulRuleSet,
                                                                      RulRule.RuleType attributeTypes);
 
-    List<RulRule> findByRuleSetAndRuleTypeAndOutputTypeOrderByPriorityAsc(RulRuleSet rulRuleSet,
-                                                                          RulRule.RuleType attributeTypes,
-                                                                          RulOutputType outputType);
 }

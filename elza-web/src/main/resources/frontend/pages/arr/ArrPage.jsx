@@ -57,20 +57,20 @@ import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
 
-var keyModifier = Utils.getKeyModifier()
+const keyModifier = Utils.getKeyModifier()
 
-var keymap = {
+const keymap = ArrParentPage.mergeKeymap({
     ArrParent: {
-        bulkActions: keyModifier + 'h',
         registerJp: keyModifier + 'j',
         area1: keyModifier + '1',
         area2: keyModifier + '2',
         area3: keyModifier + '3',
     },
-}
-var shortcutManager = new ShortcutsManager(keymap)
+});
 
-var ArrPage = class ArrPage extends ArrParentPage {
+const shortcutManager = new ShortcutsManager(keymap)
+
+const ArrPage = class ArrPage extends ArrParentPage {
     constructor(props) {
         super(props, "fa-page");
 
@@ -186,11 +186,8 @@ var ArrPage = class ArrPage extends ArrParentPage {
     }
 
     handleShortcuts(action) {
-        console.log("#handleShortcuts", '[' + action + ']', this);
+        console.log("#handleShortcuts ArrPage", '[' + action + ']', this);
         switch (action) {
-            case 'bulkActions':
-                this.handleBulkActionsDialog()
-                break
             case 'registerJp':
                 this.handleRegisterJp()
                 break
@@ -203,6 +200,8 @@ var ArrPage = class ArrPage extends ArrParentPage {
             case 'area3':
                 this.dispatch(setFocus('arr', 3))
                 break
+            default:
+                super.handleShortcuts(action);
         }
     }
 
@@ -316,8 +315,8 @@ var ArrPage = class ArrPage extends ArrParentPage {
      * Sestavení Ribbonu.
      * @return {Object} view
      */
-    buildRibbon() {
-        const {arrRegion} = this.props;
+    buildRibbon(readMode, closed) {
+        const {arrRegion, userDetail} = this.props;
 
         var activeInfo = this.getActiveInfo();
 
@@ -364,11 +363,15 @@ var ArrPage = class ArrPage extends ArrParentPage {
                         </Button>,
                         <Button key="previous-error" onClick={this.handleErrorNext.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}><Icon glyph="fa-arrow-right"/>
                             <div><span className="btnText">{i18n('ribbon.action.arr.validation.error.next')}</span></div>
-                        </Button>,
-                        <Button key="prepareFundAction" onClick={this.handleOpenFundActionForm.bind(this, activeFund.versionId, activeInfo.activeSubNode)}><Icon glyph="fa-cog"/>
-                            <div><span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span></div>
                         </Button>
-                    )
+                    );
+                    if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: activeFund.id}) && !readMode) {
+                        itemActions.push(
+                            <Button key="prepareFundAction" onClick={this.handleOpenFundActionForm.bind(this, activeFund.versionId, activeInfo.activeSubNode)}><Icon glyph="fa-cog"/>
+                                <div><span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span></div>
+                            </Button>
+                        );
+                    }
                 }
             }
         }
@@ -734,7 +737,7 @@ var ArrPage = class ArrPage extends ArrParentPage {
         this.dispatch(fundExtendedView(showExtendedView));
     }
 
-    renderCenterPanel() {
+    renderCenterPanel(readMode, closed) {
         const {arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
         const showRegisterJp = arrRegion.showRegisterJp;
         const activeFund = this.getActiveFund(this.props);
@@ -776,7 +779,7 @@ var ArrPage = class ArrPage extends ArrParentPage {
         }
     }
 
-    renderLeftPanel() {
+    renderLeftPanel(readMode, closed) {
         const {focus, arrRegion} = this.props;
         const activeFund = this.getActiveFund(this.props);
 

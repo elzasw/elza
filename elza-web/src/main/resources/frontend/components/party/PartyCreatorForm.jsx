@@ -168,7 +168,7 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
     }
 }
 
-module.exports = reduxForm({
+export default reduxForm({
     form: 'PartyCreatorForm',
     fields: [],
 },state => ({

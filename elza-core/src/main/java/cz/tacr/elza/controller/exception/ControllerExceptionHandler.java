@@ -45,6 +45,15 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse(500, exceptionAsString, cause.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler({AbstractControllerException.class})
+    @ResponseBody
+    public ResponseEntity<ErrorResponse> controllerException(final AbstractControllerException exception) throws IOException {
+        StringWriter sw = new StringWriter();
+        exception.printStackTrace(new PrintWriter(sw));
+        String exceptionAsString = sw.toString();
+        return new ResponseEntity<>(new ErrorResponse(exception.getCode().value(), exceptionAsString, exception.getMessage()), exception.getCode());
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public class ErrorResponse {
         private int code;

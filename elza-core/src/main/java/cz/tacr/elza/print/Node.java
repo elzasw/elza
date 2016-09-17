@@ -1,25 +1,13 @@
 package cz.tacr.elza.print;
 
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.print.item.AbstractItem;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemRecordRef;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.output.OutputFactoryService;
+import cz.tacr.elza.utils.AppContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import javax.validation.constraints.NotNull;
@@ -35,35 +23,22 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-@Scope("prototype")
-public class Node implements RecordProvider, Comparable<Node> {
+public class Node implements RecordProvider, Comparable<Node>, NodesOrder {
+
     private final NodeId nodeId; // vazba na node
     private final Output output;
 
-    private List<Item> items = null; // seznam všech atributů node - cache plněná při prním přístupu
-    private List<Record> records = null; // seznam všech registry node - cache plněná při prvním přístupu
+    private List<Item> items = new ArrayList<>();
+    private List<Record> records = new ArrayList<>();
 
-    @Autowired
-    private NodeRepository nodeRepository;
-
-    @Autowired
-    private DescItemRepository descItemRepository;
-
-    @Autowired
-    private FundVersionRepository fundVersionRepository;
-
-    @Autowired
-    private OutputFactoryService outputFactoryService;
-
-    @Autowired
-    private ItemRepository itemRepository;
+    private OutputFactoryService outputFactoryService = AppContext.getBean(OutputFactoryService.class);
 
     /**
      * Konstruktor s povinnými hodnotami
      * @param nodeId vazba na nodeId
      * @param output vazba na output
      */
-    public Node(NodeId nodeId, Output output) {
+    public Node(final NodeId nodeId, final Output output) {
         this.nodeId = nodeId;
         this.output = output;
     }
@@ -86,14 +61,13 @@ public class Node implements RecordProvider, Comparable<Node> {
      * @param codes seznam kódů typů atributů.
      * @return vrací se seznam hodnot těchto atributů, řazeno dle rul_desc_item.view_order + arr_item.position
      */
-    public List<Item> getItems(@NotNull Collection<String> codes) {
+    public List<Item> getItems(@NotNull final Collection<String> codes) {
         Assert.notNull(codes);
         return getItems().stream()
                 .filter(item -> {
                     final String code = item.getType().getCode();
                     return codes.contains(code);
                 })
-                .sorted(Item::compareToItemViewOrderPosition)
                 .collect(Collectors.toList());
     }
 
@@ -103,7 +77,7 @@ public class Node implements RecordProvider, Comparable<Node> {
      * @param code požadovaný kód položky
      * @return vrací seznam hodnot položek s odpovídajícím kódem oddělený čárkou (typicky 1 položka = její serializeValue)
      */
-    public String getItemsValueByCode(@NotNull String code) {
+    public String getItemsValueByCode(@NotNull final String code) {
         return getItems(Collections.singletonList(code)).stream()
                 .map(Item::serializeValue)
                 .filter(StringUtils::isNotBlank)
@@ -127,11 +101,10 @@ public class Node implements RecordProvider, Comparable<Node> {
      * @param codes     seznam kódu typů atributů
      * @return   seznam všech hodnot atributů kromě hodnot typů uvedených ve vstupu metody
      */
-    public List<Item> getAllItems(@NotNull Collection<String> codes) {
+    public List<Item> getAllItems(@NotNull final Collection<String> codes) {
         Assert.notNull(codes);
         return getItems().stream()
                 .filter(item -> !codes.contains(item.getType().getCode()))
-                .sorted(Item::compareToItemViewOrderPosition)
                 .collect(Collectors.toList());
     }
 
@@ -139,7 +112,7 @@ public class Node implements RecordProvider, Comparable<Node> {
      * Metoda pro potřeby jasperu
      * @return položky jako getItems, serializované a spojené čárkou
      */
-    public String getAllItemsAsString(@NotNull Collection<String> codes) {
+    public String getAllItemsAsString(@NotNull final Collection<String> codes) {
        return getItems(codes).stream()
 //               .map((item) -> item.serialize() + "[" + item.getType().getCode() + "]") // pro potřeby identifikace políčka při ladění šablony
                .map(Item::serialize)
@@ -154,33 +127,7 @@ public class Node implements RecordProvider, Comparable<Node> {
     /**
      * @return všechny Items přiřazené na node.
      */
-    @Transactional(readOnly = true)
     public List<Item> getItems() {
-        final ArrFundVersion arrFundVersion = fundVersionRepository.getOneCheckExist(output.getArrFundVersionId());
-        final ArrChange lockChange = arrFundVersion.getLockChange();
-        final ArrNode arrNode = nodeRepository.getOneCheckExist(getArrNodeId());
-
-        // zajistí naplnění cache, pokud není načteno
-        if (items == null) {
-            final List<ArrDescItem> descItems;
-            if (lockChange != null) {
-                descItems = descItemRepository.findByNodeAndChange(arrNode, lockChange);
-            } else {
-                descItems = descItemRepository.findByNodeAndDeleteChangeIsNull(arrNode);
-            }
-            items = new ArrayList<>(descItems.size());
-            descItems.stream()
-                    .sorted((o1, o2) -> o1.getPosition().compareTo(o2.getPosition()))
-                    .forEach(arrDescItem -> {
-                        final ArrItem arrItem = itemRepository.findOne(arrDescItem.getItemId());
-
-                        final AbstractItem item = outputFactoryService.getItem(arrItem.getItemId(), output, this.getNodeId());
-                        item.setPosition(arrDescItem.getPosition());
-
-                        items.add(item);
-                    });
-        }
-
         return items;
     }
 
@@ -196,28 +143,28 @@ public class Node implements RecordProvider, Comparable<Node> {
         return nodeId;
     }
 
+    @Override
     public List<Record> getRecords() {
-        // registers navázané k node - inicializovat
-        if (records == null) {
-            records = outputFactoryService.getRecordByNodeId(output, this.getNodeId());
-        }
-
-        final List<Record> recordList = new ArrayList<>(this.records); // interně navázané recordy jako první
+        final List<Record> recordList = new ArrayList<>(records); // interně navázané recordy jako první
 
         // recordy z itemů
-        getItems().stream()
-                .filter(item -> item instanceof ItemRecordRef)
-                .forEach(item -> {
-                    ItemRecordRef itemRecordRef = (ItemRecordRef) item;
-                    recordList.add(itemRecordRef.getValue());
-                });
+        for (Item item : getItems()) {
+            if (item instanceof ItemRecordRef) {
+                ItemRecordRef itemRecordRef = (ItemRecordRef) item;
+                recordList.add(itemRecordRef.getValue());
+            }
+        }
 
         return recordList;
     }
 
+    public List<Record> getNodeRecords() {
+        return records;
+    }
+
     @Override
-    public List<NodeId> getRecordProviderChildern() {
-        return new ArrayList<>(getChildren());
+    public IteratorNodes getRecordProviderChildren() {
+        return new IteratorNodes(output, new ArrayList<>(getChildren()), outputFactoryService, Output.MAX_CACHED_NODES);
     }
 
     @Override
@@ -244,7 +191,31 @@ public class Node implements RecordProvider, Comparable<Node> {
     }
 
     @Override
-    public int compareTo(Node o) {
+    public int compareTo(final Node o) {
         return CompareToBuilder.reflectionCompare(this, o);
+    }
+
+    @Override
+    public IteratorNodes getNodesDFS() {
+        return new IteratorNodes(output, output.getNodesChildsModel(nodeId), outputFactoryService, Output.MAX_CACHED_NODES);
+    }
+
+    @Override
+    public IteratorNodes getNodesBFS() {
+        List<NodeId> nodeIds = output.getNodesChildsModel(nodeId);
+        nodeIds.sort((o1, o2) -> new CompareToBuilder()
+                .append(o1.getDepth(), o2.getDepth())  // nejprve nejvyšší nody
+                .append(o1.getParent(), o2.getParent()) // pak sezkupit dle parenta
+                .append(o1.getPosition(), o2.getPosition()) // pak dle pořadí
+                .toComparison());
+        return new IteratorNodes(output, nodeIds, outputFactoryService, Output.MAX_CACHED_NODES);
+    }
+
+    public void setItems(final List<Item> items) {
+        this.items = items;
+    }
+
+    public void setRecords(final List<Record> records) {
+        this.records = records;
     }
 }

@@ -1,46 +1,35 @@
 package cz.tacr.elza.print;
 
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.print.item.ItemRecordRef;
-import cz.tacr.elza.service.OutputService;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-@Scope("prototype")
 public class Record implements Comparable<Record> {
-    private final Output output; // vazba na nadřazený output
-    private final NodeId nodeId; // vazba na node, může být null, v takovém případě patří přímo k output
-    private final RegRecord regRecord;
-    private ItemRecordRef item; // vazba na item, může být null
 
-    @Autowired
-    private OutputService outputService; // interní vazba na service
+    private final Output output; // vazba na nadřazený output
 
     private RecordType type;
     private String record;
     private String characteristics;
     private List<String> variantRecords = new ArrayList<>();
 
-    public Record(@NotNull Output output, NodeId nodeId, @NotNull RegRecord regRecord) {
+    public Record(@NotNull final Output output) {
         this.output = output;
-        this.nodeId = nodeId;
-        this.regRecord = regRecord;
     }
 
     /**
@@ -54,10 +43,20 @@ public class Record implements Comparable<Record> {
     }
 
     // vrací seznam Node přiřazených přes vazbu arr_node_register
-    List<NodeId> getNodes() {
-        return output.getNodesFlatModel().stream()
-                .filter(node -> node.getRecords().contains(this))
-                .collect(Collectors.toList());
+    public Map<NodeId, Node> getNodes() {
+
+        IteratorNodes iterator = output.getNodesBFS();
+
+        Map<NodeId, Node> nodes = new LinkedHashMap<>();
+        while (iterator.hasNext()) {
+            Node node = iterator.next();
+            if (node.getRecords().contains(this)) {
+                NodeId nodeId = iterator.getActualNodeId();
+                nodes.put(nodeId, node);
+            }
+        }
+
+        return nodes;
     }
 
     /**
@@ -67,24 +66,26 @@ public class Record implements Comparable<Record> {
      * @param codes seznam kódů možných itemů, pořadí je respektováno
      * @return seznam serializovaných node oddělěný čárkou
      */
-    public String getNodesSerialized(@NotNull Collection<String> codes) {
+    public String getNodesSerialized(@NotNull final Collection<String> codes) {
         List<String> result = new ArrayList<>();
-        final List<NodeId> nodeIds = getNodes().stream().distinct().collect(Collectors.toList());
+        final Map<NodeId, Node> nodes = getNodes();
 
-        nodeIds.stream().forEach(nodeId -> {
+        for (Map.Entry<NodeId, Node> nodeIdNodeEntry : nodes.entrySet()) {
+
             String serializedString = "";
             for (String code : codes) {
-                serializedString = nodeId.getNode().getAllItemsAsString(Collections.singletonList(code));
+                serializedString = nodeIdNodeEntry.getValue().getAllItemsAsString(Collections.singletonList(code));
                 if (StringUtils.isNotBlank(serializedString)) {
                     break;
                 }
             }
             if (StringUtils.isBlank(serializedString)) {
-                serializedString = "[" + nodeId.toString() + "]";
+                serializedString = "[" + nodeIdNodeEntry.getKey().toString() + "]";
             }
             final String trim = StringUtils.trim(serializedString);
             result.add(trim);
-        });
+        }
+
 
         return StringUtils.join(result, ", ");
     }
@@ -102,7 +103,7 @@ public class Record implements Comparable<Record> {
         return characteristics;
     }
 
-    public void setCharacteristics(String characteristics) {
+    public void setCharacteristics(final String characteristics) {
         this.characteristics = characteristics;
     }
 
@@ -110,7 +111,7 @@ public class Record implements Comparable<Record> {
         return record;
     }
 
-    public void setRecord(String record) {
+    public void setRecord(final String record) {
         this.record = record;
     }
 
@@ -118,7 +119,7 @@ public class Record implements Comparable<Record> {
         return type;
     }
 
-    public void setType(RecordType type) {
+    public void setType(final RecordType type) {
         this.type = type;
     }
 
@@ -126,7 +127,7 @@ public class Record implements Comparable<Record> {
         return variantRecords;
     }
 
-    public void setVariantRecords(List<String> variantRecords) {
+    public void setVariantRecords(final List<String> variantRecords) {
         this.variantRecords = variantRecords;
     }
 
@@ -145,7 +146,6 @@ public class Record implements Comparable<Record> {
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
-//                .append(getType())
                 .append(getRecord())
                 .append(getCharacteristics())
                 .toHashCode();
@@ -156,16 +156,8 @@ public class Record implements Comparable<Record> {
         return new ToStringBuilder(this).append("record", record).append("characteristics", characteristics).toString();
     }
 
-    public ItemRecordRef getItem() {
-        return item;
-    }
-
-    public void setItem(ItemRecordRef item) {
-        this.item = item;
-    }
-
     @Override
-    public int compareTo(Record o) {
+    public int compareTo(final Record o) {
         return CompareToBuilder.reflectionCompare(this, o);
     }
 }

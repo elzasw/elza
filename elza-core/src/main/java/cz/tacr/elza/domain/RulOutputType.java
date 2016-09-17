@@ -2,12 +2,15 @@ package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 
 /**
@@ -18,7 +21,7 @@ import javax.persistence.*;
 @Entity(name = "rul_output_type")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulOutputType implements cz.tacr.elza.api.RulOutputType<RulPackage> {
+public class RulOutputType implements cz.tacr.elza.api.RulOutputType<RulPackage, RulRule> {
 
     @Id
     @GeneratedValue
@@ -30,10 +33,13 @@ public class RulOutputType implements cz.tacr.elza.api.RulOutputType<RulPackage>
     @Column(length = 250, nullable = false)
     private String name;
 
-
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRule.class)
+    @JoinColumn(name = "ruleId", nullable = true)
+    private RulRule rule;
 
     @Override
     public Integer getOutputTypeId() {
@@ -73,6 +79,16 @@ public class RulOutputType implements cz.tacr.elza.api.RulOutputType<RulPackage>
     @Override
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
+    }
+
+    @Override
+    public RulRule getRule() {
+        return rule;
+    }
+
+    @Override
+    public void setRule(final RulRule rule) {
+        this.rule = rule;
     }
 
     @Override

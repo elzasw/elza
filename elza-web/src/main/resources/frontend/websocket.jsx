@@ -18,6 +18,7 @@ import {
     changeAddLevel,
     changeApproveVersion,
     changeParty,
+    changePartyCreate,
     changePartyDelete,
     changeMoveLevel,
     changeRegistryRecord,
@@ -131,6 +132,8 @@ function processEvents(values) {
                 break;
 
             case 'PARTY_CREATE':
+                partyCreate(value);
+                break;
             case 'PARTY_UPDATE':
                 partyUpdate(value);
                 break;
@@ -374,6 +377,10 @@ function fundActionActionChange(value) {
 
 function partyUpdate(value){
     store.dispatch(changeParty(value.ids[0]));
+}
+
+function partyCreate(value){
+    store.dispatch(changePartyCreate(value.ids[0]));
 }
 
 function partyDelete(value){

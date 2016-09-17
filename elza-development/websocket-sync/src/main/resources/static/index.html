@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>WebSocket Test</title>
+		<script src="stomp.js"></script>
+		<script type="text/javascript">
+			var stompClient = null;
+			var receiptId = -1;
+			
+			function setConnected(connected) {
+				document.getElementById('connect').disabled = connected;
+				document.getElementById('disconnect').disabled = !connected;
+				document.getElementById('content').style.visibility = connected ? 'visible' : 'hidden';
+				document.getElementById('response').style.visibility = connected ? 'visible' : 'hidden';
+				if (!connected) {
+					var response = document.getElementById('response');
+					for (var i = response.rows.length - 1; i > 0; i--) {
+						response.deleteRow(i);
+			        } 
+				}
+			}
+		
+			var connectedCallback = function (frame) {
+				setConnected(true);
+				console.log('Connected: ' + frame);
+				// subscribe for public chat
+				stompClient.subscribe('/fundNotification/chat', function(message) {
+					showMessage(JSON.parse(message.body));
+				});
+				// subscribe for user chat
+				stompClient.subscribe('/user/fundNotification/chat', function(message) {
+					showMessage(JSON.parse(message.body));
+				});
+			}
+			
+			var receiptCallback = function (frame) {
+				alert("Woohoo new receipt id: " + frame.headers["receipt-id"]);
+			}
+			
+			var errorCallback = function (frame) {
+				setConnected(false);
+				if (!frame.body) {
+					alert(frame.headers.message);
+				} else {
+					var body = JSON.parse(frame.body);
+					var desc = body.message + ':\n';
+					for (var i in body.stackTrace) {
+						desc += body.stackTrace[i].className + '.'
+							+  body.stackTrace[i].methodName + '('
+							+  body.stackTrace[i].fileName + ':'
+							+  body.stackTrace[i].lineNumber + ')\n';
+					}
+					alert(desc);
+				}
+			}
+			
+			function connect() {
+				stompClient = Stomp.client('ws://localhost:8080/stomp');
+				stompClient.heartbeat.outgoing = 20000;
+				stompClient.heartbeat.incoming = 20000;
+				stompClient.onreceipt = receiptCallback;
+				stompClient.connect({}, connectedCallback, errorCallback);
+			}
+		
+			function disconnect() {
+				if (stompClient != null) {
+					stompClient.disconnect();
+				}
+				setConnected(false);
+				console.log('Disconnected');
+			}
+		
+			function sendMessage(headers) {
+				var recipient = document.getElementById('recipient').value;
+				var text = document.getElementById('text').value;
+				if (!text) {
+					return;
+				}
+				stompClient.send('/fund/chat', headers, JSON.stringify({
+					'recipient' : recipient,
+					'text' : text,
+					'sent' : new Date().getTime()
+				}));
+			}
+			
+			function sendMessageWithReceipt(headers) {
+				headers.receipt = ++receiptId;
+				sendMessage(headers);
+			}
+			
+			function sendTrafficMessage() {
+				var cnt = prompt('Enter number of messages:', 10000);
+				if (!isNaN(cnt)) {
+					for (i = 1; i <= cnt; i++) {
+						stompClient.send('/fund/traffic', {}, JSON.stringify({
+							'text' : i,
+							'sent' : new Date().getTime()
+						}));
+					}
+				}
+			}
+			
+			function sendErrorMessage() {
+				stompClient.send('/fund/error', {}, null);
+			}
+			
+			function sendMalformedMessage() {
+				// var part1 = 'SEND\r\n' +
+				// 'destination:/fund/traffic\r\ncontent-';
+				var part2 = 'length:33\r\n\r\n' +
+						'{\'text\':995,\'sent\':1472634344273}\u0000';
+				// stompClient.ws.send(part1);
+				stompClient.ws.send(part2);
+			}
+			
+			function showMessage(message) {
+				var response = document.getElementById('response');
+				var tr = document.createElement('tr');
+				var toPing = message.recieved - message.sent;
+				var fromPing = new Date().getTime() - message.recieved;
+				tr.style.wordWrap = 'break-word';
+				tr.appendChild(createTd(message.sender));
+				tr.appendChild(createTd(message.recipient == '' ? 'all' : message.recipient));
+				tr.appendChild(createTd(message.text));
+				tr.appendChild(createTd(toPing + 'ms/' + fromPing + 'ms'));
+				response.appendChild(tr);
+				response.insertBefore(tr, response.childNodes[2]);
+			}
+			
+			function createTd(message) {
+				var td = document.createElement('td');
+				td.textContent = message;
+				return td;
+			}
+		</script>
+		<style type="text/css">
+			body {padding: 10px;}
+			.mt10 {margin-top: 10px;}
+		</style>
+	</head>
+	<body onload="disconnect()">
+		<div>
+			<div>
+				<button id="connect" onclick="connect();">Connect</button>
+				<button id="disconnect" onclick="disconnect();">Disconnect</button>
+			</div>
+			<div id="content" class="mt10">
+				<div>
+					<button id="sendErrorMessage" onclick="sendErrorMessage();">Send to fault controller</button>
+					<button id="sendMalformedMessage" onclick="sendMalformedMessage();">Send malformed message</button>
+					<button id="sendTrafficMessage" onclick="sendTrafficMessage();">Test high traffic</button>
+				</div>
+				<div class="mt10">
+					<label>Recipient:</label>&nbsp;<input type="text" id="recipient" style="width: 80px">&nbsp;
+					<label>Message:</label>&nbsp;<input type="text" id="text" style="width: 200px">&nbsp;
+					<button id="sendMessage" onclick="sendMessage({});">Send</button>
+					<button id="sendMessage" onclick="sendMessageWithReceipt({});">Send with receipt</button>
+				</div>
+				<table id="response">
+					<tr>
+						<th>Sender</th>
+						<th>Recipient</th>
+						<th>Text</th>
+						<th>Ping</th>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</body>
+</html>

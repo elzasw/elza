@@ -11,6 +11,7 @@ import {connect} from 'react-redux'
 import {Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, NodeActionsBar,
         VisiblePolicyForm} from 'components';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
+import {addNodeForm} from 'actions/arr/addNodeForm.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
 import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo.jsx'
@@ -133,7 +134,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion', 'renderState', 'transformConformityInfo', 'renderRowItem',
             'handleShortcuts', 'trySetFocus', 'handleAddDescItemType', 'handleAccordionKeyDown', 'handleVisiblePolicy',
-            'ensureItemVisibleNoForm', 'handleScroll'
+            'ensureItemVisibleNoForm'
             );
 
         this.state = {
@@ -166,12 +167,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         this.requestData(this.props.versionId, this.props.node);
         this.ensureItemVisible();
         this.trySetFocus(this.props);
-    }
-
-    handleScroll(){
-      const nodeToolbar = ReactDOM.findDOMNode(this.refs.nodeToolbar);
-      const accordionContent = ReactDOM.findDOMNode(this.refs.accordionContent);
-      console.log('scrolling');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -219,8 +214,22 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     handleShortcuts(action) {
         console.log("#handleShortcuts", '[' + action + ']', this);
 
-        const {node, focus} = this.props
+        const {node, versionId, closed, userDetail, fundId} = this.props
         const index = indexById(node.childNodes, node.selectedSubNodeId)
+
+        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
+        var settingsValues = settings.value != 'false';
+        const readMode = closed || settingsValues;
+
+        const actionWithBlur = (action) => {
+            const el = document.activeElement;
+            if (el && el.blur) {
+                el.blur();
+            }
+            setTimeout(() => {
+                action();
+            }, 220);
+        }
 
         switch (action) {
             case 'prevItem':
@@ -236,31 +245,40 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 }
                 break
             case 'searchItem':
-                this.refs.search.getInput().getInputDOMNode().focus()
+                ReactDOM.findDOMNode(this.refs.search.getInput().refs.input).focus()
                 break
             case 'addDescItemType':
-                const {node} = this.props
-                if (node.selectedSubNodeId !== null) {
+                if (node.selectedSubNodeId !== null && !readMode) {
                     this.handleAddDescItemType()
                 }
                 break
             case 'closeItem':
                 if (node.selectedSubNodeId !== null) {
-                    this.handleCloseItem(node.childNodes[index])
-                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                    actionWithBlur(() => {
+                        this.handleCloseItem(node.childNodes[index])
+                        this.dispatch(setFocus('arr', 2, 'accordion'))
+                    });
                 }
                 break
             case 'addNodeAfter':
-                this.refs.subNodeForm.getWrappedInstance().addNodeAfterClick()
+                if (!readMode) {
+                    this.dispatch(addNodeForm('AFTER', node, versionId));
+                }
                 break
             case 'addNodeBefore':
-                this.refs.subNodeForm.getWrappedInstance().addNodeBeforeClick()
+                if (!readMode) {
+                    this.dispatch(addNodeForm('BEFORE', node, versionId));
+                }
                 break
             case 'addNodeChild':
-                this.refs.subNodeForm.getWrappedInstance().addNodeChildClick()
+                if (!readMode) {
+                    this.dispatch(addNodeForm('CHILD', node, versionId));
+                }
                 break
             case 'addNodeEnd':
-                this.refs.addNodeChild.handleToggle(true, false)
+                if (!readMode) {
+                    this.dispatch(addNodeForm('ATEND', node, versionId));
+                }
                 break
         }
     }
@@ -322,10 +340,10 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
         var submit = (data) => {
             this.dispatch(modalDialogHide());
-            this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, data.descItemTypeId));
+            this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, data.descItemTypeId.id));
         };
         // Modální dialog
-        var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
+        const form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
         this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
     }
 
@@ -470,7 +488,7 @@ return true
         var icon = item.icon ? <Icon className="node-icon" glyph={getGlyph(item.icon)} /> : ''
         var levels = <span className="reference-mark">{createReferenceMarkString(item)}</span>
         var name = item.name ? item.name : <i>{i18n('fundTree.node.name.undefined', item.id)}</i>;
-        name = <span title={name} className="name">{name}</span>
+        name = <span title={name} className="name"><span>{name}</span></span>
 
         const click = typeof item.id !== 'undefined' ? onClick.bind(this, item) : null
 
@@ -608,7 +626,7 @@ return true
      * @param form {Object} editační formulář, pokud je k dispozici (k dispozici je, pokud je nějaká položka Accordion vybraná)
      * @return {Object} view
      */
-    renderAccordion(form, recordInfo) {
+    renderAccordion(form, recordInfo, readMode) {
         const {node, versionId, userDetail, fund, fundId, closed} = this.props;
         const {focusItemIndex} = this.state;
         var selectedSubNodeNumber = focusItemIndex +1;
@@ -682,21 +700,14 @@ return true
                     <div className="menu-wrapper">
                         <NodeActionsBar node={node} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed} selectedSubNodeNumber={selectedSubNodeNumber}/>
                     </div>
-                    <div className="floating-menu-wrapper">
-                      <div className='content-wrapper' ref='accordionContent'>
+                    <div className='content-wrapper' ref='accordionContent'>
                         {rows}
-                      </div>
                     </div>
                 </div>
             </Shortcuts>
         )
     }
 
-    /**
-     * Akce po úspěšném vybrání pozice JP z formuláře.
-     *
-     * @param form data z formuláře
-     */
 
     render() {
         const {calendarTypes, versionId, rulDataTypes, node,
@@ -712,6 +723,10 @@ return true
 
         var showParents = settingsValues == null || settingsValues['parents'] == null || settingsValues['parents'];
         var showChildren = settingsValues == null || settingsValues['children'] == null || settingsValues['children'];
+
+        settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
+        settingsValues = settings.value != 'false';
+        const readMode = closed || settingsValues;
 
         var parents = showParents ? this.renderParents(this.getParentNodes().reverse()) : null;
         var children;
@@ -763,6 +778,7 @@ return true
                 closed={closed}
                 onAddDescItemType={this.handleAddDescItemType}
                 onVisiblePolicy={this.handleVisiblePolicy}
+                readMode={readMode}
             />
         } else {
             form = <Loading value={i18n('global.data.loading.form')}/>
@@ -777,7 +793,8 @@ return true
                         selectedSubNodeId={node.selectedSubNodeId}
                         routingKey={node.routingKey}
                         register={node.subNodeRegister}
-                        closed={closed}/>
+                        closed={closed}
+                        readMode={readMode}/>
         }
 
         var cls = classNames({
@@ -788,7 +805,7 @@ return true
             <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts}>
                 <div key='main' className='main'>
                     {parents}
-                    {this.renderAccordion(form, record)}
+                    {this.renderAccordion(form, record, readMode)}
                     {children}
                 </div>
             </Shortcuts>

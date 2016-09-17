@@ -211,6 +211,7 @@ var messages = {
     "arr.fund.packets.action.changeState.toCanceled": "Změnit stav na: Zrušený",
     "arr.fund.packets.action.changeNumbers": "Přečíslovat",
     "arr.fund.packets.action.delete": "Odstranit",
+    "arr.fund.packets.action.delete.problem": "Odstranění obalů se nezdařilo",
 
     "arr.fund.panel.lockTitle": "v uzavřené verzi",
     "arr.fund.panel.allowEdit": "Povolit úpravy",
@@ -537,6 +538,7 @@ var messages = {
     "party.nameValidTo": "Působnost do",
     "party.name.from": "Datace použití jména od",
     "party.name.to": "Datace použití jména do",
+    "party.delete.error": "Odstranění osoby se nezdařilo",
     "party.delete.confirm": "Opravdu chcete smazat tuto osobu?",
     "party.delete.button": "Smazat osobu",
     "party.relation.class": "Třída vztahu",

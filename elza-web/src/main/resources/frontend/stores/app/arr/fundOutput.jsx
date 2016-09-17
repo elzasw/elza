@@ -63,8 +63,21 @@ export default function fundOutput(state = initialState, action = {}) {
         }
         case types.OUTPUT_CHANGES_DETAIL:
         case types.CHANGE_OUTPUTS: {
+
+            let outputs = state.outputs;
+            let currentDataKey = state.currentDataKey;
+            if (action.type === types.OUTPUT_CHANGES_DETAIL) {
+                for (let i = 0; i < action.outputIds.length; i++) {
+                    if (indexById(outputs, action.outputIds[i]) != null) {
+                        currentDataKey = '';
+                        break;
+                    }
+                }
+            }
+
             const result = {
                 ...state,
+                currentDataKey: currentDataKey,
                 fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
                 fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action)
             };

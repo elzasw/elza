@@ -2,7 +2,7 @@
  * Komponenta seznamu vybraných uzlů pro verzi archivního souboru.  
  */
 
-require ('./FundNodesList.less')
+require('./FundNodesList.less')
 
 import React from 'react';
 import {connect} from 'react-redux'
@@ -14,7 +14,14 @@ import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
 // Na kolik znaků se má název položky oříznout
 const NODE_NAME_MAX_CHARS = 60
 
-var FundNodesList = class FundNodesList extends AbstractReactComponent {
+export default class FundNodesList extends AbstractReactComponent {
+    static propTypes = {
+        nodes: React.PropTypes.array.isRequired,
+        onDeleteNode: React.PropTypes.func,
+        onAddNode: React.PropTypes.func,
+        readOnly: React.PropTypes.bool
+    };
+
     constructor(props) {
         super(props);
 
@@ -55,6 +62,7 @@ var FundNodesList = class FundNodesList extends AbstractReactComponent {
 
         return (
             <AddRemoveList
+                className="fund-nodes-list-container"
                 readOnly={readOnly}
                 items={nodes}
                 onAdd={onAddNode}
@@ -66,11 +74,3 @@ var FundNodesList = class FundNodesList extends AbstractReactComponent {
         )
     }
 }
-
-FundNodesList.propTypes = {
-    nodes: React.PropTypes.array.isRequired,
-    onDeleteNode: React.PropTypes.func.isRequired,
-    onAddNode: React.PropTypes.func.isRequired,
-}
-
-module.exports = connect()(FundNodesList);

@@ -153,7 +153,7 @@
 
                     .desc-item-type-label {
                         height: 1.7em;
-
+                        position:relative;
                         .title {
                             display: inline-block;
                             margin-right: 10px;
@@ -167,11 +167,14 @@
                                 padding: 0;
                                 height: 16px;
                                 line-height: 0;
-
                                 .icon {
                                     height: 16px;
                                     width: 16px;
                                     line-height: 16px;
+                                    &.fa-stack-1x {
+                                        margin-left: 2px;
+                                        font-size: inherit;
+                                    }
                                 }
                                 .unlocked, .nocopy {
                                     color: @node-form-actions-active-color;
@@ -193,9 +196,11 @@
                             }
                         }
                         .desc-item-type-edited {
-                            float:right;
                             font-size: 0.8em;
                             color: #a0a0a0;
+                            position:absolute;
+                            right: 0;
+                            top:0;
                         }
 
                     }

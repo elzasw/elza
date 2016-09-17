@@ -5,6 +5,7 @@ package cz.tacr.elza.print.party;
  *         Date: 22.6.16
  */
 public class PartyGroup extends Party {
+
     private String scope;
     private String foundingNorm;
     private String scopeNorm;
@@ -14,7 +15,7 @@ public class PartyGroup extends Party {
         return foundingNorm;
     }
 
-    public void setFoundingNorm(String foundingNorm) {
+    public void setFoundingNorm(final String foundingNorm) {
         this.foundingNorm = foundingNorm;
     }
 
@@ -22,7 +23,7 @@ public class PartyGroup extends Party {
         return organization;
     }
 
-    public void setOrganization(String organization) {
+    public void setOrganization(final String organization) {
         this.organization = organization;
     }
 
@@ -30,7 +31,7 @@ public class PartyGroup extends Party {
         return scope;
     }
 
-    public void setScope(String scope) {
+    public void setScope(final String scope) {
         this.scope = scope;
     }
 
@@ -38,7 +39,7 @@ public class PartyGroup extends Party {
         return scopeNorm;
     }
 
-    public void setScopeNorm(String scopeNorm) {
+    public void setScopeNorm(final String scopeNorm) {
         this.scopeNorm = scopeNorm;
     }
 }

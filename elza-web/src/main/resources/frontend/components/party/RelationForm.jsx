@@ -461,7 +461,7 @@ function matchStateToTerm (state, value) {
   )
 }
 
-module.exports = reduxForm({
+export default reduxForm({
     form: 'relationForm',
     fields: [],
 },state => ({

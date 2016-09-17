@@ -1,37 +1,31 @@
 package cz.tacr.elza.print;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.print.item.AbstractItem;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemFile;
 import cz.tacr.elza.print.item.ItemPacketRef;
 import cz.tacr.elza.service.DmsService;
-import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.output.OutputFactoryService;
+import cz.tacr.elza.utils.AppContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.util.Assert;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Základní objekt pro generování výstupu, při tisku se vytváří 1 instance.
@@ -39,65 +33,87 @@ import java.util.stream.Stream;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 21.6.16
  */
-@Scope("prototype")
-public class Output implements RecordProvider {
+public class Output implements RecordProvider, NodesOrder {
 
-    private static final int MAX_CACHED_NODES = 100; // maximální počet nodů v cache
+    public static final int MAX_CACHED_NODES = 100; // maximální počet nodů v cache
 
-    private final ArrOutput arrOutput; // interní záležitost - vazba na původní objekt
-    private final Integer outputId; // ID pro vazbu do DB na entitu arr_output
+    private final int outputId; // ID pro vazbu do DB na entitu arr_output
 
-    @Autowired
-    private OutputService outputService; // interní vazba na service
-
-    @Autowired
-    private OutputFactoryService outputFactoryService;
+    private OutputFactoryService outputFactoryService = AppContext.getBean(OutputFactoryService.class);
 
     private String internal_code;
     private String name;
     private String type;
     private String typeCode;
     private Fund fund;
-    private LoadingCache<Integer, Node> nodeCache;
 
-    private Integer page = 0;
+    private int page = 0;
+
+    /**
+     * Vnitřní iterátor - cache.
+     */
+    private IteratorNodes iteratorNodes = null;
 
     // seznam všech atributů outputu
     private List<Item> items = new ArrayList<>();
 
     // seznam všech node outputu (přímo přiřazené + jejich potomci + nadřízení až do root);
     // mapa má jako klíč ID Nodu odpovídající ArrNode.arrNodeId
-    private Map<Integer, NodeId> nodesMap = new HashMap<>();
+    private Map<Integer, NodeId> nodeIdsMap = new HashMap<>();
 
     // seznam rejstříkových hesel všech nodes outputu odkazovaných přes arr_node_register
-    private List<Record> records = new ArrayList<>();
+    private List<Record> records = null;
 
     private Map<String, RecordType> recordTypes = new HashMap<>(); // seznam rejstříků podle code
+
+    private Set<Integer> directNodeIds = new HashSet<>();
 
     /**
      * Vytvoření instance s povinnými údaji
      *
      * @param output arr_output s definicí zpracovávaného výstupu
      */
-    public Output(ArrOutput output) {
+    public Output(final ArrOutput output) {
         this.outputId = output.getOutputId();
-        this.arrOutput = output;
-
-        final Output out = this;
-
-        nodeCache = CacheBuilder.newBuilder()
-                .maximumSize(MAX_CACHED_NODES)
-                .expireAfterAccess(10, TimeUnit.MINUTES)
-                .build(new CacheLoader<Integer, Node>() {
-                    @Override
-                    public Node load(Integer key) throws Exception {
-                        return outputFactoryService.getNode(out.getNodesMap().get(key), out);
-                    }
-                });
     }
 
-    public LoadingCache<Integer, Node> getNodeCache() {
-        return nodeCache;
+    /**
+     * Přidá {@link NodeId} do výstupu.
+     */
+    public NodeId addNodeId(final NodeId nodeId) {
+        Assert.notNull(nodeId);
+
+        NodeId nodeIdOrig = nodeIdsMap.get(nodeId.getArrNodeId());
+        if (nodeIdOrig == null) {
+            nodeIdsMap.put(nodeId.getArrNodeId(), nodeId);
+            return nodeId;
+        } else {
+            return nodeIdOrig;
+        }
+    }
+
+    public Node getNode(final NodeId nodeId) {
+        if (nodeIdsMap.size() > 0) {
+            if (iteratorNodes == null) {
+                iteratorNodes = getNodesBFS();
+            }
+            return iteratorNodes.moveTo(nodeId);
+        } else {
+            Map<Integer, Node> nodeMap = outputFactoryService.loadNodes(this, Arrays.asList(nodeId));
+            return nodeMap.get(nodeId.getArrNodeId());
+        }
+    }
+
+    public NodeId getNodeId(final Integer nodeIdentifier) {
+        return nodeIdsMap.get(nodeIdentifier);
+    }
+
+    public void linkNodeIds(final Integer parentNodeIdentifier, final Integer childNodeIdentifier) {
+        final NodeId nodeIdParent = getNodeId(parentNodeIdentifier);
+        final NodeId nodeIdChild = getNodeId(childNodeIdentifier);
+
+        nodeIdChild.setParentNodeId(parentNodeIdentifier);
+        nodeIdParent.getChildren().add(nodeIdChild);
     }
 
     /**
@@ -107,7 +123,7 @@ public class Output implements RecordProvider {
      * @param increment má se při volání provést increment
      * @return aktuální hodnota (po případné inkrementaci)
      */
-    public Integer getPage(boolean increment) {
+    public Integer getPage(final boolean increment) {
         if (increment) {
             page += 1;
         }
@@ -118,7 +134,7 @@ public class Output implements RecordProvider {
      * @return sečtená hodnota počtu stránek příloh pdf připojených k nodům v output.
      */
     public Integer getAttachedPages() {
-        return getItemFilePdfsStream()
+        return getItemFilePdfs().stream()
                 .mapToInt(ItemFile::getPagesCount)
                 .sum();
     }
@@ -127,17 +143,27 @@ public class Output implements RecordProvider {
      * @return seznam PDF příloh připojených k nodům v output.
      */
     public List<ItemFile> getAttachements() {
-        return getItemFilePdfsStream()
-//                .map(AbstractItem::getValue)
-                .collect(Collectors.toList());
+        return getItemFilePdfs();
     }
 
-    private Stream<ItemFile> getItemFilePdfsStream() {
-        return getNodesFlatModel().stream()
-                .flatMap(nodeId -> nodeId.getNode().getAllItems(new ArrayList<>()).stream())
-                .filter(item -> item instanceof ItemFile)
-                .map(item -> (ItemFile) item)
-                .filter(itemFile -> itemFile.getMimeType().equals(DmsService.MIME_TYPE_APPLICATION_PDF));
+    private List<ItemFile> getItemFilePdfs() {
+        IteratorNodes iterator = getNodesBFS();
+
+        List<ItemFile> result = new ArrayList<>();
+        while (iterator.hasNext()) {
+            Node node = iterator.next();
+            List<Item> items = node.getItems();
+            for (Item item : items) {
+                if (item instanceof ItemFile) {
+                    ItemFile itemFile = (ItemFile) item;
+                    if (itemFile.getMimeType().equals(DmsService.MIME_TYPE_APPLICATION_PDF)) {
+                        result.add(itemFile);
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -148,12 +174,21 @@ public class Output implements RecordProvider {
     private static List<Record> getRecordsInternal(final RecordProvider recordProvider, final String code) {
         // za samotný recordProvider
         final List<Record> records = recordProvider.getRecords().stream()
-                .filter(record -> (!StringUtils.isNotBlank(code) || code.equals(record.getType().getCode()))) // pokud je vyplněno code, pak filtrovat
+                .filter(record -> (StringUtils.isBlank(code) || code.equals(record.getType().getCode()))) // pokud je vyplněno code, pak filtrovat
                 .collect(Collectors.toList());
 
         // rekurzivně za jednotlivé podřízené recordProvider
-        for (RecordProvider provider : recordProvider.getRecordProviderChildern()) {
-            records.addAll(getRecordsInternal(provider, code));
+
+        IteratorNodes iteratorNodes = recordProvider.getRecordProviderChildren();
+
+        while (iteratorNodes.hasNext()) {
+
+            Node next = iteratorNodes.next();
+            List<Record> subRecords = next.getRecords().stream()
+                    .filter(record -> (StringUtils.isBlank(code) || code.equals(record.getType().getCode()))) // pokud je vyplněno code, pak filtrovat
+                    .collect(Collectors.toList());
+
+            records.addAll(subRecords);
         }
 
         // seřadit podle názvu (record)
@@ -168,12 +203,20 @@ public class Output implements RecordProvider {
      * @return seznam nodes, které jsou přímo přiřazené outputu (arr_node_output), řazeno dle pořadí ve stromu
      */
     public List<NodeId> getDirectNodes() {
-        // Načíst seznam nodes z DB
-        final List<ArrNode> nodesForOutput = outputService.getNodesForOutput(arrOutput);
+        IteratorNodes iterator = getNodesDFS();
+        List<NodeId> result = new ArrayList<>();
+        while (iterator.hasNext()) {
+            Node node = iterator.next();
+            if (directNodeIds.contains(node.getArrNodeId())) {
+                result.add(iterator.getActualNodeId());
+            }
+        }
+        return result;
+    }
 
-        // zafiltrovat seznam všech vazeb dle seznamu se zachováním pořadí
-        Set<Integer> nodesForOutputId = nodesForOutput.parallelStream().map(ArrNode::getNodeId).collect(Collectors.toSet());
-        return getNodesChildsModel().stream().filter(node -> nodesForOutputId.contains(node.getArrNodeId())).collect(Collectors.toList());
+    /** Přidá id uzlu přímo přiřazeného k výstupu. */
+    public void addDirectNodeIdentifier(final Integer nodeId) {
+        directNodeIds.add(nodeId);
     }
 
     /**
@@ -183,7 +226,7 @@ public class Output implements RecordProvider {
      * @param codes seznam požadovaných kódů itemů
      * @return seznam items s odpovídajícími kódy
      */
-    public List<Item> getItems(@NotNull Collection<String> codes) {
+    public List<Item> getItems(@NotNull final Collection<String> codes) {
         Assert.notNull(codes);
         return items.stream()
                 .filter(item -> codes.contains(item.getType().getCode()))
@@ -198,7 +241,7 @@ public class Output implements RecordProvider {
      * @param codes seznam ignorovaných kódů itemů
      * @return seznam všech items výstupu kromě hodnot typů uvedených ve vstupu metody
      */
-    public List<Item> getAllItems(@NotNull Collection<String> codes) {
+    public List<Item> getAllItems(@NotNull final Collection<String> codes) {
         Assert.notNull(codes);
         return items.stream()
                 .filter(item -> !codes.contains(item.getType().getCode()))
@@ -214,10 +257,10 @@ public class Output implements RecordProvider {
      * @param withCount pouze s countRecords > 0
      * @return seznam typů rejstříku
      */
-    public List<RecordType> getRecordTypes(boolean withCount) {
+    public List<RecordType> getRecordTypes(final boolean withCount) {
         final List<Record> records = getRecordsInternal(this, null); // všechny záznamy rekurzivně
         return records.stream()
-                .filter(record -> (!withCount || ((record.getType().getCountDirectRecords() != null) && (record.getType().getCountDirectRecords() > 0)))) // zafiltrovat dle count
+                .filter(record -> (!withCount || record.getType().getCountDirectRecords() > 0)) // zafiltrovat dle count
                 .map(Record::getType) // převést na typ záznamu
                 .distinct() // každý typ jen jednou
                 .sorted((o1, o2) -> o1.getName().compareTo(o2.getName())) // seřadit dle zadání -> dle názvu typu
@@ -230,14 +273,13 @@ public class Output implements RecordProvider {
      * @param code požadovaný kód recordu, pokud je vyplněno code, bude filtrovat
      * @return seznam všech recordů
      */
-    public List<Record> getRecordsByType(String code) {
+    public List<Record> getRecordsByType(final String code) {
         final List<Record> recordsInternal = getRecordsInternal(this, code);
         final List<Record> collect = recordsInternal.stream()
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
         return collect;
-
     }
 
     /**
@@ -247,10 +289,17 @@ public class Output implements RecordProvider {
      * @param codes seznam požadovaných kódů itemů
      * @return seznam všech items z nodů výstupu kromě hodnot typů uvedených ve vstupu metody
      */
-    public List<Item> getNodeItems(Collection<String> codes) {
-        return getNodesFlatModel().stream()
-                .flatMap(nodeId -> nodeId.getNode().getItems(codes).stream())
-                .collect(Collectors.toList());
+    public List<Item> getNodeItems(final Collection<String> codes) {
+
+        IteratorNodes iterator = getNodesBFS();
+
+        List<Item> result = new ArrayList<>();
+        while (iterator.hasNext()) {
+            Node node = iterator.next();
+            result.addAll(node.getItems(codes));
+        }
+
+        return result;
     }
 
     /**
@@ -262,7 +311,7 @@ public class Output implements RecordProvider {
      * @param codes seznam požadovaných kódů itemů
      * @return seznam všech items z nodů výstupu kromě hodnot typů uvedených ve vstupu metody
      */
-    public List<Item> getNodeItemsDistinct(Collection<String> codes) {
+    public List<Item> getNodeItemsDistinct(final Collection<String> codes) {
         return getNodeItems(codes).stream()
                 .distinct()
                 .sorted(Item::compareToItemViewOrderPosition)
@@ -273,14 +322,23 @@ public class Output implements RecordProvider {
      * @return distinct seznam Packet navázaný přes nodes
      */
     public List<Packet> getPacketItemsDistinct() {
-        return getNodesFlatModel().stream()
-                .flatMap(nodeId -> nodeId.getNode().getAllItems(new ArrayList<>()).stream())
-                .filter(item -> item instanceof ItemPacketRef)
-                .map(item -> (ItemPacketRef) item)
-                .map(ItemPacketRef::getValue)
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList());
+        IteratorNodes iterator = getNodesBFS();
+        Set<Packet> resultsSet = new HashSet<>();
+
+        while (iterator.hasNext()) {
+            Node node = iterator.next();
+            List<Item> items = node.getItems();
+            for (Item item : items) {
+                if (item instanceof ItemPacketRef) {
+                    ItemPacketRef itemPacketRef = (ItemPacketRef) item;
+                    resultsSet.add(itemPacketRef.getValue());
+                }
+            }
+        }
+
+        List<Packet> results = new ArrayList<>(resultsSet);
+        results.sort(Packet::compareTo);
+        return results;
     }
 
 
@@ -289,16 +347,27 @@ public class Output implements RecordProvider {
      * @param codes kódy itemů, které se mají použít
      * @return ře1
      */
-    public String getNodeItemsByPacketAsString(Packet packet, Collection<String> codes) {
-        return getNodesFlatModel().stream()
-                .flatMap(nodeId -> nodeId.getNode().getAllItems(new ArrayList<>()).stream())
-                .filter(item -> item instanceof ItemPacketRef)
-                .map(item -> (ItemPacketRef) item)
-                .filter(itemPacketRef -> itemPacketRef.getValue().equals(packet))
-                .map(AbstractItem::getNodeId)
-                .filter(node -> node != null)
-                .distinct()
-                .map(nodeId1 -> nodeId1.getNode().getAllItemsAsString(codes))
+    public String getNodeItemsByPacketAsString(final Packet packet, final Collection<String> codes) {
+        IteratorNodes iterator = getNodesBFS();
+
+        Set<NodeId> nodeIds = new HashSet<>();
+        while (iterator.hasNext()) {
+            Node node = iterator.next();
+            List<Item> items = node.getItems();
+            for (Item item : items) {
+                if (item instanceof ItemPacketRef) {
+                    ItemPacketRef itemPacketRef = (ItemPacketRef) item;
+                    if (itemPacketRef.getValue().equals(packet) && item.getNodeId() != null) {
+                        nodeIds.add(item.getNodeId());
+                    }
+                }
+            }
+        }
+
+        Map<Integer, Node> nodes = outputFactoryService.loadNodes(this, nodeIds);
+
+        return nodes.values().stream()
+                .map(node -> node.getAllItemsAsString(codes))
                 .filter(StringUtils::isNotBlank)
                 .collect(Collectors.joining(";"));
     }
@@ -315,30 +384,29 @@ public class Output implements RecordProvider {
     /**
      *  @return plochý seznam Nodů seřazený dle depth, parent, position
      */
-    public List<NodeId> getNodesFlatModel() {
-        return nodesMap.values().stream()
+    @Override
+    public IteratorNodes getNodesBFS() {
+        List<NodeId> nodeIds = nodeIdsMap.values().stream()
                 .sorted((o1, o2) -> new CompareToBuilder()
                         .append(o1.getDepth(), o2.getDepth())  // nejprve nejvyšší nody
                         .append(o1.getParent(), o2.getParent()) // pak sezkupit dle parenta
                         .append(o1.getPosition(), o2.getPosition()) // pak dle pořadí
                         .toComparison())
                 .collect(Collectors.toList());
+        return new IteratorNodes(this, nodeIds, outputFactoryService, MAX_CACHED_NODES);
     }
 
     /**
      * @param parent výchozí parent
      * @return plochý seznam Nodů seřazený dle prohledávání stromu nodů od root node do hloubky, vč. předaných parentů
      */
-    public List<NodeId> getNodesChildsModel(NodeId parent) {
+    public List<NodeId> getNodesChildsModel(final NodeId parent) {
         List<NodeId> result = new ArrayList<>();
         result.add(parent); // zařadit vlastní parent
 
-        final Set<NodeId> children = parent.getChildren();
-        children.stream()
-                .sorted((o1, o2) -> new CompareToBuilder()
-                        .append(o1.getPosition(), o2.getPosition())
-                        .toComparison())
-                .forEach(nodeId -> result.addAll(getNodesChildsModel(nodeId)));
+        for (NodeId child : parent.getChildren()) {
+            result.addAll(getNodesChildsModel(child));
+        }
 
         return result;
     }
@@ -347,18 +415,25 @@ public class Output implements RecordProvider {
      * Jako výchozí bod vezme root node
      * @return plochý seznam Nodů seřazený dle prohledávání stromu nodů od root node do hloubky
      */
-    public List<NodeId> getNodesChildsModel() {
+    @Override
+    public IteratorNodes getNodesDFS() {
         final NodeId rootNodeId = getFund().getRootNodeId();
         final List<NodeId> nodesChildsModel = new ArrayList<>();
         nodesChildsModel.addAll(getNodesChildsModel(rootNodeId));
-        return nodesChildsModel;
+
+        return new IteratorNodes(this, nodesChildsModel, outputFactoryService, MAX_CACHED_NODES);
     }
 
-    public Map<Integer, NodeId> getNodesMap() {
-        return nodesMap;
-    }
-
+    @Override
     public List<Record> getRecords() {
+        IteratorNodes iteratorNodes = new IteratorNodes(this, new ArrayList<>(nodeIdsMap.values()), outputFactoryService, MAX_CACHED_NODES);
+        if (records == null) {
+            records = new ArrayList<>();
+            while (iteratorNodes.hasNext()) {
+                Node node = iteratorNodes.next();
+                records.addAll(node.getNodeRecords());
+            }
+        }
         return records;
     }
 
@@ -367,15 +442,15 @@ public class Output implements RecordProvider {
     }
 
     @Override
-    public List<NodeId> getRecordProviderChildern() {
-        return getNodesFlatModel();
+    public IteratorNodes getRecordProviderChildren() {
+        return getNodesBFS();
     }
 
     public Fund getFund() {
         return fund;
     }
 
-    public void setFund(Fund fund) {
+    public void setFund(final Fund fund) {
         this.fund = fund;
     }
 
@@ -383,7 +458,7 @@ public class Output implements RecordProvider {
         return internal_code;
     }
 
-    public void setInternal_code(String internal_code) {
+    public void setInternal_code(final String internal_code) {
         this.internal_code = internal_code;
     }
 
@@ -391,11 +466,11 @@ public class Output implements RecordProvider {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
-    public Integer getOutputId() {
+    public int getOutputId() {
         return outputId;
     }
 
@@ -403,7 +478,7 @@ public class Output implements RecordProvider {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(final String type) {
         this.type = type;
     }
 
@@ -411,7 +486,7 @@ public class Output implements RecordProvider {
         return typeCode;
     }
 
-    public void setTypeCode(String typeCode) {
+    public void setTypeCode(final String typeCode) {
         this.typeCode = typeCode;
     }
 
@@ -430,7 +505,7 @@ public class Output implements RecordProvider {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
     }
 
-    Integer getArrFundVersionId() {
-        return getFund().getArrFundVersion().getFundVersionId();
+    public ArrFundVersion getArrFundVersion() {
+        return getFund().getArrFundVersion();
     }
 }

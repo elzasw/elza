@@ -1,12 +1,14 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.elza.api.ArrBulkActionRun;
+import cz.tacr.elza.api.ArrOutputDefinition;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +20,9 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.PostConstruct;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static cz.tacr.elza.api.ArrOutputDefinition.*;
 
 /**
  * Serviska pro úlohy, které je nutné spustit těsně po spuštění.
@@ -50,10 +51,33 @@ public class StartupService {
     @Autowired
     private BulkActionRunRepository bulkActionRunRepository;
 
+    @Autowired
+    private OutputDefinitionRepository outputDefinitionRepository;
+
     @PostConstruct
     private void init() {
         clearBulkActions();
         revalidateNodes();
+        clearOutputGeneration();
+    }
+
+    /**
+     * Vyčistí hromadné akce
+     * - ty které jsou po startu ve stavu generování do chyba
+     */
+    private void clearOutputGeneration() {
+        TransactionTemplate tmpl = new TransactionTemplate(txManager);
+        // načítání dat v samostatné transakci
+        tmpl.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                int count = outputDefinitionRepository.setStateFromStateWithError(Arrays.asList(OutputState.GENERATING, OutputState.COMPUTING), OutputState.OPEN, "Server se restartoval v průběhu zpracování");
+                if (count > 0) {
+                    logger.warn("Bylo změněn stav " + count + " outputů na stav Otevřený z důvodu restartování serveru při jejich zpracování.");
+                }
+            }
+        });
+
     }
 
     /**

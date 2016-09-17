@@ -21,9 +21,6 @@ const validate = (values, props) => {
         if (!values.ruleSetId) {
             errors.ruleSetId = i18n('global.validation.required');
         }
-        if (!values.rulArrTypeId) {
-            errors.rulArrTypeId = i18n('global.validation.required');
-        }
 
     }
 
@@ -88,10 +85,6 @@ const ImportForm = class ImportForm extends AbstractReactComponent {
             data.ruleSetId = values.ruleSetId;
         }
 
-        if (values.rulArrTypeId) {
-            data.arrangementTypeId = values.rulArrTypeId;
-        }
-
         if (values.transformationName) {
             data.transformationName = values.transformationName;
         }
@@ -117,19 +110,9 @@ const ImportForm = class ImportForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {ruleSetId, rulArrTypeId, transformationName, recordScope, stopOnError, xmlFile}, onClose, handleSubmit, refTables, values} = this.props;
+        const {fields: {ruleSetId, transformationName, recordScope, stopOnError, xmlFile}, onClose, handleSubmit, refTables, values} = this.props;
         const ruleSets = refTables.ruleSet.items;
-        const currRuleSetId = values.ruleSetId;
-        let currRuleSet = [];
-        let ruleSetOptions = [];
-        if (!ruleSetId.invalid) {
-            currRuleSet = ruleSets[indexById(ruleSets, currRuleSetId)];
-            if (currRuleSet) {
-                ruleSetOptions = currRuleSet.arrangementTypes.map(
-                    i => <option key={i.id} value={i.id}>{i.name}</option>
-                );
-            }
-        }
+
         return (
             <div>
                 {
@@ -180,11 +163,6 @@ const ImportForm = class ImportForm extends AbstractReactComponent {
                                                 return <option value={i.id}>{i.name}</option>
                                             })}
                                         </FormInput>
-                                        <FormInput componentClass="select" disabled={ruleSetId.invalid}
-                                               label={i18n('arr.fund.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
-                                            <option key='-rulArrTypeId'/>
-                                            {ruleSetOptions}
-                                        </FormInput>
                                     </div>
                                 }
                                 <Checkbox{...stopOnError} {...decorateFormField(stopOnError)}>{i18n('import.stopOnError')}</Checkbox>
@@ -211,7 +189,7 @@ const ImportForm = class ImportForm extends AbstractReactComponent {
 
 module.exports = reduxForm({
     form: 'importForm',
-    fields: ['ruleSetId', 'rulArrTypeId', 'transformationName', 'recordScope', 'stopOnError', 'xmlFile'],
+    fields: ['ruleSetId', 'transformationName', 'recordScope', 'stopOnError', 'xmlFile'],
     validate
 }, state => ({
     defaultScopes: state.defaultScopes,

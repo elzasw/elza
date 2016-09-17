@@ -23,7 +23,7 @@ public class ArrDataFileRef extends ArrData implements cz.tacr.elza.api.ArrDataF
     public static final String FILE = "file";
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFile.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrFile.class)
     @JoinColumn(name = "fileId", nullable = false)
     private ArrFile file;
 

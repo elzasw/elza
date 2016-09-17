@@ -48,26 +48,91 @@ import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
-var ShortcutsManager = require('react-shortcuts');
-var Shortcuts = require('react-shortcuts/component');
+const ShortcutsManager = require('react-shortcuts');
+const Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
-var ArrParentPage = class ArrParentPage extends AbstractReactComponent {
+const keyModifier = Utils.getKeyModifier()
+
+export default class ArrParentPage extends AbstractReactComponent {
+
+    static childContextTypes = {
+        shortcuts: React.PropTypes.object.isRequired
+    };
+
+    static keymap = {
+        ArrParent: {
+            back: keyModifier + 'z',
+            arr: keyModifier + 'a',
+            dataGrid: keyModifier + 't',
+            movements: keyModifier + 'm',
+            actions: keyModifier + 'h',
+            output: keyModifier + 'o',
+        },
+    };
+
+    static mergeKeymap = (keys) => {
+        return {
+            ArrParent:{
+                ...ArrParentPage.keymap.ArrParent,
+                ...keys.ArrParent
+            }
+        }
+    };
+
+    static propTypes = {
+        splitter: React.PropTypes.object.isRequired,
+        arrRegion: React.PropTypes.object.isRequired,
+        developer: React.PropTypes.object.isRequired,
+        rulDataTypes: React.PropTypes.object.isRequired,
+        calendarTypes: React.PropTypes.object.isRequired,
+        descItemTypes: React.PropTypes.object.isRequired,
+        packetTypes: React.PropTypes.object.isRequired,
+        focus: React.PropTypes.object.isRequired,
+        userDetail: React.PropTypes.object.isRequired,
+        ruleSet: React.PropTypes.object.isRequired,
+    };
+
     constructor(props, layoutClassName) {
         super(props);
 
-        this.bindMethods(
-            'buildRibbon',
-            'handleShortcuts',
-        );
+        this.bindMethods('buildRibbon', 'handleShortcuts');
 
         this.layoutClassName = layoutClassName;
 
-        this.state = {
-        };
+        this.state = {};
+    }
+
+    handleShortcuts(action) {
+        console.log("#handleShortcuts ArrParentPage", '[' + action + ']', this);
+        switch (action) {
+            case 'back':
+                this.dispatch(routerNavigate("/~arr"));
+                break;
+            case 'arr':
+                this.dispatch(routerNavigate('/arr'));
+                this.dispatch(setFocus('arr', 1))
+                break;
+            case 'movements':
+                this.dispatch(routerNavigate('/arr/movements'));
+                this.dispatch(setFocus(null, 1))
+                break;
+            case 'dataGrid':
+                this.dispatch(routerNavigate('/arr/dataGrid'));
+                this.dispatch(setFocus(null, 1))
+                break;
+            case 'output':
+                this.dispatch(routerNavigate('/arr/output'));
+                this.dispatch(setFocus('fund-output', 1))
+                break;
+            case 'actions':
+                this.dispatch(routerNavigate('/arr/actions'));
+                this.dispatch(setFocus('fund-action', 1))
+                break;
+        }
     }
 
     componentDidMount() {
@@ -112,18 +177,18 @@ var ArrParentPage = class ArrParentPage extends AbstractReactComponent {
      * Sestavení Ribbonu. Pro překrytí.
      * @return {Object} view
      */
-    buildRibbon() {
+    buildRibbon(readMode, closed) {
     }
 
-    renderLeftPanel() {
+    renderLeftPanel(readMode, closed) {
         return null;
     }
 
-    renderCenterPanel() {
+    renderCenterPanel(readMode, closed) {
         return null;
     }
 
-    renderRightPanel() {
+    renderRightPanel(readMode, closed) {
         return null;
     }
 
@@ -140,10 +205,18 @@ var ArrParentPage = class ArrParentPage extends AbstractReactComponent {
         var statusHeader;
         var leftPanel;
         var rightPanel;
+        let readMode = false;
+        let closed = false;
 
         if (this.hasPageShowRights(userDetail, activeFund)) {   // má právo na tuto stránku
             var centerPanel;
             if (activeFund) {
+
+                var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', activeFund.id);
+                var settingsValues = settings.value != 'false';
+                readMode = settingsValues;
+                closed = activeFund.lockDate != null;
+
                 statusHeader = <ArrFundPanel />
 
                 var packets = [];
@@ -152,9 +225,9 @@ var ArrParentPage = class ArrParentPage extends AbstractReactComponent {
                     packets = arrRegion.packets[fundId].items;
                 }
 
-                centerPanel = this.renderCenterPanel();
-                leftPanel = this.renderLeftPanel();
-                rightPanel = this.renderRightPanel();
+                centerPanel = this.renderCenterPanel(readMode, closed);
+                leftPanel = this.renderLeftPanel(readMode, closed);
+                rightPanel = this.renderRightPanel(readMode, closed);
             } else {
                 centerPanel = (
                     <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>
@@ -170,7 +243,7 @@ var ArrParentPage = class ArrParentPage extends AbstractReactComponent {
                     splitter={splitter}
                     _className='fa-page'
                     className={this.layoutClassName ? ("arr-abstract-page " + this.layoutClassName) : "arr-abstract-page"}
-                    ribbon={this.buildRibbon()}
+                    ribbon={this.buildRibbon(readMode, closed)}
                     centerPanel={centerPanel}
                     leftPanel={leftPanel}
                     rightPanel={rightPanel}
@@ -180,22 +253,3 @@ var ArrParentPage = class ArrParentPage extends AbstractReactComponent {
         )
     }
 }
-
-ArrParentPage.propTypes = {
-    splitter: React.PropTypes.object.isRequired,
-    arrRegion: React.PropTypes.object.isRequired,
-    developer: React.PropTypes.object.isRequired,
-    rulDataTypes: React.PropTypes.object.isRequired,
-    calendarTypes: React.PropTypes.object.isRequired,
-    descItemTypes: React.PropTypes.object.isRequired,
-    packetTypes: React.PropTypes.object.isRequired,
-    focus: React.PropTypes.object.isRequired,
-    userDetail: React.PropTypes.object.isRequired,
-    ruleSet: React.PropTypes.object.isRequired,
-}
-
-ArrParentPage.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
-};
-
-module.exports = ArrParentPage;

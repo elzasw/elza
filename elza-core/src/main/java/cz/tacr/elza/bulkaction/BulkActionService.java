@@ -56,7 +56,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    @Qualifier("threadPoolTaskExecutor")
+    @Qualifier("threadPoolTaskExecutorBA")
     private ThreadPoolTaskExecutor taskExecutor;
 
     @Autowired
@@ -184,6 +184,15 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         bulkActionRun.setBulkActionCode(bulkActionCode);
         bulkActionRun.setUserId(userId);
         ArrFundVersion arrFundVersion = new ArrFundVersion();
+
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
+
+        List<RulAction> byRulPackage = actionRepository.findByRulPackage(version.getRuleSet().getPackage());
+        String actionFileName = bulkActionCode + bulkActionConfigManager.getExtension();
+        if (byRulPackage.stream().noneMatch(i -> i.getFilename().equals(actionFileName))) {
+            throw new IllegalStateException("Hromadná akce nepatří do stejného balíčku pravidel jako pravidla verze AP.");
+        }
+
         arrFundVersion.setFundVersionId(fundVersionId);
         bulkActionRun.setFundVersion(arrFundVersion);
         bulkActionRun.setDatePlanned(new Date());
@@ -490,7 +499,13 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
         }
 
-        return bulkActionConfigManager.getBulkActions();
+        Map<String, RulAction> byRulPackage = actionRepository.findByRulPackage(version.getRuleSet().getPackage())
+                .stream()
+                .collect(Collectors.toMap(RulAction::getFilename, p -> p));
+
+        return bulkActionConfigManager.getBulkActions().stream()
+                .filter(i -> byRulPackage.containsKey(i.getCode() + bulkActionConfigManager.getExtension()))
+                .collect(Collectors.toList());
     }
 
     /**

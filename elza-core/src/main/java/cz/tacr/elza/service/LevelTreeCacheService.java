@@ -1280,10 +1280,12 @@ public class LevelTreeCacheService {
             if (StringUtils.isNotBlank(nodeType) && StringUtils.isNotBlank(parentType)) {
                 ConfigView.ConfigViewTitlesHierarchy levelTitlesHierarchy = viewTitles
                         .getLevelTitlesHierarchy(nodeType);
-                if (StringUtils.equalsIgnoreCase(nodeType, parentType)) {
-                    separator = levelTitlesHierarchy.getSeparatorOther();
-                } else {
-                    separator = levelTitlesHierarchy.getSeparatorFirst();
+                if (levelTitlesHierarchy != null) {
+                    if (StringUtils.equalsIgnoreCase(nodeType, parentType)) {
+                        separator = levelTitlesHierarchy.getSeparatorOther();
+                    } else {
+                        separator = levelTitlesHierarchy.getSeparatorFirst();
+                    }
                 }
             }
         }
@@ -1334,7 +1336,17 @@ public class LevelTreeCacheService {
         Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
 
         if (nodeId == null) {
-            return new HashSet<>(versionTreeCache.keySet());
+            Set<Integer> nodeIds = new HashSet<>();
+            if (depth == Depth.ONE_LEVEL) {
+                for (Map.Entry<Integer, TreeNode> integerTreeNodeEntry : versionTreeCache.entrySet()) {
+                    if (integerTreeNodeEntry.getValue().getParent() == null) {
+                        nodeIds.add(integerTreeNodeEntry.getKey());
+                    }
+                }
+            } else {
+                nodeIds.addAll(versionTreeCache.keySet());
+            }
+            return nodeIds;
         }
 
         Assert.notNull(depth);

@@ -1,17 +1,10 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.utils.ObjectListIterator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,10 +12,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.utils.ObjectListIterator;
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -112,6 +117,42 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
             }
         }
 
+        return result;
+    }
+
+    @Override
+    public Map<Integer, List<ArrDescItem>> findByNodes(final Collection<Integer> nodeIds) {
+        ObjectListIterator<Integer> iterator = new ObjectListIterator<>(nodeIds);
+        Map<Integer, List<ArrDescItem>> result = new HashMap<>();
+        while (iterator.hasNext()) {
+            List<Integer> subNodeIds = iterator.next();
+
+            // SELECT i FROM arr_desc_item i WHERE i.node in (?1) AND i.deleteChange IS NULL
+
+            CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+            CriteriaQuery<ArrDescItem> query = builder.createQuery(ArrDescItem.class);
+            Root<ArrDescItem> root = query.from(ArrDescItem.class);
+
+            Join<Object, Object> nodeJoin = root.join(ArrDescItem.NODE, JoinType.INNER);
+            root.fetch(ArrDescItem.NODE, JoinType.INNER);
+
+            Predicate predicateNodeIds = nodeJoin.get(ArrNode.NODE_ID).in(subNodeIds);
+            Predicate predicateDeleteChange = root.get(ArrDescItem.DELETE_CHANGE_ID).isNull();
+            query.where(predicateNodeIds, predicateDeleteChange);
+
+            List<ArrDescItem> resultList = entityManager.createQuery(query).getResultList();
+
+            for (ArrDescItem descItem : resultList) {
+                Integer nodeId = descItem.getNodeId();
+                List<ArrDescItem> descItems = result.get(nodeId);
+                if (descItems == null) {
+                    descItems = new ArrayList<>();
+                    result.put(nodeId, descItems);
+                }
+                descItems.add(descItem);
+            }
+
+        }
         return result;
     }
 }

@@ -247,4 +247,4 @@ const PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompo
     }
 }
 
-module.exports = connect()(PartyDetailCreators);
+export default connect()(PartyDetailCreators);

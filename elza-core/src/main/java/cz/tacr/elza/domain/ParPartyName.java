@@ -40,11 +40,11 @@ public class ParPartyName
     @GeneratedValue
     private Integer partyNameId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "validFromUnitdateId")
     private ParUnitdate validFrom;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "validToUnitdateId")
     private ParUnitdate validTo;
 

@@ -176,8 +176,8 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
      * @param locked {Boolean}
      * @return {Object} view
      */
-    renderDescItemSpec(key, descItem, descItemIndex) {
-        const {infoType, refType, readMode, locked} = this.props;
+    renderDescItemSpec(key, descItem, descItemIndex, locked) {
+        const {infoType, refType, readMode} = this.props;
 
         const options = infoType.specs.map(spec => {
             const fullSpec = {...spec, ...refType.descItemSpecsMap[spec.id]}
@@ -808,11 +808,16 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             </OverlayTrigger>);
         }
 
-
         if (infoType.cal === 1) {
-            const icon = infoType.calSt ? "fa-flash" : "fa-calculator";
             const title = infoType.calSt ? i18n('subNodeForm.calculate-user') : i18n('subNodeForm.calculate-auto');
-            actions.push(<NoFocusButton onClick={this.handleSwitchCalculating} key="calculate" title={title}><Icon glyph={icon} /></NoFocusButton>);
+            actions.push(<NoFocusButton onClick={this.handleSwitchCalculating} key="calculate" title={title}>
+                {infoType.calSt ?
+                    <span className='fa-stack'>
+                      <Icon glyph='fa-calculator fa-stack-1x' />
+                      <Icon glyph='fa-ban fa-stack-2x' />
+                    </span> : <Icon glyph='fa-calculator' />
+                }
+            </NoFocusButton>);
         }
 
         let titleText = descItemType.name;
@@ -906,7 +911,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
                 </OverlayTrigger>);
             }
 
-            let canModifyDescItem = !(locked || closed || readMode)
+            let canModifyDescItem = !(locked || closed)
 
             // Pokud nemá právo na pořádání, nelze provádět akci
             if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {

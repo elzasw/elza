@@ -106,7 +106,7 @@ export default function arrRegion(state = initialState, action) {
 
     switch (action.type) {
 
-        case types.LOGOUT:
+        //case types.LOGOUT:
         case types.LOGIN_SUCCESS: {
             if (action.reset) {
                 return initialState;

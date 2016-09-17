@@ -88,14 +88,4 @@ public interface RulRule<P extends RulPackage, RS extends RulRuleSet, OT extends
      */
     void setPriority(Integer priority);
 
-    /**
-     * @return typ výstupu
-     */
-    RulOutputType getOutputType();
-
-    /**
-     * @param outputType typ výstupu
-     */
-    void setOutputType(OT outputType);
-
 }

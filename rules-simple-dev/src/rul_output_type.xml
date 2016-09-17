@@ -1,0 +1,8 @@
+<output-types>
+    <output-type code="SRD_INVENTORY" filename="SRD_AvailableItems.drl">
+        <name>Inventory</name>
+    </output-type>
+    <output-type code="SRD_ADHOC">
+        <name>AdHoc output</name>
+    </output-type>
+</output-types>

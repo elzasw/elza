@@ -68,13 +68,14 @@ var Shortcuts = require('react-shortcuts/component');
 
 var keyModifier = Utils.getKeyModifier();
 
-var keymap = {
+var keymap = ArrParentPage.mergeKeymap({
     ArrParent: {
+        newOutput: keyModifier + '+',
         area1: keyModifier + '1',
         area2: keyModifier + '2',
         area3: keyModifier + '3'
     }
-};
+});
 var shortcutManager = new ShortcutsManager(keymap);
 
 let _selectedTab = 0
@@ -158,8 +159,11 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     handleShortcuts(action) {
-        console.log("#handleShortcuts", '[' + action + ']', this);
+        console.log("#handleShortcuts ArrOutputPage", '[' + action + ']', this);
         switch (action) {
+            case 'newOutput':
+                this.handleAddOutput();
+                break;
             case 'area1':
                 this.dispatch(setFocus('fund-output', 1));
                 break;
@@ -169,6 +173,8 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             case 'area3':
                 this.dispatch(setFocus('fund-output', 3));
                 break
+            default:
+                super.handleShortcuts(action);
         }
     }
 
@@ -249,7 +255,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
         var submit = (data) => {
             this.dispatch(modalDialogHide());
-            this.dispatch(outputFormActions.fundSubNodeFormDescItemTypeAdd(fund.versionId, null, data.descItemTypeId));
+            this.dispatch(outputFormActions.fundSubNodeFormDescItemTypeAdd(fund.versionId, null, data.descItemTypeId.id));
         };
         // Modální dialog
         var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
@@ -372,6 +378,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         return outputDefinition &&
             outputDefinition.outputResultId == null &&
             outputDefinition.state === OutputState.OPEN &&
+            outputDefinition.templateId != null &&
             outputDefinition.nodes.length > 0
     }
 
@@ -424,7 +431,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         this.dispatch(fundOutputSelectOutput(fund.versionId, item.id))
     }
 
-    renderRightPanel() {
+    renderRightPanel(readMode, closed) {
         const fund = this.getActiveFund(this.props);
         if (!fund.fundOutput.fundOutputDetail.fetched) {
             return <span></span>;
@@ -467,7 +474,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         return !item.lockDate && item.outputDefinition && item.outputDefinition.state === OutputState.OPEN
     }
 
-    renderLeftPanel() {
+    renderLeftPanel(readMode, closed) {
         const fund = this.getActiveFund(this.props);
         const fundOutput = fund.fundOutput;;
 
@@ -503,7 +510,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         )
     }
 
-    renderCenterPanel() {
+    renderCenterPanel(readMode, closed) {
         const {arrRegion, calendarTypes, packetTypes, templates, rulDataTypes, descItemTypes, userDetail} = this.props;
 
         const fund = this.getActiveFund(this.props);
@@ -513,11 +520,6 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         if (fund && arrRegion.packets[fund.id]) {
             packets = arrRegion.packets[fund.id].items;
         }
-
-        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fund.id);
-        var settingsValues = settings.value != 'false';
-        const readMode = settingsValues;
-        const closed = fund.lockDate != null;
 
         return (
             <ArrOutputDetail

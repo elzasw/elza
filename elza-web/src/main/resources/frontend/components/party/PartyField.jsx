@@ -153,4 +153,4 @@ function mapStateToProps(state) {
         userDetail,
     }
 }
-module.exports = connect(mapStateToProps, null, null, { withRef: true })(PartyField);
+export default connect(mapStateToProps, null, null, { withRef: true })(PartyField);

@@ -15,6 +15,7 @@ import {
 import {registrySelect, registryAdd} from 'actions/registry/registryRegionList.jsx'
 import NodeRegister from './registerForm/NodeRegister.jsx'
 import {routerNavigate} from 'actions/router.jsx'
+import DescItemLabel from './nodeForm/DescItemLabel.jsx'
 
 const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     PropTypes = {
@@ -22,6 +23,7 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
         selectedSubNodeId: React.PropTypes.number.isRequired,
         routingKey: React.PropTypes.number.isRequired,
         closed: React.PropTypes.bool.isRequired,
+        readMode: React.PropTypes.bool.isRequired,
         nodeId: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
     };
 
@@ -92,9 +94,20 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     }
 
     renderLink(link, index) {
-        const {closed, versionId} = this.props;
+        const {closed, versionId, readMode} = this.props;
 
-        return (
+        if (readMode) {
+            if (link.value) {
+                return (
+                    <DescItemLabel key={"link-" + index} onClick={this.handleDetail.bind(this, index, link.record.recordId)} value={link.record.record} />
+                )
+            } else {
+                return (
+                    <DescItemLabel key={"link-" + index} value="" />
+                )
+            }
+        } else {
+            return (
                 <div className="link" key={"link-" + index}>
                     <NodeRegister onFocus={this.handleFocus.bind(this, index)}
                                   onBlur={this.handleBlur.bind(this, index)}
@@ -105,17 +118,18 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
                                   item={link}
                                   value={link.value ? link.value : null}
                                   versionId={versionId} />
-                    {!closed && <NoFocusButton key="delete" onClick={this.handleRemove.bind(this, index)} ><Icon glyph="fa-times" /></NoFocusButton>}
+                    {!closed && !readMode && <NoFocusButton key="delete" onClick={this.handleRemove.bind(this, index)} ><Icon glyph="fa-times" /></NoFocusButton>}
                 </div>
-        );
+            );
+        }
     }
 
     renderForm() {
-        const {register, closed} = this.props;
+        const {register, closed, readMode} = this.props;
 
         return <div className="register-form">
             <div className='links'>{register.formData.nodeRegisters.map(this.renderLink)}</div>
-            {!closed && <div className='action'><NoFocusButton onClick={this.handleAddClick}><Icon glyph="fa-plus" /></NoFocusButton></div>}
+            {!closed && !readMode && <div className='action'><NoFocusButton onClick={this.handleAddClick}><Icon glyph="fa-plus" /></NoFocusButton></div>}
         </div>
 
     }
