@@ -77,7 +77,7 @@ public abstract class Action implements InitializingBean {
     /**
      * Nashromážděný výsledek akce.
      *
-     * @return výsledek
+     * @return výsledek, akce může vrátit prázdný výsledek (null)
      */
     abstract public ActionResult getResult();
 

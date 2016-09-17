@@ -11,6 +11,7 @@ import cz.tacr.elza.domain.ArrItemText;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.utils.Yaml;
+
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
  * Akce na agregaci textových hodnot.
  *
  * @author Martin Šlapa
+ * @author Petr Pytelka
  * @since 29.06.2016
  */
 @Component
@@ -54,6 +56,11 @@ public class TextAggregationAction extends Action {
      * Ignorovat duplikáty?
      */
     private boolean ignoreDuplicated;
+    
+    /**
+     * Flag if text item should be created for empty result 
+     */
+    private boolean createEmpty;
 
     TextAggregationAction(final Yaml config) {
         super(config);
@@ -64,6 +71,7 @@ public class TextAggregationAction extends Action {
         Set<String> inputTypes = config.getStringList("input_types", null).stream().collect(Collectors.toSet());
         String outputType = config.getString("output_type", null);
         ignoreDuplicated = config.getBoolean("ignore_duplicated", false);
+        createEmpty = config.getBoolean("create_empty", true);
 
         inputItemTypes = findItemTypes(inputTypes);
         for (RulItemType inputItemType : inputItemTypes) {
@@ -111,9 +119,15 @@ public class TextAggregationAction extends Action {
 
     @Override
     public ActionResult getResult() {
+    	// Prepare result
+    	String resultText = String.join(DELIMITER, texts);
+    	// check if not empty
+    	if(!createEmpty && resultText.isEmpty()) {
+    		return null;
+    	}
         TextAggregationActionResult textAggregationActionResult = new TextAggregationActionResult();
         textAggregationActionResult.setItemType(outputItemType.getCode());
-        textAggregationActionResult.setText(String.join(DELIMITER, texts));
+        textAggregationActionResult.setText(resultText);
         return textAggregationActionResult;
     }
 

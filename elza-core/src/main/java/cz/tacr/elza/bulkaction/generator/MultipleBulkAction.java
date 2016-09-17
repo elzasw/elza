@@ -6,6 +6,7 @@ import cz.tacr.elza.bulkaction.generator.multiple.Action;
 import cz.tacr.elza.bulkaction.generator.multiple.ActionFactory;
 import cz.tacr.elza.bulkaction.generator.multiple.ActionType;
 import cz.tacr.elza.bulkaction.generator.multiple.TypeLevel;
+import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
  * Vícenásobná hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
  *
  * @author Martin Šlapa
+ * @author Petr Pytelka
  * @since 29.06.2016
  */
 public class MultipleBulkAction extends BulkAction {
@@ -152,9 +154,13 @@ public class MultipleBulkAction extends BulkAction {
             generate(node, level, nodeDescItems);
         }
 
+        // Collect results
         Result result = new Result();
         for (Action action : actions) {
-            result.getResults().add(action.getResult());
+        	ActionResult ar = action.getResult();
+        	if(ar!=null) {
+        		result.getResults().add(ar);
+        	}
         }
 
         bulkActionRun.setResult(result);
