@@ -53,7 +53,7 @@ public class TextAggregationAction extends Action {
     /**
      * Ignorovat duplikáty?
      */
-    private boolean ignoreDuplicate;
+    private boolean ignoreDuplicated;
 
     TextAggregationAction(final Yaml config) {
         super(config);
@@ -63,7 +63,7 @@ public class TextAggregationAction extends Action {
     public void init() {
         Set<String> inputTypes = config.getStringList("input_types", null).stream().collect(Collectors.toSet());
         String outputType = config.getString("output_type", null);
-        ignoreDuplicate = config.getBoolean("ignore_duplicate", true);
+        ignoreDuplicated = config.getBoolean("ignore_duplicated", false);
 
         inputItemTypes = findItemTypes(inputTypes);
         for (RulItemType inputItemType : inputItemTypes) {
@@ -89,7 +89,7 @@ public class TextAggregationAction extends Action {
                 } else {
                     throw new IllegalStateException("Neplatmý typ dat: " + itemData.getClass().getSimpleName());
                 }
-                if (!ignoreDuplicate || !texts.contains(value)) {
+                if (!ignoreDuplicated || !texts.contains(value)) {
                     texts.add(value);
                 }
             }

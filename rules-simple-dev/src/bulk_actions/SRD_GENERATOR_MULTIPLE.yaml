@@ -16,7 +16,7 @@ action:
     output_type: SRD_UNIT_COUNT
 
   - TEXT_AGGREGATION
-    ignore_duplicate: false
+    ignore_duplicated: false
     input_types:
       - SRD_TITLE
       - SRD_UNIT_DATE_TEXT
