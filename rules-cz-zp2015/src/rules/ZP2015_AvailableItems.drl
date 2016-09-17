@@ -321,7 +321,7 @@ rule "Univerzální prvky popisu - možné"
 no-loop
 when
 	$itemType : RulItemTypeExt(code in
-	( "ZP2015_FORMAL_TITLE", "ZP2015_ORIGINATOR", "ZP2015_OTHER_ID" ) )
+	( "ZP2015_FORMAL_TITLE", "ZP2015_ORIGINATOR", "ZP2015_OTHER_ID", "ZP2015_UNIT_SOURCE", "ZP2015_UNIT_HIST" ) )
 then
 	$itemType.setType(RulItemType.Type.POSSIBLE);
 end
@@ -372,4 +372,14 @@ when
 	$itemType : RulItemTypeExt(code=="ZP2015_UNIT_DATE_TEXT")
 then
    	$itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+// Přímý zdroj akvizice - doporučení pro kořen, vyhodnoceno později
+rule "Přímý zdroj akvizice - kořen"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( parent == null )
+	$itemType: RulItemTypeExt( code == "ZP2015_UNIT_SOURCE" )
+then
+	$itemType.setType(RulItemType.Type.RECOMMENDED);
 end
