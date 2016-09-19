@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
  * Vícenásobná hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
  *
  * @author Martin Šlapa
- * @author Petr Pytelka
  * @since 29.06.2016
  */
 public class MultipleBulkAction extends BulkAction {
@@ -157,10 +156,7 @@ public class MultipleBulkAction extends BulkAction {
         // Collect results
         Result result = new Result();
         for (Action action : actions) {
-        	ActionResult ar = action.getResult();
-        	if(ar!=null) {
-        		result.getResults().add(ar);
-        	}
+        	result.getResults().add(action.getResult());
         }
 
         bulkActionRun.setResult(result);

@@ -71,6 +71,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -79,6 +80,7 @@ import java.util.stream.Collectors;
  * Serviska pro práci s výstupy.
  *
  * @author Martin Šlapa
+ * @author Petr Pytelka
  * @since 03.05.2016
  */
 @Service
@@ -1392,7 +1394,7 @@ public class OutputService {
     /**
      * Uložení výsledku z hromadné akce.
      *
-     * @param result      výsledek
+     * @param result      výsledek, může být null
      * @param fundVersion verze AS
      * @param nodes       seznam uzlů
      * @param change      změna překlopení
@@ -1409,13 +1411,14 @@ public class OutputService {
 
         for (ArrOutputDefinition outputDefinition : outputDefinitions) {
 
-            List<ArrItemSettings> itemSettingsList = itemSettingsRepository.findByOutputDefinition(outputDefinition);
-            Set<RulItemType> itemTypesIgnored = itemSettingsList.stream()
-                    .filter(ArrItemSettings::getBlockActionResult)
-                    .map(ArrItemSettings::getItemType)
-                    .collect(Collectors.toSet());
-
             if (result != null) {
+            	// Prepare set of ignored item types
+                List<ArrItemSettings> itemSettingsList = itemSettingsRepository.findByOutputDefinition(outputDefinition);
+                Set<RulItemType> itemTypesIgnored = itemSettingsList.stream()
+                        .filter(ArrItemSettings::getBlockActionResult)
+                        .map(ArrItemSettings::getItemType)
+                        .collect(Collectors.toSet());
+
                 for (ActionResult actionResult : result.getResults()) {
                     storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType, itemTypesIgnored);
                 }
@@ -1488,9 +1491,15 @@ public class OutputService {
             TextAggregationActionResult textAggregationActionResult = (TextAggregationActionResult) actionResult;
             String itemTypeCode = textAggregationActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
-            ArrItemText itemText = new ArrItemText();
-            itemText.setValue(textAggregationActionResult.getText());
-            dataItems = Arrays.asList(itemText);
+            // Check if item should be created
+            if(textAggregationActionResult.isCreateInOutput()) {
+                ArrItemText itemText = new ArrItemText();
+                itemText.setValue(textAggregationActionResult.getText());
+            	dataItems = Arrays.asList(itemText);
+            } else {
+            	// no items will be created
+            	dataItems = Collections.emptyList();
+            }
         } else if (actionResult instanceof UnitCountActionResult) {
             UnitCountActionResult unitCountActionResult = (UnitCountActionResult) actionResult;
             String itemTypeCode = unitCountActionResult.getItemType();

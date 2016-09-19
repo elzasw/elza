@@ -121,13 +121,14 @@ public class TextAggregationAction extends Action {
     public ActionResult getResult() {
     	// Prepare result
     	String resultText = String.join(DELIMITER, texts);
-    	// check if not empty
-    	if(!createEmpty && resultText.isEmpty()) {
-    		return null;
-    	}
+
+    	// Create object with result
         TextAggregationActionResult textAggregationActionResult = new TextAggregationActionResult();
         textAggregationActionResult.setItemType(outputItemType.getCode());
         textAggregationActionResult.setText(resultText);
+        // check if not empty
+        textAggregationActionResult.setCreateInOutput(createEmpty || !resultText.isEmpty());
+        
         return textAggregationActionResult;
     }
 
