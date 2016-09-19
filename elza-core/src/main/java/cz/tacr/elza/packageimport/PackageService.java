@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,9 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -240,6 +244,9 @@ public class PackageService {
 
     @Autowired
     private OutputGeneratorService outputGeneratorService;
+
+    @Autowired
+    private OutputDefinitionRepository outputDefinitionRepository;
 
     private List<RulTemplate> newRultemplates = null;
 
@@ -1099,7 +1106,14 @@ public class PackageService {
 
         List<RulOutputType> rulPacketTypesDelete = new ArrayList<>(rulOutputTypes);
         rulPacketTypesDelete.removeAll(rulOutputTypesNew);
-        outputTypeRepository.delete(rulPacketTypesDelete);
+
+        if (!rulPacketTypesDelete.isEmpty()) {
+            List<ArrOutputDefinition> byOutputTypes = outputDefinitionRepository.findByOutputTypes(rulPacketTypesDelete);
+            if (!byOutputTypes.isEmpty()) {
+                throw new IllegalStateException("Existuje výstup(y) navázáný na typ výstupu, který je v novém balíčku smazán.");
+            }
+            outputTypeRepository.delete(rulPacketTypesDelete);
+        }
 
         return rulOutputTypesNew;
     }
@@ -1147,7 +1161,13 @@ public class PackageService {
 
         List<RulTemplate> rulTemplateToDelete = new ArrayList<>(rulTemplate);
         rulTemplateToDelete.removeAll(rulTemplateNew);
-        templateRepository.delete(rulTemplateToDelete);
+        if (!rulTemplateToDelete.isEmpty()) {
+            List<ArrOutputDefinition> byTemplate = outputDefinitionRepository.findByTemplatesAndStates(rulTemplateToDelete, Arrays.asList(OutputState.OPEN, OutputState.GENERATING, OutputState.COMPUTING));
+            if (!byTemplate.isEmpty()) {
+                throw new IllegalStateException("Existuje výstup(y), který nebyl vygenerován či smazán a je navázán na šablonu, která je v novém balíčku smazána.");
+            }
+            templateRepository.updateDeleted(rulTemplateToDelete, true);
+        }
 
         try {
             deleteTemplates(dirTemplates, rulTemplateToDelete);
@@ -1215,6 +1235,7 @@ public class PackageService {
         rulTemplate.setDirectory(template.getDirectory());
         rulTemplate.setMimeType(template.getMimeType());
         rulTemplate.setExtension(template.getExtension());
+        rulTemplate.setDeleted(false);
 
         List<RulOutputType> findItems = rulOutputTypes.stream()
                 .filter((r) -> r.getCode().equals(template.getOutputType()))
@@ -1723,7 +1744,7 @@ public class PackageService {
 
     private void exportTemplates(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
         Templates outputTypes = new Templates();
-        List<RulTemplate> rulRuleSets = templateRepository.findByRulPackage(rulPackage);
+        List<RulTemplate> rulRuleSets = templateRepository.findByRulPackageAndNotDeleted(rulPackage);
         List<Template> ruleSetList = new ArrayList<>(rulRuleSets.size());
         outputTypes.setTemplates(ruleSetList);
 

@@ -4,9 +4,12 @@ import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulTemplate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -49,4 +52,14 @@ public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefin
     @Modifying
     @Query("UPDATE arr_output_definition o SET o.state = ?2, o.error = ?3 WHERE o.state IN ?1")
     int setStateFromStateWithError(List<OutputState> statesToFind, OutputState stateToSet, String errorMessage);
+
+    @Query("SELECT no FROM arr_output_definition no WHERE no.template IN ?1 AND no.state IN ?2")
+    List<ArrOutputDefinition> findByTemplatesAndStates(List<RulTemplate> rulTemplateToDelete, List<OutputState> states);
+
+    @Query("SELECT no FROM arr_output_definition no WHERE no.outputType IN ?1")
+    List<ArrOutputDefinition> findByOutputTypes(List<RulOutputType> rulPacketTypesDelete);
+
+    @Query("SELECT COUNT(no) > 0 FROM arr_output_definition no WHERE no.name LIKE :name")
+    boolean existsByName(@Param("name") String name);
+
 }

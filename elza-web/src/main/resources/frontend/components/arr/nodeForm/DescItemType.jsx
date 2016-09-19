@@ -810,7 +810,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
 
         if (infoType.cal === 1) {
             const title = infoType.calSt ? i18n('subNodeForm.calculate-user') : i18n('subNodeForm.calculate-auto');
-            actions.push(<NoFocusButton onClick={this.handleSwitchCalculating} key="calculate" title={title}>
+            actions.push(<NoFocusButton onClick={this.handleSwitchCalculating} key="calculate" title={title} className="alwaysVisible">
                 {infoType.calSt ?
                     <span className='fa-stack'>
                       <Icon glyph='fa-calculator fa-stack-1x' />

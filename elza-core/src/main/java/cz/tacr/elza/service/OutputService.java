@@ -41,7 +41,6 @@ import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
@@ -271,9 +270,20 @@ public class OutputService {
             throw new IllegalArgumentException("Nelze klonovat smazaný výstup");
         }
 
+        String copy = " - kopie";
+        String newName = originalOutputDef.getName() + copy;
+        if (outputDefinitionRepository.existsByName(newName)) {
+            int num = 1;
+            String newNameWithNum;
+            do {
+                newNameWithNum = newName + " " + num++;
+            } while(outputDefinitionRepository.existsByName(newNameWithNum));
+            newName = newNameWithNum;
+        }
+
         final ArrOutputDefinition newOutputDef = createOutputDefinition(fundVersion,
-                originalOutputDef.getName() + " (kopie)",
-                originalOutputDef.getInternalCode() + " (kopie)",
+                newName,
+                originalOutputDef.getInternalCode(),
                 originalOutputDef.getTemporary(),
                 originalOutputDef.getOutputType().getOutputTypeId(),
                 originalOutputDef.getTemplate() != null ? originalOutputDef.getTemplate().getTemplateId() : null
