@@ -164,7 +164,6 @@ var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
                 <Modal.Body>
                     <form onSubmit={this.handleFormSubmit}>
                         <FormInput ref="selsel" componentClass='select' disabled={loading} label={i18n('arr.fund.addNode.direction')} defaultValue={initDirection} onChange={this.handleDirectionChange}>
-                            <option value=''/>
                             {notRoot && [
                                 <option value='BEFORE' key='BEFORE'>{i18n('arr.fund.addNode.before')}</option>,
                                 <option value='AFTER' key='AFTER'>{i18n('arr.fund.addNode.after')}</option>
@@ -204,7 +203,7 @@ function mapStateToProps(state) {
 
 AddNodeForm.propTypes = {
     node: React.PropTypes.object.isRequired,
-    initDirection: React.PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND', '']),
+    initDirection: React.PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND']),
     nodeSettings: React.PropTypes.object.isRequired
 };
 
