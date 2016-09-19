@@ -4,6 +4,7 @@ import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulTemplate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -49,4 +50,7 @@ public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefin
     @Modifying
     @Query("UPDATE arr_output_definition o SET o.state = ?2, o.error = ?3 WHERE o.state IN ?1")
     int setStateFromStateWithError(List<OutputState> statesToFind, OutputState stateToSet, String errorMessage);
+
+    @Query("SELECT no FROM arr_output_definition no WHERE no.template IN ?1 AND no.state IN ?2")
+    List<ArrOutputDefinition> findByTemplatesAndStates(List<RulTemplate> rulTemplateToDelete, List<OutputState> states);
 }

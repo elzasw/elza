@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,9 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -240,6 +244,9 @@ public class PackageService {
 
     @Autowired
     private OutputGeneratorService outputGeneratorService;
+
+    @Autowired
+    private OutputDefinitionRepository outputDefinitionRepository;
 
     private List<RulTemplate> newRultemplates = null;
 
@@ -1147,7 +1154,13 @@ public class PackageService {
 
         List<RulTemplate> rulTemplateToDelete = new ArrayList<>(rulTemplate);
         rulTemplateToDelete.removeAll(rulTemplateNew);
-        templateRepository.delete(rulTemplateToDelete);
+        if (!rulTemplateToDelete.isEmpty()) {
+            List<ArrOutputDefinition> byTemplate = outputDefinitionRepository.findByTemplatesAndStates(rulTemplateToDelete, Arrays.asList(OutputState.OPEN, OutputState.GENERATING, OutputState.COMPUTING));
+            if (!byTemplate.isEmpty()) {
+                throw new IllegalStateException("Existuje výstup(y), který nebyl vygenerován či smazán a je navázán na template, který je v novém balíčku smazán.");
+            }
+            templateRepository.delete(rulTemplateToDelete);
+        }
 
         try {
             deleteTemplates(dirTemplates, rulTemplateToDelete);
