@@ -62,4 +62,8 @@ public interface RulTemplate<P extends RulPackage, O extends RulOutputType> {
     String getExtension();
 
     void setExtension(String extension);
+
+    Boolean getDeleted();
+
+    void setDeleted(Boolean deleted);
 }

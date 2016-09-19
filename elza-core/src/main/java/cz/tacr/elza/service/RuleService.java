@@ -180,7 +180,7 @@ public class RuleService {
         RulOutputType outputType = outputTypeRepository.findByCode(outputTypeCode);
         Assert.notNull(outputType, "Typ outputu s kodem '" + outputTypeCode + "' nebyl nalezen");
 
-        return templateRepository.findByOutputType(outputType, new Sort(Sort.Direction.ASC, RulTemplate.NAME));
+        return templateRepository.findNotDeletedByOutputType(outputType, new Sort(Sort.Direction.ASC, RulTemplate.NAME));
     }
 
 
@@ -512,6 +512,18 @@ public class RuleService {
      */
     public List<RulItemTypeExt> getAllDescriptionItemTypes() {
         return getAllDescriptionItemTypes(null);
+    }
+
+    /**
+     * Vrací typy atributů podle balíčku.
+     *
+     * @param rulPackage balíček
+     * @return seznam typů
+     */
+    public List<String> getItemTypeCodesByPackage(final RulPackage rulPackage) {
+        return itemTypeRepository.findByRulPackage(rulPackage).stream()
+                .map(RulItemType::getCode)
+                .collect(Collectors.toList());
     }
 
     /**

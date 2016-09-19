@@ -655,7 +655,8 @@ public class ConfigMapperConfiguration {
                     @Override
                     public void mapAtoB(final RulRuleSet rulRuleSet, final RulRuleSetVO rulRuleSetVO, final MappingContext context) {
                         super.mapAtoB(rulRuleSet, rulRuleSetVO, context);
-                        rulRuleSetVO.setItemTypeCodes(ruleService.getDefaultItemTypeCodes(rulRuleSet));
+                        rulRuleSetVO.setDefaultItemTypeCodes(ruleService.getDefaultItemTypeCodes(rulRuleSet));
+                        rulRuleSetVO.setItemTypeCodes(ruleService.getItemTypeCodesByPackage(rulRuleSet.getPackage()));
                     }
                 })
                 .register();

@@ -59,6 +59,9 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
+    @Column(nullable = false)
+    private Boolean deleted;
+
     /* Konstanty pro vazby a fieldy. */
     public static final String NAME = "name";
 
@@ -151,6 +154,17 @@ public class RulTemplate implements cz.tacr.elza.api.RulTemplate<RulPackage, Rul
     public void setExtension(final String extension) {
         this.extension = extension;
     }
+
+    @Override
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    @Override
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
     @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof cz.tacr.elza.domain.RulTemplate)) {

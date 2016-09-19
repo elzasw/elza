@@ -1228,6 +1228,7 @@ public class PackageService {
         rulTemplate.setDirectory(template.getDirectory());
         rulTemplate.setMimeType(template.getMimeType());
         rulTemplate.setExtension(template.getExtension());
+        rulTemplate.setDeleted(false);
 
         List<RulOutputType> findItems = rulOutputTypes.stream()
                 .filter((r) -> r.getCode().equals(template.getOutputType()))
@@ -1736,7 +1737,7 @@ public class PackageService {
 
     private void exportTemplates(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
         Templates outputTypes = new Templates();
-        List<RulTemplate> rulRuleSets = templateRepository.findByRulPackage(rulPackage);
+        List<RulTemplate> rulRuleSets = templateRepository.findByRulPackageAndNotDeleted(rulPackage);
         List<Template> ruleSetList = new ArrayList<>(rulRuleSets.size());
         outputTypes.setTemplates(ruleSetList);
 
