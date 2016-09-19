@@ -6,7 +6,7 @@ require('./FundNodesList.less')
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, AddRemoveList, i18n} from 'components/index.jsx';
+import {AbstractReactComponent, AddRemoveList, Icon, i18n} from 'components/index.jsx';
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Button} from 'react-bootstrap';
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
@@ -49,9 +49,12 @@ export default class FundNodesList extends AbstractReactComponent {
         }
         name = <div title={name} className="name">{name}</div>
 
+        var icon = <Icon className="node-icon" glyph={getGlyph(node.icon)} />
+
         return (
             <div className="item">
                 {refMark}
+                {icon}
                 {name}
             </div>
         )
