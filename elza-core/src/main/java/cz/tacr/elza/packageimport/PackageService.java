@@ -1106,7 +1106,14 @@ public class PackageService {
 
         List<RulOutputType> rulPacketTypesDelete = new ArrayList<>(rulOutputTypes);
         rulPacketTypesDelete.removeAll(rulOutputTypesNew);
-        outputTypeRepository.delete(rulPacketTypesDelete);
+
+        if (!rulPacketTypesDelete.isEmpty()) {
+            List<ArrOutputDefinition> byOutputTypes = outputDefinitionRepository.findByOutputTypes(rulPacketTypesDelete);
+            if (!byOutputTypes.isEmpty()) {
+                throw new IllegalStateException("Existuje výstup(y) navázáný na typ výstupu, který je v novém balíčku smazán.");
+            }
+            outputTypeRepository.delete(rulPacketTypesDelete);
+        }
 
         return rulOutputTypesNew;
     }
@@ -1157,9 +1164,9 @@ public class PackageService {
         if (!rulTemplateToDelete.isEmpty()) {
             List<ArrOutputDefinition> byTemplate = outputDefinitionRepository.findByTemplatesAndStates(rulTemplateToDelete, Arrays.asList(OutputState.OPEN, OutputState.GENERATING, OutputState.COMPUTING));
             if (!byTemplate.isEmpty()) {
-                throw new IllegalStateException("Existuje výstup(y), který nebyl vygenerován či smazán a je navázán na template, který je v novém balíčku smazán.");
+                throw new IllegalStateException("Existuje výstup(y), který nebyl vygenerován či smazán a je navázán na šablonu, která je v novém balíčku smazána.");
             }
-            templateRepository.delete(rulTemplateToDelete);
+            templateRepository.updateDeleted(rulTemplateToDelete, true);
         }
 
         try {

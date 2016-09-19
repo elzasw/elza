@@ -4,6 +4,7 @@ import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulTemplate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -53,4 +54,7 @@ public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefin
 
     @Query("SELECT no FROM arr_output_definition no WHERE no.template IN ?1 AND no.state IN ?2")
     List<ArrOutputDefinition> findByTemplatesAndStates(List<RulTemplate> rulTemplateToDelete, List<OutputState> states);
+
+    @Query("SELECT no FROM arr_output_definition no WHERE no.outputType IN ?1")
+    List<ArrOutputDefinition> findByOutputTypes(List<RulOutputType> rulPacketTypesDelete);
 }
