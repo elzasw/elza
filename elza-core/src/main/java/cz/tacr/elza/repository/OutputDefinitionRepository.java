@@ -9,6 +9,7 @@ import cz.tacr.elza.domain.RulTemplate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -57,4 +58,8 @@ public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefin
 
     @Query("SELECT no FROM arr_output_definition no WHERE no.outputType IN ?1")
     List<ArrOutputDefinition> findByOutputTypes(List<RulOutputType> rulPacketTypesDelete);
+
+    @Query("SELECT COUNT(no) > 0 FROM arr_output_definition no WHERE no.name LIKE :name")
+    boolean existsByName(@Param("name") String name);
+
 }
