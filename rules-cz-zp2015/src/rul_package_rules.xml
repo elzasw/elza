@@ -19,4 +19,8 @@
         <rule-type>OUTPUT_ATTRIBUTE_TYPES</rule-type>
         <priority>1</priority>
     </package-rule>
+    <package-rule filename="ZP2015_INVENTAR.drl" rule-set="ZP2015">
+        <rule-type>OUTPUT_ATTRIBUTE_TYPES</rule-type>
+        <priority>1</priority>
+    </package-rule>
 </package-rules>

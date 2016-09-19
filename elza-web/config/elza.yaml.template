@@ -119,11 +119,11 @@ elza:
             - code: ZP2015_UNIT_CONTENT
               width: 0
             - code: ZP2015_UNIT_SOURCE
-              width: 1
+              width: 0
             - code: ZP2015_FUTURE_UNITS
-              width: 1
+              width: 0
             - code: ZP2015_UNIT_ACCESS
-              width: 1
+              width: 0
             - code: ZP2015_UNIT_INFO_RIGHTS
               width: 1
             - code: ZP2015_UNIT_COPY_RIGHTS
@@ -137,9 +137,9 @@ elza:
             - code: ZP2015_EXISTING_COPY
               width: 1
             - code: ZP2015_INTERNAL_NOTE
-              width: 2
+              width: 0
             - code: ZP2015_NOTE
-              width: 2
+              width: 0
             - code: ZP2015_ARRANGE_RULES
               width: 1
             - code: ZP2015_4_OTHER

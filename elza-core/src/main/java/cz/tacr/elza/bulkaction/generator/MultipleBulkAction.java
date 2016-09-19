@@ -6,6 +6,7 @@ import cz.tacr.elza.bulkaction.generator.multiple.Action;
 import cz.tacr.elza.bulkaction.generator.multiple.ActionFactory;
 import cz.tacr.elza.bulkaction.generator.multiple.ActionType;
 import cz.tacr.elza.bulkaction.generator.multiple.TypeLevel;
+import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
@@ -152,9 +153,10 @@ public class MultipleBulkAction extends BulkAction {
             generate(node, level, nodeDescItems);
         }
 
+        // Collect results
         Result result = new Result();
         for (Action action : actions) {
-            result.getResults().add(action.getResult());
+        	result.getResults().add(action.getResult());
         }
 
         bulkActionRun.setResult(result);

@@ -16,7 +16,7 @@ action:
     output_type: ZP2015_UNIT_COUNT
 
   - TEXT_AGGREGATION
-    ignore_duplicate: false
+    ignore_duplicated: false
     input_types:
       - ZP2015_NOTE
       - ZP2015_UNIT_DATE_TEXT

@@ -2,7 +2,7 @@
     <output-type code="ZP2015_MANIP_SEZNAM" filename="ZP2015_MANIP_SEZNAM.drl">
         <name>AP - manipulační seznam</name>
     </output-type>
-    <output-type code="AP_UPLNA"> <!--filename="ZP2015_AP_UPLNA.drl"-->
+    <output-type code="ZP2015_INVENTAR" filename="ZP2015_INVENTAR.drl">
         <name>AP - inventář / katalog</name>
     </output-type>
     <output-type code="STITKY">
