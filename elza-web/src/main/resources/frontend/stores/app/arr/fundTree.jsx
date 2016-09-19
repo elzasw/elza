@@ -73,7 +73,9 @@ export default function fundTree(state = initialState, action = {}) {
             }
 
         case types.CHANGE_ADD_LEVEL:
-        case types.CHANGE_DELETE_LEVEL:
+            return {...state, dirty: true}
+
+        case types.CHANGE_DELETE_LEVEL: {
 
             var refresh = false;
 
@@ -81,17 +83,20 @@ export default function fundTree(state = initialState, action = {}) {
                 refresh = true;
             }
 
-            state.nodes.forEach(node => {
+            for (let i = 0; i < state.nodes.length; i++) {
+                const node = state.nodes[i];
                 if (node.id == action.nodeId || node.id == action.parentNodeId) {
-                refresh = true;
+                    refresh = true;
+                    break;
                 }
-            });
+            }
 
             if (refresh) {
-                return {...state, selectedId: null}
+                return {...state, dirty: true, selectedId: null}
             }
 
             return state;
+        }
 
         case types.FUND_NODE_CHANGE:
             var index = indexById(state.nodes, action.parentNode.id);
