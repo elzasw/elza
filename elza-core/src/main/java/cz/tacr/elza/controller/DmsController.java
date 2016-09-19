@@ -99,7 +99,9 @@ public class DmsController {
         objVO.setFileSize((int) multipartFile.getSize());
 
         DmsFile objDO = factory.apply(objVO);
-        dmsService.createFile(objDO, multipartFile.getInputStream());
+        InputStream inputStream = multipartFile.getInputStream();
+        dmsService.createFile(objDO, inputStream);
+        inputStream.close();
         return objDO;
     }
 
@@ -163,13 +165,18 @@ public class DmsController {
 
         MultipartFile multipartFile = objVO.getFile();
         boolean hasInputFile = multipartFile != null;
+        InputStream inputStream = null;
         if (hasInputFile) {
+            inputStream = multipartFile.getInputStream();
             objDO.setFileName(multipartFile.getOriginalFilename());
             objDO.setMimeType(multipartFile.getContentType());
             objDO.setFileSize((int) multipartFile.getSize());
         }
 
-        dmsService.updateFile(objDO, hasInputFile ? multipartFile.getInputStream() : null);
+        dmsService.updateFile(objDO, inputStream);
+        if (hasInputFile) {
+            inputStream.close();
+        }
         return objDO;
     }
 

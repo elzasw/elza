@@ -256,10 +256,15 @@ public class DmsService {
     private void saveFile(final DmsFile dmsFile, final InputStream fileStream, final File outputFile) throws IOException {
 
         FileUtils.touch(outputFile);
-        BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile, false));
-        IOUtils.copy(fileStream, outputStream);
-        IOUtils.closeQuietly(fileStream);
-        IOUtils.closeQuietly(outputStream);
+
+        try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile, false))) {
+            IOUtils.copy(fileStream, outputStream);
+        } catch (IOException e) {
+            if(outputFile.exists()) {
+                FileUtils.forceDelete(outputFile);
+            }
+            throw e;
+        }
 
         dmsFile.setFileSize((int) outputFile.length());
 

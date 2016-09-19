@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.exception.ProcessException;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,15 +198,36 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     @Override
     public void onFailure(final Throwable ex) {
         logger.error("Generování výstupu  dokončeno s chybou.", ex);
+        if (ex instanceof ProcessException) {
+            final ProcessException pe = (ProcessException) ex;
+            if (pe.getId() != null) {
+                (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
+                    @Override
+                    protected void doInTransactionWithoutResult(final TransactionStatus status) {
+                        final ArrOutputDefinition outputDefinition = outputDefinitionRepository.findByOutputId(pe.getId());
+                        final StringBuilder stringBuffer = new StringBuilder();
+                        stringBuffer.append(ex.getLocalizedMessage()).append("\n");
+                        Throwable cause = ex.getCause();
+                        while (cause != null && stringBuffer.length() < 1000) {
+                            stringBuffer.append(cause.getLocalizedMessage()).append("\n");
+                            cause = cause.getCause();
+                        }
+                        outputDefinition.setError(stringBuffer.length() > 1000 ? stringBuffer.substring(0, 1000) : stringBuffer.toString());
+                        outputDefinition.setState(OutputState.OPEN);
+                        outputDefinitionRepository.save(outputDefinition);
+                        publishOutputStateEvent(outputDefinition, OutputGeneratorService.OUTPUT_WEBSOCKET_ERROR_STATE);
+                    }
+                });
+            } else {
+                logger.error("Nepodařilo se uložit chybu k výstupu. ID není definováno.");
+            }
+        }
         runNextOutput();
     }
 
     @Override
     public void onSuccess(final OutputGeneratorWorkerAbstract result) {
-        TransactionTemplate tmpl = new TransactionTemplate(txManager);
-
-        // načítání dat v samostatné transakci
-        tmpl.execute(new TransactionCallbackWithoutResult() {
+        (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(final TransactionStatus status) {
                 final Integer arrOutputId = result.getArrOutputId();
@@ -237,6 +259,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
                 publishOutputStateEvent(arrOutputDefinition, null);
 
                 logger.info("Generování výstupu pro arr_output id=" + arrOutputId + " dokončeno úspěšně.", arrOutputId);
+
                 runNextOutput();
             }
         });

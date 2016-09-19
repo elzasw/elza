@@ -55,14 +55,15 @@ class OutputGeneratorWorkerFreemarker extends OutputGeneratorWorkerAbstract {
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("output", output);
 
-            new Thread(() -> {
+            this.generatorThread = new Thread(() -> {
                 try {
                     template.process(parameters, out);
                     out.close();
                 } catch (TemplateException | IOException e) {
-                    throw new IllegalStateException("Nepodařilo se vyrenderovat výstup ze šablony " + mainFreemarkerTemplate.getAbsolutePath() + ".", e);
+                    setException(new IllegalStateException("Nepodařilo se vyrenderovat výstup ze šablony " + mainFreemarkerTemplate.getAbsolutePath() + ".", e));
                 }
-            }).start();
+            });
+            this.generatorThread.start();
 
             return new ReaderInputStream(in, StandardCharsets.UTF_8);
         } catch (IOException e) {

@@ -7,13 +7,23 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
+import cz.tacr.elza.exception.ProcessException;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import org.apache.commons.io.IOUtils;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.orm.hibernate4.SessionFactoryUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.bulkaction.BulkActionService;
@@ -53,6 +63,14 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
     @Autowired
     protected DmsService dmsService;
 
+    @Autowired
+    @Qualifier("transactionManager")
+    protected PlatformTransactionManager txManager;
+
+    protected Thread generatorThread;
+
+    private Throwable exception;
+
     @Value("${elza.templates.templatesDir}")
     protected String templatesDir;
 
@@ -84,11 +102,10 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
     private void generateOutput() {
         logger.info("Spuštěno generování výstupu pro arr_output id={}", arrOutputId);
 
-        ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
-        final ArrOutputDefinition arrOutputDefinition = arrOutput.getOutputDefinition();
+        final ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
+        final ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
 
         try {
-
             final RulTemplate rulTemplate = arrOutputDefinition.getTemplate();
             Assert.notNull(rulTemplate, "Výstup nemá definovanou šablonu (ArrOutputDefinition.template je null).");
 
@@ -103,23 +120,18 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
 
             // Uložení do výstupní struktury a DMS
             storeOutputInDms(arrOutputDefinition, rulTemplate, content);
-            arrOutputDefinition.setError(null);
-        } catch (Exception ex) {
-            arrOutputDefinition.setError(ex.getLocalizedMessage());
-            StringBuilder stringBuffer = new StringBuilder();
-            stringBuffer.append(ex.getMessage()).append("\n");
-            Throwable cause = ex.getCause();
-            while(cause != null && stringBuffer.length() < 1000) {
-                stringBuffer.append(cause.getMessage()).append("\n");
-                cause = cause.getCause();
+
+            content.close();
+
+            waitForGeneratorThread();
+
+            if (exception != null) {
+                throw exception;
             }
-            arrOutputDefinition.setError(stringBuffer.length() > 1000 ? stringBuffer.substring(0, 1000) : stringBuffer.toString());
 
-            arrOutputDefinition.setState(ArrOutputDefinition.OutputState.OPEN);
-            outputDefinitionRepository.save(arrOutputDefinition);
-            outputGeneratorService.publishOutputStateEvent(arrOutputDefinition, OutputGeneratorService.OUTPUT_WEBSOCKET_ERROR_STATE);
-
-            logger.error("Generování výstupu pro arr_output id=" + arrOutputId + " dokončeno s chybou.", ex);
+            arrOutputDefinition.setError(null);
+        } catch (Throwable ex) {
+            throw new ProcessException(arrOutputId, ex);
         }
     }
 
@@ -215,5 +227,19 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
         final File templateDir = Paths.get(templatesDir, rulTemplateDirectory).toFile();
         Assert.isTrue(templateDir.exists() && templateDir.isDirectory(), "Nepodařilo se najít adresář s definicí šablony: " + templateDir.getAbsolutePath());
         return templateDir;
+    }
+
+    public Throwable getException() {
+        return exception;
+    }
+
+    public void setException(Throwable exception) {
+        this.exception = exception;
+    }
+
+    public void waitForGeneratorThread() throws InterruptedException {
+        if (generatorThread != null) {
+            generatorThread.join();
+        }
     }
 }
