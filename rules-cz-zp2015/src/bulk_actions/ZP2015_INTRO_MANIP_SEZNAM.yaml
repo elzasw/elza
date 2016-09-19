@@ -7,6 +7,12 @@ action:
         input_types:
             - ZP2015_UNIT_SOURCE
         output_type: ZP2015_UNIT_SOURCE
+        
+    # ZP4.4.4 Fyzický stav jednotky popisu a technické požadavky
+    - TEXT_AGGREGATION
+        input_types:
+            - ZP2015_UNIT_CURRENT_STATUS
+        output_type: ZP2015_UNIT_CURRENT_STATUS
 
     - TEXT_AGGREGATION
 # Manipulacni seznam ma historii nepovinnou
