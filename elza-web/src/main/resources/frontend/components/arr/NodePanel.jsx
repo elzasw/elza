@@ -8,16 +8,16 @@ const PARENT_CHILD_MAX_LENGTH = 250
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown,
-        Search, GoToPositionForm, VisiblePolicyForm} from 'components';
-import {Button, Tooltip, OverlayTrigger, Input} from 'react-bootstrap';
+import {Icon, ListBox, AbstractReactComponent, i18n, Loading, NodeSubNodeForm, Accordion, SubNodeRegister, NodeActionsBar,
+        VisiblePolicyForm} from 'components';
+import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
+import {addNodeForm} from 'actions/arr/addNodeForm.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
 import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo.jsx'
 import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {fundNodeSubNodeFulltextSearch, fundSubNodesNext, fundSubNodesPrev, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node.jsx'
-import {addNode} from 'actions/arr/node.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {createFundRoot, isFundRootId} from './ArrUtils.jsx'
@@ -37,6 +37,7 @@ import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {visiblePolicyTypesFetchIfNeeded} from 'actions/refTables/visiblePolicyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+
 require ('./NodePanel.less');
 
 var keyModifier = Utils.getKeyModifier()
@@ -131,8 +132,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'renderChildren', 'handleOpenItem', 'handleSetVisiblePolicy',
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
-            'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd',
-            'renderRowItem', 'handleFindPosition', 'handleFindPositionSubmit',
+            'renderAccordion', 'renderState', 'transformConformityInfo', 'renderRowItem',
             'handleShortcuts', 'trySetFocus', 'handleAddDescItemType', 'handleAccordionKeyDown', 'handleVisiblePolicy',
             'ensureItemVisibleNoForm'
             );
@@ -166,7 +166,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     componentDidMount() {
         this.requestData(this.props.versionId, this.props.node);
         this.ensureItemVisible();
-        this.trySetFocus(this.props)
+        this.trySetFocus(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -214,7 +214,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     handleShortcuts(action) {
         console.log("#handleShortcuts", '[' + action + ']', this);
 
-        const {node, closed, userDetail, fundId} = this.props
+        const {node, versionId, closed, userDetail, fundId} = this.props
         const index = indexById(node.childNodes, node.selectedSubNodeId)
 
         var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
@@ -262,22 +262,22 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 break
             case 'addNodeAfter':
                 if (!readMode) {
-                    actionWithBlur(() => {this.refs.subNodeForm.getWrappedInstance().addNodeAfterClick()});
+                    this.dispatch(addNodeForm('AFTER', node, versionId));
                 }
                 break
             case 'addNodeBefore':
                 if (!readMode) {
-                    actionWithBlur(() => {this.refs.subNodeForm.getWrappedInstance().addNodeBeforeClick()});
+                    this.dispatch(addNodeForm('BEFORE', node, versionId));
                 }
                 break
             case 'addNodeChild':
                 if (!readMode) {
-                    actionWithBlur(() => {this.refs.subNodeForm.getWrappedInstance().addNodeChildClick()});
+                    this.dispatch(addNodeForm('CHILD', node, versionId));
                 }
                 break
             case 'addNodeEnd':
                 if (!readMode) {
-                    actionWithBlur(() => {this.refs.addNodeChild.handleToggle(true, false)});
+                    this.dispatch(addNodeForm('ATEND', node, versionId));
                 }
                 break
         }
@@ -546,31 +546,6 @@ return true
     }
 
     /**
-     * Přidání JP na konec do aktuálního node
-     * Využito v dropdown buttonu pro přidání node
-     *
-     * @param event Event selectu
-     * @param scenario name vybraného scénáře
-     */
-    handleAddNodeAtEnd(scenario) {
-        this.dispatch(addNode(this.props.node, this.props.node, this.props.fund.versionId, "CHILD", this.getDescItemTypeCopyIds(), scenario));
-    }
-
-    /**
-     * Vrátí pole ke zkopírování
-     */
-    getDescItemTypeCopyIds() {
-        var itemsToCopy = null;
-        if (this.props.nodeSettings != "undefined") {
-            var nodeIndex = indexById(this.props.nodeSettings.nodes, this.props.node.id);
-            if (nodeIndex != null) {
-                itemsToCopy = this.props.nodeSettings.nodes[nodeIndex].descItemTypeCopyIds;
-            }
-        }
-        return itemsToCopy;
-    }
-
-    /**
      * Renderování stavu.
      * @param item {object} na který node v Accordion se kliklo
      * @return {Object} view
@@ -652,54 +627,18 @@ return true
      * @return {Object} view
      */
     renderAccordion(form, recordInfo, readMode) {
-        const {node, versionId, userDetail, fund, fundId} = this.props;
-
+        const {node, versionId, userDetail, fund, fundId, closed} = this.props;
+        const {focusItemIndex} = this.state;
+        var selectedSubNodeNumber = focusItemIndex +1;
         var rows = [];
 
         if (node.viewStartIndex > 0) {
             rows.push(
-                <Button key="prev" onClick={()=>this.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))}><Icon glyph="fa-chevron-left" />{i18n('arr.fund.prev')}</Button>
+                <Button key="prev" onClick={()=>this.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))}>
+                    <Icon glyph="fa-chevron-left" />{i18n('arr.fund.prev')}
+                </Button>
             )
         }
-
-        var actions = []
-        if (!readMode && userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
-            if (node.nodeInfoFetched && !isFundRootId(node.id) && !closed) {
-                actions.push(
-                    <AddNodeDropdown key="end"
-                                     ref='addNodeChild'
-                                     title={i18n('nodePanel.addSubNode')}
-                                     glyph="fa-plus-circle"
-                                     action={this.handleAddNodeAtEnd}
-                                     node={this.props.node}
-                                     version={fund.versionId}
-                                     direction="CHILD"
-                    />
-                )
-            }
-        }
-        var actionsPanel = (
-            <div key='actions' className='actions-container'>
-                <div key='actions' className='actions'>
-                    {actions}
-                    <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey))}><Icon glyph="fa-backward" />{i18n('arr.fund.subNodes.prevPage')}</div>
-                    <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey))}><Icon glyph="fa-forward" />{i18n('arr.fund.subNodes.nextPage')}</div>
-
-                    <div className='btn btn-default' onClick={this.handleFindPosition} title={i18n('arr.fund.subNodes.findPosition')} ><Icon glyph="fa-hand-o-down" /></div>
-
-                    <Search
-                        tabIndex={-1}
-                        ref='search'
-                        className='search-input'
-                        placeholder={i18n('search.input.search')}
-                        value={node.filterText}
-                        onClear={() => {this.dispatch(fundNodeSubNodeFulltextSearch(''))}}
-                        onSearch={(value) => {this.dispatch(fundNodeSubNodeFulltextSearch(value))}}
-                    />
-                </div>
-            </div>
-        )
-
         for (var a=node.viewStartIndex; (a<node.viewStartIndex + node.pageSize) && (a < node.childNodes.length); a++) {
             var item = node.childNodes[a];
 
@@ -759,7 +698,7 @@ return true
             <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={this.handleShortcuts}>
                 <div tabIndex={0} className='inner-wrapper' ref="innerAccordionWrapper" onKeyDown={this.handleAccordionKeyDown}>
                     <div className="menu-wrapper">
-                        {actionsPanel}
+                        <NodeActionsBar node={node} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed} selectedSubNodeNumber={selectedSubNodeNumber}/>
                     </div>
                     <div className='content-wrapper' ref='accordionContent'>
                         {rows}
@@ -769,40 +708,9 @@ return true
         )
     }
 
-    /**
-     * Akce po úspěšném vybrání pozice JP z formuláře.
-     *
-     * @param form data z formuláře
-     */
-    handleFindPositionSubmit(form) {
-        const {node} = this.props;
-
-        var index = form.position - 1;
-        var subNodeId = node.allChildNodes[index].id;
-
-        this.dispatch(fundSelectSubNode(this.props.versionId, subNodeId, node));
-        this.dispatch(modalDialogHide());
-    }
-
-    /**
-     * Akce pro vybrání JO podle pozice.
-     */
-    handleFindPosition() {
-        const {node} = this.props;
-
-        var count = 0;
-        if (node.allChildNodes) {
-            count = node.allChildNodes.length;
-        }
-
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.subNodes.findPosition'),
-                        <GoToPositionForm onSubmitForm={this.handleFindPositionSubmit} maxPosition={count} />
-                )
-        )
-    }
 
     render() {
-        const {developer, calendarTypes, versionId, rulDataTypes, node,
+        const {calendarTypes, versionId, rulDataTypes, node,
                 packetTypes, packets, fundId, userDetail,
                 showRegisterJp, fund, closed, descItemTypes} = this.props;
 
@@ -963,12 +871,10 @@ return true
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, developer, focus, userDetail} = state
+    const {focus, userDetail} = state
     return {
-        nodeSettings: arrRegion.nodeSettings,
-        developer,
         focus,
-        userDetail,
+        userDetail
     }
 }
 
@@ -978,7 +884,6 @@ NodePanel.propTypes = {
     node: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,
-    nodeSettings: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,

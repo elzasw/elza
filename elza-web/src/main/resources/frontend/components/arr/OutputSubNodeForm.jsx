@@ -7,7 +7,7 @@ require('./NodeSubNodeForm.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyForm, AddRegistryForm,
-    AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm, AddNodeDropdown} from 'components';
+    AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm} from 'components';
 import {connect} from 'react-redux'
 import {SubNodeForm} from "components/index.jsx";
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
@@ -15,12 +15,12 @@ import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 var OutputSubNodeForm = class OutputSubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        
+
         this.bindMethods(
             "initFocus",
         );
     }
-      
+
     initFocus() {
         this.refs.subNodeForm.getWrappedInstance().initFocus();
     }

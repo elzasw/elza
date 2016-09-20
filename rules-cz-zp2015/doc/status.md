@@ -18,6 +18,9 @@ Ukladaci jednotka
 Prvky popisu
 ------------
 * Datace - ok
+* 4.3.2 Dìjiny jednotky popisu - ok
+* 4.3.5 Pøímý zdroj akvizice - ok
+* 4.4.4 Fyzický stav jednotky popisu a technické požadavky - ok
 
 Chybi
 -----

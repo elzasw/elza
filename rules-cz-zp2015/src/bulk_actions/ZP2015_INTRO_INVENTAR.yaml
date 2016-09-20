@@ -1,0 +1,15 @@
+name: Agregace úvodu inventáře a katalogu
+code_type_bulk_action: GENERATOR_MULTIPLE
+rule_code: ZP2015
+
+action:
+
+    - TEXT_AGGREGATION
+        input_types:
+            - ZP2015_UNIT_SOURCE
+        output_type: ZP2015_UNIT_SOURCE
+
+    - TEXT_AGGREGATION
+        input_types:
+            - ZP2015_UNIT_HIST
+        output_type: ZP2015_UNIT_HIST

@@ -7,7 +7,7 @@ require('./SubNodeForm.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyForm, AddRegistryForm,
-    AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm, AddNodeDropdown,
+    AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm,
     AddFileForm} from 'components';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
@@ -31,29 +31,29 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         super(props);
 
         this.bindMethods(
-            'renderDescItemGroup', 
-            'renderDescItemType', 
-            'handleChange', 
+            'renderDescItemGroup',
+            'renderDescItemType',
+            'handleChange',
             'handleChangePosition',
-            'handleChangeSpec', 
+            'handleChangeSpec',
             'handleDescItemTypeRemove',
             'handleSwitchCalculating',
             'handleBlur',
             'handleFocus',
-            'handleDescItemAdd', 
+            'handleDescItemAdd',
             'handleDescItemRemove',
             'handleCreateParty',
             'handleCreatePacket',
             'handleFundPackets',
             'handleCreatePacketFormSubmit',
-            'handleDescItemTypeCopyFromPrev', 
-            'handleDescItemTypeLock', 
+            'handleDescItemTypeCopyFromPrev',
+            'handleDescItemTypeLock',
             'handleDescItemTypeCopy',
-            'handleCreatedParty', 
-            'handleCreateRecord', 
+            'handleCreatedParty',
+            'handleCreateRecord',
             'handleCreatedRecord',
-            'trySetFocus', 
-            'initFocus', 
+            'trySetFocus',
+            'initFocus',
             'getFlatDescItemTypes',
             'handleJsonTableDownload'
         );
@@ -83,7 +83,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             if (el) {
                 setInputFocus(el, false);
             }
-        }        
+        }
     }
 
     trySetFocus(props) {
@@ -152,7 +152,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         )
     }
 
-   
+
     /**
      * Odebrání hodnoty atributu.
      * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
@@ -303,7 +303,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     handleCoordinatesUpload(descItemTypeId, file) {
         this.dispatch(this.props.formActions.fundSubNodeFormValueUploadCoordinates(this.props.versionId, this.props.routingKey, descItemTypeId, file));
     }
-    
+
     /**
      * Přidání nové hodnoty jsonTable pomocí uploadu.
      * @param file {File} soubor
@@ -674,7 +674,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
     handleJsonTableDownload(objectId) {
         const {versionId} = this.props;
-        
+
         window.open(UrlFactory.exportArrDescItemCsvExport(objectId, versionId));
     }
 

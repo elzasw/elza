@@ -248,6 +248,10 @@ var messages = {
     "arr.fund.filterSettings.updateData.action": "Aktualizovat data podle filtru",
     "arr.fund.columnSettings.title": "Nastavení sloupců",
     "arr.fund.columnSettings.action": "Nastavit zobrazení sloupců",
+
+    "arr.fund.columnSettings.available" : "Dostupné",
+    "arr.fund.columnSettings.visible" : "Vybrané",
+
     "arr.fund.bulkModifications.action": "Hromadná úprava prvku popisu",
     "arr.fund.bulkModifications.findAndRFeplace.findText": "Najít",
     "arr.fund.bulkModifications.findAndRFeplace.replaceText": "Nahradit",
@@ -349,6 +353,15 @@ var messages = {
     "arr.fund.internalCode": "Interní kod",
     "arr.fund.dateRange": "Časový rozsah",
 
+    "arr.fund.addNode": "Přidat jednotku popisu",
+    "arr.fund.addNode.direction": "Umístění",
+    "arr.fund.addNode.before": "Před",
+    "arr.fund.addNode.after": "Za",
+    "arr.fund.addNode.child": "Pod",
+    "arr.fund.addNode.atEnd": "Na konec",
+    "arr.fund.addNode.scenario": "Typ jednotky popisu",
+    "arr.fund.addNode.noDirection": "Nebylo vybráno umístění.",
+
     "arr.fund.subNodes.prevPage": "Předchozí stránka",
     "arr.fund.subNodes.nextPage": "Další stránka",
     "arr.fund.subNodes.findPosition": "Přejít na JP podle pořadového čísla",
@@ -424,9 +437,7 @@ var messages = {
     "subNodeForm.descItem.jsonTable.action.upload": "Nahrát data",
 
     "subNodeForm.section.jp" : "Záznam:",
-    "subNodeForm.section.item" : "Položka:",
-
-    "nodePanel.addSubNode": "Přidat JP na konec",
+    "subNodeForm.section.item" : "Prvek popisu",
 
     "subNodeRegister.title": "Rejstříková hesla",
     "subNodeRegister.title.add": "Přidání hesla",
