@@ -30,7 +30,8 @@ export function visiblePolicyTypesFetch() {
                 json.forEach((item) => {
                     data[item.id] = {
                         code: item.code,
-                        name: item.name
+                        name: item.name,
+                        ruleSetId: item.ruleSetId
                     }
                 });
                 dispatch(visiblePolicyTypesReceive(data))
