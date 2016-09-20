@@ -1,6 +1,6 @@
 elza:
   data:
-      url: jdbc:postgresql://vyv-db.marbes.cz/elza_demo
+      url: jdbc:postgresql://localhost/elza
       user: app
       pass: app
 
@@ -129,7 +129,7 @@ elza:
             - code: ZP2015_UNIT_COPY_RIGHTS
               width: 1
             - code: ZP2015_UNIT_CURRENT_STATUS
-              width: 2
+              width: 0
             - code: ZP2015_COPY_SOURCE
               width: 1
             - code: ZP2015_RELATED_UNITS
