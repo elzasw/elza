@@ -145,6 +145,13 @@ logging:
     cz.tacr.elza: DEBUG
 ```
 
+Nastaveni logovani do souboru pro embed server
+
+```
+logging:
+  file: ${elza.workingDir}/log/elza.log
+```
+
 ### Import balíčku s pravidly
 Po přeložení spuštění je potřeba naimportovat základní pravidla - soubor elza-war/target/elza-packages.zip
 
