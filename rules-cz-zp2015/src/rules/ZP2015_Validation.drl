@@ -84,3 +84,15 @@ when
 then
 	results.createMissing("ZP2015_UNIT_SOURCE", "Není uveden zdroj akvizice", "BASIC");
 end
+
+// Kontrola, zda každý list má v hierarchii fyzický stav
+rule "List musí mít popsán fyzický stav směrem ke kořeni"
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	not ( $level: Level( $items: descItems ) and 
+		DescItem(type in 
+		  ( "ZP2015_UNIT_CURRENT_STATUS" ) )
+		  from $items )
+then
+	results.createMissing("ZP2015_UNIT_CURRENT_STATUS", "Není uveden fyzický stav jednotky popisu a technické požadavky", "BASIC");
+end

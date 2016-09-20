@@ -9,7 +9,22 @@ action:
             - ZP2015_UNIT_SOURCE
         output_type: ZP2015_UNIT_SOURCE
 
-    - TEXT_AGGREGATION
+    # ZP4.3.2 Manipulacni seznam ma historii nepovinnou
+    - TEXT_AGGREGATION    
         input_types:
             - ZP2015_UNIT_HIST
         output_type: ZP2015_UNIT_HIST
+        
+    # ZP4.4.4 Fyzický stav jednotky popisu a technické požadavky
+    - TEXT_AGGREGATION
+        input_types:
+            - ZP2015_UNIT_CURRENT_STATUS
+        output_type: ZP2015_UNIT_CURRENT_STATUS
+
+    # 4.5.2 Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání
+    - TEXT_AGGREGATION    
+        create_empty: false
+        input_types:
+            - ZP2015_RELATED_UNITS
+        output_type: ZP2015_RELATED_UNITS
+        

@@ -321,7 +321,12 @@ rule "Univerzální prvky popisu - možné"
 no-loop
 when
 	$itemType : RulItemTypeExt(code in
-	( "ZP2015_FORMAL_TITLE", "ZP2015_ORIGINATOR", "ZP2015_OTHER_ID", "ZP2015_UNIT_SOURCE", "ZP2015_UNIT_HIST" ) )
+	( "ZP2015_FORMAL_TITLE", "ZP2015_ORIGINATOR", "ZP2015_OTHER_ID", 
+	  "ZP2015_UNIT_SOURCE", "ZP2015_UNIT_HIST", "ZP2015_UNIT_CURRENT_STATUS",
+	  // ZP 4.1 - 4.3 - vzdy mozne, neni soucasti uvodu
+	  "ZP2015_UNIT_ACCESS","ZP2015_UNIT_INFO_RIGHTS", "ZP2015_UNIT_COPY_RIGHTS",
+	  // ZP 4.5.2 
+	  "ZP2015_RELATED_UNITS" ) )
 then
 	$itemType.setType(RulItemType.Type.POSSIBLE);
 end
@@ -374,12 +379,22 @@ then
    	$itemType.setType(RulItemType.Type.REQUIRED);
 end
 
-// Přímý zdroj akvizice - doporučení pro kořen, vyhodnoceno později
-rule "Přímý zdroj akvizice - kořen"
+// 4.3.5 Přímý zdroj akvizice - doporučení pro kořen, vyhodnoceno později
+rule "4.3.5 Přímý zdroj akvizice - kořen"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( parent == null )
 	$itemType: RulItemTypeExt( code == "ZP2015_UNIT_SOURCE" )
+then
+	$itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+// 4.4.4 Fyzický stav jednotky popisu a technické požadavky - doporučení pro kořen, vyhodnoceno později
+rule "4.4.4 Fyzický stav jednotky popisu a technické požadavky - kořen"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( parent == null )
+	$itemType: RulItemTypeExt( code == "ZP2015_UNIT_CURRENT_STATUS" )
 then
 	$itemType.setType(RulItemType.Type.RECOMMENDED);
 end
