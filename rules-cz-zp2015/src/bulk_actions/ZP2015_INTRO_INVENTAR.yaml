@@ -15,6 +15,18 @@ action:
             - ZP2015_UNIT_HIST
         output_type: ZP2015_UNIT_HIST
         
+    # ZP4.3.3 Způsob uspořádání jednotky popisu
+    - TEXT_AGGREGATION    
+        input_types:
+            - ZP2015_UNIT_ARR
+        output_type: ZP2015_UNIT_ARR
+
+    # ZP4.3.6 Budoucí přírůstky
+    - TEXT_AGGREGATION    
+        input_types:
+            - ZP2015_FUTURE_UNITS
+        output_type: ZP2015_FUTURE_UNITS
+        
     # ZP4.4.4 Fyzický stav jednotky popisu a technické požadavky
     - TEXT_AGGREGATION
         input_types:
@@ -27,4 +39,16 @@ action:
         input_types:
             - ZP2015_RELATED_UNITS
         output_type: ZP2015_RELATED_UNITS
-        
+
+    # 4.7.2 Pravidla zpracování jednotky popisu
+    - TEXT_AGGREGATION    
+        input_types:
+            - ZP2015_ARRANGE_RULES
+        output_type: ZP2015_ARRANGE_RULES
+
+    # 4.7.3 Datum podpisu
+    - TEXT_AGGREGATION    
+        input_types:
+            - ZP2015_SIGNATURE_DATE
+        output_type: ZP2015_SIGNATURE_DATE
+ 
