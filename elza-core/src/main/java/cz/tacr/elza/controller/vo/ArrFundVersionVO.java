@@ -25,6 +25,8 @@ public class ArrFundVersionVO {
 
     private Integer ruleSetId;
 
+    private Integer packageId;
+
     public Integer getId() {
         return id;
     }
@@ -63,6 +65,14 @@ public class ArrFundVersionVO {
 
     public void setRuleSetId(final Integer ruleSetId) {
         this.ruleSetId = ruleSetId;
+    }
+
+    public Integer getPackageId() {
+        return packageId;
+    }
+
+    public void setPackageId(final Integer packageId) {
+        this.packageId = packageId;
     }
 
     @Override

@@ -24,6 +24,11 @@ public class RulPacketTypeVO {
     private String name;
 
     /**
+     * identifikátor balíčku
+     */
+    private Integer packageId;
+
+    /**
      * zkratka
      */
     private String shortcut;
@@ -58,5 +63,13 @@ public class RulPacketTypeVO {
 
     public void setShortcut(final String shortcut) {
         this.shortcut = shortcut;
+    }
+
+    public Integer getPackageId() {
+        return packageId;
+    }
+
+    public void setPackageId(final Integer packageId) {
+        this.packageId = packageId;
     }
 }

@@ -60,9 +60,29 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {packetTypeId, storageNumber, prefix, start, size, count}, handleSubmit, onClose, packetTypes, createSingle, createMany, changeNumbers} = this.props;
+        const {fields: {packetTypeId, storageNumber, prefix, start, size, count}, handleSubmit, onClose, packetTypes,
+            createSingle, createMany, changeNumbers, arrRegion} = this.props;
 
         var submitForm = submitReduxForm.bind(this, validate)
+
+        var activeFund = null;
+        if (arrRegion.activeIndex != null) {
+            activeFund = arrRegion.funds[arrRegion.activeIndex];
+        }
+
+        let packetTypeItems;
+
+        if (activeFund == null) {
+            packetTypeItems = packetTypes.items;
+        } else {
+            let activeVersion = activeFund.activeVersion;
+            packetTypeItems = [];
+            packetTypes.items.forEach(item => {
+                if (activeVersion.packageId === item.packageId) {
+                    packetTypeItems.push(item);
+                }
+            })
+        }
 
         var example
         if (createMany || changeNumbers) {
@@ -76,7 +96,7 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
             if (typeof packetTypeId.value === 'undefined' || packetTypeId.value === '') {
                 packetTypeHelp = i18n('arr.packet.changeNumbers.packetType.empty')
             } else {
-                const packetType = getMapFromList(packetTypes.items)[packetTypeId.value]
+                const packetType = getMapFromList(packetTypeItems)[packetTypeId.value]
                 packetTypeHelp = i18n('arr.packet.changeNumbers.packetType.notEmpty', packetType.name)
             }
         }
@@ -87,7 +107,7 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
                     <form onSubmit={handleSubmit(submitForm)}>
                         <FormInput componentClass="select" label={i18n('arr.packet.packetType')} {...packetTypeId} {...decorateFormField(packetTypeId)} help={packetTypeHelp}>
                             <option key='-packetTypeId'/>
-                            {packetTypes.items.map(i=> {return <option key={i.id} value={i.id}>{i.name}</option>})}
+                            {packetTypeItems.map(i=> {return <option key={i.id} value={i.id}>{i.name}</option>})}
                         </FormInput>
                         {createSingle && <FormInput type="text" label={i18n('arr.packet.storageNumber')} {...storageNumber} {...decorateFormField(storageNumber)} />}
                         {(createMany || changeNumbers) && <FormInput type="text" label={i18n('arr.packet.prefix')} {...prefix} {...decorateFormField(prefix)} />}
@@ -112,7 +132,8 @@ module.exports = reduxForm({
     normalize: ['start', 'size', 'count']
 },state => ({
     initialValues: state.form.addPacketForm.initialValues,
-    packetTypes: state.refTables.packetTypes
+    packetTypes: state.refTables.packetTypes,
+    arrRegion: state.arrRegion
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addPacketForm', data})}
 )(AddPacketForm)
