@@ -72,7 +72,7 @@ public class DataceRangeAction extends Action {
                 if (dataceMin > data.getNormalizedFrom()) {
                     dataceMin = data.getNormalizedFrom();
                 }
-                if (dataceMax > data.getNormalizedTo()) {
+                if (dataceMax < data.getNormalizedTo()) {
                     dataceMax = data.getNormalizedTo();
                 }
             }
