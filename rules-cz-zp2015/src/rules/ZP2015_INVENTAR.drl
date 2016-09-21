@@ -26,7 +26,10 @@ end
 rule "Vybrané jsou povinné"
 no-loop 
 when
-	$itemType : RulItemTypeExt( code in ("ZP2015_UNIT_CURRENT_STATUS","ZP2015_UNIT_SOURCE", "ZP2015_UNIT_HIST") )
+	$itemType : RulItemTypeExt( code in ("ZP2015_UNIT_CURRENT_STATUS","ZP2015_UNIT_SOURCE", 
+		"ZP2015_UNIT_HIST",
+		"ZP2015_FUTURE_UNITS", "ZP2015_UNIT_ARR", 
+		"ZP2015_ARRANGER", "ZP2015_ARRANGE_RULES", "ZP2015_SIGNATURE_DATE" ) )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
     $itemType.setRepeatable(false);

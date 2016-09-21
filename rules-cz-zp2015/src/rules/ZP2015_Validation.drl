@@ -96,3 +96,15 @@ when
 then
 	results.createMissing("ZP2015_UNIT_CURRENT_STATUS", "Není uveden fyzický stav jednotky popisu a technické požadavky", "BASIC");
 end
+
+// Kontrola, zda každý list má zpracovatele
+rule "List musí mít směrem ke kořeni alespoň jednoho zpracovatele"
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	not ( $level: Level( $items: descItems ) and 
+		DescItem(type in 
+		  ( "ZP2015_ARRANGER" ) )
+		  from $items )
+then
+	results.createMissing("ZP2015_ARRANGER", "Není uveden zpracovatel", "BASIC");
+end
