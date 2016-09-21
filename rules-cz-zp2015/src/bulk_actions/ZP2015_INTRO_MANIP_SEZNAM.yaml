@@ -3,6 +3,11 @@ code_type_bulk_action: GENERATOR_MULTIPLE
 rule_code: ZP2015
 
 action:
+    - DATACE_RANGE
+        input_types:
+            - ZP2015_UNIT_DATE
+        output_type: ZP2015_DATE_RANGE
+
     - TEXT_AGGREGATION
         input_types:
             - ZP2015_UNIT_SOURCE

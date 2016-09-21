@@ -108,3 +108,15 @@ when
 then
 	results.createMissing("ZP2015_ARRANGER", "Není uveden zpracovatel", "BASIC");
 end
+
+// Kontrola, zda každý list má určen jazyk
+rule "List musí mít směrem ke kořeni alespoň jeden jazyk"
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	not ( $level: Level( $items: descItems ) and 
+		DescItem(type in 
+		  ( "ZP2015_LANGUAGE" ) )
+		  from $items )
+then
+	results.createMissing("ZP2015_LANGUAGE", "Není uveden jazyk", "BASIC");
+end

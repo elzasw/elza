@@ -512,5 +512,96 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <view-order>57</view-order>
+    </item-type>    
+    <item-type code="ZP2015_DATE_RANGE" data-type="TEXT">
+        <name>Časové rozmezí</name>
+        <shortcut>Časové rozmezí</shortcut>
+        <description>Časové rozmezí archivní pomůcky (uvádí se v tiráži)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+        <view-order>58</view-order>
+    </item-type>
+    <item-type code="ZP2015_UNIT_COUNT_TABLE" data-type="JSON_TABLE">
+        <name>Počet evidenčních jednotek zpřístupněných archivní pomůckou</name>
+        <shortcut>Počet EJ</shortcut>
+        <description>Počet evidenčních jednotek zpřístupněných archivní pomůckou (uvádí se v tiráži)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+        <view-order>59</view-order>
+        <columns-definitions>
+            <column code="NAME" data-type="TEXT">
+                <name>EJ</name>
+                <width>40</width>
+            </column>
+            <column code="COUNT" data-type="INTEGER">
+                <name>Počet</name>
+                <width>30</width>
+            </column>
+        </columns-definitions>
+    </item-type>
+    <item-type code="ZP2015_UNIT_COUNT_SUM" data-type="INT">
+        <name>Počet jednotek popisu, které lze na základě archivní pomůcky zpřístupnit</name>
+        <shortcut>Součet JP</shortcut>
+        <description>Počet jednotek popisu, které lze na základě archivní pomůcky zpřístupnit (uvádí se v tiráži)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+        <view-order>60</view-order>
+    </item-type>
+    <item-type code="ZP2015_UNITS_AMOUNT" data-type="STRING">
+        <name>Rozsah archivní pomůckou zpřístupněných archiválií</name>
+        <shortcut>Rozsah archiválií</shortcut>
+        <description>Rozsah archivní pomůckou zpřístupněných archiválií (uvádí se v tiráži)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+        <view-order>61</view-order>
+    </item-type>
+    <item-type code="ZP2015_FINDING_AID_DATE" data-type="STRING">
+        <name>Stav archivní pomůckou zpřístupněných archiválií ke dni</name>
+        <shortcut>Datum AP</shortcut>
+        <description>Stav archivní pomůckou zpřístupněných archiválií ke dni (uvádí se v tiráži)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+        <view-order>62</view-order>
+    </item-type>
+    <item-type code="ZP2015_ARRANGER_TEXT" data-type="TEXT">
+        <name>Zpracovatel archivního souboru</name>
+        <shortcut>Zpracovatel</shortcut>
+        <description>Zpracovatel archivního souboru (uvádí se v tiráži)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+        <view-order>63</view-order>
+    </item-type>
+    <item-type code="ZP2015_FINDING_AID_EDITOR" data-type="TEXT">
+        <name>Archivní pomůcku sestavil</name>
+        <shortcut>Sestavil</shortcut>
+        <description>Archivní pomůcku sestavil (uvádí se v tiráži)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+        <view-order>64</view-order>
+    </item-type>
+    <item-type code="ZP2015_FINDING_AID_APPROVED_BY" data-type="STRING">
+        <name>Archivní pomůcku schválil</name>
+        <shortcut>Schválil</shortcut>
+        <description>Archivní pomůcku schválil(uvádí se v tiráži)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+        <view-order>65</view-order>
+    </item-type>
+    <item-type code="ZP2015_ATTACHMENT" data-type="FILE_REF">
+        <name>Příloha</name>
+        <shortcut>Příloha</shortcut>
+        <description>Příloha JP</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+        <view-order>66</view-order>
     </item-type>
 </item-types>

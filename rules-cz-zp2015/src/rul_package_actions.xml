@@ -28,6 +28,7 @@
             <action-item-type item-type="ZP2015_RELATED_UNITS" />
             <action-item-type item-type="ZP2015_ARRANGE_RULES" />
             <action-item-type item-type="ZP2015_SIGNATURE_DATE" />
+            <action-item-type item-type="ZP2015_DATE_RANGE" />
         </action-item-types>
         <action-recommendeds>
             <action-recommended output-type="ZP2015_MANIP_SEZNAM" />
@@ -44,6 +45,7 @@
             <action-item-type item-type="ZP2015_RELATED_UNITS" />
             <action-item-type item-type="ZP2015_ARRANGE_RULES" />
             <action-item-type item-type="ZP2015_SIGNATURE_DATE" />
+            <action-item-type item-type="ZP2015_DATE_RANGE" />
         </action-item-types>
         <action-recommendeds>
             <action-recommended output-type="ZP2015_INVENTAR" />
