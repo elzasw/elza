@@ -16,12 +16,12 @@
     .app-header {
         height: @header-height;
         border-bottom: 1px solid @app-header-border;
-        
+
     }
     .app-content {
         height: calc(~"100% - "@header-height);
         background: @body-bg;
-        overflow: auto;
+        //overflow: auto;
     }
 }
 
@@ -84,9 +84,9 @@
             &.closed {
                 .toggle.btn {
                     top:0;
-                }            
+                }
             }
-        }        
+        }
     }
 }
 
@@ -101,7 +101,7 @@
     .app-content {
         .split-pane-divider {
             background: @split-pane-divider-bg;
-        }        
+        }
 
         #left-component {
             padding: 4px;
@@ -133,4 +133,3 @@
         }
     }
 }
-
