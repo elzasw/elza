@@ -29,6 +29,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import org.apache.commons.collections4.CollectionUtils;
@@ -1162,9 +1163,19 @@ public class PackageService {
         List<RulTemplate> rulTemplateToDelete = new ArrayList<>(rulTemplate);
         rulTemplateToDelete.removeAll(rulTemplateNew);
         if (!rulTemplateToDelete.isEmpty()) {
-            List<ArrOutputDefinition> byTemplate = outputDefinitionRepository.findByTemplatesAndStates(rulTemplateToDelete, Arrays.asList(OutputState.OPEN, OutputState.GENERATING, OutputState.COMPUTING));
+        	// Check if there exists non deleted templates
+            List<ArrOutputDefinition> byTemplate = outputDefinitionRepository.findNonDeletedByTemplatesAndStates(rulTemplateToDelete, Arrays.asList(OutputState.OPEN, OutputState.GENERATING, OutputState.COMPUTING));
             if (!byTemplate.isEmpty()) {
-                throw new IllegalStateException("Existuje výstup(y), který nebyl vygenerován či smazán a je navázán na šablonu, která je v novém balíčku smazána.");
+            	StringBuilder sb = new StringBuilder().append("Existuje výstup(y), který nebyl vygenerován či smazán a je navázán na šablonu, která je v novém balíčku smazána.");
+            	byTemplate.forEach((a) -> { 
+            		ArrFund fund = a.getFund();            		
+            		sb.append("\noutputDefinitionId: ").append(a.getOutputDefinitionId())
+            				.append(", outputName: ").append(a.getName())
+            				.append(", fundId: ").append(fund.getFundId())
+            				.append(", fundName: ").append(fund.getName()).toString();
+            				
+            	});
+                throw new IllegalStateException(sb.toString());
             }
             templateRepository.updateDeleted(rulTemplateToDelete, true);
         }

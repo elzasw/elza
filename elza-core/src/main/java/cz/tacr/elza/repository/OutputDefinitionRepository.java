@@ -53,8 +53,8 @@ public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefin
     @Query("UPDATE arr_output_definition o SET o.state = ?2, o.error = ?3 WHERE o.state IN ?1")
     int setStateFromStateWithError(List<OutputState> statesToFind, OutputState stateToSet, String errorMessage);
 
-    @Query("SELECT no FROM arr_output_definition no WHERE no.template IN ?1 AND no.state IN ?2")
-    List<ArrOutputDefinition> findByTemplatesAndStates(List<RulTemplate> rulTemplateToDelete, List<OutputState> states);
+    @Query("SELECT no FROM arr_output_definition no WHERE no.template IN ?1 AND no.state IN ?2 AND NOT deleted = TRUE")
+    List<ArrOutputDefinition> findNonDeletedByTemplatesAndStates(List<RulTemplate> rulTemplateToDelete, List<OutputState> states);
 
     @Query("SELECT no FROM arr_output_definition no WHERE no.outputType IN ?1")
     List<ArrOutputDefinition> findByOutputTypes(List<RulOutputType> rulPacketTypesDelete);
