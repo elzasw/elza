@@ -3,7 +3,7 @@
 @parts-margin: 4px;
 @node-panel-actions-height: 26px;
 @node-panel-parents-height: 15%;
-@node-panel-content-height: 80%;
+@node-panel-content-height: 70%;
 @node-panel-children-height: 15%;
 
 .node-panel-container {
@@ -24,21 +24,14 @@
     .main {
         flex-grow: 1;
         //overflow: hidden;
-        //height: 100%;
+        height: 100%;
         display: flex;
         flex-direction: column;
 
         .actions-container {
             width: 100%;
             background: @node-panel-actions-bg;
-            //max-height: 1.8em;
-            //min-height: 1.8em;
-            //line-height: 1.8em;
             position: relative;
-            //margin-bottom: 5px;
-            //background-color: red;
-
-
         }
         .content {
             margin-bottom: @parts-margin;
@@ -56,16 +49,10 @@
                 .menu-wrapper {
 
                 }
-                .floating-menu-wrapper{
-                  position:relative;
-                  height:100%;
-                }
                 .content-wrapper {
                     height: 100%;
                     overflow: auto;
                     overflow-x: hidden;
-
-
                 }
 
                 &:focus {
@@ -89,7 +76,6 @@
                 }
             }
             .accordion-item {
-              position:relative;
                 &.opened {
                     margin-top: -1px;
                     .accordion-header-container {
@@ -102,25 +88,22 @@
                     }
                 }
                 .accordion-header-container {
-                    position: relative;
-
-                    flex-wrap: nowrap;
+                    display: table;
+                    width: 100%;
                     table-layout:fixed;
                     border-bottom: 1px solid @accordion-header-border;
-                    width: 100%;
 
                     .accordion-header {
-                        display: flex;
+                        display: table-row;
+                        width: 100%;
                         height: 32px;
                         padding: 4px;
                         cursor: pointer;
                         background: @accordion-header-bg;
-                        align-items: center;
 
                         .accordion-header-left {
-                            display: inline-flex;
-                            flex-grow: 0;
-                            //width: 60%;
+                            display: table-cell;
+                            width: 60%;
                             padding: 5px;
                             overflow: hidden;
                             text-overflow: ellipsis;
@@ -129,9 +112,10 @@
                         }
 
                         .accordion-header-right {
-
-                            flex-grow: 1;
+                            display: table-cell;
                             padding: 5px;
+                            width: calc(~"40% - 20px");
+                            overflow: hidden;
                             text-overflow: ellipsis;
                             white-space: nowrap;
                             /*color: grey;*/
