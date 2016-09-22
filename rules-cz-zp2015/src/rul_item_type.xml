@@ -495,7 +495,7 @@
         <use-specification>false</use-specification>
         <view-order>54</view-order>
     </item-type>
-    <item-type code="ZP2015_ARRANGER" data-type="RECORD_REF">
+    <item-type code="ZP2015_ARRANGER" data-type="PARTY_REF">
         <name>Zpracovatel jednotky popisu</name>
         <shortcut>Zpracovatel</shortcut>
         <description>ZP4.7.1 Zpracovatel jednotky popisu</description>
