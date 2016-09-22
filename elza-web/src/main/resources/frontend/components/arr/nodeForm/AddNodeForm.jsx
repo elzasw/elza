@@ -37,7 +37,7 @@ var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
      * @param {String} inDirection směr, kterým se má vytvořit nová JP
      * @param {Object} inNode uzel pro který je volána akce
      */
-    formatDataForServer(inDirection, inNode) {
+    formatDataForServer(inDirection, inNode, inSelectedSubNodeIndex) {
         var di, no, pno;
         if(inDirection == 'ATEND') { // prvek na konec seznamu
             di = 'CHILD';
@@ -45,10 +45,15 @@ var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
             pno = inNode;
         } else {
             di = inDirection;
-            no = inNode.subNodeForm.data.parent;
+            // výběr node v akordeonu podle toho zda je otevřená JP nebo je akordeon zavřený
+            if(inNode.selectedSubNodeId != null) {
+                no = inNode.subNodeForm.data.parent;
+            } else {
+                no = inNode.childNodes[inSelectedSubNodeIndex];
+            }
             pno = inNode;
             if(inDirection == 'CHILD') {
-                pno = inNode.subNodeForm.data.parent;
+                pno = no;
             }
         }
         return {direction: di, activeNode: no, parentNode: pno}
@@ -69,9 +74,9 @@ var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
         this.setState({
             loading: true
         });
-        const {node, versionId} = this.props;
+        const {node, selectedSubNodeIndex, versionId} = this.props;
         // nastavi odpovidajiciho rodice a direction pro dotaz
-        var dataServ = this.formatDataForServer(newDirection, node)
+        var dataServ = this.formatDataForServer(newDirection, node, selectedSubNodeIndex)
         // ajax dotaz na scenare
         WebApi.getNodeAddScenarios(dataServ.activeNode, versionId, dataServ.direction).then(
             (result) => { // resolved
@@ -127,11 +132,11 @@ var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
      */
     handleFormSubmit(e) {
         e.preventDefault();
-        const {node, versionId, initDirection, handlePostSubmitActions} = this.props;
+        const {node, selectedSubNodeIndex, versionId, initDirection, handlePostSubmitActions} = this.props;
         var selDi = this.state.selectedDirection;
         var selScn = this.state.selectedScenario;
         // nastavi odpovidajiciho rodice a direction pro dotaz
-        var dataServ = this.formatDataForServer(selDi, node);
+        var dataServ = this.formatDataForServer(selDi, node, selectedSubNodeIndex);
         this.dispatch(addNode(dataServ.activeNode, dataServ.parentNode, this.props.versionId, dataServ.direction, this.getDescItemTypeCopyIds(), selScn));
         handlePostSubmitActions();
     }
@@ -204,7 +209,8 @@ function mapStateToProps(state) {
 AddNodeForm.propTypes = {
     node: React.PropTypes.object.isRequired,
     initDirection: React.PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND']),
-    nodeSettings: React.PropTypes.object.isRequired
+    nodeSettings: React.PropTypes.object.isRequired,
+    selectedSubNodeIndex: React.PropTypes.number.isRequired
 };
 
 module.exports = connect(mapStateToProps)(AddNodeForm);

@@ -215,6 +215,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         console.log("#handleShortcuts", '[' + action + ']', this);
 
         const {node, versionId, closed, userDetail, fundId} = this.props
+        const {focusItemIndex} = this.state;
         const index = indexById(node.childNodes, node.selectedSubNodeId)
 
         var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
@@ -262,22 +263,22 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 break
             case 'addNodeAfter':
                 if (!readMode) {
-                    this.dispatch(addNodeForm('AFTER', node, versionId));
+                    this.dispatch(addNodeForm('AFTER', node, focusItemIndex, versionId));
                 }
                 break
             case 'addNodeBefore':
                 if (!readMode) {
-                    this.dispatch(addNodeForm('BEFORE', node, versionId));
+                    this.dispatch(addNodeForm('BEFORE', node, focusItemIndex, versionId));
                 }
                 break
             case 'addNodeChild':
                 if (!readMode) {
-                    this.dispatch(addNodeForm('CHILD', node, versionId));
+                    this.dispatch(addNodeForm('CHILD', node, focusItemIndex, versionId));
                 }
                 break
             case 'addNodeEnd':
                 if (!readMode) {
-                    this.dispatch(addNodeForm('ATEND', node, versionId));
+                    this.dispatch(addNodeForm('ATEND', node, focusItemIndex, versionId));
                 }
                 break
         }
@@ -629,7 +630,6 @@ return true
     renderAccordion(form, recordInfo, readMode) {
         const {node, versionId, userDetail, fund, fundId, closed} = this.props;
         const {focusItemIndex} = this.state;
-        var selectedSubNodeNumber = focusItemIndex +1;
         var rows = [];
 
         if (node.viewStartIndex > 0) {
@@ -698,7 +698,7 @@ return true
             <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={this.handleShortcuts}>
                 <div tabIndex={0} className='inner-wrapper' ref="innerAccordionWrapper" onKeyDown={this.handleAccordionKeyDown}>
                     <div className="menu-wrapper">
-                        <NodeActionsBar node={node} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed} selectedSubNodeNumber={selectedSubNodeNumber}/>
+                        <NodeActionsBar node={node} selectedSubNodeIndex={focusItemIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
                     </div>
                     <div className='content-wrapper' ref='accordionContent'>
                         {rows}

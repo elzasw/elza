@@ -17,10 +17,10 @@ import {i18n, AddNodeForm} from 'components/index.jsx';
  * @param {Object} node uzel pro který je volána akce
  * @param {Object} versionId verze AS
  */
-export function addNodeForm(direction, node, versionId) {
+export function addNodeForm(direction, node, selectedSubNodeIndex, versionId) {
     return (dispatch) => {
         dispatch(modalDialogShow(this, i18n('arr.fund.addNode'),
-                <AddNodeForm node={node} versionId={versionId} initDirection={direction} handlePostSubmitActions={addNodeFormSubmit.bind(null, dispatch)}/>
+                <AddNodeForm initDirection={direction} node={node} selectedSubNodeIndex={selectedSubNodeIndex} versionId={versionId} handlePostSubmitActions={addNodeFormSubmit.bind(null, dispatch)}/>
             )
         )
     }

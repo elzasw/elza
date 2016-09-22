@@ -26,8 +26,8 @@ const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
      * Zavolání dialogu pro přidání záznamu s předdefinovaným směrem
      */
     handleAddNode(direction) {
-        const {node, versionId} = this.props;
-        this.dispatch(addNodeForm(direction, node, versionId));
+        const {node, selectedSubNodeIndex, versionId} = this.props;
+        this.dispatch(addNodeForm(direction, node, selectedSubNodeIndex, versionId));
     }
 
     renderCross() {
@@ -77,6 +77,7 @@ const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
 
 AddNodeCross.propTypes = {
     node: React.PropTypes.any.isRequired,
-    userDetail: React.PropTypes.object.isRequired
+    userDetail: React.PropTypes.object.isRequired,
+    selectedSubNodeIndex: React.PropTypes.number.isRequired
 };
 module.exports = connect()(AddNodeCross);

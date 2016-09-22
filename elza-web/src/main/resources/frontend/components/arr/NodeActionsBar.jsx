@@ -59,11 +59,13 @@ const NodeActionsBar = class NodeActionsBar extends AbstractReactComponent {
     }
 
     render() {
-      const {node, versionId, userDetail, fundId, closed, selectedSubNodeNumber} = this.props;
+      const {node, selectedSubNodeIndex, versionId, userDetail, fundId, closed} = this.props;
+      var selectedSubNodeNumber = selectedSubNodeIndex + 1; // pořadí vybraného záznamu v akordeonu
+      
       return(
         <div key='actions' className='actions-container'>
             <div key='actions' className='actions'>
-                <AddNodeCross node={node} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
+                <AddNodeCross node={node} selectedSubNodeIndex={selectedSubNodeIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
                 <div className="button-wrap">
                     <div className="left-side">
                         <Search
@@ -114,6 +116,7 @@ NodeActionsBar.propTypes = {
       versionId: React.PropTypes.any.isRequired,
       userDetail: React.PropTypes.object.isRequired,
       fundId: React.PropTypes.any.isRequired,
-      closed: React.PropTypes.any.isRequired
+      closed: React.PropTypes.any.isRequired,
+      selectedSubNodeIndex: React.PropTypes.number.isRequired
 };
 module.exports = connect()(NodeActionsBar);
