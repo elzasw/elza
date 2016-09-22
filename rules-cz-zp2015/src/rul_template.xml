@@ -4,4 +4,9 @@
         <engine>FREEMARKER</engine>
         <directory>ZP2015_MANIP_SEZNAM_TXT_FREEMARKER</directory>
     </template>
+    <template code="ZP2015_MANIP_SEZNAM_PDF_JASPER" output-type="ZP2015_MANIP_SEZNAM" mime-type="application/pdf" extension="pdf">
+        <name>Manipulační seznam, PDF</name>
+        <engine>JASPER</engine>
+        <directory>ZP2015_MANIP_SEZNAM_PDF_JASPER</directory>
+    </template>
 </templates>
