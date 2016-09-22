@@ -36,14 +36,14 @@ const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
             <div className="hid">
                 {notRoot &&
                     [<div key="addBefore" className="but top" onClick={this.handleAddNode.bind(this,'BEFORE')}>
-                        <span className="ico fa fa-arrow-up"></span><br/>{i18n('arr.fund.addNode.before')}</div>,
+                        <div className="ico"><span className="fa fa-arrow-up"></span></div><div className="lbl">{i18n('arr.fund.addNode.before')}</div></div>,
                     <div key="addAfter" className="but bottom" onClick={this.handleAddNode.bind(this,'AFTER')}>
-                        <span className="ico fa fa-arrow-down"></span><br/>{i18n('arr.fund.addNode.after')}</div>,
+                        <div className="ico"><span className="fa fa-arrow-down"></span></div><div className="lbl">{i18n('arr.fund.addNode.after')}</div></div>,
                     <div key="addAtEnd" className="but bottom2" onClick={this.handleAddNode.bind(this,'ATEND')}>
-                        <span className="ico fa fa-arrow-down"></span><br/>{i18n('arr.fund.addNode.atEnd')}</div>]
+                        <div className="ico"><span className="fa fa-arrow-down"></span></div><div className="lbl">{i18n('arr.fund.addNode.atEnd')}</div></div>]
                 }
                 <div key="addChild" className="but right" onClick={this.handleAddNode.bind(this,'CHILD')}>
-                    <span className="ico fa fa-level-up fa-rotate-90"></span><br/>{i18n('arr.fund.addNode.child')}</div>
+                    <div className="ico"><span className="fa fa-level-up fa-rotate-90"></span></div><div className="lbl">{i18n('arr.fund.addNode.child')}</div></div>
             </div>
         )
     }
