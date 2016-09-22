@@ -233,6 +233,42 @@ public class Output implements RecordProvider, NodesOrder {
                 .sorted(Item::compareToItemViewOrderPosition)
                 .collect(Collectors.toList());
     }
+    
+    /**
+     * Return single item 
+     * @param itemTypeCode Code of item
+     * @return Return single item if exists. Return null if item does not exists.
+     * @throws Throw exception if there are multiple items with same type.
+     */
+    public Item getSingleItem(String itemTypeCode) {
+    	Item found = null;
+    	for(Item item: items)
+    	{
+    		if(itemTypeCode.equals(item.getType().getCode())) {
+    			// Check if item already found
+    			if(found!=null) {
+    				throw new IllegalStateException("Multiple items with same code exists: "+itemTypeCode);
+    			}
+    			found = item;
+    		}
+    	}
+    	return found;
+    }
+
+    /**
+     * Return value of single item 
+     * @param itemTypeCode Code of item
+     * @return Return value of single item. Return null if item does not exists.
+     * @throws Throw exception if there are multiple items with same type.
+     */
+    public String getSingleItemValue(String itemTypeCode) {
+    	Item found = getSingleItem(itemTypeCode);
+    	if(found!=null) {
+    		return found.getSerializedValue();
+    	} else {
+    		return null;
+    	}
+    }
 
     /**
      * Vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě hodnot typů uvedených ve vstupu metody;

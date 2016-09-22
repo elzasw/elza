@@ -58,6 +58,7 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
             // Parameters for report
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("output", output);
+            parameters.put("fund", output.getFund());
 
             // subreporty
             addSubreports(rulTemplate, parameters);
