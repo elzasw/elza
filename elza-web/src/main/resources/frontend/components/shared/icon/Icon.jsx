@@ -17,7 +17,13 @@ var Icon = class Icon extends AbstractReactComponent {
     }
 
     render() {
-        var cls = 'icon fa ' + this.props.glyph;
+        const {glyph} = this.props;
+        if(glyph.includes("ez-")){
+            var cls = 'icon ez ' + glyph;
+        }
+        else if(glyph.includes("fa-")){
+            var cls = 'icon fa ' + glyph;
+        }
         if (this.props.className) {
             cls += ' ' + this.props.className;
         }
@@ -35,4 +41,3 @@ var Icon = class Icon extends AbstractReactComponent {
 }
 
 module.exports = Icon;
-

@@ -122,7 +122,7 @@ const ArrPage = class ArrPage extends ArrParentPage {
                     }, activeFund.versionId));
                 }
             }
-            
+
             if (this.state.fundNodesError !== activeFund.fundNodesError) {
                 this.setState({fundNodesError: activeFund.fundNodesError})
                 if (this.refs.fundErrors) {
@@ -132,7 +132,7 @@ const ArrPage = class ArrPage extends ArrParentPage {
         } else {
             this.setState({fundNodesError: null});
         }
-        
+
         this.trySetFocus(nextProps)
     }
 
@@ -367,7 +367,7 @@ const ArrPage = class ArrPage extends ArrParentPage {
                     );
                     if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: activeFund.id}) && !readMode) {
                         itemActions.push(
-                            <Button key="prepareFundAction" onClick={this.handleOpenFundActionForm.bind(this, activeFund.versionId, activeInfo.activeSubNode)}><Icon glyph="fa-cog"/>
+                            <Button key="prepareFundAction" onClick={this.handleOpenFundActionForm.bind(this, activeFund.versionId, activeInfo.activeSubNode)}><Icon glyph="fa-calculator"/>
                                 <div><span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span></div>
                             </Button>
                         );

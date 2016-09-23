@@ -487,15 +487,17 @@ return true
      */
     renderRowItem(onClick, item) {
         var icon = item.icon ? <Icon className="node-icon" glyph={getGlyph(item.icon)} /> : ''
-        var levels = <span className="reference-mark">{createReferenceMarkString(item)}</span>
+        var refmark = createReferenceMarkString(item);
+        var levels = "";
+        if(refmark != "")
+            levels = <span className="reference-mark">{refmark}</span>
         var name = item.name ? item.name : <i>{i18n('fundTree.node.name.undefined', item.id)}</i>;
         name = <span title={name} className="name"><span>{name}</span></span>
-
         const click = typeof item.id !== 'undefined' ? onClick.bind(this, item) : null
 
         return (
             <div key={item.id} className='node' onClick={click}>
-                {icon} {levels} {name}
+                 {levels} {icon} &nbsp;{name}
             </div>
         )
     }
@@ -632,68 +634,71 @@ return true
         const {focusItemIndex} = this.state;
         var rows = [];
 
-        if (node.viewStartIndex > 0) {
-            rows.push(
-                <Button key="prev" onClick={()=>this.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))}>
-                    <Icon glyph="fa-chevron-left" />{i18n('arr.fund.prev')}
-                </Button>
-            )
-        }
-        for (var a=node.viewStartIndex; (a<node.viewStartIndex + node.pageSize) && (a < node.childNodes.length); a++) {
-            var item = node.childNodes[a];
-
-            var state = this.renderState(item);
-            var accordionLeft = item.accordionLeft ? item.accordionLeft : i18n('accordion.title.left.name.undefined', item.id)
-            var accordionRight = item.accordionRight ? item.accordionRight : ''
-            var referenceMark = <span className="reference-mark">{createReferenceMarkString(item)}</span>
-
-            var focused = a === this.state.focusItemIndex
-
-            if (node.selectedSubNodeId == item.id) {
+        if (!node.nodeInfoFetched) {
+            rows.push( <Loading value={i18n('global.data.loading.node')}/>);
+        } else{
+            if (node.viewStartIndex > 0) {
                 rows.push(
-                    <div key={item.id} ref={'accheader-' + item.id} className={'accordion-item opened' + (focused ? ' focused' : '')}>
-                        <div key='header' className='accordion-header-container' onClick={this.handleCloseItem.bind(this, item)}>
-                            <div className='accordion-header'>
-                                <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
-                                    {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
-                                </div>
-                                <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
-                                    <span className="title" title={accordionRight}>{accordionRight}</span>
-                                </div>
-                                {state}
-                            </div>
-                        </div>
-                        <div key="body" className='accordion-body'>
-                            {form}
-                            {recordInfo}
-                        </div>
-                    </div>
+                    <Button key="prev" onClick={()=>this.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))}>
+                        <Icon glyph="fa-chevron-left" />{i18n('arr.fund.prev')}
+                    </Button>
                 )
-            } else {
-                rows.push(
-                    <div key={item.id} ref={'accheader-' + item.id} className={'accordion-item closed' + (focused ? ' focused' : '')}>
-                        <div key='header' className='accordion-header-container' onClick={this.handleOpenItem.bind(this, item)}>
-                            <div className='accordion-header'>
-                                <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
-                                    {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
+            }
+            for (var a=node.viewStartIndex; (a<node.viewStartIndex + node.pageSize) && (a < node.childNodes.length); a++) {
+                var item = node.childNodes[a];
+
+                var state = this.renderState(item);
+                var accordionLeft = item.accordionLeft ? item.accordionLeft : i18n('accordion.title.left.name.undefined', item.id)
+                var accordionRight = item.accordionRight ? item.accordionRight : ''
+                var referenceMark = <span className="reference-mark">{createReferenceMarkString(item)}</span>
+
+                var focused = a === this.state.focusItemIndex
+
+                if (node.selectedSubNodeId == item.id) {
+                    rows.push(
+                        <div key={item.id} ref={'accheader-' + item.id} className={'accordion-item opened' + (focused ? ' focused' : '')}>
+                            <div key='header' className='accordion-header-container' onClick={this.handleCloseItem.bind(this, item)}>
+                                <div className='accordion-header'>
+                                    <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
+                                        {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
+                                    </div>
+                                    <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
+                                        <span className="title" title={accordionRight}>{accordionRight}</span>
+                                    </div>
+                                    {state}
                                 </div>
-                                <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
-                                    <span className="title" title={accordionRight}>{accordionRight}</span>
-                                </div>
-                                {state}
+                            </div>
+                            <div key="body" className='accordion-body'>
+                                {form}
+                                {recordInfo}
                             </div>
                         </div>
-                    </div>
+                    )
+                } else {
+                    rows.push(
+                        <div key={item.id} ref={'accheader-' + item.id} className={'accordion-item closed' + (focused ? ' focused' : '')}>
+                            <div key='header' className='accordion-header-container' onClick={this.handleOpenItem.bind(this, item)}>
+                                <div className='accordion-header'>
+                                    <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
+                                        {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
+                                    </div>
+                                    <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
+                                        <span className="title" title={accordionRight}>{accordionRight}</span>
+                                    </div>
+                                    {state}
+                                </div>
+                            </div>
+                        </div>
+                    )
+                }
+            }
+
+            if (node.childNodes.length > node.pageSize && node.viewStartIndex + node.pageSize/2 < node.childNodes.length && node.childNodes.length - node.viewStartIndex > node.pageSize) {
+                rows.push(
+                    <Button key="next" onClick={()=>this.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))}><Icon glyph="fa-chevron-right" />{i18n('arr.fund.next')}</Button>
                 )
             }
         }
-
-        if (node.childNodes.length > node.pageSize && node.viewStartIndex + node.pageSize/2 < node.childNodes.length && node.childNodes.length - node.viewStartIndex > node.pageSize) {
-            rows.push(
-                <Button key="next" onClick={()=>this.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))}><Icon glyph="fa-chevron-right" />{i18n('arr.fund.next')}</Button>
-            )
-        }
-
         return (
             <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={this.handleShortcuts}>
                 <div tabIndex={0} className='inner-wrapper' ref="innerAccordionWrapper" onKeyDown={this.handleAccordionKeyDown}>
@@ -714,9 +719,7 @@ return true
                 packetTypes, packets, fundId, userDetail,
                 showRegisterJp, fund, closed, descItemTypes} = this.props;
 
-        if (!node.nodeInfoFetched) {
-            return <Loading value={i18n('global.data.loading.node')}/>
-        }
+
 
         var settings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
         var settingsValues = settings.value ? JSON.parse(settings.value) : null;

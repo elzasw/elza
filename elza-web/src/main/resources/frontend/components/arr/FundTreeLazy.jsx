@@ -78,7 +78,7 @@ var keyDownHandlers = {
             var index = indexById(nodes, selectedId)
             if (index !== null) {
                 var node = nodes[index]
-                if (node.hasChildren) { 
+                if (node.hasChildren) {
                     if (!expandedIds[node.id]) {    // je zabalen, rozbalíme ho
                         onOpenCloseNode(node, true)
                     } else {    // jdeme na prvního potomka
@@ -247,7 +247,7 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
                 </div>
                 <div className='fa-tree-lazy-container' ref="treeContainer" onKeyDown={this.handleKeyDown} tabIndex={0}>
                     <div className="fa-tree-lazy-actions">
-                        <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
+                        <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='ez-collapse-all'/>Sbalit vše</Button>
                         {actionAddons}
                     </div>
                     {this.state.treeContainer && <VirtualList
@@ -258,7 +258,7 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
                         items={this.props.nodes}
                         renderItem={this.renderNode}
                         itemHeight={this.props.rowHeight}
-                    />}
+                    />}                    
                 </div>
             </div>
         )
