@@ -39,7 +39,7 @@ elza:
               separator-first: '||'
               separator-other: '|'
             ZP2015_LEVEL_SERIES:
-              icon: fa-server
+              icon: ez-serie
               separator-first: '||'
               separator-other: '|'
             ZP2015_LEVEL_FOLDER:
@@ -47,11 +47,11 @@ elza:
               separator-first: '||'
               separator-other: '|'
             ZP2015_LEVEL_ITEM:
-              icon: fa-building
+              icon: fa-file-text-o
               separator-first: '||'
               separator-other: '|'
             ZP2015_LEVEL_PART:
-              icon: fa-building-o
+              icon: ez-item-part-o
               separator-first: '||'
               separator-other: '|'
 
