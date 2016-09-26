@@ -2,21 +2,22 @@
 
 @rowHeight: 16px;
 
-@TREE_TOP_PADDING: 23px;    // nutné definovat i v komponentě!
+@TREE_TOP_PADDING: 21px;    // nutné definovat i v komponentě!
 
 .fa-tree-lazy-main-container {
     height: 100%;
-
+    position: relative;
 
     .fa-tree-lazy-container {
         height: 100%;
-        height: calc(~"100% - 28px");
+        height: calc(~"100% - 49px");
         overflow: auto;
         background: white;
         border: 1px solid #DDDDDD;
         position: relative;
-        padding-top: @TREE_TOP_PADDING;
+        margin-top: @TREE_TOP_PADDING;
         width: 100%;
+        padding-top: 5px;
 
         div {
             width: 100%;
@@ -59,6 +60,9 @@
             line-height: 16px;
             vertical-align: middle;
             cursor: pointer;
+            &:hover {
+                background: #EEEEEE;
+            }
         }
 
         .node-icon {
@@ -89,30 +93,18 @@
             &:hover {
                 background: @tree-node-active-hover-bg;
             }
+            .node-label {
+                background: @tree-node-active-bg;
+                &:hover {
+                    background: @tree-node-active-hover-bg;
+                }
+            }
         }
 
         .focus {
             .node-label {
                 /*outline: 1px solid @tree-node-focus-border;*/
             }
-        }
-
-        .fa-tree-lazy-actions {
-            position: absolute;
-            top: 0;
-
-            display: flex;
-            justify-content: flex-end;
-
-            .btn {
-                border: none;
-                background: transparent;
-                .icon {
-                    padding: 0 5px 0 0;
-                }
-                &:hover{
-                    background: @node-form-actions-hover;
-                }            }
         }
 
         //.btn {
@@ -130,5 +122,30 @@
         //        background: @node-form-actions-hover;
         //    }
         //}
+    }
+
+    .fa-tree-lazy-actions {
+        position: absolute;
+        top: 30px;
+        left: 4px;
+        display: flex;
+        justify-content: flex-end;
+        width: calc(~"100% - 8px");
+        background: white;
+        border: 1px solid #DDDDDD;
+        margin: 0;
+        .btn {
+            border: none;
+            background: transparent;
+            .icon {
+                padding: 0 5px 0 0;
+            }
+            &:hover{
+                background: @node-form-actions-hover;
+            }
+        }
+        .extended-view-toggle {
+            padding-right: 0;
+        }
     }
 }

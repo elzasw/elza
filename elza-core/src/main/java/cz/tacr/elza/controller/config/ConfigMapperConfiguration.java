@@ -645,7 +645,16 @@ public class ConfigMapperConfiguration {
                 })
                 .register();
 
-        mapperFactory.classMap(RulPacketType.class, RulPacketTypeVO.class).byDefault().field("packetTypeId", "id").register();
+        mapperFactory.classMap(RulPacketType.class, RulPacketTypeVO.class).byDefault()
+                .field("packetTypeId", "id")
+                .customize(new CustomMapper<RulPacketType, RulPacketTypeVO>() {
+                    @Override
+                    public void mapAtoB(final RulPacketType rulPacketType, final RulPacketTypeVO rulPacketTypeVO, final MappingContext context) {
+                        super.mapAtoB(rulPacketType, rulPacketTypeVO, context);
+                        rulPacketTypeVO.setPackageId(rulPacketType.getPackage().getPackageId());
+                    }
+                })
+                .register();
         mapperFactory.classMap(RulOutputType.class, RulOutputTypeVO.class).byDefault().field("outputTypeId", "id").register();
 
         mapperFactory.classMap(RulRuleSet.class, RulRuleSetVO.class)
@@ -669,8 +678,15 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrFund.class, ArrFundBaseVO.class).byDefault().field("fundId", "id").register();
 
         mapperFactory.classMap(ArrFundVersion.class, ArrFundVersionVO.class).byDefault().field(
-                "fundVersionId", "id").
-                exclude("arrangementType").register();
+                "fundVersionId", "id").exclude("arrangementType")
+                .customize(new CustomMapper<ArrFundVersion, ArrFundVersionVO>() {
+                    @Override
+                    public void mapAtoB(final ArrFundVersion arrFundVersion, final ArrFundVersionVO arrFundVersionVO, final MappingContext context) {
+                        super.mapAtoB(arrFundVersion, arrFundVersionVO, context);
+                        arrFundVersionVO.setPackageId(arrFundVersion.getRuleSet().getPackage().getPackageId());
+                    }
+                })
+                .register();
         mapperFactory.classMap(ArrOutputDefinition.class, ArrOutputDefinitionVO.class)
 //                .exclude("outputs")
                 .exclude("nodes")

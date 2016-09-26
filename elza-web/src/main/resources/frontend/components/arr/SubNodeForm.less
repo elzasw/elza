@@ -154,12 +154,16 @@
                     .desc-item-type-label {
                         height: 1.7em;
                         position:relative;
+                        display: flex;
+                        flex-direction: row;
                         .title {
-                            display: inline-block;
                             margin-right: 10px;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
                         }
                         .actions {
-                            display: inline-block;
+                            flex-shrink: 0;
                             .node-form-standard-actions;
 
                             .btn {
@@ -201,9 +205,6 @@
                         .desc-item-type-edited {
                             font-size: 0.8em;
                             color: #a0a0a0;
-                            position:absolute;
-                            right: 0;
-                            top:0;
                         }
 
                     }
@@ -227,6 +228,8 @@
                                 display: flex;
                                 flex-wrap: nowrap;
                                 flex-grow: 1;
+                                width: 100%;
+                                word-wrap: break-word;
 
                                 &.desc-item-spec-and-value {
                                     .desc-item-value {

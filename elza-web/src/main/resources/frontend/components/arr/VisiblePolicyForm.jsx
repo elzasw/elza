@@ -44,8 +44,30 @@ var VisiblePolicyForm = class VisiblePolicyForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {records}, handleSubmit, onClose, nodeId, fundVersionId, visiblePolicy, visiblePolicyTypes} = this.props;
+        const {fields: {records}, handleSubmit, onClose, nodeId, fundVersionId, visiblePolicy, visiblePolicyTypes,
+            arrRegion} = this.props;
         var submitForm = submitReduxForm.bind(this, validate)
+
+        var activeFund = null;
+        if (arrRegion.activeIndex != null) {
+            activeFund = arrRegion.funds[arrRegion.activeIndex];
+        }
+
+        let visiblePolicyTypeItems;
+
+        if (activeFund == null) {
+            visiblePolicyTypeItems = visiblePolicyTypes;
+        } else {
+            let activeVersion = activeFund.activeVersion;
+            visiblePolicyTypeItems = {};
+
+            for(var id in visiblePolicyTypes.items) {
+                let item = visiblePolicyTypes.items[id];
+                if (activeVersion.ruleSetId === item.ruleSetId) {
+                    visiblePolicyTypeItems[id] = item;
+                }
+            }
+        }
 
         return (
             <div>
@@ -53,7 +75,7 @@ var VisiblePolicyForm = class VisiblePolicyForm extends AbstractReactComponent {
                     <form onSubmit={handleSubmit(submitForm)}>
                         {records.map((val, index) =>
                             <div key={index}>
-                                <Checkbox {...val.checked} value={true}>{visiblePolicyTypes.items[val.id.initialValue].name}</Checkbox>
+                                <Checkbox {...val.checked} value={true}>{visiblePolicyTypeItems[val.id.initialValue].name}</Checkbox>
                             </div>
                         )}
                     </form>
@@ -74,5 +96,6 @@ module.exports = reduxForm({
 }, state => ({
     initialValues: {records: state.arrRegion.visiblePolicy.data},
     visiblePolicy: state.arrRegion.visiblePolicy,
-    visiblePolicyTypes: state.refTables.visiblePolicyTypes
+    visiblePolicyTypes: state.refTables.visiblePolicyTypes,
+    arrRegion: state.arrRegion
 }))(VisiblePolicyForm)

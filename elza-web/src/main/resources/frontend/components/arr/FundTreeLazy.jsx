@@ -18,7 +18,7 @@ import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, g
 const TREE_NAME_MAX_CHARS = 60
 
 // Odsazení odshora, musí být definováno, jinak nefunguje ensureItemVisible
-const TREE_TOP_PADDING = 23
+const TREE_TOP_PADDING = 21
 
 var keyDownHandlers = {
     ArrowUp: function(e) {
@@ -78,7 +78,7 @@ var keyDownHandlers = {
             var index = indexById(nodes, selectedId)
             if (index !== null) {
                 var node = nodes[index]
-                if (node.hasChildren) {
+                if (node.hasChildren) { 
                     if (!expandedIds[node.id]) {    // je zabalen, rozbalíme ho
                         onOpenCloseNode(node, true)
                     } else {    // jdeme na prvního potomka
@@ -245,11 +245,11 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
                         onFulltextPrevItem={onFulltextPrevItem}
                     />
                 </div>
+                <div className="fa-tree-lazy-actions">
+                    <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
+                    {actionAddons}
+                </div>
                 <div className='fa-tree-lazy-container' ref="treeContainer" onKeyDown={this.handleKeyDown} tabIndex={0}>
-                    <div className="fa-tree-lazy-actions">
-                        <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='ez-collapse-all'/>Sbalit vše</Button>
-                        {actionAddons}
-                    </div>
                     {this.state.treeContainer && <VirtualList
                         scrollTopPadding={TREE_TOP_PADDING}
                         tagName='div'
@@ -258,7 +258,7 @@ var FundTreeLazy = class FundTreeLazy extends AbstractReactComponent {
                         items={this.props.nodes}
                         renderItem={this.renderNode}
                         itemHeight={this.props.rowHeight}
-                    />}                    
+                    />}
                 </div>
             </div>
         )
