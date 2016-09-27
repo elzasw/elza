@@ -67,6 +67,7 @@ import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -328,7 +329,10 @@ public class XmlExportService {
     private Packet createPacket(final ArrPacket arrPacket) {
         Packet packet = new Packet();
 
-        packet.setPacketTypeCode(arrPacket.getPacketType().getCode());
+        RulPacketType packetType = arrPacket.getPacketType();
+		if (packetType != null) {
+			packet.setPacketTypeCode(packetType.getCode());
+		}
         packet.setState(arrPacket.getState());
         packet.setStorageNumber(arrPacket.getStorageNumber());
 

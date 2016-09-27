@@ -1,5 +1,27 @@
 package cz.tacr.elza.service.output;
 
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.validation.constraints.NotNull;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -39,6 +61,7 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.print.Fund;
 import cz.tacr.elza.print.Node;
@@ -91,26 +114,6 @@ import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import ma.glasnost.orika.metadata.MappingDirection;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.validation.constraints.NotNull;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Factory pro vytvoření struktury pro výstupy
@@ -688,9 +691,12 @@ public class OutputFactoryService implements NodeLoader {
     private AbstractItem getItemUnitPacketRef(final NodeId nodeId, final ArrItemPacketRef itemData) {
         final ArrPacket arrPacket = itemData.getPacket();
         Packet packet = new Packet();
-        packet.setType(arrPacket.getPacketType().getName());
-        packet.setTypeCode(arrPacket.getPacketType().getCode());
-        packet.setTypeShortcut(arrPacket.getPacketType().getShortcut());
+        RulPacketType packetType = arrPacket.getPacketType();
+        if (packetType != null) {
+        	packet.setType(packetType.getName());
+        	packet.setTypeCode(packetType.getCode());
+        	packet.setTypeShortcut(packetType.getShortcut());
+        }
         packet.setStorageNumber(arrPacket.getStorageNumber());
         packet.setState(arrPacket.getState().name());
         return new ItemPacketRef(nodeId, packet);
