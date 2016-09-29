@@ -16,13 +16,10 @@ import javax.persistence.PersistenceContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.document.FieldType;
-import org.apache.lucene.queries.ChainedFilter;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.queryparser.flexible.standard.config.NumericConfig;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.NumericRangeFilter;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
@@ -257,12 +254,11 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     private List<Integer> findNodeIdsByValidDescItems(final Integer lockChangeId, final String descItemIdsString) {
         Class<ArrDescItem> entityClass = ArrDescItem.class;
 
-        Filter changeFilter = createChangeFilter(lockChangeId);
-
         QueryBuilder queryBuilder = createQueryBuilder(entityClass);
+        Query changeQuery = createChangeQuery(queryBuilder, lockChangeId);
         Query descItemIdsQuery = queryBuilder.keyword().onField("descItemIdString").matching(descItemIdsString).createQuery();
-        Query validDescItemInVersionQuery = queryBuilder.all().filteredBy(changeFilter).createQuery();
-        Query query = queryBuilder.bool().must(descItemIdsQuery).must(validDescItemInVersionQuery).createQuery();
+        Query validDescItemInVersionQuery = queryBuilder.all().createQuery();
+        Query query = queryBuilder.bool().must(changeQuery).must(descItemIdsQuery).must(validDescItemInVersionQuery).createQuery();
 
         List<Integer> result = createFullTextQuery(query, entityClass).setProjection("nodeId").getResultList().stream().mapToInt(row -> {
             return (int) ((Object[]) row)[0];
@@ -271,33 +267,28 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         return result;
     }
 
-    /**
-     * Vytvoří filtr pro hledání podle aktuální nebo uzavžené verze.
+	/**
+     * Vytvoří query pro hledání podle aktuální nebo uzavžené verze.
      *
      * @param lockChangeId id verze, může být null
      *
-     * @return filtr
+     * @return query
      */
-    private Filter createChangeFilter(final Integer lockChangeId) {
+    private Query createChangeQuery(final QueryBuilder queryBuilder, final Integer lockChangeId) {
         if (lockChangeId == null) { // deleteChange is null
-            return NumericRangeFilter.newIntRange("deleteChangeId", Integer.MAX_VALUE, Integer.MAX_VALUE, true, true);
+        	return queryBuilder.range().onField("deleteChangeId").from(Integer.MAX_VALUE).to(Integer.MAX_VALUE).createQuery();
         }
 
-        // createChangeId < lockChangeId
-        NumericRangeFilter<Integer> createChangeFilter = NumericRangeFilter.newIntRange("createChangeId", null,
-                lockChangeId, false, false);
-        // and (deleteChange is null or deleteChange < lockChangeId)
-        NumericRangeFilter<Integer> nullDeleteChangeFilter = NumericRangeFilter.newIntRange("deleteChangeId", Integer.MAX_VALUE,
-                Integer.MAX_VALUE, true, true);
-        NumericRangeFilter<Integer> deleteChangeFilter = NumericRangeFilter.newIntRange("deleteChangeId", null,
-                lockChangeId, false, false);
+        //createChangeId < lockChangeId
+        Query createChangeQuery = queryBuilder.range().onField("createChangeId").below(lockChangeId).excludeLimit().createQuery();
 
-        Filter[] deleteChangeFilters = {nullDeleteChangeFilter, deleteChangeFilter};
-        ChainedFilter orFilter = new ChainedFilter(deleteChangeFilters, ChainedFilter.OR);
+        // and (deleteChange is null or deleteChange > lockChangeId)
+        Query nullDeleteChangeQuery = queryBuilder.range().onField("deleteChangeId").from(Integer.MAX_VALUE).to(Integer.MAX_VALUE).createQuery();
+        Query deleteChangeQuery = queryBuilder.range().onField("deleteChangeId").above(lockChangeId).excludeLimit().createQuery();
 
-        Filter[] andFilters = {createChangeFilter, orFilter};
-        return new ChainedFilter(andFilters, ChainedFilter.AND);
-    }
+        Query deleteQuery = queryBuilder.bool().should(nullDeleteChangeQuery).should(deleteChangeQuery).createQuery();
+        return queryBuilder.bool().must(createChangeQuery).must(deleteQuery).createQuery();
+	}
 
     @PostConstruct
     private void buildFullTextEntityManager() {

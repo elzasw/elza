@@ -1,5 +1,22 @@
 package cz.tacr.elza.service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
@@ -59,21 +76,6 @@ import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Serviska pro práci s výstupy.
@@ -294,11 +296,13 @@ public class OutputService {
         final ArrChange change = newOutputDef.getOutputs().get(0).getCreateChange();
         final ArrayList<ArrNodeOutput> newNodes = new ArrayList<>();
         originalOutputDef.getOutputNodes().forEach(node -> {
-            ArrNodeOutput newNode = new ArrNodeOutput();
-            newNode.setCreateChange(change);
-            newNode.setNode(node.getNode());
-            newNode.setOutputDefinition(newOutputDef);
-            newNodes.add(newNode);
+        	if (node.getDeleteChange() == null) {
+        		ArrNodeOutput newNode = new ArrNodeOutput();
+        		newNode.setCreateChange(change);
+        		newNode.setNode(node.getNode());
+        		newNode.setOutputDefinition(newOutputDef);
+        		newNodes.add(newNode);
+        	}
         });
 
         nodeOutputRepository.save(newNodes);
@@ -1199,7 +1203,7 @@ public class OutputService {
     /**
      * @return dohledané Nody navázané na vstupní RegRecord
      */
-    public List<ArrNode> getNodesByRegister(RegRecord regRecord) {
+    public List<ArrNode> getNodesByRegister(final RegRecord regRecord) {
         final List<ArrNodeRegister> arrNodeRegisters = nodeRegisterRepository.findByRecordId(regRecord);
         return arrNodeRegisters.stream()
                 .map(ArrNodeRegister::getNode)

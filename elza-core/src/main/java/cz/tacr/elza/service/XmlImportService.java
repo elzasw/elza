@@ -274,7 +274,7 @@ public class XmlImportService {
      *
      * @throws XmlImportException chyba při importu
      */
-    @Transactional
+    @Transactional(rollbackOn = Throwable.class)
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
     public void importData(final XmlImportConfig config) throws XmlImportException {
         // transformace dat
