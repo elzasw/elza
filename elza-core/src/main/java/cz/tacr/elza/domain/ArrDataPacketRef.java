@@ -36,7 +36,9 @@ public class ArrDataPacketRef extends ArrData implements cz.tacr.elza.api.ArrDat
     @Override
     @Field
     public Integer getSpecification() {
-        return packet.getPacketType().getPacketTypeId();
+        RulPacketType packetType = packet.getPacketType();
+
+        return packetType == null ? null : packetType.getPacketTypeId();
     }
 
     @Override
@@ -51,6 +53,13 @@ public class ArrDataPacketRef extends ArrData implements cz.tacr.elza.api.ArrDat
 
     @Override
     public String getFulltextValue() {
-        return packet.getPacketType().getName() + ": " + packet.getStorageNumber();
+        RulPacketType packetType = packet.getPacketType();
+        String fulltext = null;
+        if (packetType == null) {
+        	fulltext = packet.getStorageNumber();
+        } else {
+        	fulltext = packetType.getName() + ": " + packet.getStorageNumber();
+        }
+		return fulltext;
     }
 }
