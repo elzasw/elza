@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Set;
 import cz.tacr.elza.api.RulItemType;
 
+// Volitelné neopakovatelné prvky popisu
 rule "Jen vybrané jsou možné"
 no-loop 
 when
@@ -22,16 +23,26 @@ then
     $itemType.setRepeatable(false);
 end
 
-// Povinné prvky popisu
-rule "Vybrané jsou povinné"
+// Povinné neopakovatelné prvky popisu
+rule "Povinné neopakovatelné prvky popisu"
 no-loop 
 when
 	$itemType : RulItemTypeExt( code in ("ZP2015_UNIT_CURRENT_STATUS", "ZP2015_UNIT_SOURCE", 
-		"ZP2015_ARRANGER", "ZP2015_ARRANGE_RULES", "ZP2015_SIGNATURE_DATE",
+		"ZP2015_ARRANGE_RULES", "ZP2015_SIGNATURE_DATE",
 		"ZP2015_DATE_RANGE", "ZP2015_UNIT_COUNT_TABLE", "ZP2015_UNIT_COUNT_SUM", "ZP2015_UNITS_AMOUNT", 
 		"ZP2015_FINDING_AID_DATE", "ZP2015_ARRANGER_TEXT", "ZP2015_FINDING_AID_EDITOR",
 		"ZP2015_FINDING_AID_APPROVED_BY" ) )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
     $itemType.setRepeatable(false);
+end
+
+// Povinné opakovatelné prvky popisu
+rule "Povinné opakovatelné prvky popisu"
+no-loop 
+when
+	$itemType : RulItemTypeExt( code in ( 
+		"ZP2015_ARRANGER" ) )
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
 end

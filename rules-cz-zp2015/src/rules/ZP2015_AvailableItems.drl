@@ -297,6 +297,18 @@ then
 	$itemType.setType(RulItemType.Type.REQUIRED);
 end
 
+// U jednotlivosti lze zvolit libovolny typ jednotlivosti
+rule "Druh archiválie - lze vybrat libovolný typ"
+no-loop
+when
+	$activeLevel: ActiveLevel( )
+	$descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_ITEM" ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
+	$itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
 // Obsah/Regest
 rule "Obsah/regest - doporučený pro složku a níže"
 when
@@ -385,6 +397,7 @@ then
    	$itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
+
 // Standarní datace je doporučená pro poslední složku a část jednotlivosti (bez potomků)
 rule "Datace - strojová - doporučení"
 salience -100
@@ -397,6 +410,8 @@ then
 	$itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
+// Doporuceni na textovou dataci
+/*
 rule "Druh arhivalie"
 no-loop
 when
@@ -406,6 +421,7 @@ when
 then
    	$itemType.setType(RulItemType.Type.REQUIRED);
 end
+*/
 
 // Doporučení pro kořen dle MAN,INV, KAT - vyhodnoceno později
 // 4.3.5 Přímý zdroj akvizice
@@ -436,3 +452,68 @@ when $activeLevel: ActiveLevel( parent == null )
 then
 	$itemType.setType(RulItemType.Type.RECOMMENDED);
 end
+
+// Doporučení pro listiny (vždy)
+rule "Doporučení pro listiny (vždy)"
+no-loop
+when $activeLevel: ActiveLevel( )
+	$descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_LIO", "ZP2015_UNIT_TYPE_LIP") ) from $activeLevel.descItems
+	$itemType: RulItemTypeExt( code in ("ZP2015_STORAGE_COND", "ZP2015_SIZE", "ZP2015_ITEM_MAT", "ZP2015_LANGUAGE", "ZP2015_IMPRINT_COUNT",
+		"ZP2015_ENTITY_ROLE") )
+then
+	$itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+// Možné role entit pro listiny (vždy)
+rule "Možné role entit pro listiny (vždy)"
+no-loop
+when $activeLevel: ActiveLevel( )
+	$descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_LIO", "ZP2015_UNIT_TYPE_LIP") ) from $activeLevel.descItems
+	$itemType: RulItemTypeExt( code in ("ZP2015_STORAGE_COND", "ZP2015_SIZE", "ZP2015_ITEM_MAT", "ZP2015_LANGUAGE", "ZP2015_IMPRINT_COUNT",
+		"ZP2015_ENTITY_ROLE") )
+	$itemSpec: RulItemSpecExt( code in ( 
+		"ZP2015_ENTITY_ROLE_15", "ZP2015_ENTITY_ROLE_17", "ZP2015_ENTITY_ROLE_21",
+		// žadatelé
+		"ZP2015_ENTITY_ROLE_22",
+		// mista vydani
+		"ZP2015_ENTITY_ROLE_58"
+	 ) ) from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+// Povinnost pro listiny v inv
+rule "Povinnost pro listiny v inv"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( )
+	$descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_LIO", "ZP2015_UNIT_TYPE_LIP") ) from $activeLevel.descItems
+	// Rodic je INV 
+	$level: Level( $items: descItems ) 
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+	// nastaveni prvku	
+	$itemType: RulItemTypeExt( code in ("ZP2015_STORAGE_COND", "ZP2015_SIZE", "ZP2015_ITEM_MAT", "ZP2015_LANGUAGE", "ZP2015_IMPRINT_COUNT",
+		// nastaveni vztahu
+		"ZP2015_ENTITY_ROLE"
+	) )
+then
+	$itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+// Povinne role pro listiny v inv
+rule "Povinne role pro listiny v inv"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( )
+	$descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_LIO", "ZP2015_UNIT_TYPE_LIP") ) from $activeLevel.descItems
+	// Rodic je INV 
+	$level: Level( $items: descItems ) 
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+	// nastaveni prvku	
+	$itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+	$itemSpec: RulItemSpecExt( code in ( "ZP2015_ENTITY_ROLE_17", "ZP2015_ENTITY_ROLE_21" ) ) from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.REQUIRED);
+end
+
+// jednotlivosti v inventáři
