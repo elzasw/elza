@@ -241,10 +241,11 @@ then
 end
 
 // referenční označení možné pro ostatní typy pro nejvyšší uzly
+// neni mozne pro koren
 rule "Referenční označení - možné pro série vždy"
 no-loop
 when
-	$activeLevel: ActiveLevel( $items: descItems)
+	$activeLevel: ActiveLevel( parent!=null && $items: descItems)
 	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT" , "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES") ) from $items
 	not DescItem(type=="ZP2015_SERIAL_NUMBER") from $items
 	$itemType : RulItemTypeExt(code == "ZP2015_UNIT_ID")
@@ -254,6 +255,7 @@ then
 end
 
 // referenční označení v INV|KAT - povinné pro uzly mimo kořen
+// neni mozne pro koren
 rule "Referenční označení - povinné"
 no-loop
 when
