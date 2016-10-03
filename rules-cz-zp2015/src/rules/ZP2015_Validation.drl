@@ -52,14 +52,21 @@ then
 end
 
 // Povinné pokud je nastaven typ pořádání
+// výjimkou je kořen nebo hlavní série pokud mají nastaveno ref.označení
+// Možné zlepšení: Kontrolovat, že žádný rodič nemá pořadové číslo, pokud ho nemá posuzovaná JP
 rule "Pořadové číslo - povinné"
 no-loop
 when
-	$activeLevel : ActiveLevel( )
-	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
-	not DescItem(type=="ZP2015_SERIAL_NUMBER" && !isInherited()) from $activeLevel.descItems
+	$activeLevel : ActiveLevel( $items: descItems )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $items
+	not DescItem(type=="ZP2015_SERIAL_NUMBER" && !isInherited()) from $items
+	// Výjimka pro nejvyšší série a kořen
+	not (
+	  DescItem(type=="ZP2015_UNIT_ID" && !isInherited() ) from $items
+	  and DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES") ) from $items
+	)
 then
-	results.createMissing("ZP2015_SERIAL_NUMBER", "Pořadové číslo musí být nastaveno", "SERIAL_NO");
+	results.createMissing("ZP2015_SERIAL_NUMBER", "Pořadové číslo musí být nastaveno (případně ref. označení pro nejvyšší úrovně popisu)", "SERIAL_NO");
 end
 
 // referenční označení v INV|KAT - povinné pro uzly mimo kořen
