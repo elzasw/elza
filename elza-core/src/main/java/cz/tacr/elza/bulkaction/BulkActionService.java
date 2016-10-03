@@ -257,7 +257,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     public void reload() {
         try {
             bulkActionConfigManager.load();
-        } catch (Yaml.YAMLInvalidContentException | IOException e) {
+        } catch ( IOException e) {
             throw new IllegalStateException("Nastal problem při načítání hromadných akcí", e);
         }
     }

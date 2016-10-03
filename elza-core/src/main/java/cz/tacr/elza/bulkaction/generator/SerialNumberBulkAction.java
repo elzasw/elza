@@ -5,14 +5,19 @@ import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.SerialNumberResult;
-import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemInt;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -26,6 +31,7 @@ import java.util.List;
  * Hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
  *
  * @author Martin Šlapa
+ * @author Petr Pytelka
  * @since 21.10.2015
  */
 @Component
@@ -65,12 +71,12 @@ public class SerialNumberBulkAction extends BulkAction {
     /**
      * Typ atributu pro zastaveni
      */
-    private RulItemType descItemEndType;
+    private RulItemType descItemStopType;
 
     /**
      * Specifikace atributu pro zastaveni
      */
-    private RulItemSpec descItemEndSpec;
+    private RulItemSpec descItemStopSpec;
 
     /**
      * Počet změněných položek.
@@ -89,9 +95,6 @@ public class SerialNumberBulkAction extends BulkAction {
     @Autowired
     private DescItemFactory descItemFactory;
 
-    @Autowired
-    private EventNotificationService eventNotificationService;
-
     /**
      * Inicializace hromadné akce.
      *
@@ -101,28 +104,22 @@ public class SerialNumberBulkAction extends BulkAction {
 
         Assert.notNull(bulkActionConfig);
 
-        try {
+        String serialIdCode = (String) bulkActionConfig.getString("serial_id_code");
+        Assert.notNull(serialIdCode);
 
-            String serialIdCode = (String) bulkActionConfig.getString("serial_id_code");
-            Assert.notNull(serialIdCode);
+        descItemType = itemTypeRepository.getOneByCode(serialIdCode);
+        Assert.notNull(descItemType);
 
-            descItemType = itemTypeRepository.getOneByCode(serialIdCode);
-            Assert.notNull(descItemType);
+        String stopWhenType = (String) bulkActionConfig.getString("stop_when_type");
+        if (stopWhenType != null) {
+        	descItemStopType = itemTypeRepository.getOneByCode(stopWhenType);
+            Assert.notNull(descItemStopType, "Description item not found: " + stopWhenType);
 
-            String levelTypeCode = (String) bulkActionConfig.getString("level_type_code");
-            if (levelTypeCode != null) {
-                descItemEndType = itemTypeRepository.getOneByCode(levelTypeCode);
-                Assert.notNull(descItemEndType);
-
-                String levelTypeEndGenerationForArrType = (String) bulkActionConfig.getString(
-                        "level_type_end_generation_for_arr_type");
-                Assert.notNull(levelTypeEndGenerationForArrType);
-                descItemEndSpec = itemSpecRepository.getOneByCode(levelTypeEndGenerationForArrType);
-                Assert.notNull(descItemEndSpec);
-            }
-
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+            String stopOnValue = (String) bulkActionConfig.getString(
+                        "stop_on_value");
+            Assert.notNull(stopOnValue, "stop_on_value is not defined");
+            descItemStopSpec = itemSpecRepository.getOneByCode(stopOnValue);
+            Assert.notNull(descItemStopSpec, "Specification: "+stopOnValue+" does not exists");
         }
     }
 
@@ -138,39 +135,9 @@ public class SerialNumberBulkAction extends BulkAction {
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
         }
         change = bulkActionRun.getChange();
-
-        if (!level.getNode().equals(rootNode)) {
-            ArrDescItem<ArrItemInt> descItem = loadDescItem(level);
-            int sn = serialNumber.getNext();
-
-            // vytvoření nového atributu
-            if (descItem == null) {
-                descItem = new ArrDescItem(new ArrItemInt());
-                descItem.setItemType(descItemType);
-                descItem.setNode(level.getNode());
-            }
-
-            if (!(descItem.getItem() instanceof ArrItemInt)) {
-                throw new IllegalStateException(descItemType.getCode() + " není typu ArrDescItemInt");
-            }
-
-            ArrItemInt item = descItem.getItem();
-
-            // uložit pouze při rozdílu
-            if (item.getValue() == null || sn != item.getValue()) {
-                item.setValue(sn);
-                ArrDescItem ret = saveDescItem(descItem, version, change);
-                level.setNode(ret.getNode());
-                countChanges++;
-            }
-
-            if (descItemEndType != null) {
-                ArrDescItem descItemLevel = loadDescItem(level, descItemEndType, descItemEndSpec);
-                if (descItemLevel != null) {
-                    return;
-                }
-            }
-        }
+        
+        // update serial number
+        update(level);
 
         List<ArrLevel> childLevels = getChildren(level);
 
@@ -181,14 +148,53 @@ public class SerialNumberBulkAction extends BulkAction {
     }
 
     /**
-     * Načtení atributu.
+     * Update number for given level
+     * @param level Level to be updated
+     */
+	private void update(ArrLevel level) {
+		ArrNode currNode = level.getNode();
+		
+		ArrDescItem<ArrItemInt> descItem = loadDescItem(currNode);
+		int sn = serialNumber.getNext();
+
+		// vytvoření nového atributu
+		if (descItem == null) {
+			descItem = new ArrDescItem(new ArrItemInt());
+			descItem.setItemType(descItemType);
+			descItem.setNode(currNode);
+		}
+
+		if (!(descItem.getItem() instanceof ArrItemInt)) {
+			throw new IllegalStateException(descItemType.getCode() + " není typu ArrDescItemInt");
+		}
+
+		ArrItemInt item = descItem.getItem();
+
+		// uložit pouze při rozdílu
+		if (item.getValue() == null || sn != item.getValue()) {
+			item.setValue(sn);
+			ArrDescItem ret = saveDescItem(descItem, version, change);
+			level.setNode(ret.getNode());
+			countChanges++;
+		}
+
+		if (descItemStopType != null) {
+			ArrDescItem descItemLevel = loadDescItem(level, descItemStopType, descItemStopSpec);
+			if (descItemLevel != null) {
+				return;
+			}
+		}
+	}
+
+	/**
+     * Načtení požadovaného atributu
      *
-     * @param level uzel
+     * @param node uzel
      * @return nalezený atribut
      */
-    private ArrDescItem loadDescItem(final ArrLevel level) {
+    private ArrDescItem loadDescItem(final ArrNode node) {
         List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndItemTypeId(
-                level.getNode(), descItemType.getItemTypeId());
+                node, descItemType.getItemTypeId());
         if (descItems.size() == 0) {
             return null;
         }
@@ -202,7 +208,7 @@ public class SerialNumberBulkAction extends BulkAction {
     /**
      * Načtení atributu.
      *
-     * @param level           uzel
+     * @param node           uzel
      * @param rulDescItemSpec specifikace atributu
      * @param rulDescItemType typ atributu
      * @return nalezený atribut

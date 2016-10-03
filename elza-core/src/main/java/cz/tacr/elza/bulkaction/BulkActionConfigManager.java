@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
  * Manager konfigurace hromadných akcí.
  *
  * @author Martin Šlapa
+ * @author Petr Pytelka
  * @since 10.11.2015
  */
 @Component
@@ -61,7 +62,7 @@ public class BulkActionConfigManager {
     /**
      * Načtení hromadných akcí z adresáře.
      */
-    public void load() throws IOException, Yaml.YAMLInvalidContentException {
+    public void load() throws IOException {
 
         bulkActionConfigMap = new HashMap<>();
 
@@ -77,12 +78,16 @@ public class BulkActionConfigManager {
         File[] files = dir.listFiles((dir1, name) -> name.endsWith(extension));
 
         for (File file : files) {
-            InputStream ios = new FileInputStream(file);
-            BulkActionConfig bulkActionConfig = new BulkActionConfig();
-            bulkActionConfig.setCode(FilenameUtils.getBaseName(file.getName()));
-            bulkActionConfig.getYaml().load(ios);
-            ios.close();
-            bulkActionConfigMap.put(bulkActionConfig.getCode(), bulkActionConfig);
+        	try {
+        		InputStream ios = new FileInputStream(file);
+        		BulkActionConfig bulkActionConfig = new BulkActionConfig();
+        		bulkActionConfig.setCode(FilenameUtils.getBaseName(file.getName()));
+        		bulkActionConfig.getYaml().load(ios);
+        		ios.close();
+        		bulkActionConfigMap.put(bulkActionConfig.getCode(), bulkActionConfig);
+        	} catch(Yaml.YAMLInvalidContentException ye) {
+        		throw new IllegalArgumentException("Failed to read configuration file: "+file.getAbsolutePath(), ye);
+        	}
         }
 
     }

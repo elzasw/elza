@@ -358,7 +358,7 @@ public class PackageService {
                 rollBackFiles(dirActions);
                 rollBackFiles(dirRules);
                 bulkActionConfigManager.load();
-            } catch (Yaml.YAMLInvalidContentException | IOException e1) {
+            } catch (IOException e1) {
                 throw new IllegalStateException(e);
             }
             throw new IllegalStateException(e);
@@ -633,7 +633,7 @@ public class PackageService {
             }
 
             bulkActionConfigManager.load();
-        } catch (Yaml.YAMLInvalidContentException | IOException e) {
+        } catch (IOException e) {
             throw new IllegalStateException(e);
         }
 
@@ -795,7 +795,7 @@ public class PackageService {
             }
 
             bulkActionConfigManager.load();
-        } catch (Yaml.YAMLInvalidContentException | IOException e) {
+        } catch (IOException e) {
             throw new IllegalStateException(e);
         }
 
@@ -1223,7 +1223,7 @@ public class PackageService {
             try {
                 bulkActionConfigManager.load();
             }
-            catch (Yaml.YAMLInvalidContentException | IOException e) {
+            catch (IOException e) {
                 throw new IllegalStateException(e);
             }
         }
@@ -1648,7 +1648,7 @@ public class PackageService {
 
                 bulkActionConfigManager.load();
                 throw new IllegalStateException(e);
-            } catch (Yaml.YAMLInvalidContentException | IOException e1) {
+            } catch (IOException e1) {
                 throw new IllegalStateException(e);
             }
         }
