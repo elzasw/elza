@@ -55,6 +55,7 @@ import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPerson;
 import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegRecord;
@@ -298,6 +299,13 @@ public class OutputFactoryService implements NodeLoader {
 
         // partyGroup k instituci
         final ParParty parParty = arrFundInstitution.getParty();
+        
+        // Check party type
+        final ParPartyType partyType = parParty.getPartyType();
+        if(!ParPartyType.PartyTypeEnum.GROUP_PARTY.toString().equals(partyType.getCode())) {
+        	throw new IllegalStateException("Party for institution is not GROUP_PARTY, partyId = "+parParty.getPartyId());        	
+        }
+        // create party group
         final PartyGroup partyGroup = createPartyGroup(output, parParty);
         institution.setPartyGroup(partyGroup);
 
