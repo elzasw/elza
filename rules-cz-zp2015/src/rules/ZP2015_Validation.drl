@@ -17,7 +17,7 @@ when
 	not ( $level: Level( $items: descItems ) and 
 		DescItem(type=="ZP2015_STORAGE_ID") from $items )
 then
-	results.createMissing("ZP2015_STORAGE_ID", "Chybí ukládací jednotka", "STORAGE_ID");
+	results.createMissing("ZP2015_STORAGE_ID", "Chybí ukládací jednotka", "ZP2015_POL_STORAGE_ID");
 end
 
 // Kontrola, zda každý list má dataci
@@ -29,7 +29,7 @@ when
 		  ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST","ZP2015_UNIT_DATE_TEXT" ) )
 		  from $items )
 then
-	results.createMissing("ZP2015_UNIT_DATE", "Není uvedena datace", "BASIC");
+	results.createMissing("ZP2015_UNIT_DATE", "Není uvedena datace", "ZP2015_POL_BASIC");
 end
 
 // Kontrola, zda každá hromadina s EJ má uvedenu ukládací jednotku s druhem KAR,FAS,DAJ
@@ -39,7 +39,7 @@ when
 	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode=="ZP2015_FOLDER_UNITS"||specCode=="ZP2015_FOLDER_SINGLE_TYPE") ) from $items 
 	not ( DescItem(type=="ZP2015_STORAGE_ID"&&packet!=null&&packet.packetType!=null&&(packet.packetType.code=="BOX"||packet.packetType.code=="FASCICLE"||packet.packetType.code=="DATA_UNIT" ) ) from $items )
 then
-	results.createMissing("ZP2015_STORAGE_ID", "Ukládací jednotka bez uvedení typu hromadiny", "STORAGE_ID");
+	results.createMissing("ZP2015_STORAGE_ID", "Ukládací jednotka bez uvedení typu hromadiny", "ZP2015_POL_STORAGE_ID");
 end
 
 // Počet jednotek musí být větší než 1 pro ZP2015_UNIT_COUNT
@@ -48,7 +48,7 @@ when
 	$activeLevel: ActiveLevel( $items: descItems )
     $descItem: DescItem(type=="ZP2015_UNIT_COUNT"  && integer.intValue()<2 ) from $items
 then
-	results.createError($descItem.getDescItemId(), "Počet jednotek musí být větší než 1", "BASIC");
+	results.createError($descItem.getDescItemId(), "Počet jednotek musí být větší než 1", "ZP2015_POL_BASIC");
 end
 
 // Povinné pokud je nastaven typ pořádání
@@ -66,7 +66,9 @@ when
 	  and DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES") ) from $items
 	)
 then
-	results.createMissing("ZP2015_SERIAL_NUMBER", "Pořadové číslo musí být nastaveno (případně ref. označení pro nejvyšší úrovně popisu)", "SERIAL_NO");
+	results.createMissing("ZP2015_SERIAL_NUMBER", 
+	"Pořadové číslo musí být nastaveno (případně ref. označení pro nejvyšší úrovně popisu)", 
+	"ZP2015_POL_SERIAL_NO");
 end
 
 // referenční označení v INV|KAT - povinné pro uzly mimo kořen
@@ -77,7 +79,7 @@ when
 	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
 	not DescItem(type=="ZP2015_UNIT_ID" && !isInherited()) from $activeLevel.descItems
 then
-	results.createMissing("ZP2015_UNIT_ID", "Referenční označení musí byt přiřazeno", "REF_NO");
+	results.createMissing("ZP2015_UNIT_ID", "Referenční označení musí byt přiřazeno", "ZP2015_POL_REF_NO");
 end
 
 // Kontrola, zda každý list má v hierarchii zdroj akvizice
@@ -89,7 +91,7 @@ when
 		  ( "ZP2015_UNIT_SOURCE" ) )
 		  from $items )
 then
-	results.createMissing("ZP2015_UNIT_SOURCE", "Není uveden zdroj akvizice", "BASIC");
+	results.createMissing("ZP2015_UNIT_SOURCE", "Není uveden zdroj akvizice", "ZP2015_POL_BASIC");
 end
 
 // Kontrola, zda každý list má v hierarchii fyzický stav
@@ -101,7 +103,8 @@ when
 		  ( "ZP2015_UNIT_CURRENT_STATUS" ) )
 		  from $items )
 then
-	results.createMissing("ZP2015_UNIT_CURRENT_STATUS", "Není uveden fyzický stav jednotky popisu a technické požadavky", "BASIC");
+	results.createMissing("ZP2015_UNIT_CURRENT_STATUS", 
+	"Není uveden fyzický stav jednotky popisu a technické požadavky", "ZP2015_POL_BASIC");
 end
 
 // Kontrola, zda každý list má zpracovatele
@@ -113,7 +116,7 @@ when
 		  ( "ZP2015_ARRANGER" ) )
 		  from $items )
 then
-	results.createMissing("ZP2015_ARRANGER", "Není uveden zpracovatel", "BASIC");
+	results.createMissing("ZP2015_ARRANGER", "Není uveden zpracovatel", "ZP2015_POL_BASIC");
 end
 
 // Kontrola, zda každý list má určen jazyk
@@ -125,5 +128,5 @@ when
 		  ( "ZP2015_LANGUAGE" ) )
 		  from $items )
 then
-	results.createMissing("ZP2015_LANGUAGE", "Není uveden jazyk", "BASIC");
+	results.createMissing("ZP2015_LANGUAGE", "Není uveden jazyk", "ZP2015_POL_BASIC");
 end

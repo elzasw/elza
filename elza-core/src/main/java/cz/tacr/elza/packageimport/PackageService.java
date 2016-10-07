@@ -41,7 +41,6 @@ import org.springframework.util.Assert;
 import com.google.common.collect.Maps;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
-import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulDataType;
@@ -86,7 +85,6 @@ import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DefaultItemTypeRepository;
-import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
@@ -95,7 +93,6 @@ import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.TemplateRepository;
@@ -103,7 +100,7 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
-import cz.tacr.elza.utils.Yaml;
+import cz.tacr.elza.utils.AppContext;
 
 
 /**
@@ -205,9 +202,6 @@ public class PackageService {
     private ItemSpecRegisterRepository itemSpecRegisterRepository;
 
     @Autowired
-    private RegisterTypeRepository registerTypeRepository;
-
-    @Autowired
     private ActionRepository packageActionsRepository;
 
     @Autowired
@@ -227,9 +221,6 @@ public class PackageService {
 
     @Autowired
     private RulesExecutor rulesExecutor;
-
-    @Autowired
-    private DescItemRepository descItemRepository;
 
     @Autowired
     private OutputTypeRepository outputTypeRepository;
@@ -944,125 +935,11 @@ public class PackageService {
     private List<RulItemType> processItemTypes(final ItemTypes itemTypes,
                                                final ItemSpecs itemSpecs,
                                                final RulPackage rulPackage) {
-
-        List<RulDataType> rulDataTypes = dataTypeRepository.findAll();
-
-        List<RulItemType> rulItemTypes = itemTypeRepository.findByRulPackage(rulPackage);
-        List<RulItemType> rulItemTypesNew = new ArrayList<>();
-
-        if (!CollectionUtils.isEmpty(itemTypes.getItemTypes())) {
-            for (ItemType itemType : itemTypes.getItemTypes()) {
-                List<RulItemType> findItems = rulItemTypes.stream().filter(
-                        (r) -> r.getCode().equals(itemType.getCode())).collect(
-                        Collectors.toList());
-                RulItemType item;
-                if (findItems.size() > 0) {
-                    item = findItems.get(0);
-
-                    // provedla se změna pro použití specifikace?
-                    if (!item.getUseSpecification().equals(itemType.getUseSpecification())) {
-                        // je nutné zkontrolovat, jestli neexistuje nějaký záznam
-
-                        Long countDescItems = descItemRepository.getCountByType(item);
-                        if (countDescItems != null && countDescItems > 0) {
-                            throw new IllegalStateException("Nelze změnit použití specifikace u typu " + item.getCode()
-                                    + ", protože existují záznamy, které typ využívají");
-                        }
-                    }
-
-                    if (item.getColumnsDefinition() != null && !equalsColumns(item.getColumnsDefinition(), itemType.getColumnsDefinition())) {
-                        Long countDescItems = descItemRepository.getCountByType(item);
-                        if (countDescItems != null && countDescItems > 0) {
-                            throw new IllegalStateException("Nelze změnit definici sloupců (datový typ a kód) u typu " + item.getCode()
-                                    + ", protože existují záznamy, které typ využívají");
-                        }
-                    }
-
-                } else {
-                    item = new RulItemType();
-                }
-
-                convertRulDescItemType(rulPackage, itemType, item, rulDataTypes);
-                rulItemTypesNew.add(item);
-            }
-        }
-
-        rulItemTypesNew = itemTypeRepository.save(rulItemTypesNew);
-
-        processDescItemSpecs(itemSpecs, rulPackage, rulItemTypesNew);
-
-        List<RulItemType> rulDescItemTypesDelete = new ArrayList<>(rulItemTypes);
-        rulDescItemTypesDelete.removeAll(rulItemTypesNew);
-        itemTypeRepository.delete(rulDescItemTypesDelete);
-
-        return rulItemTypesNew;
-    }
-
-    /**
-     * Porovnávání typů sloupců.
-     *
-     * @param elzaColumnList porovnávaný list ElzaColumn
-     * @param columnList     porovnávaný list Column
-     * @return jsou změněný neměnitelný položky?
-     */
-    private boolean equalsColumns(final List<ElzaColumn> elzaColumnList, final List<Column> columnList) {
-        if (elzaColumnList.size() != columnList.size()) {
-            return false;
-        }
-
-        for (int i = 0; i < elzaColumnList.size(); i++) {
-            ElzaColumn elzaColumn = elzaColumnList.get(i);
-            Column column = columnList.get(i);
-            if (!elzaColumn.getCode().equals(column.getCode())
-                    || !elzaColumn.getDataType().toString().equals(column.getDataType())) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-
-    /**
-     * Zpracování specifikací atributů.
-     *
-     * @param itemSpecs       seznam importovaných specifikací
-     * @param rulPackage          balíček
-     * @param rulDescItemTypes    seznam typů atributů
-     */
-    private void processDescItemSpecs(final ItemSpecs itemSpecs,
-                                      final RulPackage rulPackage, final List<RulItemType> rulDescItemTypes) {
-
-        List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
-        List<RulItemSpec> rulDescItemSpecsNew = new ArrayList<>();
-
-        if (!CollectionUtils.isEmpty(itemSpecs.getItemSpecs())) {
-            for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
-                List<RulItemSpec> findItems = rulDescItemSpecs.stream()
-                        .filter((r) -> r.getCode().equals(itemSpec.getCode())).collect(
-                                Collectors.toList());
-                RulItemSpec item;
-                if (findItems.size() > 0) {
-                    item = findItems.get(0);
-                } else {
-                    item = new RulItemSpec();
-                }
-
-                convertRulDescItemSpec(rulPackage, itemSpec, item, rulDescItemTypes);
-                rulDescItemSpecsNew.add(item);
-            }
-        }
-
-        rulDescItemSpecsNew = itemSpecRepository.save(rulDescItemSpecsNew);
-
-        processDescItemSpecsRegister(itemSpecs, rulDescItemSpecsNew);
-
-        List<RulItemSpec> rulDescItemSpecsDelete = new ArrayList<>(rulDescItemSpecs);
-        rulDescItemSpecsDelete.removeAll(rulDescItemSpecsNew);
-        for (RulItemSpec descItemSpec : rulDescItemSpecsDelete) {
-            itemSpecRegisterRepository.deleteByItemSpec(descItemSpec);
-        }
-        itemSpecRepository.delete(rulDescItemSpecsDelete);
+    	List<RulDataType> rulDataTypes = dataTypeRepository.findAll();
+    	
+    	ItemTypeUpdater updater = AppContext.getBean(ItemTypeUpdater.class);
+    	
+    	return updater.update(rulDataTypes, rulPackage, itemTypes, itemSpecs);
     }
 
     /**
@@ -1262,182 +1139,6 @@ public class PackageService {
 
         rulTemplate.setOutputType(item);
     }
-
-
-    /**
-     * Zpracování napojení specifikací na reg.
-     *
-     * @param itemSpecs    seznam importovaných specifikací
-     * @param rulDescItemSpecs seznam specifikací atributů
-     */
-    private void processDescItemSpecsRegister(final ItemSpecs itemSpecs,
-                                              final List<RulItemSpec> rulDescItemSpecs) {
-
-        List<RegRegisterType> regRegisterTypes = registerTypeRepository.findAll();
-
-        for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
-            List<ItemSpec> findItemsSpec = itemSpecs.getItemSpecs().stream().filter(
-                    (r) -> r.getCode().equals(rulDescItemSpec.getCode())).collect(Collectors.toList());
-            ItemSpec item;
-            if (findItemsSpec.size() > 0) {
-                item = findItemsSpec.get(0);
-            } else {
-                throw new IllegalStateException("Kód " + rulDescItemSpec.getCode() + " neexistuje v ItemSpecs");
-            }
-
-            List<RulItemSpecRegister> rulItemSpecRegisters = itemSpecRegisterRepository
-                    .findByDescItemSpecId(rulDescItemSpec);
-            List<RulItemSpecRegister> rulItemSpecRegistersNew = new ArrayList<>();
-
-            if (!CollectionUtils.isEmpty(item.getDescItemSpecRegisters())) {
-                for (DescItemSpecRegister descItemSpecRegister : item.getDescItemSpecRegisters()) {
-                    List<RulItemSpecRegister> findItems = rulItemSpecRegisters.stream()
-                            .filter((r) -> r.getRegisterType().getCode().equals(
-                                    descItemSpecRegister.getRegisterType())).collect(Collectors.toList());
-                    RulItemSpecRegister itemRegister;
-                    if (findItems.size() > 0) {
-                        itemRegister = findItems.get(0);
-                    } else {
-                        itemRegister = new RulItemSpecRegister();
-                    }
-
-                    convertRulDescItemSpecsRegister(rulDescItemSpec, itemRegister, regRegisterTypes,
-                            descItemSpecRegister);
-
-                    rulItemSpecRegistersNew.add(itemRegister);
-                }
-            }
-
-            rulItemSpecRegistersNew = itemSpecRegisterRepository.save(rulItemSpecRegistersNew);
-
-            List<RulItemSpecRegister> rulItemSpecRegistersDelete = new ArrayList<>(rulItemSpecRegisters);
-            rulItemSpecRegistersDelete.removeAll(rulItemSpecRegistersNew);
-            itemSpecRegisterRepository.delete(rulItemSpecRegistersDelete);
-
-        }
-
-    }
-
-    /**
-     * Převod VO na DAO napojení specifikací na reg.
-     *
-     * @param rulDescItemSpec         seznam specifikací
-     * @param rulItemSpecRegister seznam DAO napojení
-     * @param regRegisterTypes        seznam typů reg.
-     * @param descItemSpecRegister    seznam VO napojení
-     */
-    private void convertRulDescItemSpecsRegister(final RulItemSpec rulDescItemSpec,
-                                                 final RulItemSpecRegister rulItemSpecRegister,
-                                                 final List<RegRegisterType> regRegisterTypes,
-                                                 final DescItemSpecRegister descItemSpecRegister) {
-
-        rulItemSpecRegister.setItemSpec(rulDescItemSpec);
-
-        List<RegRegisterType> findItems = regRegisterTypes.stream()
-                .filter((r) -> r.getCode().equals(descItemSpecRegister.getRegisterType()))
-                .collect(Collectors.toList());
-
-        RegRegisterType item;
-
-        if (findItems.size() > 0) {
-            item = findItems.get(0);
-        } else {
-            throw new IllegalStateException(
-                    "Kód " + descItemSpecRegister.getRegisterType() + " neexistuje v RegRegisterType");
-        }
-
-        rulItemSpecRegister.setRegisterType(item);
-
-    }
-
-    /**
-     * Převod VO na DAO specifikace atributu.
-     *
-     * @param rulPackage       balíček
-     * @param itemSpec     VO specifikace
-     * @param rulDescItemSpec  DAO specifikace
-     * @param rulDescItemTypes seznam typů atributů
-     */
-    private void convertRulDescItemSpec(final RulPackage rulPackage,
-                                        final ItemSpec itemSpec,
-                                        final RulItemSpec rulDescItemSpec,
-                                        final List<RulItemType> rulDescItemTypes) {
-
-        rulDescItemSpec.setName(itemSpec.getName());
-        rulDescItemSpec.setCode(itemSpec.getCode());
-        rulDescItemSpec.setViewOrder(itemSpec.getViewOrder());
-        rulDescItemSpec.setDescription(itemSpec.getDescription());
-        rulDescItemSpec.setShortcut(itemSpec.getShortcut());
-        rulDescItemSpec.setPackage(rulPackage);
-
-        List<RulItemType> findItems = rulDescItemTypes.stream()
-                .filter((r) -> r.getCode().equals(itemSpec.getItemType()))
-                .collect(Collectors.toList());
-
-        RulItemType item;
-
-        if (findItems.size() > 0) {
-            item = findItems.get(0);
-        } else {
-            throw new IllegalStateException("Kód " + itemSpec.getItemType() + " neexistuje v RulItemType");
-        }
-
-        rulDescItemSpec.setItemType(item);
-    }
-
-    /**
-     * Převod VO na DAO typu atributu.
-     *
-     * @param rulPackage      balíček
-     * @param itemType    VO typu
-     * @param rulDescItemType DAO typy
-     * @param rulDataTypes    datové typy atributů
-     */
-    private void convertRulDescItemType(final RulPackage rulPackage,
-                                        final ItemType itemType,
-                                        final RulItemType rulDescItemType,
-                                        final List<RulDataType> rulDataTypes) {
-
-        rulDescItemType.setCode(itemType.getCode());
-        rulDescItemType.setName(itemType.getName());
-
-        List<RulDataType> findItems = rulDataTypes.stream()
-                .filter((r) -> r.getCode().equals(itemType.getDataType()))
-                .collect(Collectors.toList());
-
-        RulDataType item;
-
-        if (findItems.size() > 0) {
-            item = findItems.get(0);
-        } else {
-            throw new IllegalStateException("Kód " + itemType.getDataType() + " neexistuje v RulDataType");
-        }
-
-        rulDescItemType.setDataType(item);
-        rulDescItemType.setShortcut(itemType.getShortcut());
-        rulDescItemType.setDescription(itemType.getDescription());
-        rulDescItemType.setIsValueUnique(itemType.getIsValueUnique());
-        rulDescItemType.setCanBeOrdered(itemType.getCanBeOrdered());
-        rulDescItemType.setUseSpecification(itemType.getUseSpecification());
-        rulDescItemType.setViewOrder(itemType.getViewOrder());
-
-        if (itemType.getColumnsDefinition() != null) {
-            List<ElzaColumn> elzaColumns = new ArrayList<>(itemType.getColumnsDefinition().size());
-            for (Column column : itemType.getColumnsDefinition()) {
-                ElzaColumn elzaColumn = new ElzaColumn();
-                elzaColumn.setCode(column.getCode());
-                elzaColumn.setName(column.getName());
-                elzaColumn.setDataType(ElzaColumn.DataType.valueOf(column.getDataType()));
-                elzaColumn.setWidth(column.getWidth());
-                elzaColumns.add(elzaColumn);
-            }
-
-            rulDescItemType.setColumnsDefinition(elzaColumns);
-        }
-
-        rulDescItemType.setPackage(rulPackage);
-    }
-
 
     /**
      * Zpracování pravidel.
@@ -1888,7 +1589,7 @@ public class PackageService {
      */
     private void exportDescItemTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
         ItemTypes itemTypes = new ItemTypes();
-        List<RulItemType> rulDescItemTypes = itemTypeRepository.findByRulPackage(rulPackage);
+        List<RulItemType> rulDescItemTypes = itemTypeRepository.findByRulPackageOrderByViewOrderAsc(rulPackage);
         List<ItemType> itemTypeList = new ArrayList<>(rulDescItemTypes.size());
         itemTypes.setItemTypes(itemTypeList);
 
@@ -1988,7 +1689,6 @@ public class PackageService {
         itemType.setDescription(rulDescItemType.getDescription());
         itemType.setIsValueUnique(rulDescItemType.getIsValueUnique());
         itemType.setUseSpecification(rulDescItemType.getUseSpecification());
-        itemType.setViewOrder(rulDescItemType.getViewOrder());
 
         List<ElzaColumn> columnsDefinition = rulDescItemType.getColumnsDefinition();
         if (columnsDefinition != null) {

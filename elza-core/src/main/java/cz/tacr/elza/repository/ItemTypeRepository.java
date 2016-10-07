@@ -11,7 +11,10 @@ import java.util.Set;
 
 
 /**
+ * Repository for RulItemType
+ * 
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
+ * @author Petr Pytelka
  * @since 20.8.2015
  */
 @Repository
@@ -43,6 +46,14 @@ public interface ItemTypeRepository extends ElzaJpaRepository<RulItemType, Integ
 
 
     List<RulItemType> findByRulPackage(RulPackage rulPackage);
+    
+    List<RulItemType> findByRulPackageOrderByViewOrderAsc(RulPackage rulPackage);
+    
+    /**
+     * Return item type with the highest view-order
+     * @return return item with highest view_order 
+     */
+    RulItemType findFirstByOrderByViewOrderDesc();
 
 
     void deleteByRulPackage(RulPackage rulPackage);

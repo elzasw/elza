@@ -10,9 +10,11 @@ import java.util.List;
 
 
 /**
- * VO ItemType.
+ * VO ItemType from XML
  *
+ * View order is based on position in the list
  * @author Martin Šlapa
+ * @author Petr Pytelka
  * @since 14.12.2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -42,9 +44,6 @@ public class ItemType {
 
     @XmlElement(name = "use-specification", required = true)
     private Boolean useSpecification;
-
-    @XmlElement(name = "view-order", required = true)
-    private Integer viewOrder;
 
     @XmlElement(name = "column")
     @XmlElementWrapper(name = "columns-definitions")
@@ -112,14 +111,6 @@ public class ItemType {
 
     public void setUseSpecification(final Boolean useSpecification) {
         this.useSpecification = useSpecification;
-    }
-
-    public Integer getViewOrder() {
-        return viewOrder;
-    }
-
-    public void setViewOrder(final Integer viewOrder) {
-        this.viewOrder = viewOrder;
     }
 
     public List<Column> getColumnsDefinition() {

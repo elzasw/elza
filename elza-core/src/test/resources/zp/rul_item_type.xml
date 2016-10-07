@@ -6,7 +6,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>0</view-order>
     </item-type>
     <item-type code="ZP2015_LEVEL_TYPE" data-type="ENUM">
         <name>Úroveň popisu</name>
@@ -15,7 +14,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>1</view-order>
     </item-type>
     <item-type code="ZP2015_FOLDER_TYPE" data-type="ENUM">
         <name>Typ složky</name>
@@ -24,7 +22,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>2</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_TYPE" data-type="ENUM">
         <name>Typ archiválie</name>
@@ -33,7 +30,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>3</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_COUNT" data-type="INT">
         <name>Počet evidenčních jednotek</name>
@@ -42,7 +38,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>4</view-order>
     </item-type>
     <item-type code="ZP2015_STORAGE_ID" data-type="PACKET_REF">
         <name>Ukládací jednotka</name>
@@ -51,7 +46,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>5</view-order>
     </item-type>
     <item-type code="ZP2015_EXTRA_UNITS" data-type="INT">
         <name>Další evidenční jednotky ve složce</name>
@@ -60,7 +54,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>6</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_EXT_TYPE" data-type="ENUM">
         <name>Rozšířený popis archiválie</name>
@@ -69,7 +62,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>7</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_ID" data-type="UNITID">
         <name>Referenční označení (pořadové číslo)</name>
@@ -78,7 +70,6 @@
         <is-value-unique>true</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>8</view-order>
     </item-type>
     <item-type code="ZP2015_OTHER_ID" data-type="STRING">
         <name>Jiná označení - specifikace a hodnota</name>
@@ -87,7 +78,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>9</view-order>
     </item-type>
     <item-type code="ZP2015_SERIAL_NUMBER" data-type="INT">
         <name>Jiná označení - Pořadové číslo</name>
@@ -96,7 +86,6 @@
         <is-value-unique>true</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>10</view-order>
     </item-type>
     <item-type code="ZP2015_TITLE" data-type="TEXT">
         <name>Obsah, regest</name>
@@ -105,7 +94,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>11</view-order>
     </item-type>
     <item-type code="ZP2015_FORMAL_TITLE" data-type="STRING">
         <name>Formální název jednotky popisu</name>
@@ -114,7 +102,6 @@
         <is-value-unique>true</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>12</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_DATE_PRE" data-type="UNITDATE">
         <name>Datace prior vzniku jednotky popisu - strojově čitelný</name>
@@ -123,7 +110,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>13</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_DATE" data-type="UNITDATE">
         <name>Datace vzniku jednotky popisu - strojově čitelný</name>
@@ -132,7 +118,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>14</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_DATE_POST" data-type="UNITDATE">
         <name>Datace posterior vzniku jednotky popisu - strojově čitelný</name>
@@ -141,7 +126,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>15</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_DATE_TEXT" data-type="STRING">
         <name>Datace vzniku jednotky popisu - Textový zápis</name>
@@ -150,7 +134,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>16</view-order>
     </item-type>
     <item-type code="ZP2015_ORIGINATOR" data-type="PARTY_REF">
         <name>Původce</name>
@@ -159,7 +142,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>17</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_HIST" data-type="TEXT">
         <name>Dějiny jednotky popisu</name>
@@ -168,7 +150,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>18</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_ARR" data-type="TEXT">
         <name>Způsob uspořádání jednotky popisu</name>
@@ -177,7 +158,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>19</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_CONTENT" data-type="TEXT">
         <name>Tematický popis jednotky popisu</name>
@@ -186,7 +166,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>20</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_SOURCE" data-type="TEXT">
         <name>Přímý zdroj akvizice</name>
@@ -195,7 +174,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>21</view-order>
     </item-type>
     <item-type code="ZP2015_FUTURE_UNITS" data-type="TEXT">
         <name>Budoucí přírůstky</name>
@@ -204,7 +182,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>22</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_ACCESS" data-type="TEXT">
         <name>Podmínky přístupu, práva k jednotce popisu a její reprodukci</name>
@@ -213,7 +190,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>23</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_INFO_RIGHTS" data-type="TEXT">
         <name>Možnost zveřejnění informací o jednotce popisu</name>
@@ -222,7 +198,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>24</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_COPY_RIGHTS" data-type="TEXT">
         <name>Možnost zveřejnění reprodukce jednotky popisu</name>
@@ -231,7 +206,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>25</view-order>
     </item-type>
     <item-type code="ZP2015_UNIT_CURRENT_STATUS" data-type="TEXT">
         <name>Fyzický stav jednotky popisu a technické požadavky</name>
@@ -240,7 +214,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>26</view-order>
     </item-type>
     <item-type code="ZP2015_COPY_SOURCE" data-type="TEXT">
         <name>Identifikace předlohy kopie</name>
@@ -249,7 +222,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>27</view-order>
     </item-type>
     <item-type code="ZP2015_RELATED_UNITS" data-type="TEXT">
         <name>Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání</name>
@@ -258,7 +230,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>28</view-order>
     </item-type>
     <item-type code="ZP2015_EXISTING_COPY" data-type="TEXT">
         <name>Existence kopií jednotky popisu</name>
@@ -267,7 +238,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>29</view-order>
     </item-type>
     <item-type code="ZP2015_INTERNAL_NOTE" data-type="TEXT">
         <name>Služební poznámka</name>
@@ -276,7 +246,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>30</view-order>
     </item-type>
     <item-type code="ZP2015_NOTE" data-type="TEXT">
         <name>Veřejná poznámka</name>
@@ -285,7 +254,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>31</view-order>
     </item-type>
     <item-type code="ZP2015_ARRANGE_RULES" data-type="TEXT">
         <name>Pravidla zpracování jednotky popisu</name>
@@ -294,7 +262,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>32</view-order>
     </item-type>
     <item-type code="ZP2015_4_OTHER" data-type="UNITDATE">
         <name>Jiné datace jednotky popisu než datace vzniku jednotky popisu - specifikace a hodnota</name>
@@ -304,7 +271,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>33</view-order>
     </item-type>
     <item-type code="ZP2015_ITEM_TITLE" data-type="TEXT">
         <name>Název autorského díla</name>
@@ -313,7 +279,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>34</view-order>
     </item-type>
     <item-type code="ZP2015_STORAGE_COND" data-type="TEXT">
         <name>Způsob a forma dochování</name>
@@ -322,7 +287,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>35</view-order>
     </item-type>
     <item-type code="ZP2015_SIZE" data-type="TEXT">
         <name>Rozměry, hmotnost, velikost, množství</name>
@@ -331,7 +295,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>36</view-order>
     </item-type>
     <item-type code="ZP2015_SCALE" data-type="TEXT">
         <name>Měřítko</name>
@@ -340,7 +303,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>37</view-order>
     </item-type>
     <item-type code="ZP2015_POSITION" data-type="COORDINATES">
         <name>Souřadnice - tvar a souřadnice</name>
@@ -349,7 +311,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>38</view-order>
     </item-type>
     <item-type code="ZP2015_ORIENTATION" data-type="TEXT">
         <name>Orientace z hlediska světových stran</name>
@@ -358,7 +319,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>39</view-order>
     </item-type>
     <item-type code="ZP2015_ITEM_MAT" data-type="TEXT">
         <name>Technika, adjustace, nosič a látka záznamu</name>
@@ -367,7 +327,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>40</view-order>
     </item-type>
     <item-type code="ZP2015_PART" data-type="TEXT">
         <name>Díl, část, pořadí vydání jednotky popisu</name>
@@ -376,7 +335,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>41</view-order>
     </item-type>
     <item-type code="ZP2015_LANGUAGE" data-type="ENUM">
         <name>Jazyk, písmo</name>
@@ -385,7 +343,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>42</view-order>
     </item-type>
     <item-type code="ZP2015_EDITION" data-type="TEXT">
         <name>Edice a literatura</name>
@@ -394,7 +351,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>43</view-order>
     </item-type>
     <item-type code="ZP2015_ENTITY_ROLE" data-type="RECORD_REF">
         <name>Role entit (specifikace + hodnota)</name>
@@ -403,7 +359,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>44</view-order>
     </item-type>
     <item-type code="ZP2015_EXERQUE" data-type="TEXT">
         <name>Opis, nápis, exerque</name>
@@ -412,7 +367,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>45</view-order>
     </item-type>
     <item-type code="ZP2015_PAINTING_CHAR" data-type="TEXT">
         <name>Popis obrazu v poli typáře či otisku</name>
@@ -421,7 +375,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>46</view-order>
     </item-type>
     <item-type code="ZP2015_CORROBORATION" data-type="TEXT">
         <name>Koroborace dokumentu, k němuž byl popisovaný otisk připojen</name>
@@ -430,7 +383,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>47</view-order>
     </item-type>
     <item-type code="ZP2015_IMPRINT_COUNT" data-type="TEXT">
         <name>Počet otisků původní a současný</name>
@@ -439,7 +391,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>48</view-order>
     </item-type>
     <item-type code="ZP2015_IMPRINT_ORDER" data-type="TEXT">
         <name>Pořadí otisku</name>
@@ -448,7 +399,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>49</view-order>
     </item-type>
     <item-type code="ZP2015_LEGEND" data-type="FORMATTED_TEXT">
         <name>Legenda</name>
@@ -457,7 +407,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>50</view-order>
     </item-type>
     <item-type code="ZP2015_MOVIE_LENGTH" data-type="INT">
         <name>Délka filmového záznamu</name>
@@ -466,7 +415,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>51</view-order>
     </item-type>
     <item-type code="ZP2015_RECORD_LENGTH" data-type="INT">
         <name>Délka zvukového záznamu</name>
@@ -475,7 +423,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>52</view-order>
     </item-type>
     <item-type code="ZP2015_COLL_EXTENT_LENGTH" data-type="DECIMAL">
         <name>Rozsah archivního souboru</name>
@@ -484,7 +431,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>53</view-order>
     </item-type>
     <item-type code="ZP2015_NAD" data-type="STRING">
         <name>Číslo NAD</name>
@@ -493,7 +439,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>54</view-order>
     </item-type>
     <item-type code="ZP2015_STATISTICS" data-type="JSON_TABLE">
         <name>Statistika</name>
@@ -502,7 +447,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>55</view-order>
         <columns-definitions>
             <column code="KEY" data-type="TEXT">
                 <name>Položka</name>
@@ -521,7 +465,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>56</view-order>
         <columns-definitions>
             <column code="NAME" data-type="TEXT">
                 <name>Položka</name>
@@ -552,6 +495,5 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>57</view-order>
     </item-type>
 </item-types>

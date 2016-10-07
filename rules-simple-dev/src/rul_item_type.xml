@@ -6,7 +6,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>100</view-order>
     </item-type>
     <item-type code="SRD_LEVEL_TYPE" data-type="ENUM">
         <name>Úroveň popisu</name>
@@ -15,7 +14,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>101</view-order>
     </item-type>
     <item-type code="SRD_FOLDER_TYPE" data-type="ENUM">
         <name>Typ složky</name>
@@ -24,7 +22,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>102</view-order>
     </item-type>
     <item-type code="SRD_UNIT_TYPE" data-type="ENUM">
         <name>Typ archiválie</name>
@@ -33,7 +30,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>103</view-order>
     </item-type>
     <item-type code="SRD_UNIT_COUNT" data-type="INT">
         <name>Počet evidenčních jednotek</name>
@@ -42,7 +38,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>104</view-order>
     </item-type>
     <item-type code="SRD_STORAGE_ID" data-type="PACKET_REF">
         <name>Ukládací jednotka</name>
@@ -51,7 +46,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>105</view-order>
     </item-type>
     <item-type code="SRD_EXTRA_UNITS" data-type="INT">
         <name>Další evidenční jednotky ve složce</name>
@@ -60,7 +54,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>106</view-order>
     </item-type>
     <item-type code="SRD_UNIT_ID" data-type="UNITID">
         <name>Referenční označení (pořadové číslo)</name>
@@ -69,7 +62,6 @@
         <is-value-unique>true</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>107</view-order>
     </item-type>
     <item-type code="SRD_OTHER_ID" data-type="STRING">
         <name>Jiná označení - specifikace a hodnota</name>
@@ -78,7 +70,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>108</view-order>
     </item-type>
     <item-type code="SRD_SERIAL_NUMBER" data-type="INT">
         <name>Jiná označení - Pořadové číslo</name>
@@ -87,7 +78,6 @@
         <is-value-unique>true</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>109</view-order>
     </item-type>
     <item-type code="SRD_TITLE" data-type="TEXT">
         <name>Obsah, regest</name>
@@ -96,7 +86,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>110</view-order>
     </item-type>
     <item-type code="SRD_FORMAL_TITLE" data-type="STRING">
         <name>Formální název jednotky popisu</name>
@@ -105,7 +94,6 @@
         <is-value-unique>true</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>111</view-order>
     </item-type>
     <item-type code="SRD_UNIT_DATE_PRE" data-type="UNITDATE">
         <name>Datace prior vzniku jednotky popisu - strojově čitelný</name>
@@ -114,7 +102,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>112</view-order>
     </item-type>
     <item-type code="SRD_UNIT_DATE" data-type="UNITDATE">
         <name>Datace vzniku jednotky popisu - strojově čitelný</name>
@@ -123,7 +110,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>113</view-order>
     </item-type>
     <item-type code="SRD_UNIT_DATE_POST" data-type="UNITDATE">
         <name>Datace posterior vzniku jednotky popisu - strojově čitelný</name>
@@ -132,7 +118,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>114</view-order>
     </item-type>
     <item-type code="SRD_UNIT_DATE_TEXT" data-type="STRING">
         <name>Datace vzniku jednotky popisu - Textový zápis</name>
@@ -141,7 +126,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>115</view-order>
     </item-type>
     <item-type code="SRD_ORIGINATOR" data-type="PARTY_REF">
         <name>Původce</name>
@@ -150,7 +134,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>116</view-order>
     </item-type>
     <item-type code="SRD_UNIT_HIST" data-type="TEXT">
         <name>Dějiny jednotky popisu</name>
@@ -159,7 +142,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>117</view-order>
     </item-type>
     <item-type code="SRD_UNIT_ARR" data-type="TEXT">
         <name>Způsob uspořádání jednotky popisu</name>
@@ -168,7 +150,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>118</view-order>
     </item-type>
     <item-type code="SRD_POSITION" data-type="COORDINATES">
         <name>Souřadnice - tvar a souřadnice</name>
@@ -177,7 +158,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>119</view-order>
     </item-type>
     <item-type code="SRD_LANGUAGE" data-type="ENUM">
         <name>Jazyk, písmo</name>
@@ -186,7 +166,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>120</view-order>
     </item-type>
     <item-type code="SRD_ENTITY_ROLE" data-type="RECORD_REF">
         <name>Role entit (specifikace + hodnota)</name>
@@ -195,7 +174,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
-        <view-order>121</view-order>
     </item-type>
     <item-type code="SRD_IMPRINT_COUNT" data-type="TEXT">
         <name>Počet otisků původní a současný</name>
@@ -204,7 +182,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>122</view-order>
     </item-type>
     <item-type code="SRD_LEGEND" data-type="FORMATTED_TEXT">
         <name>Legenda</name>
@@ -213,7 +190,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>123</view-order>
     </item-type>
     <item-type code="SRD_COLL_EXTENT_LENGTH" data-type="DECIMAL">
         <name>Rozsah archivního souboru</name>
@@ -222,7 +198,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>124</view-order>
     </item-type>
     <item-type code="SRD_NAD" data-type="STRING">
         <name>Číslo NAD</name>
@@ -231,7 +206,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>125</view-order>
     </item-type>
     <item-type code="SRD_STATISTICS" data-type="JSON_TABLE">
         <name>Statistika</name>
@@ -240,7 +214,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>126</view-order>
         <columns-definitions>
             <column code="KEY" data-type="TEXT">
                 <name>Položka</name>
@@ -259,7 +232,6 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>127</view-order>
         <columns-definitions>
             <column code="NAME" data-type="TEXT">
                 <name>Položka</name>
@@ -290,6 +262,5 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-        <view-order>128</view-order>
     </item-type>
 </item-types>
