@@ -286,7 +286,7 @@ const FundActionPage = class FundActionPage extends ArrParentPage {
         }
 
         return (
-            <Ribbon arr subMenu altSection={altSection} itemSection={itemSection}/>
+            <Ribbon arr subMenu fundId={fund.id} altSection={altSection} itemSection={itemSection}/>
         )
     }
 
