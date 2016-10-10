@@ -13,6 +13,7 @@ import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.DmsService;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -94,7 +95,7 @@ public class DmsController {
         MultipartFile multipartFile = objVO.getFile();
         Assert.notNull(multipartFile);
 
-        objVO.setFileName(multipartFile.getOriginalFilename());
+        objVO.setFileName(FilenameUtils.getName(multipartFile.getOriginalFilename()));
         objVO.setMimeType(multipartFile.getContentType());
         objVO.setFileSize((int) multipartFile.getSize());
 
