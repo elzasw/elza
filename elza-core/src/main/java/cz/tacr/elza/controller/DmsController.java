@@ -131,7 +131,8 @@ public class DmsController {
     // kvůli IE nelze použít PUT protože nemůžeme uploadovat soubor
     @RequestMapping(value = "/api/dms/fund/{fileId}", method = RequestMethod.POST)
     public void updateFile(@PathVariable(value = "fileId") Integer fileId, final ArrFileVO object) throws IOException {
-        dmsService.checkFundWritePermission(object.getFundId());
+        ArrFile arrFile = dmsService.getArrFile(fileId);
+        dmsService.checkFundWritePermission(arrFile.getFund().getFundId());
         update(fileId, object, (fileVO) -> factoryDO.createArrFile((ArrFileVO) fileVO));
     }
 
