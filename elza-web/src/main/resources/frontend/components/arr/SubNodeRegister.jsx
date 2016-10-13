@@ -118,7 +118,7 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
                                   item={link}
                                   value={link.value ? link.value : null}
                                   versionId={versionId} />
-                    {!closed && !readMode && <NoFocusButton key="delete" onClick={this.handleRemove.bind(this, index)} ><Icon glyph="fa-times" /></NoFocusButton>}
+                    {!closed && !readMode && <NoFocusButton style={{visibility: link.id ? 'visible' : 'hidden'}} key="delete" onClick={this.handleRemove.bind(this, index)} ><Icon glyph="fa-times" /></NoFocusButton>}
                 </div>
             );
         }
