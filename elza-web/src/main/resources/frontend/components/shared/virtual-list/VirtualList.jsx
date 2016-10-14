@@ -60,7 +60,7 @@ var VirtualList = React.createClass({
 
         if (lazyItems) {
             state.items = []
-            for (var a=renderStats.firstItemIndex; a<renderStats.lastItemIndex + 1; a++) {
+            for (var a=renderStats.firstItemIndex; a < renderStats.lastItemIndex + 1 ; a++) {
                 state.items.push(a)
             }
         } else {
@@ -148,10 +148,10 @@ return true;
     },
     render: function() {
         return (
-        <this.props.tagName ref='box' {...this.props} style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart }} >
+        <this.props.tagName ref='box' {...this.props} style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart, display:'table' }} >
             {this.state.items.map(this.props.renderItem)}
         </this.props.tagName>
-        );
+        );				
     }
 });
 
