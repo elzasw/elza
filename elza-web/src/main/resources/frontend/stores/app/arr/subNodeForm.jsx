@@ -444,7 +444,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 data: {
                     ...state.data,
                     node: {
-                        ...state.data.parent,
+                        ...state.data.node,
                         version: action.version
                     }
                 }

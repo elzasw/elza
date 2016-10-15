@@ -2,7 +2,11 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {i18n} from 'components/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 
-const getLoc = (state, index)  => ({link: {...state.formData.nodeRegisters[index]}})
+const getLoc = (state, index)  => {
+    return {
+        link: state.formData.nodeRegisters[index] ? {...state.formData.nodeRegisters[index]} : {}
+    }
+};
 
 const initialState = {
     isFetching: false,
@@ -45,8 +49,8 @@ export default function subNodeRegister(state = initialState, action = {}) {
             };
         case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:{
 
-            const loc = getLoc(state, action.index);
-
+            const loc = action.operationType === 'DELETE' ? null : getLoc(state, action.index);
+            console.log("ssssS", loc, action)
             switch (action.operationType) {
                 case 'DELETE':
                     break;
@@ -59,12 +63,36 @@ export default function subNodeRegister(state = initialState, action = {}) {
                     loc.link.record = action.data.record;
                     break;
             }
+            console.log("ssssS222", loc, action)
+
+
+            const node = action.data.node ? action.data.node : state.formData.node;
+            let nodeRegisters = state.formData.nodeRegisters.map(i => ({...i, node}));
+            console.log("ssssS3333", nodeRegisters);
+
+            if (loc) {
+                loc.link.node = node;
+
+                let index = null;
+                if (action.index) {
+                    index = action.index;
+                } else {
+                    let leng = nodeRegisters.length-1;
+                    for (let i = 0; i < leng;i++) {
+                        if (nodeRegisters[i].loc.id === loc.link.id) {
+                            index = i;
+                            break;
+                        }
+                    }
+                }
+                nodeRegisters[index] = loc.link;
+            }
 
             return {
                 ...state,
                 formData: {
-                    node: action.data.node,
-                    nodeRegisters: state.formData.nodeRegisters.map(i => {i.node = action.data.node; return i})
+                    node,
+                    nodeRegisters
                 }
             }
         }
@@ -72,6 +100,7 @@ export default function subNodeRegister(state = initialState, action = {}) {
             return {
                 ...state,
                 formData: {
+                    ...state.formData,
                     nodeRegisters: [
                         ...state.formData.nodeRegisters.slice(0, action.index),
                         ...state.formData.nodeRegisters.slice(action.index + 1)
@@ -125,6 +154,7 @@ export default function subNodeRegister(state = initialState, action = {}) {
                 }
             };
         case types.FUND_SUB_NODE_REGISTER_VALUE_ADD:{
+            console.log("aaa", state);
             const formItem = {
                 node: {...state.formData.node},
                 nodeId: state.formData.node.id,

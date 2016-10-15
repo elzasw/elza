@@ -443,7 +443,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         let tabIndex = 0
 
         items.push({id: tabIndex, title: i18n('arr.output.panel.title.function')});
-        if (_selectedTab === tabIndex) tabContent = this.renderFunctionsPanel();
+        if (_selectedTab === tabIndex) tabContent = this.renderFunctionsPanel(readMode);
         tabIndex++;
 
         items.push({id: tabIndex, title: i18n('arr.output.panel.title.template')});
@@ -478,7 +478,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         const fund = this.getActiveFund(this.props);
         const fundOutput = fund.fundOutput;;
 
-        var activeIndex;
+        let activeIndex = null;
         if (fundOutput.fundOutputDetail.id !== null) {
             activeIndex = indexById(fundOutput.outputs, fundOutput.fundOutputDetail.id)
         }
@@ -544,12 +544,13 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         return userDetail.hasArrOutputPage(activeFund ? activeFund.id : null);
     }
 
-    renderFunctionsPanel() {
+    renderFunctionsPanel(readMode) {
         const activeFund = this.getActiveFund(this.props);
         const {fundOutput} = activeFund;
         if (fundOutput.fundOutputDetail.fetched) {
             return <FundOutputFunctions
                 ref="fundOutputFunctions"
+                readMode={readMode}
                 versionId={activeFund.versionId}
                 outputId={fundOutput.fundOutputDetail.id}
                 outputState={fundOutput.fundOutputDetail.outputDefinition.state}

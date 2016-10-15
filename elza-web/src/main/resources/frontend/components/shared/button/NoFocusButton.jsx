@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbstractReactComponent} from 'components/index.jsx';
 
-var NoFocusButton = class NoFocusButton extends AbstractReactComponent {
+const NoFocusButton = class NoFocusButton extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -17,18 +17,20 @@ var NoFocusButton = class NoFocusButton extends AbstractReactComponent {
     }
 
     render() {
-        var cls = 'btn btn-default';
-        if (this.props.disabled) {
+        const {className, disabled, ...otherProps} = this.props;
+        let cls = 'btn btn-default';
+        if (disabled) {
             cls += ' disabled';
         }
-        if (this.props.className) {
-            cls += ' ' + this.props.className;
+        if (className) {
+            cls += ' ' + className;
         }
 
+
         return (
-            <div title={this.props.title} className={cls} onClick={this.handleClick}>{this.props.children}</div>
+            <div className={cls} onClick={this.handleClick} {...otherProps}>{this.props.children}</div>
         )
     }
 }
 
-module.exports = NoFocusButton;
+export default NoFocusButton;
