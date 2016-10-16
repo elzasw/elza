@@ -58,8 +58,6 @@ class AddOutputForm extends AbstractReactComponent {
         const {fields: {name, internalCode, temporary, templateId, outputTypeId}, create, handleSubmit, onClose, outputTypes, allTemplates} = this.props;
         const submitForm = submitReduxForm.bind(this, AddOutputForm.validate);
 
-        console.log(outputTypes);
-
         let templates = false;
         if (outputTypeId.value) {
             const index = indexById(outputTypes, outputTypeId.value);

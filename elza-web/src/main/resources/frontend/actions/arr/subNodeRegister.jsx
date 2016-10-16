@@ -108,9 +108,9 @@ export function fundSubNodeRegisterValueDelete(versionId, nodeId, routingKey, in
             routingKey,
             index,
         })
-
+        console.log("q", loc);
         if (typeof loc.link.id !== 'undefined') {
-            fundSubNodeRegisterDelete(versionId, nodeId, loc.link, routingKey, index);
+            dispatch(fundSubNodeRegisterDelete(versionId, nodeId, loc.link, routingKey, index));
         }
     }
 }

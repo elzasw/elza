@@ -82,12 +82,12 @@ const FundOutputFunctions = class FundOutputFunctions extends AbstractReactCompo
     }
 
     renderListItem(item) {
-        const {outputState} = this.props;
+        const {outputState, readMode} = this.props;
         const config = this.getConfigByCode(item.code);
         const name = config ? <span title={item.name} className='name'>{config.name}</span> : '';
         const state = FundActionPage.getStateTranslation(item.state);
         let buttons = null;
-        if (outputState !== OutputState.FINISHED && outputState !== OutputState.OUTDATED) {
+        if (!readMode && outputState !== OutputState.FINISHED && outputState !== OutputState.OUTDATED) {
             if (state == null || ACTION_NOT_RUNNING_STATE.indexOf(item.state) !== -1) {
                 buttons = <Icon glyph="fa-play" onClick={() => this.handleActionRun(item.code)}/>;
             } else if (ACTION_RUNNING_STATE.indexOf(item.state) !== -1) {
@@ -139,6 +139,7 @@ FundOutputFunctions.propTypes = {
     data: React.PropTypes.array,
     filterRecommended: React.PropTypes.bool.isRequired,
     fetched: React.PropTypes.bool.isRequired,
+    readMode: React.PropTypes.bool.isRequired,
     outputState: React.PropTypes.string.isRequired
 };
 

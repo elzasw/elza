@@ -111,7 +111,7 @@ const PartyField = class PartyField extends AbstractReactComponent {
 
     render() {
         /** onChange nutno excludnout z other props - jinak by vlezno na autocomplete a přestal by fugnovat event on Change na komponentě **/
-        const {userDetail, locked, value, onChange, ...otherProps, detail} = this.props;
+        const {userDetail, locked, value, onChange, detail, ...otherProps} = this.props;
 
         let footer;
         if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR)) {
