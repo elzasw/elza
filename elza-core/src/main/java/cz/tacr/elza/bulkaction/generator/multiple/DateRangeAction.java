@@ -139,6 +139,7 @@ public class DateRangeAction extends Action {
             // není použit záměrně if-else, protože teoreticky by šlo nakonfigurovat vše na stejnou položku
             if (inputItemType.equals(item.getItemType())) {
                 ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
+                data.setFormat(UnitDateConvertor.DATE);
                 if (dateMin > data.getNormalizedFrom()) {
                     dateMinString = UnitDateConvertor.convertToString(data);
                     dateMin = data.getNormalizedFrom();
@@ -150,6 +151,7 @@ public class DateRangeAction extends Action {
             }
             if (inputItemTypePrior.equals(item.getItemType())) {
                 ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
+                data.setFormat(UnitDateConvertor.DATE);
                 if (dateMinPrior > data.getNormalizedFrom()) {
                     dateMinPriorString = UnitDateConvertor.convertToString(data);
                     dateMinPrior = data.getNormalizedFrom();
@@ -157,6 +159,7 @@ public class DateRangeAction extends Action {
             }
             if (inputItemTypePosterior.equals(item.getItemType())) {
                 ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
+                data.setFormat(UnitDateConvertor.DATE);
                 if (dateMaxPosterior < data.getNormalizedTo()) {
                     dateMaxPosterior = data.getNormalizedTo();
                     dateMaxPosteriorString = UnitDateConvertor.convertToString(data);
