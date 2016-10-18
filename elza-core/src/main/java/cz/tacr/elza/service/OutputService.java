@@ -71,6 +71,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -500,25 +501,33 @@ public class OutputService {
                 .filter(nodeOutput -> nodeOutput.getDeleteChange() == null)
                 .collect(Collectors.toList());
 
-        Set<ArrNodeOutput> nodeOutputs = outputDefinition.getOutputNodes().stream()
-                .filter(nodeOutput -> nodeOutput.getDeleteChange() == null && nodeIds.contains(nodeOutput.getNode().getNodeId()))
-                .collect(Collectors.toSet());
-
-        if (nodeOutputs.size() > 0) {
-            nodeOutputs.stream().forEach(arrNodeOutput -> arrNodeOutput.setDeleteChange(change));
-            nodeOutputRepository.save(nodeOutputs);
-
-            outputNodes.removeAll(nodeOutputs);
-            Set<ArrNode> allNodes = outputNodes.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet());
-
-            if (allNodes.size() > 0) {
-                storeResults(fundVersion, change, allNodes, outputDefinition, null);
+        Set<ArrNodeOutput> nodeOutputs = new HashSet<>();
+        for (ArrNodeOutput nodeOutput : outputDefinition.getOutputNodes()) {
+            if (nodeOutput.getDeleteChange() == null) {
+                ArrNode node = nodeOutput.getNode();
+                if (nodeIds.contains(node.getNodeId())) {
+                    nodeOutput.setDeleteChange(change);
+                    nodeOutputs.add(nodeOutput);
+                }
             }
-
-            Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
-            EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
-            eventNotificationService.publishEvent(event);
         }
+
+        if (nodeIds.size() != nodeOutputs.size()) {
+            throw new IllegalArgumentException("Byl předán seznam s neplatným identifikátorem uzlu: " + nodeIds);
+        }
+
+        nodeOutputRepository.save(nodeOutputs);
+
+        outputNodes.removeAll(nodeOutputs);
+        Set<ArrNode> allNodes = outputNodes.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet());
+
+        if (allNodes.size() > 0) {
+            storeResults(fundVersion, change, allNodes, outputDefinition, null);
+        }
+
+        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
+        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
+        eventNotificationService.publishEvent(event);
     }
 
     /**
@@ -643,29 +652,37 @@ public class OutputService {
                 .map(ArrNode::getNodeId)
                 .collect(Collectors.toSet());
 
-        nodeIds.removeAll(nodesIdsDb);
-
-        if (nodeIds.size() > 0) {
-
-            List<ArrNodeOutput> nodeOutputs = nodeIds.stream()
-                    .map(nodeId -> entityManager.find(ArrNode.class, nodeId))
-                    .map(node -> {
-                        ArrNodeOutput nodeOutput = new ArrNodeOutput();
-                        nodeOutput.setNode(node);
-                        nodeOutput.setOutputDefinition(outputDefinition);
-                        nodeOutput.setCreateChange(change);
-                        return nodeOutput;
-                    }).collect(Collectors.toList());
-
-            nodeOutputRepository.save(nodeOutputs);
-
-            allNodes.addAll(nodeOutputs.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet()));
-            storeResults(fundVersion, change, allNodes, outputDefinition, null);
-
-            Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
-            EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
-            eventNotificationService.publishEvent(event);
+        for (Integer nodeId : nodesIdsDb) {
+            for (Integer nodeIdAdd : nodeIds) {
+                if (nodeId.equals(nodeIdAdd)) {
+                    throw new IllegalArgumentException("Nelze přidat již přidaný uzel. (ID=" + nodeIdAdd + ")");
+                }
+            }
         }
+
+        List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
+
+        if (nodes.size() != nodeIds.size()) {
+            throw new IllegalArgumentException("Byl předán seznam s neplatným identifikátorem uzlu: " + nodeIds);
+        }
+
+        List<ArrNodeOutput> nodeOutputs = new ArrayList<>(nodes.size());
+        for (ArrNode node : nodes) {
+            ArrNodeOutput nodeOutput = new ArrNodeOutput();
+            nodeOutput.setNode(node);
+            nodeOutput.setOutputDefinition(outputDefinition);
+            nodeOutput.setCreateChange(change);
+            nodeOutputs.add(nodeOutput);
+        }
+
+        nodeOutputRepository.save(nodeOutputs);
+
+        allNodes.addAll(nodes);
+        storeResults(fundVersion, change, allNodes, outputDefinition, null);
+
+        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
+        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
+        eventNotificationService.publishEvent(event);
     }
 
     /**
