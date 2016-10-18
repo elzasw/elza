@@ -352,7 +352,15 @@ const RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
     render() {
         const {selectedId, registryRegionData: { item, fetched }} = this.props;
-        let detailRegistry = false;
+        let detailRegistry = false;        
+        if(!selectedId){
+            return(
+                    <div className="unselected-msg">
+                        <div className="title">{i18n('registry.noSelection.title')}</div>
+                        <div className="msg-text">{i18n('registry.noSelection.message')}</div>                                                
+                    </div>
+                    );
+        }
         if (fetched) {
             const disableEdit = !this.canEdit();
 

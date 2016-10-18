@@ -232,7 +232,12 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
         }
 
         if(party == undefined){
-            return <div className="partyDetail">{i18n('party.detail.noSelection')}</div>
+            return(
+                    <div className="unselected-msg">
+                        <div className="title">{i18n('party.noSelection.title')}</div>
+                        <div className="msg-text">{i18n('party.noSelection.message')}</div>                                                
+                    </div>
+                    );
         }
 
         var canEdit = false
