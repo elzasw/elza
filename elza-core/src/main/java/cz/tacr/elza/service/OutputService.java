@@ -1,22 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
@@ -76,6 +59,23 @@ import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Serviska pro práci s výstupy.
@@ -1551,13 +1551,53 @@ public class OutputService {
                                 final ArrOutputDefinition outputDefinition,
                                 final ArrFundVersion fundVersion,
                                 final ArrChange change) {
-        deleteOutputItemsByType(fundVersion, outputDefinition, type, change);
-        for (ArrItemData dataItem : dataItems) {
-            ArrOutputItem outputItem = new ArrOutputItem(dataItem);
-            outputItem.setItemType(type);
-            outputItem.setItemSpec(dataItem.getSpec());
-            createOutputItem(outputItem, outputDefinition, fundVersion, change);
+        if (isDataChanged(type, dataItems, outputDefinition)) {
+            deleteOutputItemsByType(fundVersion, outputDefinition, type, change);
+            for (ArrItemData dataItem : dataItems) {
+                ArrOutputItem outputItem = new ArrOutputItem(dataItem);
+                outputItem.setItemType(type);
+                outputItem.setItemSpec(dataItem.getSpec());
+                createOutputItem(outputItem, outputDefinition, fundVersion, change);
+            }
         }
+    }
+
+    /**
+     * Detekuje, jestli jsou data změněná a je potřeba je přeuložit.
+     *
+     * @return {true} pokud se data změnily
+     */
+    private boolean isDataChanged(final RulItemType itemType,
+                                  final List<ArrItemData> dataItems,
+                                  final ArrOutputDefinition outputDefinition) {
+        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemType, outputDefinition);
+
+        // pokud se liší počet, musela nastat změna
+        if (outputItems.size() != dataItems.size()) {
+            return true;
+        }
+
+        // pomocné pole pro porovnávání
+        ArrayList<ArrItemData> dataItemsToCompare = new ArrayList<>(dataItems);
+
+        itemService.loadData(outputItems);
+
+        // procházím všechny kombinace
+        // pokud naleznu shodu, odeberu položku z pomocného pole
+        for (ArrOutputItem outputItem : outputItems) {
+            ArrItemData item = outputItem.getItem();
+            Iterator<ArrItemData> iterator = dataItemsToCompare.iterator();
+            while (iterator.hasNext()) {
+                ArrItemData next = iterator.next();
+                if (EqualsBuilder.reflectionEquals(next, item)) {
+                    iterator.remove();
+                    break;
+                }
+            }
+        }
+
+        // pokud není seznam prázdný, existuje alespoň jedna změna
+        return dataItemsToCompare.size() != 0;
     }
 
     /**
