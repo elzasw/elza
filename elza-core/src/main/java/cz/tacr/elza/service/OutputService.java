@@ -24,7 +24,7 @@ import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
-import cz.tacr.elza.bulkaction.generator.result.DataceRangeActionResult;
+import cz.tacr.elza.bulkaction.generator.result.DateRangeActionResult;
 import cz.tacr.elza.bulkaction.generator.result.NodeCountActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.SerialNumberResult;
@@ -1479,12 +1479,12 @@ public class OutputService {
             String itemTypeCode = copyActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
             dataItems = copyActionResult.getDataItems();
-        } else if (actionResult instanceof DataceRangeActionResult) {
-            DataceRangeActionResult dataceRangeActionResult = (DataceRangeActionResult) actionResult;
-            String itemTypeCode = dataceRangeActionResult.getItemType();
+        } else if (actionResult instanceof DateRangeActionResult) {
+            DateRangeActionResult dateRangeActionResult = (DateRangeActionResult) actionResult;
+            String itemTypeCode = dateRangeActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
             ArrItemString itemString = new ArrItemString();
-            itemString.setValue(dataceRangeActionResult.getText());
+            itemString.setValue(dateRangeActionResult.getText());
             dataItems = Arrays.asList(itemString);
         } else if (actionResult instanceof NodeCountActionResult) {
             NodeCountActionResult nodeCountActionResult = (NodeCountActionResult) actionResult;

@@ -118,7 +118,7 @@ public abstract class Action implements InitializingBean {
     public Set<RulItemType> findItemTypes(final Set<String> codes) {
         Set<RulItemType> itemTypes = itemTypeRepository.findByCode(codes);
         if (itemTypes.size() != codes.size()) {
-            throw new IllegalArgumentException("Některý atributu neexistuje: " + codes + ", " + itemTypes);
+            throw new IllegalArgumentException("Některý atribut neexistuje -> potřeba: " + codes + ", nalezene:" + itemTypes);
         }
         return itemTypes;
     }

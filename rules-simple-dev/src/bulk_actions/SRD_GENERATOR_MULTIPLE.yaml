@@ -3,9 +3,10 @@ code_type_bulk_action: GENERATOR_MULTIPLE
 rule_code: SIMPLE-DEV
 
 action:
-  - DATACE_RANGE
-    input_types:
-      - SRD_UNIT_DATE
+  - DATE_RANGE
+    input_type: SRD_UNIT_DATE
+    input_type_prior: SRD_UNIT_DATE_PRE
+    input_type_posterior: SRD_UNIT_DATE_POST
     output_type: SRD_TITLE
 
   - NODE_COUNT
