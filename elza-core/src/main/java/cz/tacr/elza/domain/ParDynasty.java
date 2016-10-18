@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.Column;
@@ -14,6 +15,7 @@ import javax.persistence.Entity;
 public class ParDynasty extends ParParty implements cz.tacr.elza.api.ParDynasty {
 
     @Column(nullable = false)
+    @JsonIgnore
     private String genealogy;
 
 

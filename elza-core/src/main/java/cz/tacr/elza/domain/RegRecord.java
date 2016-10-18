@@ -15,6 +15,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -45,40 +46,50 @@ public class RegRecord extends AbstractVersionableEntity
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRegisterType.class)
     @JoinColumn(name = "registerTypeId", nullable = false)
+    @JsonIgnore
     private RegRegisterType registerType;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
     @JoinColumn(name = "parentRecordId")
+    @JsonIgnore
     private RegRecord parentRecord;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegExternalSource.class)
     @JoinColumn(name = "externalSourceId")
+    @JsonIgnore
     private RegExternalSource externalSource;
 
     @RestResource(exported = false)
     @OneToMany(mappedBy = "regRecord")
+    @JsonIgnore
     private List<RegVariantRecord> variantRecordList = new ArrayList<>(0);
 
     @RestResource(exported = false)
     @OneToMany(mappedBy = "record", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<ParRelationEntity> relationEntities = new ArrayList<>();
 
     @Column(length = StringLength.LENGTH_1000, nullable = false)
+    @JsonIgnore
     private String record;
 
     @Column
+    @JsonIgnore
     private String characteristics;
 
     @Column()
+    @JsonIgnore
     private String note;
 
     @Column(name = "externalId", length = StringLength.LENGTH_250)
+    @JsonIgnore
     private String externalId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegScope.class)
     @JoinColumn(name = "scopeId", nullable = false)
+    @JsonIgnore
     private RegScope scope;
 
     /* Konstanty pro vazby a fieldy. */
@@ -218,6 +229,7 @@ public class RegRecord extends AbstractVersionableEntity
     }
 
     @Override
+    @JsonIgnore
     public RegScope getRegScope() {
         return scope;
     }

@@ -70,7 +70,6 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -1485,14 +1484,14 @@ public class OutputService {
             type = itemTypeRepository.findOneByCode(itemTypeCode);
             ArrItemString itemString = new ArrItemString();
             itemString.setValue(dateRangeActionResult.getText());
-            dataItems = Arrays.asList(itemString);
+            dataItems = Collections.singletonList(itemString);
         } else if (actionResult instanceof NodeCountActionResult) {
             NodeCountActionResult nodeCountActionResult = (NodeCountActionResult) actionResult;
             String itemTypeCode = nodeCountActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
             ArrItemInt itemInt = new ArrItemInt();
             itemInt.setValue(nodeCountActionResult.getCount());
-            dataItems = Arrays.asList(itemInt);
+            dataItems = Collections.singletonList(itemInt);
         } else if (actionResult instanceof SerialNumberResult) {
             return; // tohle se nikam nepřeklápí zatím
         } else if (actionResult instanceof TableStatisticActionResult) {
@@ -1501,7 +1500,7 @@ public class OutputService {
             type = itemTypeRepository.findOneByCode(itemTypeCode);
             ArrItemJsonTable itemJsonTable = new ArrItemJsonTable();
             itemJsonTable.setValue(tableStatisticActionResult.getTable());
-            dataItems = Arrays.asList(itemJsonTable);
+            dataItems = Collections.singletonList(itemJsonTable);
         } else if (actionResult instanceof TextAggregationActionResult) {
             TextAggregationActionResult textAggregationActionResult = (TextAggregationActionResult) actionResult;
             String itemTypeCode = textAggregationActionResult.getItemType();
@@ -1510,7 +1509,7 @@ public class OutputService {
             if(textAggregationActionResult.isCreateInOutput()) {
                 ArrItemText itemText = new ArrItemText();
                 itemText.setValue(textAggregationActionResult.getText());
-            	dataItems = Arrays.asList(itemText);
+            	dataItems = Collections.singletonList(itemText);
             } else {
             	// no items will be created
             	dataItems = Collections.emptyList();
@@ -1521,7 +1520,7 @@ public class OutputService {
             type = itemTypeRepository.findOneByCode(itemTypeCode);
             ArrItemInt itemInt = new ArrItemInt();
             itemInt.setValue(unitCountActionResult.getCount());
-            dataItems = Arrays.asList(itemInt);
+            dataItems = Collections.singletonList(itemInt);
         } else if (actionResult instanceof UnitIdResult) {
             return; // tohle se nikam nepřeklápí zatím
         } else {
@@ -1553,6 +1552,10 @@ public class OutputService {
                                 final ArrChange change) {
         if (isDataChanged(type, dataItems, outputDefinition)) {
             deleteOutputItemsByType(fundVersion, outputDefinition, type, change);
+
+            // donačte entity, které jsou reprezentované v JSON pouze s ID (odkazové)
+            itemService.refItemsLoader(dataItems);
+
             for (ArrItemData dataItem : dataItems) {
                 ArrOutputItem outputItem = new ArrOutputItem(dataItem);
                 outputItem.setItemType(type);

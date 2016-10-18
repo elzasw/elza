@@ -67,6 +67,7 @@ public class CopyAction extends Action {
         for (ArrItem item : items) {
             if (inputItemTypes.contains(item.getItemType())) {
                 ArrItemData itemData = item.getItem();
+                itemData.setSpec(item.getItemSpec());
                 dataItems.add(itemData);
             }
         }
