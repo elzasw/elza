@@ -49,11 +49,12 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
     }
 
     render() {
-        const {descItem, locked, repeatable, onUpload, readMode} = this.props;
+        const {descItem, locked, repeatable, onUpload, readMode, cal} = this.props;
+        let value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : descItem.value;
 
         if (readMode) {
             return (
-                <DescItemLabel value={descItem.value} />
+                <DescItemLabel value={value} cal={cal} />
             )
         }
 

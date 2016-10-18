@@ -47,18 +47,20 @@ var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked, readMode, calendarTypes} = this.props;
+        const {descItem, locked, readMode, calendarTypes, cal} = this.props;
+
+        let value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : descItem.value;
 
         if (readMode) {
             let index = indexById(calendarTypes.items, descItem.calendarTypeId);
             if (index !== null) {
                 let calendar = calendarTypes.items[index].name;
                 return (
-                    <DescItemLabel value={calendar + ": " + descItem.value}/>
+                    <DescItemLabel value={calendar + ": " + value} cal={false}/>
                 )
             } else {
                 return (
-                    <DescItemLabel value="" />
+                    <DescItemLabel value="" cal={cal} />
                 )
             }
         }
@@ -78,6 +80,12 @@ var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
                         Definuje se uzavřením hodnoty do kulatých závorek: (16.8.1977)<br />
                       </Tooltip>
 
+        let cls = ['unitdate-input'];
+        if (cal) {
+            cls.push("calculable");
+        }
+
+        ['calendar-select']
         return (
             <div className='desc-item-value desc-item-value-parts'>
                 <select
@@ -94,10 +102,10 @@ var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
                         overlay={tooltip} placement="bottom"
                         >
                     <input
-                        {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, ['unitdate-input'])}
+                        {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                         ref='focusEl'
                         type="text"
-                        value={descItem.value}
+                        value={value}
                         onChange={this.handleValueChange}
                     />
                 </OverlayTrigger>

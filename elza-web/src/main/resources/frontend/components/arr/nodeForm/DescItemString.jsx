@@ -4,7 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {normalizeString} from 'components/validate.jsx'
 import {decorateValue} from './DescItemUtils.jsx'
@@ -32,22 +32,28 @@ const DescItemString = class DescItemString extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked, readMode} = this.props;
+        const {descItem, locked, readMode, cal} = this.props;
+        let value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : descItem.value;
 
         if (readMode) {
             return (
-                <DescItemLabel value={descItem.value} />
+                <DescItemLabel value={descItem.value} cal={cal} />
             )
+        }
+
+        let cls = [];
+        if (cal) {
+            cls.push("calculable");
         }
 
         return (
             <div className='desc-item-value'>
                 <input
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                     ref='focusEl'
                     type="text"
                     disabled={locked}
-                    value={descItem.value}
+                    value={value}
                     onChange={this.handleChange}
                 />
             </div>
