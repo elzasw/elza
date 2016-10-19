@@ -2,6 +2,7 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {consolidateState} from 'components/Utils.jsx'
 import subNodeForm from './subNodeForm.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
+import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 
 const initialState = {
     initialised: false, // jestli byl prvotně inicializován, např. seznam zobrazovaných sloupců atp.
@@ -9,6 +10,8 @@ const initialState = {
     fetchedFilter: false,
     isFetchingData: false,
     fetchedData: false,
+    rowsDirty: false,   // zda jsou data tabulky již neaktuální - počet řádek na serveru již nemusí odpovídat řádkům na klientovi - např. byla přidána nová JP
+    filterDirty: false,  // pokud nastala od poskledního přefiltrování nějaká změna v hodnotách PP - výsledek filtru již nemusí odpovídat tomu, co se zobrazuje
     pageSize: 10,   // aktuální velikost stránky
     pageIndex: 0,   // aktuální stránka
     items: [],
@@ -244,20 +247,53 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 isFetchingFilter: true,
             }
         case types.FUND_FUND_DATA_GRID_FILTER_RECEIVE:
+            const viewInfo = {
+                pageIndex: state.pageIndex,
+                selectedIds: state.selectedIds,
+                selectedRowIndexes: state.selectedRowIndexes,
+                cellFocus: state.cellFocus
+            }
+
+            if (action.resetViewState) {    // reset stránkování označení atp.
+                viewInfo.pageIndex = 0;
+                viewInfo.selectedIds = [];
+                viewInfo.selectedRowIndexes = [0];
+                viewInfo.cellFocus = {row: 0, col: 0};
+            } else {
+                // Pokud je aktuální zobrazení stránky mimo záznamy, zobrazíme poslední stránku
+                if (viewInfo.pageIndex * state.pageSize >= action.itemsCount) {
+                    viewInfo.pageIndex = Math.floor(action.itemsCount / state.pageSize) - (action.itemsCount % state.pageSize > 0 ? 0 : 1);
+                }
+
+                // Cell focus - pokud je mimo řádek, nastavíme na poslední řádek na stránce
+                const restRows = action.itemsCount - (viewInfo.pageIndex * state.pageSize)
+                if (viewInfo.cellFocus.row >= restRows) {
+                    viewInfo.cellFocus = {row: restRows - 1, col: viewInfo.cellFocus.col};
+                }
+            }
+
             return {
                 ...state,
+                rowsDirty: false,
+                filterDirty: false,
                 isFetchingFilter: false,
                 fetchedFilter: true,
                 itemsCount: action.itemsCount,
-                pageIndex: 0,
-                selectedIds: [],
-                selectedRowIndexes: [0],
                 currentDataKey: '', // vynucení načtení dat!!!
-                cellFocus: {row: 0, col: 0},
+                ...viewInfo
             }
+        case types.CHANGE_ADD_LEVEL:
+        case types.CHANGE_DELETE_LEVEL:
+        case types.CHANGE_MOVE_LEVEL: {
+            return {
+                ...state,
+                rowsDirty: true
+            }
+        }
         case types.CHANGE_NODES:
             return {
                 ...state,
+                filterDirty: true,  // filtr po změně nějakého PP již nemusí odpovídat
                 currentDataKey: '',
                 subNodeForm: subNodeForm(state.subNodeForm, action),
             }
@@ -268,11 +304,22 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 currentDataKey: action.dataKey,
             }
         case types.FUND_FUND_DATA_GRID_DATA_RECEIVE:
+            // Pokud vrácené záznamy neobsahují ty záznamy, které jsou aktuálně v selectedIds, je selectedIds opraveno
+            const rowsMap = getMapFromList(action.items);
+            const newSelectedIds = [];
+            state.selectedIds.forEach(id => {
+                if (rowsMap[id]) {
+                    newSelectedIds.push(id);
+                }
+            });
+
+            // ---
             return {
                 ...state,
                 isFetchingData: false,
                 fetchedData: true,
                 items: action.items,
+                selectedIds: newSelectedIds,
             }
         default:
             return state

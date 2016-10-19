@@ -193,11 +193,18 @@ export function fundDataGridPrepareEdit(versionId, nodeId, parentNodeId, descIte
     }
 }
 
-export function fundDataGridFilterUpdateData(versionId) {
-    return {
-        type: types.FUND_FUND_DATA_GRID_FILTER_CHANGE,
-        versionId,
-        descItemTypeId: null,
+/**
+ * Aktualizace řádek v tabulce - zachová aktuální stránku, ale znovu přefiltruje data.
+ * @param versionId verze AS
+ */
+export function fundDataGridRefreshRows(versionId) {
+    return (dispatch, getState) => {
+        const fundDataGrid = getFundDataGrid(getState, versionId)
+        if (!fundDataGrid) {
+            return
+        }
+
+        dispatch(_fundDataGridFilter(versionId, fundDataGrid.filter, false));
     }
 }
 
@@ -326,6 +333,10 @@ function _setPageIndex(versionId, pageIndex) {
  * Filtrování dat podle předaného filtru.
  */
 export function fundDataGridFilter(versionId, filter) {
+    return _fundDataGridFilter(versionId, filter, true)
+}
+
+function _fundDataGridFilter(versionId, filter, resetViewState = true) {
     return (dispatch, getState) => {
         dispatch(_filterRequest(versionId))
 
@@ -349,11 +360,9 @@ export function fundDataGridFilter(versionId, filter) {
             })
         })
 
-// console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$ FILTER", versionId, callFilter)
-
         WebApi.filterNodes(versionId, callFilter)
             .then(json => {
-                dispatch(_filterReceive(versionId, json))
+                dispatch(_filterReceive(versionId, json, resetViewState))
             })
     }
 }
@@ -371,11 +380,12 @@ function _filterRequest(versionId) {
 /**
  * Byla vyfiltrována data.
  */
-function _filterReceive(versionId, itemsCount) {
+function _filterReceive(versionId, itemsCount, resetViewState) {
     return {
         type: types.FUND_FUND_DATA_GRID_FILTER_RECEIVE,
         versionId,
         itemsCount,
+        resetViewState,
     }
 }
 
