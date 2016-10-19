@@ -188,7 +188,7 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
     
     handleDeleteRegistry() {
-        this.dispatch(registryDelete(this.props.registryRegionData.selectedId));
+        this.dispatch(registryDelete(this.props.registryRegion.selectedId));
     }
 
 
