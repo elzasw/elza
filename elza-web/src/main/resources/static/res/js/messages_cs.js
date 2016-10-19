@@ -137,6 +137,8 @@ var messages = {
     "developer.scenarios.before": "Před",
     "developer.scenarios.child": "Pod",
 
+    "arr.output.noSelection.title": "Není vybrán výstup",
+    "arr.output.noSelection.message": "Prosím vyberte výstup ze seznamu nebo vytvořte nový. Pro vytvoření výstupu je potřeba povolit úpravy.",    
     "arr.output.delete.confirm": "Opravdu chcete smazat výstup?",
     "arr.output.usageEnd.confirm": "Opravdu chcete ukončit používání výstupu?",
     "arr.output.title.add": "Vytvoření nového výstupu",
@@ -442,6 +444,8 @@ var messages = {
     "subNodeRegister.title": "Rejstříková hesla",
     "subNodeRegister.title.add": "Přidání hesla",
 
+    "registry.noSelection.title": "Není vybráno rejstříkové heslo",
+    "registry.noSelection.message": "Prosím vyberte rejstříkové heslo ze seznamu nebo vytvořte nové.",    
     "registry.addRegistry": "Nové rejstříkové heslo",
     "registry.addRegistryFor": "Nové rejstříkové heslo pod {0}",
     "registry.addNewRegistry": "Nové heslo",
@@ -476,6 +480,8 @@ var messages = {
     "registry.disallowedMoveAction.title": "Nepovolená akce",
     "registry.disallowedMoveAction.text": "Nelze přesunout sama sebe do sebe",
 
+    "party.noSelection.title": "Není vybrána osoba",
+    "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",
     "party.detail.characteristics": "Charakteristika",
     "party.detail.type": "Typ",
     "party.detail.number": "Pořadové číslo",
@@ -496,8 +502,7 @@ var messages = {
     "party.detail.genealogy": "Genealogie",
     "party.detail.creator.new": "Nový autor",
     "party.detail.creator.delete": "Opravdu chcete smazat tohoto autora?",
-    "party.detail.finding": "Vyhledávám osobu",
-    "party.detail.noSelection": "Není vybrána osoba",
+    "party.detail.finding": "Vyhledávám osobu",    
     "party.creator.errors.undefinedCreator": "Nebyl vybrán autor",
     "party.creator.creator": "Autor osoby",
     "party.detail.identifiers": "Identifikátory korporace",
