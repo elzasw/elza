@@ -7,7 +7,7 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 
-// Null hodnota, která je používaná v klientovi pro reprezentaci null hodnoty
+// Null hodnota, která se používaná v klientovi pro reprezentaci null hodnoty
 export const FILTER_NULL_VALUE = "____$<NULL>$___"
 
 export function isFundDataGridAction(action) {
@@ -355,9 +355,16 @@ function _fundDataGridFilter(versionId, filter, resetViewState = true) {
             }
 
             // Hodnoty null na reálné null
-            callFilter[key].values = callFilter[key].values.map(v => {
-                return v === FILTER_NULL_VALUE ? null : v
-            })
+            if (callFilter[key].values) {
+                callFilter[key].values = callFilter[key].values.map(v => {
+                    return v === FILTER_NULL_VALUE ? null : v
+                })
+            }
+            if (callFilter[key].specs) {
+                callFilter[key].specs = callFilter[key].specs.map(v => {
+                    return v === FILTER_NULL_VALUE ? null : v
+                })
+            }
         })
 
         WebApi.filterNodes(versionId, callFilter)
