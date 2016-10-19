@@ -1,86 +1,72 @@
-var React = require('react');
-
+import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, ModalDialogWrapper, FormInput} from 'components/index.jsx';
-import {Modal, Button} from 'react-bootstrap';
+import {Modal, Button, Form} from 'react-bootstrap';
 import {decorateFormField} from 'components/form/FormUtils.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {loginSuccess} from 'actions/global/login.jsx';
 
-require('./Login.less');
+import './Login.less';
 
 // TODO: smazat až bude potřeba
 const defaultLogin = {
     username: "admin",
     password: "admin"
-}
+};
 
-var Login = class extends AbstractReactComponent {
+class Login extends AbstractReactComponent {
+    state = {
+        username: '',
+        password: '',
+        ...defaultLogin, // TODO: Smazat až bude potřeba
+        error: null
+    };
 
-    constructor(props) {
-        super(props);
-        this.bindMethods('handleLogin');
+    handleChange = (field, event) => {
+        this.setState({[field]: event.target.value});
+    };
 
-        this.state = {username: defaultLogin.username, password: defaultLogin.password, "error": null}
-    }
-
-    handleChange(field, event) {
-        var state = this.state;
-        state[field] = event.target.value;
-        this.setState(state);
-    }
-
-    handleLogin() {
+    handleLogin = (e) => {
+        e.preventDefault();
         const {login} = this.props;
+        const {username, password} = this.state;
 
         // volám nepřetížený api
-        WebApi._login(this.state.username, this.state.password).then((data)=>{
+        WebApi._login(username, password).then((data) => {
             this.dispatch(loginSuccess());
             try {
                 login.callback && login.callback();
             } catch (ex) {
                 console.error("Error calling login callback.", ex)
             }
-            this.setState({username: defaultLogin.username, password: defaultLogin.password, "error": null});
-        }).catch((err)=>{
-            var state = this.state;
-            state['error'] = err.data.message;
-            this.setState(state);
+            this.setState({username: defaultLogin.username, password: defaultLogin.password, error: null});
+        }).catch((err) => {
+            this.setState({error: err.data.message});
         });
-    }
+    };
 
     render() {
         const {login} = this.props;
-        var error = this.state.error && <div className="error">{this.state.error}</div>
-
-        var dialog = !login.logged &&
-        <ModalDialogWrapper className="login" ref='wrapper' title={i18n('login.form.title')} onHide={()=>{console.log("close")}}>
-            <form onSubmit={this.handleLogin}>
-                <Modal.Body>
-                    {error}
-                        <FormInput type="text" value={this.state.username} onChange={this.handleChange.bind(this, "username")} label={i18n('login.field.username')} />
-                        <FormInput type="password" value={this.state.password} onChange={this.handleChange.bind(this, "password")} label={i18n('login.field.password')} />
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={this.handleLogin}>{i18n('login.action.login')}</Button>
-                </Modal.Footer>
-            </form>
-        </ModalDialogWrapper>
+        const {error, username, password} = this.state;
 
         return (
             <div className="login-container">
-                {dialog}
+                {!login.logged && <ModalDialogWrapper className="login" ref='wrapper' title={i18n('login.form.title')}>
+                    <Form onSubmit={this.handleLogin}>
+                        <Modal.Body>
+                            {error && <div className="error">{error}</div>}
+                            <FormInput type="text" value={username} onChange={this.handleChange.bind(this, 'username')} label={i18n('login.field.username')} />
+                            <FormInput type="password" value={password} onChange={this.handleChange.bind(this, 'password')} label={i18n('login.field.password')} />
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button type="submit" onClick={this.handleLogin}>{i18n('login.action.login')}</Button>
+                        </Modal.Footer>
+                    </Form>
+                </ModalDialogWrapper>}
             </div>
         );
     }
 }
 
-function mapStateToProps(state) {
-    const {login} = state
-    return {
-        login
-    }
-}
-
-module.exports = connect(mapStateToProps)(Login);
+export default connect(({login}) => ({login}))(Login);
