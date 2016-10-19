@@ -208,7 +208,7 @@ var ArrOutputDetail = class ArrOutputDetail extends AbstractReactComponent {
                         </div>}
                     </div>
 
-                    <div className="fund-nodes-container">
+                    <div className="">
                         <h2>{i18n("arr.output.title.nodes")}</h2>
                         <FundNodesList
                             nodes={fundOutputDetail.outputDefinition.nodes}
