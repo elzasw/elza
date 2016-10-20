@@ -9,9 +9,9 @@ import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
 
-var _nextRoutingKey = 1;
-var _routingKeyAreaPrefix = 'NODE|';
-var _pageSize = 50;
+let _nextRoutingKey = 1;
+const _routingKeyAreaPrefix = 'NODE|';
+const _pageSize = 50;
 
 export function nodeInitState(node, prevNodesNode) {
     var result = {
@@ -86,12 +86,12 @@ export function nodeInitState(node, prevNodesNode) {
 }
 
 function getViewStartIndex(state, selectedId) {
-    var index = indexById(state.childNodes, selectedId)
+    const index = indexById(state.childNodes, selectedId);
     if (index !== null) {   // null může být, pokud nejsou data seznamu položek accordionu (childNodes) ještě načtena
         if (index < state.viewStartIndex || index >= state.viewStartIndex + state.pageSize) {
-            var newIndex = state.pageSize * Math.floor(index / state.pageSize);
+            let newIndex = state.pageSize * Math.floor(index / state.pageSize);
             // Chceme posunout o půlku stránky méně, aby nebyla položka sama na začátku
-            newIndex -= Math.floor(_pageSize / 2)
+            newIndex -= Math.floor(_pageSize / 2);
             return Math.max(newIndex, 0)
         }
     }
@@ -127,7 +127,7 @@ const nodeInitialState = {
 
 export function node(state = nodeInitialState, action) {
     if (nodeFormActions.isSubNodeFormAction(action, "NODE")) {
-        var result = {
+        const result = {
             ...state, 
             subNodeForm: subNodeForm(state.subNodeForm, action),
         };
@@ -142,18 +142,18 @@ export function node(state = nodeInitialState, action) {
     }
 
     if (isSubNodeInfoAction(action)) {
-        var result = {
+        const result = {
             ...state,
             subNodeInfo: subNodeInfo(state.subNodeInfo, action),
-        }
+        };
         return consolidateState(state, result);
     }
 
     if (isSubNodeRegisterAction(action)) {
-        var result = {
+        const result = {
             ...state,
             subNodeRegister: subNodeRegister(state.subNodeRegister, action),
-        }
+        };
         return consolidateState(state, result);
     }
 
