@@ -566,7 +566,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         try {
             logger.info("Zahájení překlopení výsledku hromadné akce do výstupů");
             ArrChange change = arrangementService.createChange();
-            outputService.storeResult(bulkActionRun.getResult(), bulkActionRun.getFundVersion(), nodes, change, null);
+            outputService.storeResultBulkAction(bulkActionRun, nodes, change, null);
             logger.info("Překlopení výsledku hromadné akce bylo úspěšně dokončeno");
         } catch (Exception e) {
             logger.error("Nastal problém při překlopení výsledků hromadné akce do výstupů", e);
@@ -604,6 +604,16 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      */
     public RulAction getBulkActionByCode(final String code) {
         return actionRepository.findOneByFilename(code + ".yaml");
+    }
+
+    /**
+     * Vyhledá hromadnou akci podle kódu.
+     *
+     * @param codes  kód hromadné akce
+     * @return hromadná akce
+     */
+    public List<RulAction> getBulkActionByCodes(final List<String> codes) {
+        return actionRepository.findByFilename(codes.stream().map(code -> code + ".yaml").collect(Collectors.toList()));
     }
 
     public Set<RulAction> getRecommendedActions(RulOutputType outputType) {

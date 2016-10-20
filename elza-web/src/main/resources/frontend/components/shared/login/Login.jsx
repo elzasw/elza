@@ -44,7 +44,7 @@ class Login extends AbstractReactComponent {
             } catch (ex) {
                 console.error("Error calling login callback.", ex)
             }
-            this.replaceState(this.defaultState);
+            this.setState(this.defaultState);
         }).catch((err) => {
             this.setState({error: err.data.message});
         });

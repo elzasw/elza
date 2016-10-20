@@ -182,6 +182,9 @@ public class ArrangementService {
     @Autowired
     private VisiblePolicyRepository visiblePolicyRepository;
 
+    @Autowired
+    private DmsService dmsService;
+
     /**
      * Vytvoření archivního souboru.
      *
@@ -481,6 +484,7 @@ public class ArrangementService {
         deleteFundLevels(rootLevel);
         nodeRepository.delete(node);
 
+        dmsService.deleteFilesByFund(fund);
 
         packetRepository.findByFund(fund).forEach(packet -> packetRepository.delete(packet));
 
