@@ -60,6 +60,8 @@ import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -152,6 +154,8 @@ public class OutputService {
 
     @Autowired
     private ItemTypeActionRepository itemTypeActionRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(OutputService.class);
 
     /**
      * Vyhledá platné nody k výstupu.
@@ -735,7 +739,7 @@ public class OutputService {
             RulAction action = bulkActionService.getBulkActionByCode(bulkActionRun.getBulkActionCode());
             for (RulActionRecommended actionRecommended : actionRecommendeds) {
                 if (actionRecommended.getAction().equals(action)) {
-                    storeResult(bulkActionRun.getResult(), fundVersion, newNodes, change, itemType);
+                    storeResultInternal(bulkActionRun.getResult(), fundVersion, newNodes, change, itemType);
                 }
             }
         }
@@ -1481,6 +1485,44 @@ public class OutputService {
 
     /**
      * Uložení výsledku z hromadné akce.
+     * - kontroluje, jestli ukládané typy odpovídají přípustný a naopak
+     *
+     * @param bulkActionRun hromadná akce
+     * @param nodes         seznam uzlů
+     * @param change        změna překlopení
+     * @param itemType      typ atributu
+     */
+    @Transactional
+    public void storeResultBulkAction(final ArrBulkActionRun bulkActionRun,
+                                      final Set<ArrNode> nodes,
+                                      final ArrChange change,
+                                      @Nullable final RulItemType itemType) {
+        List<RulItemType> itemTypes = storeResultInternal(bulkActionRun.getResult(), bulkActionRun.getFundVersion(), nodes, change, itemType);
+
+        RulAction action = bulkActionService.getBulkActionByCode(bulkActionRun.getBulkActionCode());
+        List<RulItemType> recommendedItemTypes = itemTypeActionRepository.findByAction(Collections.singletonList(action));
+
+        List<RulItemType> itemTypesMissing = new ArrayList<>(recommendedItemTypes);
+        itemTypesMissing.removeAll(itemTypes);
+
+        if (itemTypesMissing.size() > 0) {
+            logger.warn("Při ukládání výsledků z hromadné akce '" + bulkActionRun.getBulkActionCode()
+                    + "' nebyly nalezeny přípustné typy atributů: "
+                    + itemTypesMissing.stream().map(RulItemType::getCode).collect(Collectors.joining(", ")));
+        }
+
+        List<RulItemType> itemTypesMoreover = new ArrayList<>(itemTypes);
+        itemTypesMoreover.removeAll(recommendedItemTypes);
+
+        if (itemTypesMoreover.size() > 0) {
+            logger.warn("Při ukládání výsledků z hromadné akce '" + bulkActionRun.getBulkActionCode()
+                    + "' byly nalezeny typy atributů, které nejsou v seznamu přípustných: "
+                    + itemTypesMoreover.stream().map(RulItemType::getCode).collect(Collectors.joining(", ")));
+        }
+    }
+
+    /**
+     * Uložení výsledku do výstupů.
      *
      * @param result      výsledek, může být null
      * @param fundVersion verze AS
@@ -1488,18 +1530,18 @@ public class OutputService {
      * @param change      změna překlopení
      * @param itemType    typ atributu
      */
-    @Transactional
-    public void storeResult(final Result result,
+    public List<RulItemType> storeResultInternal(final Result result,
                             final ArrFundVersion fundVersion,
                             final Set<ArrNode> nodes,
                             final ArrChange change,
                             @Nullable final RulItemType itemType) {
         if (nodes.size() == 0) {
-            return;
+            return Collections.emptyList();
         }
 
         List<ArrOutputDefinition> outputDefinitions = findOutputsByNodes(fundVersion, nodes, OutputState.OPEN, OutputState.COMPUTING);
 
+        List<RulItemType> itemTypesResult = new ArrayList<>();
         for (ArrOutputDefinition outputDefinition : outputDefinitions) {
 
             if (result != null) {
@@ -1511,11 +1553,16 @@ public class OutputService {
                         .collect(Collectors.toSet());
 
                 for (ActionResult actionResult : result.getResults()) {
-                    storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType, itemTypesIgnored);
+                    RulItemType itemTypeStore = storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType, itemTypesIgnored);
+                    if (itemTypeStore != null) {
+                        itemTypesResult.add(itemTypeStore);
+                    }
                 }
             }
             changeOutputState(outputDefinition, OutputState.OPEN);
         }
+
+        return itemTypesResult;
     }
 
     /**
@@ -1541,7 +1588,7 @@ public class OutputService {
      * @param itemType         typ atributu
      * @param itemTypesIgnored seznam typů atributů, které se nepřeklápí
      */
-    private void storeActionResult(final ArrOutputDefinition outputDefinition,
+    private RulItemType storeActionResult(final ArrOutputDefinition outputDefinition,
                                    final ActionResult actionResult,
                                    final ArrFundVersion fundVersion,
                                    final ArrChange change,
@@ -1570,7 +1617,7 @@ public class OutputService {
             itemInt.setValue(nodeCountActionResult.getCount());
             dataItems = Collections.singletonList(itemInt);
         } else if (actionResult instanceof SerialNumberResult) {
-            return; // tohle se nikam nepřeklápí zatím
+            return null; // tohle se nikam nepřeklápí zatím
         } else if (actionResult instanceof TableStatisticActionResult) {
             TableStatisticActionResult tableStatisticActionResult = (TableStatisticActionResult) actionResult;
             String itemTypeCode = tableStatisticActionResult.getItemType();
@@ -1599,18 +1646,20 @@ public class OutputService {
             itemInt.setValue(unitCountActionResult.getCount());
             dataItems = Collections.singletonList(itemInt);
         } else if (actionResult instanceof UnitIdResult) {
-            return; // tohle se nikam nepřeklápí zatím
+            return null; // tohle se nikam nepřeklápí zatím
         } else {
             throw new IllegalStateException("Nedefinovný typ výsledku: " + actionResult.getClass().getSimpleName());
         }
 
         if (itemTypesIgnored != null && itemTypesIgnored.contains(type)) {
-            return;
+            return null;
         }
 
         if (itemType == null || itemType.equals(type)) {
             storeDataItems(type, dataItems, outputDefinition, fundVersion, change);
         }
+
+        return type;
     }
 
     /**

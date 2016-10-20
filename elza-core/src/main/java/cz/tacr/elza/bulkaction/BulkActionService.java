@@ -566,7 +566,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         try {
             logger.info("Zahájení překlopení výsledku hromadné akce do výstupů");
             ArrChange change = arrangementService.createChange();
-            outputService.storeResult(bulkActionRun.getResult(), bulkActionRun.getFundVersion(), nodes, change, null);
+            outputService.storeResultBulkAction(bulkActionRun, nodes, change, null);
             logger.info("Překlopení výsledku hromadné akce bylo úspěšně dokončeno");
         } catch (Exception e) {
             logger.error("Nastal problém při překlopení výsledků hromadné akce do výstupů", e);
