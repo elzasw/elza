@@ -104,6 +104,7 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
 
         final ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
         final ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
+        change = createChange(userId);
 
         try {
             final RulTemplate rulTemplate = arrOutputDefinition.getTemplate();
@@ -151,8 +152,6 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
      */
     private void storeOutputInDms(final ArrOutputDefinition arrOutputDefinition, final RulTemplate rulTemplate,
                                   final InputStream in) throws IOException {
-        change = createChange(userId);
-
         ArrOutputResult outputResult = createOutputResult(arrOutputDefinition, rulTemplate);
         outputResultRepository.save(outputResult);
 
