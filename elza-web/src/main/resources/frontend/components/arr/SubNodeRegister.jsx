@@ -18,7 +18,7 @@ import {routerNavigate} from 'actions/router.jsx'
 import DescItemLabel from './nodeForm/DescItemLabel.jsx'
 
 const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
-    PropTypes = {
+    static PropTypes = {
         register: React.PropTypes.object.isRequired,
         selectedSubNodeId: React.PropTypes.number.isRequired,
         routingKey: React.PropTypes.number.isRequired,
