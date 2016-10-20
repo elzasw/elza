@@ -606,6 +606,16 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         return actionRepository.findOneByFilename(code + ".yaml");
     }
 
+    /**
+     * Vyhledá hromadnou akci podle kódu.
+     *
+     * @param codes  kód hromadné akce
+     * @return hromadná akce
+     */
+    public List<RulAction> getBulkActionByCodes(final List<String> codes) {
+        return actionRepository.findByFilename(codes.stream().map(code -> code + ".yaml").collect(Collectors.toList()));
+    }
+
     public Set<RulAction> getRecommendedActions(RulOutputType outputType) {
         return actionRecommendedRepository.findByOutputType(outputType).stream().map(RulActionRecommended::getAction).collect(Collectors.toSet());
     }
