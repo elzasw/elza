@@ -1,46 +1,41 @@
-/**
- * Formulář přidání obalu.
- */
-
-require ('./AddPacketForm.less')
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
-import {Modal, Button} from 'react-bootstrap';
+import {Modal, Button, Form} from 'react-bootstrap';
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {indexById, getMapFromList} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
+import './AddPacketForm.less';
 
 /**
- * Validace formuláře.
+ * Formulář přidání obalu.
  */
-const validate = (values, props) => {
-    const errors = {};
+class AddPacketForm extends AbstractReactComponent {
+    /**
+     * Validace formuláře.
+     */
+    static validate = (values, props) => {
+        const errors = {};
 
-    if (props.createSingle) {
-        if (!values.storageNumber) {
-            errors.storageNumber = i18n('global.validation.required');
+        if (props.createSingle) {
+            if (!values.storageNumber) {
+                errors.storageNumber = i18n('global.validation.required');
+            }
+        } else if (props.createMany || props.changeNumbers) {
+            if (!values.start) {
+                errors.start = i18n('global.validation.required');
+            }
+            if (!values.count) {
+                errors.count = i18n('global.validation.required');
+            }
         }
-    } else if (props.createMany || props.changeNumbers) {
-        if (!values.start) {
-            errors.start = i18n('global.validation.required');
-        }
-        if (!values.count) {
-            errors.count = i18n('global.validation.required');
-        }
-    }
 
-    return errors;
-};
+        return errors;
+    };
 
-var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-        this.state = {};
-    }
+    state = {};
 
     componentWillReceiveProps(nextProps) {
     }
@@ -63,7 +58,7 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
         const {fields: {packetTypeId, storageNumber, prefix, start, size, count}, handleSubmit, onClose, packetTypes,
             createSingle, createMany, changeNumbers, arrRegion} = this.props;
 
-        var submitForm = submitReduxForm.bind(this, validate)
+        var submitForm = submitReduxForm.bind(this, AddPacketForm.validate);
 
         var activeFund = null;
         if (arrRegion.activeIndex != null) {
@@ -84,7 +79,7 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
             })
         }
 
-        var example
+        var example;
         if (createMany || changeNumbers) {
             if (prefix.value && start.value && size.value) {
                 example = prefix.value + this.zeroFill(start.value, size.value)
@@ -101,10 +96,10 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
             }
         }
 
-        return (
+        return <Form onSubmit={handleSubmit(submitForm)}>
             <div className="add-packet-form-container">
                 <Modal.Body>
-                    <form onSubmit={handleSubmit(submitForm)}>
+
                         <FormInput componentClass="select" label={i18n('arr.packet.packetType')} {...packetTypeId} {...decorateFormField(packetTypeId)} help={packetTypeHelp}>
                             <option key='-packetTypeId'/>
                             {packetTypeItems.map(i=> {return <option key={i.id} value={i.id}>{i.name}</option>})}
@@ -114,19 +109,18 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
                         {(createMany || changeNumbers) && <FormInput type="text" label={i18n('arr.packet.start')} {...start} {...decorateFormField(start)} />}
                         {(createMany || changeNumbers) && <FormInput type="text" label={i18n('arr.packet.size')} {...size} {...decorateFormField(size)} />}
                         {(createMany || changeNumbers) && <FormInput disabled={changeNumbers} type="text" label={i18n('arr.packet.count')} {...count} {...decorateFormField(count)} />}
-                    </form>
                 </Modal.Body>
                 <Modal.Footer>
                     <div className="packet-example">{example && i18n('arr.packet.example', example)}</div>
-                    <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.create')}</Button>
+                    <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n('global.action.create')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
-        )
+        </Form>
     }
 }
 
-module.exports = reduxForm({
+export default reduxForm({
     form: 'addPacketForm',
     fields: ['packetTypeId', 'storageNumber', 'prefix', 'start', 'size', 'count'],
     normalize: ['start', 'size', 'count']
