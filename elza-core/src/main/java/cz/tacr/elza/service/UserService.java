@@ -103,7 +103,8 @@ public class UserService {
             if (permission.getPermissionId() == null) {
                 permission.setUser(user);
                 permission.setGroup(group);
-                loadPermissionEntity(permission);
+                setFundRelation(permission, permission.getFundId());
+                setScopeRelation(permission, permission.getScopeId());
                 permissionsAdd.add(permission);
             } else {
                 UsrPermission permissionDB = permissionMap.get(permission.getPermissionId());
@@ -111,9 +112,8 @@ public class UserService {
                     throw new IllegalArgumentException("Oprávnění neexistuje a proto nemůže být upraveno");
                 }
                 permissionDB.setPermission(permission.getPermission());
-                permissionDB.setFundId(permission.getFundId());
-                permissionDB.setScopeId(permission.getScopeId());
-                loadPermissionEntity(permissionDB);
+                setFundRelation(permissionDB, permission.getFundId());
+                setScopeRelation(permissionDB, permission.getScopeId());
                 permissionsUpdate.add(permissionDB);
             }
         }
@@ -151,20 +151,39 @@ public class UserService {
         permissionRepository.save(permissionsUpdate);
     }
 
-    private void loadPermissionEntity(final UsrPermission permission) {
-        if (permission.getFundId() != null) {
-            ArrFund fund = fundRepository.findOne(permission.getFundId());
+    /**
+     * Nastaví vazbu na soubor, pokud je předané id. Pokud předané není, je vazba odstraněna.
+     * Kontroluje existenci objektu s daným id.
+     * @param permission oprávnění
+     * @param fundId id objektu, na který má být přidána vazba
+     */
+    private void setFundRelation(final UsrPermission permission, final Integer fundId) {
+        if (fundId != null) {
+            ArrFund fund = fundRepository.findOne(fundId);
             if (fund == null) {
                 throw new IllegalArgumentException("Neplatný archivní soubor");
             }
             permission.setFund(fund);
+        } else {
+            permission.setFund(null);
         }
-        if (permission.getScopeId() != null) {
-            RegScope scope = scopeRepository.findOne(permission.getScopeId());
+    }
+
+    /**
+     * Nastaví vazbu na scope, pokud je předané id. Pokud předané není, je vazba odstraněna.
+     * Kontroluje existenci objektu s daným id.
+     * @param permission oprávnění
+     * @param scopeId id objektu, na který má být přidána vazba
+     */
+    private void setScopeRelation(final UsrPermission permission, final Integer scopeId) {
+        if (scopeId != null) {
+            RegScope scope = scopeRepository.findOne(scopeId);
             if (scope == null) {
                 throw new IllegalArgumentException("Neplatný scope");
             }
             permission.setScope(scope);
+        } else {
+            permission.setScope(null);
         }
     }
 
