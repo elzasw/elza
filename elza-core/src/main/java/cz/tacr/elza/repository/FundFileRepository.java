@@ -1,7 +1,10 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrFund;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 
 /**
@@ -13,4 +16,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FundFileRepository extends ElzaJpaRepository<ArrFile,Integer>, FundFileRepositoryCustom {
 
+    List<ArrFile> findByFund(ArrFund fund);
 }

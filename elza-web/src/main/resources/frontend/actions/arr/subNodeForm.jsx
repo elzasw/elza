@@ -186,8 +186,9 @@ class ItemFormActions {
      * @param {int} versionId verze AS
      * @param {int} nodeId id node záložky, které se to týká
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
+     * @param {bool} needClean má se formulář reinicializovat a vymazat cšechna editace? - jako nové načtení formuláře
      */
-    _fundSubNodeFormFetch(versionId, nodeId, routingKey) {
+    _fundSubNodeFormFetch(versionId, nodeId, routingKey, needClean) {
         return (dispatch, getState) => {
             dispatch(this.fundSubNodeFormRequest(versionId, nodeId, routingKey))
             this._getItemFormData(getState, dispatch, versionId, nodeId, routingKey)
@@ -195,7 +196,7 @@ class ItemFormActions {
                     var state = getState()
                     var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
                     if (subNodeForm.fetchingId == nodeId) {
-                        dispatch(this.fundSubNodeFormReceive(versionId, nodeId, routingKey, json, state.refTables.rulDataTypes, state.refTables.descItemTypes))
+                        dispatch(this.fundSubNodeFormReceive(versionId, nodeId, routingKey, json, state.refTables.rulDataTypes, state.refTables.descItemTypes, needClean))
                     }
                 })
         }
@@ -670,9 +671,9 @@ class ItemFormActions {
 
             const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
             const parentObjStore = this._getParentObjStore(state, versionId, routingKey);
-            if ((!subNodeForm.fetched || subNodeForm.dirty) && !subNodeForm.isFetching) {
+            if ((!subNodeForm.fetched || subNodeForm.dirty || subNodeForm.needClean) && !subNodeForm.isFetching) {
                 const parentObjIdInfo = this._getParentObjIdInfo(parentObjStore, routingKey);
-                dispatch(this._fundSubNodeFormFetch(versionId, parentObjIdInfo.parentId, routingKey));
+                dispatch(this._fundSubNodeFormFetch(versionId, parentObjIdInfo.parentId, routingKey, subNodeForm.needClean));
             }
         }
     }
@@ -685,8 +686,9 @@ class ItemFormActions {
      * @param {Object} json objekt s daty
      * @param {Object} rulDataTypes store - datové typy pro atributy
      * @param {Object} descItemTypes store - obecný předpis atributů - ref
+     * @param {bool} needClean má se formulář reinicializovat a vymazat cšechna editace? - jako nové načtení formuláře
      */
-    fundSubNodeFormReceive(versionId, nodeId, routingKey, json, rulDataTypes, descItemTypes) {
+    fundSubNodeFormReceive(versionId, nodeId, routingKey, json, rulDataTypes, descItemTypes, needClean) {
         return {
             type: types.FUND_SUB_NODE_FORM_RECEIVE,
             area: this.area,
@@ -696,7 +698,8 @@ class ItemFormActions {
             data: json,
             rulDataTypes,
             refDescItemTypes: descItemTypes,
-            receivedAt: Date.now()
+            receivedAt: Date.now(),
+            needClean
         }
     }
 

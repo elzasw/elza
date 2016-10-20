@@ -8,9 +8,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import cz.tacr.elza.service.exception.DeleteFailedException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -419,5 +421,16 @@ public class DmsService {
      */
     public ArrFile getArrFile(final Integer fileId) {
         return fundFileRepository.getOneCheckExist(fileId);
+    }
+
+    public void deleteFilesByFund(final ArrFund fund) {
+        List<ArrFile> files = fundFileRepository.findByFund(fund);
+        for (ArrFile file : files) {
+            try {
+                deleteFile(file);
+            } catch (IOException e) {
+                throw new DeleteFailedException("Nepodařilo se smazat přílohu: " + file.getName(), e);
+            }
+        }
     }
 }
