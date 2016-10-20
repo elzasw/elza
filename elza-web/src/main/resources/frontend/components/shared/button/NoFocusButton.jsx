@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbstractReactComponent} from 'components/index.jsx';
 
-const NoFocusButton = class NoFocusButton extends AbstractReactComponent {
+class NoFocusButton extends AbstractReactComponent {
     constructor(props) {
         super(props);
 

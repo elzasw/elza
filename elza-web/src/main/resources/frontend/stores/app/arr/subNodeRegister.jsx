@@ -2,30 +2,23 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {i18n} from 'components/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 
-const getLoc = (state, index)  => {
-    return {
-        link: state.formData.nodeRegisters[index] ? {...state.formData.nodeRegisters[index]} : {}
-    }
-};
 
 const initialState = {
     isFetching: false,
     fetched: false,
     dirty: false,
-    //data: null,
-    formData: {
-        node: null,
-        nodeRegisters: null
-    },
-    getLoc
+    node: null,
+    data: null,
+    currentDataKey: null,
 };
 
 export default function subNodeRegister(state = initialState, action = {}) {
     switch (action.type) {
+        // List Operation
         case types.FUND_SUB_NODE_REGISTER_REQUEST:
             return {
                 ...state,
-                isFetching: true,
+                currentDataKey: action.dataKey
             };
         case types.FUND_SUB_NODE_REGISTER_RECEIVE:
             return {
@@ -33,152 +26,248 @@ export default function subNodeRegister(state = initialState, action = {}) {
                 isFetching: false,
                 fetched: true,
                 dirty: false,
-                //data: action.data,
-                formData: {
-                    ...state.formData,
-                    node: action.data.node,
-                    nodeRegisters: action.data.nodeRegisters.map(item => ({
-                        ...item,
-                        prevValue: item.value,
+                node: action.data.node,
+                data: action.data.nodeRegisters.map(item => ({
+                    ...item,
+                    prevValue: item.value,
+                    hasFocus: false,
+                    saving: false,
+                    touched: false,
+                    visited: false,
+                    error: {hasError: false}
+                }))
+            };
+        // ------ Values ------
+        case types.FUND_SUB_NODE_REGISTER_VALUE_ADD:
+            return {
+                ...state,
+                data: [
+                    ...state.data,
+                    {
+                        //node: {...state.formData.node},
+                        //nodeId: state.formData.node.id,
+                        id: null,
+                        value: null,
+                        prevValue: null,
                         hasFocus: false,
                         touched: false,
                         visited: false,
-                        error: {hasError: false}
-                    })),
-                }
-            };
-        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE:{
-
-            const loc = action.operationType === 'DELETE' ? null : getLoc(state, action.index);
-            console.log("ssssS", loc, action)
-            switch (action.operationType) {
-                case 'DELETE':
-                    break;
-                case 'UPDATE':
-                    loc.link.prevValue = action.data.value;
-                    break;
-                case 'CREATE':
-                    loc.link.id = action.data.id;
-                    loc.link.prevValue = action.data.value;
-                    loc.link.record = action.data.record;
-                    break;
-            }
-            console.log("ssssS222", loc, action)
-
-
-            const node = action.data.node ? action.data.node : state.formData.node;
-            let nodeRegisters = state.formData.nodeRegisters.map(i => ({...i, node}));
-            console.log("ssssS3333", nodeRegisters);
-
-            if (loc) {
-                loc.link.node = node;
-
-                let index = null;
-                if (action.index) {
-                    index = action.index;
-                } else {
-                    let leng = nodeRegisters.length-1;
-                    for (let i = 0; i < leng;i++) {
-                        if (nodeRegisters[i].loc.id === loc.link.id) {
-                            index = i;
-                            break;
-                        }
+                        saving: false,
+                        error: {hasError:false}
                     }
-                }
-                nodeRegisters[index] = loc.link;
+                ]
+            };
+
+        case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:{
+            const register = state.data[action.index];
+            if (register) {
+                return {
+                    ...state,
+                    data: [
+                        ...state.data.slice(0, action.index),
+                        {
+                            ...register,
+                            visited: true,
+                            hasFocus: true
+                        },
+                        ...state.data.slice(action.index + 1)
+                    ]
+                };
             }
 
-            return {
-                ...state,
-                formData: {
-                    node,
-                    nodeRegisters
-                }
+            if (!register) {
+                console.warn('Sub Node Register - On action "VALUE_BLUR" index ' + action.index + ' not found!');
             }
+
+            return state;
         }
-        case types.FUND_SUB_NODE_REGISTER_VALUE_DELETE:
-            return {
-                ...state,
-                formData: {
-                    ...state.formData,
-                    nodeRegisters: [
-                        ...state.formData.nodeRegisters.slice(0, action.index),
-                        ...state.formData.nodeRegisters.slice(action.index + 1)
-                    ]
-                }
-            };
-        case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:
-            return {
-                ...state,
-                formData: {
-                    nodeRegisters: [
-                        ...state.formData.nodeRegisters.slice(0, action.index),
+        case types.FUND_SUB_NODE_REGISTER_VALUE_CHANGE:{
+            const register = state.data[action.index];
+            if (register) {
+                return {
+                    ...state,
+                    data: [
+                        ...state.data.slice(0, action.index),
                         {
-                            ...state.formData.nodeRegisters[action.index],
+                            ...register,
                             value: action.record.recordId,
                             record: action.record,
                             touched: true
                         },
-                        ...state.formData.nodeRegisters.slice(action.index+1)
+                        ...state.data.slice(action.index + 1)
                     ]
-                }
-            };
-        case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
-            return {
-                ...state,
-                formData: {
-                    nodeRegisters: [
-                        ...state.formData.nodeRegisters.slice(0, action.index),
+                };
+            }
+
+            if (!register) {
+                console.warn('Sub Node Register - On action "VALUE_UPDATE" index ' + action.index + ' not found!');
+            }
+
+            return state;
+        }
+        case types.FUND_SUB_NODE_FORM_VALUE_BLUR:{
+            const register = state.data[action.index];
+            if (register) {
+                return {
+                    ...state,
+                    data: [
+                        ...state.data.slice(0, action.index),
                         {
-                            ...state.formData.nodeRegisters[action.index],
+                            ...register,
                             visited: false,
                             hasFocus: false
                         },
-                        ...state.formData.nodeRegisters.slice(action.index+1)
+                        ...state.data.slice(action.index + 1)
                     ]
-                }
-            };
-        case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
-            return {
-                ...state,
-                formData: {
-                    nodeRegisters: [
-                        ...state.formData.nodeRegisters.slice(0, action.index),
-                        {
-                            ...state.formData.nodeRegisters[action.index],
-                            visited: true,
-                            hasFocus: true
-                        },
-                        ...state.formData.nodeRegisters.slice(action.index+1)
-                    ]
-                }
-            };
-        case types.FUND_SUB_NODE_REGISTER_VALUE_ADD:{
-            console.log("aaa", state);
-            const formItem = {
-                node: {...state.formData.node},
-                nodeId: state.formData.node.id,
-                value: null,
-                prevValue: null,
-                hasFocus: false,
-                touched: false,
-                visited: false,
-                error: {hasError:false}
-            };
+                };
+            }
 
-            return {
-                ...state,
-                formData: {
-                    ...state.formData,
-                    nodeRegisters: [
-                        ...state.formData.nodeRegisters,
-                        formItem
+            if (!register) {
+                console.warn('Sub Node Register - On action "VALUE_BLUR" index ' + action.index + ' not found!');
+            }
+
+            return state;
+        }
+        case types.FUND_SUB_NODE_REGISTER_VALUE_SAVING:{
+            const register = state.data[action.index];
+            console.log("aaa", "sav", register);
+            if (register) {
+                return {
+                    ...state,
+                    data: [
+                        ...state.data.slice(0, action.index),
+                        {
+                            ...register,
+                            saving: true
+                        },
+                        ...state.data.slice(action.index + 1)
+                    ]
+                };
+            }
+
+            if (!register) {
+                console.warn('Sub Node Register - On action "VALUE_SAVING" index ' + action.index + ' not found!');
+            }
+
+            return state;
+        }
+        case types.FUND_SUB_NODE_REGISTER_VALUE_DELETE: {
+            const register = state.data[action.index];
+
+            if (register && !register.id && !register.value) {
+                return {
+                    ...state,
+                    data: [
+                        ...state.data.slice(0, action.index),
+                        ...state.data.slice(action.index + 1),
+
                     ]
                 }
             }
+
+            if (!register) {
+                console.warn('Sub Node Register - On action "VALUE_DELETE" index ' + action.index + ' not found!')
+            } else if (register.id) {
+                console.warn('Sub Node Register - Invalid action "VALUE_DELETE" on index ' + action.index + ' already has ID - you have to delete it on server first!');
+            } else if (register.value) {
+                console.warn('Sub Node Register - Invalid action "VALUE_DELETE" on index ' + action.index + ' invalid state - register have a value - expect save (only blank can be deleted)!');
+            }
+            return state;
         }
+
+        // ----- Server operation ------
+        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE_CREATE:{
+            const register = state.data[action.index];
+            console.log("aaaa", register);
+            if (register && !register.id && register.saving) {
+                return {
+                    ...state,
+                    node: action.data.node,
+                    data: [
+                        ...state.data.slice(0, action.index),
+                        {
+                            ...register,
+                            ...action.data,
+                            prevValue: register.value,
+                            saving: false
+                        },
+                        ...state.data.slice(action.index + 1),
+
+                    ]
+                }
+            }
+
+            if (!register) {
+                console.warn('Sub Node Register - On action "CREATE" index ' + action.index + ' not found!')
+            } else if (register.id) {
+                console.warn('Sub Node Register - Invalid action "CREATE" on index ' + action.index + ' already has ID!');
+            } else if (register.saving) {
+                console.warn('Sub Node Register - Invalid action "CREATE" on index ' + action.index + ' it is not in saving state!');
+            }
+
+            return state;
+        }
+        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE_UPDATE:{
+            const register = state.data[action.index];
+            if (register && register.id && register.saving) {
+                return {
+                    ...state,
+                    node: action.data.node,
+                    data: [
+                        ...state.data.slice(0, action.index),
+                        {
+                            ...register,
+                            ...action.data,
+                            prevValue: register.value,
+                            saving:false
+                        },
+                        ...state.data.slice(action.index + 1),
+
+                    ]
+                }
+            }
+
+            if (!register) {
+                console.warn('Sub Node Register - On action "UPDATE" index ' + action.index + ' not found!')
+            } else if (register.id) {
+                console.warn('Sub Node Register - Invalid action "UPDATE" on index ' + action.index + ' it does not have an ID!');
+            } else if (register.saving) {
+                console.warn('Sub Node Register - Invalid action "UPDATE" on index ' + action.index + ' it is not in saving state!');
+            }
+
+            return state;
+        }
+        case types.FUND_SUB_NODE_REGISTER_VALUE_RESPONSE_DELETE:{
+            const register = state.data[action.index];
+            console.log("FUND_SUB_NODE_REGISTER_VALUE_RESPONSE_DELETE", register, action.data);
+            if (register && register.saving && register.id) {
+                console.log("FUND_SUB_NODE_REGISTER_VALUE_RESPONSE_DELETE2");
+                return {
+                    ...state,
+                    node: action.data.node,
+                    data: [
+                        ...state.data.slice(0, action.index),
+                        ...state.data.slice(action.index + 1),
+                    ]
+                }
+            }
+
+            if (!register) {
+                console.warn('Sub Node Register - On action "DELETE" index ' + action.index + ' not found!')
+            } else if (register.saving) {
+                console.warn('Sub Node Register - Invalid action "DELETE" on index ' + action.index + ' it is not in saving state!');
+            } else if (!register.id && register.value) {
+                console.warn('Sub Node Register - Invalid action "DELETE" on index ' + action.index + ' doesnt have an ID but have a value!');
+            }
+
+            return state;
+        }
+
+        // ------ WebSocket -----
         case types.CHANGE_NODES:
-            return {...state, dirty: true};
+            return {
+                ...state,currentDataKey: false
+            };
         default:
             return state
     }
