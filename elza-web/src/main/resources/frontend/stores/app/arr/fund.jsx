@@ -224,6 +224,14 @@ export function fund(state, action) {
             }
             return consolidateState(state, result);
         }
+        case types.FUND_FUND_CHANGE_READ_MODE: {
+            const result = {
+                ...state,
+                nodes: nodes(state.nodes, action),
+                fundOutput: fundOutput(state.fundOutput, action),
+            }
+            return consolidateState(state, result);
+        }
         case types.CHANGE_FUND_ACTION:{
             const result = {
                 ...state,

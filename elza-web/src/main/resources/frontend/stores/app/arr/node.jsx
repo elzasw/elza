@@ -222,6 +222,12 @@ export function node(state = nodeInitialState, action) {
                 subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
             }
             return consolidateState(state, result);
+        case types.FUND_FUND_CHANGE_READ_MODE:
+            var result = {
+                ...state,
+                subNodeForm: subNodeForm(state.subNodeForm, action),
+            }
+            return consolidateState(state, result);
         case types.FUND_FUND_SUBNODES_NEXT:
             if ((state.viewStartIndex + state.pageSize/2) < state.allChildNodes.length) {
                 return {

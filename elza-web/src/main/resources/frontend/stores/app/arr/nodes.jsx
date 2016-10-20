@@ -71,7 +71,12 @@ export default function nodes(state = nodesInitialState, action) {
                 return {...state, nodes}
             }
             return state;
-
+        case types.FUND_FUND_CHANGE_READ_MODE:
+            var nodes = [...state.nodes];
+            for (var i = 0; i < nodes.length; i++) {
+                nodes[i] = node(nodes[i], action);
+            }
+            return {...state, nodes}
         case types.STORE_LOAD:
             return {
                 ...state,

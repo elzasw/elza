@@ -61,6 +61,12 @@ export default function fundOutputDetail(state = initialState, action = {}) {
             }
             return state
         }
+        case types.FUND_FUND_CHANGE_READ_MODE:{
+            return {
+                ...state,
+                subNodeForm: subNodeForm(state.subNodeForm, action),
+            }
+        }
         case types.FUND_OUTPUT_SELECT_OUTPUT:{
             if (state.id !== action.id) {
                 return {
