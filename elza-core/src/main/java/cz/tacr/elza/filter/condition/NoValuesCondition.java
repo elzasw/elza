@@ -12,24 +12,28 @@ import javax.persistence.Query;
 public class NoValuesCondition implements HibernateDescItemCondition {
 
     @Override
-    public Query createHibernateQuery(final EntityManager entityManager, final Integer fundId, final Integer descItemTypeId, final Integer lockChangeId) {
-        Query query;
+    public Query createHibernateQuery(final EntityManager entityManager, final Integer fundId, final Integer descItemTypeId,
+            final Integer lockChangeId) {
+        StringBuffer sb = new StringBuffer()
+                .append("select distinct n.node_id ") // zajímají nás id nodů
+                .append("from arr_node n ")
+                .append("join arr_level l on n.node_id = l.node_id ")
+                .append("left join arr_desc_item di on n.node_id = di.node_id ")
+                .append("left join arr_item it on di.item_id = it.item_id ")
+                .append("where n.fund_id = :fundId "); // z daného AS
+
         if (lockChangeId == null) {
-            String sql = "select n.node_id from arr_node n join arr_level l on n.node_id = l.node_id left join arr_desc_item di on n.node_id = di.node_id left join arr_item it on di.item_id = it.item_id "
-                    + "where it.item_type_id is null and n.fund_id = :fundId and l.delete_change_id is null "
-                    + "UNION "
-                    + "select n.node_id  from arr_node n join arr_level l on n.node_id = l.node_id left join arr_desc_item di on n.node_id = di.node_id left join arr_item it on di.item_id = it.item_id "
-                    + "where n.fund_id = :fundId and l.delete_change_id is null and n.node_id not in (select di2.node_id from arr_desc_item di2 join arr_item it2 on di2.item_id = it2.item_id where it2.item_type_id = :descItemTypeId)";
-
-            query = entityManager.createNativeQuery(sql);
+            sb.append("and l.delete_change_id is null "); // v otevřené verzi
         } else {
-            String sql = "select n.node_id from arr_node n join arr_level l on n.node_id = l.node_id left join arr_desc_item di on n.node_id = di.node_id left join arr_item it on di.item_id = it.item_id "
-                    + "where it.item_type_id is null and n.fund_id = :fundId and l.create_change_id < :lockChangeId and (l.delete_change_id is null or l.delete_change_id > :lockChangeId) "
-                    + "UNION "
-                    + "select n.node_id  from arr_node n join arr_level l on n.node_id = l.node_id left join arr_desc_item di on n.node_id = di.node_id left join arr_item it on di.item_id = it.item_id "
-                    + "where n.fund_id = :fundId and l.create_change_id < :lockChangeId and (l.delete_change_id is null or l.delete_change_id > :lockChangeId) and n.node_id not in (select di2.node_id from arr_desc_item di2 join arr_item it2 on di2.item_id = it2.item_id where it2.item_type_id = :descItemTypeId)";
+            sb.append("and l.create_change_id < :lockChangeId and (l.delete_change_id is null or l.delete_change_id > :lockChangeId) "); // v uzavřené verzi
+        }
 
-            query = entityManager.createNativeQuery(sql);
+        sb.append("and n.node_id not in (") // které nemají hodnotu
+            .append("select di2.node_id from arr_desc_item di2 join arr_item it2 on di2.item_id = it2.item_id where it2.item_type_id = :descItemTypeId") // daného typu
+            .append(")");
+
+        Query query = entityManager.createNativeQuery(sb.toString());
+        if (lockChangeId != null) {
             query.setParameter("lockChangeId", lockChangeId);
         }
         query.setParameter("descItemTypeId", descItemTypeId);
