@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions name="ElzaCoreService" targetNamespace="http://elza.tacr.cz/ws/core/v1" xmlns:eat="http://elza.tacr.cz/ws/types/v1" xmlns:tns="http://elza.tacr.cz/ws/core/v1" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<wsdl:import namespace="http://elza.tacr.cz/ws/types/v1" location="elza-api-types-v1.xsd"/>
+	<wsdl:types/>
+	<wsdl:message name="CoreServiceException">
+		<wsdl:part name="errorDescription" type="eat:errorDescription"/>
+	</wsdl:message>
+	<wsdl:message name="RequestRevoked">
+		<wsdl:part name="requestRevoked" type="eat:requestRevoked"/>
+	</wsdl:message>
+	<wsdl:message name="RequestIdentifier">
+		<wsdl:part name="requestIdentifier" type="eat:identifier"/>
+	</wsdl:message>
+	<wsdl:message name="DigitizationRequestResult">
+		<wsdl:part name="digitizationRequestResult" type="eat:digitizationRequestResult"/>
+	</wsdl:message>
+	<wsdl:message name="DaoImport">
+		<wsdl:part name="daoImport" type="eat:daoImport"/>
+	</wsdl:message>
+	<wsdl:message name="Identifier">
+		<wsdl:part name="PackageIdentifier" type="eat:identifier"/>
+	</wsdl:message>
+	<wsdl:message name="DaoPackage">
+		<wsdl:part name="daoPackage" type="eat:daoPackage"/>
+	</wsdl:message>
+	<wsdl:message name="DaoLink">
+		<wsdl:part name="daoLink" type="eat:daoLink"/>
+	</wsdl:message>
+	<wsdl:portType name="DaoService">
+		<wsdl:operation name="Import">
+			<wsdl:documentation>Import one or more packages. Import will also create corresponding links to described material.</wsdl:documentation>
+			<wsdl:input name="daoImport" message="tns:DaoImport"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="AddPackage">
+			<wsdl:input name="daoPackage" message="tns:DaoPackage"/>
+			<wsdl:output name="daoPackageIdentifier" message="tns:Identifier">
+				<wsdl:documentation>Identifier in the target system of added package.</wsdl:documentation>
+			</wsdl:output>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="RemovePackage">
+			<wsdl:documentation>Remove package</wsdl:documentation>
+			<wsdl:input name="DaoPackageIdentifier" message="tns:Identifier">
+				<wsdl:documentation>ID of package in given system</wsdl:documentation>
+			</wsdl:input>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="Link">
+			<wsdl:input name="daoLink" message="tns:DaoLink"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="DaoRequestsService">
+		<wsdl:operation name="TransferRequestFinished">
+			<wsdl:input name="requestId" message="tns:RequestIdentifier"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="TransferRequestRevoked">
+			<wsdl:input name="requestRevoked" message="tns:RequestRevoked"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="DestructionRequestFinished">
+			<wsdl:input name="requestId" message="tns:RequestIdentifier"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="DestructionRequestRevoked">
+			<wsdl:input name="requestRevoked" message="tns:RequestRevoked"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="DaoDigitizationService">
+		<wsdl:operation name="DigitizationRequestRevoked">
+			<wsdl:input name="requestRevoked" message="tns:RequestRevoked"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="DigitizationRequestFinished">
+			<wsdl:input name="digitizationRequestResult" message="tns:DigitizationRequestResult"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="DaoRequestsService" type="tns:DaoRequestsService">
+		<soap:binding style="document" transport="http://tacr.elza.cz/ws/dao-service/requests"/>
+		<wsdl:operation name="DestructionRequestFinished">
+			<soap:operation style="document"/>
+			<wsdl:input name="requestId">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="DestructionRequestRevoked">
+			<soap:operation style="document"/>
+			<wsdl:input name="requestRevoked">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="TransferRequestFinished">
+			<soap:operation style="document"/>
+			<wsdl:input name="requestId">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="TransferRequestRevoked">
+			<soap:operation style="document"/>
+			<wsdl:input name="requestRevoked">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:binding name="DaoDigitizationService" type="tns:DaoDigitizationService">
+		<soap:binding style="document" transport="http://tacr.elza.cz/ws/dao-service/digitization"/>
+		<wsdl:operation name="DigitizationRequestFinished">
+			<soap:operation style="document"/>
+			<wsdl:input name="digitizationRequestResult">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="DigitizationRequestRevoked">
+			<soap:operation style="document"/>
+			<wsdl:input name="requestRevoked">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:binding name="DaoService" type="tns:DaoService">
+		<soap:binding style="document" transport="http://tacr.elza.cz/ws/dao-service/core"/>
+		<wsdl:operation name="AddPackage">
+			<soap:operation style="document"/>
+			<wsdl:input name="daoPackage">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="daoPackageIdentifier">
+				<wsdl:documentation>Identifier in the target system of added package.</wsdl:documentation>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="Import">
+			<wsdl:documentation>Import one or more packages. Import will also create corresponding links to described material.</wsdl:documentation>
+			<soap:operation style="document"/>
+			<wsdl:input name="daoImport">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="Link">
+			<soap:operation style="document"/>
+			<wsdl:input name="daoLink">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="RemovePackage">
+			<wsdl:documentation>Remove package</wsdl:documentation>
+			<soap:operation style="document"/>
+			<wsdl:input name="DaoPackageIdentifier">
+				<wsdl:documentation>ID of package in given system</wsdl:documentation>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="CoreService">
+		<wsdl:port name="DaoRequestsService" binding="tns:DaoRequestsService">
+			<soap:address location="http://elza.tacr.cz/ws/core/v1/dao-service/requests"/>
+		</wsdl:port>
+		<wsdl:port name="DaoDigitizationService" binding="tns:DaoDigitizationService">
+			<soap:address location="http://elza.tacr.cz/ws/core/v1/dao-service/digitization"/>
+		</wsdl:port>
+		<wsdl:port name="DaoCoreService" binding="tns:DaoService">
+			<soap:address location="http://elza.tacr.cz/ws/core/v1/dao-service/core"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>
