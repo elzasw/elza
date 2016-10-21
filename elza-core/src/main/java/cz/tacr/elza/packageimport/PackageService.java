@@ -709,13 +709,14 @@ public class PackageService {
                 convertRulPackageAction(rulPackage, packageAction, item);
                 packageActionsRepository.save(item);
 
+                List<RulItemTypeAction> rulTypeActionsNew = new ArrayList<>();
                 if (!CollectionUtils.isEmpty(packageAction.getActionItemTypes())) {
                     // pokud existují v balíčku u akce typy atributů, které se počítají,
                     // je potřeba je dohledat pokud existují v DB a následně upravit,
                     // nebo přidat/smazat
-                    List<RulItemTypeAction> rulTypeActionsNew = new ArrayList<>();
+
                     for (ActionItemType actionItemType : packageAction.getActionItemTypes()) {
-                        RulItemTypeAction rulItemTypeAction = itemTypeActionRepository.findOneByItemTypeCode(actionItemType.getItemType());
+                        RulItemTypeAction rulItemTypeAction = itemTypeActionRepository.findOneByItemTypeCodeAndAction(actionItemType.getItemType(), item);
                         RulItemType rulItemType = itemTypeRepository.findOneByCode(actionItemType.getItemType());
 
                         if (rulItemType == null) {
@@ -734,19 +735,18 @@ public class PackageService {
 
                     // uložení seznamu upravených/přidaných navázaných typů atributů
                     itemTypeActionRepository.save(rulTypeActionsNew);
-
-                    // vyhledat a odstranit již nenavázané typy atributů z DB
-                    List<RulItemTypeAction> rulTypeActionsDelete = new ArrayList<>(rulTypeActions);
-                    rulTypeActionsDelete.removeAll(rulTypeActionsNew);
-                    itemTypeActionRepository.delete(rulTypeActionsDelete);
                 }
+                // vyhledat a odstranit již nenavázané typy atributů z DB
+                List<RulItemTypeAction> rulTypeActionsDelete = new ArrayList<>(rulTypeActions);
+                rulTypeActionsDelete.removeAll(rulTypeActionsNew);
+                itemTypeActionRepository.delete(rulTypeActionsDelete);
 
+                List<RulActionRecommended> rulActionRecomendedsNew = new ArrayList<>();
                 if (!CollectionUtils.isEmpty(packageAction.getActionRecommendeds())) {
                     // pokud existují v balíčku u akce typy výstupů, pro které jsou akce doporučené,
                     // je potřeba je dohledat pokud existují v DB a následně upravit, nebo přidat/smaza
-                    List<RulActionRecommended> rulActionRecomendedsNew = new ArrayList<>();
                     for (ActionRecommended actionRecommended : packageAction.getActionRecommendeds()) {
-                        RulActionRecommended rulActionRecommended = actionRecommendedRepository.findOneByOutputTypeCode(actionRecommended.getOutputType());
+                        RulActionRecommended rulActionRecommended = actionRecommendedRepository.findOneByOutputTypeCodeAndAction(actionRecommended.getOutputType(), item);
                         RulOutputType rulOutputType = outputTypeRepository.findOneByCode(actionRecommended.getOutputType());
 
                         if (rulOutputType == null) {
@@ -766,11 +766,11 @@ public class PackageService {
                     // uložení seznamu upravených/přidaných vazeb na doporučené akce
                     actionRecommendedRepository.save(rulActionRecomendedsNew);
 
-                    // vyhkedat a odstranit již nenavázané doporučené akce
-                    List<RulActionRecommended> rulActionRecommendedsDelete = new ArrayList<>(rulActionRecommendeds);
-                    rulActionRecommendedsDelete.removeAll(rulActionRecomendedsNew);
-                    actionRecommendedRepository.delete(rulActionRecommendedsDelete);
                 }
+                // vyhkedat a odstranit již nenavázané doporučené akce
+                List<RulActionRecommended> rulActionRecommendedsDelete = new ArrayList<>(rulActionRecommendeds);
+                rulActionRecommendedsDelete.removeAll(rulActionRecomendedsNew);
+                actionRecommendedRepository.delete(rulActionRecommendedsDelete);
 
                 rulPackageActionsNew.add(item);
             }
