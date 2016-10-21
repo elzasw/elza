@@ -9,10 +9,15 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.domain.table.ElzaRow;
+import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.utils.Yaml;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +25,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Akce na počítání Evidenčních jednotek.
@@ -49,7 +56,7 @@ public class UnitCountAction extends Action {
     /**
      * Počet EJ
      */
-    private Integer count = 0;
+    private Map<String, Integer> countMap = new HashMap<>();
 
     /**
      * Seznam ignorovaných uzlů, které byly již započítané.
@@ -61,6 +68,12 @@ public class UnitCountAction extends Action {
      */
     private Set<String> storageNumbers = new HashSet<>();
 
+    // typy a názvy sloupců tabulky
+    private String outputTableColumn1;
+    private String outputTableColumn1Type;
+    private String outputTableColumn2;
+    private String outputTableColumn2Type;
+
     UnitCountAction(final Yaml config) {
         super(config);
     }
@@ -68,27 +81,77 @@ public class UnitCountAction extends Action {
     @Override
     public void init() {
         String outputType = config.getString("output_type", null);
-        outputItemType = findItemType(outputType);
-        checkValidDataType(outputItemType, "INT");
+        outputItemType = findItemType(outputType, "output_type");
+        checkValidDataType(outputItemType, "JSON_TABLE");
 
-        loadTypeAndSpec("find_1");
-        loadTypeAndSpec("under");
+        outputTableColumn1 = config.getString("output_table_column1", null);
+        checkValidateParam("output_table_column1", outputTableColumn1);
+        outputTableColumn1Type = config.getString("output_table_column1_type", null);
+        checkValidateParam("output_table_column1_type", outputTableColumn1Type);
+        outputTableColumn2 = config.getString("output_table_column2", null);
+        checkValidateParam("output_table_column2", outputTableColumn2);
+        outputTableColumn2Type = config.getString("output_table_column2_type", null);
+        checkValidateParam("output_table_column2_type", outputTableColumn2Type);
 
-        loadTypeAndSpec("find_2");
-        loadTypeAndSpec("find_3");
-        loadType("value");
+        List<ElzaColumn> columnsDefinition = outputItemType.getColumnsDefinition();
+        Map<String, ElzaColumn> outputColumns = columnsDefinition.stream().collect(Collectors.toMap(ElzaColumn::getCode, Function.identity()));
 
-        loadTypeAndSpec("find_4");
-        loadType("value2");
+        validateColumn(outputTableColumn1, outputTableColumn1Type, outputColumns);
+        validateColumn(outputTableColumn2, outputTableColumn2Type, outputColumns);
 
-        loadTypeAndSpec("unit_extra");
-        loadType("unit_extra_count");
+        loadType("UNIT_TYPE");
 
-        loadTypeAndSpec("exclude_hierarchical");
+        loadTypeAndSpec("ITEM");
 
+        loadTypeAndSpec("SERIES");
 
-        loadType("extra");
+        loadTypeAndSpec("KTT");
+        loadType("KTT_count");
 
+        loadTypeAndSpec("FOLDER_LOGICAL");
+
+        loadTypeAndSpec("FOLDER_UNITS");
+
+        loadTypeAndSpec("FOLDER_SINGLE_TYPE");
+        loadType("FOLDER_SINGLE_TYPE_count");
+
+        loadTypeAndSpec("FOLDER_UNITS");
+        loadType("STORAGE");
+
+        loadType("EXTRA_UNITS");
+
+    }
+
+    /**
+     * Ověření vyplnění parametru - sloupce v tabulce.
+     *
+     * @param paramName         název parametru
+     * @param outputTableColumn sloupec v tabulce
+     */
+    private void checkValidateParam(final String paramName, final String outputTableColumn) {
+        Assert.hasText(outputTableColumn, "Nebyl nastaven parametr: " + paramName);
+    }
+
+    /**
+     * Validace sloupce z definice typu atributu.
+     *
+     * @param outputTableColumn     název sloupce
+     * @param outputTableColumnType typ sloupce
+     * @param outputColumns         mapa sloupců
+     */
+    protected void validateColumn(final String outputTableColumn,
+                                  final String outputTableColumnType,
+                                  final Map<String, ElzaColumn> outputColumns) {
+        ElzaColumn column = outputColumns.get(outputTableColumn);
+        if (column == null) {
+            throw new IllegalArgumentException("Atribut " + outputItemType.getCode() + " nemá sloupec " + outputTableColumn);
+        }
+        ElzaColumn.DataType dataType = ElzaColumn.DataType.valueOf(outputTableColumnType);
+        if (!column.getDataType().equals(dataType)) {
+            throw new IllegalArgumentException("Atribut " + outputItemType.getCode()
+                    + " má sloupec " + column.getCode() + " jiného datového typu (" + outputItemType.getDataType().getCode()
+                    + "), než je nastaveno (" + dataType.name() + ").");
+        }
     }
 
     /**
@@ -99,14 +162,14 @@ public class UnitCountAction extends Action {
     protected void loadTypeAndSpec(final String code) {
         String attribute = config.getString(code, null);
         if (attribute == null) {
-            throw new IllegalArgumentException("Neplatný atribut: find_type");
+            throw new IllegalArgumentException("Neplatný atribut: " + attribute);
         }
         String[] split = attribute.split(" ");
         if (split.length != 2) {
             throw new IllegalArgumentException("Neplatný atribut: musí obsahovat kód typu a specifikace");
         }
 
-        RulItemType type = findItemType(split[0]);
+        RulItemType type = findItemType(split[0], code);
         RulItemSpec spec = findItemSpec(split[1]);
 
         if (!spec.getItemType().equals(type)) {
@@ -118,30 +181,46 @@ public class UnitCountAction extends Action {
     }
 
     /**
+     * Přičtení počtu podle typu.
+     *
+     * @param type typ sumy
+     * @param inc  počet o který se suma navyšuje
+     */
+    private void addToCount(final String type, final Integer inc) {
+        Assert.isTrue(inc >= 0, "Číslo nemůže být záporné");
+        Integer sum = countMap.get(type);
+        if (sum == null) {
+            countMap.put(type, inc);
+        } else {
+            countMap.put(type, sum + inc);
+        }
+    }
+
+    /**
      * Načtení typu podle kódu.
      *
      * @param code kód atributu
      */
     protected void loadType(final String code) {
         String attribute = config.getString(code, null);
-        RulItemType type = findItemType(attribute);
+        RulItemType type = findItemType(attribute, code);
         itemTypes.put(code, type);
     }
 
     @Override
     public void apply(final ArrNode node, final List<ArrDescItem> items, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
 
-        // Jednotlivost přímo pod sérii
-        itemUnderType(node, items, (LinkedHashMap<ArrNode, List<ArrDescItem>>) parentNodeDescItems);
+        // Jednotlivost přímo pod Sérii
+        itemUnderType(node, items, (LinkedHashMap<ArrNode, List<ArrDescItem>>) parentNodeDescItems, "SERIES");
 
-        // Logická složka
-        isType1(node, items, (LinkedHashMap<ArrNode, List<ArrDescItem>>) parentNodeDescItems);
+        // Jednotlivost přímo pod Logickou složkou
+        itemUnderType(node, items, (LinkedHashMap<ArrNode, List<ArrDescItem>>) parentNodeDescItems, "FOLDER_LOGICAL");
 
         // Množstevní EJ
-        isType2(node, items, (LinkedHashMap<ArrNode, List<ArrDescItem>>) parentNodeDescItems);
+        isTypeEJ1(node, items, (LinkedHashMap<ArrNode, List<ArrDescItem>>) parentNodeDescItems);
 
         // S uvedením EJ
-        isType3(node, items, (LinkedHashMap<ArrNode, List<ArrDescItem>>) parentNodeDescItems);
+        isTypeEJ2(node, items, (LinkedHashMap<ArrNode, List<ArrDescItem>>) parentNodeDescItems);
     }
 
     /**
@@ -151,26 +230,21 @@ public class UnitCountAction extends Action {
      * @param items               seznam hodnot uzlu
      * @param parentNodeDescItems rodiče uzlu
      */
-    private void isType3(final ArrNode node, final List<ArrDescItem> items, final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
-        boolean isFind4 = isItem(items, "find_4");
-        boolean isFind1 = isItem(items, "find_1");
+    private void isTypeEJ2(final ArrNode node, final List<ArrDescItem> items, final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
+        boolean isFind = isItem(items, "FOLDER_SINGLE_TYPE");
 
-        if (!isFind4 && !isFind1) {
+        if (!isFind) {
             return;
         }
 
-        if (isFind1) {
-            count++;
-        } else {
-            boolean count = !hasIgnoredParent(parentNodeDescItems);
+        boolean count = !hasIgnoredParent(parentNodeDescItems);
 
-            if (count) {
-                countItemValue2(items);
-                countExtraItem(items);
-                ignoredNodeId.add(node.getNodeId());
-            }
+
+        if (count) {
+            countItemValue2(items);
+            countExtraUnit(items);
+            ignoredNodeId.add(node.getNodeId());
         }
-
 
     }
 
@@ -181,8 +255,8 @@ public class UnitCountAction extends Action {
      * @param items               seznam hodnot uzlu
      * @param parentNodeDescItems rodiče uzlu
      */
-    private void isType2(final ArrNode node, final List<ArrDescItem> items, final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
-        boolean isFind = isItem(items, "find_3");
+    private void isTypeEJ1(final ArrNode node, final List<ArrDescItem> items, final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
+        boolean isFind = isItem(items, "FOLDER_UNITS");
 
         if (!isFind) {
             return;
@@ -192,7 +266,7 @@ public class UnitCountAction extends Action {
 
         if (count) {
             countItemValue(items);
-            countExtraItem(items);
+            countExtraUnit(items);
             ignoredNodeId.add(node.getNodeId());
         }
     }
@@ -203,11 +277,12 @@ public class UnitCountAction extends Action {
      * @param items seznam hodnot uzlu
      */
     private void countItemValue2(final List<ArrDescItem> items) {
-        RulItemType extraType = itemTypes.get("value2");
+        RulItemType countType = itemTypes.get("FOLDER_SINGLE_TYPE_count");
+        RulItemSpec countSpec = itemSpecs.get("FOLDER_SINGLE_TYPE");
 
         for (ArrDescItem item : items) {
-            if (item.getItemType().equals(extraType)) {
-                count += ((ArrItemInt) item.getItem()).getValue();
+            if (countType.equals(item.getItemType())) {
+                addToCount(countSpec.getShortcut(), ((ArrItemInt) item.getItem()).getValue());
             }
         }
     }
@@ -218,14 +293,15 @@ public class UnitCountAction extends Action {
      * @param items seznam hodnot uzlu
      */
     private void countItemValue(final List<ArrDescItem> items) {
-        RulItemType extraType = itemTypes.get("value");
+        RulItemType extraType = itemTypes.get("STORAGE");
 
         for (ArrDescItem item : items) {
             if (item.getItemType().equals(extraType)) {
                 ArrPacket packet = ((ArrItemPacketRef) item.getItem()).getPacket();
                 String storageNumber = packet.getStorageNumber();
                 if (!storageNumbers.contains(storageNumber)) {
-                    count++;
+                    String shortcut = packet.getPacketType().getShortcut();
+                    addToCount(shortcut, 1);
                     storageNumbers.add(storageNumber);
                 }
             }
@@ -233,39 +309,32 @@ public class UnitCountAction extends Action {
     }
 
     /**
-     * Počítání podle "Logická složka".
+     * Připočítání položek podle extra unit.
      *
-     * @param node                procházený uzel
-     * @param items               seznam hodnot uzlu
-     * @param parentNodeDescItems rodiče uzlu
+     * @param items seznam hodnot uzlu
      */
-    private void isType1(final ArrNode node, final List<ArrDescItem> items, final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
-
-        boolean isFind = isItem(items, "find_2");
-
-        if (!isFind) {
-            return;
-        }
-
-        boolean count = !hasIgnoredParent(parentNodeDescItems);
-
-        if (count) {
-            countItem(items);
-            countExtraItem(items);
-            ignoredNodeId.add(node.getNodeId());
+    private void countExtraUnit(final List<ArrDescItem> items) {
+        RulItemType extraType = itemTypes.get("EXTRA_UNITS");
+        for (ArrDescItem item : items) {
+            if (item.getItemType().equals(extraType)) {
+                RulItemSpec itemSpec = item.getItemSpec();
+                addToCount(itemSpec.getShortcut(), ((ArrItemInt) item.getItem()).getValue());
+            }
         }
     }
 
     /**
-     * Připočítání položek podle extra typu.
+     * Připočítání položek podle KKT.
      *
      * @param items seznam hodnot uzlu
      */
-    private void countExtraItem(final List<ArrDescItem> items) {
-        RulItemType extraType = itemTypes.get("extra");
+    private void countKkt(final List<ArrDescItem> items) {
+        RulItemType extraType = itemTypes.get("KTT_count");
+        RulItemSpec extraSpec = itemSpecs.get("KTT");
+
         for (ArrDescItem item : items) {
             if (item.getItemType().equals(extraType)) {
-                count += ((ArrItemInt) item.getItem()).getValue();
+                addToCount(extraSpec.getShortcut(), ((ArrItemInt) item.getItem()).getValue());
             }
         }
     }
@@ -276,20 +345,29 @@ public class UnitCountAction extends Action {
      * @param node                procházený uzel
      * @param items               seznam hodnot uzlu
      * @param parentNodeDescItems rodiče uzlu
+     * @param type                typ, pod kterým hledáme (z předpisu akce)
      */
-    public void itemUnderType(final ArrNode node, final List<ArrDescItem> items, final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
+    public void itemUnderType(final ArrNode node, final List<ArrDescItem> items, final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems, final String type) {
 
-        boolean isFind = isItem(items, "find_1");
+        // existuje typ?
+        boolean found = isItem(items, "ITEM");
 
-        if (!isFind) {
+        if (!found) {
+            // pokud ne, není co počítat
             return;
         }
 
         boolean onlyItemCount = hasIgnoredParent(parentNodeDescItems);
-        boolean isUnder = isUnder(parentNodeDescItems);
+        boolean isUnder = isUnder(parentNodeDescItems, type);
 
         if (isUnder || onlyItemCount) {
-            countItem(items);
+
+            if (isItem(items, "KTT")) {
+                countKkt(items);
+            }
+
+            RulItemSpec item = itemSpecs.get("ITEM");
+            addToCount(item.getShortcut(), 1);
 
             if (isUnder) {
                 ignoredNodeId.add(node.getNodeId());
@@ -299,39 +377,10 @@ public class UnitCountAction extends Action {
     }
 
     /**
-     * Spočítání EJ na uzlu.
-     *
-     * @param items seznam hodnot uzlu
-     */
-    private void countItem(final List<ArrDescItem> items) {
-        int unitExtraCount = 0;
-        RulItemType unitExtraCountType = itemTypes.get("unit_extra_count");
-        RulItemType unitExtraType = itemTypes.get("unit_extra");
-        RulItemSpec unitExtraSpec = itemSpecs.get("unit_extra");
-
-        boolean isExtra = false;
-        for (ArrDescItem item : items) {
-            if (item.getItemType().equals(unitExtraCountType)) {
-                unitExtraCount += ((ArrItemInt) item.getItem()).getValue();
-            }
-
-            if (item.getItemType().equals(unitExtraType)
-                    && item.getItemSpec() != null
-                    && item.getItemSpec().equals(unitExtraSpec)) {
-                isExtra = true;
-            }
-        }
-
-        if (isExtra) {
-            count += unitExtraCount;
-        }
-    }
-
-    /**
      * Jsou mezi ignorovanými některý z rodičů?
      *
-     * @param parentNodeDescItems   rodiče uzlu
-     * @return  jsou?
+     * @param parentNodeDescItems rodiče uzlu
+     * @return jsou?
      */
     protected boolean hasIgnoredParent(final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
         if (parentNodeDescItems != null && parentNodeDescItems.values().size() > 0) {
@@ -349,15 +398,18 @@ public class UnitCountAction extends Action {
      * Je uzel pod typem?
      *
      * @param parentNodeDescItems rodiče uzlu
+     * @param type typ, pod kterým hledáme (z předpisu akce)
      * @return je?
      */
-    protected boolean isUnder(final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
+    protected boolean isUnder(final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems, final String type) {
         if (parentNodeDescItems != null && parentNodeDescItems.values().size() > 0) {
             ArrayList<List<ArrDescItem>> lists = new ArrayList<>(parentNodeDescItems.values());
             List<ArrDescItem> parentItems = lists.get(lists.size() - 1); // hodnoty posledního elementu (předchůdce)
+            RulItemType itemType = itemTypes.get(type);
+            RulItemSpec itemSpec = itemSpecs.get(type);
             for (ArrDescItem parentItem : parentItems) {
-                if (parentItem.getItemType().equals(itemTypes.get("under")) &&
-                        parentItem.getItemSpec() != null && parentItem.getItemSpec().equals(itemSpecs.get("under"))) {
+                if (parentItem.getItemType().equals(itemType) &&
+                        parentItem.getItemSpec() != null && parentItem.getItemSpec().equals(itemSpec)) {
                     return true;
                 }
             }
@@ -368,14 +420,16 @@ public class UnitCountAction extends Action {
     /**
      * Existuje v uzlu daný typ?
      *
-     * @param items seznam hodnot uzlu
-     * @param itemCode  typ atributu
-     * @return
+     * @param items    seznam hodnot uzlu
+     * @param itemCode typ atributu
+     * @return true podle item existuje mezi hodnotami atributů
      */
     protected boolean isItem(final List<ArrDescItem> items, final String itemCode) {
+        RulItemType itemType = itemTypes.get(itemCode);
+        RulItemSpec itemSpec = itemSpecs.get(itemCode);
         for (ArrDescItem item : items) {
-            if (item.getItemType().equals(itemTypes.get(itemCode)) &&
-                    item.getItemSpec() != null && item.getItemSpec().equals(itemSpecs.get(itemCode))) {
+            if (item.getItemType().equals(itemType) &&
+                    item.getItemSpec() != null && item.getItemSpec().equals(itemSpec)) {
                 return true;
             }
         }
@@ -399,7 +453,15 @@ public class UnitCountAction extends Action {
     public ActionResult getResult() {
         UnitCountActionResult result = new UnitCountActionResult();
         result.setItemType(outputItemType.getCode());
-        result.setCount(count);
+        ElzaTable table = new ElzaTable();
+
+        for (Map.Entry<String, Integer> entry : countMap.entrySet()) {
+            Map.Entry<String, String> key = new AbstractMap.SimpleEntry<>(outputTableColumn1, entry.getKey());
+            Map.Entry<String, String> value = new AbstractMap.SimpleEntry<>(outputTableColumn2, entry.getValue().toString());
+            table.addRow(new ElzaRow(key, value));
+        }
+
+        result.setTable(table);
         return result;
     }
 

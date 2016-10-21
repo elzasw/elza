@@ -129,7 +129,7 @@ public class DateRangeAction extends Action {
             checkValidDataType(inputItemType, "UNITDATE");
         }
 
-        outputItemType = findItemType(outputType);
+        outputItemType = findItemType(outputType, "output_type");
         checkValidDataType(outputItemType, "TEXT");
     }
 

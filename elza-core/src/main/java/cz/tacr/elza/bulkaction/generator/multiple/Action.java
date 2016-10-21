@@ -85,12 +85,13 @@ public abstract class Action implements InitializingBean {
      * Vyhledá typ podle kódu.
      *
      * @param code  kód typu atributu
+     * @param param hledaný parametr
      * @return  atribut
      */
-    public RulItemType findItemType(final String code) {
+    public RulItemType findItemType(final String code, final String param) {
         RulItemType itemType = itemTypeRepository.findOneByCode(code);
         if (itemType == null) {
-            throw new IllegalArgumentException("Typ atributu neexistuje: " + code);
+            throw new IllegalArgumentException("Typ atributu neexistuje: " + param + " (" + code + ")");
         }
         return itemType;
     }
@@ -133,7 +134,7 @@ public abstract class Action implements InitializingBean {
         RulDataType dataType = inputItemType.getDataType();
         List<String> codeList = Arrays.asList(codes);
         if (!codeList.contains(dataType.getCode())) {
-            throw new IllegalArgumentException("Datový typ atributu musí být " + codes + " (item type " + inputItemType.getCode() + ")");
+            throw new IllegalArgumentException("Datový typ atributu musí být " + codeList + " (item type " + inputItemType.getCode() + ")");
         }
     }
 

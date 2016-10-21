@@ -65,7 +65,7 @@ public class TableStatisticAction extends Action {
         Set<String> inputTypes = config.getStringList("input_types", null).stream().collect(Collectors.toSet());
         String outputType = config.getString("output_type", null);
         inputItemTypes = findItemTypes(inputTypes);
-        outputItemType = findItemType(outputType);
+        outputItemType = findItemType(outputType, "output_type");
         checkValidDataType(outputItemType, "JSON_TABLE");
 
         List<ElzaColumn> columnsDefinition = outputItemType.getColumnsDefinition();

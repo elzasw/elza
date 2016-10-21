@@ -15,6 +15,7 @@ public class ElzaRow implements cz.tacr.elza.api.table.ElzaRow {
 
     private Map<String, String> values;
 
+    @SafeVarargs
     public ElzaRow(Map.Entry<String, String>... cells) {
         values = new HashMap<>();
         for (Map.Entry<String, String> cell : cells) {

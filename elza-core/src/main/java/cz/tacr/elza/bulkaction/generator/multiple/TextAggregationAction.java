@@ -78,7 +78,7 @@ public class TextAggregationAction extends Action {
             checkValidDataType(inputItemType, "TEXT", "STRING", "FORMATTED_TEXT");
         }
 
-        outputItemType = findItemType(outputType);
+        outputItemType = findItemType(outputType, "output_type");
         checkValidDataType(outputItemType, "TEXT");
     }
 

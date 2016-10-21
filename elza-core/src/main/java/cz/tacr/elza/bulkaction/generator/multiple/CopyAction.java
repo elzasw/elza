@@ -52,7 +52,7 @@ public class CopyAction extends Action {
         String outputType = config.getString("output_type", null);
 
         inputItemTypes = findItemTypes(inputTypes);
-        outputItemType = findItemType(outputType);
+        outputItemType = findItemType(outputType, "output_type");
 
         String code = outputItemType.getDataType().getCode();
         for (RulItemType inputItemType : inputItemTypes) {

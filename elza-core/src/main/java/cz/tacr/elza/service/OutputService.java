@@ -1642,9 +1642,9 @@ public class OutputService {
             UnitCountActionResult unitCountActionResult = (UnitCountActionResult) actionResult;
             String itemTypeCode = unitCountActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
-            ArrItemInt itemInt = new ArrItemInt();
-            itemInt.setValue(unitCountActionResult.getCount());
-            dataItems = Collections.singletonList(itemInt);
+            ArrItemJsonTable itemJsonTable = new ArrItemJsonTable();
+            itemJsonTable.setValue(unitCountActionResult.getTable());
+            dataItems = Collections.singletonList(itemJsonTable);
         } else if (actionResult instanceof UnitIdResult) {
             return null; // tohle se nikam nepřeklápí zatím
         } else {
