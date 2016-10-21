@@ -148,7 +148,7 @@ return true;
     },
     render: function() {
         return (
-        <this.props.tagName ref='box' {...this.props} style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart, display:'table' }} >
+        <this.props.tagName className="virtual-list" ref='box' {...this.props} style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart}} >
             {this.state.items.map(this.props.renderItem)}
         </this.props.tagName>
         );				

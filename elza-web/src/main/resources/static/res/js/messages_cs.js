@@ -160,6 +160,7 @@ var messages = {
     "arr.output.functions.notStarted" : "Nebyla provedena",
     "arr.output.functions.recommended": "Doporučené",
     "arr.output.functions.all": "Všechny použité funkce",
+    "arr.output.functions.noPermissions": "Nemáte oprávnění spouštět funkce.",
 
     "arr.output.list.type": "Typ: {0}",
     "arr.output.list.state.label": "Stav:",
