@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema targetNamespace="http://elza.tacr.cz/ws/types/v1" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:eat="http://elza.tacr.cz/ws/types/v1">
 	<xs:annotation>
-		<xs:documentation>Struktury jsou inspirovány standardem EAD ve verzi 3.</xs:documentation>
+		<xs:documentation>Common data structures used by Elza web services. </xs:documentation>
 	</xs:annotation>
 	<xs:complexType name="digitizationRequest">
 		<xs:annotation>
@@ -154,7 +154,6 @@ Source: EAD3</xs:documentation>
 		</xs:annotation>
 		<xs:sequence/>
 		<xs:attributeGroup ref="eat:fileCore"/>
-		<xs:attribute name="href" use="optional" type="eat:href"/>
 		<xs:attribute name="identifier" use="required" type="eat:identifier">
 			<xs:annotation>
 				<xs:documentation>Identifier of the file.</xs:documentation>
@@ -175,7 +174,6 @@ Source: EAD3</xs:documentation>
 			<xs:element name="fileGroup" type="eat:fileGroup" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="relatedFileGroup" type="eat:relatedFileGroup" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
-		<xs:attribute name="href" use="optional" type="eat:href"/>
 		<xs:attribute name="identifier" use="required" type="eat:identifier">
 			<xs:annotation>
 				<xs:documentation>Identifier of the digital archival object</xs:documentation>
@@ -184,11 +182,6 @@ Source: EAD3</xs:documentation>
 		<xs:attribute name="label" use="optional" type="eat:label">
 			<xs:annotation>
 				<xs:documentation>Name of digital archival object</xs:documentation>
-			</xs:annotation>
-		</xs:attribute>
-		<xs:attribute name="repositoryIdentifier" use="required" type="eat:identifier">
-			<xs:annotation>
-				<xs:documentation>Identifier of repository where is digital archival object stored.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
@@ -484,12 +477,4 @@ Source: VideoMD 2.0</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:attributeGroup>
-	<xs:simpleType name="href">
-		<xs:annotation>
-			<xs:documentation>Hypertext reference
-
-The locator for a remote resource in a link. When linking to an external file, href takes the form of a Uniform Resource Identifier (URI). If the value is not in the form of a URI, the locator is assumed to be within the document that contains the linking element.</xs:documentation>
-		</xs:annotation>
-		<xs:restriction base="xs:string"/>
-	</xs:simpleType>
 </xs:schema>

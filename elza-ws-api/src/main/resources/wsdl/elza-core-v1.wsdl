@@ -140,7 +140,7 @@
 		</wsdl:operation>
 	</wsdl:binding>
 	<wsdl:binding name="DaoService" type="tns:DaoService">
-		<soap:binding style="document" transport="http://tacr.elza.cz/ws/dao-service/core"/>
+		<soap:binding style="document" transport="http://tacr.elza.cz/ws/dao-service/base"/>
 		<wsdl:operation name="AddPackage">
 			<soap:operation style="document"/>
 			<wsdl:input name="daoPackage">
