@@ -205,7 +205,6 @@ public class BulkActionControllerTest extends AbstractControllerTest {
      * Spustí homadnou akci a poté se ji pokusí přerušit
      */
     @Test
-    @Ignore
     public void interruptBulkAction() throws InterruptedException {
         int fundVersionId = importAndGetVersionId();
         BulkActionRunVO state;
@@ -223,18 +222,23 @@ public class BulkActionControllerTest extends AbstractControllerTest {
             logger.info("Čekání na dokončení asynchronních operací...");
             Thread.sleep(10000);
 
-            state = getBulkAction(actionId);
+            try {
 
-            if (counter >= 0) {
-                if (state != null) {
-                    if (state.getState().equals(State.INTERRUPTED)) {
-                        hasResult = true;
-                    } else if (state.getState().equals(State.ERROR)) {
-                        Assert.fail("Hromadná akce skončila chybou");
+                state = getBulkAction(actionId);
+
+                if (counter >= 0) {
+                    if (state != null) {
+                        if (state.getState().equals(State.INTERRUPTED)) {
+                            hasResult = true;
+                        } else if (state.getState().equals(State.ERROR)) {
+                            Assert.fail("Hromadná akce skončila chybou");
+                        }
                     }
+                } else {
+                    hasResult = true;
                 }
-            } else {
-                hasResult = true;
+            } catch (Exception e) {
+                logger.warn("Nepodařilo se získat stav hromadné akce", e);
             }
 
         } while (!hasResult);
