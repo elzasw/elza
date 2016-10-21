@@ -5,6 +5,7 @@ import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.*;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -204,6 +205,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
      * Spustí homadnou akci a poté se ji pokusí přerušit
      */
     @Test
+    @Ignore
     public void interruptBulkAction() throws InterruptedException {
         int fundVersionId = importAndGetVersionId();
         BulkActionRunVO state;
