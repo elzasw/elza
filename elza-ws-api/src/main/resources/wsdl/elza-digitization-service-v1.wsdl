@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions name="ElzaDigitizationService" targetNamespace="http://elza.tacr.cz/ws/digitization/v1" xmlns:eat="http://elza.tacr.cz/ws/types/v1" xmlns:tns="http://elza.tacr.cz/ws/digitization/v1" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<wsdl:import namespace="http://elza.tacr.cz/ws/types/v1" location="elza-api-types-v1.xsd"/>
+	<wsdl:types/>
+	<wsdl:message name="DigitizationRequestResponse">
+		<wsdl:part name="requestId" type="eat:requestId"/>
+	</wsdl:message>
+	<wsdl:message name="DigitizationRequest">
+		<wsdl:part name="digitizationRequest" type="eat:digitizationRequest"/>
+	</wsdl:message>
+	<wsdl:message name="DigitizationServiceException">
+		<wsdl:part name="errorDescription" type="eat:errorDescription"/>
+	</wsdl:message>
+	<wsdl:portType name="DigitizationFrontdesk">
+		<wsdl:operation name="PostRequest">
+			<wsdl:input name="digitizationRrequest" message="tns:DigitizationRequest"/>
+			<wsdl:output name="requestId" message="tns:DigitizationRequestResponse"/>
+			<wsdl:fault name="digitizationServiceException" message="tns:DigitizationServiceException"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="DigitizationFrontdesk" type="tns:DigitizationFrontdesk">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="PostRequest">
+			<soap:operation soapAction="http://tacr.elza.cz/ws/digitization/postRequest" style="document"/>
+			<wsdl:input name="digitizationRrequest">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="requestId">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="digitizationServiceException">
+				<soap:fault name="digitizationServiceException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="DigitizationService">
+		<wsdl:port name="DigitizationService" binding="tns:DigitizationFrontdesk">
+			<soap:address location="www.elza.tacr.cz/services/digitization-service"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

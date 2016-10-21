@@ -25,6 +25,7 @@
 
     <modules>
         <module>elza-api</module>
+        <module>elza-ws-api</module>
         <module>elza-core</module>
         <module>elza-web</module>
         <module>elza-war</module>

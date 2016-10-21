@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions name="ElzaDaoProvider" targetNamespace="http://elza.tacr.cz/ws/dao-service/v1" xmlns:eat="http://elza.tacr.cz/ws/types/v1" xmlns:tns="http://elza.tacr.cz/ws/dao-service/v1" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<wsdl:import namespace="http://elza.tacr.cz/ws/types/v1" location="elza-api-types-v1.xsd"/>
+	<wsdl:types/>
+	<wsdl:message name="DaoServiceException">
+		<wsdl:part name="errorDescription" type="eat:errorDescription"/>
+	</wsdl:message>
+	<wsdl:message name="DesctructionRequestResponse">
+		<wsdl:part name="requestId" type="eat:requestId"/>
+	</wsdl:message>
+	<wsdl:message name="DesctructionRequest">
+		<wsdl:part name="destructionRequest" type="eat:destructionRequest"/>
+	</wsdl:message>
+	<wsdl:message name="TransferRequest">
+		<wsdl:part name="transferRequest" type="eat:transferRequest"/>
+	</wsdl:message>
+	<wsdl:message name="TransferRequestResponse">
+		<wsdl:part name="requestId" type="eat:requestId"/>
+	</wsdl:message>
+	<wsdl:message name="OnDaoLinked">
+		<wsdl:part name="onDaoLinked" type="eat:onDaoLinked"/>
+	</wsdl:message>
+	<wsdl:message name="OnDaoUnlinked">
+		<wsdl:part name="onDaoUnlinked" type="eat:onDaoUnlinked"/>
+	</wsdl:message>
+	<wsdl:portType name="DaoRequests">
+		<wsdl:operation name="PostDestructionRequest">
+			<wsdl:input name="destructionRequest" message="tns:DesctructionRequest"/>
+			<wsdl:output name="requestId" message="tns:DesctructionRequestResponse"/>
+			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="PostTransferRequest">
+			<wsdl:input name="transferRequest" message="tns:TransferRequest"/>
+			<wsdl:output name="transferRequestResponse" message="tns:TransferRequestResponse"/>
+			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="DaoNotifications">
+		<wsdl:operation name="OnDaoLinked">
+			<wsdl:input name="onDaoLinked" message="tns:OnDaoLinked"/>
+			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="OnDaoUnlinked">
+			<wsdl:input name="onDaoUnlinked" message="tns:OnDaoUnlinked"/>
+			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="DaoRequests" type="tns:DaoRequests">
+		<soap:binding style="document" transport="http://tacr.elza.cz/ws/dao-provider/requests"/>
+		<wsdl:operation name="PostDestructionRequest">
+			<soap:operation style="document"/>
+			<wsdl:input name="destructionRequest">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="requestId">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="daoServiceException">
+				<soap:fault name="daoServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="PostTransferRequest">
+			<soap:operation style="document"/>
+			<wsdl:input name="transferRequest">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="transferRequestResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="daoServiceException">
+				<soap:fault name="daoServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:binding name="DaoNotifications" type="tns:DaoNotifications">
+		<soap:binding style="document" transport="http://tacr.elza.cz/ws/dao-provider/notifications"/>
+		<wsdl:operation name="OnDaoLinked">
+			<soap:operation style="document"/>
+			<wsdl:input name="onDaoLinked">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:fault name="daoServiceException">
+				<soap:fault name="daoServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="OnDaoUnlinked">
+			<soap:operation style="document"/>
+			<wsdl:input name="onDaoUnlinked">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:fault name="daoServiceException">
+				<soap:fault name="daoServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="DaoProvider">
+		<wsdl:port name="DaoRequest" binding="tns:DaoRequests">
+			<soap:address location="www.elza.tacr.cz/dao-provider/requests"/>
+		</wsdl:port>
+		<wsdl:port name="DaoNotifications" binding="tns:DaoNotifications">
+			<soap:address location="www.elza.tacr.cz/dao-provider/notifications"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>
