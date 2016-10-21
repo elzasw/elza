@@ -42,27 +42,31 @@ function hasRight(right) {
     return false
 }
 
-function hasArrPage(fundId = null) {
+function hasRdPage(fundId = null) {     //Zjistí zda má uživatel oprávnění číst archivní soubor
     return hasOne.bind(this)(
         perms.FUND_ADMIN,
-        perms.FUND_RD_ALL, {type: perms.FUND_RD, fundId},
+        perms.FUND_RD_ALL, {type: perms.FUND_RD, fundId},  
+        perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId},      
+    )
+}
+
+function hasArrPage(fundId = null) {    //Zjistí zda má uživatel oprávnění pořádat archivní soubor
+    return hasOne.bind(this)(
+        perms.FUND_ADMIN,        
         perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId},
     )
 }
 
-function hasArrOutputPage(fundId = null) {
+function hasArrOutputPage(fundId = null) {  //Zjistí zda má uživatel oprávnění vytvářet výstupy
     return hasOne.bind(this)(
         perms.FUND_ADMIN,
-        perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId},
-        perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId},
+        perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId},        
     )
 }
 
-function hasFundActionPage(fundId = null) {
+function hasFundActionPage(fundId = null) { //Zjistí zda má uživatel oprávnění spouštět funkce
     return hasOne.bind(this)(
-        perms.FUND_ADMIN,
-        perms.FUND_RD_ALL, {type: perms.FUND_RD, fundId},
-        perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId},
+        perms.FUND_ADMIN,        
         perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId},
     )
 }
@@ -112,6 +116,7 @@ export default function userDetail(state = initialState, action = {}) {
 
     result.hasOne = hasOne.bind(result)
     result.hasAll = hasAll.bind(result)
+    result.hasRdPage = hasRdPage.bind(result)
     result.hasArrPage = hasArrPage.bind(result)
     result.hasArrOutputPage = hasArrOutputPage.bind(result)
     result.hasFundActionPage = hasFundActionPage.bind(result)

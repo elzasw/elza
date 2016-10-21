@@ -21,14 +21,15 @@ const RibbonGroup = class RibbonGroup extends React.Component {
         const {className} = this.props
 
         const classes = "ribbonGroup " + className;
-
+        
         if (className.indexOf("small") !== -1) {
             var parts = []
+            var right = className.indexOf('right') !== -1 ? "right" : "";  //Pokud className obsahuje "right" pak se tato třída vloží i do výsledného divu
             for (let a=0; a<this.props.children.length; a += 3) {
                 const sub = this.props.children.slice(a, a + 3)
                 parts.push(<div key={"part-" + a} className={classes}>{sub}</div>)
             }
-            return <div className="ribbonSmallGroupsContainer" key="small-container">{parts}</div>
+            return <div className={"ribbonSmallGroupsContainer " +  right } key="small-container">{parts}</div>
         } else {
             return (
                 <div className={classes}>

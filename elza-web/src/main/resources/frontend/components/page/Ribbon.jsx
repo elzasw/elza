@@ -19,7 +19,7 @@ import {
     ModalDialog,
     NodeTabs
 } from 'components/index.jsx';
-import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
+import {ButtonGroup, Button, DropdownButton, MenuItem, Dropdown} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {AppStore} from 'stores/index.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
@@ -107,17 +107,19 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
         }
         if (this.props.arr) {
             const arrParts = []
-            if (userDetail.hasArrPage(fundId)) {    // právo na pořádání
+            if (userDetail.hasRdPage(fundId)) {    // právo na čtení
                 arrParts.push(<IndexLinkContainer key="ribbon-btn-arr-index" to="/arr"><Button ref='ribbonDefaultFocus'><Icon glyph="fa-sitemap" /><div><span className="btnText">{i18n('ribbon.action.arr.arr')}</span></div></Button></IndexLinkContainer>)
-                arrParts.push(<LinkContainer key="ribbon-btn-arr-dataGrid" to="/arr/dataGrid"><Button><Icon glyph="fa-table" /><div><span className="btnText">{i18n('ribbon.action.arr.dataGrid')}</span></div></Button></LinkContainer>)
+                arrParts.push(<LinkContainer key="ribbon-btn-arr-dataGrid" to="/arr/dataGrid"><Button><Icon glyph="fa-table" /><div><span className="btnText">{i18n('ribbon.action.arr.dataGrid')}</span></div></Button></LinkContainer>)                
+            }
+            if (userDetail.hasArrPage(fundId)) {    // právo na pořádání                
                 arrParts.push(<LinkContainer key="ribbon-btn-arr-movements" to="/arr/movements"><Button><Icon glyph="fa-exchange" /><div><span className="btnText">{i18n('ribbon.action.arr.movements')}</span></div></Button></LinkContainer>)
             }
 
-            if (userDetail.hasArrOutputPage(fundId)) {    // právo na outputy
+            if (userDetail.hasArrOutputPage(fundId) && userDetail.hasArrPage(fundId)) {    // právo na výstupy
                 arrParts.push(<LinkContainer key="ribbon-btn-arr-output" to="/arr/output"><Button><Icon glyph="fa-print" /><div><span className="btnText">{i18n('ribbon.action.arr.output')}</span></div></Button></LinkContainer>)
             }
 
-            if (userDetail.hasFundActionPage(fundId)) {    // právo na hromadné akce
+            if (userDetail.hasFundActionPage(fundId)) {    // právo na hromadné akce            
                 arrParts.push(<LinkContainer key="ribbon-btn-arr-actions" to="/arr/actions"><Button><Icon glyph="fa-calculator" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span></div></Button></LinkContainer>)
             }
 
@@ -165,12 +167,18 @@ const Ribbon = class Ribbon extends AbstractReactComponent {
         return (
             <RibbonMenu opened onShowHide={this.handleRibbonShowHide}>
                 {partsWithSplit}
-                <RibbonGroup className="large right">
-                    {saveCounter > 0 && <span>{i18n('ribbon.saving')}</span>}
-                    <DropdownButton bsStyle='default' title={userDetail.username} key='user-menu' id='user-menu'>
-                        <MenuItem eventKey="1" onClick={this.handlePasswordChangeForm}>{i18n('ribbon.action.admin.user.passwordChange')}</MenuItem>
-                    </DropdownButton>
-                    <Button key="ribbon-btn-logout" onClick={this.handleLogout} ref='ribbonDefaultFocus'><Icon glyph="fa-sign-out" /><div><span className="btnText">{i18n('ribbon.action.logout')}</span></div></Button>
+                <RibbonGroup className="small right">
+                    <Dropdown bsStyle='default' key='user-menu' id='user-menu'>
+                        <Dropdown.Toggle  noCaret>                            
+                            {userDetail.username}<Icon glyph="fa-user" />
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                            <MenuItem eventKey="1" onClick={this.handlePasswordChangeForm}>{i18n('ribbon.action.admin.user.passwordChange')}</MenuItem>
+                            <MenuItem divider/>
+                            <MenuItem eventKey="2" onClick={this.handleLogout}>{i18n('ribbon.action.logout')}</MenuItem>
+                        </Dropdown.Menu>
+                    </Dropdown>
+                    {saveCounter > 0 && <div className="save-msg"><Icon glyph="fa-spinner fa-spin" />{i18n('ribbon.saving')}</div>}
                 </RibbonGroup>
             </RibbonMenu>
         )
