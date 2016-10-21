@@ -1,15 +1,15 @@
-/**
- * Formulář přidání výstupu.
- */
-
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
-import {Modal, Button, Checkbox} from 'react-bootstrap';
+import {Modal, Button, Checkbox, Form} from 'react-bootstrap';
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import {indexById} from 'stores/app/utils.jsx'
+
+/**
+ * Formulář přidání výstupu.
+ */
 
 class AddOutputForm extends AbstractReactComponent {
 
@@ -71,8 +71,8 @@ class AddOutputForm extends AbstractReactComponent {
 
         return (
             <div className="add-output-form-container">
-                <Modal.Body>
-                    <form onSubmit={handleSubmit(submitForm)}>
+                <Form onSubmit={handleSubmit(submitForm)}>
+                    <Modal.Body>
                         <FormInput type="text" label={i18n('arr.output.name')} {...name} {...decorateFormField(name)} />
                         <FormInput type="text" label={i18n('arr.output.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />
                         {create && <FormInput componentClass="select" label={i18n('arr.output.outputType')} {...outputTypeId} {...decorateFormField(outputTypeId)}>
@@ -84,12 +84,12 @@ class AddOutputForm extends AbstractReactComponent {
                             {templates && templates.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
                         </FormInput>
                         {create && <Checkbox {...temporary} {...decorateFormField(temporary)}>{i18n('arr.output.temporary')}</Checkbox>}
-                    </form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={handleSubmit(submitForm)}>{create ? i18n('global.action.create') : i18n('global.action.update')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
-                </Modal.Footer>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type="submit" onClick={handleSubmit(submitForm)}>{create ? i18n('global.action.create') : i18n('global.action.update')}</Button>
+                        <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    </Modal.Footer>
+                </Form>
             </div>
         )
     }

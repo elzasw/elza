@@ -1,44 +1,46 @@
-/**
- * Formulář přidání nebo uzavření AS.
- */
-
-require('./FundForm.less');
-
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Icon, Autocomplete, VersionValidationState, FormInput} from 'components/index.jsx';
-import {Modal, Button} from 'react-bootstrap';
+import {Modal, Button, Form} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 
+import './FundForm.less';
+
 /**
- * Validace formuláře.
+ * Formulář přidání nebo uzavření AS.
  */
-const validate = (values, props) => {
-    const errors = {};
+class FundForm extends AbstractReactComponent {
 
-    if ((props.create || props.update) && !values.name) {
-        errors.name = i18n('global.validation.required');
-    }
-    if ((props.create || props.ruleSet) && !values.ruleSetId) {
-        errors.ruleSetId = i18n('global.validation.required');
-    }
-    if ((props.create || props.update) && !values.institutionId) {
-        errors.institutionId = i18n('global.validation.required');
-    }
+    /**
+     * Validace formuláře.
+     */
+    static validate = (values, props) => {
+        const errors = {};
 
-    return errors;
-};
+        if ((props.create || props.update) && !values.name) {
+            errors.name = i18n('global.validation.required');
+        }
+        if ((props.create || props.ruleSet) && !values.ruleSetId) {
+            errors.ruleSetId = i18n('global.validation.required');
+        }
+        if ((props.create || props.update) && !values.institutionId) {
+            errors.institutionId = i18n('global.validation.required');
+        }
 
-const FundForm = class FundForm extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+        return errors;
+    };
 
-        this.bindMethods('isBulkActionRunning');
+    static PropTypes = {
+        approve: React.PropTypes.bool,
+        create: React.PropTypes.bool,
+        update: React.PropTypes.bool,
+        ruleSet: React.PropTypes.bool,
+        scopeList: React.PropTypes.array
+    };
 
-        this.state = {};
-    }
+    state = {};
 
     componentDidMount() {
         this.dispatch(refRuleSetFetchIfNeeded());
@@ -53,7 +55,7 @@ const FundForm = class FundForm extends AbstractReactComponent {
      *
      * @returns {boolean}
      */
-    isBulkActionRunning() {
+    isBulkActionRunning = () => {
         let result = false;
         this.props.bulkActions.states.forEach((item) => {
             if (item.state !== 'ERROR' && item.state !== 'FINISH') {
@@ -61,7 +63,7 @@ const FundForm = class FundForm extends AbstractReactComponent {
             }
         });
         return result;
-    }
+    };
 
     /**
      * Vyhledávání v redux form fields - prohledává index.value
@@ -84,101 +86,89 @@ const FundForm = class FundForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {name, ruleSetId, regScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet} = this.props;
+        const {fields: {name, ruleSetId, regScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet, refTables} = this.props;
 
-        const submitForm = submitReduxForm.bind(this, validate);
+        const submitForm = submitReduxForm.bind(this, FundForm.validate);
 
         let approveButton;
         if (approve) {
             if (this.isBulkActionRunning()) {
                 approveButton = <span className="text-danger">{i18n('arr.fund.approveVersion.runningBulkAction')}</span>;
             } else {
-                approveButton = <Button onClick={handleSubmit(submitForm)}>{i18n('arr.fund.approveVersion.approve')}</Button>
+                approveButton = <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n('arr.fund.approveVersion.approve')}</Button>
             }
         }
-        const ruleSets = this.props.refTables.ruleSet.items;
-        const institutions = this.props.refTables.institutions.items;
+        const ruleSets = refTables.ruleSet.items;
+        const institutions = refTables.institutions.items;
 
-        return (
-            <div>
-                <Modal.Body>
-                    <form onSubmit={handleSubmit(submitForm)}>
-                        {(create || update) &&
-                        <FormInput type="text" label={i18n('arr.fund.name')} {...name} {...decorateFormField(name)} />}
+        return <Form onSubmit={handleSubmit(submitForm)}>
+            <Modal.Body>
+                {(create || update) &&
+                <FormInput type="text" label={i18n('arr.fund.name')} {...name} {...decorateFormField(name)} />}
 
-                        {(create || update) &&
-                        <FormInput type="text" label={i18n('arr.fund.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />}
+                {(create || update) &&
+                <FormInput type="text" label={i18n('arr.fund.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />}
 
-                        {(create || update) &&
-                        <FormInput componentClass="select" label={i18n('arr.fund.institution')} {...institutionId} {...decorateFormField(institutionId)}>
-                            <option key='-institutionId'/>
-                            {institutions.map(i=> {
-                                return <option value={i.id}>{i.name}</option>
-                            })}
-                        </FormInput>}
+                {(create || update) &&
+                <FormInput componentClass="select" label={i18n('arr.fund.institution')} {...institutionId} {...decorateFormField(institutionId)}>
+                    <option key='-institutionId'/>
+                    {institutions.map(i=> {
+                        return <option value={i.id}>{i.name}</option>
+                    })}
+                </FormInput>}
 
-                        {(create || ruleSet) &&
-                        <FormInput componentClass="select" label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
-                            <option key='-ruleSetId'/>
-                            {ruleSets.map(i=> {
-                                return <option value={i.id}>{i.name}</option>
-                            })}
-                        </FormInput>}
+                {(create || ruleSet) &&
+                <FormInput componentClass="select" label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
+                    <option key='-ruleSetId'/>
+                    {ruleSets.map(i=> {
+                        return <option value={i.id}>{i.name}</option>
+                    })}
+                </FormInput>}
 
-                        {approve &&
-                        <FormInput componentClass="textarea" label={i18n('arr.fund.dateRange')} {...dateRange} {...decorateFormField(dateRange)} />}
+                {approve &&
+                <FormInput componentClass="textarea" label={i18n('arr.fund.dateRange')} {...dateRange} {...decorateFormField(dateRange)} />}
 
-                        {update && <Autocomplete
-                            tags
-                            label={i18n('arr.fund.regScope')}
-                            items={this.props.scopeList}
-                            getItemId={(item) => item ? item.id : null}
-                            getItemName={(item) => item ? item.name : ''}
-                            onChange={
-                                (id, value) => {
-                                    if (value.name.trim() == '') {
-                                        return;
-                                    }
-                                    let index = this.findIndexInFields(this.props.fields.regScopes, value.name, 'name');
-                                    if (index == null) {
-                                        this.props.fields.regScopes.addField(value);
-                                    } else {
-                                        this.props.fields.regScopes.removeField(index);
-                                    }
-                                }
+                {update && <Autocomplete
+                    tags
+                    label={i18n('arr.fund.regScope')}
+                    items={this.props.scopeList}
+                    getItemId={(item) => item ? item.id : null}
+                    getItemName={(item) => item ? item.name : ''}
+                    onChange={
+                        (id, value) => {
+                            if (value.name.trim() == '') {
+                                return;
                             }
-                            value={this.state.autocompleteValue}
-                        />}
-                        {update && <div className="selected-data-container">
-                            {regScopes.map((scope, scopeIndex) => (
-                                <div className="selected-data" key={scopeIndex}>
-                                    {scope.name.value}<Button onClick={() => {regScopes.removeField(scopeIndex)}}>
-                                    <Icon glyph="fa-times"/>
-                                </Button>
-                                </div>))}
-                        </div>}
-                    </form>
-                </Modal.Body>
-                <Modal.Footer>
-                    {create && <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.create')}</Button>}
-                    {approve && approveButton}
-                    {(update || ruleSet) && <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.update')}</Button>}
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
-                </Modal.Footer>
-            </div>
-        )
+                            let index = this.findIndexInFields(this.props.fields.regScopes, value.name, 'name');
+                            if (index == null) {
+                                this.props.fields.regScopes.addField(value);
+                            } else {
+                                this.props.fields.regScopes.removeField(index);
+                            }
+                        }
+                    }
+                    value={this.state.autocompleteValue}
+                />}
+                {update && <div className="selected-data-container">
+                    {regScopes.map((scope, scopeIndex) => (
+                        <div className="selected-data" key={scopeIndex}>
+                            {scope.name.value}<Button onClick={() => {regScopes.removeField(scopeIndex)}}>
+                            <Icon glyph="fa-times"/>
+                        </Button>
+                        </div>))}
+                </div>}
+            </Modal.Body>
+            <Modal.Footer>
+                {create && <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n('global.action.create')}</Button>}
+                {approve && approveButton}
+                {(update || ruleSet) && <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n('global.action.update')}</Button>}
+                <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+            </Modal.Footer>
+        </Form>
     }
-};
+}
 
-FundForm.propTypes = {
-    approve: React.PropTypes.bool,
-    create: React.PropTypes.bool,
-    update: React.PropTypes.bool,
-    ruleSet: React.PropTypes.bool,
-    scopeList: React.PropTypes.array
-};
-
-module.exports = reduxForm({
+export default reduxForm({
         form: 'fundForm',
         fields: ['name', 'ruleSetId', 'institutionId', 'internalCode', 'dateRange', 'regScopes[].id', 'regScopes[].name'],
     }, state => ({
