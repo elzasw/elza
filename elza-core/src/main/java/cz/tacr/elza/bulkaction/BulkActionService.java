@@ -411,7 +411,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @param fundVersionId identifikátor verze archivní pomůcky
      * @return seznam stavů hromadných akcí
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrBulkActionRun> getAllArrBulkActionRun(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         return bulkActionRepository.findByFundVersionId(fundVersionId, new PageRequest(0, MAX_BULK_ACTIONS_LIST));
     }
@@ -491,7 +491,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @param fundVersionId identifikátor verze archivní pomůcky
      * @return seznam nastavení hromadných akcí
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<BulkActionConfig> getBulkActions(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
