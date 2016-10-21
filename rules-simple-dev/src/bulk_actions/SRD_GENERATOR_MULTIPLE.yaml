@@ -37,19 +37,39 @@ action:
     output_table_type: TEXT
 
   - UNIT_COUNT
-    output_type: SRD_UNIT_COUNT
+    output_type: ZP2015_UNIT_COUNT_TABLE
+    output_table_column1: NAME
+    output_table_column1_type: TEXT
+    output_table_column2: COUNT
+    output_table_column2_type: INTEGER
 
-    find_1: SRD_LEVEL_TYPE SRD_LEVEL_ITEM
-    under: SRD_LEVEL_TYPE SRD_LEVEL_SERIES
-    unit_extra: SRD_UNIT_TYPE SRD_UNIT_TYPE_KTT
-    unit_extra_count: SRD_UNIT_COUNT
+    # typ pro typ archiválie
+    UNIT_TYPE: ZP2015_UNIT_TYPE
 
-    find_2: SRD_FOLDER_TYPE SRD_FOLDER_LOGICAL
-    find_3: SRD_FOLDER_TYPE SRD_FOLDER_UNITS
-    find_4: SRD_FOLDER_TYPE SRD_FOLDER_SINGLE_TYPE
-    value2: SRD_UNIT_COUNT
+    # typ a specifikace jednotlivosti
+    ITEM: ZP2015_LEVEL_TYPE ZP2015_LEVEL_ITEM
 
-    exclude_hierarchical: SRD_FOLDER_TYPE SRD_FOLDER_UNITS
-    value: SRD_STORAGE_ID
-    extra: SRD_EXTRA_UNITS
+    # typ a specifikace série
+    SERIES: ZP2015_LEVEL_TYPE ZP2015_LEVEL_SERIES
+
+    # typ a specifikace kartotéky a typ počtu zásuvek
+    KTT: ZP2015_UNIT_TYPE ZP2015_UNIT_TYPE_KTT
+    KTT_count: ZP2015_UNIT_COUNT
+
+    # typ a specifikace logické složky
+    FOLDER_LOGICAL: ZP2015_FOLDER_TYPE ZP2015_FOLDER_LOGICAL
+
+    # typ a specifikace množstevní EJ
+    FOLDER_UNITS: ZP2015_FOLDER_TYPE ZP2015_FOLDER_UNITS
+
+    # typ a specifikace složky s typem EJ a typ počtu ej
+    FOLDER_SINGLE_TYPE: ZP2015_FOLDER_TYPE ZP2015_FOLDER_SINGLE_TYPE
+    FOLDER_SINGLE_TYPE_count: ZP2015_UNIT_COUNT
+
+    # typ a specifikace množstevní EJ a typ pro ukládací číslo
+    FOLDER_UNITS: ZP2015_FOLDER_TYPE ZP2015_FOLDER_UNITS
+    STORAGE: ZP2015_STORAGE_ID
+
+    # typ pro extra EJ
+    EXTRA_UNITS: ZP2015_EXTRA_UNITS
 
