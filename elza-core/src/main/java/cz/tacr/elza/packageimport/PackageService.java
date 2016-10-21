@@ -334,7 +334,7 @@ public class PackageService {
                 }
 
                 if (newRultemplates != null) {
-                    deleteTemplates(dirTemplates, newRultemplates);
+                    deleteTemplatesForRollback(dirTemplates, newRultemplates);
                 }
 
                 if (originalRulTemplates != null) {
@@ -1090,6 +1090,20 @@ public class PackageService {
             }
             for (File file : dirFile.listFiles()) {
                 deleteFile(dirFile, file.getName());
+            }
+        }
+    }
+
+    private void deleteTemplatesForRollback(final File dirTemplates, final List<RulTemplate> rulTemplateActual) throws IOException {
+        for (RulTemplate template : rulTemplateActual) {
+            File dirFile = new File(dirTemplates + File.separator + template.getDirectory());
+            if (!dirFile.exists()) {
+                continue;
+            }
+            File[] files = dirFile.listFiles((dir1, name) -> !name.endsWith(".bck"));
+
+            for (File file : files) {
+                file.delete();
             }
         }
     }

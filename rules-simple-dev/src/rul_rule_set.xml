@@ -4,7 +4,7 @@
         <default-item-types>
             <item-type code="SRD_LEVEL_TYPE" />
             <item-type code="SRD_SERIAL_NUMBER" />
-            <item-type code="SRD_TITLE" />
+            <item-type code="SRD_TITLEssssss" />
         </default-item-types>
     </rule-set>
 </rule-sets>
