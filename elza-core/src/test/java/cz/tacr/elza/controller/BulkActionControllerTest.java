@@ -237,7 +237,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
                 } else {
                     hasResult = true;
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 logger.warn("Nepodařilo se získat stav hromadné akce", e);
             }
 
