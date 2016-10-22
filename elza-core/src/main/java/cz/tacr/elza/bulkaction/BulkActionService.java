@@ -411,7 +411,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @param fundVersionId identifikátor verze archivní pomůcky
      * @return seznam stavů hromadných akcí
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrBulkActionRun> getAllArrBulkActionRun(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         return bulkActionRepository.findByFundVersionId(fundVersionId, new PageRequest(0, MAX_BULK_ACTIONS_LIST));
     }
@@ -491,7 +491,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @param fundVersionId identifikátor verze archivní pomůcky
      * @return seznam nastavení hromadných akcí
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<BulkActionConfig> getBulkActions(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
@@ -566,7 +566,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         try {
             logger.info("Zahájení překlopení výsledku hromadné akce do výstupů");
             ArrChange change = arrangementService.createChange();
-            outputService.storeResult(bulkActionRun.getResult(), bulkActionRun.getFundVersion(), nodes, change, null);
+            outputService.storeResultBulkAction(bulkActionRun, nodes, change, null);
             logger.info("Překlopení výsledku hromadné akce bylo úspěšně dokončeno");
         } catch (Exception e) {
             logger.error("Nastal problém při překlopení výsledků hromadné akce do výstupů", e);
@@ -604,6 +604,16 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      */
     public RulAction getBulkActionByCode(final String code) {
         return actionRepository.findOneByFilename(code + ".yaml");
+    }
+
+    /**
+     * Vyhledá hromadnou akci podle kódu.
+     *
+     * @param codes  kód hromadné akce
+     * @return hromadná akce
+     */
+    public List<RulAction> getBulkActionByCodes(final List<String> codes) {
+        return actionRepository.findByFilename(codes.stream().map(code -> code + ".yaml").collect(Collectors.toList()));
     }
 
     public Set<RulAction> getRecommendedActions(RulOutputType outputType) {

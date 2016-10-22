@@ -1,24 +1,17 @@
-/**
- * Modální dialog.
- */
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {i18n} from 'components/index.jsx';
 import {Modal} from 'react-bootstrap';
 import {setInputFocus} from 'components/Utils.jsx'
 
-var ModalDialogWrapper = class ModalDialogWrapper extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.dialogWillHide = this.dialogWillHide.bind(this);
-    }
-
+/**
+ * Obal modálního dialogu
+ */
+export default class ModalDialogWrapper extends React.Component {
     componentDidMount() {
         this.setState({}, () => {
             if (this.refs.modalBody) {
-                var el = ReactDOM.findDOMNode(this.refs.modalBody);
+                const el = ReactDOM.findDOMNode(this.refs.modalBody);
                 if (el) {
                     setInputFocus(el, false);
                 }
@@ -26,27 +19,25 @@ var ModalDialogWrapper = class ModalDialogWrapper extends React.Component {
         })
     }
 
-    dialogWillHide() {
+    dialogWillHide = () => {
         this.refs.modal._onHide();
-    }
+    };
 
     render() {
-        const {title} = this.props
+        const {title, onHide, className, children} = this.props;
         
-        const renderHeader = title !== null
+        const renderHeader = title !== null;
 
         return (
-            <Modal backdrop='static' className={this.props.className} ref='modal' show={true} onHide={this.props.onHide}>
-                {renderHeader && <Modal.Header closeButton onHide={this.props.onHide}>
-                    <Modal.Title>{this.props.title}</Modal.Title>
+            <Modal backdrop='static' className={className} ref='modal' show={true} onHide={onHide}>
+                {renderHeader && <Modal.Header closeButton onHide={onHide}>
+                    <Modal.Title>{title}</Modal.Title>
                 </Modal.Header>}
 
                 <div ref="modalBody">
-                    {this.props.children}
+                    {children}
                 </div>
             </Modal>
         );
     }
 }
-
-module.exports = ModalDialogWrapper;

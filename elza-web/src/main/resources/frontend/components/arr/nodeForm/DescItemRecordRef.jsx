@@ -77,7 +77,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     }
 
     render() {
-        const {userDetail, descItem, locked, singleDescItemTypeEdit, readMode} = this.props;
+        const {userDetail, descItem, locked, singleDescItemTypeEdit, readMode, cal} = this.props;
         var value = descItem.record ? descItem.record : null;
 
         if (readMode) {
@@ -87,7 +87,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
                 )
             } else {
                 return (
-                    <DescItemLabel value="" />
+                    <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} />
                 )
             }
         }

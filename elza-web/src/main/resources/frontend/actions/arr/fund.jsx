@@ -182,3 +182,16 @@ export function approveFundResult(versionId) {
         versionId: versionId
     }
 }
+
+/**
+ * Informační zpráva při změně read mode pro fund.
+ * @param versionId verze AS
+ * @param readMode nový stav read mode
+ */
+export function fundChangeReadMode(versionId, readMode) {
+    return {
+        type: types.FUND_FUND_CHANGE_READ_MODE,
+        versionId,
+        readMode,
+    }
+}

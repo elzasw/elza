@@ -1,22 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
@@ -24,7 +7,7 @@ import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
-import cz.tacr.elza.bulkaction.generator.result.DataceRangeActionResult;
+import cz.tacr.elza.bulkaction.generator.result.DateRangeActionResult;
 import cz.tacr.elza.bulkaction.generator.result.NodeCountActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.SerialNumberResult;
@@ -76,6 +59,25 @@ import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Serviska pro práci s výstupy.
@@ -152,6 +154,8 @@ public class OutputService {
 
     @Autowired
     private ItemTypeActionRepository itemTypeActionRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(OutputService.class);
 
     /**
      * Vyhledá platné nody k výstupu.
@@ -501,25 +505,32 @@ public class OutputService {
                 .filter(nodeOutput -> nodeOutput.getDeleteChange() == null)
                 .collect(Collectors.toList());
 
-        Set<ArrNodeOutput> nodeOutputs = outputDefinition.getOutputNodes().stream()
-                .filter(nodeOutput -> nodeOutput.getDeleteChange() == null && nodeIds.contains(nodeOutput.getNode().getNodeId()))
-                .collect(Collectors.toSet());
-
-        if (nodeOutputs.size() > 0) {
-            nodeOutputs.stream().forEach(arrNodeOutput -> arrNodeOutput.setDeleteChange(change));
-            nodeOutputRepository.save(nodeOutputs);
-
-            outputNodes.removeAll(nodeOutputs);
-            Set<ArrNode> allNodes = outputNodes.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet());
-
-            if (allNodes.size() > 0) {
-                storeResults(fundVersion, change, allNodes, outputDefinition, null);
+        Set<ArrNodeOutput> nodeOutputs = new HashSet<>();
+        for (ArrNodeOutput nodeOutput : outputDefinition.getOutputNodes()) {
+            if (nodeOutput.getDeleteChange() == null) {
+                ArrNode node = nodeOutput.getNode();
+                if (nodeIds.contains(node.getNodeId())) {
+                    nodeOutput.setDeleteChange(change);
+                    nodeOutputs.add(nodeOutput);
+                }
             }
-
-            Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
-            EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
-            eventNotificationService.publishEvent(event);
         }
+
+        if (nodeIds.size() != nodeOutputs.size()) {
+            throw new IllegalArgumentException("Byl předán seznam s neplatným identifikátorem uzlu: " + nodeIds);
+        }
+
+        nodeOutputRepository.save(nodeOutputs);
+
+        Set<ArrNode> oldNodes = outputNodes.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet());
+        outputNodes.removeAll(nodeOutputs);
+        Set<ArrNode> newNodes = outputNodes.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet());
+
+        storeResults(fundVersion, change, oldNodes, newNodes, outputDefinition, null);
+
+        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
+        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
+        eventNotificationService.publishEvent(event);
     }
 
     /**
@@ -636,62 +647,128 @@ public class OutputService {
 
         checkFund(fundVersion, outputDefinition);
 
-        Set<ArrNode> allNodes = outputDefinition.getOutputNodes().stream()
+        Set<ArrNode> newNodes = outputDefinition.getOutputNodes().stream()
                 .filter(arrNodeOutput -> arrNodeOutput.getDeleteChange() == null) // pouze nesmazané nody
                 .map(ArrNodeOutput::getNode).collect(Collectors.toSet());
 
-        Set<Integer> nodesIdsDb = allNodes.stream()
+        Set<Integer> nodesIdsDb = newNodes.stream()
                 .map(ArrNode::getNodeId)
                 .collect(Collectors.toSet());
 
-        nodeIds.removeAll(nodesIdsDb);
-
-        if (nodeIds.size() > 0) {
-
-            List<ArrNodeOutput> nodeOutputs = nodeIds.stream()
-                    .map(nodeId -> entityManager.find(ArrNode.class, nodeId))
-                    .map(node -> {
-                        ArrNodeOutput nodeOutput = new ArrNodeOutput();
-                        nodeOutput.setNode(node);
-                        nodeOutput.setOutputDefinition(outputDefinition);
-                        nodeOutput.setCreateChange(change);
-                        return nodeOutput;
-                    }).collect(Collectors.toList());
-
-            nodeOutputRepository.save(nodeOutputs);
-
-            allNodes.addAll(nodeOutputs.stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet()));
-            storeResults(fundVersion, change, allNodes, outputDefinition, null);
-
-            Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
-            EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
-            eventNotificationService.publishEvent(event);
+        for (Integer nodeId : nodesIdsDb) {
+            for (Integer nodeIdAdd : nodeIds) {
+                if (nodeId.equals(nodeIdAdd)) {
+                    throw new IllegalArgumentException("Nelze přidat již přidaný uzel. (ID=" + nodeIdAdd + ")");
+                }
+            }
         }
+
+        List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
+
+        if (nodes.size() != nodeIds.size()) {
+            throw new IllegalArgumentException("Byl předán seznam s neplatným identifikátorem uzlu: " + nodeIds);
+        }
+
+        List<ArrNodeOutput> nodeOutputs = new ArrayList<>(nodes.size());
+        for (ArrNode node : nodes) {
+            ArrNodeOutput nodeOutput = new ArrNodeOutput();
+            nodeOutput.setNode(node);
+            nodeOutput.setOutputDefinition(outputDefinition);
+            nodeOutput.setCreateChange(change);
+            nodeOutputs.add(nodeOutput);
+        }
+
+        nodeOutputRepository.save(nodeOutputs);
+
+        Set<ArrNode> oldNodes = new HashSet<>(newNodes);
+        newNodes.addAll(nodes);
+        storeResults(fundVersion, change, oldNodes, newNodes, outputDefinition, null);
+
+        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
+        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
+        eventNotificationService.publishEvent(event);
     }
 
     /**
      * Uložení výsledků z hromadných akcí podle nodů - pouze doporučené hromadné akce.
      *
+     * - pokud jsou seznamy {oldNodes} a {newNodes} rozdílené, ještě se provede smazání odlišných počítaných atributů
+     *
      * @param fundVersion verze AS
      * @param change      změna překlopení
-     * @param nodes       seznam uzlů
+     * @param oldNodes    seznam původních uzlů
+     * @param newNodes    seznam nových uzlů
      */
     private void storeResults(final ArrFundVersion fundVersion,
                               final ArrChange change,
-                              final Set<ArrNode> nodes,
+                              final Set<ArrNode> oldNodes,
+                              final Set<ArrNode> newNodes,
                               final ArrOutputDefinition outputDefinition,
                               final RulItemType itemType) {
-        List<ArrBulkActionRun> bulkActionRunList = bulkActionService.findBulkActionsByNodes(fundVersion, nodes);
+        List<RulItemType> itemTypesDelete = null;
+        // pokud se jedná o rozdílné seznamy, je potřeba odstranit odlišné počítané atributy; cenu mazat má jen v případě, že předchozí stav má alespoň jeden uzel
+        if ((!oldNodes.containsAll(newNodes) || !newNodes.containsAll(oldNodes)) && oldNodes.size() > 0) {
+            List<RulItemType> itemTypesOld = findCountItemTypes(fundVersion, oldNodes);
+            if (newNodes.size() > 0) {
+                itemTypesDelete = new ArrayList<>(itemTypesOld);
+                List<RulItemType> itemTypesNew = findCountItemTypes(fundVersion, newNodes);
+
+                // odeberu všechny, které jsou v budoucím stavu (ty nemusím mazat)
+                itemTypesDelete.removeAll(itemTypesNew);
+            } else {
+                // pokud nejsou žádné uzly u budoucího stavu, smažu všechny počítané typy
+                itemTypesDelete = itemTypesOld;
+            }
+        }
+
+        // pokud je co ke smazání, provede se výmaz typů u výstupů
+        if (itemTypesDelete != null && itemTypesDelete.size() > 0) {
+            for (RulItemType rulItemType : itemTypesDelete) {
+                deleteOutputItemsByType(fundVersion, outputDefinition, rulItemType, change);
+            }
+        }
+
+        if (newNodes.size() == 0) {
+            return;
+        }
+
+        List<ArrBulkActionRun> bulkActionRunList = bulkActionService.findBulkActionsByNodes(fundVersion, newNodes);
         List<RulActionRecommended> actionRecommendeds = actionRecommendedRepository.findByOutputType(outputDefinition.getOutputType());
 
         for (ArrBulkActionRun bulkActionRun : bulkActionRunList) {
             RulAction action = bulkActionService.getBulkActionByCode(bulkActionRun.getBulkActionCode());
             for (RulActionRecommended actionRecommended : actionRecommendeds) {
                 if (actionRecommended.getAction().equals(action)) {
-                    storeResult(bulkActionRun.getResult(), fundVersion, nodes, change, itemType);
+                    storeResultInternal(bulkActionRun.getResult(), fundVersion, newNodes, change, itemType);
                 }
             }
         }
+    }
+
+    /**
+     * Vyhledá podle uzlů typy atributů, které se automaticky počítají.
+     *
+     * @param fundVersion verze fondu
+     * @param nodes       seznam uzlů
+     * @return seznam typů atributů, které se pro seznam uzlů automaticky počítají
+     */
+    private List<RulItemType> findCountItemTypes(final ArrFundVersion fundVersion, final Set<ArrNode> nodes) {
+        List<ArrBulkActionRun> bulkActionRunListOld = bulkActionService.findBulkActionsByNodes(fundVersion, nodes);
+
+        // získám kódy hromadných akcí
+        List<String> actionCodes = new ArrayList<>(bulkActionRunListOld.size());
+        for (ArrBulkActionRun bulkActionRun : bulkActionRunListOld) {
+            actionCodes.add(bulkActionRun.getBulkActionCode());
+        }
+        // získám hromadné akce, které souvisí s výstupem
+        List<RulAction> actions = bulkActionService.getBulkActionByCodes(actionCodes);
+
+        List<RulItemType> itemTypes = new ArrayList<>();
+        if (actions.size() > 0) {
+            // vyhledám typy atributů, které jsou počítané a souvisí s výstupem
+            itemTypes = itemTypeActionRepository.findByAction(actions);
+        }
+        return itemTypes;
     }
 
     /**
@@ -1408,6 +1485,44 @@ public class OutputService {
 
     /**
      * Uložení výsledku z hromadné akce.
+     * - kontroluje, jestli ukládané typy odpovídají přípustný a naopak
+     *
+     * @param bulkActionRun hromadná akce
+     * @param nodes         seznam uzlů
+     * @param change        změna překlopení
+     * @param itemType      typ atributu
+     */
+    @Transactional
+    public void storeResultBulkAction(final ArrBulkActionRun bulkActionRun,
+                                      final Set<ArrNode> nodes,
+                                      final ArrChange change,
+                                      @Nullable final RulItemType itemType) {
+        List<RulItemType> itemTypes = storeResultInternal(bulkActionRun.getResult(), bulkActionRun.getFundVersion(), nodes, change, itemType);
+
+        RulAction action = bulkActionService.getBulkActionByCode(bulkActionRun.getBulkActionCode());
+        List<RulItemType> recommendedItemTypes = itemTypeActionRepository.findByAction(Collections.singletonList(action));
+
+        List<RulItemType> itemTypesMissing = new ArrayList<>(recommendedItemTypes);
+        itemTypesMissing.removeAll(itemTypes);
+
+        if (itemTypesMissing.size() > 0) {
+            logger.warn("Při ukládání výsledků z hromadné akce '" + bulkActionRun.getBulkActionCode()
+                    + "' nebyly nalezeny přípustné typy atributů: "
+                    + itemTypesMissing.stream().map(RulItemType::getCode).collect(Collectors.joining(", ")));
+        }
+
+        List<RulItemType> itemTypesMoreover = new ArrayList<>(itemTypes);
+        itemTypesMoreover.removeAll(recommendedItemTypes);
+
+        if (itemTypesMoreover.size() > 0) {
+            logger.warn("Při ukládání výsledků z hromadné akce '" + bulkActionRun.getBulkActionCode()
+                    + "' byly nalezeny typy atributů, které nejsou v seznamu přípustných: "
+                    + itemTypesMoreover.stream().map(RulItemType::getCode).collect(Collectors.joining(", ")));
+        }
+    }
+
+    /**
+     * Uložení výsledku do výstupů.
      *
      * @param result      výsledek, může být null
      * @param fundVersion verze AS
@@ -1415,15 +1530,18 @@ public class OutputService {
      * @param change      změna překlopení
      * @param itemType    typ atributu
      */
-    @Transactional
-    public void storeResult(final Result result,
+    public List<RulItemType> storeResultInternal(final Result result,
                             final ArrFundVersion fundVersion,
                             final Set<ArrNode> nodes,
                             final ArrChange change,
                             @Nullable final RulItemType itemType) {
+        if (nodes.size() == 0) {
+            return Collections.emptyList();
+        }
 
         List<ArrOutputDefinition> outputDefinitions = findOutputsByNodes(fundVersion, nodes, OutputState.OPEN, OutputState.COMPUTING);
 
+        List<RulItemType> itemTypesResult = new ArrayList<>();
         for (ArrOutputDefinition outputDefinition : outputDefinitions) {
 
             if (result != null) {
@@ -1435,11 +1553,16 @@ public class OutputService {
                         .collect(Collectors.toSet());
 
                 for (ActionResult actionResult : result.getResults()) {
-                    storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType, itemTypesIgnored);
+                    RulItemType itemTypeStore = storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType, itemTypesIgnored);
+                    if (itemTypeStore != null) {
+                        itemTypesResult.add(itemTypeStore);
+                    }
                 }
             }
             changeOutputState(outputDefinition, OutputState.OPEN);
         }
+
+        return itemTypesResult;
     }
 
     /**
@@ -1465,7 +1588,7 @@ public class OutputService {
      * @param itemType         typ atributu
      * @param itemTypesIgnored seznam typů atributů, které se nepřeklápí
      */
-    private void storeActionResult(final ArrOutputDefinition outputDefinition,
+    private RulItemType storeActionResult(final ArrOutputDefinition outputDefinition,
                                    final ActionResult actionResult,
                                    final ArrFundVersion fundVersion,
                                    final ArrChange change,
@@ -1479,29 +1602,29 @@ public class OutputService {
             String itemTypeCode = copyActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
             dataItems = copyActionResult.getDataItems();
-        } else if (actionResult instanceof DataceRangeActionResult) {
-            DataceRangeActionResult dataceRangeActionResult = (DataceRangeActionResult) actionResult;
-            String itemTypeCode = dataceRangeActionResult.getItemType();
+        } else if (actionResult instanceof DateRangeActionResult) {
+            DateRangeActionResult dateRangeActionResult = (DateRangeActionResult) actionResult;
+            String itemTypeCode = dateRangeActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
             ArrItemString itemString = new ArrItemString();
-            itemString.setValue(dataceRangeActionResult.getText());
-            dataItems = Arrays.asList(itemString);
+            itemString.setValue(dateRangeActionResult.getText());
+            dataItems = Collections.singletonList(itemString);
         } else if (actionResult instanceof NodeCountActionResult) {
             NodeCountActionResult nodeCountActionResult = (NodeCountActionResult) actionResult;
             String itemTypeCode = nodeCountActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
             ArrItemInt itemInt = new ArrItemInt();
             itemInt.setValue(nodeCountActionResult.getCount());
-            dataItems = Arrays.asList(itemInt);
+            dataItems = Collections.singletonList(itemInt);
         } else if (actionResult instanceof SerialNumberResult) {
-            return; // tohle se nikam nepřeklápí zatím
+            return null; // tohle se nikam nepřeklápí zatím
         } else if (actionResult instanceof TableStatisticActionResult) {
             TableStatisticActionResult tableStatisticActionResult = (TableStatisticActionResult) actionResult;
             String itemTypeCode = tableStatisticActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
             ArrItemJsonTable itemJsonTable = new ArrItemJsonTable();
             itemJsonTable.setValue(tableStatisticActionResult.getTable());
-            dataItems = Arrays.asList(itemJsonTable);
+            dataItems = Collections.singletonList(itemJsonTable);
         } else if (actionResult instanceof TextAggregationActionResult) {
             TextAggregationActionResult textAggregationActionResult = (TextAggregationActionResult) actionResult;
             String itemTypeCode = textAggregationActionResult.getItemType();
@@ -1510,7 +1633,7 @@ public class OutputService {
             if(textAggregationActionResult.isCreateInOutput()) {
                 ArrItemText itemText = new ArrItemText();
                 itemText.setValue(textAggregationActionResult.getText());
-            	dataItems = Arrays.asList(itemText);
+            	dataItems = Collections.singletonList(itemText);
             } else {
             	// no items will be created
             	dataItems = Collections.emptyList();
@@ -1519,22 +1642,24 @@ public class OutputService {
             UnitCountActionResult unitCountActionResult = (UnitCountActionResult) actionResult;
             String itemTypeCode = unitCountActionResult.getItemType();
             type = itemTypeRepository.findOneByCode(itemTypeCode);
-            ArrItemInt itemInt = new ArrItemInt();
-            itemInt.setValue(unitCountActionResult.getCount());
-            dataItems = Arrays.asList(itemInt);
+            ArrItemJsonTable itemJsonTable = new ArrItemJsonTable();
+            itemJsonTable.setValue(unitCountActionResult.getTable());
+            dataItems = Collections.singletonList(itemJsonTable);
         } else if (actionResult instanceof UnitIdResult) {
-            return; // tohle se nikam nepřeklápí zatím
+            return null; // tohle se nikam nepřeklápí zatím
         } else {
             throw new IllegalStateException("Nedefinovný typ výsledku: " + actionResult.getClass().getSimpleName());
         }
 
         if (itemTypesIgnored != null && itemTypesIgnored.contains(type)) {
-            return;
+            return null;
         }
 
         if (itemType == null || itemType.equals(type)) {
             storeDataItems(type, dataItems, outputDefinition, fundVersion, change);
         }
+
+        return type;
     }
 
     /**
@@ -1551,13 +1676,57 @@ public class OutputService {
                                 final ArrOutputDefinition outputDefinition,
                                 final ArrFundVersion fundVersion,
                                 final ArrChange change) {
-        deleteOutputItemsByType(fundVersion, outputDefinition, type, change);
-        for (ArrItemData dataItem : dataItems) {
-            ArrOutputItem outputItem = new ArrOutputItem(dataItem);
-            outputItem.setItemType(type);
-            outputItem.setItemSpec(dataItem.getSpec());
-            createOutputItem(outputItem, outputDefinition, fundVersion, change);
+        if (isDataChanged(type, dataItems, outputDefinition)) {
+            deleteOutputItemsByType(fundVersion, outputDefinition, type, change);
+
+            // donačte entity, které jsou reprezentované v JSON pouze s ID (odkazové)
+            itemService.refItemsLoader(dataItems);
+
+            for (ArrItemData dataItem : dataItems) {
+                ArrOutputItem outputItem = new ArrOutputItem(dataItem);
+                outputItem.setItemType(type);
+                outputItem.setItemSpec(dataItem.getSpec());
+                createOutputItem(outputItem, outputDefinition, fundVersion, change);
+            }
         }
+    }
+
+    /**
+     * Detekuje, jestli jsou data změněná a je potřeba je přeuložit.
+     *
+     * @return {true} pokud se data změnily
+     */
+    private boolean isDataChanged(final RulItemType itemType,
+                                  final List<ArrItemData> dataItems,
+                                  final ArrOutputDefinition outputDefinition) {
+        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemType, outputDefinition);
+
+        // pokud se liší počet, musela nastat změna
+        if (outputItems.size() != dataItems.size()) {
+            return true;
+        }
+
+        // pomocné pole pro porovnávání
+        ArrayList<ArrItemData> dataItemsToCompare = new ArrayList<>(dataItems);
+
+        itemService.loadData(outputItems);
+
+        // procházím všechny kombinace
+        // pokud naleznu shodu, odeberu položku z pomocného pole
+        for (ArrOutputItem outputItem : outputItems) {
+            ArrItemData item = outputItem.getItem();
+            Iterator<ArrItemData> iterator = dataItemsToCompare.iterator();
+            while (iterator.hasNext()) {
+                ArrItemData next = iterator.next();
+                if (EqualsBuilder.reflectionEquals(next, item)) {
+                    iterator.remove();
+                    break;
+                }
+            }
+        }
+
+        // pokud není seznam prázdný, existuje alespoň jedna změna
+        return dataItemsToCompare.size() != 0;
     }
 
     /**
@@ -1612,7 +1781,7 @@ public class OutputService {
             itemSettingsRepository.delete(itemSettings);
             Set<ArrNode> nodes = outputDefinition.getOutputNodes().stream().map(ArrNodeOutput::getNode).collect(Collectors.toSet());
             deleteOutputItemsByType(fundVersion, outputDefinition, itemType, change);
-            storeResults(fundVersion, change, nodes, outputDefinition, itemType);
+            storeResults(fundVersion, change, nodes, nodes, outputDefinition, itemType);
         }
     }
 

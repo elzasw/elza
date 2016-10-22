@@ -40,7 +40,7 @@ public class NodeCountAction extends Action {
     public void init() {
         String outputType = config.getString("output_type", null);
 
-        outputItemType = findItemType(outputType);
+        outputItemType = findItemType(outputType, "output_type");
         checkValidDataType(outputItemType, "INT");
     }
 

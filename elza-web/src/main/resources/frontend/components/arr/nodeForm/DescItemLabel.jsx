@@ -6,6 +6,7 @@ import {AbstractReactComponent, Icon} from 'components/index.jsx';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import {Button} from 'react-bootstrap';
+var classNames = require('classnames');
 
 var DescItemLabel = class DescItemLabel extends AbstractReactComponent {
     constructor(props) {
@@ -13,7 +14,12 @@ var DescItemLabel = class DescItemLabel extends AbstractReactComponent {
     }
 
     render() {
-        const {value, onClick} = this.props;
+        const {value, onClick, cal} = this.props;
+
+        let cls = ['desc-item-label-value'];
+        if (cal) {
+            cls.push("calculable");
+        }
 
         // Sestavení hodnoty - změna znaku < na entitu, nahrazení enterů <br/>
         var updatedValue = value ? ("" + value).replace(/\</g,"&lt;").replace(/(?:\r\n|\r|\n)/g, '<br />') : "";
@@ -26,7 +32,7 @@ var DescItemLabel = class DescItemLabel extends AbstractReactComponent {
         }
 
         return (
-            <div title={value} className='desc-item-label-value'>
+            <div title={value} className={classNames(cls)}>
                 {renderItem}
             </div>
         )

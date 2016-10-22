@@ -1,9 +1,3 @@
-/**
- * Správa souborů.
- */
-
-require('./FundOutputFunctions.less')
-
 import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, Icon, i18n, ListBox, Loading, FormInput} from 'components/index.jsx';
@@ -12,6 +6,7 @@ import {fetchFundOutputFunctionsIfNeeded, fundOutputFunctionsFilterByState, fund
 import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {dateTimeToString} from 'components/Utils.jsx';
+import './FundOutputFunctions.less'
 
 const ACTION_RUNNING_STATE = ['RUNNING', 'WAITING', 'PLANNED',];
 const ACTION_NOT_RUNNING_STATE = ['FINISHED', 'ERROR', 'INTERRUPTED',];
@@ -25,25 +20,27 @@ const OutputState = {
     ERROR: 'ERROR' /// Pomocný stav websocketu
 };
 
-const FundOutputFunctions = class FundOutputFunctions extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+/**
+ * Správa souborů.
+ */
+class FundOutputFunctions extends AbstractReactComponent {
 
-        this.bindMethods(
-            'handleStateSearch',
-            'renderListItem',
-            'handleActionRun',
-            'handleActionInterrupt',
-            'getConfigByCode',
-            'focus'
-        );
+    state = {};
 
-        this.state = {}
-    }
+    static PropTypes = {
+        actionConfig: React.PropTypes.array,
+        outputId: React.PropTypes.number.isRequired,
+        versionId: React.PropTypes.number.isRequired,
+        data: React.PropTypes.array,
+        filterRecommended: React.PropTypes.bool.isRequired,
+        fetched: React.PropTypes.bool.isRequired,
+        readMode: React.PropTypes.bool.isRequired,
+        outputState: React.PropTypes.string.isRequired
+    };
 
     componentDidMount() {
         const {versionId, outputId} = this.props;
-        this.dispatch(fetchFundOutputFunctionsIfNeeded(versionId, outputId))
+        this.dispatch(fetchFundOutputFunctionsIfNeeded(versionId, outputId));
         this.dispatch(fundActionFetchConfigIfNeeded(versionId));
     }
 
@@ -53,35 +50,34 @@ const FundOutputFunctions = class FundOutputFunctions extends AbstractReactCompo
         this.dispatch(fundActionFetchConfigIfNeeded(versionId));
     }
 
-    handleStateSearch(state) {
+    handleStateSearch = (state) => {
         const {versionId} = this.props;
         this.dispatch(fundOutputFunctionsFilterByState(versionId, state));
-    }
+    };
 
-
-    getConfigByCode(code) {
+    getConfigByCode = (code) => {
         const {actionConfig} = this.props;
         const index = indexById(actionConfig, code, 'code');
         if (index !== null) {
             return actionConfig[index];
         }
         return null;
-    }
+    };
     
-    handleActionRun(code) {
+    handleActionRun = (code) => {
         const {versionId} = this.props;
         this.dispatch(fundOutputActionRun(versionId, code));
-    }
+    };
 
-    handleActionInterrupt(id) {
+    handleActionInterrupt = (id) => {
         this.dispatch(fundOutputActionInterrupt(id));
-    }
+    };
 
-    focus() {
+    focus = () => {
         this.refs.listBox.focus()
-    }
+    };
 
-    renderListItem(item) {
+    renderListItem = (item) => {
         const {outputState, readMode} = this.props;
         const config = this.getConfigByCode(item.code);
         const name = config ? <span title={item.name} className='name'>{config.name}</span> : '';
@@ -94,18 +90,16 @@ const FundOutputFunctions = class FundOutputFunctions extends AbstractReactCompo
                 buttons = <Icon glyph="fa-stop" onClick={() => this.handleActionInterrupt(item.id)}/>
             }
         }
-        return (
-            <div className='item' key={item.id}>
+        return <div className='item' key={item.id}>
+            <div>
+                <div>{name}</div>
                 <div>
-                    <div>{name}</div>
-                    <div>
-                        {i18n('arr.output.functions.state', state == null ? i18n('arr.output.functions.notStarted') : state + (item.dateFinished != null ? " (" + dateTimeToString(new Date(item.dateFinished)) + ")" : ''))}
-                    </div>
+                    {i18n('arr.output.functions.state', state == null ? i18n('arr.output.functions.notStarted') : state + (item.dateFinished != null ? " (" + dateTimeToString(new Date(item.dateFinished)) + ")" : ''))}
                 </div>
-                <div>{buttons}</div>
             </div>
-        )
-    }
+            <div>{buttons}</div>
+        </div>
+    };
 
     render() {
         const {fetched, data, filterRecommended, actionConfig} = this.props;
@@ -114,34 +108,21 @@ const FundOutputFunctions = class FundOutputFunctions extends AbstractReactCompo
             return <Loading/>
         }
 
-        return (
-            <div className='functions-list-container'>
-                <FormInput componentClass="select" onChange={(e) => this.handleStateSearch(e.target.value)} value={filterRecommended}>
-                    <option value={true} key="recommended-filter">{i18n('arr.output.functions.recommended')}</option>
-                    <option value={false} key="no-filter">{i18n('arr.output.functions.all')}</option>
-                </FormInput>
+        return <div className='functions-list-container'>
+            <FormInput componentClass="select" onChange={(e) => this.handleStateSearch(e.target.value)} value={filterRecommended}>
+                <option value={true} key="recommended-filter">{i18n('arr.output.functions.recommended')}</option>
+                <option value={false} key="no-filter">{i18n('arr.output.functions.all')}</option>
+            </FormInput>
 
-                <ListBox
-                    ref="listBox"
-                    className="functions-listbox"
-                    items={data}
-                    renderItemContent={this.renderListItem}
-                />
-            </div>
-        )
+            <ListBox
+                ref="listBox"
+                className="functions-listbox"
+                items={data}
+                renderItemContent={this.renderListItem}
+            />
+        </div>;
     }
-};
-
-FundOutputFunctions.propTypes = {
-    actionConfig: React.PropTypes.array,
-    outputId: React.PropTypes.number.isRequired,
-    versionId: React.PropTypes.number.isRequired,
-    data: React.PropTypes.array,
-    filterRecommended: React.PropTypes.bool.isRequired,
-    fetched: React.PropTypes.bool.isRequired,
-    readMode: React.PropTypes.bool.isRequired,
-    outputState: React.PropTypes.string.isRequired
-};
+}
 
 function mapStateToProps(state) {
     const {arrRegion: {funds, activeIndex}} = state;
@@ -159,4 +140,4 @@ function mapStateToProps(state) {
 }
 
 
-module.exports = connect(mapStateToProps, null, null, { withRef: true })(FundOutputFunctions);
+export default connect(mapStateToProps, null, null, { withRef: true })(FundOutputFunctions);

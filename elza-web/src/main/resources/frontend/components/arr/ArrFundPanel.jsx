@@ -8,6 +8,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {Button} from 'react-bootstrap';
 import {dateToString} from 'components/Utils.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
+import {fundChangeReadMode} from 'actions/arr/fund.jsx'
 import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 
@@ -27,6 +28,7 @@ var ArrFundPanel = class ArrFundPanel extends AbstractReactComponent {
         var item = getOneSettings(settings, 'FUND_READ_MODE', 'FUND', fund.id);
         item.value = readMode;
         settings = setSettings(settings, item.id, item);
+        this.dispatch(fundChangeReadMode(fund.versionId, readMode));
         this.dispatch(userDetailsSaveSettings(settings));
     }
 

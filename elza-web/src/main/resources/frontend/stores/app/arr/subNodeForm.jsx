@@ -27,6 +27,7 @@ const initialState = {
     fetchingId: null,
     fetched: false,
     dirty: false,
+    needClean: false,   // pokud je true, přenačtou se data a vymaže se aktuální editace - obdoba jako nové zobrazení formuláře
     versionId: null,
     nodeId: null,
     data: null,
@@ -125,6 +126,15 @@ export default function subNodeForm(state = initialState, action = {}) {
     }
 
     switch (action.type) {
+        case types.FUND_FUND_CHANGE_READ_MODE:
+            if (action.readMode) {  // změna na read mode - musíme vyresetovat všechny změny ve formuláři
+                return {
+                    ...state,
+                    needClean: true,
+                };
+            } else {
+                return state;
+            }
         case types.FUND_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
             var refType = state.refTypesMap[loc.descItemType.id]
 
@@ -432,8 +442,15 @@ export default function subNodeForm(state = initialState, action = {}) {
                 fetched: true,
                 dirty: false,
                 versionId: action.versionId,
-                nodeId: action.nodeId
+                nodeId: action.nodeId,
+                needClean: false,
             };
+
+            // Pokud je vyžadován reset formuláře, nastavíme předchozí data na null a tím se vše znovu nainicializuje
+            if (action.needClean) {
+                result.data = null;
+                result.formData = null;
+            }
 
             updateFormData(result, action.data, refTypesMap);
 

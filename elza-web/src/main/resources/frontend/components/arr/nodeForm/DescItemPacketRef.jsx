@@ -123,12 +123,13 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked, packetTypes, packets, singleDescItemTypeEdit, readMode} = this.props;
+        const {descItem, locked, packetTypes, packets, singleDescItemTypeEdit, readMode, cal} = this.props;
         var value = descItem.packet ? descItem.packet : null;
 
         if (readMode) {
+            let calValue = cal && value == null ? i18n("subNodeForm.descItemType.calculable") : "";
             return (
-                <DescItemLabel value={value ? value.storageNumber : ""} />
+                <DescItemLabel value={value ? value.storageNumber : calValue} cal={cal} />
             )
         }
 

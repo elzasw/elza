@@ -1,14 +1,9 @@
-/**
- * Formulář přidání uzlů verse souboru - výběr uzlů ve stromu z jedné úrovně.
- */
-
-require('./FundNodesAddForm.less')
 
 import React from 'react';
 import {connect} from 'react-redux'
 import {i18n, FundTreeLazy, AbstractReactComponent} from 'components/index.jsx';
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {Modal, Button, Input} from 'react-bootstrap';
+import {Modal, Button, Input, Form} from 'react-bootstrap';
 import * as types from 'actions/constants/ActionTypes.js';
 import {
     fundTreeFulltextChange,
@@ -23,48 +18,48 @@ import {
     fundTreeNodeCollapse
 } from 'actions/arr/fundTree.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
+import './FundNodesAddForm.less';
 
-var FundNodesAddForm = class FundNodesAddForm extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+/**
+ * Formulář přidání uzlů verse souboru - výběr uzlů ve stromu z jedné úrovně.
+ */
 
-        this.bindMethods('handleSubmit', 'requestFundTreeData', 'getActiveFund',
-            'handleFulltextChange', 'handleFulltextSearch', 'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleCollapse',
-        'handleNodeClick');
+class FundNodesAddForm extends AbstractReactComponent {
 
-        this.state = {
-            nodes: {}
-        }
-    }
+    static PropTypes = {};
+
+    state = {
+        nodes: {}
+    };
 
     componentDidMount() {
-        const fund = this.getActiveFund(this.props)
-        const fundTreeNodes = fund.fundTreeNodes
-        const versionId = fund.versionId
+        const fund = this.getActiveFund(this.props);
+        const fundTreeNodes = fund.fundTreeNodes;
+        const versionId = fund.versionId;
         this.requestFundTreeData(versionId, fundTreeNodes.expandedIds, fundTreeNodes.selectedIds);
     }
 
-    componentWillReceiveProps(nextProps) {
-        const fund = this.getActiveFund(nextProps)
-        const fundTreeNodes = fund.fundTreeNodes
-        const versionId = fund.versionId
+    componentWillReceiveProps(nextProps){
+        const fund = this.getActiveFund(nextProps);
+        const fundTreeNodes = fund.fundTreeNodes;
+        const versionId = fund.versionId;
         this.requestFundTreeData(versionId, fundTreeNodes.expandedIds, fundTreeNodes.selectedIds);
-    }
+    };
 
-    requestFundTreeData(versionId, expandedIds, selectedIds) {
+    requestFundTreeData = (versionId, expandedIds, selectedIds) => {
         var selectedId = null;
         if (Object.keys(selectedIds).length == 1) {
             selectedId = Object.keys(selectedIds)[0];
         }
 
         this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_NODES, versionId, expandedIds, selectedId));
-    }
+    };
 
-    handleNodeClick(node, ensureItemVisible, e) {
-        const fund = this.getActiveFund(this.props)
-        e.shiftKey && this.unFocus()
+    handleNodeClick = (node, ensureItemVisible, e) => {
+        const fund = this.getActiveFund(this.props);
+        e.shiftKey && this.unFocus();
         this.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_NODES, fund.versionId, node.id, e.ctrlKey, e.shiftKey, null, ensureItemVisible));
-    }
+    };
 
     unFocus() {
         if (document.selection) {
@@ -74,56 +69,56 @@ var FundNodesAddForm = class FundNodesAddForm extends AbstractReactComponent {
         }
     }    
 
-    handleFulltextChange(value) {
-        const fund = this.getActiveFund(this.props)
+    handleFulltextChange = (value) => {
+        const fund = this.getActiveFund(this.props);
         this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_NODES, fund.versionId, value));
-    }
+    };
 
-    handleFulltextSearch() {
-        const fund = this.getActiveFund(this.props)
+    handleFulltextSearch = () => {
+        const fund = this.getActiveFund(this.props);
         this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_NODES, fund.versionId));
-    }
+    };
 
-    handleFulltextPrevItem() {
-        const fund = this.getActiveFund(this.props)
+    handleFulltextPrevItem = () => {
+        const fund = this.getActiveFund(this.props);
         this.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_NODES, fund.versionId));
-    }
+    };
 
-    handleFulltextNextItem() {
-        const fund = this.getActiveFund(this.props)
+    handleFulltextNextItem = () => {
+        const fund = this.getActiveFund(this.props);
         this.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_NODES, fund.versionId));
-    }
+    };
 
-    handleSubmit() {
-        const {onSubmitForm} = this.props
-        const fund = this.getActiveFund(this.props)
-        const fundTreeNodes = fund.fundTreeNodes
+    handleSubmit = () => {
+        const {onSubmitForm} = this.props;
+        const fund = this.getActiveFund(this.props);
+        const fundTreeNodes = fund.fundTreeNodes;
         
-        const nodesMap = getMapFromList(fundTreeNodes.nodes)
-        const nodes = Object.keys(fundTreeNodes.selectedIds).map(id => nodesMap[id])
+        const nodesMap = getMapFromList(fundTreeNodes.nodes);
+        const nodes = Object.keys(fundTreeNodes.selectedIds).map(id => nodesMap[id]);
         
         onSubmitForm(Object.keys(fundTreeNodes.selectedIds), nodes)
-    }
+    };
 
-    getActiveFund(props) {
+    getActiveFund = (props) => {
         var arrRegion = props.arrRegion;
         var activeFund = null;
         if (arrRegion.activeIndex != null) {
             activeFund = arrRegion.funds[arrRegion.activeIndex];
         }
         return activeFund
-    }
+    };
 
-    handleCollapse() {
-        const fund = this.getActiveFund(this.props)
+    handleCollapse = () => {
+        const fund = this.getActiveFund(this.props);
         this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_NODES,fund.versionId, fund))
-    }
+    };
 
     render() {
-        const { onClose} = this.props
-        const fund = this.getActiveFund(this.props)
-        const fundTreeNodes = fund.fundTreeNodes
-        const versionId = fund.versionId
+        const { onClose} = this.props;
+        const fund = this.getActiveFund(this.props);
+        const fundTreeNodes = fund.fundTreeNodes;
+        const versionId = fund.versionId;
 
         return (
             <div className="add-nodes-form-container">
@@ -150,16 +145,12 @@ var FundNodesAddForm = class FundNodesAddForm extends AbstractReactComponent {
     }
 }
 
-FundNodesAddForm.propTypes = {
-
-}
-
 function mapStateToProps(state) {
-    const {arrRegion} = state
+    const {arrRegion} = state;
     return {
         arrRegion,
     }
 }
 
-module.exports = connect(mapStateToProps)(FundNodesAddForm);
+export default connect(mapStateToProps)(FundNodesAddForm);
 

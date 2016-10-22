@@ -11,7 +11,7 @@ public enum  ActionType {
     /**
      * Rozsah datace
      */
-    DATACE_RANGE,
+    DATE_RANGE,
 
     /**
      * Počet JP

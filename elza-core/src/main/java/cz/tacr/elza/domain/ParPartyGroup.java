@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
@@ -16,22 +17,27 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  * Organizace nebo skupina osob, která se označuje konkrétním jménem a která vystupuje nebo může vystupovat jako entita.
  */
 @Entity(name = "par_party_group")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ParPartyGroup extends ParParty implements cz.tacr.elza.api.ParPartyGroup {
 
     @Column(length = StringLength.LENGTH_1000, nullable = false)
+    @JsonIgnore
     private String scope;
 
     @Column(length = StringLength.LENGTH_50)
+    @JsonIgnore
     private String foundingNorm;
 
     @Column(length = StringLength.LENGTH_250)
+    @JsonIgnore
     private String scopeNorm;
 
     @Column(length = StringLength.LENGTH_1000)
+    @JsonIgnore
     private String organization;
 
     @OneToMany(mappedBy = "partyGroup", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<ParPartyGroupIdentifier> partyGroupIdentifiers;
 
 

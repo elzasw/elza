@@ -1,5 +1,7 @@
 package cz.tacr.elza.bulkaction.generator.result;
 
+import cz.tacr.elza.domain.table.ElzaTable;
+
 /**
  * Výsledek z akce {@link cz.tacr.elza.bulkaction.generator.multiple.NodeCountAction}
  *
@@ -10,14 +12,14 @@ public class UnitCountActionResult extends ActionResult {
 
     private String itemType;
 
-    private Integer count;
+    private ElzaTable table;
 
-    public Integer getCount() {
-        return count;
+    public ElzaTable getTable() {
+        return table;
     }
 
-    public void setCount(final Integer count) {
-        this.count = count;
+    public void setTable(final ElzaTable table) {
+        this.table = table;
     }
 
     public String getItemType() {

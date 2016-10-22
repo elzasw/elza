@@ -299,7 +299,7 @@ public class PackageService {
             processPolicyTypes(policyTypes, rulPackage, rulRuleSets);
 
             List<RulItemType> rulDescItemTypes = processItemTypes(itemTypes, itemSpecs, rulPackage);
-            rulPackageActions = processPackageActions(packageActions, rulPackage, mapEntry, rulOutputTypes, rulDescItemTypes, dirActions);
+            rulPackageActions = processPackageActions(packageActions, rulPackage, mapEntry, dirActions);
 
             // Zde se může importovat vazba mezi pravidlem a atributem
             processDefaultItemTypes(rulRuleSets, ruleSets, rulDescItemTypes);
@@ -334,7 +334,7 @@ public class PackageService {
                 }
 
                 if (newRultemplates != null) {
-                    deleteTemplates(dirTemplates, newRultemplates);
+                    deleteTemplatesForRollback(dirTemplates, newRultemplates);
                 }
 
                 if (originalRulTemplates != null) {
@@ -671,22 +671,21 @@ public class PackageService {
      * @param packageActions   importovaných seznam hromadných akcí
      * @param rulPackage       balíček
      * @param mapEntry         mapa streamů souborů v ZIP
-     * @param rulOutputTypes   seznam výstupů
-     * @param rulDescItemTypes seznam typů atributů
      * @param dir              adresář hromadných akcí  @return seznam hromadných akcí
      */
     private List<RulAction> processPackageActions(final PackageActions packageActions,
                                                   final RulPackage rulPackage,
                                                   final Map<String, ByteArrayInputStream> mapEntry,
-                                                  final List<RulOutputType> rulOutputTypes,
-                                                  final List<RulItemType> rulDescItemTypes,
                                                   final File dir) {
 
         List<RulAction> rulPackageActions = packageActionsRepository.findByRulPackage(rulPackage);
         List<RulAction> rulPackageActionsNew = new ArrayList<>();
 
         if (!CollectionUtils.isEmpty(packageActions.getPackageActions())) {
+            // procházím všechny definice akcí z pabíčku
             for (PackageAction packageAction : packageActions.getPackageActions()) {
+
+                //vyhledám akci podle záznamů v DB, pokud existuje
                 List<RulAction> findItems = rulPackageActions.stream().filter(
                         (r) -> r.getFilename().equals(packageAction.getFilename())).collect(
                         Collectors.toList());
@@ -694,6 +693,8 @@ public class PackageService {
                 List<RulItemTypeAction> rulTypeActions;
                 List<RulActionRecommended> rulActionRecommendeds;
 
+                // pokud existuje v DB, vyhledám návazné typy atributů a doporučené akce,
+                // jinak založím prázdné seznamy
                 if (findItems.size() > 0) {
                     item = findItems.get(0);
                     rulTypeActions = itemTypeActionRepository.findByAction(item);
@@ -704,19 +705,25 @@ public class PackageService {
                     rulActionRecommendeds = new ArrayList<>();
                 }
 
+                // vytvořím/úpravím a uložím akci
                 convertRulPackageAction(rulPackage, packageAction, item);
                 packageActionsRepository.save(item);
 
+                List<RulItemTypeAction> rulTypeActionsNew = new ArrayList<>();
                 if (!CollectionUtils.isEmpty(packageAction.getActionItemTypes())) {
-                    List<RulItemTypeAction> rulTypeActionsNew = new ArrayList<>();
+                    // pokud existují v balíčku u akce typy atributů, které se počítají,
+                    // je potřeba je dohledat pokud existují v DB a následně upravit,
+                    // nebo přidat/smazat
+
                     for (ActionItemType actionItemType : packageAction.getActionItemTypes()) {
-                        RulItemTypeAction rulItemTypeAction = itemTypeActionRepository.findOneByItemTypeCode(actionItemType.getItemType());
+                        RulItemTypeAction rulItemTypeAction = itemTypeActionRepository.findOneByItemTypeCodeAndAction(actionItemType.getItemType(), item);
                         RulItemType rulItemType = itemTypeRepository.findOneByCode(actionItemType.getItemType());
 
                         if (rulItemType == null) {
                             throw new IllegalArgumentException("Neexistující typ atributu: " + actionItemType.getItemType());
                         }
 
+                        // pokud typ z balíčku ještě neexistuje v DB
                         if (rulItemTypeAction == null) {
                             rulItemTypeAction = new RulItemTypeAction();
                         }
@@ -726,23 +733,27 @@ public class PackageService {
                         rulTypeActionsNew.add(rulItemTypeAction);
                     }
 
+                    // uložení seznamu upravených/přidaných navázaných typů atributů
                     itemTypeActionRepository.save(rulTypeActionsNew);
-
-                    List<RulItemTypeAction> rulTypeActionsDelete = new ArrayList<>(rulTypeActions);
-                    rulTypeActionsDelete.removeAll(rulTypeActionsNew);
-                    itemTypeActionRepository.delete(rulTypeActionsDelete);
                 }
+                // vyhledat a odstranit již nenavázané typy atributů z DB
+                List<RulItemTypeAction> rulTypeActionsDelete = new ArrayList<>(rulTypeActions);
+                rulTypeActionsDelete.removeAll(rulTypeActionsNew);
+                itemTypeActionRepository.delete(rulTypeActionsDelete);
 
+                List<RulActionRecommended> rulActionRecomendedsNew = new ArrayList<>();
                 if (!CollectionUtils.isEmpty(packageAction.getActionRecommendeds())) {
-                    List<RulActionRecommended> rulActionRecomendedsNew = new ArrayList<>();
+                    // pokud existují v balíčku u akce typy výstupů, pro které jsou akce doporučené,
+                    // je potřeba je dohledat pokud existují v DB a následně upravit, nebo přidat/smaza
                     for (ActionRecommended actionRecommended : packageAction.getActionRecommendeds()) {
-                        RulActionRecommended rulActionRecommended = actionRecommendedRepository.findOneByOutputTypeCode(actionRecommended.getOutputType());
+                        RulActionRecommended rulActionRecommended = actionRecommendedRepository.findOneByOutputTypeCodeAndAction(actionRecommended.getOutputType(), item);
                         RulOutputType rulOutputType = outputTypeRepository.findOneByCode(actionRecommended.getOutputType());
 
                         if (rulOutputType == null) {
                             throw new IllegalArgumentException("Neexistující typ outputu: " + actionRecommended.getOutputType());
                         }
 
+                        // pokud vazba na doporučenou akci ještě neexistuje v DB
                         if (rulActionRecommended == null) {
                             rulActionRecommended = new RulActionRecommended();
                         }
@@ -752,30 +763,32 @@ public class PackageService {
                         rulActionRecomendedsNew.add(rulActionRecommended);
                     }
 
+                    // uložení seznamu upravených/přidaných vazeb na doporučené akce
                     actionRecommendedRepository.save(rulActionRecomendedsNew);
 
-                    List<RulActionRecommended> rulActionRecommendedsDelete = new ArrayList<>(rulActionRecommendeds);
-                    rulActionRecommendedsDelete.removeAll(rulActionRecomendedsNew);
-                    actionRecommendedRepository.delete(rulActionRecommendedsDelete);
                 }
+                // vyhkedat a odstranit již nenavázané doporučené akce
+                List<RulActionRecommended> rulActionRecommendedsDelete = new ArrayList<>(rulActionRecommendeds);
+                rulActionRecommendedsDelete.removeAll(rulActionRecomendedsNew);
+                actionRecommendedRepository.delete(rulActionRecommendedsDelete);
 
                 rulPackageActionsNew.add(item);
             }
         }
 
+        // uložení nově vytvořených hromadných akcí
         rulPackageActionsNew = packageActionsRepository.save(rulPackageActionsNew);
 
+        // smazání nedefinovaných hromadných akcí včetně vazeb
         List<RulAction> rulPackageActionsDelete = new ArrayList<>(rulPackageActions);
         rulPackageActionsDelete.removeAll(rulPackageActionsNew);
-
         for (RulAction rulAction : rulPackageActionsDelete) {
             itemTypeActionRepository.deleteByAction(rulAction);
             actionRecommendedRepository.deleteByAction(rulAction);
         }
-
         packageActionsRepository.delete(rulPackageActionsDelete);
 
-
+        // odstranění/vytvoření definičních souborů pro hromadné akce
         try {
             for (RulAction action : rulPackageActionsDelete) {
                 deleteFile(dir, action.getFilename());
@@ -1077,6 +1090,20 @@ public class PackageService {
             }
             for (File file : dirFile.listFiles()) {
                 deleteFile(dirFile, file.getName());
+            }
+        }
+    }
+
+    private void deleteTemplatesForRollback(final File dirTemplates, final List<RulTemplate> rulTemplateActual) throws IOException {
+        for (RulTemplate template : rulTemplateActual) {
+            File dirFile = new File(dirTemplates + File.separator + template.getDirectory());
+            if (!dirFile.exists()) {
+                continue;
+            }
+            File[] files = dirFile.listFiles((dir1, name) -> !name.endsWith(".bck"));
+
+            for (File file : files) {
+                file.delete();
             }
         }
     }

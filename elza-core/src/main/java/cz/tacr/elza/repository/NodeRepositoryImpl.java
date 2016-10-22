@@ -267,7 +267,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         return result;
     }
 
-	/**
+    /**
      * Vytvoří query pro hledání podle aktuální nebo uzavžené verze.
      *
      * @param lockChangeId id verze, může být null
@@ -276,7 +276,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     private Query createChangeQuery(final QueryBuilder queryBuilder, final Integer lockChangeId) {
         if (lockChangeId == null) { // deleteChange is null
-        	return queryBuilder.range().onField("deleteChangeId").from(Integer.MAX_VALUE).to(Integer.MAX_VALUE).createQuery();
+            return queryBuilder.range().onField("deleteChangeId").from(Integer.MAX_VALUE).to(Integer.MAX_VALUE).createQuery();
         }
 
         //createChangeId < lockChangeId
@@ -288,7 +288,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         Query deleteQuery = queryBuilder.bool().should(nullDeleteChangeQuery).should(deleteChangeQuery).createQuery();
         return queryBuilder.bool().must(createChangeQuery).must(deleteQuery).createQuery();
-	}
+    }
 
     @PostConstruct
     private void buildFullTextEntityManager() {
@@ -306,7 +306,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         Map<Integer, List<String>> nodeIdToDescItemIds = findDescItemIdsByFilters(filters, fundId, lockChangeId);
         if (nodeIdToDescItemIds == null || nodeIdToDescItemIds.isEmpty()) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
         Set<Integer> nodeIds = new HashSet<>();

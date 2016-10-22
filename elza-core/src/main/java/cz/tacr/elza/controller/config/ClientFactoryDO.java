@@ -1,25 +1,17 @@
 package cz.tacr.elza.controller.config;
 
-import cz.tacr.elza.FilterTools;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.filter.Condition;
-import cz.tacr.elza.controller.vo.filter.Filter;
-import cz.tacr.elza.controller.vo.filter.Filters;
-import cz.tacr.elza.controller.vo.filter.ValuesTypes;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.filter.condition.*;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.DescriptionItemService;
-import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -28,10 +20,97 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import cz.tacr.elza.FilterTools;
+import cz.tacr.elza.controller.vo.ArrFileVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrOutputFileVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.DmsFileVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParRelationEntityVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RegCoordinatesVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.UISettingsVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.XmlImportConfigVO;
+import cz.tacr.elza.controller.vo.filter.Condition;
+import cz.tacr.elza.controller.vo.filter.Filter;
+import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.filter.ValuesTypes;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrItemData;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrOutputFile;
+import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.DmsFile;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.RegCoordinates;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.convertor.CalendarConverter;
+import cz.tacr.elza.domain.convertor.CalendarConverter.CalendarType;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.filter.DescItemTypeFilter;
+import cz.tacr.elza.filter.condition.BeginDescItemCondition;
+import cz.tacr.elza.filter.condition.ContainDescItemCondition;
+import cz.tacr.elza.filter.condition.DescItemCondition;
+import cz.tacr.elza.filter.condition.EndDescItemCondition;
+import cz.tacr.elza.filter.condition.EqDescItemCondition;
+import cz.tacr.elza.filter.condition.EqIntervalDesCitemCondition;
+import cz.tacr.elza.filter.condition.GeDescItemCondition;
+import cz.tacr.elza.filter.condition.GtDescItemCondition;
+import cz.tacr.elza.filter.condition.IntersectDescItemCondition;
+import cz.tacr.elza.filter.condition.Interval;
+import cz.tacr.elza.filter.condition.IntervalDescItemCondition;
+import cz.tacr.elza.filter.condition.LeDescItemCondition;
+import cz.tacr.elza.filter.condition.LtDescItemCondition;
+import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
+import cz.tacr.elza.filter.condition.NeDescItemCondition;
+import cz.tacr.elza.filter.condition.NoValuesCondition;
+import cz.tacr.elza.filter.condition.NotContainDescItemCondition;
+import cz.tacr.elza.filter.condition.NotEmptyDescItemCondition;
+import cz.tacr.elza.filter.condition.NotIntervalDescItemCondition;
+import cz.tacr.elza.filter.condition.SelectedSpecificationsDescItemEnumCondition;
+import cz.tacr.elza.filter.condition.SelectedValuesDescItemEnumCondition;
+import cz.tacr.elza.filter.condition.SelectsNothingCondition;
+import cz.tacr.elza.filter.condition.SubsetDescItemCondition;
+import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
+import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.PacketTypeRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
+import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MapperFactory;
 
 /**
  * Továrna na vytváření DO objektů z VO objektů.
@@ -703,7 +782,7 @@ public class ClientFactoryDO {
                 conditions.add(new UnselectedValuesDescItemEnumCondition(values, attName));
                 conditions.add(new NoValuesCondition());
             } else { // odškrtlé jen "Prázdné" = vše s hodnotou
-                conditions.add(new NotEmptyDescItemCondition());
+                // není potřeba vkládat podmínku, pokud vznikne ještě jiná podmínka tak by se udělal průnik výsledků a když bude seznam podmínek prázdný tak se vrátí všechna data
             }
         }
     }
@@ -732,20 +811,20 @@ public class ClientFactoryDO {
                 conditions.add(new SelectsNothingCondition());
             } else if (containsNull && !values.isEmpty()) { // vybrané hodnoty i "Prázdné"
                 conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
-                conditions.add(new NoSpecsCondition());
+                conditions.add(new NoValuesCondition());
             } else if (!values.isEmpty()) { // vybrané jen hodnoty
                 conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
             } else { // vybrané jen "Prázdné"
-                conditions.add(new NoSpecsCondition());
+                conditions.add(new NoValuesCondition());
             }
         } else {
             if (containsNull && !values.isEmpty()) { // odškrtlé hodnoty i "Prázdné" = hodnoty které neobsahují proškrtlé položky
                 conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
             } else if (!values.isEmpty()) { // odškrtlé jen hodnoty = hodnoty které neobsahují proškrtlé položky + nody bez hodnot
                 conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
-                conditions.add(new NoSpecsCondition());
+                conditions.add(new NoValuesCondition());
             } else { // odškrtlé jen "Prázdné" = vše s hodnotou
-                conditions.add(new NotEmptyDescItemCondition());
+                // není potřeba vkládat podmínku, pokud vznikne ještě jiná podmínka tak by se udělal průnik výsledků a když bude seznam podmínek prázdný tak se vrátí všechna data
             }
         }
     }
@@ -756,7 +835,7 @@ public class ClientFactoryDO {
      * @param fileVO soubor VO
      * @return soubor DO
      */
-    public DmsFile createDmsFile(DmsFileVO fileVO) {
+    public DmsFile createDmsFile(final DmsFileVO fileVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(fileVO, DmsFile.class);
     }
@@ -809,7 +888,7 @@ public class ClientFactoryDO {
      * @param fileVO soubor VO
      * @return soubor DO
      */
-    public ArrFile createArrFile(ArrFileVO fileVO) {
+    public ArrFile createArrFile(final ArrFileVO fileVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(fileVO, ArrFile.class);
     }
@@ -821,7 +900,7 @@ public class ClientFactoryDO {
      * @param fileVO soubor VO
      * @return soubor DO
      */
-    public ArrOutputFile createArrOutputFile(ArrOutputFileVO fileVO) {
+    public ArrOutputFile createArrOutputFile(final ArrOutputFileVO fileVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(fileVO, ArrOutputFile.class);
     }

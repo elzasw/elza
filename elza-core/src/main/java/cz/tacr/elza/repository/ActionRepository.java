@@ -24,5 +24,7 @@ public interface ActionRepository extends JpaRepository<RulAction, Integer> {
 
     void deleteByRulPackage(RulPackage rulPackage);
 
-    RulAction findOneByFilename(String s);
+    RulAction findOneByFilename(String name);
+
+    List<RulAction> findByFilename(List<String> names);
 }

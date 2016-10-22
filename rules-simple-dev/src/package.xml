@@ -1,6 +1,6 @@
 <package>
   <code>SIMPLE-DEV</code>
   <name>Simple Rules for Developers</name>
-  <version>6</version>
+  <version>9</version>
   <description>Simplified rules for ELZA developers</description>
 </package>

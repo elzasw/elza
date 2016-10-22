@@ -80,7 +80,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             'removePlaceholder',
             'renderDescItem',
             'renderDescItemSpec',
-            'renderLabel',
+            'renderLabel'
         );
     }
 
@@ -564,7 +564,8 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             onFocus: this.handleFocus.bind(this, descItemIndex),
             locked: locked,
             readMode: readMode,
-            ref: key
+            ref: key,
+            cal: infoType.cal && !infoType.calSt
         }
 
         let dragProps;
