@@ -27,7 +27,7 @@ class AddNodeForm extends AbstractReactComponent {
     state = { // initial states
         scenarios: undefined,
         loading: false,
-        selectedDirection: React.PropTypes.initDirection,
+        selectedDirection: this.props.initDirection,
         selectedScenario: undefined
     };
 
