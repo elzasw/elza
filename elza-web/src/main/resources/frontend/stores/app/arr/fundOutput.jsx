@@ -61,6 +61,12 @@ export default function fundOutput(state = initialState, action = {}) {
                 filterState: state.filterState
             }
         }
+        case types.FUND_FUND_CHANGE_READ_MODE:{
+            return {
+                ...state,
+                fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
+            }
+        }
         case types.OUTPUT_CHANGES_DETAIL:
         case types.CHANGE_OUTPUTS: {
 

@@ -1,12 +1,12 @@
 package cz.tacr.elza.bulkaction.generator.result;
 
 /**
- * Výsledek z akce {@link cz.tacr.elza.bulkaction.generator.multiple.DataceRangeAction}
+ * Výsledek z akce {@link cz.tacr.elza.bulkaction.generator.multiple.DateRangeAction}
  *
  * @author Martin Šlapa
  * @since 29.06.2016
  */
-public class DataceRangeActionResult extends ActionResult {
+public class DateRangeActionResult extends ActionResult {
 
     private String itemType;
 

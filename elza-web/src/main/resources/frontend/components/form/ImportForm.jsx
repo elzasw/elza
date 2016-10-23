@@ -1,39 +1,40 @@
-/**
- * Formulář importu rejstříkových hesel
- * <ImportForm fund onSubmit={this.handleCallImportRegistry} />
- */
-
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Autocomplete, Icon, FormInput} from 'components/index.jsx';
-import {Modal, Button, Checkbox} from 'react-bootstrap';
+import {Modal, Button, Checkbox, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx';
 import {decorateFormField} from 'components/form/FormUtils.jsx';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {importForm} from 'actions/global/global.jsx';
 
-const validate = (values, props) => {
-    const errors = {};
+/**
+ * Formulář importu rejstříkových hesel
+ * <ImportForm fund onSubmit={this.handleCallImportRegistry} />
+ */
 
-    if (values.transformationName) {
-        if (!values.ruleSetId) {
-            errors.ruleSetId = i18n('global.validation.required');
+class ImportForm extends AbstractReactComponent {
+    /**
+     * Validace formuláře.
+     */
+    static validate = (values, props) => {
+        const errors = {};
+
+        if (values.transformationName) {
+            if (!values.ruleSetId) {
+                errors.ruleSetId = i18n('global.validation.required');
+            }
+
         }
 
-    }
-
-    if (!values.recordScope || !values.recordScope.name) {
-        errors.recordScope = i18n('global.validation.required');
-    }
-    if (!values.xmlFile || values.xmlFile == null) {
-        errors.xmlFile = i18n('global.validation.required');
-    }
-    return errors;
-};
-
-const ImportForm = class ImportForm extends AbstractReactComponent {
+        if (!values.recordScope || !values.recordScope.name) {
+            errors.recordScope = i18n('global.validation.required');
+        }
+        if (!values.xmlFile || values.xmlFile == null) {
+            errors.xmlFile = i18n('global.validation.required');
+        }
+        return errors;
+    };
 
     static PropTypes = {
         party: React.PropTypes.bool,
@@ -41,11 +42,10 @@ const ImportForm = class ImportForm extends AbstractReactComponent {
         fund: React.PropTypes.bool
     };
 
-    constructor(props) {
-        super(props);
-        this.state = {defaultScopes: [], transformationNames: [], isRunning: false};
-        this.bindMethods('save');
-    }
+    state = {
+        defaultScopes: [],
+        transformationNames: [],
+        isRunning: false};
 
     componentDidMount() {
         this.dispatch(refRuleSetFetchIfNeeded());
@@ -69,7 +69,7 @@ const ImportForm = class ImportForm extends AbstractReactComponent {
         });
     }
 
-    save(values) {
+    save = (values) => {
         //validate
         this.setState({
             isRunning: true,
@@ -107,7 +107,7 @@ const ImportForm = class ImportForm extends AbstractReactComponent {
         }
         const messageType = this.props.fund ? 'Fund' : this.props.record ? 'Record' : 'Party';
         this.dispatch(importForm(formData, messageType));
-    }
+    };
 
     render() {
         const {fields: {ruleSetId, transformationName, recordScope, stopOnError, xmlFile}, onClose, handleSubmit, refTables, values} = this.props;
@@ -117,8 +117,8 @@ const ImportForm = class ImportForm extends AbstractReactComponent {
             <div>
                 {
                     !this.state.isRunning && <div>
-                        <Modal.Body>
-                            <form onSubmit={handleSubmit(this.save)}>
+                        <Form onSubmit={handleSubmit(this.save)}>
+                            <Modal.Body>
                                 {
                                     <div>
                                         <FormInput componentClass="select" label={i18n('import.transformationName')} {...transformationName}>
@@ -169,12 +169,12 @@ const ImportForm = class ImportForm extends AbstractReactComponent {
 
                                 <label>{i18n('import.file')}</label>
                                 <FormInput type="file" {...xmlFile} {...decorateFormField(xmlFile)} value={null}/>
-                            </form>
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button onClick={handleSubmit(this.save)}>{i18n('global.action.import')}</Button>
-                            <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
-                        </Modal.Footer>
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <Button type="submit" onClick={handleSubmit(this.save)}>{i18n('global.action.import')}</Button>
+                                <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                            </Modal.Footer>
+                        </Form>
                     </div>
                 }
                 {this.state.isRunning && <div>
@@ -185,12 +185,12 @@ const ImportForm = class ImportForm extends AbstractReactComponent {
             </div>
         )
     }
-};
+}
 
-module.exports = reduxForm({
+export default reduxForm({
     form: 'importForm',
     fields: ['ruleSetId', 'transformationName', 'recordScope', 'stopOnError', 'xmlFile'],
-    validate
+    validate: ImportForm.validate
 }, state => ({
     defaultScopes: state.defaultScopes,
     refTables: state.refTables

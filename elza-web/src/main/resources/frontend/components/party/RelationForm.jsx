@@ -1,14 +1,9 @@
-/**
- * Formulář přidání nového vztahu k osobě
- */
-
 import React from 'react';
 import {WebApi} from 'actions/index.jsx';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, Autocomplete, i18n, Icon, FormInput} from 'components/index.jsx';
-import {Modal, Button, Glyphicon} from 'react-bootstrap';
+import {Modal, Button, Glyphicon, Form} from 'react-bootstrap'
 import {indexById} from 'stores/app/utils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
@@ -16,38 +11,20 @@ import {refRegistryListFetchIfNeeded} from 'actions/refTables/registryRegionList
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {Combobox} from 'react-input-enhancements'
 
-
-require('./PartyFormStyles.less');
+import './PartyFormStyles.less';
 
 /**
   * RELATION FORM
   * *********************************************
   * Formulář vztahu osoby
   */ 
-const RelationForm = class RelationForm extends AbstractReactComponent {
-    constructor(props) {
-        super(props);                                       
+class RelationForm extends AbstractReactComponent {
+    state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
+        data : this.props.initData,                     // předvyplněná data formuláře
+        errors: [],                                      // sezn chyb k vypsání uživateli
+        recordList: []
 
-        this.state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
-            data : this.props.initData,                     // předvyplněná data formuláře
-            errors: [],                                      // sezn chyb k vypsání uživateli
-            recordList: []
-
-        };
-        this.bindMethods(                                   // pripojení potřebných metod - aby měly k dispozici tento objekt (formulář)
-            'addEntity',                                    // funkce pro přidání nové entity do vztahu
-            'removeEntity',                                 // funkce pro odebrání entity ze vztahu
-            'updateEntityValue',                            // funkce pro změnu nějaké položky jedné entity
-            'updateValue',                                  // funkce pro změnu nějaké hodnoty vztahu
-            'handleClose',                                  // funkce pro zavření dialogu formuláře
-            'handleSubmit',                                 // funkce pro odeslání formuláře
-            'validate',                                      // funkce pro kontrolu zadaných dat formuláře
-            'handleSearchChange',
-            'renderRecord',
-            'initRelationTypes'
-        );
-    }
-
+    };
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(calendarTypesFetchIfNeeded());        // budeme potřebovat seznam typů kaledáře, tj pokud není ještě načtený, se načte
@@ -81,16 +58,16 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
      * *********************************************
      * přidání nové prázdné entity do vztahu
      */ 
-    addEntity() {
+    addEntity = () => {
         const data = this.state.data;                         // původní data vztahu(formuláře)
         data.entities[data.entities.length]={               // pridání nové prázdné entity na konec seznamu entit
             record: null,
             roleTypeId: null,
-        }
+        };
         this.setState({
             data : data                                     // uložení výsledku do state
         });
-    }
+    };
 
     /**
      * Vrací možné typy vztahů a typ rolí. Provede prvotní předvybrání typu vztahu.
@@ -98,7 +75,7 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
      * @param nextProps properties
      * @returns {{roleTypes: Array, relationTypes: Array, relationTypeId: *}}
      */
-    initRelationTypes(relationTypeId, nextProps) {
+    initRelationTypes = (relationTypeId, nextProps) => {
         let allRelationTypes = [];
         for(let i=0; i<nextProps.refTables.partyTypes.items.length; i++) {
             if(nextProps.refTables.partyTypes.items[i].partyTypeId == nextProps.initData.partyTypeId) {
@@ -134,7 +111,7 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
             relationTypes: relationTypes,
             relationTypeId: selectedRelationTypeId
         };
-    }
+    };
 
      /**
      * REMOVE ENTITY
@@ -143,7 +120,7 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
      * @params int index - lokální index entity, kterou odstranit 
      * @params event - událost která změnu vyvolala
      */ 
-    removeEntity(index, event) {
+    removeEntity = (index, event) => {
         const data = this.state.data;                                 // původní data formuláře
         const entities = [];                                          // nový seznnam entit
         for(let i=0; i<data.entities.length; i++) {                  // procházejí se původní entity
@@ -155,7 +132,7 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
         this.setState({
             data : data                                             // a uložíme nová data do state
         });
-    }
+    };
 
     /**
      * UPDATE VALUE
@@ -163,7 +140,7 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
      * aktualizace nějaké hodnoty ve formuláři (kromě entit)
      * @params event - událost která změnu vyvolala
      */
-    updateValue(event) {
+    updateValue = (event) => {
         const value = event.target.value;                                                 // hodnota změněného pole formuláře
         const variable = event.target.name;                                               // nazeb měněné hodnoty
         const data = this.state.data;                                                     // puvodni data formuláře
@@ -192,7 +169,7 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
         this.setState({
             data : data                                                                 // uložení změn do state
         });
-    }
+    };
 
      /**
      * UPDATE ENTITY VALUE
@@ -201,7 +178,7 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
      * @params obj entity - obsahuje index entity a měněnou hodnotu, např {index 5, variable: 'record'} 
      * @params event - událost která změnu vyvolala
      */   
-    updateEntityValue(entity, event) {
+    updateEntityValue = (entity, event) => {
         const data = this.state.data;                             // puvodní data formuláře
         for(let i=0; i<data.entities.length; i++) {              // procházejí se všechny entity
             if(i == entity.index) {                              // nalezení té pravé, krou máme změnit
@@ -218,7 +195,7 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
         this.setState({
             data : data                                         // uložení změny do state
         });
-    }
+    };
 
 
     /**
@@ -226,7 +203,8 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
      * *********************************************
      * Odeslání formuláře
      */
-    handleSubmit(e) {
+    handleSubmit = (e) => {
+        e.preventDefault();
         const errors = this.validate();               // seznam  chyb ve vyplněných datech
         if(errors.length > 0) {                      // pokud je formulář chybně vyplnění
             this.setState({             
@@ -235,7 +213,7 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
         }else{                                      // formulář je vyplněn dobře
             this.props.onSave(this.state.data);     // vyplněná data se pošlou do funkce definované nadřazenou komponentou v proměnné onSave 
         }
-    }
+    };
 
 
     /**
@@ -244,7 +222,7 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
      * Kontrola vyplnění formuláře vztahu
      * @return array errors - seznam chyb 
      */
-    validate() {
+    validate = () => {
         const errors = [];                                        // seznam chyb
         const data = this.state.data;                             // zadaná data z formuláře
 
@@ -284,11 +262,11 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
      * *********************************************
      * Zavření dialogového okénka formuláře
      */
-    handleClose() {
+    handleClose = () => {
         this.dispatch(modalDialogHide());
-    }
+    };
 
-    renderRecord(item, isHighlighted, isSelected) {
+    renderRecord = (item, isHighlighted, isSelected) => {
         let cls = 'item';
         if (isHighlighted) {
             cls += ' focus'
@@ -301,9 +279,9 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
             <div className="name" title={item.record}>{item.record}</div>
             <div className="characteristics" title={item.characteristics}>{item.characteristics}</div>
         </div>)
-    }
+    };
 
-    handleSearchChange(roleTypeId, text) {
+    handleSearchChange = (roleTypeId, text) => {
         const partyId = this.props.initData.partyId;
         text = text == "" ? null : text;
 
@@ -319,7 +297,7 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
                         })
                     })
                 })
-    }
+    };
 
 
     /**
@@ -346,8 +324,8 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
 
         return (
             <div className="relations-edit">
-                <Modal.Body>
-                    <form>
+                <Form onSubmit={this.handleSubmit}>
+                    <Modal.Body>
                         <ul className="errors">
                             {this.state.errors.map((i, index)=> {return <li key={index}>{i}</li>})}
                         </ul>
@@ -427,12 +405,12 @@ const RelationForm = class RelationForm extends AbstractReactComponent {
                             </div>
                         <Button className="relation-add" onClick={this.addEntity}><Icon glyph="fa-plus" /></Button>
                         </div>
-                    </form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
-                    <Button bsStyle="link" onClick={this.handleClose}>{i18n('global.action.cancel')}</Button>
-                </Modal.Footer>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type="submit" onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
+                        <Button bsStyle="link" onClick={this.handleClose}>{i18n('global.action.cancel')}</Button>
+                    </Modal.Footer>
+                </Form>
             </div>
         )
     }

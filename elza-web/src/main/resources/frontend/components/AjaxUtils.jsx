@@ -3,27 +3,32 @@
  *
  * @author Martin Šlapa
  * @since 8.12.2015
+ * ---
+ * Revize
+ *
+ * @author Petr Compel
+ * @since 19.10.2016
  */
-
-// Nastavení úrovně logování
-var _logCalls = true;
-var _logErrors = true;
-var _logResults = true;
-var _logDuration = false;    // moznost logovani delky volani
-
-var React = require('react');
+import React from 'react';
 import {i18n, Toastr, LongText} from 'components/index.jsx';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
 import {store} from '../stores/AppStore.jsx';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 
-var _callIndex = 0;
+
+// Nastavení úrovně logování
+const _logCalls = true;
+const _logErrors = true;
+const _logResults = true;
+const _logDuration = false;    // moznost logovani delky volani
+
+let _callIndex = 0;
 
 function requestCounter(method, url, data) {
-    var callStr;
+    let callStr;
     if (_logCalls || _logResults) {
-        var callIndex = _callIndex++;
-        var indexStr = callIndex;
+        let callIndex = _callIndex++;
+        let indexStr = callIndex;
         if (callIndex < 10) indexStr = "0" + indexStr;
         if (callIndex < 100) indexStr = "0" + indexStr;
         if (callIndex < 1000) indexStr = "0" + indexStr;
@@ -40,16 +45,18 @@ function requestCounter(method, url, data) {
  * @param {Object} params - Object query parametrů -> klíč: hodnota
  * @param {string} method - Metoda volání (GET, POST, PUT, DELETE, ...)
  * @param {Object} data - Odesílaná data
+ * @param {string|bool} contentType - content Type v hlavičce
+ * @param {bool} ignoreError - zda se mají chyby ignorovat
  * @returns {Promise} - Výsledek volání
  */
 function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError = false) {
 
     url = updateQueryStringParameters(url, params);
 
-    return new Promise(function (resolve, reject) {
-        var callStr = requestCounter(method, url, data);
+    return new Promise((resolve, reject) => {
+        const callStr = requestCounter(method, url, data);
 
-        var tStart
+        let tStart;
         if (_logDuration) {
             tStart = new Date().getTime()
         }
@@ -68,7 +75,7 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
                                status,  // status - 'success'
                                xhr) {   // xhr - responseText, responseJSON, status a statusText
                 if (_logResults) {
-                    var lenStr = '(' + lenToBytesStr(roughSizeOfObject(data)) + ')';
+                    const lenStr = '(' + lenToBytesStr(roughSizeOfObject(data)) + ')';
                     if (_logDuration) {
                         const t = new Date().getTime() - tStart
                         console.info("<-", callStr, lenStr, data, t + ' ms');
@@ -89,7 +96,7 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
                     }
                 }
 
-                var message;
+                let message;
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     message = xhr.responseJSON.message;
                 } else if (xhr.responseText) {
@@ -98,7 +105,7 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
                     message = null;
                 }
 
-                var result;
+                let result;
 
                 if (xhr.status == 422) { // pro validaci
                     result = {
@@ -131,7 +138,7 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
 
                 if (!ignoreError && result.error) {
 
-                    var messages = [];
+                    const messages = [];
                     if (result.message) {
                         messages.push(<p><LongText text={result.message}/></p>);
                     }
@@ -161,10 +168,10 @@ function ajaxCall(url, params, method, data) {
 
     url = updateQueryStringParameters(url, params);
 
-    return new Promise(function (resolve, reject) {
-        var callStr = requestCounter(method, url, data);
+    return new Promise((resolve, reject) => {
+        const callStr = requestCounter(method, url, data);
 
-        var tStart
+        let tStart
         if (_logDuration) {
             tStart = new Date().getTime()
         }
@@ -187,15 +194,15 @@ function ajaxCall(url, params, method, data) {
                                status,  // status - 'success'
                                xhr) {   // xhr - responseText, responseJSON, status a statusText
                  if (_logResults) {
-                    var len = JSON.stringify(data).length;
-                    var lenStr = '(' + lenToBytesStr(len) + ')';
+                     const len = JSON.stringify(data).length;
+                     const lenStr = '(' + lenToBytesStr(len) + ')';
 
-                    if (_logDuration) {
-                        const t = new Date().getTime() - tStart
-                        console.info("<-", callStr, lenStr, data, t + ' ms');
-                    } else {
-                        console.info("<-", callStr, lenStr, data);
-                    }
+                     if (_logDuration) {
+                         const t = new Date().getTime() - tStart;
+                         console.info("<-", callStr, lenStr, data, t + ' ms');
+                     } else {
+                         console.info("<-", callStr, lenStr, data);
+                     }
                  }
                 resolve(data);
             },
@@ -206,7 +213,7 @@ function ajaxCall(url, params, method, data) {
                     console.error("<-", callStr, "[" + xhr.status + "-" + status + "]", xhr);
                 }
 
-                var message;
+                let message;
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     message = xhr.responseJSON.message;
                 } else if (xhr.responseText) {
@@ -215,7 +222,7 @@ function ajaxCall(url, params, method, data) {
                     message = null;
                 }
 
-                var result;
+                let result;
 
                 if (xhr.status == 422) { // pro validaci
                     result = {
@@ -247,8 +254,7 @@ function ajaxCall(url, params, method, data) {
                 }
 
                 if (result.error) {
-
-                    var messages = [];
+                    const messages = [];
                     if (result.message) {
                         messages.push(<p><LongText text={result.message}/></p>);
                     }
@@ -271,9 +277,11 @@ function ajaxCall(url, params, method, data) {
  */
 function updateQueryStringParameters(uri, params) {
     if (params) {
-        for(var key in params) {
-            var value = params[key];
-            uri = updateQueryStringParameter(uri, key, value);
+        for(let key in params) {
+            if (params.hasOwnProperty(key)) {
+                const value = params[key];
+                uri = updateQueryStringParameter(uri, key, value);
+            }
         }
     }
     return uri;
@@ -291,10 +299,10 @@ function updateQueryStringParameter(uri, key, value) {
         return uri;
     }
 
-    var upValue = encodeURIComponent(value)
+    const upValue = encodeURIComponent(value);
 
-    var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
-    var separator = uri.indexOf('?') !== -1 ? "&" : "?";
+    const re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
+    const separator = uri.indexOf('?') !== -1 ? "&" : "?";
     if (uri.match(re)) {
         return uri.replace(re, '$1' + key + "=" + upValue + '$2');
     } else {
@@ -309,9 +317,7 @@ function updateQueryStringParameter(uri, key, value) {
  * @param {Object} params - Object query parametrů -> klíč: hodnota
  * @returns {Promise} - Výsledek volání
  */
-function ajaxGet(url, params) {
-    return ajaxCall(url, params, "GET", null);
-}
+const ajaxGet = (url, params = null) => ajaxCall(url, params, "GET", null);
 
 /**
  * Odeslání POST dotazu na server.
@@ -321,9 +327,7 @@ function ajaxGet(url, params) {
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
  */
-function ajaxPost(url, params, data) {
-    return ajaxCall(url, params, "POST", data);
-}
+const ajaxPost = (url, params = null, data = null) => ajaxCall(url, params, "POST", data);
 
 /**
  * Odeslání PUT dotazu na server.
@@ -333,9 +337,7 @@ function ajaxPost(url, params, data) {
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
  */
-function ajaxPut(url, params, data) {
-    return ajaxCall(url, params, "PUT", data);
-}
+const ajaxPut = (url, params = null, data = null) => ajaxCall(url, params, "PUT", data);
 
 /**
  * Odeslání DELETE dotazu na server.
@@ -345,15 +347,13 @@ function ajaxPut(url, params, data) {
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
  */
-function ajaxDelete(url, params, data) {
-    return ajaxCall(url, params, "DELETE", data);
-}
+const ajaxDelete = (url, params = null, data = null) => ajaxCall(url, params, "DELETE", data);
 
-module.exports = {
-    ajaxGet: ajaxGet,
-    ajaxPost: ajaxPost,
-    ajaxPut: ajaxPut,
-    ajaxDelete: ajaxDelete,
-    ajaxCall: ajaxCall,
-    ajaxCallRaw: ajaxCallRaw
+export default {
+    ajaxGet,
+    ajaxPost,
+    ajaxPut,
+    ajaxDelete,
+    ajaxCall,
+    ajaxCallRaw
 }

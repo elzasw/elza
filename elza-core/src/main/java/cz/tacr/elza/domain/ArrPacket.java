@@ -12,6 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
@@ -46,18 +47,22 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrF
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPacketType.class)
     @JoinColumn(name = "packetTypeId", nullable = true)
+    @JsonIgnore
     private RulPacketType packetType;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
     @JoinColumn(name = "fundId", nullable = false)
+    @JsonIgnore
     private ArrFund fund;
 
     @Column(length = StringLength.LENGTH_50, nullable = false)
+    @JsonIgnore
     private String storageNumber;
 
     @Column(length = 50, nullable = false)
     @Enumerated(EnumType.STRING)
+    @JsonIgnore
     private State state;
 
     @Override

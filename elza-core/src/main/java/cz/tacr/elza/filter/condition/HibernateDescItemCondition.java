@@ -4,7 +4,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 /**
- * Podmínka přes Hibernate.
+ * Podmínka přes Hibernate. Počítá s tím že se budou hledat jen uzly bez hodnot, takže se pak nekontroluje
+ * platnost hodnot těchto uzlů.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 2. 5. 2016

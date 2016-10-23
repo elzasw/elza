@@ -1,35 +1,35 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {connect} from 'react-redux'
+import {Modal, Button, Radio, FormGroup, ControlLabel, Form} from 'react-bootstrap';
+import {WebApi} from 'actions/index.jsx';
+import {addNode} from 'actions/arr/node.jsx';
+import {AbstractReactComponent, i18n, FormInput, Loading} from 'components/index.jsx';
+import {isFundRootId} from 'components/arr/ArrUtils.jsx'
+import {indexById} from 'stores/app/utils.jsx'
+import './AddNodeForm.less';
+
 /**
  * Dialog pro přidání nové JP
  *
  * @author Tomáš Pytelka
  * @since 26.8.2016
  */
+class AddNodeForm extends AbstractReactComponent {
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {Modal, Button, Radio, FormGroup, ControlLabel} from 'react-bootstrap';
-import {WebApi} from 'actions/index.jsx';
-import {addNode} from 'actions/arr/node.jsx';
-import * as types from 'actions/constants/ActionTypes.js';
-import {AbstractReactComponent, i18n, FormInput, Loading} from 'components/index.jsx';
-import {isFundRootId} from 'components/arr/ArrUtils.jsx'
-import {indexById} from 'stores/app/utils.jsx'
+    static PropTypes = {
+        node: React.PropTypes.object.isRequired,
+        initDirection: React.PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND']),
+        nodeSettings: React.PropTypes.object.isRequired,
+        selectedSubNodeIndex: React.PropTypes.number.isRequired
+    };
 
-require ('./AddNodeForm.less');
-
-var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-        this.bindMethods('formatDataForServer', 'handleDirectionChange', 'handleScenarioChange', 'getDirectionScenarios', 'handleFormSubmit',
-            'getDescItemTypeCopyIds');
-        this.state = { // initial states
-            scenarios: undefined,
-            loading: false,
-            selectedDirection: props.initDirection,
-            selectedScenario: undefined
-        };
-    }
+    state = { // initial states
+        scenarios: undefined,
+        loading: false,
+        selectedDirection: this.props.initDirection,
+        selectedScenario: undefined
+    };
 
     /**
      * Připravuje hodnoty proměnných rodič, směr pro potřeby API serveru
@@ -37,7 +37,7 @@ var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
      * @param {String} inDirection směr, kterým se má vytvořit nová JP
      * @param {Object} inNode uzel pro který je volána akce
      */
-    formatDataForServer(inDirection, inNode, inSelectedSubNodeIndex) {
+    formatDataForServer = (inDirection, inNode, inSelectedSubNodeIndex) => {
         var di, no, pno;
         if(inDirection == 'ATEND') { // prvek na konec seznamu
             di = 'CHILD';
@@ -57,13 +57,13 @@ var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
             }
         }
         return {direction: di, activeNode: no, parentNode: pno}
-    }
+    };
 
     /**
      * Načte scénáře a vrátí je pro zobrazení, v průběhu načístání nastaví ve state 'loading'
      * resp. uloží je do state 'scenarios'
      */
-    getDirectionScenarios(newDirection) {
+    getDirectionScenarios = (newDirection) => {
         if(newDirection === '') { // direction is not selected
             this.setState({
                 scenarios: undefined
@@ -97,22 +97,22 @@ var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
                 });
             }
         );
-    }
+    };
 
-    handleDirectionChange(e) {
+    handleDirectionChange = (e) => {
         var dr = e.target.value;
         this.setState({selectedDirection: dr});
         this.getDirectionScenarios(dr);
-    }
+    };
 
-    handleScenarioChange(e) {
+    handleScenarioChange = (e) => {
         this.setState({selectedScenario: e.target.value});
-    }
+    };
 
     /**
      * Vrátí prvky popisu ke zkopírování na základě proměnné props.nodeSettings
      */
-    getDescItemTypeCopyIds() {
+    getDescItemTypeCopyIds = () => {
         const nodeSettings = this.props.nodeSettings;
         const nodeId = this.props.node.id;
 
@@ -124,13 +124,13 @@ var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
             }
         }
         return itemsToCopy;
-    }
+    };
 
     /**
      * Zprostředkuje přidání nové JP, dle aktuálně vyplněných dat ve formuláři
      * resp. dat uložených ve state 'selectedDirection', 'selectedScenario'
      */
-    handleFormSubmit(e) {
+    handleFormSubmit = (e) => {
         e.preventDefault();
         const {node, selectedSubNodeIndex, versionId, initDirection, handlePostSubmitActions} = this.props;
         var selDi = this.state.selectedDirection;
@@ -139,7 +139,7 @@ var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
         var dataServ = this.formatDataForServer(selDi, node, selectedSubNodeIndex);
         this.dispatch(addNode(dataServ.activeNode, dataServ.parentNode, this.props.versionId, dataServ.direction, this.getDescItemTypeCopyIds(), selScn));
         handlePostSubmitActions();
-    }
+    };
 
     componentWillMount() {
         const {initDirection} = this.props;
@@ -164,53 +164,42 @@ var AddNodeForm = class AddNodeForm extends AbstractReactComponent {
             scnRadios.push(<div>{i18n('arr.fund.addNode.noDirection')}</div>);
         }
 
-        return(
-            <div>
-                <Modal.Body>
-                    <form onSubmit={this.handleFormSubmit}>
-                        <FormInput ref="selsel" componentClass='select' disabled={loading} label={i18n('arr.fund.addNode.direction')} defaultValue={initDirection} onChange={this.handleDirectionChange}>
-                            {notRoot && [
-                                <option value='BEFORE' key='BEFORE'>{i18n('arr.fund.addNode.before')}</option>,
-                                <option value='AFTER' key='AFTER'>{i18n('arr.fund.addNode.after')}</option>
-                            ]}
-                            <option value='CHILD' key='CHILD'>{i18n('arr.fund.addNode.child')}</option>
-                            {notRoot && [
-                                <option value='ATEND' key='ATEND'>{i18n('arr.fund.addNode.atEnd')}</option>
-                            ]}
-                        </FormInput>
-                        <FormGroup>
-                            <ControlLabel>{i18n('arr.fund.addNode.scenario')}</ControlLabel>
-                            {loading ? <Loading /> :
-                                <FormGroup key='Scenarios'>
-                                    {scnRadios}
-                                </FormGroup>
-                            }
+        return <Form onSubmit={this.handleFormSubmit}>
+            <Modal.Body>
+                <FormInput ref="selsel" componentClass='select' disabled={loading} label={i18n('arr.fund.addNode.direction')} defaultValue={initDirection} onChange={this.handleDirectionChange}>
+                    {notRoot && [
+                        <option value='BEFORE' key='BEFORE'>{i18n('arr.fund.addNode.before')}</option>,
+                        <option value='AFTER' key='AFTER'>{i18n('arr.fund.addNode.after')}</option>
+                    ]}
+                    <option value='CHILD' key='CHILD'>{i18n('arr.fund.addNode.child')}</option>
+                    {notRoot && [
+                        <option value='ATEND' key='ATEND'>{i18n('arr.fund.addNode.atEnd')}</option>
+                    ]}
+                </FormInput>
+                <FormGroup>
+                    <ControlLabel>{i18n('arr.fund.addNode.scenario')}</ControlLabel>
+                    {loading ? <Loading /> :
+                        <FormGroup key='Scenarios'>
+                            {scnRadios}
                         </FormGroup>
-                        <Button type='submit' className='hide'/>
-                    </form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={this.handleFormSubmit}>{i18n('global.action.store')}</Button>
-                    <Button bsStyle='link' onClick={onClose}>{i18n('global.action.cancel')}</Button>
-                </Modal.Footer>
-            </div>
-        );
+                    }
+                </FormGroup>
+                <Button type='submit' className='hide'/>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button type="submit" onClick={this.handleFormSubmit}>{i18n('global.action.store')}</Button>
+                <Button bsStyle='link' onClick={onClose}>{i18n('global.action.cancel')}</Button>
+            </Modal.Footer>
+        </Form>
     }
-};
+}
 
 function mapStateToProps(state) {
-    const {arrRegion} = state
+    const {arrRegion} = state;
 
     return {
         nodeSettings: arrRegion.nodeSettings,
     }
 }
 
-AddNodeForm.propTypes = {
-    node: React.PropTypes.object.isRequired,
-    initDirection: React.PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND']),
-    nodeSettings: React.PropTypes.object.isRequired,
-    selectedSubNodeIndex: React.PropTypes.number.isRequired
-};
-
-module.exports = connect(mapStateToProps)(AddNodeForm);
+export default connect(mapStateToProps)(AddNodeForm);

@@ -16,6 +16,7 @@ import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrItemCoordinates;
@@ -33,6 +34,10 @@ import cz.tacr.elza.domain.ArrItemString;
 import cz.tacr.elza.domain.ArrItemText;
 import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrItemUnitid;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.DmsFile;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
@@ -53,8 +58,12 @@ import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataTextRepository;
 import cz.tacr.elza.repository.DataUnitdateRepository;
 import cz.tacr.elza.repository.DataUnitidRepository;
+import cz.tacr.elza.repository.FileRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MappingContext;
@@ -75,9 +84,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -152,6 +163,18 @@ public class ItemService implements InitializingBean {
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
+
+    @Autowired
+    private PartyRepository partyRepository;
+
+    @Autowired
+    private PacketRepository packetRepository;
+
+    @Autowired
+    private FileRepository fileRepository;
+
+    @Autowired
+    private RegRecordRepository recordRepository;
 
     /**
      * Kontrola sloupců v JSON tabulce.
@@ -1056,5 +1079,60 @@ public class ItemService implements InitializingBean {
     public ArrItem loadDataById(Integer itemId) {
         final ArrItem arrItem = itemRepository.findOne(itemId);
         return loadData(arrItem);
+    }
+
+    /**
+     * Donačítá položky, které jsou typově jako odkaz, podle ID.
+     *
+     * @param dataItems seznam položek, které je potřeba donačíst podle ID návazných entit
+     */
+    public void refItemsLoader(final List<ArrItemData> dataItems) {
+
+        // mapy pro naplnění ID entit
+        Map<Integer, ArrItemPartyRef> partyMap = new HashMap<>();
+        Map<Integer, ArrItemPacketRef> packetMap = new HashMap<>();
+        Map<Integer, ArrItemFileRef> fileMap = new HashMap<>();
+        Map<Integer, ArrItemRecordRef> recordMap = new HashMap<>();
+
+        // prohledávám pouze entity, které mají návazné data
+        for (ArrItemData dataItem : dataItems) {
+            if (dataItem instanceof ArrItemPartyRef) {
+                ParParty party = ((ArrItemPartyRef) dataItem).getParty();
+                partyMap.put(party.getPartyId(), (ArrItemPartyRef) dataItem);
+            } else if (dataItem instanceof ArrItemPacketRef) {
+                ArrPacket packet = ((ArrItemPacketRef) dataItem).getPacket();
+                packetMap.put(packet.getPacketId(), (ArrItemPacketRef) dataItem);
+            } else if (dataItem instanceof ArrItemFileRef) {
+                ArrFile file = ((ArrItemFileRef) dataItem).getFile();
+                fileMap.put(file.getFileId(), (ArrItemFileRef) dataItem);
+            } else if (dataItem instanceof ArrItemRecordRef) {
+                RegRecord record = ((ArrItemRecordRef) dataItem).getRecord();
+                recordMap.put(record.getRecordId(), (ArrItemRecordRef) dataItem);
+            }
+        }
+
+        Set<Integer> packetIds = packetMap.keySet();
+        List<ArrPacket> packetEntities = packetRepository.findAll(packetIds);
+        for (ArrPacket packetEntity : packetEntities) {
+            packetMap.get(packetEntity.getPacketId()).setPacket(packetEntity);
+        }
+
+        Set<Integer> partyIds = partyMap.keySet();
+        List<ParParty> partyEntities = partyRepository.findAll(partyIds);
+        for (ParParty partyEntity : partyEntities) {
+            partyMap.get(partyEntity.getPartyId()).setParty(partyEntity);
+        }
+
+        Set<Integer> fileIds = partyMap.keySet();
+        List<DmsFile> fileEntities = fileRepository.findAll(fileIds);
+        for (DmsFile fileEntity : fileEntities) {
+            fileMap.get(fileEntity.getFileId()).setFile((ArrFile) fileEntity);
+        }
+
+        Set<Integer> recordIds = recordMap.keySet();
+        List<RegRecord> recordEntities = recordRepository.findAll(recordIds);
+        for (RegRecord recordEntity : recordEntities) {
+            recordMap.get(recordEntity.getRecordId()).setRecord(recordEntity);
+        }
     }
 }

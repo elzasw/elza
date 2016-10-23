@@ -15,6 +15,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import cz.tacr.elza.api.RegScope;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -53,43 +54,54 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     @RestResource(exported = false)
     @OneToOne(fetch = FetchType.EAGER, targetEntity = RegRecord.class)
     @JoinColumn(name = "recordId", nullable = false)
+    @JsonIgnore
     private RegRecord record;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParPartyType.class)
     @JoinColumn(name = "partyTypeId", nullable = false)
+    @JsonIgnore
     private ParPartyType partyType;
 
     @RestResource(exported = false)
     @OneToOne(fetch = FetchType.EAGER, targetEntity = ParPartyName.class)
     @JoinColumn(name = "preferredNameId")
+    @JsonIgnore
     private ParPartyName preferredName;
 
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "fromUnitdateId")
+    @JsonIgnore
     private ParUnitdate from;
 
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "toUnitdateId")
+    @JsonIgnore
     private ParUnitdate to;
 
     @RestResource(exported = false)
     @OneToMany(mappedBy = "party", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<ParPartyName> partyNames;
 
     @OneToMany(mappedBy = "party", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<ParCreator> partyCreators;
 
     @OneToMany(mappedBy = "party", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<ParRelation> relations;
 
     @Column()
+    @JsonIgnore
     private String history;
 
     @Column()
+    @JsonIgnore
     private String sourceInformation;
 
     @Column(length = StringLength.LENGTH_1000, nullable = true)
+    @JsonIgnore
     private String characteristics;
 
     @Override
@@ -225,6 +237,7 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     }
 
     @Override
+    @JsonIgnore
     public RegScope getRegScope() {
         return record.getScope();
     }

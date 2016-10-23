@@ -1,17 +1,17 @@
-/**
- * Formulář přidání nebo uzavření AS.
- */
-
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Icon, FormInput, Autocomplete, VersionValidationState, PartyField} from 'components/index.jsx';
-import {Modal, Button} from 'react-bootstrap';
+import {Modal, Button, Form} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 
-const AddUserForm = class AddUserForm extends AbstractReactComponent {
+/**
+ * Formulář přidání nebo uzavření AS.
+ */
+
+class AddUserForm extends AbstractReactComponent {
 
     static defaultProps = {
         create: false
@@ -47,22 +47,13 @@ const AddUserForm = class AddUserForm extends AbstractReactComponent {
         return errors;
     }
 
-    constructor(props) {
-        super(props);
-
-        this.bindMethods(
-            'handlePartyCreate',
-            'handlePartyReceive',
-        )
-    }
-
-    handlePartyCreate(partyTypeId) {
+    handlePartyCreate = (partyTypeId) => {
         const {onCreateParty} = this.props;
 
         onCreateParty && onCreateParty(partyTypeId, this.handlePartyReceive);
     };
 
-    handlePartyReceive(newParty) {
+    handlePartyReceive = (newParty) => {
         this.props.fields.party.onChange(newParty);
     };
 
@@ -71,26 +62,23 @@ const AddUserForm = class AddUserForm extends AbstractReactComponent {
 
         const submitForm = submitReduxForm.bind(this, AddUserForm.validate);
 
-        return (
-            <div>
+        return <Form onSubmit={handleSubmit(submitForm)}>
                 <Modal.Body>
-                    <form onSubmit={handleSubmit(submitForm)}>
                         {create && <PartyField label={i18n('admin.user.add.party')} {...party}  onCreate={this.handlePartyCreate} detail={false} />}
                         <FormInput label={i18n('admin.user.add.username')} autoComplete="off" type="text" {...username} />
                         <FormInput label={i18n(create ? 'admin.user.password' : 'admin.user.newPassword' )} autoComplete="off" type="password" {...password} />
                         <FormInput label={i18n('admin.user.passwordAgain')} autoComplete="off" type="password" {...passwordAgain} />
-                    </form>
+
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit(submitForm)}>{i18n(create ? 'global.action.create' : 'global.action.update')}</Button>
+                    <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n(create ? 'global.action.create' : 'global.action.update')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
-            </div>
-        )
+        </Form>
     }
-};
+}
 
-module.exports = reduxForm({
+export default reduxForm({
     form: 'addUserForm',
     fields: ['username', 'password', 'passwordAgain', 'party'],
 })(AddUserForm);

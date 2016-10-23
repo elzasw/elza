@@ -6,6 +6,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
@@ -64,7 +65,7 @@ public class TableStatisticAction extends Action {
         Set<String> inputTypes = config.getStringList("input_types", null).stream().collect(Collectors.toSet());
         String outputType = config.getString("output_type", null);
         inputItemTypes = findItemTypes(inputTypes);
-        outputItemType = findItemType(outputType);
+        outputItemType = findItemType(outputType, "output_type");
         checkValidDataType(outputItemType, "JSON_TABLE");
 
         List<ElzaColumn> columnsDefinition = outputItemType.getColumnsDefinition();
@@ -89,7 +90,13 @@ public class TableStatisticAction extends Action {
         for (ArrItem item : items) {
             if (inputItemTypes.contains(item.getItemType())) {
                 ArrItemData itemData = item.getItem();
-                data.add(itemData.toString());
+                RulItemSpec itemSpec = item.getItemSpec();
+                itemData.setSpec(itemSpec);
+                String text = itemData.toString();
+                if (itemSpec != null) {
+                    text = itemSpec.getName() + ": " + text;
+                }
+                data.add(text);
             }
         }
     }

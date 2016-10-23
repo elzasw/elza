@@ -18,7 +18,7 @@ import {routerNavigate} from 'actions/router.jsx'
 import DescItemLabel from './nodeForm/DescItemLabel.jsx'
 
 const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
-    PropTypes = {
+    static PropTypes = {
         register: React.PropTypes.object.isRequired,
         selectedSubNodeId: React.PropTypes.number.isRequired,
         routingKey: React.PropTypes.number.isRequired,
@@ -27,17 +27,10 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
         nodeId: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
     };
 
-    constructor(props) {
-        super(props);
-
-        this.bindMethods('renderLink', 'renderForm', 'handleAddClick');
-
-    }
-
     /**
      * Vytvoření nového hesla.
      *
-     * @param index {Integer} index hodnoty seznamu
+     * @param index {number} index hodnoty seznamu
      */
     handleCreateRecord(index) {
         const {versionId} = this.props;
@@ -67,7 +60,7 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
         }
     }
 
-    handleAddClick() {
+    handleAddClick = () => {
         this.dispatch(fundSubNodeRegisterValueAdd(this.props.versionId, this.props.selectedSubNodeId, this.props.routingKey));
     }
 
@@ -75,7 +68,7 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
         this.dispatch(fundSubNodeRegisterValueChange(this.props.versionId, this.props.selectedSubNodeId, this.props.routingKey, index, record));
     }
 
-    handleDetail(index, recordId) {
+    handleDetail(recordId) {
         const {fund} = this.props;
         this.dispatch(registrySelect(recordId, fund));
         this.dispatch(routerNavigate('registry'));
@@ -93,69 +86,59 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
         this.dispatch(fundSubNodeRegisterValueDelete(this.props.versionId, this.props.selectedSubNodeId, this.props.routingKey, index));
     }
 
-    renderLink(link, index) {
+    renderRegister = (register, index) => {
         const {closed, versionId, readMode} = this.props;
 
         if (readMode) {
-            if (link.value) {
-                return (
-                    <DescItemLabel key={"link-" + index} onClick={this.handleDetail.bind(this, index, link.record.recordId)} value={link.record.record} />
-                )
-            } else {
-                return (
-                    <DescItemLabel key={"link-" + index} value="" />
-                )
-            }
+            return register.value ?
+                <DescItemLabel key={"link-" + index} onClick={this.handleDetail.bind(this, register.record.recordId)} value={register.record.record} /> :
+                <DescItemLabel key={"link-" + index} value="" />;
         } else {
-            return (
-                <div className="link" key={"link-" + index}>
+            const deletable = (register.id && register.value === register.prevValue) || (!register.id && !register.value);
+            return <div className="link" key={"link-" + index}>
                     <NodeRegister onFocus={this.handleFocus.bind(this, index)}
                                   onBlur={this.handleBlur.bind(this, index)}
                                   onDetail={this.handleDetail.bind(this, index)}
                                   onChange={this.handleChange.bind(this, index)}
                                   closed={closed}
                                   onCreateRecord={this.handleCreateRecord.bind(this, index)}
-                                  item={link}
-                                  value={link.value ? link.value : null}
+                                  item={register}
+                                  value={register.value ? register.value : null}
                                   versionId={versionId} />
-                    {!closed && !readMode && <NoFocusButton style={{visibility: link.id ? 'visible' : 'hidden'}} key="delete" onClick={this.handleRemove.bind(this, index)} ><Icon glyph="fa-times" /></NoFocusButton>}
-                </div>
-            );
+                {!closed && <NoFocusButton style={{visibility: deletable ? 'visible' : 'hidden'}} key="delete" onClick={this.handleRemove.bind(this, index)} ><Icon glyph="fa-times" /></NoFocusButton>}
+            </div>;
         }
-    }
+    };
 
-    renderForm() {
+    renderForm = () => {
         const {register, closed, readMode} = this.props;
 
         return <div className="register-form">
-            <div className='links'>{register.formData.nodeRegisters.map(this.renderLink)}</div>
+            <div className='links'>{register.data.map(this.renderRegister)}</div>
             {!closed && !readMode && <div className='action'><NoFocusButton onClick={this.handleAddClick}><Icon glyph="fa-plus" /></NoFocusButton></div>}
         </div>
-
-    }
+    };
 
     render() {
 
         const {register} = this.props;
 
-        return (
-            <div className='node-register'>
-                <div className='node-register-title'>{i18n('subNodeRegister.title')}</div>
-                {register.fetched ? this.renderForm() : <Loading value={i18n('global.data.loading.register')} />}
-            </div>
-        )
+        return <div className='node-register'>
+            <div className='node-register-title'>{i18n('subNodeRegister.title')}</div>
+            {register.fetched ? this.renderForm() : <Loading value={i18n('global.data.loading.register')} />}
+        </div>
     }
 };
 
 function mapStateToProps(state) {
-    const {arrRegion} = state
+    const {arrRegion} = state;
     let fund = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
     }
 
     return {
-        fund: fund
+        fund
     }
 }
 

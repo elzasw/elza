@@ -409,6 +409,7 @@ var messages = {
     "subNodeForm.descItemType.copy": "Nastavení opakovaného kopírování hodnot PP",
     "subNodeForm.descItemType.lock": "Nastavení zamknutí úprav hodnot PP",
     "subNodeForm.descItemType.copyFromPrev": "Kopírovat hodnoty PP z předchozí JP",
+    "subNodeForm.descItemType.calculable": "Hodnota počítána funkcí",
     "subNodeForm.addNodeAfter": "JP za",
 
     "subNodeForm.descItem.edited": "Editováno",

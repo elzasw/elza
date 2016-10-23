@@ -3,6 +3,7 @@ package cz.tacr.elza.domain;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import cz.tacr.elza.api.Versionable;
 
 /**
@@ -15,6 +16,7 @@ import cz.tacr.elza.api.Versionable;
 public class AbstractVersionableEntity implements Versionable {
 
     @Version
+    @JsonIgnore
     private Integer version;
 
     @Override

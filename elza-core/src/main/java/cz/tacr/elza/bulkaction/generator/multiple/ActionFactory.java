@@ -22,8 +22,8 @@ public class ActionFactory {
 
         switch (type) {
 
-            case DATACE_RANGE: {
-                return new DataceRangeAction(section);
+            case DATE_RANGE: {
+                return new DateRangeAction(section);
             }
 
             case COPY: {

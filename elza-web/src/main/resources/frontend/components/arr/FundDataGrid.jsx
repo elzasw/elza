@@ -32,7 +32,6 @@ import {
     fundBulkModifications,
     fundDataGridFilterClearAll,
     fundDataGridPrepareEdit,
-    fundDataGridFilterUpdateData,
     fundDataFulltextSearch,
     fundDataFulltextPrevItem,
     fundDataFulltextNextItem,
@@ -40,7 +39,8 @@ import {
     fundDataChangeRowIndexes,
     fundDataFulltextClear,
     fundDataFulltextExtended,
-    fundDataInitIfNeeded
+    fundDataInitIfNeeded,
+    fundDataGridRefreshRows
 } from 'actions/arr/fundDataGrid.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
@@ -81,6 +81,12 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
         this.fetchData(this.props)
 
         this.setState({}, this.resizeGrid)
+
+        // Pokud je potřeba aktualizovat, aktualizujeme při přepnutí na grid, ale zachováme stránkování
+        const {versionId, fundDataGrid} = this.props
+        if (fundDataGrid.rowsDirty || fundDataGrid.filterDirty) {
+            this.dispatch(fundDataGridRefreshRows(versionId));
+        }
     }
 
     fetchData(props) {
@@ -319,7 +325,7 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
 
     handleFilterUpdateData() {
         const {versionId} = this.props
-        this.dispatch(fundDataGridFilterUpdateData(versionId))
+        this.dispatch(fundDataGridRefreshRows(versionId))
     }
 
     handleColumnSettings() {
@@ -594,7 +600,10 @@ var FundDataGrid = class FundDataGrid extends AbstractReactComponent {
                             <Button onClick={this.handleToggleExtendedSearch} title={i18n(fundDataGrid.searchExtended ? 'arr.fund.simpleSearch' : 'arr.fund.extendedSearch')}><Icon glyph={fundDataGrid.searchExtended ? 'fa-search-minus' : 'fa-search-plus'}/></Button>
                         </div>
                         <div className="actions-buttons">
-                            <Button onClick={this.handleFilterUpdateData}><Icon glyph='fa-refresh'/>{i18n('arr.fund.filterSettings.updateData.action')}</Button>
+                            <Button
+                                disabled={!(fundDataGrid.rowsDirty || fundDataGrid.filterDirty)}
+                                onClick={this.handleFilterUpdateData}
+                            ><Icon glyph='fa-refresh'/>{i18n('arr.fund.filterSettings.updateData.action')}</Button>
                             <Button onClick={this.handleFilterClearAll}><Icon glyph='fa-trash'/>{i18n('arr.fund.filterSettings.clearAll.action')}</Button>
                             <Button onClick={this.handleColumnSettings} title={i18n('arr.fund.columnSettings.action')}><Icon glyph='fa-columns'/></Button>
                         </div>

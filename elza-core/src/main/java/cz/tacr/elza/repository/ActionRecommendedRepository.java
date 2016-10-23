@@ -25,8 +25,8 @@ public interface ActionRecommendedRepository extends JpaRepository<RulActionReco
 
     List<RulActionRecommended> findByAction(RulAction rulAction);
 
-    @Query("SELECT r FROM rul_action_recommended r JOIN r.outputType ot WHERE ot.code = :code")
-    RulActionRecommended findOneByOutputTypeCode(@Param("code") String code);
+    @Query("SELECT r FROM rul_action_recommended r JOIN r.outputType ot WHERE ot.code = :code AND r.action = :action")
+    RulActionRecommended findOneByOutputTypeCodeAndAction(@Param("code") String code, @Param("action") RulAction rulAction);
 
     List<RulActionRecommended> findByOutputType(RulOutputType outputType);
 }

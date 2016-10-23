@@ -1,14 +1,9 @@
-/**
- * Formulář autora osoby
- */
-
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
 import {WebApi} from 'actions/index.jsx';
 import {AbstractReactComponent, i18n, Autocomplete} from 'components/index.jsx';
-import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';
+import {Modal, Button, Input, Glyphicon, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refPartyListFetchIfNeeded} from 'actions/refTables/partyList.jsx'
@@ -18,33 +13,24 @@ import {refPartyListFetchIfNeeded} from 'actions/refTables/partyList.jsx'
  * *********************************************
  * formulář autora osoby
  */
-var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+class PartyCreatorForm extends AbstractReactComponent {
+    state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
+        data : this.props.initData,                     // předvyplněná data formuláře
+        errors: [],                                      // sezn chyb k vypsání uživateli
+        partyList: []
+    };
+
+    componentWillReceiveProps(nextProps) {
         this.dispatch(refPartyListFetchIfNeeded());         // načtení osob pro autory osoby
-        this.state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
-            data : this.props.initData,                     // předvyplněná data formuláře
-            errors: [],                                      // sezn chyb k vypsání uživateli
-            partyList: []
-        };
-        this.bindMethods(                                   // pripojení potřebných metod - aby měly k dispozici tento objekt (formulář)
-            'updateValue',                                  // funkce pro změnu nějaké hodnoty identifikátoru
-            'validate',                                     // funkce pro kontrolu zadaných dat formuláře
-            'handleClose',                                  // funkce pro zavření okna dialogu
-            'handleSubmit',                                  // funkce pro odeslání formuláře
-            'handleSearchChange'
-        );
-
     }
-
     /**
      * UPDATE VALUE
      * *********************************************
      * aktualizace nějaké hodnoty ve formuláři
      * @params event - událost která změnu vyvolala
      */
-    updateValue(id, valueObj){
-        console.log(valueObj)
+    updateValue = (id, valueObj) => {
+        console.log(valueObj);
         var value = id;                                               // hodnota změněného pole formuláře
         var data = this.state.data;
         data.creatorId = value;
@@ -54,7 +40,7 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
         this.setState({
             data : data                                                                     // uložení změn do state
         });
-    }
+    };
 
     /**
      * VALIDATE
@@ -62,7 +48,7 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
      * Kontrola vyplnění formuláře autora
      * @return array errors - seznam chyb 
      */
-    validate(){
+    validate = () => {
         var errors = [];                                        // seznam chyb
         var data = this.state.data;                             // zadaná data z formuláře
 
@@ -72,23 +58,24 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
         }
 
         return errors;                                          // vrácení seznamu chyb
-    }
+    };
 
    /**
      * HANDLE CLOSE
      * *********************************************
      * Zavření dialogového okénka formuláře
      */
-    handleClose(){
+    handleClose = () => {
         this.dispatch(modalDialogHide());
-    }
+    };
 
     /**
      * HANDLE SUBMIT
      * *********************************************
      * Odeslání formuláře
      */
-    handleSubmit(e){
+    handleSubmit = (e) => {
+        e.preventDefault();
         var errors = this.validate();               // seznam  chyb ve vyplněných datech
         if(errors.length > 0){                      // pokud je formulář chybně vyplnění
             this.setState({             
@@ -97,9 +84,9 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
         }else{                                      // formulář je vyplněn dobře
             this.props.onSave(this.state.data);     // vyplněná data se pošlou do funkce definované nadřazenou komponentou v proměnné onSave
         }
-    }
+    };
 
-    handleSearchChange(text) {
+    handleSearchChange = (text) => {
 
         text = text == "" ? null : text;
 
@@ -138,31 +125,29 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
 
         return (
             <div>
-                <Modal.Body>
-                    <ul className="errors">
-                        {this.state.errors.map(i=> {return <li>{i}</li>})}
-                    </ul>
-                    <form>
-
-                        <Autocomplete
-                                label={i18n('party.creator.creator')}
-                                customFilter
-                                className='autocomplete-party'
-                                items={this.state.partyList}
-                                getItemId={(item) => item ? item.id : null}
-                                getItemName={(item) => item ? item.name : ''}
-                                onSearchChange={this.handleSearchChange}
-                                onChange={this.updateValue}
-                                renderItem={this.props.renderParty}
-                                value={value}
-                                 />
-
-                    </form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
-                    <Button bsStyle="link" onClick={this.handleClose}>{i18n('global.action.cancel')}</Button>
-                </Modal.Footer>
+                <Form onSubmit={this.handleSubmit}>
+                    <Modal.Body>
+                        <ul className="errors">
+                            {this.state.errors.map(i=> {return <li>{i}</li>})}
+                        </ul>
+                            <Autocomplete
+                                    label={i18n('party.creator.creator')}
+                                    customFilter
+                                    className='autocomplete-party'
+                                    items={this.state.partyList}
+                                    getItemId={(item) => item ? item.id : null}
+                                    getItemName={(item) => item ? item.name : ''}
+                                    onSearchChange={this.handleSearchChange}
+                                    onChange={this.updateValue}
+                                    renderItem={this.props.renderParty}
+                                    value={value}
+                                     />
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type="submit" onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
+                        <Button bsStyle="link" onClick={this.handleClose}>{i18n('global.action.cancel')}</Button>
+                    </Modal.Footer>
+                </Form>
             </div>
         )
     }

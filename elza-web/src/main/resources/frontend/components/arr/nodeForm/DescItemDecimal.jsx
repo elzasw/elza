@@ -4,7 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent} from 'components/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {connect} from 'react-redux'
 var classNames = require('classnames');
 import {normalizeDouble} from 'components/validate.jsx'
@@ -62,30 +62,29 @@ var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked, readMode} = this.props;
+        const {descItem, locked, readMode, cal} = this.props;
+        let value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : descItem.value;
 
         if (readMode) {
             return (
-                <DescItemLabel value={descItem.value} />
+                <DescItemLabel value={value} cal={cal} />
             )
         }
 
-        var cls = classNames({
-            'form-control': true,
-            value: true,
-            error: descItem.error,
-            active: descItem.hasFocus,
-        });
+        let cls = [];
+        if (cal) {
+            cls.push("calculable");
+        }
 
         return (
             <div className='desc-item-value'>
                 <input
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                     ref='focusEl'
                     type="text"
                     disabled={locked}
                     onChange={this.handleChange}
-                    value={this.state.value}
+                    value={cal && this.state.value == '' ? value : this.state.value}
                 />
             </div>
         )
