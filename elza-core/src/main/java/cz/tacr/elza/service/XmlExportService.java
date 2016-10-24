@@ -330,9 +330,9 @@ public class XmlExportService {
         Packet packet = new Packet();
 
         RulPacketType packetType = arrPacket.getPacketType();
-		if (packetType != null) {
-			packet.setPacketTypeCode(packetType.getCode());
-		}
+        if (packetType != null) {
+            packet.setPacketTypeCode(packetType.getCode());
+        }
         packet.setState(arrPacket.getState());
         packet.setStorageNumber(arrPacket.getStorageNumber());
 
@@ -451,7 +451,6 @@ public class XmlExportService {
         }
         party.setEvents(createEvents(parParty.getRelations(), recordMap));
 
-        party.setFromDate(XmlImportUtils.createComplexDate(parParty.getFrom()));
         party.setHistory(parParty.getHistory());
 
         ParInstitution parInstitution = institutionRepository.findByParty(parParty);
@@ -467,7 +466,6 @@ public class XmlExportService {
         party.setRecord(record);
 
         party.setSourceInformations(parParty.getSourceInformation());
-        party.setToDate(XmlImportUtils.createComplexDate(parParty.getTo()));
         List<ParPartyName> partyNames = parParty.getPartyNames();
         if (CollectionUtils.isNotEmpty(partyNames)) {
             List<ParPartyName> namesToExport = new ArrayList<>(partyNames);
@@ -505,7 +503,7 @@ public class XmlExportService {
 
         Relation relation = new Relation();
 
-        relation.setClassTypeCode(parRelation.getComplementType().getClassType());
+//        relation.setClassTypeCode(parRelation.getComplementType().getClassType());
         relation.setDateNote(parRelation.getDateNote());
         relation.setFromDate(XmlImportUtils.createComplexDate(parRelation.getFrom()));
         relation.setNote(parRelation.getNote());

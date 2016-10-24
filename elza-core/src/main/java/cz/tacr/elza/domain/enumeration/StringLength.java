@@ -8,6 +8,7 @@ package cz.tacr.elza.domain.enumeration;
  */
 public interface StringLength {
 
+    public static final int LENGTH_10 = 10;
     public static final int LENGTH_36 = 36;
     public static final int LENGTH_50 = 50;
     public static final int LENGTH_250 = 250;

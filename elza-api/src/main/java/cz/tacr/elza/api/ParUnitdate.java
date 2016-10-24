@@ -25,4 +25,14 @@ public interface ParUnitdate<CT extends ArrCalendarType> extends Serializable, I
      * @param textDate Text pokud není validní datace.
      */
     void setTextDate(String textDate);
+
+    /** @return poznámka */
+    String getNote();
+
+    /**
+     * Poznámka
+     *
+     * @param note poznámka
+     */
+    void setNote(String note);
 }

@@ -1,12 +1,25 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.*;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -29,6 +42,7 @@ public class ParUnitdate implements cz.tacr.elza.api.ParUnitdate<ArrCalendarType
     public static final String VALUE_TO_ESTIMATED = "valueToEstimated";
     public static final String FORMAT = "format";
     public static final String TEXT_DATE = "textDate";
+    public static final String NOTE = "note";
 
     @Id
     @GeneratedValue
@@ -58,14 +72,6 @@ public class ParUnitdate implements cz.tacr.elza.api.ParUnitdate<ArrCalendarType
     private String textDate;
 
     @RestResource(exported = false)
-    @OneToMany(mappedBy = "from", fetch = FetchType.LAZY)
-    private List<ParParty> fromParty;
-
-    @RestResource(exported = false)
-    @OneToMany(mappedBy = "to", fetch = FetchType.LAZY)
-    private List<ParParty> toParty;
-
-    @RestResource(exported = false)
     @OneToMany(mappedBy = "validFrom", fetch = FetchType.LAZY)
     private List<ParPartyName> validFromPartyNames;
 
@@ -73,6 +79,10 @@ public class ParUnitdate implements cz.tacr.elza.api.ParUnitdate<ArrCalendarType
     @OneToMany(mappedBy = "validTo", fetch = FetchType.LAZY)
     private List<ParPartyName> validToPartyNames;
 
+    @Column
+    @Lob
+    @org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
+    private String note;
 
     @Override
     public Integer getUnitdateId() {
@@ -155,6 +165,26 @@ public class ParUnitdate implements cz.tacr.elza.api.ParUnitdate<ArrCalendarType
     }
 
     @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(unitdateId).toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "ParUnitdate pk=" + unitdateId;
+    }
+
+    @Override
+    public String getNote() {
+        return note;
+    }
+
+    @Override
+    public void setNote(final String note) {
+        this.note = note;
+    }
+
+    @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof cz.tacr.elza.api.ParUnitdate)) {
             return false;
@@ -174,15 +204,5 @@ public class ParUnitdate implements cz.tacr.elza.api.ParUnitdate<ArrCalendarType
             this.format = "";
         }
         this.format += format;
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder().append(unitdateId).toHashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "ParUnitdate pk=" + unitdateId;
     }
 }

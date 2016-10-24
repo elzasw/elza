@@ -28,4 +28,8 @@ public interface ParRelationEntity<PR extends ParRelation, RR extends RegRecord,
     PRRT getRoleType();
 
     void setRoleType(PRRT roleType);
+
+    String getNote();
+
+    void setNote(final String note);
 }

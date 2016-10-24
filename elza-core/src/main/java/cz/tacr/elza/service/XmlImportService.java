@@ -1019,14 +1019,14 @@ public class XmlImportService {
         String relationTypeCode = relation.getRelationTypeCode();
         String classTypeCode = relation.getClassTypeCode();
 
-        ParRelationType parRelationType;
+        ParRelationType parRelationType = null;
         if (classTypeCode == null) {
-            parRelationType = relationTypeRepository.findByCodeAndClassTypeIsNull(relationTypeCode);
+//            parRelationType = relationTypeRepository.findByCodeAndClassTypeIsNull(relationTypeCode);
             if (parRelationType ==  null) {
                 throw new PartyImportException("Nebyl nalezen typ vztahu s kódem " + relationTypeCode);
             }
         } else {
-            parRelationType = relationTypeRepository.findByCodeAndClassType(relationTypeCode, classTypeCode);
+//            parRelationType = relationTypeRepository.findByCodeAndClassType(relationTypeCode, classTypeCode);
             if (parRelationType ==  null) {
                 throw new PartyImportException("Nebyl nalezen typ vztahu s kódem " + relationTypeCode
                         + " a s třídou " + classTypeCode);
@@ -1190,8 +1190,6 @@ public class XmlImportService {
 
         parParty.setHistory(party.getHistory());
         parParty.setSourceInformation(party.getSourceInformations());
-        parParty.setFrom(importComplexDate(party.getFromDate()));
-        parParty.setTo(importComplexDate(party.getFromDate()));
     }
 
     private ParPartyName importPartyName(final PartyName partyName, final ParParty parParty, final boolean stopOnError, final List<ParComplementType> partyComplementTypes) throws InvalidDataException, PartyImportException {

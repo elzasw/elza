@@ -25,4 +25,7 @@ public interface ParPartyTypeComplementType<PPT extends ParPartyType, PCT extend
 
     void setPartyType(PPT partyType);
 
+    boolean isRepeatable();
+
+    void setRepeatable(boolean repeatable);
 }

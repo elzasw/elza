@@ -193,17 +193,17 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
         @Override
         public int compare(final ParRelation o1, final ParRelation o2) {
 
-            Integer class1 = classTypeOrderMap.get(o1.getComplementType().getClassType());
-            Integer class2 = classTypeOrderMap.get(o2.getComplementType().getClassType());
-            class1 = class1 == null ? Integer.MAX_VALUE : class1;
-            class2 = class2 == null ? Integer.MAX_VALUE : class2;
+//            Integer class1 = classTypeOrderMap.get(o1.getComplementType().getClassType());
+//            Integer class2 = classTypeOrderMap.get(o2.getComplementType().getClassType());
+//            class1 = class1 == null ? Integer.MAX_VALUE : class1;
+//            class2 = class2 == null ? Integer.MAX_VALUE : class2;
+//
+//            int result = class1.compareTo(class2);
+//            if (result == 0) {
+//                result = o1.getRelationId().compareTo(o2.getRelationId());
+//            }
 
-            int result = class1.compareTo(class2);
-            if (result == 0) {
-                result = o1.getRelationId().compareTo(o2.getRelationId());
-            }
-
-            return result;
+            return 0;
         }
     }
 }
