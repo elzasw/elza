@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import java.util.List;
 
 import cz.tacr.elza.api.ArrBulkActionRun.State;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -52,4 +53,6 @@ public interface BulkActionRunRepository extends JpaRepository<ArrBulkActionRun,
     void updateFromStateToState(@Param("fromState") final State fromState, @Param("toState") final State toState);
 
     List<ArrBulkActionRun> findByState(@Param(value = "state") final State state);
+
+    void deleteByOutputDefinition(ArrOutputDefinition outputDefinition);
 }
