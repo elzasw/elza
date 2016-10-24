@@ -190,18 +190,18 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     handleSwitchCalculating(descItemGroupIndex, descItemTypeIndex) {
-        var valueLocation = {
+        const valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
-        }
+        };
 
-        const {subNodeForm: {formData}} = this.props
-        var descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
+        const {subNodeForm: {formData}, versionId, routingKey} = this.props;
+        const descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
 
-        var msgI18n = descItemType.calSt === 1 ? 'subNodeForm.calculate-auto.confirm' : 'subNodeForm.calculate-user.confirm';
+        const msgI18n = descItemType.calSt === 1 ? 'subNodeForm.calculate-auto.confirm' : 'subNodeForm.calculate-user.confirm';
 
         if(confirm(i18n(msgI18n))) {
-            this.dispatch(this.props.formActions.switchOutputCalculating(this.props.versionId, descItemType.id, this.props.routingKey, valueLocation));
+            this.dispatch(this.props.formActions.switchOutputCalculating(versionId, descItemType.id, routingKey, valueLocation));
         }
     }
 
