@@ -1,7 +1,7 @@
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Icon, FormInput, Autocomplete, VersionValidationState} from 'components/index.jsx';
-import {Modal, Button, FormControl, FormGroup, ControlLabel, HelpBlock, Form} from 'react-bootstrap';
+import {Modal, Button, Form} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
@@ -9,7 +9,6 @@ import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 /**
  * Formulář přidání nebo uzavření AS.
  */
-
 class AddGroupForm extends AbstractReactComponent {
 
     /**
@@ -27,9 +26,9 @@ class AddGroupForm extends AbstractReactComponent {
         return errors;
     };
 
-    static PropTypes = {};
-
-    state = {};
+    static PropTypes = {
+        create: React.PropTypes.bool,
+    };
 
     render() {
         const {fields: {name, code, description}, create, handleSubmit, onClose} = this.props;
@@ -38,11 +37,9 @@ class AddGroupForm extends AbstractReactComponent {
 
         return <Form onSubmit={handleSubmit(submitForm)}>
             <Modal.Body>
-
-                    <FormInput label={i18n('admin.group.title.name')} type="text" {...name} />
-                    {create && <FormInput label={i18n('admin.group.title.code')} type="text" {...code} />}
-                    {!create && <FormInput disabled label={i18n('admin.group.title.code')} type="text" {...code} />}
-                    <FormInput componentClass="textarea" label={i18n('admin.group.title.description')} type="text" {...description} />
+                <FormInput label={i18n('admin.group.title.name')} type="text" {...name} />
+                <FormInput label={i18n('admin.group.title.code')} type="text" {...code} disabled={!create} />
+                <FormInput componentClass="textarea" label={i18n('admin.group.title.description')} {...description} />
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" onClick={handleSubmit(submitForm)}>{i18n(create ? 'global.action.create' : 'global.action.update')}</Button>
@@ -53,14 +50,13 @@ class AddGroupForm extends AbstractReactComponent {
 }
 
 export default  reduxForm({
-        form: 'addGroupForm',
-        fields: ['name', 'code', 'description'],
-    },(state, props) => {
-        return {
-            initialValues: props.initData,
-        }
+    form: 'addGroupForm',
+    fields: ['name', 'code', 'description'],
+},(state, props) => {
+    return {
+        initialValues: props.initData,
     }
-)(AddGroupForm);
+})(AddGroupForm);
 
 
 
