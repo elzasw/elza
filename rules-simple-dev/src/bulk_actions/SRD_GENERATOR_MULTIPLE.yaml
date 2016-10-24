@@ -24,6 +24,20 @@ action:
       - SRD_LEGEND
     output_type: SRD_TITLE
 
+  # Generated item not mentioned in actions
+  - TEXT_AGGREGATION
+    ignore_duplicated: false
+    input_types:
+      - SRD_UNIT_ARR
+    output_type: SRD_UNIT_ARR
+
+  # Generated item which is obligatory
+  - TEXT_AGGREGATION
+    ignore_duplicated: false
+    input_types:
+      - SRD_UNIT_HIST
+    output_type: SRD_UNIT_HIST
+
   - COPY
     input_types:
       - SRD_TITLE
