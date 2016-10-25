@@ -164,14 +164,16 @@ Source: EAD3</xs:documentation>
 	</xs:complexType>
 	<xs:complexType name="dao">
 		<xs:annotation>
-			<xs:documentation>Child element of &lt;did&gt; used for linking to born digital records or a digital representation of the materials being described.
+			<xs:documentation>Child element of &lt;did&gt; used for linking to born digital records or a digital representation of the materials being described. 
 
-&lt;dao&gt; is a linking element that uses href to connect to born digital records or digital representations of the described materials. Digital representations may include graphic images, audio or video clips, images of text pages, and electronic transcriptions of text.
+Digital archival object might contain link to several files in repository. Digital representations may include graphic images, audio or video clips, images of text pages, and electronic transcriptions of text.
 
-Source: EAD3</xs:documentation>
+Original source: EAD3
+
+Note: Some types of DAO does not have to have link to any file.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="fileGroup" type="eat:fileGroup" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="fileGroup" type="eat:fileGroup" minOccurs="0" maxOccurs="1"/>
 			<xs:element name="relatedFileGroup" type="eat:relatedFileGroup" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 		<xs:attribute name="identifier" use="required" type="eat:identifier">

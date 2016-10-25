@@ -2,6 +2,10 @@
 <wsdl:definitions name="ElzaCoreService" targetNamespace="http://elza.tacr.cz/ws/core/v1" xmlns:eat="http://elza.tacr.cz/ws/types/v1" xmlns:tns="http://elza.tacr.cz/ws/core/v1" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	<wsdl:import namespace="http://elza.tacr.cz/ws/types/v1" location="elza-api-types-v1.xsd"/>
 	<wsdl:types/>
+	<wsdl:message name="Did">
+		<wsdl:documentation>Description of material/level of description</wsdl:documentation>
+		<wsdl:part name="did" type="eat:did"/>
+	</wsdl:message>
 	<wsdl:message name="CoreServiceException">
 		<wsdl:part name="errorDescription" type="eat:errorDescription"/>
 	</wsdl:message>
@@ -40,14 +44,30 @@
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 		<wsdl:operation name="RemovePackage">
-			<wsdl:documentation>Remove package</wsdl:documentation>
+			<wsdl:documentation>Remove package by internal ID</wsdl:documentation>
 			<wsdl:input name="DaoPackageIdentifier" message="tns:Identifier">
-				<wsdl:documentation>ID of package in given system</wsdl:documentation>
+				<wsdl:documentation>ID of package in the system</wsdl:documentation>
 			</wsdl:input>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 		<wsdl:operation name="Link">
 			<wsdl:input name="daoLink" message="tns:DaoLink"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="GetDid">
+			<wsdl:documentation>Return current description of given did.
+Function will throw error if didIdentifier is not valid.</wsdl:documentation>
+			<wsdl:input name="didIdentifier" message="tns:Identifier"/>
+			<wsdl:output name="did" message="tns:Did">
+				<wsdl:documentation>Return did for given identifier</wsdl:documentation>
+			</wsdl:output>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="RemoveDao">
+			<wsdl:documentation>Remove digital archival object from system. Throw exception if digital archival object does not exists in the system.</wsdl:documentation>
+			<wsdl:input name="daoIdentifier" message="tns:Identifier">
+				<wsdl:documentation>ELZA internal identifier of given DAO</wsdl:documentation>
+			</wsdl:input>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 	</wsdl:portType>
@@ -70,11 +90,14 @@
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:portType name="DaoDigitizationService">
+		<wsdl:documentation>Digitization service has two methods for notification about result of digitization request. For each request exactly one of these methods have to be called.</wsdl:documentation>
 		<wsdl:operation name="DigitizationRequestRevoked">
+			<wsdl:documentation>Function to revoke some digitization request.</wsdl:documentation>
 			<wsdl:input name="requestRevoked" message="tns:RequestRevoked"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 		<wsdl:operation name="DigitizationRequestFinished">
+			<wsdl:documentation>Function for importing result of digitization request.</wsdl:documentation>
 			<wsdl:input name="digitizationRequestResult" message="tns:DigitizationRequestResult"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
@@ -141,6 +164,32 @@
 	</wsdl:binding>
 	<wsdl:binding name="DaoService" type="tns:DaoService">
 		<soap:binding style="document" transport="http://tacr.elza.cz/ws/dao-service/base"/>
+		<wsdl:operation name="GetDid">
+			<wsdl:documentation>Return current description of given did.
+Function will throw error if didIdentifier is not valid.</wsdl:documentation>
+			<soap:operation style="document"/>
+			<wsdl:input name="didIdentifier">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="did">
+				<wsdl:documentation>Return did for given identifier</wsdl:documentation>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="RemoveDao">
+			<wsdl:documentation>Remove digital archival object from system. Throw exception if digital archival object does not exists in the system.</wsdl:documentation>
+			<soap:operation style="document"/>
+			<wsdl:input name="daoIdentifier">
+				<wsdl:documentation>ELZA internal identifier of given DAO</wsdl:documentation>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use=""/>
+			</wsdl:fault>
+		</wsdl:operation>
 		<wsdl:operation name="AddPackage">
 			<soap:operation style="document"/>
 			<wsdl:input name="daoPackage">
