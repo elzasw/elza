@@ -1,16 +1,34 @@
 package cz.tacr.elza.service;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
@@ -23,16 +41,17 @@ import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.repository.*;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.ObjectUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.ExternalSourceRepository;
+import cz.tacr.elza.repository.FundRegisterScopeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.RegCoordinatesRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -231,14 +250,14 @@ public class RegistryService {
         }
 
         RegRecord parentRecord = null;
-        if(record.getParentRecord() != null && record.getParentRecord().getRecordId() != null){
+        if (record.getParentRecord() != null && record.getParentRecord().getRecordId() != null){
             parentRecord = regRecordRepository.findOne(record.getParentRecord().getRecordId());
             checkRecordCycle(record, parentRecord);
             record.setParentRecord(parentRecord);
         }
 
 
-        if(record.getRecordId() != null){
+        if (record.getRecordId() != null){
             //při editaci typu kořenového hesla promítnout změnu na všechny potomky
             RegRecord dbRecord = regRecordRepository.findOne(record.getRecordId());
             if (dbRecord.getParentRecord() == null) {
@@ -247,8 +266,11 @@ public class RegistryService {
                     childs.forEach(child -> hierarchicalUpdateRegisterType(child, registerType));
                 }
             }
+        } else {
+            record.setUuid(UUID.randomUUID().toString());
         }
 
+        record.setLastUpdate(LocalDateTime.now());
 
         RegRecord result = regRecordRepository.save(record);
         EventType type = record.getRecordId() == null ? EventType.RECORD_CREATE : EventType.RECORD_UPDATE;
@@ -362,8 +384,6 @@ public class RegistryService {
             if (parentRecord != null && !parentRecord.getRegisterType().getHierarchical()) {
                 throw new IllegalArgumentException("Nelze přidávat heslo k rodiči, který není hierarchický.");
             }
-
-
         } else {
             RegRecord dbRecord = regRecordRepository.findOne(record.getRecordId());
             if (!record.getScope().getScopeId().equals(dbRecord.getScope().getScopeId())) {
@@ -377,8 +397,6 @@ public class RegistryService {
                         "Nelze změnit typ rejstříkového hesla na nehierarchický, pokud má heslo potomky.");
             }
 
-
-
             ParParty party = partyService.findParPartyByRecord(dbRecord);
             if (party == null) {
                 if (regRegisterType.getPartyType() != null) {
@@ -389,7 +407,7 @@ public class RegistryService {
                 ElzaTools.checkEquals(regRegisterType.getPartyType(), party.getPartyType(),
                         "Nelze změnit typ rejstříkového hesla osoby, který odkazuje na jiný typ osoby.");
 
-                //pokud editujeme heslo přes insert/update, a né přes ukládání osoby
+                //pokud editujeme heslo přes insert/update, a ne přes ukládání osoby
                 if (!partySave) {
                     ElzaTools.checkEquals(record.getRecord(), dbRecord.getRecord(),
                             "Nelze editovat hodnotu rejstříkového hesla napojeného na osobu.");
@@ -434,7 +452,7 @@ public class RegistryService {
         return saved;
     }
 
-    public Map<RegRecord, List<RegRecord>> findChildren(List<RegRecord> records) {
+    public Map<RegRecord, List<RegRecord>> findChildren(final List<RegRecord> records) {
         Assert.notNull(records);
 
         if (CollectionUtils.isEmpty(records)) {

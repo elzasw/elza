@@ -145,7 +145,7 @@
         </addColumn>
 
         <update tableName="par_relation_type">
-            <column name="use_unitdate" valueBoolean="INTERVAL" />
+            <column name="use_unitdate" value="INTERVAL" />
         </update>
 
         <addNotNullConstraint tableName="par_relation_type" columnName="use_unitdate" columnDataType="char(10)"/>

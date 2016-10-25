@@ -177,6 +177,9 @@ public class XmlImportService {
     private PartyService partyService;
 
     @Autowired
+    private RegistryService registryServiceService;
+
+    @Autowired
     private ExternalSourceRepository externalSourceRepository;
 
     @Autowired
@@ -1316,7 +1319,7 @@ public class XmlImportService {
         }
 
         updateRecord(record, regRecord, parent, stopOnError);
-        regRecord = recordRepository.save(regRecord);
+        regRecord = registryServiceService.saveRecord(regRecord, true); // TODO vanek: zjistit jaký boolean se tam má dát, udělat v úkolu na úpravu importu
         xmlIdIntIdRecordMap.put(record.getRecordId(), regRecord);
         syncVariantRecords(record, regRecord, isNew, stopOnError);
 
