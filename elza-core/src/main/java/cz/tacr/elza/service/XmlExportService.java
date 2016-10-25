@@ -505,7 +505,7 @@ public class XmlExportService {
 
         Relation relation = new Relation();
 
-//        relation.setClassTypeCode(parRelation.getComplementType().getClassType());
+        relation.setClassTypeCode(parRelation.getComplementType().getRelationClassType().getCode());
         relation.setDateNote(parRelation.getDateNote());
         relation.setFromDate(XmlImportUtils.createComplexDate(parRelation.getFrom()));
         relation.setNote(parRelation.getNote());

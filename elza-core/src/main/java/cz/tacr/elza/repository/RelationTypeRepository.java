@@ -17,9 +17,8 @@ import cz.tacr.elza.domain.ParRelationType;
  */
 public interface RelationTypeRepository extends JpaRepository<ParRelationType, Integer> {
 
-//    ParRelationType findByCodeAndClassType(String relationTypeCode, String classTypeCode);
-//
-//    ParRelationType findByCodeAndClassTypeIsNull(String relationTypeCode);
+    @Query("SELECT rt FROM par_relation_type rt join rt.relationClassType cls WHERE rt.code = ?1 and cls.code = ?2")
+    ParRelationType findByCodeAndClassTypeCode(String relationTypeCode, String classTypeCode);
 
     /**
      * Najde typy vztahů podle typu role vztahu.

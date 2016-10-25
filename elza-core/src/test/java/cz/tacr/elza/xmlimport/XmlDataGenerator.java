@@ -635,7 +635,7 @@ public class XmlDataGenerator {
             event.setClassTypeCode("classTypeCode ");
             event.setRelationTypeCode("relationTypeCode " + index);
         } else {
-//            event.setClassTypeCode(randomRelationType.getClassType());
+            event.setClassTypeCode(randomRelationType.getRelationClassType().getCode());
             event.setRelationTypeCode(randomRelationType.getCode());
         }
 

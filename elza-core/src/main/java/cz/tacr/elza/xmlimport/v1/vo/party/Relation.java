@@ -26,7 +26,7 @@ import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
 public class Relation {
 
     /** Třída vztahu. */
-    @XmlAttribute(name = "class-type-code")
+    @XmlAttribute(name = "class-type-code", required =  true)
     private String classTypeCode;
 
     /** Typ vztahu. */
@@ -64,7 +64,7 @@ public class Relation {
         return classTypeCode;
     }
 
-    public void setClassTypeCode(String classTypeCode) {
+    public void setClassTypeCode(final String classTypeCode) {
         this.classTypeCode = classTypeCode;
     }
 
@@ -72,7 +72,7 @@ public class Relation {
         return relationTypeCode;
     }
 
-    public void setRelationTypeCode(String relationTypeCode) {
+    public void setRelationTypeCode(final String relationTypeCode) {
         this.relationTypeCode = relationTypeCode;
     }
 
@@ -80,7 +80,7 @@ public class Relation {
         return fromDate;
     }
 
-    public void setFromDate(ComplexDate fromDate) {
+    public void setFromDate(final ComplexDate fromDate) {
         this.fromDate = fromDate;
     }
 
@@ -88,7 +88,7 @@ public class Relation {
         return toDate;
     }
 
-    public void setToDate(ComplexDate toDate) {
+    public void setToDate(final ComplexDate toDate) {
         this.toDate = toDate;
     }
 
@@ -96,7 +96,7 @@ public class Relation {
         return dateNote;
     }
 
-    public void setDateNote(String dateNote) {
+    public void setDateNote(final String dateNote) {
         this.dateNote = dateNote;
     }
 
@@ -104,7 +104,7 @@ public class Relation {
         return note;
     }
 
-    public void setNote(String note) {
+    public void setNote(final String note) {
         this.note = note;
     }
 
@@ -120,7 +120,7 @@ public class Relation {
         return roleTypes;
     }
 
-    public void setRoleTypes(List<RoleType> roleTypes) {
+    public void setRoleTypes(final List<RoleType> roleTypes) {
         this.roleTypes = roleTypes;
     }
 

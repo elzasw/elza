@@ -1022,19 +1022,12 @@ public class XmlImportService {
         String relationTypeCode = relation.getRelationTypeCode();
         String classTypeCode = relation.getClassTypeCode();
 
-        ParRelationType parRelationType = null;
-        if (classTypeCode == null) {
-//            parRelationType = relationTypeRepository.findByCodeAndClassTypeIsNull(relationTypeCode);
-            if (parRelationType ==  null) {
-                throw new PartyImportException("Nebyl nalezen typ vztahu s kódem " + relationTypeCode);
-            }
-        } else {
-//            parRelationType = relationTypeRepository.findByCodeAndClassType(relationTypeCode, classTypeCode);
-            if (parRelationType ==  null) {
-                throw new PartyImportException("Nebyl nalezen typ vztahu s kódem " + relationTypeCode
-                        + " a s třídou " + classTypeCode);
-            }
+        ParRelationType parRelationType = relationTypeRepository.findByCodeAndClassTypeCode(relationTypeCode, classTypeCode);
+        if (parRelationType ==  null) {
+            throw new PartyImportException("Nebyl nalezen typ vztahu s kódem " + relationTypeCode
+                    + " a s třídou " + classTypeCode);
         }
+
         parRelation.setComplementType(parRelationType);
 
         parRelation.setDateNote(XmlImportUtils.trimStringValue(relation.getDateNote(), StringLength.LENGTH_1000, stopOnError));

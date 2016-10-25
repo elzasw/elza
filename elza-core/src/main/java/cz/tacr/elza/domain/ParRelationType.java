@@ -58,7 +58,7 @@ public class ParRelationType implements cz.tacr.elza.api.ParRelationType<ParRela
     @Column(nullable = false)
     private UseUnitdateEnum useUnitdate;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParRelationClassType.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParRelationClassType.class)
     @JoinColumn(name = "relationClassTypeId", nullable = false)
     private ParRelationClassType relationClassType;
 
@@ -103,12 +103,12 @@ public class ParRelationType implements cz.tacr.elza.api.ParRelationType<ParRela
     }
 
     @Override
-	public UseUnitdateEnum getUseUnitdate() {
+    public UseUnitdateEnum getUseUnitdate() {
         return useUnitdate;
     }
 
     @Override
-	public void setUseUnitdate(final UseUnitdateEnum useUnitdate) {
+    public void setUseUnitdate(final UseUnitdateEnum useUnitdate) {
         this.useUnitdate = useUnitdate;
     }
 
