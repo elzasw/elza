@@ -14,7 +14,7 @@ import {Link, IndexLink} from 'react-router';
 import {FundSettingsForm, Tabs, Icon, FundDataGrid, Ribbon, i18n, ArrFundPanel} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 
-var ArrParentPage = require("./ArrParentPage.jsx");
+import ArrParentPage from "./ArrParentPage.jsx";
 
 import {
     BulkActionsDialog,

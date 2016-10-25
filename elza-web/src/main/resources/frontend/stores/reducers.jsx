@@ -32,6 +32,7 @@ import stateRegion from './app/state/stateRegion.jsx';
 import userDetail from './app/user/userDetail.jsx';
 import router from './app/router.jsx';
 import status from './app/status.jsx';
+import app from './app/app.jsx';
 
 import addPartyForm from './app/party/form/addPartyForm.jsx';
 import partyNameForm from './app/party/form/partyNameForm.jsx';
@@ -57,9 +58,10 @@ const normalizePacketSize = (value, previousValue, allValues, previousAllValues)
 
 
 const rootReducer = combineReducers({
+    app,
     arrRegion,
     refTables,
-    registryRegion,
+    //registryRegion,
     registryRegionRecordTypes,
     toastr,
     developer,
@@ -77,7 +79,7 @@ const rootReducer = combineReducers({
     userDetail,
     tab,
     status,
-form: formReducer.plugin({
+    form: formReducer.plugin({
         fundForm: fundForm,
         outputEditForm: inlineForm,
         permissionsEditForm: inlineForm,

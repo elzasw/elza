@@ -226,28 +226,27 @@ public class PartyController {
      * @return seznam osob s počtem všech osob
      */
     @RequestMapping(value = "/findParty", method = RequestMethod.GET)
-    public ParPartyWithCount findParty(@Nullable @RequestParam(value = "search", required = false) final String search,
+    public FilteredResultVO<ParPartyVO> findParty(@Nullable @RequestParam(value = "search", required = false) final String search,
                                        @RequestParam("from") final Integer from,
                                        @RequestParam("count") final Integer count,
                                        @Nullable @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId,
                                        @RequestParam(required = false) @Nullable final Integer versionId) {
 
         ArrFund fund;
-        if(versionId == null){
+        if (versionId == null) {
             fund = null;
-        }else{
+        } else {
             ArrFundVersion version = fundVersionRepository.findOne(versionId);
-            Assert.notNull(version, "Nebyla nalezena verze archivní pomůcky s id "+versionId);
+            Assert.notNull(version, "Nebyla nalezena verze archivní pomůcky s id " + versionId);
             fund = version.getFund();
         }
 
 
-        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, from, count,
-                fund);
+        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, from, count, fund);
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
         long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, fund);
-        return new ParPartyWithCount(resultVo, countAll);
+        return new FilteredResultVO<>(resultVo, countAll);
     }
 
     /**

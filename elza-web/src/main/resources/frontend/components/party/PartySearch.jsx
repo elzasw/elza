@@ -1,91 +1,87 @@
-/**
- * Komponenta hledání osob
- */
-
-require('./PartySearch.less');
-
 import React from 'react';
 import {connect} from 'react-redux'
-import {Button} from 'react-bootstrap';
-import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel} from 'components/index.jsx';
+import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel, Loading} from 'components/index.jsx';
+import FormInput from 'components/form/FormInput.jsx';
 import {AppActions} from 'stores/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded, partyArrReset} from 'actions/party/party.jsx'
+import {partyListFetchIfNeeded, partyListFilter, partyDetailFetchIfNeeded, partyArrReset} from 'actions/party/party.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import {WebApi} from 'actions/index.jsx';
 
-var PartySearch = class PartySearch extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+import './PartySearch.less';
 
-        this.bindMethods('trySetFocus')
-
-        this.handleSearch = this.handleSearch.bind(this);               // funkce pro akci spoustící vyhledávání
-        this.handlePartyDetail = this.handlePartyDetail.bind(this);     // funkce vyberu osoby zobrazeni detailu
-        this.handleClearSearch = this.handleClearSearch.bind(this);
-        this.renderListItem = this.renderListItem.bind(this);
-    }
+/**
+ * Komponenta list osob
+ */
+class PartySearch extends AbstractReactComponent {
 
     componentDidMount() {
-        this.trySetFocus(this.props)
+        this.fetchIfNeeded();
+        this.trySetFocus()
     }
 
     componentWillReceiveProps(nextProps) {
-        this.trySetFocus(nextProps)
+        this.fetchIfNeeded(nextProps);
+        this.trySetFocus(nextProps);
     }
 
-    trySetFocus(props) {
-        var {focus} = props
+    fetchIfNeeded = (props = this.props) => {
+        const {partyList: {filter}} = props;
+        this.dispatch(partyListFetchIfNeeded(filter))
+    };
+
+    trySetFocus = (props = this.props) => {
+        const {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
                 if (this.refs.partyList) {   // ještě nemusí existovat
                     this.setState({}, () => {
-                        this.refs.partyList.focus()
+                        this.refs.partyList.focus();
                         focusWasSet()
                     })
                 }
             } else if (isFocusFor(focus, 'party', 1) || isFocusFor(focus, 'party', 1, 'list')) {
                 this.setState({}, () => {
-                    this.refs.partyList.focus()
+                    this.refs.partyList.focus();
                     focusWasSet()
                 })
             }
         }
-    }
+    };
 
-    handleSearch(filterText){
-        const {partyRegion} = this.props;
-        this.dispatch(findPartyFetchIfNeeded(filterText, partyRegion.panel.versionId));
-    }
+    handleFilterType = (e) => {
+        const val = e.target.value;
+        this.dispatch(partyListFilter({...this.props.partyList.filter, type: val == -1 ? null : val}));
+    };
 
-    handleClearSearch(){
-        const {partyRegion} = this.props;
-        this.dispatch(findPartyFetchIfNeeded(null, partyRegion.panel.versionId));
-    }
+    handleFilterText = (filterText) => {
+        this.dispatch(partyListFilter({...this.props.partyList.filter, text: filterText.length === 0 ? null : filterText}));
+    };
 
-    handlePartyDetail(item, e){
+    handleFilterTextClear = () => {
+        this.dispatch(partyListFilter({...this.props.partyList.filter, text: null}));
+    };
+
+    handlePartyDetail = (item, e) => {
         this.dispatch(partyDetailFetchIfNeeded(item.partyId));
-    }
+    };
 
-    handleArrReset() {
-        this.dispatch(partyArrReset());
-    }
+    handleArrReset = () => {
+        //this.dispatch(partyArrReset());
+    };
 
-    renderListItem(item) {
-        return (
-            <div className='search-result-row' onClick={this.handlePartyDetail.bind(this, item)}>
-                <span className="name">{item.record.record}</span>
-                <span>{item.partyType.description + " | " + item.partyId}</span>
-                <span title={item.record.description}>{item.record.description}</span>
-            </div>
-        )
-    }
+    renderListItem = (item) => {
+        return <div className='search-result-row' onClick={this.handlePartyDetail.bind(this, item)}>
+            <span className="name">{item.record.record}</span>
+            <span>{item.partyType.description + " | " + item.partyId}</span>
+            <span title={item.record.description}>{item.record.description}</span>
+        </div>
+    };
 
     render() {
-        const {partyRegion} = this.props;
-
-        var partyList = this.props.items;
-        var partyListRows
+        const {partyList, partyTypes} = this.props;
+        /*
         if(partyList && partyList.length>0){
             var description = '';
             for(var i = 0; i<partyList.length; i++){                                                            // projdu vsechny polozky abych jim nastavil popisek
@@ -105,54 +101,60 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
 
             var activeIndex = indexById(partyList, this.props.selectedPartyID, 'partyId')
             partyListRows = (
-                <ListBox
-                    className='party-listbox'
-                    ref='partyList'
-                    items={partyList}
-                    activeIndex={activeIndex}
-                    renderItemContent={this.renderListItem}
-                    onFocus={this.handlePartyDetail}
-                    onSelect={this.handlePartyDetail}
-                    />
+
             )            
         }else{
-            var label = i18n('search.action.noResult'); ;
-            partyListRows = <li className="noResult">{label}</li>
-        }
+            var label = ; ;
+            partyListRows =
+        }*/
 
-        var arrPanel = null;
+        let arrPanel = null;
 
-        if (partyRegion.panel.versionId != null) {
+        if (false) {
             arrPanel = <ArrPanel onReset={this.handleArrReset} name={partyRegion.panel.name} />
         }
 
-        return  <div className="party-list">
-                    <div>
-                        {arrPanel}
-                        <SearchWithGoto
-                            onFulltextSearch={this.handleSearch}
-                            onClear={this.handleClearSearch}
-                            placeholder={i18n('search.input.search')}
-                            filterText={this.props.filterText}
-                            showFilterResult={true}
-                            type="INFO"
-                            itemsCount={partyList ? partyList.length : 0}
-                            allItemsCount={partyRegion.itemsCount}
-                        />
-                    </div>
-                    <div className="partySearch">
-                        {partyListRows}
-                    </div>
-                </div>
+        if (!partyTypes || !partyList.fetched) {
+            return <Loading />;
+        }
+
+        return <div className="party-list">
+            <div>
+                {arrPanel}
+                <FormInput componentClass="select" onChange={this.handleFilterType}>
+                    <option value={-1}>{i18n('global.all')}</option>
+                    {partyTypes.map(i => <option value={i.partyTypeId} key={i.partyTypeId}>{i.name}</option>)}
+                </FormInput>
+                <SearchWithGoto
+                    onFulltextSearch={this.handleFilterText}
+                    onClear={this.handleFilterTextClear}
+                    placeholder={i18n('search.input.search')}
+                    filterText={partyList.filter.text}
+                    showFilterResult={true}
+                    type="INFO"
+                    itemsCount={partyList.filteredRows ? partyList.filteredRows.length : 0}
+                    allItemsCount={partyList.count}
+                />
+            </div>
+            <div className="partySearch">
+                {partyList.rows.length > 0 ? <ListBox
+                    className='party-listbox'
+                    ref='partyList'
+                    items={partyList.filteredRows}
+                    activeIndex={null}
+                    renderItemContent={this.renderListItem}
+                    onFocus={this.handlePartyDetail}
+                    onSelect={this.handlePartyDetail}
+                /> :<ul><li className="noResult">{i18n('search.action.noResult')}</li></ul>}
+            </div>
+        </div>
     }
 }
 
-function mapStateToProps(state) {
-    const {partyRegion, focus} = state
+export default connect((state) => {
+    const {app:{partyList}, refTables:{partyTypes}} = state;
     return {
-        partyRegion,
-        focus,
+        partyList,
+        partyTypes: partyTypes.fetched ? partyTypes.items : false,
     }
-}
-
-module.exports = connect(mapStateToProps)(PartySearch);
+})(PartySearch);

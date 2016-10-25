@@ -1,9 +1,6 @@
 /**
  * Komponenta detailu osoby
  */
-
-require('./PartyFormStyles.less');
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -15,58 +12,67 @@ import {updateParty} from 'actions/party/party.jsx'
 import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 import {Utils} from 'components/index.jsx';
 import {setInputFocus} from 'components/Utils.jsx'
-var ShortcutsManager = require('react-shortcuts');
-var Shortcuts = require('react-shortcuts/component');
+const ShortcutsManager = require('react-shortcuts');
+const Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 
-var keyModifier = Utils.getKeyModifier()
+const keyModifier = Utils.getKeyModifier();
 
-var keymap = {
+const keymap = {
     PartyDetail: {
         xxx: keyModifier + 'e',
     },
-}
-var shortcutManager = new ShortcutsManager(keymap)
+};
+const shortcutManager = new ShortcutsManager(keymap);
+
+import './PartyFormStyles.less';
 
 /**
  * PARTY DETAIL
  * *********************************************
  * Detail osoby
- */ 
-var PartyDetail = class PartyDetail extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+ */
+class PartyDetail extends AbstractReactComponent {
 
-        this.bindMethods(                               // pripojením funkcím "this"
-            'updateValue',                              // aktualizace nějaké hodnoty
-            'changeValue',                               // změna nějakéh políčka ve formuláři
-            'trySetFocus',
-            'initCalendarTypes'
-        );
-        this.state={
-            dynastyId: 2,
-            groupId: 3,
-        };
-    }
+    static PropTypes = {
+        focus: React.PropTypes.object.isRequired,
+        userDetail: React.PropTypes.object.isRequired,
+    };
+
+    static childContextTypes = {
+        shortcuts: React.PropTypes.object.isRequired
+    };
+
+    state = {
+        dynastyId: 2,
+        groupId: 3,
+    };
 
     componentDidMount() {
         this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
         this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
-        this.trySetFocus(this.props)
+        this.trySetFocus();
         this.initCalendarTypes(this.props, this.props);
+        this.fetchIfNeeded();
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(partyDetailFetchIfNeeded(nextProps.partyRegion.selectedPartyID));
-        this.trySetFocus(nextProps)
+        this.fetchIfNeeded(nextProps);
+        this.trySetFocus(nextProps);
         this.initCalendarTypes(this.props, nextProps);
     }
 
-    trySetFocus(props) {
-        var {focus} = props
+    fetchIfNeeded = (props = this.props) => {
+        const {partyDetail: {id}} = props;
+        if (id) {
+            this.dispatch(partyDetailFetchIfNeeded(id));
+        }
+    };
 
-        var callback = null;
+    trySetFocus = (props = this.props) => {
+        const {focus} = props;
+
         if (canSetFocus()) {
             if (isFocusFor(focus, 'party', 2)) {
                 this.setState({}, () => {
@@ -76,52 +82,49 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                 })
             }
         }
-    }
+    };
 
     /**
      * Inicializace typů kalendáře (z důvodu možnosti výběru typu kalendáře, když není zadaná hodnota datumu. Nedochází k ukládání osoby)
      */
-    initCalendarTypes(props, nextProps) {
-        var party = nextProps.partyRegion.selectedPartyData;
-        var fromCalendar = this.state.fromCalendar;
-        var toCalendar = this.state.toCalendar;
+    initCalendarTypes = (props, nextProps)  => {
+        const party = nextProps.partyDetail.data;
+        let {fromCalendar, toCalendar} = this.state;
 
-        var partyChanged = props.partyRegion.selectedPartyID != nextProps.partyRegion.selectedPartyID;
-        if(partyChanged){
+        var partyChanged = props.partyDetail.id != nextProps.partyDetail.id;
+        if (partyChanged) {
             fromCalendar = null;
             toCalendar = null;
         }
 
 
-        if (party != undefined) {
+        if (party) {
             if (party.from != undefined && party.from.calendarTypeId != undefined) {
                 fromCalendar = party.from.calendarTypeId;
             }
-            fromCalendar = fromCalendar == undefined ? nextProps.partyRegion.gregorianCalendarId : fromCalendar;
+            fromCalendar = fromCalendar == undefined ? "A" : fromCalendar;
 
             if (party.to != undefined && party.to.calendarTypeId != undefined) {
                 toCalendar = party.to.calendarTypeId;
             }
-            toCalendar = toCalendar == undefined ? nextProps.partyRegion.gregorianCalendarId : toCalendar;
+            toCalendar = toCalendar == undefined ? "A" : toCalendar;
         }
 
-        this.setState({
-            toCalendar: toCalendar,
-            fromCalendar: fromCalendar});
-    }
+        this.setState({toCalendar, fromCalendar});
+    };
 
     getChildContext() {
         return { shortcuts: shortcutManager };
     }
 
-    handleShortcuts(action) {
+    handleShortcuts = (action)  => {
         console.log("#handleShortcuts", '[' + action + ']', this);
 
         switch (action) {
             case 'xxx':
                 break
         }
-    }
+    };
 
     /**
      * CHANGE VALUE
@@ -129,7 +132,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
      * Zpracování změny nějaké hodnoty ve formuláři
      * @param event - událost změny
      */ 
-    changeValue(needUpdate, event){
+    changeValue = (needUpdate, event) => {
         var value = event.target.value;                             // hodnota změna         
         var variable = event.target.name;                           // políčko (název hodnoty) změny
         var p = this.props.partyRegion.selectedPartyData;           // původní osoba
@@ -140,7 +143,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
             needUpdate: needUpdate,
             party: party
         });                              // znovuvykresleni formuláře se změnou
-    }
+    };
 
     /**
      * UPDATE VALUE
@@ -148,7 +151,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
      * Uložení změny nekteré hodnoty
      * @param event - událost, která změnu vyvolala
      */ 
-    updateValue(event){
+    updateValue = (event) => {
         if(this.state.needUpdate){
             var value = event.target.value;                             // hodnota změna
             var variable = event.target.name;                           // políčko (název hodnoty) změny
@@ -176,7 +179,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                 needUpdate: false,
                 party:null});
         }
-    }
+    };
 
     /**
      * MERGE PARTY CHANGES
@@ -186,7 +189,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
      * @param variable - název měné hodnoty 
      * @param value - nová hoddnota měnené položky
      */ 
-    mergePartyChanges(party, variable, value){
+    mergePartyChanges = (party, variable, value) => {
         if((variable=="fromText" || variable=="fromCalendar") && !party.from){  // pokud neni definovane datumove pole a je aktualizováno
             party.from={
                 calendarTypeId: this.state.fromCalendar ? this.state.fromCalendar : this.props.partyRegion.gregorianCalendarId,     // nastaví se mu defaultně gregoriánský kalendář
@@ -213,9 +216,9 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
             case "scope" : party.scope = value; break;
             case "note" : party.record.note = value; break;
             case "characteristics" : party.characteristics = value; break;
-        };
+        }
         return party;
-    }
+    };
 
     /**
      * RENDER
@@ -223,39 +226,33 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
      * Vykreslení detailu osoby
      */ 
     render() {
-        const {userDetail} = this.props
+        const {userDetail, partyDetail, refTables: {partyTypes, calendarTypes}} = this.props;
+        const {fromCalendar, toCalendar} = this.state;
+        const party = partyDetail.data;
 
-        var party = this.props.partyRegion.selectedPartyData;
-
-        if(this.props.partyRegion.isFetchingDetail && party == undefined){
+        if (partyDetail.isFetching && !party) {
             return <div>{i18n('party.detail.finding')}</div>
         }
 
-        if(party == undefined){
-            return(
-                    <div className="unselected-msg">
-                        <div className="title">{i18n('party.noSelection.title')}</div>
-                        <div className="msg-text">{i18n('party.noSelection.message')}</div>                                                
-                    </div>
-                    );
+        if (!party) {
+            return <div className="unselected-msg">
+                <div className="title">{i18n('party.noSelection.title')}</div>
+                <div className="msg-text">{i18n('party.noSelection.message')}</div>
+            </div>
         }
 
-        var canEdit = false
-        if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: party.record.scopeId})) {
-            canEdit = true
-        }
+        let canEdit = userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: party.record.scopeId});
 
         return (
             <Shortcuts name='PartyDetail' handler={this.handleShortcuts}>
-                <div ref='partyDetail' className={"partyDetail"}>
+                <div ref='partyDetail' className="partyDetail">
                     <h1>{party.record.record}</h1>
                     <div className="line">
-                    <FormInput disabled={!canEdit} componentClass="textarea" label={i18n('party.detail.characteristics')} name="characteristics" value={party.characteristics != undefined ? party.characteristics : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
+                        <FormInput disabled={!canEdit} componentClass="textarea" label={i18n('party.detail.characteristics')} name="characteristics" value={party.characteristics ? party.characteristics : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
                     </div>
-
                     <div className="line typ">
                         <FormInput componentClass="select" disabled={true} value={party.partyType.partyTypeId} label={i18n('party.detail.type')}>
-                            {this.props.refTables.partyTypes.items.map(i=> {return <option key={i.partyTypeId} value={i.partyTypeId}>{i.name}</option>})}
+                            {partyTypes.items.map(i=> {return <option key={i.partyTypeId} value={i.partyTypeId}>{i.name}</option>})}
                         </FormInput>
                     </div>
                     <div className="line datation">
@@ -263,8 +260,8 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                             <div>
                                 <label>{i18n('party.nameValidFrom')}</label>
                                 <div className="date">
-                                    <FormInput disabled={!canEdit} componentClass="select" name="fromCalendar" value={this.state.fromCalendar} onChange={this.changeValue.bind(this,party.from != undefined && party.from.textDate != undefined)} onBlur={this.updateValue}>
-                                        {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
+                                    <FormInput disabled={!canEdit} componentClass="select" name="fromCalendar" value={fromCalendar} onChange={this.changeValue.bind(this, party.from && party.from.textDate)} onBlur={this.updateValue}>
+                                        {calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
                                     </FormInput>
                                     <FormInput disabled={!canEdit} type="text"  name="fromText" value={party.from == null || party.from.textDate == null ? '' : party.from.textDate} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue} />
                                 </div>
@@ -272,8 +269,8 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                             <div>
                                 <label>{i18n('party.nameValidTo')}</label>
                                 <div className="date">
-                                    <FormInput disabled={!canEdit} componentClass="select" name="toCalendar" value={this.state.toCalendar} onChange={this.changeValue.bind(this, party.to != undefined && party.to.textDate != undefined)} onBlur={this.updateValue} >
-                                        {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
+                                    <FormInput disabled={!canEdit} componentClass="select" name="toCalendar" value={toCalendar} onChange={this.changeValue.bind(this, party.to && party.to.textDate)} onBlur={this.updateValue} >
+                                        {calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
                                     </FormInput>
                                     <FormInput disabled={!canEdit} type="text" name="toText" value={party.to == null || party.to.textDate == null ? '' : party.to.textDate} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue} />
                                 </div>
@@ -283,32 +280,32 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
 
                     <div className="line party-names">
                         <label>{i18n('party.detail.names')}</label>
-                        <PartyDetailNames canEdit={canEdit} partyRegion={this.props.partyRegion} />
+                        {false && <PartyDetailNames canEdit={canEdit} party={partyDetail.data}  />}
                     </div>
 
-                    {party.partyType.partyTypeId == this.state.groupId ? <div className="line party-identifiers">
+                    {false && party.partyType.partyTypeId == this.state.groupId ? <div className="line party-identifiers">
                         <label>{i18n('party.detail.identifiers')}</label>
-                        <PartyDetailIdentifiers canEdit={canEdit} partyRegion={this.props.partyRegion} refTables={this.props.refTables}/>
+                        <PartyDetailIdentifiers canEdit={canEdit} party={partyDetail.data} refTables={refTables}/>
                     </div> :  null}
 
 
-                    {party.partyType.partyTypeId == this.state.dynastyId ? <div className="line">
-                        <FormInput disabled={!canEdit} componentClass="textarea" label={i18n('party.detail.genealogy')} name="genealogy" value={party.genealogy != undefined ? party.genealogy : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/> </div>:  null}
+                    {false && party.partyType.partyTypeId == this.state.dynastyId ? <div className="line">
+                        <FormInput disabled={!canEdit} componentClass="textarea" label={i18n('party.detail.genealogy')} name="genealogy" value={party.genealogy ? party.genealogy : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/> </div>:  null}
 
-                    <div className="line"><FormInput disabled={!canEdit} componentClass="textarea" label={i18n('party.detail.note')} name="note" value={party.record.note != undefined ? party.record.note : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
-                    <div className="line"><FormInput disabled={!canEdit} componentClass="textarea" label={i18n('party.detail.history')} name="history" value={party.history != undefined ? party.history : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
+                    <div className="line"><FormInput disabled={!canEdit} componentClass="textarea" label={i18n('party.detail.note')} name="note" value={party.record.note ? party.record.note : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
+                    <div className="line"><FormInput disabled={!canEdit} componentClass="textarea" label={i18n('party.detail.history')} name="history" value={party.history ? party.history : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
                     <div className="line"><FormInput disabled={!canEdit} componentClass="textarea" label={i18n('party.detail.sources')} name="sourceInformation" value={party.sourceInformation == null ? '' : party.sourceInformation} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/></div>
 
-                    {party.partyType.partyTypeId == this.state.groupId ? <div className="line group-panel">
-                        <FormInput disabled={!canEdit} type="text" label={i18n('party.detail.groupOrganization')} name="organization" value={party.organization != undefined ? party.organization : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
-                        <FormInput disabled={!canEdit} type="text" label={i18n('party.detail.groupFoundingNorm')} name="foundingNorm" value={party.foundingNorm != undefined ? party.foundingNorm : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
-                        <FormInput disabled={!canEdit} type="text" label={i18n('party.detail.groupScopeNorm')} name="scopeNorm" value={party.scopeNorm != undefined ? party.scopeNorm : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
-                        <FormInput disabled={!canEdit} type="text" label={i18n('party.detail.groupScope')} name="scope" value={party.scope != undefined ? party.scope : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
+                    {false && party.partyType.partyTypeId == this.state.groupId ? <div className="line group-panel">
+                        <FormInput disabled={!canEdit} type="text" label={i18n('party.detail.groupOrganization')} name="organization" value={party.organization ? party.organization : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
+                        <FormInput disabled={!canEdit} type="text" label={i18n('party.detail.groupFoundingNorm')} name="foundingNorm" value={party.foundingNorm ? party.foundingNorm : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
+                        <FormInput disabled={!canEdit} type="text" label={i18n('party.detail.groupScopeNorm')} name="scopeNorm" value={party.scopeNorm ? party.scopeNorm : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
+                        <FormInput disabled={!canEdit} type="text" label={i18n('party.detail.groupScope')} name="scope" value={party.scope ? party.scope : ''} onChange={this.changeValue.bind(this,true)} onBlur={this.updateValue}/>
                     </div> :  ''}
 
                     <div className="line party-creators">
                         <label>{i18n('party.detail.creators')}</label>
-                        <PartyDetailCreators canEdit={canEdit} partyRegion={this.props.partyRegion} refTables={this.props.refTables}/>
+                        {false && <PartyDetailCreators canEdit={canEdit} partyRegion={this.props.partyRegion} refTables={this.props.refTables}/>}
                     </div>
                 </div>
             </Shortcuts>
@@ -317,22 +314,12 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {partyRegion, focus, userDetail} = state;
+    const {app: {partyDetail}, focus, userDetail} = state;
     return {
-        partyRegion,
+        partyDetail,
         focus,
         userDetail
     }
 }
 
-PartyDetail.propTypes = {
-    focus: React.PropTypes.object.isRequired,
-    userDetail: React.PropTypes.object.isRequired,
-    partyRegion: React.PropTypes.object.isRequired
-};
-
-PartyDetail.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
-};
-
-module.exports = connect(mapStateToProps)(PartyDetail);
+export default connect(mapStateToProps)(PartyDetail);

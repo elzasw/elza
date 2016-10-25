@@ -5,7 +5,7 @@
 'use strict'
 
 // Import css Bootstrapu
-require('./elza-styles.less');
+import './elza-styles.less';
 
 import React from 'react';
 import { render } from 'react-dom';
@@ -69,18 +69,18 @@ import SplitToggle from './node_modules/react-bootstrap/lib/SplitToggle';
 SplitToggle.defaultProps = {
     ...SplitToggle.defaultProps,
     tabIndex: -1
-}
+};
 
 // Pokud dostane focus body, chceme jej změnit na implcitiní focus pro ribbon
 import {setFocus} from 'actions/global/focus.jsx';
 {
-    function testBodyfocus() {
+    const testBodyfocus = () => {
         if (document.activeElement === document.body) { // focus je na body, nastavíme ho podle aktuálně přepnuté oblasti
             AppStore.store.dispatch(setFocus(null, 1));
         }
 
         setTimeout(testBodyfocus, 150)
-    }
+    };
     //testBodyfocus()
 }
 /*

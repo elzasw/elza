@@ -1,1 +1,1 @@
-exports.AppStore = require('stores/AppStore.jsx');
+export AppStore from 'stores/AppStore.jsx';

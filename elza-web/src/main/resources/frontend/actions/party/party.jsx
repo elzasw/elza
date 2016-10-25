@@ -12,6 +12,12 @@ import {getPartyTypeById} from 'actions/refTables/partyTypes.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 
+import {SimpleListActions} from 'shared/list'
+import {DetailActions} from 'shared/detail'
+
+
+export const AREA_PARTY_LIST = 'partyList';
+export const AREA_PARTY_DETAIL = 'partyDetail';
 
 /**
  * INSERT PARTY
@@ -83,37 +89,37 @@ export function deleteParty(partyId, filterText) {
 
 
 /**
- * FIND PARTY FETCH IF NEEDED
- * *********************************************
- * Volání webového rozhraní pro získání hledaný osob (pokud již není načten)
- * @param filterText string - hledaná fráze/text/jméno
+ * Načtení seznamu osob dle filtru
+ *
+ * @param filter {Object} - objekt filtru
  * @param versionId int - versionId
  */
-export function findPartyFetchIfNeeded(filterText, versionId = null) {
-    return (dispatch, getState) => {
-        var state = getState();
-
-        if (!state.partyRegion.isFetchingSearch && (state.partyRegion.dirtySearch || state.partyRegion.filterText !== filterText)) {
-            return dispatch(findPartyFetch(filterText, versionId));
-        } else if (!state.partyRegion.fetchedSearch && !state.partyRegion.isFetchingSearch) {
-            return dispatch(findPartyFetch(filterText, versionId));
-        }
-    }
+export function partyListFetchIfNeeded(filter, versionId = null) {
+    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, () => WebApi.findParty(filter.text, versionId, filter.type))
 }
 
 /**
- * FIND PARTY FETCH
- * *********************************************
- * Volání webového rozhraní pro získání seznamu osob na základě hledané fráze
- * @param filterText string - hledaná fráze/text/jméno
- * @param versionId int - versionId
+ * Filtr osob
+ *
+ * @param filter {Object} - objekt filtru
  */
-export function findPartyFetch(filterText, versionId = null) {
-    return dispatch => {
-        dispatch(findPartyRequest(filterText))
-        return WebApi.findParty(filterText, versionId)
-            .then(json => dispatch(findPartyReceive(filterText, json)));
-    }
+export function partyListFilter(filter) {
+    return SimpleListActions.filter(AREA_PARTY_LIST, filter);
+}
+
+/**
+ * Invalidace seznamu osob
+ */
+export function partyListInvalidate() {
+    return SimpleListActions.invalidate(AREA_PARTY_LIST, null);
+}
+
+export function partyDetailFetchIfNeeded(id) {
+    return DetailActions.fetchIfNeeded(AREA_PARTY_DETAIL, id, () => WebApi.getParty(id));
+}
+
+export function partyDetailInvalidate() {
+    return DetailActions.invalidate(AREA_PARTY_DETAIL, null)
 }
 
 /**
@@ -124,100 +130,6 @@ export function findPartyFetch(filterText, versionId = null) {
 export function clearPartyDetail() {
     return {
         type: types.PARTY_DETAIL_CLEAR
-    }
-}
-
-/**
- * FIND PARTY RECETVE
- * *********************************************
- * Seznam osob z webového rozhraní byl získán
- * @param filterText string - hledaná fráze/text/jméno
- * @param json obj - objekt obsahující nalezené osoby
- */
-export function findPartyReceive(filterText, json) {
-    return {
-        type: types.PARTY_FIND_PARTY_RECEIVE,
-        items: json.records,
-        itemsCount: json.recordsCount,
-        filterText: filterText
-    }
-}
-
-/**
- * FIND PARTY REQUEST
- * *********************************************
- * Byl odeslán požadavek na získání seznamu hledaných osob
- * @param filterText string - hledaná fráze/text/jméno
- */
-export function findPartyRequest(filterText) {
-    return {
-        type: types.PARTY_FIND_PARTY_REQUEST,
-        filterText: filterText
-    }
-}
-
-/**
- * PARTY DETAIL FETCH IF NEEDED
- * *********************************************
- * Volání webového rozhraní pro získání detailu osoby (pokud již není načten)
- * @param selectedPartyID int - identifikátor hledané osoby
- */
-export function partyDetailFetchIfNeeded(selectedPartyID) {
-    return (dispatch, getState) => {
-        if(selectedPartyID == undefined){
-            return;
-        }
-
-        var state = getState();
-        if (!state.partyRegion.isFetchingDetail && (state.partyRegion.dirty || state.partyRegion.selectedPartyID !== selectedPartyID)) {
-            return dispatch(partyDetailFetch(selectedPartyID));
-        } else if (!state.partyRegion.fetchedDetail && !state.partyRegion.isFetchingDetail) {
-            return dispatch(partyDetailFetch(selectedPartyID));
-        }
-    }
-}
-
-/**
- * PARTY DETAIL FETCH
- * *********************************************
- * Volání webového rozhraní pro získání detailu osoby
- * @param selectedPartyID int - identifikátor hledané osoby
- */
-export function partyDetailFetch(selectedPartyID) {
-    return dispatch => {
-        dispatch(partyDetailRequest(selectedPartyID))
-        
-        return WebApi.getParty(selectedPartyID)
-            .then(json => dispatch(partyDetailReceive(selectedPartyID, json)));
-    }
-}
-
-/**
- * PARTY DETAIL RECIVE
- * *********************************************
- * Volání webového rozhraní pro získání detailu osoby
- * @param selectedPartyID int - identifikátor hledané osoby
- * @param selectedPartyData obj - získaná data osoby
- */
-export function partyDetailReceive(selectedPartyID, selectedPartyData) {
-    return {
-        type: types.PARTY_DETAIL_RECEIVE,
-        selectedPartyData: selectedPartyData,
-        selectedPartyID: selectedPartyID
-    }
-}
-
-/**
- * PARTY DETAIL REQUEST
- * *********************************************
- * Volání webového rozhraní pro získání detailu osoby
- * @param selectedPartyID int - identifikátor hledané osoby
- * @param selectedPartyData obj - získaná data osoby
- */
-export function partyDetailRequest(selectedPartyID) {
-    return {
-        type: types.PARTY_DETAIL_REQUEST,
-        selectedPartyID: selectedPartyID
     }
 }
 
@@ -261,8 +173,8 @@ export function updateRelation(relation, partyId) {
  * DELETE RELATION
  * *********************************************
  * Volání webového rozhraní pro smazání relace
- * @param int relationID - identifikator mazané relace
- * @param int partyId - identifikátor osoby, kterou chceme smazat
+ * @param relationId int - identifikator mazané relace
+ * @param partyId int - identifikátor osoby, kterou chceme smazat
  */
 export function deleteRelation(relationId, partyId) {
     return dispatch => {

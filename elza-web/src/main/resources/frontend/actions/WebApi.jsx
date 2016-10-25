@@ -83,15 +83,13 @@ class WebApi{
         return AjaxUtils.ajaxDelete(WebApi.partyUrl + '/relations/'+relationId, {relationId: relationId});
     }
 
-    findParty(search = null, versionId = null){
+    findParty(search = null, versionId = null, partyTypeId = null) {
         return AjaxUtils.ajaxGet(WebApi.partyUrl + '/findParty', {
             search: search,
             from: 0,
             count : 200,
-            partyTypeId: null,
+            partyTypeId: partyTypeId,
             versionId: versionId
-        }).then(json=>{
-            return {records: json.recordList, recordsCount: json.count};
         });
     }
 
@@ -108,11 +106,11 @@ class WebApi{
 
 
     deleteParty(partyId) {
-        return AjaxUtils.ajaxDelete(WebApi.partyUrl + '/deleteParty', {partyId: partyId});
+        return AjaxUtils.ajaxDelete(WebApi.partyUrl + '/deleteParty', {partyId});
     }
 
     getParty(partyId){
-        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/getParty', {partyId: partyId});
+        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/getParty', {partyId});
     }
 
     validateUnitdate(value) {
@@ -124,7 +122,7 @@ class WebApi{
     }
 
     updateParty(party) {
-        return AjaxUtils.ajaxPut(WebApi.partyUrl + '/updateParty/'+party.partyId, null,  party);
+        return AjaxUtils.ajaxPut(WebApi.partyUrl + '/updateParty/' + party.partyId, null, party);
     }
 
     aainsertRelation(partyId, relationTypeId, note, sources, from, to, entities) {
@@ -714,7 +712,7 @@ class WebApi{
 
     findUser(fulltext, active, disabled, max = 200, groupId = null) {
         return AjaxUtils.ajaxGet(WebApi.userUrl + '', {search: fulltext, active, disabled, from: 0, count: max, excludedGroupId: groupId})
-            .then(json => ({users: json.list, usersCount: json.totalCount}))
+            .then(json => ({users: json.rows, usersCount: json.count}))
     }
 
     changeUserPermission(userId, permissions) {
@@ -727,7 +725,7 @@ class WebApi{
 
     findGroup(fulltext, max = 200) {
         return AjaxUtils.ajaxGet(WebApi.userUrl + '/group', {search: fulltext, from: 0, count: max})
-            .then(json => ({groups: json.list, groupsCount: json.totalCount}))
+            .then(json => ({groups: json.rows, groupsCount: json.count}))
     }
 
     getUser(userId) {

@@ -60,7 +60,7 @@ import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm.jsx
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
-var ArrParentPage = require("./ArrParentPage.jsx");
+import ArrParentPage from "./ArrParentPage.jsx";
 
 var classNames = require('classnames');
 var ShortcutsManager = require('react-shortcuts');
