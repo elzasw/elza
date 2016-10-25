@@ -58,7 +58,7 @@ public class ParRelationType implements cz.tacr.elza.api.ParRelationType<ParRela
     @Column(nullable = false)
     private UseUnitdateEnum useUnitdate;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParRelationClassType.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParRelationClassType.class)
     @JoinColumn(name = "relationClassTypeId", nullable = false)
     private ParRelationClassType relationClassType;
 
