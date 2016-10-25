@@ -5,10 +5,10 @@
     <output-type code="ZP2015_INVENTAR" filename="ZP2015_INVENTAR.drl">
         <name>AP - inventář / katalog</name>
     </output-type>
-    <output-type code="STITKY">
+    <output-type code="ZP2015_STITKY">
         <name>Štítky</name>
     </output-type>
-    <output-type code="SOUPIS" >
+    <!--<output-type code="SOUPIS" >
         <name>Soupis</name>
-    </output-type>
+    </output-type>-->
 </output-types>

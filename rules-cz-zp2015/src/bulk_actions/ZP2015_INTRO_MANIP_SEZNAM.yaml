@@ -68,3 +68,8 @@ action:
             - ZP2015_ORIGINATOR
         output_type: ZP2015_ORIGINATOR
  
+    # Agregace jazyků - zatim nefunkcni
+    - COPY
+        input_types:
+            - ZP2015_LANGUAGE
+        output_type: ZP2015_LANGUAGE
