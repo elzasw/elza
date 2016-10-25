@@ -266,7 +266,7 @@ public class RegistryService {
                     childs.forEach(child -> hierarchicalUpdateRegisterType(child, registerType));
                 }
             }
-        } else {
+        } else if (record.getUuid() == null) {
             record.setUuid(UUID.randomUUID().toString());
         }
 
