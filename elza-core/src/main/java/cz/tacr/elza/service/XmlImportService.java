@@ -615,7 +615,6 @@ public class XmlImportService {
     }
 
     private ArrDescItem createArrDescItem(final ArrChange change, final ArrNode node, final AbstractDescItem descItem) throws LevelImportException {
-
         String descItemTypeCode = descItem.getDescItemTypeCode();
         RulItemType descItemType = null;
         if (descItemTypeCode !=  null) {
@@ -1010,6 +1009,7 @@ public class XmlImportService {
             throw new PartyImportException("Nebyl nalezen seznam rolí entit ve vztahu s kódem " + roleTypeCode);
         }
         parRelationEntity.setRoleType(parRelationRoleType);
+        parRelationEntity.setNote(roleType.getNote());
 
         return parRelationEntity;
     }
@@ -1319,7 +1319,11 @@ public class XmlImportService {
         }
 
         updateRecord(record, regRecord, parent, stopOnError);
-        regRecord = registryServiceService.saveRecord(regRecord, true); // TODO vanek: zjistit jaký boolean se tam má dát, udělat v úkolu na úpravu importu
+        boolean partySave = false;
+        if (isNew) {
+            partySave = regRecord.getRegisterType().getPartyType() != null;
+        }
+        regRecord = registryServiceService.saveRecord(regRecord, partySave); // TODO vanek: zjistit jaký boolean se tam má dát, udělat v úkolu na úpravu importu
         xmlIdIntIdRecordMap.put(record.getRecordId(), regRecord);
         syncVariantRecords(record, regRecord, isNew, stopOnError);
 

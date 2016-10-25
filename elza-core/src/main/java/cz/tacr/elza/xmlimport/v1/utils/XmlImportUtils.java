@@ -78,6 +78,7 @@ public final class XmlImportUtils {
                 unitdate.formatAppend(UnitDateConvertor.DATE_TIME);
             }
         }
+        unitdate.setNote(complexDate.getNote());
 
         return unitdate;
     }
@@ -162,6 +163,7 @@ public final class XmlImportUtils {
         complexDate.setSpecificDateFrom(XmlImportUtils.stringToDate(parUnitdate.getValueFrom()));
         complexDate.setSpecificDateTo(XmlImportUtils.stringToDate(parUnitdate.getValueTo()));
         complexDate.setTextDate(parUnitdate.getTextDate());
+        complexDate.setNote(parUnitdate.getNote());
 
         return complexDate;
     }

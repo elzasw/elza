@@ -95,6 +95,8 @@ public class RegRecordVO extends AbstractRegRecord {
 
     private boolean hasChildren;
 
+    private String uuid;
+
     public Integer getRecordId() {
         return recordId;
     }
@@ -235,7 +237,7 @@ public class RegRecordVO extends AbstractRegRecord {
         return parents;
     }
 
-    public void setParents(List<RecordParent> parents) {
+    public void setParents(final List<RecordParent> parents) {
         this.parents = parents;
     }
 
@@ -245,6 +247,14 @@ public class RegRecordVO extends AbstractRegRecord {
 
     public void setTypesToRoot(final List<RecordParent> typesToRoot) {
         this.typesToRoot = typesToRoot;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(final String uuid) {
+        this.uuid = uuid;
     }
 
     public static class RecordParent{

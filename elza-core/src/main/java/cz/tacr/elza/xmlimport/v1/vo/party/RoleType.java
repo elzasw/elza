@@ -36,11 +36,15 @@ public class RoleType {
     @XmlElement(name = "source")
     private String source;
 
+    /** Poznámka. */
+    @XmlElement(name = "note")
+    private String note;
+
     public String getRoleTypeCode() {
         return roleTypeCode;
     }
 
-    public void setRoleTypeCode(String roleTypeCode) {
+    public void setRoleTypeCode(final String roleTypeCode) {
         this.roleTypeCode = roleTypeCode;
     }
 
@@ -48,7 +52,7 @@ public class RoleType {
         return record;
     }
 
-    public void setRecord(Record record) {
+    public void setRecord(final Record record) {
         this.record = record;
     }
 
@@ -56,8 +60,16 @@ public class RoleType {
         return source;
     }
 
-    public void setSource(String source) {
+    public void setSource(final String source) {
         this.source = source;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(final String note) {
+        this.note = note;
     }
 
     @Override

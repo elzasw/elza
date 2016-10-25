@@ -322,6 +322,7 @@ public class PartyService {
             ParParty dbParty = partyRepository.findOne(party.getPartyId());
             recordFromGroovy.setRecordId(dbParty.getRecord().getRecordId());
             recordFromGroovy.setVersion(dbParty.getRecord().getVersion());
+            recordFromGroovy.setUuid(dbParty.getRecord().getUuid());
         }
         RegRecord savedRecord = registryService.saveRecord(recordFromGroovy, true);
         party.setRecord(savedRecord);

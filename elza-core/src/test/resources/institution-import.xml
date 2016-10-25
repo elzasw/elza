@@ -42,52 +42,52 @@
           </coordinate>
         </coordinate-list>
       </record-coordinates>
-      <sub-record-list>
-        <record record-id="recordId-1-1" register-type-code="FAMILY_BRANCH" external-source-code="externalSourceCode 226261935" external-id="externalId 1" local="false">
-          <preferred-name>record 1</preferred-name>
-          <characteristics>characteristics 1</characteristics>
-          <note>comment 1</note>
-          <variant-name-list>
-            <variant-name>
-              <variant-name>variantRecord 0</variant-name>
-            </variant-name>
-          </variant-name-list>
-          <record-coordinates area-type="line" system="WGS84">
-            <note>note</note>
-            <coordinate-list>
-              <coordinate position="0">
-                <coordinate>point 0</coordinate>
-              </coordinate>
-              <coordinate position="1">
-                <coordinate>point 1</coordinate>
-              </coordinate>
-            </coordinate-list>
-          </record-coordinates>
-          <sub-record-list>
-            <record record-id="recordId-1-1-1" register-type-code="FAMILY_BRANCH" external-source-code="externalSourceCode 747662184" external-id="externalId 1" local="true">
-              <preferred-name>record 1</preferred-name>
-              <characteristics>characteristics 1</characteristics>
-              <note>comment 1</note>
-              <variant-name-list>
-                <variant-name>
-                  <variant-name>variantRecord 0</variant-name>
-                </variant-name>
-              </variant-name-list>
-              <record-coordinates area-type="line" system="WGS84">
-                <note>note</note>
-                <coordinate-list>
-                  <coordinate position="0">
-                    <coordinate>point 0</coordinate>
-                  </coordinate>
-                  <coordinate position="1">
-                    <coordinate>point 1</coordinate>
-                  </coordinate>
-                </coordinate-list>
-              </record-coordinates>
-            </record>
-          </sub-record-list>
-        </record>
-      </sub-record-list>
+<!--       <sub-record-list> -->
+<!--         <record record-id="recordId-1-1" register-type-code="FAMILY_BRANCH" external-source-code="externalSourceCode 226261935" external-id="externalId 1" local="false"> -->
+<!--           <preferred-name>record 1</preferred-name> -->
+<!--           <characteristics>characteristics 1</characteristics> -->
+<!--           <note>comment 1</note> -->
+<!--           <variant-name-list> -->
+<!--             <variant-name> -->
+<!--               <variant-name>variantRecord 0</variant-name> -->
+<!--             </variant-name> -->
+<!--           </variant-name-list> -->
+<!--           <record-coordinates area-type="line" system="WGS84"> -->
+<!--             <note>note</note> -->
+<!--             <coordinate-list> -->
+<!--               <coordinate position="0"> -->
+<!--                 <coordinate>point 0</coordinate> -->
+<!--               </coordinate> -->
+<!--               <coordinate position="1"> -->
+<!--                 <coordinate>point 1</coordinate> -->
+<!--               </coordinate> -->
+<!--             </coordinate-list> -->
+<!--           </record-coordinates> -->
+<!--           <sub-record-list> -->
+<!--             <record record-id="recordId-1-1-1" register-type-code="FAMILY_BRANCH" external-source-code="externalSourceCode 747662184" external-id="externalId 1" local="true"> -->
+<!--               <preferred-name>record 1</preferred-name> -->
+<!--               <characteristics>characteristics 1</characteristics> -->
+<!--               <note>comment 1</note> -->
+<!--               <variant-name-list> -->
+<!--                 <variant-name> -->
+<!--                   <variant-name>variantRecord 0</variant-name> -->
+<!--                 </variant-name> -->
+<!--               </variant-name-list> -->
+<!--               <record-coordinates area-type="line" system="WGS84"> -->
+<!--                 <note>note</note> -->
+<!--                 <coordinate-list> -->
+<!--                   <coordinate position="0"> -->
+<!--                     <coordinate>point 0</coordinate> -->
+<!--                   </coordinate> -->
+<!--                   <coordinate position="1"> -->
+<!--                     <coordinate>point 1</coordinate> -->
+<!--                   </coordinate> -->
+<!--                 </coordinate-list> -->
+<!--               </record-coordinates> -->
+<!--             </record> -->
+<!--           </sub-record-list> -->
+<!--         </record> -->
+<!--       </sub-record-list> -->
     </record>
     <record record-id="recordId-2" register-type-code="EVENT_EVENT" external-source-code="externalSourceCode 1015647040" external-id="externalId 2" local="false">
       <preferred-name>record 2</preferred-name>
@@ -109,52 +109,52 @@
           </coordinate>
         </coordinate-list>
       </record-coordinates>
-      <sub-record-list>
-        <record record-id="recordId-2-1" register-type-code="GEO_WATERS" external-source-code="externalSourceCode 537051127" external-id="externalId 1" local="false">
-          <preferred-name>record 2-1</preferred-name>
-          <characteristics>characteristics 1</characteristics>
-          <note>comment 1</note>
-          <variant-name-list>
-            <variant-name>
-              <variant-name>variantRecord 0</variant-name>
-            </variant-name>
-          </variant-name-list>
-          <record-coordinates area-type="line" system="WGS84">
-            <note>note</note>
-            <coordinate-list>
-              <coordinate position="0">
-                <coordinate>point 0</coordinate>
-              </coordinate>
-              <coordinate position="1">
-                <coordinate>point 1</coordinate>
-              </coordinate>
-            </coordinate-list>
-          </record-coordinates>
-          <sub-record-list>
-            <record record-id="recordId-2-1-1" register-type-code="GEO_WATERS" external-source-code="externalSourceCode 2142619247" external-id="externalId 1" local="true">
-              <preferred-name>record 2-1-1</preferred-name>
-              <characteristics>characteristics 1</characteristics>
-              <note>comment 1</note>
-              <variant-name-list>
-                <variant-name>
-                  <variant-name>variantRecord 0</variant-name>
-                </variant-name>
-              </variant-name-list>
-              <record-coordinates area-type="line" system="WGS84">
-                <note>note</note>
-                <coordinate-list>
-                  <coordinate position="0">
-                    <coordinate>point 0</coordinate>
-                  </coordinate>
-                  <coordinate position="1">
-                    <coordinate>point 1</coordinate>
-                  </coordinate>
-                </coordinate-list>
-              </record-coordinates>
-            </record>
-          </sub-record-list>
-        </record>
-      </sub-record-list>
+<!--       <sub-record-list> -->
+<!--         <record record-id="recordId-2-1" register-type-code="GEO_WATERS" external-source-code="externalSourceCode 537051127" external-id="externalId 1" local="false"> -->
+<!--           <preferred-name>record 2-1</preferred-name> -->
+<!--           <characteristics>characteristics 1</characteristics> -->
+<!--           <note>comment 1</note> -->
+<!--           <variant-name-list> -->
+<!--             <variant-name> -->
+<!--               <variant-name>variantRecord 0</variant-name> -->
+<!--             </variant-name> -->
+<!--           </variant-name-list> -->
+<!--           <record-coordinates area-type="line" system="WGS84"> -->
+<!--             <note>note</note> -->
+<!--             <coordinate-list> -->
+<!--               <coordinate position="0"> -->
+<!--                 <coordinate>point 0</coordinate> -->
+<!--               </coordinate> -->
+<!--               <coordinate position="1"> -->
+<!--                 <coordinate>point 1</coordinate> -->
+<!--               </coordinate> -->
+<!--             </coordinate-list> -->
+<!--           </record-coordinates> -->
+<!--           <sub-record-list> -->
+<!--             <record record-id="recordId-2-1-1" register-type-code="GEO_WATERS" external-source-code="externalSourceCode 2142619247" external-id="externalId 1" local="true"> -->
+<!--               <preferred-name>record 2-1-1</preferred-name> -->
+<!--               <characteristics>characteristics 1</characteristics> -->
+<!--               <note>comment 1</note> -->
+<!--               <variant-name-list> -->
+<!--                 <variant-name> -->
+<!--                   <variant-name>variantRecord 0</variant-name> -->
+<!--                 </variant-name> -->
+<!--               </variant-name-list> -->
+<!--               <record-coordinates area-type="line" system="WGS84"> -->
+<!--                 <note>note</note> -->
+<!--                 <coordinate-list> -->
+<!--                   <coordinate position="0"> -->
+<!--                     <coordinate>point 0</coordinate> -->
+<!--                   </coordinate> -->
+<!--                   <coordinate position="1"> -->
+<!--                     <coordinate>point 1</coordinate> -->
+<!--                   </coordinate> -->
+<!--                 </coordinate-list> -->
+<!--               </record-coordinates> -->
+<!--             </record> -->
+<!--           </sub-record-list> -->
+<!--         </record> -->
+<!--       </sub-record-list> -->
     </record>
     <record record-id="recordId-3" register-type-code="ORGANIZATION" external-source-code="externalSourceCode 1097950573" external-id="externalId 1" local="false">
       <preferred-name>record 3</preferred-name>
@@ -176,52 +176,52 @@
           </coordinate>
         </coordinate-list>
       </record-coordinates>
-      <sub-record-list>
-        <record record-id="recordId-3-1" register-type-code="ORGANIZATION" external-source-code="externalSourceCode 226261935" external-id="externalId 1" local="false">
-          <preferred-name>record 3-1</preferred-name>
-          <characteristics>characteristics 1</characteristics>
-          <note>comment 1</note>
-          <variant-name-list>
-            <variant-name>
-              <variant-name>variantRecord 0</variant-name>
-            </variant-name>
-          </variant-name-list>
-          <record-coordinates area-type="line" system="WGS84">
-            <note>note</note>
-            <coordinate-list>
-              <coordinate position="0">
-                <coordinate>point 0</coordinate>
-              </coordinate>
-              <coordinate position="1">
-                <coordinate>point 1</coordinate>
-              </coordinate>
-            </coordinate-list>
-          </record-coordinates>
-          <sub-record-list>
-            <record record-id="recordId-3-1-1" register-type-code="BRANCH" external-source-code="externalSourceCode 747662184" external-id="externalId 1" local="true">
-              <preferred-name>record 3</preferred-name>
-              <characteristics>characteristics 1</characteristics>
-              <note>comment 1</note>
-              <variant-name-list>
-                <variant-name>
-                  <variant-name>variantRecord 0</variant-name>
-                </variant-name>
-              </variant-name-list>
-              <record-coordinates area-type="line" system="WGS84">
-                <note>note</note>
-                <coordinate-list>
-                  <coordinate position="0">
-                    <coordinate>point 0</coordinate>
-                  </coordinate>
-                  <coordinate position="1">
-                    <coordinate>point 1</coordinate>
-                  </coordinate>
-                </coordinate-list>
-              </record-coordinates>
-            </record>
-          </sub-record-list>
-        </record>
-      </sub-record-list>
+<!--       <sub-record-list> -->
+<!--         <record record-id="recordId-3-1" register-type-code="ORGANIZATION" external-source-code="externalSourceCode 226261935" external-id="externalId 1" local="false"> -->
+<!--           <preferred-name>record 3-1</preferred-name> -->
+<!--           <characteristics>characteristics 1</characteristics> -->
+<!--           <note>comment 1</note> -->
+<!--           <variant-name-list> -->
+<!--             <variant-name> -->
+<!--               <variant-name>variantRecord 0</variant-name> -->
+<!--             </variant-name> -->
+<!--           </variant-name-list> -->
+<!--           <record-coordinates area-type="line" system="WGS84"> -->
+<!--             <note>note</note> -->
+<!--             <coordinate-list> -->
+<!--               <coordinate position="0"> -->
+<!--                 <coordinate>point 0</coordinate> -->
+<!--               </coordinate> -->
+<!--               <coordinate position="1"> -->
+<!--                 <coordinate>point 1</coordinate> -->
+<!--               </coordinate> -->
+<!--             </coordinate-list> -->
+<!--           </record-coordinates> -->
+<!--           <sub-record-list> -->
+<!--             <record record-id="recordId-3-1-1" register-type-code="BRANCH" external-source-code="externalSourceCode 747662184" external-id="externalId 1" local="true"> -->
+<!--               <preferred-name>record 3</preferred-name> -->
+<!--               <characteristics>characteristics 1</characteristics> -->
+<!--               <note>comment 1</note> -->
+<!--               <variant-name-list> -->
+<!--                 <variant-name> -->
+<!--                   <variant-name>variantRecord 0</variant-name> -->
+<!--                 </variant-name> -->
+<!--               </variant-name-list> -->
+<!--               <record-coordinates area-type="line" system="WGS84"> -->
+<!--                 <note>note</note> -->
+<!--                 <coordinate-list> -->
+<!--                   <coordinate position="0"> -->
+<!--                     <coordinate>point 0</coordinate> -->
+<!--                   </coordinate> -->
+<!--                   <coordinate position="1"> -->
+<!--                     <coordinate>point 1</coordinate> -->
+<!--                   </coordinate> -->
+<!--                 </coordinate-list> -->
+<!--               </record-coordinates> -->
+<!--             </record> -->
+<!--           </sub-record-list> -->
+<!--         </record> -->
+<!--       </sub-record-list> -->
     </record>
   </record-list>
   <party-list>

@@ -4,7 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -548,6 +550,7 @@ public class XmlExportService {
         Record record = recordMap.get(parRelationEntity.getRecord().getRecordId());
         roleType.setRecord(record);
         roleType.setRoleTypeCode(parRelationEntity.getRoleType().getCode());
+        roleType.setNote(parRelationEntity.getNote());
         //roleType.setSource(); //nepoužívá se
 
         return roleType;
@@ -939,6 +942,8 @@ public class XmlExportService {
 //        record.setRecordCoordinates(); //zatím se s nimi nepracuje
         record.setRecordId(regRecord.getRecordId().toString());
         record.setRegisterTypeCode(regRecord.getRegisterType().getCode());
+        record.setUuid(regRecord.getUuid());
+        record.setLastUpdate(Date.from(regRecord.getLastUpdate().atZone(ZoneId.systemDefault()).toInstant()));
 
         List<RegVariantRecord> variantRecordList = regRecord.getVariantRecordList();
         if (CollectionUtils.isNotEmpty(variantRecordList)) {
