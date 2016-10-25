@@ -13,8 +13,11 @@ public class BasicHttpAuthentication extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable()
-				.authorizeRequests().anyRequest().authenticated()
-				.and().httpBasic();
+				.authorizeRequests()
+				.anyRequest().authenticated()
+				.and().httpBasic()
+				.and().formLogin().failureUrl("/login-error");
+		;
 	}
 
 	@Override

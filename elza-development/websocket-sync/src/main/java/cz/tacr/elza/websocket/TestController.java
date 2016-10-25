@@ -1,5 +1,8 @@
 package cz.tacr.elza.websocket;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +26,18 @@ public class TestController {
 
 	@MessageMapping("/chat")
 	public void chat(Message message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
+		System.out.println("$$$$$$$$$ controller");
 		message.updateMessage(headerAccessor.getUser());
+
+		final List<String> receipt = headerAccessor.getNativeHeader("receipt");
+		final String receiptId = receipt == null || receipt.isEmpty() ? null : receipt.get(0);
+		Map sendHeader = new HashMap();
+		sendHeader.put("receipt-id", receiptId);
+
 		if (StringUtils.isEmpty(message.getRecipient())) {
-			messagingTemplate.convertAndSend(MessageBrokerConfigurer.BROKER_DESTINATION + "/chat", message);
+			messagingTemplate.convertAndSend(MessageBrokerConfigurer.BROKER_DESTINATION + "/chat", message, sendHeader);
 		} else {
-			messagingTemplate.convertAndSendToUser(message.getRecipient(), MessageBrokerConfigurer.BROKER_DESTINATION + "/chat", message);
+			messagingTemplate.convertAndSendToUser(message.getRecipient(), MessageBrokerConfigurer.BROKER_DESTINATION + "/chat", message, sendHeader);
 		}
 		return;
 	}
