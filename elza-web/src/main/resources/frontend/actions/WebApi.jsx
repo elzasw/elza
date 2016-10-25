@@ -8,6 +8,20 @@ function getData(data, timeout = 1000) {
     });
 }
 
+function callWS(url, data, needResponse=true) {
+    return new Promise((resolve, reject) => {
+        if (needResponse) {
+            window.ws.send(serverContextPath + '/app' + url, {}, JSON.stringify(data), (response) => {
+                console.log(111111111111, response);
+                resolve(response);
+            });
+        } else {
+            window.ws.send(serverContextPath + '/app' + url, {}, JSON.stringify(data));
+            resolve();
+        }
+    });
+}
+
 /**
  * Továrna URL
  *
@@ -180,7 +194,8 @@ class WebApi {
     }
 
     updateDescItem(versionId, nodeVersionId, descItem) {
-        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/descItems/' + versionId + '/' + nodeVersionId + '/update/true', null,  descItem);
+        return callWS('/arrangement/descItems/' + versionId + '/' + nodeVersionId + '/update/true', descItem);
+        // return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/descItems/' + versionId + '/' + nodeVersionId + '/update/true', null,  descItem);
     }
 
     updateOutputItem(versionId, outputDefinitionVersion, descItem) {

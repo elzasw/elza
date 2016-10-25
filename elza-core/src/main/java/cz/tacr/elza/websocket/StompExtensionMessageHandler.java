@@ -1,4 +1,4 @@
-package cz.tacr.elza.websocket.core;
+package cz.tacr.elza.websocket;
 
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -18,7 +18,7 @@ public class StompExtensionMessageHandler extends AbstractBrokerMessageHandler {
 	private static final byte[] EMPTY_PAYLOAD = new byte[0];
 
 	public StompExtensionMessageHandler(SubscribableChannel inboundChannel, MessageChannel outboundChannel,
-			SubscribableChannel brokerChannel) {
+                                        SubscribableChannel brokerChannel) {
 		super(inboundChannel, outboundChannel, brokerChannel);
 	}
 
