@@ -33,6 +33,10 @@ public class ItemTypeLiteVO {
 
     /**
      * stav počítanýho atributu
+     * - 0 - vypnutý
+     * - 1 - zapnutý
+     *
+     * Číslené z důvodu optimalizace
      */
     private Integer calSt;
 

@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.repository.ItemSettingsRepository;
+import cz.tacr.elza.repository.OutputResultRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -184,6 +186,12 @@ public class ArrangementService {
 
     @Autowired
     private DmsService dmsService;
+
+    @Autowired
+    private OutputResultRepository outputResultRepository;
+
+    @Autowired
+    private ItemSettingsRepository itemSettingsRepository;
 
     /**
      * Vytvoření archivního souboru.
@@ -463,6 +471,9 @@ public class ArrangementService {
                 nodeOutputRepository.delete(outputDefinition.getOutputNodes());
                 dataRepository.deleteByOutputDefinition(outputDefinition);
                 outputItemRepository.deleteByOutputDefinition(outputDefinition);
+                faBulkActionRepository.deleteByOutputDefinition(outputDefinition);
+                itemSettingsRepository.deleteByOutputDefinition(outputDefinition);
+                outputResultRepository.deleteByOutputDefinition(outputDefinition);
                 outputDefinitionRepository.delete(outputDefinition);
             }
         }
