@@ -55,4 +55,7 @@
             <action-recommended output-type="ZP2015_INVENTAR" />
         </action-recommendeds>
     </package-action>
+    <!-- Agregace pro inventar a katalog -->
+    <package-action filename="ZP2015_TEST_DATA_GENERATOR.yaml">
+    </package-action>
 </package-actions>

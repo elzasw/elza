@@ -12,6 +12,7 @@ import cz.tacr.elza.bulkaction.generator.result.NodeCountActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.SerialNumberResult;
 import cz.tacr.elza.bulkaction.generator.result.TableStatisticActionResult;
+import cz.tacr.elza.bulkaction.generator.result.TestDataGeneratorResult;
 import cz.tacr.elza.bulkaction.generator.result.TextAggregationActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitCountActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
@@ -1647,6 +1648,8 @@ public class OutputService {
             dataItems = Collections.singletonList(itemJsonTable);
         } else if (actionResult instanceof UnitIdResult) {
             return null; // tohle se nikam nepřeklápí zatím
+        } else if (actionResult instanceof TestDataGeneratorResult) {
+        	return null; // tohle se nikam nepřeklápí zatím
         } else {
             throw new IllegalStateException("Nedefinovný typ výsledku: " + actionResult.getClass().getSimpleName());
         }

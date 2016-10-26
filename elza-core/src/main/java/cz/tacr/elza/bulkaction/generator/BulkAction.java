@@ -32,7 +32,7 @@ public abstract class BulkAction {
     protected NodeRepository nodeRepository;
 
     @Autowired
-    private DescriptionItemService descriptionItemService;
+    protected DescriptionItemService descriptionItemService;
 
     @Autowired
     private BulkActionService bulkActionService;
