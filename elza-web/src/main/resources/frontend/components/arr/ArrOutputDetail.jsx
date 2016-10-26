@@ -11,7 +11,7 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundOutputRemoveNodes, fundOutputAddNodes } from 'actions/arr/fundOutput.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
-import OutputInlineForm from './OutputInlineForm.jsx'
+import OutputInlineForm from 'components/arr/OutputInlineForm.jsx'
 
 import './ArrOutputDetail.less';
 
