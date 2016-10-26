@@ -28,22 +28,6 @@ import cz.tacr.elza.api.UseUnitdateEnum;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ParRelationType implements cz.tacr.elza.api.ParRelationType<ParRelationClassType> {
 
-    public enum ClassType{
-        VZNIK("B"),
-        ZANIK("E"),
-        VZTAH("R");
-
-        private String classType;
-
-        ClassType(final String classType) {
-            this.classType = classType;
-        }
-
-        public String getClassType() {
-            return classType;
-        }
-    }
-
     @Id
     @GeneratedValue
     private Integer relationTypeId;

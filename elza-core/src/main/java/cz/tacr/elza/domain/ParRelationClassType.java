@@ -23,6 +23,22 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ParRelationClassType implements cz.tacr.elza.api.ParRelationClassType {
 
+    public enum ClassType{
+        VZNIK("B"),
+        ZANIK("E"),
+        VZTAH("R");
+
+        private String classType;
+
+        ClassType(final String classType) {
+            this.classType = classType;
+        }
+
+        public String getClassType() {
+            return classType;
+        }
+    }
+
     @Id
     @GeneratedValue
     private Integer relationClassTypeId;

@@ -22,6 +22,8 @@ public class ParRelationEntityVO {
      */
     private ParRelationRoleTypeVO roleType;
 
+    private String note;
+
     public Integer getRelationEntityId() {
         return relationEntityId;
     }
@@ -52,5 +54,13 @@ public class ParRelationEntityVO {
 
     public void setRoleType(final ParRelationRoleTypeVO roleType) {
         this.roleType = roleType;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(final String note) {
+        this.note = note;
     }
 }

@@ -151,7 +151,7 @@ String generateCharacteristics(ParParty party) {
     //počátek existence
     ParUnitdate fromDate = null;
     if(party.getRelations() != null) {
-        final ParRelationType.ClassType VZNIK = ParRelationType.ClassType.VZNIK;
+        final ParRelationClassType.ClassType VZNIK = ParRelationClassType.ClassType.VZNIK;
         for (ParRelation relation : party.getRelations()) {
             if (relation.getComplementType().getRelationClassType().getCode().equals(VZNIK.getClassType())
                     && relation.getFrom() != null) {
@@ -164,7 +164,7 @@ String generateCharacteristics(ParParty party) {
     //konec existence
     ParUnitdate toDate = null;
     if (party.getRelations() != null) {
-        final ParRelationType.ClassType ZANIK = ParRelationType.ClassType.ZANIK;
+        final ParRelationClassType.ClassType ZANIK = ParRelationClassType.ClassType.ZANIK;
         for (ParRelation relation : party.getRelations()) {
             if (relation.getComplementType().getRelationClassType().getCode().equals(ZANIK.getClassType())
                     && relation.getTo() != null) {

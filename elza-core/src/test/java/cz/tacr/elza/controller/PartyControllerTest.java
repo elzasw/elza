@@ -1,12 +1,32 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.vo.*;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ParComplementTypeVO;
+import cz.tacr.elza.controller.vo.ParDynastyVO;
+import cz.tacr.elza.controller.vo.ParEventVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupVO;
+import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPersonVO;
+import cz.tacr.elza.controller.vo.ParRelationEntityVO;
+import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.ParUnitdateVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
 
 
 /**
@@ -105,8 +125,6 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         partyNameO1.setNameFormType(typePrimaryName);
         personO1.setPartyNames(Collections.singletonList(partyNameO1));
-        personO1.setFrom(testFromDate);
-        personO1.setTo(testToDate);
 
         personO1 = (ParPersonVO) insertParty(personO1);
 
@@ -122,8 +140,6 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         groupK1.setPartyType(typeK1);
         groupK1.setScope(scope.getId().toString());
-        groupK1.setFrom(testFromDate);
-        groupK1.setTo(testToDate);
 
         ParPartyNameVO partyNameK1 = new ParPartyNameVO();
         partyNameK1.setDisplayName("K1");
@@ -147,8 +163,6 @@ public class PartyControllerTest extends AbstractControllerTest {
         dynastyR1.setRecord(recordR1);
         dynastyR1.setGenealogy("R1");
         dynastyR1.setPartyType(typeR1);
-        dynastyR1.setFrom(testFromDate);
-        dynastyR1.setTo(testToDate);
 
         ParPartyNameVO partyNameR1 = new ParPartyNameVO();
         partyNameR1.setDisplayName("R1");
@@ -170,8 +184,6 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         eventU1.setRecord(recordU1);
         eventU1.setPartyType(typeU1);
-        eventU1.setFrom(testFromDate);
-        eventU1.setTo(testToDate);
 
         ParPartyNameVO partyNameU1 = new ParPartyNameVO();
         partyNameU1.setDisplayName("U1");
@@ -466,7 +478,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         return null;
     }
 
-    private RegRegisterTypeVO findRegisterTypeAddable(List<RegRegisterTypeVO> list) {
+    private RegRegisterTypeVO findRegisterTypeAddable(final List<RegRegisterTypeVO> list) {
         for (RegRegisterTypeVO type : list) {
             if (type.getAddRecord()) {
                 return type;

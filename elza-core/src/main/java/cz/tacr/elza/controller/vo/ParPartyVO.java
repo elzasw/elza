@@ -1,9 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import java.util.LinkedList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 
 /**
@@ -33,14 +33,6 @@ public class ParPartyVO {
      * Zdroje informací.
      */
     private String sourceInformation;
-    /**
-     * Čas působonosti od
-     */
-    private ParUnitdateVO from;
-    /**
-     * Čas působonosti do
-     */
-    private ParUnitdateVO to;
 
     /**
      * Seznam vazeb osoby.
@@ -111,22 +103,6 @@ public class ParPartyVO {
 
     public void setRelations(final List<ParRelationVO> relations) {
         this.relations = relations;
-    }
-
-    public ParUnitdateVO getFrom() {
-        return from;
-    }
-
-    public void setFrom(ParUnitdateVO from) {
-        this.from = from;
-    }
-
-    public ParUnitdateVO getTo() {
-        return to;
-    }
-
-    public void setTo(ParUnitdateVO to) {
-        this.to = to;
     }
 
     public List<ParPartyNameVO> getPartyNames() {

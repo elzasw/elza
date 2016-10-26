@@ -24,6 +24,8 @@ public class ParUnitdateVO {
 
     private String textDate;
 
+    private String note;
+
     public Integer getUnitdateId() {
         return unitdateId;
     }
@@ -86,5 +88,13 @@ public class ParUnitdateVO {
 
     public void setTextDate(final String textDate) {
         this.textDate = textDate;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(final String note) {
+        this.note = note;
     }
 }

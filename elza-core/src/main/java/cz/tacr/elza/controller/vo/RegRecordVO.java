@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -96,6 +97,8 @@ public class RegRecordVO extends AbstractRegRecord {
     private boolean hasChildren;
 
     private String uuid;
+
+    private LocalDateTime lastUpdate;
 
     public Integer getRecordId() {
         return recordId;
@@ -255,6 +258,14 @@ public class RegRecordVO extends AbstractRegRecord {
 
     public void setUuid(final String uuid) {
         this.uuid = uuid;
+    }
+
+    public LocalDateTime getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(final LocalDateTime lastUpdate) {
+        this.lastUpdate = lastUpdate;
     }
 
     public static class RecordParent{
