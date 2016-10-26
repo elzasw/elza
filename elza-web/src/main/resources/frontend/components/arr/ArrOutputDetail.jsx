@@ -222,8 +222,8 @@ class ArrOutputDetail extends AbstractReactComponent {
                     </div>}
                 </div>
 
-                <div className="">
-                    <h2>{i18n("arr.output.title.nodes")}</h2>
+                <div>
+                    <label className="control-label">{i18n("arr.output.title.nodes")}</label>
                     <FundNodesList
                         nodes={fundOutputDetail.outputDefinition.nodes}
                         onDeleteNode={this.handleRemoveNode}
@@ -231,7 +231,7 @@ class ArrOutputDetail extends AbstractReactComponent {
                         readOnly={closed || readMode || !this.isEditable()}
                     />
                 </div>
-
+                <hr className="small"/>
                 {form}
             </div>
         </Shortcuts>;
