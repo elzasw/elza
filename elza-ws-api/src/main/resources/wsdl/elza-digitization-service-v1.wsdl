@@ -27,7 +27,7 @@
 		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 		<wsdl:operation name="PostRequest">
 			<soap:operation soapAction="http://tacr.elza.cz/ws/digitization/postRequest" style="document"/>
-			<wsdl:input name="digitizationRrequest">
+			<wsdl:input name="digitizationRequest">
 				<soap:body use="literal"/>
 			</wsdl:input>
 			<wsdl:output name="requestId">
