@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux'
-import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel, Loading} from 'components/index.jsx';
+import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel, Loading, Icon} from 'components/index.jsx';
 import FormInput from 'components/form/FormInput.jsx';
 import {AppActions} from 'stores/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
@@ -8,12 +8,12 @@ import {partyListFetchIfNeeded, partyListFilter, partyDetailFetchIfNeeded, party
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {WebApi} from 'actions/index.jsx';
 
-import './PartySearch.less';
+import './PartyList.less';
 
 /**
  * Komponenta list osob
  */
-class PartySearch extends AbstractReactComponent {
+class PartyList extends AbstractReactComponent {
 
     componentDidMount() {
         this.fetchIfNeeded();
@@ -72,10 +72,35 @@ class PartySearch extends AbstractReactComponent {
     };
 
     renderListItem = (item) => {
+        let icon;
+        switch(item.partyType.description) {
+            case 'OSOBA':
+                icon = 'fa-user';
+                break;
+            case 'KORPORACE':
+                icon = 'fa-building';
+                break;
+            case 'DOČASNÁ KORPORACE':
+                icon = 'fa-hospital-o';
+                break;
+            case 'ROD':
+                icon = 'fa-shield';
+                break;
+            default:
+                icon = 'fa-times';
+        }
+
         return <div className='search-result-row' onClick={this.handlePartyDetail.bind(this, item)}>
-            <span className="name">{item.record.record}</span>
-            <span>{item.partyType.description + " | " + item.partyId}</span>
-            <span title={item.record.description}>{item.record.description}</span>
+            <div>
+                <Icon glyph={icon} />
+                <span className="name">{item.record.record}</span>
+            </div>
+            <div>
+                <span className="date">{/** TODO Dodat datum **/}</span>
+                {item.record.external_id && item.record.externalSource && <span className="description">{item.partyType.description + ':' + item.partyId}</span>}
+                {item.record.external_id && !item.record.externalSource && <span className="description">{'UNKNOWN:' + item.record.external_id}</span>}
+                {!item.record.external_id && <span className="description">{item.partyType.description + ':' + item.partyId}</span>}
+            </div>
         </div>
     };
 
@@ -136,7 +161,7 @@ class PartySearch extends AbstractReactComponent {
                     allItemsCount={partyList.count}
                 />
             </div>
-            <div className="partySearch">
+            <div className="party-listbox-container">
                 {partyList.rows.length > 0 ? <ListBox
                     className='party-listbox'
                     ref='partyList'
@@ -157,4 +182,4 @@ export default connect((state) => {
         partyList,
         partyTypes: partyTypes.fetched ? partyTypes.items : false,
     }
-})(PartySearch);
+})(PartyList);

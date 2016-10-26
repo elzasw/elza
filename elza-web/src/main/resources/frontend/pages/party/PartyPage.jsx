@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {ControllableDropdownButton, Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, PartyEntities, i18n, ImportForm} from 'components/index.jsx';
+import {ControllableDropdownButton, Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartyList, PartyDetail, PartyEntities, i18n, ImportForm} from 'components/index.jsx';
 import {RelationForm, AddPartyForm} from 'components/index.jsx';
 import {ButtonGroup, MenuItem, DropdownButton, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
@@ -288,7 +288,7 @@ class PartyPage extends AbstractReactComponent {
             }
         }
 
-        const leftPanel = <PartySearch
+        const leftPanel = <PartyList
             items={this.props.partyRegion.items}
             selectedPartyID={this.props.partyRegion.selectedPartyID}
             filterText={this.props.partyRegion.filterText}
