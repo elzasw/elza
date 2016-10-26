@@ -12,8 +12,8 @@ import {AppStore} from 'stores/index.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {partyDetailFetch, findPartyFetch, findPartyFetchIfNeeded} from 'actions/party/party.jsx'
-import {partyAdd, insertParty, insertRelation, deleteParty} from 'actions/party/party.jsx'
+import {partyDetailFetchIfNeeded, partyListInvalidate} from 'actions/party/party.jsx'
+import {partyAdd, insertParty, insertRelation, partyDelete} from 'actions/party/party.jsx'
 const ShortcutsManager = require('react-shortcuts');
 const Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components/index.jsx';
@@ -57,12 +57,10 @@ class PartyPage extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
-        //this.dispatch(findPartyFetchIfNeeded(this.props.partyRegion.filterText, this.props.partyRegion.panel.versionId));
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
-        //this.dispatch(findPartyFetchIfNeeded(nextProps.partyRegion.filterText, nextProps.partyRegion.panel.versionId));
     }
 
     handleShortcuts = (action) => {
@@ -96,8 +94,8 @@ class PartyPage extends AbstractReactComponent {
      * Uložení nové osoby
      */ 
     addParty = (data) => {
-        this.dispatch(partyDetailFetch(data.partyId));
-        this.dispatch(findPartyFetch(this.props.partyRegion.filterText));
+        this.dispatch(partyDetailFetchIfNeeded(data.partyId));
+        this.dispatch(partyListInvalidate());
     };
 
     /**
@@ -107,8 +105,7 @@ class PartyPage extends AbstractReactComponent {
      * @param partyTypeId - identifikátor typu osoby (osoba, rod, korporace, ..)
      */ 
     handleAddParty = (partyTypeId) => {
-        const {partyRegion} = this.props;
-        this.dispatch(partyAdd(partyTypeId, partyRegion.panel.versionId, this.addParty, false));
+        this.dispatch(partyAdd(partyTypeId, null, this.addParty, false));
     };
 
     /**
@@ -196,21 +193,8 @@ class PartyPage extends AbstractReactComponent {
      * Kliknutí na tlačítko pro smazání osoby
      */ 
     handleDeleteParty = () => {
-        var result = confirm(i18n('party.delete.confirm')); // potvrzení smazání
-        if (result) {                                       // pokud uživatel potvrdil smazání
-            this.dispatch(this.deleteParty());    // smaže osobu - smazána bude aktualně vybraná osoba uložená party regionu
-        }
+        confirm(i18n('party.delete.confirm')) && this.dispatch(partyDelete(this.props.partyDetail.data.partyId));
     };
-
-    /**
-     * DELETE PARTY
-     * *********************************************
-     * Smazání osoby
-     */ 
-    deleteParty = () => {
-        var partyId = this.props.partyRegion.selectedPartyData.partyId;                         // bude smazána aktuální osoba, uložená v partyRegionu
-        return deleteParty(partyId, this.props.partyRegion.filterText);                 // smazání osoby, znovunačtení osoby i hledaných osob
-    }   ;
 
     /**
      * BUILD RIBBON
@@ -218,9 +202,9 @@ class PartyPage extends AbstractReactComponent {
      * Sestavení Ribbon Menu - přidání položek pro osoby
      */ 
     buildRibbon = () => {
-        const {userDetail, partyRegion, refTables} = this.props
+        const {userDetail, partyDetail, refTables} = this.props;
 
-        const isSelected = partyRegion.selectedPartyID ? true : false;
+        const isSelected = partyDetail.id !== null;
         const altActions = [];
         if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
             altActions.push(
@@ -240,8 +224,8 @@ class PartyPage extends AbstractReactComponent {
         }
 
         const itemActions = [];
-        if (isSelected && partyRegion.fetchedDetail && !partyRegion.isFetchingDetail) {
-            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyRegion.selectedPartyData.record.scopeId})) {
+        if (isSelected && partyDetail.fetched && !partyDetail.isFetching) {
+            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyDetail.data.record.scopeId})) {
                 itemActions.push(
                     <ControllableDropdownButton key='add-relation' ref='addRelation' id='addRelation'
                                                 title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.relation.add')}</span></div></span>}>
@@ -280,23 +264,16 @@ class PartyPage extends AbstractReactComponent {
      * Vykreslení stránky pro osoby
      */ 
     render() {
-        const {splitter, userDetail, partyRegion} = this.props;
-        let canEdit = false;
-        if (partyRegion.fetchedDetail && !partyRegion.isFetchingDetail) {
-            if (partyRegion.selectedPartyData && userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyRegion.selectedPartyData.record.scopeId})) {
-                canEdit = true
-            }
-        }
+        const {splitter, userDetail, partyDetail, refTables} = this.props;
+        const canEdit = partyDetail.fetched &&
+            !partyDetail.isFetching &&
+            partyDetail.data &&
+            userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyDetail.data.record.scopeId});
 
-        const leftPanel = <PartyList
-            items={this.props.partyRegion.items}
-            selectedPartyID={this.props.partyRegion.selectedPartyID}
-            filterText={this.props.partyRegion.filterText}
-            panel={this.props.partyRegion.panel}
-        />;
+        const leftPanel = <PartyList />;
 
         const centerPanel = <PartyDetail
-            refTables={this.props.refTables}
+            refTables={refTables}
         />;
 
         return <Shortcuts name='Party' handler={this.handleShortcuts}>
@@ -313,10 +290,11 @@ class PartyPage extends AbstractReactComponent {
 
 
 function mapStateToProps(state) {
-    const {splitter, partyRegion, refTables, userDetail} = state;
+    const {app:{partyList, partyDetail}, splitter, refTables, userDetail} = state;
     return {
+        partyList,
+        partyDetail,
         splitter,
-        partyRegion,
         refTables,
         userDetail,
     }

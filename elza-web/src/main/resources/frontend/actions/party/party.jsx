@@ -68,22 +68,13 @@ export function updateParty(party){
  * *********************************************
  * Volání webového rozhraní pro smazání osoby
  * @param partyId string - identifikátor osoby, kterou chceme smazat
- * @param filterText string - aktualni filtr nad seznamem osob - aby se uzivateli vratil, už bez smazané osoby
  */
-export function deleteParty(partyId, filterText) {
+export function partyDelete(partyId) {
     return dispatch => {
-        return WebApi.deleteParty(partyId)
-            .then((json) => {
-                dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
-                dispatch(clearPartyDetail());
-                dispatch(findPartyFetch(filterText));       // znovu načtení leveho panelu s vyfiltrovanými osobami (aby zmizela ta smazaná)
-            }).catch((err) => {
-                if (err.controller) {
-                    dispatch(addToastrWarning(i18n('party.delete.error'), err.data.message));
-                } else {
-                    reject(err);
-                }
-            });
+        WebApi.deleteParty(partyId).then(() => {
+            dispatch(partyDetailClear());
+            dispatch(partyListInvalidate());
+        })
     }
 }
 
@@ -122,17 +113,9 @@ export function partyDetailInvalidate() {
     return DetailActions.invalidate(AREA_PARTY_DETAIL, null)
 }
 
-/**
- * PARTY CLEAR SELECTED PARTY
- * *********************************************
- * Zruší zobrazeni detailu osoby - zobrazí defaultní stránku - pravděpodobně "nenalezeno"
- */
-export function clearPartyDetail() {
-    return {
-        type: types.PARTY_DETAIL_CLEAR
-    }
+export function partyDetailClear() {
+    return partyDetailFetchIfNeeded(null);
 }
-
 
 /**
  * INSERT RELATION

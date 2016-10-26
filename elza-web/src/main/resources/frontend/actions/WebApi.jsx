@@ -125,19 +125,6 @@ class WebApi{
         return AjaxUtils.ajaxPut(WebApi.partyUrl + '/updateParty/' + party.partyId, null, party);
     }
 
-    aainsertRelation(partyId, relationTypeId, note, sources, from, to, entities) {
-        const data = {
-            partyId: partyId,
-            ParRelationTypeVO : {relationTypeId: relationTypeId},
-            note: note,
-            sources: sources,
-            from: from,
-            to: to,
-            relationEntities: entities
-        }
-        return AjaxUtils.ajaxPost(WebApi.partyUrl + '/relations', null,  data);
-    }
-
     moveNodesUnder(versionId, nodes, nodesParent, dest, destParent) {
         const data = {
             versionId: versionId,
