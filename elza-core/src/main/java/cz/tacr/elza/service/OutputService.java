@@ -37,6 +37,7 @@ import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
+import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -154,6 +155,9 @@ public class OutputService {
 
     @Autowired
     private ItemTypeActionRepository itemTypeActionRepository;
+
+    @Autowired
+    private RuleService ruleService;
 
     private static final Logger logger = LoggerFactory.getLogger(OutputService.class);
 
@@ -1552,6 +1556,15 @@ public class OutputService {
                         .map(ArrItemSettings::getItemType)
                         .collect(Collectors.toSet());
 
+                // načtení typy atributů z pravidel výstupů,
+                // přidá do seznamu ignorovaných ty, které jsou nemožné
+                List<RulItemTypeExt> outputItemTypes = ruleService.getOutputItemTypes(outputDefinition);
+                for (RulItemTypeExt outputItemType : outputItemTypes) {
+                    if (outputItemType.getType().equals(RulItemType.Type.IMPOSSIBLE)) {
+                        itemTypesIgnored.add(outputItemType);
+                    }
+                }
+
                 for (ActionResult actionResult : result.getResults()) {
                     RulItemType itemTypeStore = storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType, itemTypesIgnored);
                     if (itemTypeStore != null) {
@@ -1652,6 +1665,9 @@ public class OutputService {
         }
 
         if (itemTypesIgnored != null && itemTypesIgnored.contains(type)) {
+            logger.warn("Při ukládání výsledků hromadné akce do výstupu " + outputDefinition.getName()
+                    + " [ID=" + outputDefinition.getOutputDefinitionId() + "] byl přeskočen atribut " + type.getName()
+                    + " [CODE=" + type.getCode() + "], protože je v seznamu ignorovaných");
             return null;
         }
 
