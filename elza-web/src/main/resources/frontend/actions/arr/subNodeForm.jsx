@@ -55,6 +55,7 @@ class ItemFormActions {
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
                 case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
+                case types.FUND_SUB_NODE_FORM_OUTPUT_CALC_SWITCH:
                     return true
                 default:
                     return false
@@ -575,21 +576,30 @@ class ItemFormActions {
     /**
      * Přepnutí počítání hodnot atributu uživatelské/automatické.
      *
-     * @param {int} fundVersionId identifikátor verze AS
-     * @param {int} outputDefinitionId identifikátor výstupu
+     * @param {int} versionId identifikátor verze AS
      * @param {int} itemTypeId identifikátor typu atributu
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
+     * @param {Object} valueLocation konkrétní umístění atributu
      */
-    switchOutputCalculating(fundVersionId, itemTypeId, routingKey) {
+    switchOutputCalculating(versionId, itemTypeId, routingKey, valueLocation) {
         return (dispatch, getState) => {
-            var state = getState();
-            var fundIndex = indexById(state.arrRegion.funds, fundVersionId, "versionId");
-            var outputDefinitionId;
+            const state = getState();
+            const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+            let outputDefinitionId;
             if (fundIndex !== null) {
                 outputDefinitionId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
             } else {
                 return null
             }
-            WebApi.switchOutputCalculating(fundVersionId, outputDefinitionId, itemTypeId);
+            WebApi.switchOutputCalculating(versionId, outputDefinitionId, itemTypeId).then(() => {
+                dispatch({
+                    type: types.FUND_SUB_NODE_FORM_OUTPUT_CALC_SWITCH,
+                    area: this.area,
+                    versionId,
+                    routingKey,
+                    valueLocation
+                })
+            });
         }
     }
 
@@ -974,7 +984,7 @@ class OutputFormActions extends ItemFormActions {
     }
 }
 
-module.exports = {
+export default {
     nodeFormActions: new NodeFormActions(),
     outputFormActions: new OutputFormActions(),
 };

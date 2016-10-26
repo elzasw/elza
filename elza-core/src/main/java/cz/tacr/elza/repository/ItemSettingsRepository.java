@@ -19,4 +19,6 @@ public interface ItemSettingsRepository extends JpaRepository<ArrItemSettings, I
     List<ArrItemSettings> findByOutputDefinition(ArrOutputDefinition outputDefinition);
 
     ArrItemSettings findOneByOutputDefinitionAndItemType(ArrOutputDefinition outputDefinition, RulItemType itemType);
+
+    void deleteByOutputDefinition(ArrOutputDefinition outputDefinition);
 }

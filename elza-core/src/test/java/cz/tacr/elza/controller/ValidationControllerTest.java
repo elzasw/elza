@@ -17,19 +17,26 @@ public class ValidationControllerTest extends AbstractControllerTest {
     public void getFundVersionsTest() {
         this.valid(new String[]{
                 "20.st.",
-                "1968",
-                "1968/8",
+                "20st",
+                "20. st.",
+                "5.1968",
                 "21.8.1698",
                 "21.8.1968 8:00",
+                "21.8.1968 8:00:00",
+                "[1968]",
+                "(1968)",
                 "1968",
+                "1968-1970",
+                "1968/1970",
                 "21.8.1968 0:00-27.6.1989",
-                "21.8.1968-",
-                "-21.8.1968",
                 "(16.8.1977)",
         });
 
         this.invalid(new String[]{
+                "1968-1950",
                 "19680",
+                "21.8.1968-",
+                "-21.8.1968",
                 "..",
                 "..dwklfhewiofle",
         });

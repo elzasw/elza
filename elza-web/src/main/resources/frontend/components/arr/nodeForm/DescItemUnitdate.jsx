@@ -67,17 +67,17 @@ var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
 
         let tooltip = <Tooltip id='tt'>
                         <b>Formát datace</b><br />
-                        Století: 20.st.<br />
+                        Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />
                         Rok: 1968<br />
-                        Rok/měsíc: 1968/8<br />
+                        Měsíc.rok: 8.1968<br />
                         Datum: 21.8.1698<br />
-                        Datum a čas: 21.8.1968 8:00<br />
+                        Datum a čas: 21.8.1968 8:23 <i>nebo</i> 21.8.1968 8:23:31<br />
                         <b>Intervaly</b><br />
                         Jednotlivá hodnota: 1968<br />
                         Interval: 21.8.1968 0:00-27.6.1989<br />
-                        Polointerval 21.8.1968-<br />
                         <b>Odhad</b><br />
-                        Definuje se uzavřením hodnoty do kulatých závorek: (16.8.1977)<br />
+                        Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek: [16.8.1977]<br />
+                        Při použití znaku "/" pro oddělení intervalu jsou od i do chápány jako odhad.
                       </Tooltip>
 
         let cls = ['unitdate-input'];
