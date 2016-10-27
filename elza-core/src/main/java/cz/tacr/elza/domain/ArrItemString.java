@@ -1,12 +1,14 @@
 package cz.tacr.elza.domain;
 
+import cz.tacr.elza.domain.interfaces.IArrItemStringValue;
+
 /**
  * Rozšiřuje atribut archivního popisu o jeho hodnotu.
  *
  * @author Martin Šlapa
  * @since 15.9.15
  */
-public class ArrItemString extends ArrItemData implements cz.tacr.elza.api.ArrItemString {
+public class ArrItemString extends ArrItemData implements cz.tacr.elza.api.ArrItemString, IArrItemStringValue {
 
     private String value;
 
