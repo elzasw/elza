@@ -64,12 +64,13 @@ const UserDetail = class UserDetail extends AbstractReactComponent {
         const {userDetail, focus, userCount} = this.props;
 
         if (userDetail.id === null) {
-            return <div className='user-detail-container'>
-                        <div className="unselected-msg">
-                            <div className="title">{userCount > 0 ? i18n('admin.user.noSelection.title') : i18n('admin.user.emptyList.title')}</div>
-                            <div className="msg-text">{userCount > 0 ? i18n('admin.user.noSelection.message') : i18n('admin.user.emptyList.message')}</div>
-                        </div>
+            return(
+                <div className='user-detail-container'>
+                    <div className="unselected-msg">
+                        <div className="title">{userCount > 0 ? i18n('admin.user.noSelection.title') : i18n('admin.user.emptyList.title')}</div>
+                        <div className="message">{userCount > 0 ? i18n('admin.user.noSelection.message') : i18n('admin.user.emptyList.message')}</div>
                     </div>
+                </div>);
         }
 
         if (!userDetail.fetched) {

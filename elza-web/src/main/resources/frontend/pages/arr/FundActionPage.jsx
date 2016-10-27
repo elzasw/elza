@@ -385,7 +385,7 @@ const FundActionPage = class FundActionPage extends ArrParentPage {
     renderCenterPanel(readMode, closed) {
         const fund = this.getActiveFund(this.props);
         const {fundAction: {detail, isFormVisible, config, form}, versionId} = fund;
-
+        const fundActionCount = fund.fundAction.list.data ? fund.fundAction.list.data.length : 0;
         if (isFormVisible) {
             if (config.isFetching || !config.fetched) {
                 return <Loading />
@@ -429,10 +429,19 @@ const FundActionPage = class FundActionPage extends ArrParentPage {
         }
 
         if (detail) {
-            if (detail.isFetching && !detail.fetched) {
-                return <Loading />
+            if (detail.isFetching && !detail.fetched) { // Pokud načítá ale nemá načteno
+                return <div className='center-container'><Loading /></div>
             }
-            if (detail.fetched) {
+            else if(!detail.fetched){ // Pokud nenačítá a nemá načteno
+                return(
+                <div className='center-container'>
+                    <div className="unselected-msg">
+                        <div className="title">{fundActionCount > 0 ? i18n('arr.fundAction.noSelection.title') : i18n('arr.fundAction.emptyList.title')}</div>
+                        <div className="msg-text">{fundActionCount > 0 ? i18n('arr.fundAction.noSelection.message') : i18n('arr.fundAction.emptyList.message')}</div>
+                    </div>
+                </div>);
+            }
+            else if (detail.fetched) { //Pokud má načteno
                 const {data} = detail;
                 const config = this.getConfigByCode(data.code);
                 let date = null;
