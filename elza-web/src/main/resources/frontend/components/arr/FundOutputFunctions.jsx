@@ -117,7 +117,22 @@ class FundOutputFunctions extends AbstractReactComponent {
             <ListBox
                 ref="listBox"
                 className="functions-listbox"
-                items={data}
+                items={data.sort((a,b) => {
+                    const configA = this.getConfigByCode(a.code);
+                    const configB = this.getConfigByCode(b.code);
+
+                    const nameA = configA.name.toUpperCase();
+                    const nameB = configB.name.toUpperCase();
+                    if (nameA < nameB) {
+                        return -1;
+                    }
+                    if (nameA > nameB) {
+                        return 1;
+                    }
+
+                    // names must be equal
+                    return 0;
+                })}
                 renderItemContent={this.renderListItem}
             />
         </div>;

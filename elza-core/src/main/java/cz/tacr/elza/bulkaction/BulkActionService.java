@@ -144,6 +144,18 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     @Override
     public void onSuccess(final BulkActionWorker result) {
         runningWorkers.remove(result.getVersionId());
+
+        ArrBulkActionRun bulkActionRun = result.getBulkActionRun();
+
+        // změna stavu výstupů na open
+        outputService.changeOutputsStateByNodes(bulkActionRun.getFundVersion(),
+                bulkActionRun.getArrBulkActionNodes()
+                        .stream()
+                        .map(ArrBulkActionNode::getNode)
+                        .collect(Collectors.toSet()),
+                OutputState.OPEN,
+                OutputState.COMPUTING);
+
         runNextWorker();
     }
 

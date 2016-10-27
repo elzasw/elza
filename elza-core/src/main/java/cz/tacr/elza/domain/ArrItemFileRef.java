@@ -3,6 +3,7 @@ package cz.tacr.elza.domain;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import java.util.Objects;
 
 /**
  * Rozšiřuje atribut archivního popisu o jeho hodnotu.
@@ -29,5 +30,19 @@ public class ArrItemFileRef extends ArrItemData implements cz.tacr.elza.api.ArrI
     @Override
     public String toString() {
         return (file != null ) ? file.getName() : null;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ArrItemFileRef that = (ArrItemFileRef) o;
+        return Objects.equals(file, that.file);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), file);
     }
 }

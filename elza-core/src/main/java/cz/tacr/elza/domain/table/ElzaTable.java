@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Implementace {@link cz.tacr.elza.api.table.ElzaTable}
@@ -75,5 +76,18 @@ public class ElzaTable implements cz.tacr.elza.api.table.ElzaTable<ElzaRow> {
     @Override
     public void clear() {
         this.rows = null;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ElzaTable table = (ElzaTable) o;
+        return Objects.equals(rows, table.rows);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(rows);
     }
 }

@@ -37,7 +37,9 @@ import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
+import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.interfaces.IArrItemStringValue;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
@@ -59,6 +61,7 @@ import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,6 +157,9 @@ public class OutputService {
 
     @Autowired
     private ItemTypeActionRepository itemTypeActionRepository;
+
+    @Autowired
+    private RuleService ruleService;
 
     private static final Logger logger = LoggerFactory.getLogger(OutputService.class);
 
@@ -1552,6 +1558,15 @@ public class OutputService {
                         .map(ArrItemSettings::getItemType)
                         .collect(Collectors.toSet());
 
+                // načtení typy atributů z pravidel výstupů,
+                // přidá do seznamu ignorovaných ty, které jsou nemožné
+                List<RulItemTypeExt> outputItemTypes = ruleService.getOutputItemTypes(outputDefinition);
+                for (RulItemTypeExt outputItemType : outputItemTypes) {
+                    if (outputItemType.getType().equals(RulItemType.Type.IMPOSSIBLE)) {
+                        itemTypesIgnored.add(outputItemType);
+                    }
+                }
+
                 for (ActionResult actionResult : result.getResults()) {
                     RulItemType itemTypeStore = storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType, itemTypesIgnored);
                     if (itemTypeStore != null) {
@@ -1652,6 +1667,9 @@ public class OutputService {
         }
 
         if (itemTypesIgnored != null && itemTypesIgnored.contains(type)) {
+            logger.warn("Při ukládání výsledků hromadné akce do výstupu " + outputDefinition.getName()
+                    + " [ID=" + outputDefinition.getOutputDefinitionId() + "] byl přeskočen atribut " + type.getName()
+                    + " [CODE=" + type.getCode() + "], protože je v seznamu ignorovaných");
             return null;
         }
 
@@ -1721,6 +1739,14 @@ public class OutputService {
                 if (EqualsBuilder.reflectionEquals(next, item)) {
                     iterator.remove();
                     break;
+                } else if (next instanceof IArrItemStringValue && item instanceof IArrItemStringValue) {
+                    // pokud se jedná o textové hodnoty atributu, porovnávám na úrovni textové hodnoty a specifikace
+                    String nextValue = ((IArrItemStringValue) next).getValue();
+                    String itemValue = ((IArrItemStringValue) item).getValue();
+                    if (ObjectUtils.equals(nextValue, itemValue) && ObjectUtils.equals(next.getSpec(), item.getSpec())) {
+                        iterator.remove();
+                        break;
+                    }
                 }
             }
         }
