@@ -200,6 +200,10 @@ var messages = {
     "change.arr.output.error.title": "Chyba při generování výstupu",
     "change.arr.output.clickToShow": "Klikněte zde pro zobrazení",
 
+    "arr.fundAction.noSelection.title": "Není vybrána funkce",
+    "arr.fundAction.noSelection.message": "Prosím vyberte funkci nebo založte novou.",
+    "arr.fundAction.emptyList.title": "Žádné funkce",
+    "arr.fundAction.emptyList.message": "Zatím nebyly spuštěny žádné funkce. Pro vytvoření funkce je potřeba povolit úpravy.",
     "arr.fundAction.noFa": "Není vybrán žádný archivní soubor",
     "arr.fundAction.form.newAction": "Nová akce",
     "arr.fundAction.form.type": "Typ akce",
