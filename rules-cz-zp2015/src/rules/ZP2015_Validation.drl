@@ -36,8 +36,9 @@ end
 rule "Každá hromadina s EJ má uvedenu ukládací jednotku"
 when
 	$activeLevel: ActiveLevel( $items: descItems )
-	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode=="ZP2015_FOLDER_UNITS"||specCode=="ZP2015_FOLDER_SINGLE_TYPE") ) from $items 
-	not ( DescItem(type=="ZP2015_STORAGE_ID"&&packet!=null&&packet.packetType!=null&&(packet.packetType.code=="BOX"||packet.packetType.code=="FASCICLE"||packet.packetType.code=="DATA_UNIT" ) ) from $items )
+	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE") ) ) from $items 
+	not ( DescItem(type=="ZP2015_STORAGE_ID"&&packet!=null&&packet.packetType!=null&&
+	                 (packet.packetType.code in ("ZP2015_BOX", "ZP2015_FASCICLE") ) ) from $items )
 then
 	results.createMissing("ZP2015_STORAGE_ID", "Ukládací jednotka bez uvedení typu hromadiny", "ZP2015_POL_STORAGE_ID");
 end
