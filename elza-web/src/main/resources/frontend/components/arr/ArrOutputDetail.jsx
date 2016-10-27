@@ -170,17 +170,13 @@ class ArrOutputDetail extends AbstractReactComponent {
             fund, versionId, packets, packetTypes, descItemTypes,
             calendarTypes, rulDataTypes, closed, readMode} = this.props;
 
-        console.log("*********** SELECT OUTPUT ***********");
-        console.log(fundOutputDetail);
-        if (!fundOutputDetail.fetched) {
-            return <div className="unselected-msg">
-                <div className="title">{i18n('arr.output.noSelection.title')}</div>
-                <div className="msg-text">{i18n('arr.output.noSelection.message')}</div>
-            </div>;
-        }
-            
         if (fundOutputDetail.id === null) {
-            return <div className='arr-output-detail-container'></div>
+            return <div className='arr-output-detail-container'>
+                        <div className="unselected-msg">
+                            <div className="title">{i18n('arr.output.noSelection.title')}</div>
+                            <div className="msg-text">{i18n('arr.output.noSelection.message')}</div>
+                        </div>
+                    </div>
         }
 
         if (!fundOutputDetail.fetched) {

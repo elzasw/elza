@@ -221,9 +221,9 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
                     />
                 </div>
                 <div key={2} className='tree-actions-container'>
-                    <Button onClick={this.handleMoveUnder} disabled={!moveUnder}>Přesunout do<Icon glyph="fa-arrow-circle-o-right"/></Button>
-                    <Button onClick={this.handleMoveBefore} disabled={!moveBeforeAfter}>Přesunout před<Icon glyph="fa-arrow-circle-o-right"/></Button>
-                    <Button onClick={this.handleMoveAfter} disabled={!moveBeforeAfter}>Přesunout za<Icon glyph="fa-arrow-circle-o-right"/></Button>
+                    <Button onClick={this.handleMoveUnder} disabled={!moveUnder}>{i18n('arr.movements.move.under')}<Icon glyph="fa-level-up fa-rotate-90"/></Button>
+                    <Button onClick={this.handleMoveBefore} disabled={!moveBeforeAfter}>{i18n('arr.movements.move.before')}<Icon glyph="fa-arrow-up"/></Button>
+                    <Button onClick={this.handleMoveAfter} disabled={!moveBeforeAfter}>{i18n('arr.movements.move.after')}<Icon glyph="fa-arrow-down"/></Button>
                 </div>
                 <div key={3} className='tree-right-container'>
                     <FundTreeMovementsRight
