@@ -47,8 +47,8 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
 
     handleSelect(item) {
         this.dispatch(groupsSelectGroup(item.id))
-    }    
-    
+    }
+
     handleSearch(filterText) {
         this.dispatch(groupsSearch(filterText))
     }
@@ -145,6 +145,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
         const centerPanel = (
             <GroupDetail
                 groupDetail={group.groupDetail}
+                groupCount={group.groups.length}
             />
         )
 
@@ -165,7 +166,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
  */
 function mapStateToProps(state) {
     const {splitter, adminRegion} = state
-    
+
     return {
         splitter,
         group: adminRegion.group

@@ -56,10 +56,15 @@ const GroupDetail = class GroupDetail extends AbstractReactComponent {
     }
 
     render() {
-        const {groupDetail, focus} = this.props;
+        const {groupDetail, focus, groupCount} = this.props;
 
         if (groupDetail.id === null) {
-            return <div className='group-detail-container'></div>
+            return <div className='group-detail-container'>
+                        <div className="unselected-msg">
+                            <div className="title">{groupCount > 0 ? i18n('admin.group.noSelection.title') : i18n('admin.group.emptyList.title')}</div>
+                            <div className="msg-text">{groupCount > 0 ? i18n('admin.group.noSelection.message') : i18n('admin.group.emptyList.message')}</div>
+                        </div>
+                    </div>
         }
 
         if (!groupDetail.fetched) {
@@ -92,7 +97,8 @@ const GroupDetail = class GroupDetail extends AbstractReactComponent {
 };
 
 GroupDetail.propTypes = {
-    groupDetail: React.PropTypes.object.isRequired
+    groupDetail: React.PropTypes.object.isRequired,
+    groupCount: React.PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
