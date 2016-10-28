@@ -241,6 +241,7 @@ var messages = {
     "arr.fund.panel.lockTitle": "v uzavřené verzi",
     "arr.fund.panel.allowEdit": "Povolit úpravy",
     "arr.fund.panel.forbidEdit": "Ukončit režim úprav",
+    "arr.fund.panel.readOnly": "Máte oprávnění jen pro čtení",
 
     "arr.fund.files.action.add": "Nový soubor",
     "arr.fund.files.action.delete": "Odebrat soubor",
@@ -408,6 +409,8 @@ var messages = {
     "arr.node.status.okx": "Ok*",
     "arr.node.status.err": "Err",
     "arr.node.status.undefined": "Nezvalidovaný",
+    "arr.node.noSelection.title": "Není vybrána jednotka popisu",
+    "arr.node.noSelection.message": "Prosím vyberte jednotku popisu.",
 
     "dms.file.title.add": "Přidání nového souboru",
     "dms.file.name": "Název souboru",
