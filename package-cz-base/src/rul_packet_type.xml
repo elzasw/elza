@@ -1,9 +1,9 @@
 <packet-types>
-    <packet-type code="ZP2015_BOX">
+    <packet-type code="BOX">
         <name>Karton</name>
         <shortcut>kar</shortcut>
     </packet-type>
-    <packet-type code="ZP2015_FASCICLE">
+    <packet-type code="FASCICLE">
         <name>Fascikl</name>
         <shortcut>fas</shortcut>
     </packet-type>
