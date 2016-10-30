@@ -165,7 +165,7 @@ const FundPage = class FundPage extends AbstractReactComponent {
 
     handleCallEditFundVersion(data) {
         const {fundRegion} = this.props
-        const fundDetail = fundRegion.fundDetail        
+        const fundDetail = fundRegion.fundDetail
 
         data.id = fundDetail.id;
         this.dispatch(scopesDirty(fundDetail.versionId));
@@ -279,7 +279,7 @@ const FundPage = class FundPage extends AbstractReactComponent {
         if (fundRegion.fundDetail.id !== null) {
             activeIndex = indexById(fundRegion.funds, fundRegion.fundDetail.id)
         }
-        
+
         const leftPanel = (
             <div className="fund-list-container">
                 <SearchWithGoto
@@ -308,6 +308,7 @@ const FundPage = class FundPage extends AbstractReactComponent {
             <FundDetail
                 fundDetail={fundRegion.fundDetail}
                 focus={focus}
+                fundCount={fundRegion.funds.length}
             />
         )
 

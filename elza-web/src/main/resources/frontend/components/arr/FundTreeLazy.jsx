@@ -18,7 +18,7 @@ import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, g
 const TREE_NAME_MAX_CHARS = 60
 
 // Odsazení odshora, musí být definováno, jinak nefunguje ensureItemVisible
-const TREE_TOP_PADDING = 21
+const TREE_TOP_PADDING = 0
 
 var keyDownHandlers = {
     ArrowUp: function(e) {
@@ -78,7 +78,7 @@ var keyDownHandlers = {
             var index = indexById(nodes, selectedId)
             if (index !== null) {
                 var node = nodes[index]
-                if (node.hasChildren) { 
+                if (node.hasChildren) {
                     if (!expandedIds[node.id]) {    // je zabalen, rozbalíme ho
                         onOpenCloseNode(node, true)
                     } else {    // jdeme na prvního potomka

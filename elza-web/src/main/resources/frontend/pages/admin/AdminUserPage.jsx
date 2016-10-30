@@ -150,7 +150,6 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
 
     render() {
         const {splitter, user} = this.props;
-
         let activeIndex
         if (user.userDetail.id !== null) {
             activeIndex = indexById(user.users, user.userDetail.id)
@@ -183,6 +182,7 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
         const centerPanel = (
             <UserDetail
                 userDetail={user.userDetail}
+                userCount={user.users.length}
             />
         )
 
@@ -203,7 +203,7 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
  */
 function mapStateToProps(state) {
     const {splitter, adminRegion} = state
-    
+
     return {
         splitter,
         user: adminRegion.user

@@ -221,9 +221,17 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
                     />
                 </div>
                 <div key={2} className='tree-actions-container'>
-                    <Button onClick={this.handleMoveUnder} disabled={!moveUnder}>Přesunout do<Icon glyph="fa-arrow-circle-o-right"/></Button>
-                    <Button onClick={this.handleMoveBefore} disabled={!moveBeforeAfter}>Přesunout před<Icon glyph="fa-arrow-circle-o-right"/></Button>
-                    <Button onClick={this.handleMoveAfter} disabled={!moveBeforeAfter}>Přesunout za<Icon glyph="fa-arrow-circle-o-right"/></Button>
+                    <div className="arrow">
+                        <Icon glyph="fa-chevron-right fa-3x"/>
+                        <Icon glyph="fa-chevron-right fa-5x"/>
+                    </div>
+                    <Button onClick={this.handleMoveBefore} disabled={!moveBeforeAfter}><Icon glyph="fa-arrow-up"/><div>{i18n('arr.movements.move.before')}</div></Button>
+                    <Button onClick={this.handleMoveUnder} disabled={!moveUnder}><Icon glyph="fa-level-up fa-rotate-90"/><div>{i18n('arr.movements.move.under')}</div></Button>
+                    <Button onClick={this.handleMoveAfter} disabled={!moveBeforeAfter}><Icon glyph="fa-arrow-down"/><div>{i18n('arr.movements.move.after')}</div></Button>
+                    <div className="arrow">
+                        <Icon glyph="fa-chevron-right fa-3x"/>
+                        <Icon glyph="fa-chevron-right fa-5x"/>
+                    </div>
                 </div>
                 <div key={3} className='tree-right-container'>
                     <FundTreeMovementsRight

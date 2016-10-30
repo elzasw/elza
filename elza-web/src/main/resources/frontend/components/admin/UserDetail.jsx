@@ -61,16 +61,22 @@ const UserDetail = class UserDetail extends AbstractReactComponent {
     }
 
     render() {
-        const {userDetail, focus} = this.props;
+        const {userDetail, focus, userCount} = this.props;
 
         if (userDetail.id === null) {
-            return <div className='user-detail-container'></div>
+            return(
+                <div className='user-detail-container'>
+                    <div className="unselected-msg">
+                        <div className="title">{userCount > 0 ? i18n('admin.user.noSelection.title') : i18n('admin.user.emptyList.title')}</div>
+                        <div className="message">{userCount > 0 ? i18n('admin.user.noSelection.message') : i18n('admin.user.emptyList.message')}</div>
+                    </div>
+                </div>);
         }
 
         if (!userDetail.fetched) {
             return <div className='user-detail-container'><Loading/></div>
         }
-        
+
         return (
             <div className='user-detail-container'>
                 <h1>{userDetail.party.record.record}</h1>
@@ -100,6 +106,7 @@ const UserDetail = class UserDetail extends AbstractReactComponent {
 
 UserDetail.propTypes = {
     userDetail: React.PropTypes.object.isRequired,
+    userCount: React.PropTypes.object.isRequired,
 };
 
 function mapStateToProps(state) {
