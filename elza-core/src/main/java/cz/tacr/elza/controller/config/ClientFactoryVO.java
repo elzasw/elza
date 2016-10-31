@@ -11,6 +11,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.LevelTreeCacheService;
@@ -21,6 +22,7 @@ import ma.glasnost.orika.MapperFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -1026,7 +1028,67 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemTypeExtVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeExtVO.class);
         descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
+        descItemTypeVO.setItemSpecsTree(new ArrayList<>(1));
+        for (RulItemSpecExt rulItemSpecExt : descItemType.getRulItemSpecList()) {
+            if (StringUtils.isNotEmpty(rulItemSpecExt.getCategory())) {
+                String[] categories = rulItemSpecExt.getCategory().split("\\" + ItemTypeUpdater.CATEGORY_SEPARATOR);
+                recursiveAddCategory(categories, 0, descItemTypeVO.getItemSpecsTree(), rulItemSpecExt.getItemSpecId());
+            }
+        }
         return descItemTypeVO;
+    }
+
+    /**
+     * Rekurzivní sestavení stromu kategorií.
+     *
+     * @param categories    cesta kategorií stromem
+     * @param depthIndex    index aktuální pozice cesty stromem
+     * @param itemSpecsTree seznam kategorií na aktuální pozici cesty stromem
+     * @param itemSpecId    přidávaný identifikátor specifikace
+     */
+    private void recursiveAddCategory(final String[] categories,
+                                      final int depthIndex,
+                                      final List<ItemSpecsCategory> itemSpecsTree,
+                                      final Integer itemSpecId) {
+        if (itemSpecsTree == null || depthIndex >= categories.length) {
+            return;
+        }
+
+        String categoryName = categories[depthIndex];
+
+        ItemSpecsCategory category = null;
+
+        // vyhledám kategorii
+        for (ItemSpecsCategory itemSpecsCategory : itemSpecsTree) {
+            if (itemSpecsCategory.getName().equals(categoryName)) {
+                category = itemSpecsCategory;
+                break;
+            }
+        }
+
+        // pokud ještě neexistuje, vytvořím a přidám jí do seznamu
+        if (category == null) {
+            category = new ItemSpecsCategory();
+            category.setName(categoryName);
+            itemSpecsTree.add(category);
+        }
+
+        // pokud jsme na poslední úrovni, přidáme id do seznamu identifikátorů specifikace,
+        // pokud nejsme, procházíme do hlubší kategorie
+        if (depthIndex + 1 == categories.length) {
+            List<Integer> specIds = category.getSpecIds();
+            if (specIds == null) {
+                specIds = new ArrayList<>(1);
+                category.setSpecIds(specIds);
+            }
+            specIds.add(itemSpecId);
+        } else {
+            if (category.getChildren() == null) {
+                category.setChildren(new ArrayList<>(1));
+            }
+            recursiveAddCategory(categories, depthIndex + 1, category.getChildren(), itemSpecId);
+        }
+
     }
 
     /**

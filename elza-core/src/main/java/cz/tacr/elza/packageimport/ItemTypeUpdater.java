@@ -5,15 +5,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotNull;
-
+import cz.tacr.elza.packageimport.xml.Category;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -65,7 +63,9 @@ public class ItemTypeUpdater {
 
     @Autowired
 	private RegisterTypeRepository registerTypeRepository;
-    
+
+    public static final String CATEGORY_SEPARATOR = "|";
+
     /**
      * Max used view order
      */
@@ -341,6 +341,13 @@ public class ItemTypeUpdater {
             item = findItems.get(0);
         } else {
             throw new IllegalStateException("Kód " + itemSpec.getItemType() + " neexistuje v RulItemType");
+        }
+
+        if (CollectionUtils.isNotEmpty(itemSpec.getCategories())) {
+            List<String> categories = itemSpec.getCategories().stream().map(Category::getValue).collect(Collectors.toList());
+            rulDescItemSpec.setCategory(StringUtils.join(categories, CATEGORY_SEPARATOR));
+        } else {
+            rulDescItemSpec.setCategory(null);
         }
 
         rulDescItemSpec.setItemType(item);

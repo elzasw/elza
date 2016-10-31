@@ -31,6 +31,7 @@ import javax.xml.bind.Unmarshaller;
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.packageimport.xml.Category;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -1493,7 +1494,7 @@ public class PackageService {
             ruleSetList.add(outputType);
             File dir = new File(outputGeneratorService.getTemplatesDir() + File.separator + rulOutputType.getDirectory() + File.separator);
             for (File dirFile : dir.listFiles()) {
-                addToZipFile(ZIP_DIR_TEMPLATES + "/" + rulOutputType.getDirectory(), dirFile, zos);
+                addToZipFile(ZIP_DIR_TEMPLATES + "/" + rulOutputType.getDirectory() + "/" + dirFile.getName(), dirFile, zos);
             }
         }
 
@@ -1759,6 +1760,14 @@ public class PackageService {
         }
 
         itemSpec.setDescItemSpecRegisters(descItemSpecRegisterList);
+
+        if (StringUtils.isNotEmpty(rulDescItemSpec.getCategory())) {
+            String[] categoriesString = rulDescItemSpec.getCategory().split("\\" + ItemTypeUpdater.CATEGORY_SEPARATOR);
+            List<Category> categories = Arrays.asList(categoriesString).stream()
+                    .map(s -> new Category(s))
+                    .collect(Collectors.toList());
+            itemSpec.setCategories(categories);
+        }
     }
 
     /**
