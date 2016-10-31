@@ -22,6 +22,10 @@ public interface SettingsRepository extends JpaRepository<UISettings, Integer> {
     List<UISettings> findByUserAndSettingsType(UsrUser user,
                                                Collection<UISettings.SettingsType> settingsTypes);
 
+    List<UISettings> findByUserAndSettingsTypeAndEntityType(UsrUser user,
+                                                            UISettings.SettingsType settingsType,
+                                                            UISettings.EntityType entityType);
+
     List<UISettings> findByUserAndEntityTypeAndEntityId(UsrUser user,
                                                         UISettings.EntityType entityType,
                                                         Integer entityId);
