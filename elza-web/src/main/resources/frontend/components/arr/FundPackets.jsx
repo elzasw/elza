@@ -11,6 +11,7 @@ import {DropdownButton, MenuItem} from 'react-bootstrap'
 import {fetchFundPacketsIfNeeded, fundPacketsFilterByText, fundPacketsChangeSelection, fundPacketsFilterByState, fundPacketsChangeState, fundPacketsCreate, fundPacketsChangeNumbers, fundPacketsDelete} from 'actions/arr/fundPackets.jsx'
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
+import PacketFormatter from 'components/arr/packets/PacketFormatter.jsx';
 
 var FundPackets = class FundPackets extends AbstractReactComponent {
     constructor(props) {
@@ -32,13 +33,15 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        const {versionId, fundId} = this.props;
+        const {versionId, fundId, packetTypes} = this.props;
         this.dispatch(fetchFundPacketsIfNeeded(versionId, fundId));
+        this.pf = new PacketFormatter(packetTypes);
     }
 
     componentWillReceiveProps(nextProps) {
         const {versionId, fundId} = this.props;
         this.dispatch(fetchFundPacketsIfNeeded(versionId, fundId));
+
     }
 
     handleSelectionChange(selectionType, ids, unselectedIds, type) {
@@ -145,21 +148,14 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
     }
 
     render() {
-        const {versionId, packetTypes, filterState, filterText, fetched, packets, selectedIds} = this.props
+        const {versionId, filterState, filterText, fetched, packets, selectedIds} = this.props
 
         if (!fetched) {
             return <Loading/>
         }
 
-        const packetTypesMap = getMapFromList(packetTypes.items)
         const items = packets.map(packet => {
-            let name
-            // if (typeof packet.packetTypeId !== 'undefined' && packet.packetTypeId !== null) {
-            //     name = packet.storageNumber + " [" + packetTypesMap[packet.packetTypeId].name + "]"
-            // } else {
-            //     name = packet.storageNumber
-            // }
-            name = packet.storageNumber
+            var name = this.pf.format(packet);
             return {id: packet.id, name: name}
         })
 
