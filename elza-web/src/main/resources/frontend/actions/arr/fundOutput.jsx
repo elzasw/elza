@@ -249,7 +249,11 @@ export function fundOutputDetailClear(versionId) {
 
 export function fundOutputGenerate(outputId) {
     return (dispatch, getState) => {
-        WebApi.outputGenerate(outputId);
+        WebApi.outputGenerate(outputId).then(data => {
+            if(data && data.message && confirm(data.message + ", chcete i přesto pokračovat?")) {
+                WebApi.outputGenerate(outputId, true);
+            }
+        });
     }
 }
 

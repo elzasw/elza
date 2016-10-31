@@ -8,8 +8,8 @@ import {indexById} from 'stores/app/utils.jsx'
 import {dateTimeToString} from 'components/Utils.jsx';
 import './FundOutputFunctions.less'
 
-const ACTION_RUNNING_STATE = ['RUNNING', 'WAITING', 'PLANNED',];
-const ACTION_NOT_RUNNING_STATE = ['FINISHED', 'ERROR', 'INTERRUPTED',];
+const ACTION_RUNNING_STATE = ['RUNNING', 'WAITING', 'PLANNED'];
+const ACTION_NOT_RUNNING_STATE = ['FINISHED', 'ERROR', 'INTERRUPTED', 'OUTDATED'];
 
 const OutputState = {
     OPEN: 'OPEN',
