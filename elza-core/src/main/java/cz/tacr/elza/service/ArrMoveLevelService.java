@@ -14,7 +14,12 @@ import javax.persistence.PersistenceContext;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.UsrPermission;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +81,7 @@ public class ArrMoveLevelService {
 
         Assert.notEmpty(transportNodes);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL);
 
         ArrLevel staticLevelParent = arrangementService.lockNode(staticParentNode, version, change);
         ArrLevel transportLevelParent = transportParentNode.equals(staticParentNode)
@@ -194,7 +199,7 @@ public class ArrMoveLevelService {
                                 final ArrNode transportParentNode) {
         Assert.notEmpty(transportNodes);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL);
 
         ArrLevel staticLevelParent = arrangementService.lockNode(staticParentNode, version, change);
         ArrLevel transportLevelParent = transportParentNode.equals(staticParentNode)
@@ -306,7 +311,7 @@ public class ArrMoveLevelService {
                                 final Collection<ArrNode> transportNodes,
                                 final ArrNode transportParentNode) {
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL);
 
         ArrLevel staticLevel = arrangementService.lockNode(staticNode, version, change);
         ArrLevel transportLevelParent = staticNode.equals(transportParentNode)
@@ -396,7 +401,7 @@ public class ArrMoveLevelService {
         Assert.notNull(version);
         Assert.notNull(deleteNode);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_LEVEL);
 
         ArrLevel deleteLevel = arrangementService.lockNode(deleteNode, version, change);
         if (deleteNodeParent != null) {
@@ -591,7 +596,7 @@ public class ArrMoveLevelService {
 
         arrangementService.isValidAndOpenVersion(version);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_LEVEL);
 
         final ArrLevel staticLevelParent = arrangementService.lockNode(staticNodeParent, version, change);
         Assert.notNull(staticLevelParent);
@@ -630,7 +635,7 @@ public class ArrMoveLevelService {
 
         arrangementService.isValidAndOpenVersion(version);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_LEVEL);
         final ArrLevel staticLevel = arrangementService.lockNode(staticNode, version, change);
         Assert.notNull(staticLevel);
 

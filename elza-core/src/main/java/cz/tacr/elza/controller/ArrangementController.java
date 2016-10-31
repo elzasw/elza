@@ -1208,7 +1208,7 @@ public class ArrangementController {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
         RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
 
         ArrNode node = factoryDO.createNode(nodeVO);
         ArrLevel level = arrangementService.lockNode(node, version, change);
