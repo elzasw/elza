@@ -304,7 +304,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         Integer fundId = version.getFund().getFundId();
         Integer lockChangeId = version.getLockChange() == null ? null : version.getLockChange().getChangeId();
 
-        Map<Integer, List<String>> nodeIdToDescItemIds = findDescItemIdsByFilters(filters, fundId, lockChangeId);
+        Map<Integer, Set<String>> nodeIdToDescItemIds = findDescItemIdsByFilters(filters, fundId, lockChangeId);
         if (nodeIdToDescItemIds == null || nodeIdToDescItemIds.isEmpty()) {
             return Collections.emptySet();
         }
@@ -326,15 +326,15 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         return nodeIds;
     }
 
-    private Map<Integer, List<String>> findDescItemIdsByFilters(final List<DescItemTypeFilter> filters, final Integer fundId, final Integer lockChangeId) {
+    private Map<Integer, Set<String>> findDescItemIdsByFilters(final List<DescItemTypeFilter> filters, final Integer fundId, final Integer lockChangeId) {
         if (CollectionUtils.isEmpty(filters)) {
             return null;
         }
 
-        Map<Integer, List<String>> allDescItemIds = null;
+        Map<Integer, Set<String>> allDescItemIds = null;
         for (DescItemTypeFilter filter : filters) {
             QueryBuilder queryBuilder = createQueryBuilder(filter.getCls());
-            Map<Integer, List<String>> nodeIdToDescItemIds = filter.resolveConditions(fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
+            Map<Integer, Set<String>> nodeIdToDescItemIds = filter.resolveConditions(fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
 
             if (allDescItemIds == null) {
                 allDescItemIds = new HashMap<>(nodeIdToDescItemIds);
@@ -342,10 +342,10 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
                 Set<Integer> existingNodes = new HashSet<>(allDescItemIds.keySet());
                 existingNodes.retainAll(nodeIdToDescItemIds.keySet());
 
-                Map<Integer, List<String>> updatedAllDescItemIds = new HashMap<>(nodeIdToDescItemIds.size());
+                Map<Integer, Set<String>> updatedAllDescItemIds = new HashMap<>(nodeIdToDescItemIds.size());
                 for (Integer nodeId : existingNodes) {
-                    List<String> rowDescItemIds = nodeIdToDescItemIds.get(nodeId);
-                    List<String> existingDescItemIds = allDescItemIds.get(nodeId);
+                    Set<String> rowDescItemIds = nodeIdToDescItemIds.get(nodeId);
+                    Set<String> existingDescItemIds = allDescItemIds.get(nodeId);
 
                     if (existingDescItemIds == null) {
                         updatedAllDescItemIds.put(nodeId, rowDescItemIds);
