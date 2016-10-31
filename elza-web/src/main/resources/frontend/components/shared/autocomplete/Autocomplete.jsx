@@ -734,6 +734,7 @@ export default class Autocomplete extends AbstractReactComponent {
                 onMouseEnter: () => this.highlightItemFromMouse(index),
                 onClick: () => this.selectItemFromMouse(item),
                 ref: `item-${index}`,
+                key: `item-${index}`,
             })
         })
         var style = {

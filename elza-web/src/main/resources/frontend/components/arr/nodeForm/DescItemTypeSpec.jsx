@@ -6,6 +6,8 @@ import {Autocomplete, Icon, i18n, AbstractReactComponent} from 'components/index
 import {getSetFromIdsList} from "stores/app/utils.jsx";
 const classNames = require('classnames');
 
+require("./DescItemTypeSpec.less");
+
 const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
 
     constructor(props) {
@@ -51,6 +53,7 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
     getSpecItems = (refType, infoType, filterText) => {
         let result;
 
+        // Položky
         if (refType.itemSpecsTree && refType.itemSpecsTree.length > 0) {    // stromová reprezentace
             result = [];
             const treeNodeIndex = {index: 0};
@@ -61,7 +64,34 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
                 }
             });
         } else {    // plochý seznam
-            result = infoType.specs.map(spec => ( {...spec, ...refType.descItemSpecsMap[spec.id]} ));
+            result = infoType.specs.map(spec => ( {...refType.descItemSpecsMap[spec.id], ...spec} ));
+        }
+
+        // Oblíbené položky
+        if (infoType.favoriteSpecIds && infoType.favoriteSpecIds.length > 0) {  // má oblíbené položky
+            const items = [];
+            infoType.favoriteSpecIds.forEach(specId => {
+                const refSpec = refType.descItemSpecsMap[specId];
+                if (!filterText || (filterText && refSpec.name.toLocaleLowerCase().indexOf(filterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
+                    const infoSpec = infoType.descItemSpecsMap[specId];
+                    const value = {
+                        ...refSpec,
+                        ...infoSpec,
+                        className: 'spec-' + infoSpec.type.toLowerCase()
+                    };
+                    items.push(value);
+                }
+            });
+
+            // Pokud nějaké jsou, upravíme výstupní result a přidáme je tam včetně skupin, které oddělují oblíbené a ostatní položky
+            if (items.length > 0) {
+                result = [
+                    {id: -1111, name: i18n("subNodeForm.descItemType.spec.favorite"), className: "spec-group", group: true},
+                    ...items,
+                    {id: -2222, name: i18n("subNodeForm.descItemType.spec.all"), className: "spec-group", group: true},
+                    ...result
+                ]
+            }
         }
 
         return result;
@@ -80,16 +110,16 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
         // Specifikace pro daný atribut v pro konkrétní formulář
         const specChildren = [];
         const nodeSpecIdsMap = getSetFromIdsList(node.specIds);
-        infoType.specs.forEach(spec => {    // projdeme všechny specifikace pro daný atribut a formulář
-            if (nodeSpecIdsMap[spec.id]) {   // v daném nodu má být konkrétní specifikace, může pro daný atribut být v daném formuláři
-                const refSpec = refType.descItemSpecsMap[spec.id];
+        infoType.specs.forEach(infoSpec => {    // projdeme všechny specifikace pro daný atribut a formulář
+            if (nodeSpecIdsMap[infoSpec.id]) {   // v daném nodu má být konkrétní specifikace, může pro daný atribut být v daném formuláři
+                const refSpec = refType.descItemSpecsMap[infoSpec.id];
 
                 // Filtr
                 if (!filterText || (filterText && refSpec.name.toLocaleLowerCase().indexOf(filterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
                     specChildren.push({
                         ...refSpec,
-                        ...spec,
-                        className: 'spec-' + spec.type.toLowerCase()
+                        ...infoSpec,
+                        className: 'spec-' + infoSpec.type.toLowerCase()
                     });
                 }
             }
@@ -177,6 +207,7 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
                 customFilter: true,
                 tree: true,
                 allowSelectItem: (id, item) => !item.node,
+                allowFocusItem: (id, item) => !item.group,
                 onSearchChange: this.handleSearchChange,
             }
         } else {    // list
