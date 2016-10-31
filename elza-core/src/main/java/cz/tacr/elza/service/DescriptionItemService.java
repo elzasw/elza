@@ -179,7 +179,7 @@ public class DescriptionItemService {
         Assert.notNull(nodeVersion);
         Assert.notNull(fundVersionId);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemObjectId);
 
@@ -222,7 +222,7 @@ public class DescriptionItemService {
                                                 final Integer nodeVersion,
                                                 final Integer descItemTypeId) {
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
 
@@ -270,7 +270,7 @@ public class DescriptionItemService {
                                                               final Integer nodeVersion,
                                                               final Integer descItemTypeId) {
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
 
@@ -323,7 +323,7 @@ public class DescriptionItemService {
         ArrNode node = nodeRepository.findOne(nodeId);
         Assert.notNull(node);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM);
 
         // uložení uzlu (kontrola optimistických zámků)
         node.setVersion(nodeVersion);
@@ -359,7 +359,7 @@ public class DescriptionItemService {
         ArrNode node = nodeRepository.findOne(nodeId);
         Assert.notNull(node);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM);
 
         // uložení uzlu (kontrola optimistických zámků)
         node.setVersion(nodeVersion);
@@ -382,7 +382,7 @@ public class DescriptionItemService {
                                              final ArrFundVersion version,
                                              @Nullable final ArrChange createChange) {
 
-        ArrChange change = createChange == null ? arrangementService.createChange() : createChange;
+        ArrChange change = createChange == null ? arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM) : createChange;
 
         descItem.setNode(node);
         descItem.setCreateChange(change);
@@ -415,7 +415,7 @@ public class DescriptionItemService {
                                                     final ArrFundVersion version,
                                                     @Nullable final ArrChange createChange) {
 
-        ArrChange change = createChange == null ? arrangementService.createChange() : createChange;
+        ArrChange change = createChange == null ? arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM) : createChange;
         List<ArrDescItem> createdItems = new ArrayList<>();
         for (ArrDescItem descItem :
                 descItems) {
@@ -734,7 +734,7 @@ public class DescriptionItemService {
             node.setVersion(nodeVersion);
 
             // vytvoření změny
-            change = arrangementService.createChange();
+            change = arrangementService.createChange(ArrChange.Type.UPDATE_DESC_ITEM);
 
             // uložení uzlu (kontrola optimistických zámků)
             saveNode(node, change);
@@ -1163,7 +1163,7 @@ public class DescriptionItemService {
         if (!dataToReplaceText.isEmpty()) {
 
 
-            ArrChange change = arrangementService.createChange();
+            ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
             for (ArrData arrData : dataToReplaceText) {
                 ArrNode clientNode = nodesMap.get(arrData.getItem().getNodeId());
@@ -1251,7 +1251,7 @@ public class DescriptionItemService {
                         .findOpenByNodesAndTypeAndSpec(nodes, descItemType, specifications) :
                 descItemRepository.findOpenByNodesAndType(nodes, descItemType);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
         for (ArrDescItem descItem : descItems) {
             deleteDescriptionItem(descItem, version, change, false);
@@ -1385,7 +1385,7 @@ public class DescriptionItemService {
                         specifications) :
                 descItemRepository.findOpenByNodesAndType(nodes, descItemType);
         if (!descItems.isEmpty()) {
-            ArrChange change = arrangementService.createChange();
+            ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_DELETE_DESC_ITEM);
 
             for (ArrDescItem descItem : descItems) {
                 deleteDescriptionItem(descItem, version, change, false);

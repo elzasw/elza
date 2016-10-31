@@ -329,7 +329,7 @@ public class XmlImportService {
             deleteFundIfExists(rootLevel);
 
             // založit fa
-            ArrChange change = arrangementService.createChange();
+            ArrChange change = arrangementService.createChange(ArrChange.Type.IMPORT);
             ArrFund fund = createFund(xmlImport.getFund(), change, config, stopOnError);
 
             // importovat

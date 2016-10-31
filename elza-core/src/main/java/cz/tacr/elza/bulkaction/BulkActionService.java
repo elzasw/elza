@@ -9,7 +9,16 @@ import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
 import cz.tacr.elza.bulkaction.factory.BulkActionWorkerFactory;
 import cz.tacr.elza.bulkaction.generator.BulkAction;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrBulkActionNode;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulActionRecommended;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.LevelTreeCacheService;
@@ -397,6 +406,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             user.setUserId(userId);
             change.setUser(user);
         }
+        change.setType(ArrChange.Type.BULK_ACTION);
         return changeRepository.save(change);
     }
 
@@ -577,7 +587,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
         try {
             logger.info("Zahájení překlopení výsledku hromadné akce do výstupů");
-            ArrChange change = arrangementService.createChange();
+            ArrChange change = arrangementService.createChange(null);
             outputService.storeResultBulkAction(bulkActionRun, nodes, change, null);
             logger.info("Překlopení výsledku hromadné akce bylo úspěšně dokončeno");
         } catch (Exception e) {

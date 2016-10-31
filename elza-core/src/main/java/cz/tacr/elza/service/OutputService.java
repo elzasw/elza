@@ -341,7 +341,7 @@ public class OutputService {
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public ArrOutput outputLock(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                 final ArrOutput output) {
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
         return outputLock(fundVersion, output, change);
     }
 
@@ -426,7 +426,7 @@ public class OutputService {
 
         outputDefinitionRepository.save(outputDefinition);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
         ArrOutput output = createOutputWithChange(outputDefinition, change);
         List<ArrOutput> outputs = new ArrayList<>();
         outputs.add(output);
@@ -470,7 +470,7 @@ public class OutputService {
     public void removeNodesNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                        final ArrOutput output,
                                        final List<Integer> nodeIds) {
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
         removeNodesNamedOutput(fundVersion, output, nodeIds, change);
     }
 
@@ -616,7 +616,7 @@ public class OutputService {
     public void addNodesNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                     final ArrOutput output,
                                     final List<Integer> nodeIds) {
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
         addNodesNamedOutput(fundVersion, output, nodeIds, change);
     }
 
@@ -891,7 +891,7 @@ public class OutputService {
                                           final ArrOutputDefinition outputDefinition,
                                           final ArrFundVersion fundVersion,
                                           @Nullable final ArrChange createChange) {
-        ArrChange change = createChange == null ? arrangementService.createChange() : createChange;
+        ArrChange change = createChange == null ? arrangementService.createChange(null) : createChange;
 
         outputItem.setOutputDefinition(outputDefinition);
 
@@ -984,7 +984,7 @@ public class OutputService {
         Assert.notNull(outputVersion);
         Assert.notNull(fundVersionId);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(descItemObjectId);
 
@@ -1103,7 +1103,7 @@ public class OutputService {
             saveOutputDefinition(outputDefinition);
 
             // vytvoření změny
-            change = arrangementService.createChange();
+            change = arrangementService.createChange(null);
         }
 
         ArrOutputItem outputItemUpdated = updateOutputItem(outputItem, outputItemDB, fundVersion, change, createNewVersion);
@@ -1340,7 +1340,7 @@ public class OutputService {
         if (outputDefinition.getState() != OutputState.OPEN) {
             throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
         }
-        ArrChange change = createChange == null ? arrangementService.createChange() : createChange;
+        ArrChange change = createChange == null ? arrangementService.createChange(null) : createChange;
         List<ArrOutputItem> createdItems = new ArrayList<>();
         for (ArrOutputItem outputItem :
                 outputItems) {
@@ -1370,7 +1370,7 @@ public class OutputService {
     public ArrOutputDefinition deleteOutputItemsByTypeWithoutVersion(final Integer fundVersionId,
                                                                      final Integer outputDefinitionId,
                                                                      final Integer descItemTypeId) {
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
 
@@ -1410,7 +1410,7 @@ public class OutputService {
                                                        final Integer outputDefinitionVersion,
                                                        final Integer itemTypeId) {
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
 
@@ -1790,7 +1790,7 @@ public class OutputService {
 
         ArrItemSettings itemSettings = itemSettingsRepository.findOneByOutputDefinitionAndItemType(outputDefinition, itemType);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
 
         if (itemSettings == null) {
             itemSettings = new ArrItemSettings();
