@@ -236,20 +236,23 @@ export default class Autocomplete extends AbstractReactComponent {
         const {allowFocusItem, getItemId} = this.props;
         const items = this.getFilteredItems();
         const start = index !== null ? index : 0;
-        var ii = start + 1;
+        var ii = index != null ? start + 1 : start;
+        if (ii >= items.length) {   // na konci přejdeme na začátek
+            ii = 0;
+        }
         while (true) {
-            if (ii === start) { // udělali jsme celé kolečko a nenalezli položku, na kterou se může dát další focus
-                return index;
-            }
-            if (ii >= items.length) {   // na konci přejdeme na začátek
-                ii = 0;
-            }
-
             var item = items[ii];
             if (allowFocusItem(getItemId(item), item)) {
                 return ii;
             }
             ii++;
+
+            if (ii >= items.length) {   // na konci přejdeme na začátek
+                ii = 0;
+            }
+            if (ii === start) { // udělali jsme celé kolečko a nenalezli položku, na kterou se může dát další focus
+                return index;
+            }
         }
         return null;
     }
@@ -263,20 +266,23 @@ export default class Autocomplete extends AbstractReactComponent {
         const {allowFocusItem, getItemId} = this.props;
         const items = this.getFilteredItems();
         const start = index !== null ? index : items.length - 1;
-        var ii = index - 1;
+        var ii = index !== null ? index - 1 : start;
+        if (ii < 0) {   // na konci přejdeme na začátek
+            ii = items.length - 1;
+        }
         while (true) {
-            if (ii === start) { // udělali jsme celé kolečko a nenalezli položku, na kterou se může dát další focus
-                return index;
-            }
-            if (ii < 0) {   // na konci přejdeme na začátek
-                ii = items.length - 1;
-            }
-
             var item = items[ii];
             if (allowFocusItem(getItemId(item), item)) {
                 return ii;
             }
             ii--;
+
+            if (ii < 0) {   // na konci přejdeme na začátek
+                ii = items.length - 1;
+            }
+            if (ii === start) { // udělali jsme celé kolečko a nenalezli položku, na kterou se může dát další focus
+                return index;
+            }
         }
         return null;
     }
@@ -570,7 +576,7 @@ export default class Autocomplete extends AbstractReactComponent {
             var filteredItems = [];
             var filteredItemsDepth = [];
             result.items.forEach((item, index) => {
-                if (shouldItemRender(item, inputStrValue)) {
+                if (shouldItemRender(item, inputStrValue || "")) {
                     filteredItems.push(item);
                     tree && filteredItemsDepth.push(result.itemsDepth[index]);
                 }
@@ -880,7 +886,7 @@ export default class Autocomplete extends AbstractReactComponent {
 
 Autocomplete.defaultProps = {
     inputProps: {},
-    onSearchChange () {
+    onSearchChange (text) {
     },
     onChange (value, item) {
     },
@@ -906,9 +912,11 @@ Autocomplete.defaultProps = {
         if (!allowFocus) {
             cls += ' not-focusable';
         }
-
         if (treeInfo !== null) {
             cls += " depth-" + treeInfo.depth;
+        }
+        if (item.className) {
+            cls += " " + item.className;
         }
 
         var itemStr;

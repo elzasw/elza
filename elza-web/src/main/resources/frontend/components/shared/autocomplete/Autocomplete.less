@@ -89,6 +89,10 @@
                     padding-left: 5*@autocomplete-tree-depth;
                 }
 
+                .item-text {
+                    padding-right: 8px;
+                }
+
                 cursor: pointer;
                 &.not-selectable {
                     cursor: default;
@@ -104,7 +108,7 @@
                 }
 
                 .node-expand-collapse {
-                    cursor: default;
+                    cursor: pointer;
                     width: 20px;
                     display: inline-block;
                     //width: 16px;
@@ -123,8 +127,10 @@
                     background: #afafaf;
                 }
                 &.focus.not-focusable {
-                //&.focus.not-selectable {
                     background: transparent;
+                }
+                &.focus.not-selectable {
+                    background: #dfdfdf;
                 }
             }
         }
