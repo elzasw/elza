@@ -448,21 +448,33 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         Assert.notNull(bulkActionRunId);
         ArrBulkActionRun bulkActionRun = bulkActionRepository.findOne(bulkActionRunId);
         checkAuthBA(bulkActionRun.getFundVersion());
+        return bulkActionRun;
+    }
 
-        if (bulkActionRun.getState() == State.FINISHED) {
-            Set<ArrNode> collect = bulkActionRun.getArrBulkActionNodes().stream().map(ArrBulkActionNode::getNode).collect(Collectors.toSet());
-            HashSet<ArrChange> arrChanges = new HashSet<>(1);
-            ArrChange change = bulkActionRun.getChange();
-            arrChanges.add(change);
+    /**
+     * Kontroluje ve verzi dokončené hromadné akce, jestli zda-li jsou aktuální.
+     * V případě, že je detekovaná změna, provede změnu stavu hromadné akce na neaktuální.
+     *
+     * @param fundVersionId id verze archivní pomůcky
+     */
+    public void checkOutdatedActions(final Integer fundVersionId) {
+        List<ArrBulkActionRun> bulkActions = bulkActionRepository.findByFundVersionIdAndState(fundVersionId, State.FINISHED);
 
-            Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(collect, arrChanges, true, true);
-            if (arrChangeBooleanMap.containsKey(change) && arrChangeBooleanMap.get(change)) {
-                bulkActionRun.setState(State.OUTDATED);
-                bulkActionRepository.save(bulkActionRun);
+        for (ArrBulkActionRun bulkAction : bulkActions) {
+            if (bulkAction.getState() == State.FINISHED) {
+                Set<ArrNode> arrNodes = bulkAction.getArrBulkActionNodes().stream().map(ArrBulkActionNode::getNode).collect(Collectors.toSet());
+                HashSet<ArrChange> arrChanges = new HashSet<>(1);
+                ArrChange changeBulkAction = bulkAction.getChange();
+                arrChanges.add(changeBulkAction);
+
+                Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(arrNodes, arrChanges, true, true);
+                if (arrChangeBooleanMap.containsKey(changeBulkAction) && arrChangeBooleanMap.get(changeBulkAction)) {
+                    bulkAction.setState(State.OUTDATED);
+                    bulkActionRepository.save(bulkAction);
+                    eventPublishBulkAction(bulkAction);
+                }
             }
         }
-
-        return bulkActionRun;
     }
 
     /**
