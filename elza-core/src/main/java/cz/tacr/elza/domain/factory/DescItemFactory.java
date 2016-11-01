@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain.factory;
 
-import cz.tacr.elza.api.controller.ArrangementManager;
+import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.repository.*;
@@ -933,7 +933,7 @@ public class DescItemFactory implements InitializingBean {
             if (format != null) {
                 String stringValue = value;
                 if (stringValue != null && stringValue.length() > 250 && format != null
-                        && ArrangementManager.FORMAT_ATTRIBUTE_SHORT.equals(format)) {
+                        && ArrangementController.FORMAT_ATTRIBUTE_SHORT.equals(format)) {
                     valueRet = stringValue.substring(0, 250);
                 }
             }

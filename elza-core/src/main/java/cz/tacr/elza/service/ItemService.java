@@ -1,6 +1,6 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.api.controller.ArrangementManager;
+import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -935,7 +935,7 @@ public class ItemService implements InitializingBean {
             if (format != null) {
                 String stringValue = value;
                 if (stringValue != null && stringValue.length() > 250 && format != null
-                        && ArrangementManager.FORMAT_ATTRIBUTE_SHORT.equals(format)) {
+                        && ArrangementController.FORMAT_ATTRIBUTE_SHORT.equals(format)) {
                     valueRet = stringValue.substring(0, 250);
                 }
             }

@@ -72,19 +72,27 @@ class WebApi{
     }
 
     updateRelation(relation) {
-        return AjaxUtils.ajaxPut(WebApi.partyUrl + '/relations/'+relation.relationId, null,  relation);
+        return AjaxUtils.ajaxPut(WebApi.partyUrl + '/relations/' + relation.relationId, null,  relation);
+    }
+
+    deleteRelation(relationId) {
+        return AjaxUtils.ajaxDelete(WebApi.partyUrl + '/relations/' + relationId);
     }
 
     copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId) {
         return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/copyOlderSiblingAttribute/', {versionId, descItemTypeId},  {id: nodeId, version: nodeVersionId});
     }
 
-    deleteRelation(relationId) {
-        return AjaxUtils.ajaxDelete(WebApi.partyUrl + '/relations/'+relationId, {relationId: relationId});
+    insertParty(party) {
+        return AjaxUtils.ajaxPost(WebApi.partyUrl + '/', null, party);
+    }
+
+    getParty(partyId){
+        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/' + partyId);
     }
 
     findParty(search = null, versionId = null, partyTypeId = null) {
-        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/findParty', {
+        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/', {
             search: search,
             from: 0,
             count : 200,
@@ -93,36 +101,25 @@ class WebApi{
         });
     }
 
-    findPartyForParty(partyId, search = null){
+    findPartyForParty(partyId, search = null) {
         return AjaxUtils.ajaxGet(WebApi.partyUrl + '/findPartyForParty', {
             search: search,
             from: 0,
             count : 200,
             partyId: partyId
-        }).then(json=>{
-            return json.recordList;
         });
     }
 
-
-    deleteParty(partyId) {
-        return AjaxUtils.ajaxDelete(WebApi.partyUrl + '/deleteParty', {partyId});
+    updateParty(party) {
+        return AjaxUtils.ajaxPut(WebApi.partyUrl + '/' + party.partyId, null, party);
     }
 
-    getParty(partyId){
-        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/getParty', {partyId});
+    deleteParty(partyId) {
+        return AjaxUtils.ajaxDelete(WebApi.partyUrl + '/' + partyId);
     }
 
     validateUnitdate(value) {
         return AjaxUtils.ajaxGet(WebApi.validateUrl + '/unitDate', {value: value || ''});
-    }
-
-    insertParty(party) {
-        return AjaxUtils.ajaxPost(WebApi.partyUrl + '/insertParty', null,  party);
-    }
-
-    updateParty(party) {
-        return AjaxUtils.ajaxPut(WebApi.partyUrl + '/updateParty/' + party.partyId, null, party);
     }
 
     moveNodesUnder(versionId, nodes, nodesParent, dest, destParent) {
@@ -509,7 +506,7 @@ class WebApi{
     }
 
     getPartyNameFormTypes() {
-        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/getPartyNameFormTypes');
+        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/partyNameFormTypes');
     }
 
     getRecordTypes() {
@@ -517,7 +514,7 @@ class WebApi{
     }
 
     getPartyTypes() {
-        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/getPartyTypes');
+        return AjaxUtils.ajaxGet(WebApi.partyUrl + '/partyTypes');
     }
 
     getRuleSets() {

@@ -99,15 +99,216 @@ public class PartyController {
     private UserService userService;
 
     /**
+     * Uložení nové osoby
+     * @param partyVO data osoby
+     * @return uložený objekt osoby
+     */
+    @RequestMapping(value = "/", method = RequestMethod.POST)
+    @Transactional
+    public ParPartyVO createParty(@RequestBody final ParPartyVO partyVO) {
+        Assert.notNull(partyVO);
+
+        if(partyVO.getPartyId() != null){
+            throw new IllegalArgumentException("Nová osoba nesmí mít nastaveno ID");
+        }
+
+        //CHECK
+        validationVOService.checkParty(partyVO);
+
+        ParParty party = factoryDO.createParty(partyVO);
+
+        ParParty savedParty = partyService.saveParty(party);
+        return factoryVo.createParPartyDetail(savedParty);
+    }
+
+
+    /**
      * Načte osobu podle id.
      * @param partyId id osoby
      * @return data osoby
      */
-    @RequestMapping(value = "/getParty", method = RequestMethod.GET)
-    public ParPartyVO getParty(@RequestParam("partyId") final Integer partyId) {
+    @RequestMapping(value = "/{partyId}", method = RequestMethod.GET)
+    public ParPartyVO getParty(@PathVariable final Integer partyId) {
         Assert.notNull(partyId);
         ParParty party = partyService.getParty(partyId);
         return factoryVo.createParPartyDetail(party);
+    }
+
+    /**
+     * Aktualizace osoby.
+     * @param partyId id osoby
+     * @param partyVO data osoby
+     * @return aktualizovaný objekt osoby
+     */
+    @RequestMapping(value = "/{partyId}", method = RequestMethod.PUT)
+    @Transactional
+    public ParPartyVO updateParty(@PathVariable final Integer partyId, @RequestBody final ParPartyVO partyVO) {
+        Assert.notNull(partyId);
+        Assert.notNull(partyVO);
+
+        Assert.isTrue(
+            partyVO.getPartyId().equals(partyId),
+            "V url požadavku je odkazováno na jiné ID (" + partyId + ") než ve VO (" + partyVO.getPartyId() + ")."
+        );
+        validationVOService.checkPartyUpdate(partyVO);
+
+        ParParty party = factoryDO.createParty(partyVO);
+
+        ParParty savedParty = partyService.saveParty(party);
+        return factoryVo.createParPartyDetail(savedParty);
+    }
+
+    /**
+     * Smazání osoby a navázaných entit.
+     *
+     * @param partyId id osoby
+     */
+    @Transactional
+    @RequestMapping(value = "/{partyId}", method = RequestMethod.DELETE)
+    public void deleteParty(@PathVariable final Integer partyId) {
+        Assert.notNull(partyId);
+
+        ParParty party = partyRepository.getOneCheckExist(partyId);
+
+        if (!userService.findUsersByParty(party).isEmpty()) {
+            throw new DeleteException("Osobu nelze smazat, kvůli navázaným uživatelům.");
+        }
+
+        partyService.deleteParty(party);
+    }
+
+    /**
+     * Načte stránkovaný seznam osob.
+     *
+     * @param search      hledaný řetězec
+     * @param from        počáteční záznam
+     * @param count       počet vrácených záznamů
+     * @param partyTypeId id typu osoby
+     * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
+     * @return seznam osob s počtem všech osob
+     */
+    @RequestMapping(value = "/", method = RequestMethod.GET)
+    public FilteredResultVO<ParPartyVO> findParty(@Nullable @RequestParam(required = false) final String search,
+                                       @RequestParam final Integer from,
+                                       @RequestParam final Integer count,
+                                       @Nullable @RequestParam(required = false) final Integer partyTypeId,
+                                       @RequestParam(required = false) @Nullable final Integer versionId) {
+
+        ArrFund fund;
+        if (versionId == null) {
+            fund = null;
+        } else {
+            ArrFundVersion version = fundVersionRepository.findOne(versionId);
+            Assert.notNull(version, "Nebyla nalezena verze archivní pomůcky s id " + versionId);
+            fund = version.getFund();
+        }
+
+
+        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, from, count, fund);
+        List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
+
+        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, fund);
+        return new FilteredResultVO<>(resultVo, countAll);
+    }
+
+    /**
+     * Načte stránkovaný seznam osob.
+     *
+     * @param search      hledaný řetězec
+     * @param from        počáteční záznam
+     * @param count       počet vrácených záznamů
+     * @param partyTypeId id typu osoby
+     * @param partyId     id osoby, v jejíž scopeid budou filtrovány výsledky
+     * @return seznam osob s počtem všech osob
+     */
+    @RequestMapping(value = "/findPartyForParty", method = RequestMethod.GET)
+    public FilteredResultVO<ParPartyVO> findPartyForParty(
+            @Nullable @RequestParam(required = false) final String search,
+            @RequestParam final Integer from,
+            @RequestParam final Integer count,
+            @Nullable @RequestParam(required = false) final Integer partyTypeId,
+            @RequestParam final Integer partyId) {
+
+        ParParty party = partyRepository.getOne(partyId);
+        Assert.notNull(party, "Nebyla nalezena osoba s id " + partyId);
+        Set<Integer> scopeIds = new HashSet<>();
+        scopeIds.add(party.getRecord().getScope().getScopeId());
+
+        UsrUser user = userService.getLoggedUser();
+        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
+        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, from, count, scopeIds, readAllScopes, user);
+
+        List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
+
+        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, scopeIds, readAllScopes, user);
+        return new FilteredResultVO<>(resultVo, countAll);
+    }
+
+
+    /**
+     * Vložení vztahu spolu s vazbami.
+     *
+     * @param relationVO vztah s vazvami
+     * @return vložený objekt
+     */
+    @Transactional
+    @RequestMapping(value = "/relations", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ParRelationVO insertRelation(@RequestBody final ParRelationVO relationVO) {
+
+        Assert.isNull(relationVO.getRelationId());
+
+        validationVOService.checkRelation(relationVO);
+
+
+        ParRelation relation = factoryDO.createRelation(relationVO);
+        List<ParRelationEntity> relationEntities = factoryDO.createRelationEntities(relationVO.getRelationEntities());
+        ParRelation relationSaved = partyService.saveRelation(relation, relationEntities);
+
+
+        return factoryVo.createRelation(relationSaved);
+    }
+
+    /**
+     * Aktualizace vztahu s vazbami. Obsahuje stav, tzn. chybějící vazby budou smazány.
+     *
+     * @param relationId id vztahu
+     * @param relationVO objekt vztahu s vazbami
+     * @return aktualizovaný objekt vztahu
+     */
+    @Transactional
+    @RequestMapping(value = "/relations/{relationId}", method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ParRelationVO updateRelation(
+            @PathVariable(value = "relationId") final Integer relationId,
+            @RequestBody final ParRelationVO relationVO) {
+
+
+        relationVO.setRelationId(relationId);
+        validationVOService.checkRelation(relationVO);
+
+
+        ParRelation relation = factoryDO.createRelation(relationVO);
+        List<ParRelationEntity> relationEntities = factoryDO.createRelationEntities(relationVO.getRelationEntities());
+        ParRelation relationSaved = partyService.saveRelation(relation, relationEntities);
+
+        return factoryVo.createRelation(relationSaved);
+    }
+
+    /**
+     * Provede smazání vztahu a jeho vazeb
+     *
+     * @param relationId id vztahu
+     */
+    @Transactional
+    @RequestMapping(value = "/relations/{relationId}", method = RequestMethod.DELETE)
+    public void deleteRelation(@PathVariable(value = "relationId") final Integer relationId) {
+
+        ParRelation relation = relationRepository.findOne(relationId);
+        if (relation != null) {
+            partyService.deleteRelation(relation);
+        }
     }
 
     /**
@@ -115,7 +316,7 @@ public class PartyController {
      *
      * @return typy osob včetně navázaných podtypů
      */
-    @RequestMapping(value = "/getPartyTypes", method = RequestMethod.GET)
+    @RequestMapping(value = "/partyTypes", method = RequestMethod.GET)
     public List<ParPartyTypeVO> getPartyTypes() {
         //načteme všechny záznamy, aby nedocházelo k samostatným dotazům v cyklech
         List<ParRelationType> relationTypes = relationTypeRepository.findAll();
@@ -207,223 +408,19 @@ public class PartyController {
      *
      * @return seznam typů formy jména
      */
-    @RequestMapping(value = "/getPartyNameFormTypes", method = RequestMethod.GET)
+    @RequestMapping(value = "/partyNameFormTypes", method = RequestMethod.GET)
     public List<ParPartyNameFormTypeVO> getPartyNameFormType() {
         List<ParPartyNameFormType> types = partyNameFormTypeRepository.findAll();
 
         return factoryVo.createPartyNameFormTypes(types);
     }
 
-
     /**
-     * Načte stránkovaný seznam osob.
-     *
-     * @param search      hledaný řetězec
-     * @param from        počáteční záznam
-     * @param count       počet vrácených záznamů
-     * @param partyTypeId id typu osoby
-     * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
-     * @return seznam osob s počtem všech osob
+     * Načte seznam institucí
+     * @return seznam institucí
      */
-    @RequestMapping(value = "/findParty", method = RequestMethod.GET)
-    public FilteredResultVO<ParPartyVO> findParty(@Nullable @RequestParam(value = "search", required = false) final String search,
-                                       @RequestParam("from") final Integer from,
-                                       @RequestParam("count") final Integer count,
-                                       @Nullable @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId,
-                                       @RequestParam(required = false) @Nullable final Integer versionId) {
-
-        ArrFund fund;
-        if (versionId == null) {
-            fund = null;
-        } else {
-            ArrFundVersion version = fundVersionRepository.findOne(versionId);
-            Assert.notNull(version, "Nebyla nalezena verze archivní pomůcky s id " + versionId);
-            fund = version.getFund();
-        }
-
-
-        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, from, count, fund);
-        List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
-
-        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, fund);
-        return new FilteredResultVO<>(resultVo, countAll);
-    }
-
-    /**
-     * Načte stránkovaný seznam osob.
-     *
-     * @param search      hledaný řetězec
-     * @param from        počáteční záznam
-     * @param count       počet vrácených záznamů
-     * @param partyTypeId id typu osoby
-     * @param partyId     id osoby, v jejíž scopeid budou filtrovány výsledky
-     * @return seznam osob s počtem všech osob
-     */
-    @RequestMapping(value = "/findPartyForParty", method = RequestMethod.GET)
-    public ParPartyWithCount findPartyForParty(
-            @Nullable @RequestParam(value = "search", required = false) final String search,
-            @RequestParam("from") final Integer from,
-            @RequestParam("count") final Integer count,
-            @Nullable @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId,
-            @RequestParam(value = "partyId", required = true) final Integer partyId) {
-
-        ParParty party = partyRepository.getOne(partyId);
-        Assert.notNull(party, "Nebyla nalezena osoba s id " + partyId);
-        Set<Integer> scopeIds = new HashSet<>();
-        scopeIds.add(party.getRecord().getScope().getScopeId());
-
-        UsrUser user = userService.getLoggedUser();
-        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
-        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, from, count, scopeIds, readAllScopes, user);
-
-        List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
-
-        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, scopeIds, readAllScopes, user);
-        return new ParPartyWithCount(resultVo, countAll);
-    }
-
-
-    /**
-     * Uložení nové osoby
-     * @param partyVO data osoby
-     * @return uložený objekt osoby
-     */
-    @RequestMapping(value = "/insertParty", method = RequestMethod.POST)
-    @Transactional
-    public ParPartyVO insertParty(@RequestBody final ParPartyVO partyVO) {
-        Assert.notNull(partyVO);
-
-        if(partyVO.getPartyId() != null){
-            throw new IllegalArgumentException("Nová osoba nesmí mít nastaveno ID");
-        }
-
-        //CHECK
-        validationVOService.checkParty(partyVO);
-
-        ParParty party = factoryDO.createParty(partyVO);
-
-        ParParty savedParty = partyService.saveParty(party);
-        return factoryVo.createParPartyDetail(savedParty);
-    }
-
-    /**
-     * Aktualizace osoby.
-     * @param partyId id osoby
-     * @param partyVO data osoby
-     * @return aktualizovaný objekt osoby
-     */
-    @RequestMapping(value = "/updateParty/{partyId}", method = RequestMethod.PUT)
-    @Transactional
-    public ParPartyVO updateParty(
-            @PathVariable(value = "partyId") final Integer partyId,
-            @RequestBody final ParPartyVO partyVO) {
-
-        if (partyVO == null) {
-            return null;
-        }
-
-        //CHECK
-        Assert.isTrue(partyVO.getPartyId().equals(partyId), "V url požadavku je odkazováno na jiné ID (" + partyId
-                + ") než ve VO (" + partyVO.getPartyId() + ").");
-        validationVOService.checkPartyUpdate(partyVO);
-
-        ParParty party = factoryDO.createParty(partyVO);
-
-        ParParty savedParty = partyService.saveParty(party);
-        return factoryVo.createParPartyDetail(savedParty);
-    }
-
-    /**
-     * Smazání osoby a navázaných entit.
-     *
-     * @param partyId id osoby
-     */
-    @Transactional
-    @RequestMapping(value = "/deleteParty", method = RequestMethod.DELETE)
-    public void deleteParty(@RequestParam("partyId") final Integer partyId) {
-        Assert.notNull(partyId);
-        ParParty party = partyRepository.findOne(partyId);
-        if (party == null) {
-            return;
-        }
-
-        if (!userService.findUsersByParty(party).isEmpty()) {
-            throw new DeleteException("Osobu nelze smazat, kvůli navázaným uživatelům.");
-        }
-
-        partyService.deleteParty(party);
-    }
-
-
-    /**
-     * Vložení vztahu spolu s vazbami.
-     *
-     * @param relationVO vztah s vazvami
-     * @return vložený objekt
-     */
-    @Transactional
-    @RequestMapping(value = "/relations", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ParRelationVO insertRelation(@RequestBody final ParRelationVO relationVO) {
-
-        Assert.isNull(relationVO.getRelationId());
-
-        validationVOService.checkRelation(relationVO);
-
-
-        ParRelation relation = factoryDO.createRelation(relationVO);
-        List<ParRelationEntity> relationEntities = factoryDO.createRelationEntities(relationVO.getRelationEntities());
-        ParRelation relationSaved = partyService.saveRelation(relation, relationEntities);
-
-
-        return factoryVo.createRelation(relationSaved);
-    }
-
-    /**
-     * Aktualizace vztahu s vazbami. Obsahuje stav, tzn. chybějící vazby budou smazány.
-     *
-     * @param relationId id vztahu
-     * @param relationVO objekt vztahu s vazbami
-     * @return aktualizovaný objekt vztahu
-     */
-    @Transactional
-    @RequestMapping(value = "/relations/{relationId}", method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ParRelationVO updateRelation(
-            @PathVariable(value = "relationId") final Integer relationId,
-            @RequestBody final ParRelationVO relationVO) {
-
-
-        relationVO.setRelationId(relationId);
-        validationVOService.checkRelation(relationVO);
-
-
-        ParRelation relation = factoryDO.createRelation(relationVO);
-        List<ParRelationEntity> relationEntities = factoryDO.createRelationEntities(relationVO.getRelationEntities());
-        ParRelation relationSaved = partyService.saveRelation(relation, relationEntities);
-
-        return factoryVo.createRelation(relationSaved);
-    }
-
-    /**
-     * Provede smazání vztahu a jeho vazeb
-     *
-     * @param relationId id vztahu
-     */
-    @Transactional
-    @RequestMapping(value = "/relations/{relationId}", method = RequestMethod.DELETE)
-    public void deleteRelation(@PathVariable(value = "relationId") final Integer relationId) {
-
-        ParRelation relation = relationRepository.findOne(relationId);
-        if (relation != null) {
-            partyService.deleteRelation(relation);
-        }
-    }
-
     @RequestMapping(value = "/institutions", method = RequestMethod.GET)
     public List<ParInstitutionVO> getInstitutions() {
         return factoryVo.createInstitutionList(institutionRepository.findAll());
     }
-
 }
