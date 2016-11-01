@@ -120,7 +120,7 @@ function validate(descItem, refType, valueServerError) {
 
 export default function subNodeForm(state = initialState, action = {}) {
     // Načtení umístění, pokud bylo v akci předáno
-    var loc
+    let loc
     if (action.valueLocation) {
         loc = getLoc(state, action.valueLocation);
     }
@@ -221,13 +221,17 @@ export default function subNodeForm(state = initialState, action = {}) {
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
             var refType = state.refTypesMap[loc.descItemType.id]
-            
-            loc.descItem.descItemSpecId = action.value;
-            loc.descItem.touched = true;
-            loc.descItem.error = validate(loc.descItem, refType);
 
-            state.formData = {...state.formData};
-            return {...state};
+            if (loc.descItem.descItemSpecId !== action.value) {
+                loc.descItem.descItemSpecId = action.value;
+                loc.descItem.touched = true;
+                loc.descItem.error = validate(loc.descItem, refType);
+
+                state.formData = {...state.formData};
+                return {...state};
+            } else {
+                return state;
+            }
         case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
             loc.descItem.hasFocus = false;
             loc.descItemType.hasFocus = false;
@@ -279,6 +283,19 @@ export default function subNodeForm(state = initialState, action = {}) {
 
             state.formData = {...state.formData};
             return {...state};
+        case types.FUND_SUB_NODE_FORM_OUTPUT_CALC_SWITCH: {
+            const infoType = state.infoTypesMap[loc.descItemType.id];
+            return {
+                ...state,
+                infoTypesMap: {
+                    ...state.infoTypesMap,
+                    [loc.descItemType.id]: {
+                        ...infoType,
+                        calSt: 1 === infoType.calSt ? 0 : 1
+                    }
+                }
+            }
+        }
         case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
             if (state.data.parent.id !== action.descItemResult.parent.id) {
                 return state;

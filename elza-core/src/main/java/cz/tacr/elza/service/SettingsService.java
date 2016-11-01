@@ -79,4 +79,15 @@ public class SettingsService {
         settingsRepository.save(settingsListUpdate);
     }
 
+    /**
+     * Vrací seznam nastavení, které se vážou na typ nastavení a typ entity.
+     *
+     * @param settingsType typ nastavneí
+     * @param entityType   typ entity
+     * @return seznam nastavení
+     */
+    public List<UISettings> getGlobalSettings(final UISettings.SettingsType settingsType,
+                                              final UISettings.EntityType entityType) {
+        return settingsRepository.findByUserAndSettingsTypeAndEntityType(null, settingsType, entityType);
+    }
 }

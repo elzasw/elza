@@ -132,7 +132,7 @@ public class BulkActionController {
                 bulkActionService.findBulkActionsByNodes(
                         arrangementService.getOpenVersionByFundId(outputDefinition.getFund().getFundId()),
                         nodes,
-                        State.FINISHED, State.RUNNING, State.OUTDATED, State.ERROR, State.INTERRUPTED, State.OUTDATED
+                        State.values()
                 );
         final Set<RulAction> recommendedActions = bulkActionService.getRecommendedActions(outputDefinition.getOutputType());
 

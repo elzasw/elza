@@ -36,6 +36,10 @@ public class ItemSpec {
     @XmlElementWrapper(name = "desc-item-spec-registers")
     private List<DescItemSpecRegister> descItemSpecRegisters;
 
+    @XmlElement(name = "category")
+    @XmlElementWrapper(name = "categories")
+    private List<Category> categories;
+
     public String getCode() {
         return code;
     }
@@ -90,5 +94,13 @@ public class ItemSpec {
 
     public void setDescItemSpecRegisters(final List<DescItemSpecRegister> descItemSpecRegisters) {
         this.descItemSpecRegisters = descItemSpecRegisters;
+    }
+
+    public List<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(final List<Category> categories) {
+        this.categories = categories;
     }
 }

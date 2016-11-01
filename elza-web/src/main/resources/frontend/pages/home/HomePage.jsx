@@ -77,6 +77,61 @@ cols.push({
     width: 120,
 })
 
+// const data = [
+//     {
+//         id: 1,
+//         node: true,
+//         name: "nazev 1",
+//         expanded: false,
+//         children: [
+//             {
+//                 id: 10,
+//                 name: "pod nazev 1-1",
+//                 expanded: false,
+//                 children: [
+//                     {id: 101, name: "pod nazev 1-1-1"},
+//                     {id: 102, name: "pod nazev 1-1-2"},
+//                 ]
+//             },
+//             {
+//                 id: 11,
+//                 name: "pod nazev 1-2"
+//             },
+//         ]
+//     },
+//     {
+//         id: 2,
+//         node: true,
+//         name: "nazev 2",
+//         expanded: false,
+//         children: [
+//             {id: 21, name: "pod nazev 2-1"},
+//         ]
+//     },
+//     {
+//         id: 3,
+//         node: true,
+//         name: "nazev 3",
+//         expanded: false,
+//         children: [
+//             {id: 32, name: "pod nazev 3-1"},
+//         ]
+//     },
+//     {
+//         id: 4,
+//         name: "nazev 4",
+//         expanded: false,
+//         children: [
+//             {id: 43, name: "pod nazev 4-2"},
+//         ]
+//     },
+// ]
+// const data = [
+//     {id: 1, name: "nazev 1"},
+//     {id: 2, name: "nazev 2"},
+//     {id: 3, name: "nazev 3"},
+//     {id: 4, name: "nazev 4"},
+// ]
 
 const HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
@@ -89,6 +144,10 @@ const HomePage = class HomePage extends AbstractReactComponent {
             'trySetFocus',
             'buildRibbon'
         );
+
+        // this.state = {
+        //     data: data
+        // };
     }
 
     componentWillReceiveProps(nextProps) {
@@ -227,8 +286,32 @@ const HomePage = class HomePage extends AbstractReactComponent {
         )
     }
 
+    handleSearchChange = (x) => {
+        console.log(x);
+    }
+    handleChange = (id, obj) => {
+        console.log(id, obj);
+    }
+
     render() {
         const {splitter} = this.props;
+
+        {/*return (*/}
+            {/*<div>*/}
+        //         1111111111
+        //         <Autocomplete
+        //             _customFilter
+        //             tree
+        //             value={this.state.value}
+        //             items={this.state.data}
+        //             onSearchChange={this.handleSearchChange}
+        //             onChange={this.handleChange}
+        //             allowSelectItem={(id, item) => !item.node}
+        //             allowFocusItem={(id, item) => id > 2}
+        //             />
+        //         222222222
+        //     </div>
+        // )
 
         let centerPanel = (
             <div className='splitter-home'>

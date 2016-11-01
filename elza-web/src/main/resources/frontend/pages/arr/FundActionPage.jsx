@@ -50,7 +50,8 @@ const ActionState = {
     PLANNED: 'PLANNED',
     FINISHED: 'FINISHED',
     ERROR: 'ERROR',
-    INTERRUPTED: 'INTERRUPTED'
+    INTERRUPTED: 'INTERRUPTED',
+    OUTDATED: 'OUTDATED'
 };
 
 const keyModifier = Utils.getKeyModifier()
@@ -307,6 +308,7 @@ class FundActionPage extends ArrParentPage {
                 return <Icon glyph='fa-cog'/>;
             case ActionState.WAITING:
                 return <Icon glyph='fa-clock-o'/>;
+            case ActionState.OUTDATED:
             case ActionState.FINISHED:
                 return <Icon glyph='fa-check'/>;
             case ActionState.ERROR:
@@ -334,6 +336,8 @@ class FundActionPage extends ArrParentPage {
                 return i18n('arr.fundAction.state.planned');
             case ActionState.INTERRUPTED:
                 return i18n('arr.fundAction.state.interrupted');
+            case ActionState.OUTDATED:
+                return i18n('arr.fundAction.state.outdated');
             default:
                 return null;
         }

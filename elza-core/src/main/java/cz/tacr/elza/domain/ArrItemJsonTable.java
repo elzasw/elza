@@ -2,6 +2,8 @@ package cz.tacr.elza.domain;
 
 import cz.tacr.elza.domain.table.ElzaTable;
 
+import java.util.Objects;
+
 /**
  * Implementace {@link cz.tacr.elza.api.ArrItemJsonTable}
  *
@@ -25,5 +27,19 @@ public class ArrItemJsonTable extends ArrItemData implements cz.tacr.elza.api.Ar
     @Override
     public String toString() {
         return value == null ? null : value.toString();
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ArrItemJsonTable that = (ArrItemJsonTable) o;
+        return Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), value);
     }
 }

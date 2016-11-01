@@ -25,7 +25,7 @@ import liquibase.statement.core.UpdateStatement;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 24. 10. 2016
  */
-public class DBChangelog55 implements CustomSqlChange {
+public class DBChangelog1_55 implements CustomSqlChange {
 
     @Override
     public SqlStatement[] generateStatements(final Database database) throws CustomChangeException {

@@ -1211,7 +1211,7 @@ public class ArrangementController {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
         RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
 
         ArrNode node = factoryDO.createNode(nodeVO);
         ArrLevel level = arrangementService.lockNode(node, version, change);
@@ -1620,11 +1620,15 @@ public class ArrangementController {
     }
 
     @RequestMapping(value = "/output/generate/{outputId}", method = RequestMethod.GET)
-    public void generateOutput(@PathVariable(value = "outputId") final Integer outputId) {
+    public GenerateOutputResult generateOutput(@PathVariable(value = "outputId") final Integer outputId,
+                                               @RequestParam(value = "forced", required = false, defaultValue = "false") final Boolean forced) {
         ArrOutput output = outputService.getOutput(outputId);
         UserDetail userDetail = userService.getLoggedUserDetail();
         Integer userId = userDetail != null ? userDetail.getId() : null;
-        outputGeneratorService.generateOutput(output, userId, output.getOutputDefinition().getFund());
+        GenerateOutputResult generateOutputResult = new GenerateOutputResult();
+        String message = outputGeneratorService.generateOutput(output, userId, output.getOutputDefinition().getFund(), forced);
+        generateOutputResult.setMessage(message);
+        return generateOutputResult;
     }
 
     /**
@@ -2393,6 +2397,18 @@ public class ArrangementController {
 
         public void setDescItemCopyTypes(final Set<Integer> descItemCopyTypes) {
             this.descItemCopyTypes = descItemCopyTypes;
+        }
+    }
+
+    public static class GenerateOutputResult {
+        private String message;
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(final String message) {
+            this.message = message;
         }
     }
 

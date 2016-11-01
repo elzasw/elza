@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Implementace {@link cz.tacr.elza.api.table.ElzaRow}
@@ -47,5 +48,18 @@ public class ElzaRow implements cz.tacr.elza.api.table.ElzaRow {
         } else {
             values.put(key, value);
         }
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ElzaRow row = (ElzaRow) o;
+        return Objects.equals(values, row.values);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(values);
     }
 }

@@ -12,6 +12,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
@@ -71,6 +72,9 @@ public class RulItemSpec implements cz.tacr.elza.api.RulItemSpec<RulItemType, Ru
 
     @Transient
     private String policyTypeCode;
+
+    @Column(length = StringLength.LENGTH_1000)
+    private String category;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
@@ -174,6 +178,16 @@ public class RulItemSpec implements cz.tacr.elza.api.RulItemSpec<RulItemType, Ru
     @Override
     public void setPolicyTypeCode(final String policyTypeCode) {
         this.policyTypeCode = policyTypeCode;
+    }
+
+    @Override
+    public String getCategory() {
+        return category;
+    }
+
+    @Override
+    public void setCategory(final String category) {
+        this.category = category;
     }
 
     @Override

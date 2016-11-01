@@ -33,6 +33,10 @@ public class ItemTypeLiteVO {
 
     /**
      * stav počítanýho atributu
+     * - 0 - vypnutý
+     * - 1 - zapnutý
+     *
+     * Číslené z důvodu optimalizace
      */
     private Integer calSt;
 
@@ -40,6 +44,11 @@ public class ItemTypeLiteVO {
      * seznam specifikací atributu
      */
     private List<DescItemSpecLiteVO> specs;
+
+    /**
+     * seznam identifikátorů oblíbených specifikací u typu
+     */
+    private List<Integer> favoriteSpecIds;
 
     /**
      * šířka atributu (0 - maximální počet sloupců, 1..N - počet sloupců)
@@ -100,5 +109,13 @@ public class ItemTypeLiteVO {
 
     public void setCal(final Integer cal) {
         this.cal = cal;
+    }
+
+    public List<Integer> getFavoriteSpecIds() {
+        return favoriteSpecIds;
+    }
+
+    public void setFavoriteSpecIds(final List<Integer> favoriteSpecIds) {
+        this.favoriteSpecIds = favoriteSpecIds;
     }
 }

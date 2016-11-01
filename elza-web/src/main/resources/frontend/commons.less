@@ -111,6 +111,25 @@ input::-ms-clear {
   }
 }
 
+.row-layout{
+    display: flex;
+    .form-group {
+        flex-grow: 1;
+        margin-right: 10px;
+        &:last-child {
+            margin-right: 0;
+        }
+    }
+}
+
+hr{
+    border-top: 1px solid #dddddd;
+    &.small{
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+}
+
 /** IE FIXES */
 .ie {
   .modal {

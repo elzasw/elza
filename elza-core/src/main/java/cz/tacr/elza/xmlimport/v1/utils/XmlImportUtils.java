@@ -64,14 +64,14 @@ public final class XmlImportUtils {
         } else if (specificDate != null) {
             unitdate.setValueFrom(FORMATTER_DATE_TIME.format(specificDateFrom));
             unitdate.formatAppend(UnitDateConvertor.DATE_TIME);
-            unitdate.formatAppend(UnitDateConvertor.INTERVAL_DELIMITER);
+            unitdate.formatAppend(UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER);
         } else {
             if (specificDateFrom != null) {
                 unitdate.setValueFrom(FORMATTER_DATE_TIME.format(specificDateFrom));
                 unitdate.formatAppend(UnitDateConvertor.DATE_TIME);
             }
 
-            unitdate.formatAppend(UnitDateConvertor.INTERVAL_DELIMITER);
+            unitdate.formatAppend(UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER);
 
             if (specificDateTo != null) {
                 unitdate.setValueTo(FORMATTER_DATE_TIME.format(specificDateTo));

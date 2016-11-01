@@ -4,7 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Utils, Icon, i18n, AbstractReactComponent, NoFocusButton, FormInput} from 'components/index.jsx';
+import {Autocomplete, Utils, Icon, i18n, AbstractReactComponent, NoFocusButton, FormInput} from 'components/index.jsx';
 import {Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {connect} from 'react-redux'
@@ -28,6 +28,8 @@ const classNames = require('classnames');
 import * as perms from 'actions/user/Permission.jsx';
 const ShortcutsManager = require('react-shortcuts');
 const Shortcuts = require('react-shortcuts/component')
+import {getSetFromIdsList} from "stores/app/utils.jsx";
+import DescItemTypeSpec from "./DescItemTypeSpec";
 
 require('./AbstractDescItem.less')
 
@@ -79,7 +81,6 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             'handleSwitchCalculating',
             'removePlaceholder',
             'renderDescItem',
-            'renderDescItemSpec',
             'renderLabel'
         );
     }
@@ -130,7 +131,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     getChildContext() {
-        return { shortcuts: shortcutManager };
+        return {shortcuts: shortcutManager};
     }
 
     focus(item) {
@@ -179,51 +180,19 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     renderDescItemSpec(key, descItem, descItemIndex, locked) {
         const {infoType, refType, readMode} = this.props;
 
-        const options = infoType.specs.map(spec => {
-            const fullSpec = {...spec, ...refType.descItemSpecsMap[spec.id]}
-            const clsSpec = ['spec-' + spec.type.toLowerCase()];
-            return <option className={clsSpec} key={fullSpec.id} value={fullSpec.id}>{fullSpec.name}</option>
-        });
-
-        const cls = classNames({
-            'form-control': true,
-            value: true,
-            'desc-item-spec': true,
-            error: descItem.error.spec,
-            active: descItem.hasFocus,
-        });
-
-        const descItemSpecProps = {
-            onChange: this.handleChangeSpec.bind(this, descItemIndex),
-            onBlur: this.handleBlur.bind(this, descItemIndex),
-            onFocus: this.handleFocus.bind(this, descItemIndex),
-            disabled: locked
-        }
-
-        if (readMode) {
-            let nameVal;
-            if (descItem.descItemSpecId == null || descItem.descItemSpecId == "") {
-                nameVal = "";
-            } else {
-                nameVal = refType.descItemSpecsMap[descItem.descItemSpecId].name;
-            }
-            return (
-                <span key={key} className="desc-item-spec-label">{nameVal}</span>
-            )
-        }
-
         return (
-            <select
+            <DescItemTypeSpec
                 key={key}
                 ref={key}
-                className={cls}
-                {...descItemSpecProps}
-                value={descItem.descItemSpecId}
-                title={descItem.error.spec}
-            >
-                <option key="novalue" />
-                {options}
-            </select>
+                descItem={descItem}
+                locked={locked}
+                infoType={infoType}
+                refType={refType}
+                readMode={readMode}
+                onChange={this.handleChangeSpec.bind(this, descItemIndex)}
+                onBlur={this.handleBlur.bind(this, descItemIndex)}
+                onFocus={this.handleFocus.bind(this, descItemIndex)}
+                />
         )
     }
 
@@ -314,12 +283,15 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     /**
      * Změna hodnoty specifikace atributu.
      * @param descItemIndex {Integer} index hodnoty atributu v seznamu
-     * @param e {Object} event od prvku
+     * @param eventOrValue {Object} event nebo hodnota od prvku
      */
-    handleChangeSpec(descItemIndex, e) {
+    handleChangeSpec(descItemIndex, eventOrValue) {
+        const isEvent = !!(eventOrValue && eventOrValue.stopPropagation && eventOrValue.preventDefault);
+        const value = isEvent ? eventOrValue.target.value : eventOrValue;
+
         let specId
-        if (typeof e.target.value !== 'undefined' && e.target.value !== null && e.target.value !== '') {
-            specId = Number(e.target.value)
+        if (typeof value !== 'undefined' && value !== null && value !== '') {
+            specId = Number(value)
         } else {
             specId = ''
         }
@@ -376,7 +348,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
 
         const draggerRect = drgs[0].getBoundingClientRect();
         const clickOnDragger = (e.clientX >= draggerRect.left && e.clientX <= draggerRect.right
-            && e.clientY >= draggerRect.top && e.clientY <= draggerRect.bottom)
+        && e.clientY >= draggerRect.top && e.clientY <= draggerRect.bottom)
         if (!clickOnDragger) {
             return this.cancelDragging(e)
         }
@@ -402,8 +374,8 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         // Update data
         let from = Number(this.dragged.dataset.id);
         let to = Number(this.over.dataset.id);
-        if(from < to) to--;
-        if(this.nodePlacement == "after") to++;
+        if (from < to) to--;
+        if (this.nodePlacement == "after") to++;
         //console.log(from, to);
         if (from !== to) {
             this.props.onChangePosition(from, to);
@@ -411,7 +383,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     hasClass(elem, klass) {
-         return (" " + elem.className + " ").indexOf(" " + klass + " ") > -1;
+        return (" " + elem.className + " ").indexOf(" " + klass + " ") > -1;
     }
 
     isUnderContainer(el, container) {
@@ -508,7 +480,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         this.props.onCoordinatesUpload(file);
         e.target.value = null;
     }
-    
+
     handleJsonTableUploadUpload(e) {
         const fileList = e.target.files;
 
@@ -584,88 +556,88 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         switch (rulDataType.code) {
             case 'PARTY_REF':
                 parts.push(<DescItemPartyRef key={itemComponentKey}
-                    {...descItemProps}
-                    singleDescItemTypeEdit={singleDescItemTypeEdit}
-                    onDetail={this.handleDetailParty.bind(this, descItemIndex)}
-                    onCreateParty={this.handleCreateParty.bind(this, descItemIndex)}
-                    versionId={versionId}
-                    />)
+                                             {...descItemProps}
+                                             singleDescItemTypeEdit={singleDescItemTypeEdit}
+                                             onDetail={this.handleDetailParty.bind(this, descItemIndex)}
+                                             onCreateParty={this.handleCreateParty.bind(this, descItemIndex)}
+                                             versionId={versionId}
+                />)
                 break;
             case 'RECORD_REF':
                 parts.push(<DescItemRecordRef key={itemComponentKey}
-                    {...descItemProps}
-                    singleDescItemTypeEdit={singleDescItemTypeEdit}
-                    onDetail={this.handleDetailRecord.bind(this, descItemIndex)}
-                    onCreateRecord={this.handleCreateRecord.bind(this, descItemIndex)}
-                    versionId={versionId}
-                    />)
+                                              {...descItemProps}
+                                              singleDescItemTypeEdit={singleDescItemTypeEdit}
+                                              onDetail={this.handleDetailRecord.bind(this, descItemIndex)}
+                                              onCreateRecord={this.handleCreateRecord.bind(this, descItemIndex)}
+                                              versionId={versionId}
+                />)
                 break;
             case 'PACKET_REF':
                 parts.push(<DescItemPacketRef key={itemComponentKey}
-                    {...descItemProps}
-                    singleDescItemTypeEdit={singleDescItemTypeEdit}
-                    packets={packets}
-                    onCreatePacket={this.handleCreatePacket.bind(this, descItemIndex)}
-                    onFundPackets={this.handleFundPackets.bind(this, descItemIndex)}
-                    fundId={fundId}
-                    packetTypes={packetTypes}
-                    />)
+                                              {...descItemProps}
+                                              singleDescItemTypeEdit={singleDescItemTypeEdit}
+                                              packets={packets}
+                                              onCreatePacket={this.handleCreatePacket.bind(this, descItemIndex)}
+                                              onFundPackets={this.handleFundPackets.bind(this, descItemIndex)}
+                                              fundId={fundId}
+                                              packetTypes={packetTypes}
+                />)
                 break;
             case 'FILE_REF':
                 parts.push(<DescItemFileRef key={itemComponentKey}
-                    {...descItemProps}
-                    onCreateFile={this.handleCreateFile.bind(this, descItemIndex)}
-                    onFundFiles={this.handleFundFiles.bind(this, descItemIndex)}
-                    fundId={fundId}
-                    />)
+                                            {...descItemProps}
+                                            onCreateFile={this.handleCreateFile.bind(this, descItemIndex)}
+                                            onFundFiles={this.handleFundFiles.bind(this, descItemIndex)}
+                                            fundId={fundId}
+                />)
                 break;
             case 'UNITDATE':
                 parts.push(<DescItemUnitdate key={itemComponentKey}
-                    {...descItemProps}
-                    calendarTypes={calendarTypes}
-                    />)
+                                             {...descItemProps}
+                                             calendarTypes={calendarTypes}
+                />)
                 break;
             case 'UNITID':
                 parts.push(<DescItemUnitid key={itemComponentKey}
-                    {...descItemProps}
-                    />)
+                                           {...descItemProps}
+                />)
                 break;
             case 'JSON_TABLE':
                 parts.push(<DescItemJsonTable key={itemComponentKey}
-                    {...descItemProps}
-                    refType={refType} 
-                    onDownload={this.props.onJsonTableDownload.bind(this, descItem.descItemObjectId)}
-                    onUpload={this.handleJsonTableUploadUpload}  
-                    />)
+                                              {...descItemProps}
+                                              refType={refType}
+                                              onDownload={this.props.onJsonTableDownload.bind(this, descItem.descItemObjectId)}
+                                              onUpload={this.handleJsonTableUploadUpload}
+                />)
                 break;
             case 'STRING':
                 parts.push(<DescItemString key={itemComponentKey}
-                    {...descItemProps}
-                    />)
+                                           {...descItemProps}
+                />)
                 break;
             case 'FORMATTED_TEXT':
             case 'TEXT':
                 parts.push(<DescItemText key={itemComponentKey}
-                    {...descItemProps}
-                    />)
+                                         {...descItemProps}
+                />)
                 break;
             case 'DECIMAL':
                 parts.push(<DescItemDecimal key={itemComponentKey}
-                    {...descItemProps}
-                    />)
+                                            {...descItemProps}
+                />)
                 break;
             case 'INT':
                 parts.push(<DescItemInt key={itemComponentKey}
-                    {...descItemProps}
-                    />)
+                                        {...descItemProps}
+                />)
                 break;
             case 'COORDINATES':
                 parts.push(<DescItemCoordinates key={itemComponentKey}
-                        repeatable={infoType.rep == 1}
-                        onUpload={this.handleCoordinatesUpload}
-                    {...descItemProps}
-                    onDownload={this.props.onCoordinatesDownload.bind(this, descItem.descItemObjectId)}
-                    />)
+                                                repeatable={infoType.rep == 1}
+                                                onUpload={this.handleCoordinatesUpload}
+                                                {...descItemProps}
+                                                onDownload={this.props.onCoordinatesDownload.bind(this, descItem.descItemObjectId)}
+                />)
                 break;
             case 'ENUM':
                 break;
@@ -676,7 +648,10 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         return (
             <Shortcuts key={key} name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}>
                 <div key="container" className={cls} {...dragProps}>
-                    {!readMode && infoType.rep == 1 && <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down" glyph="fa-angle-down"/>&nbsp;</div>}
+                    {!readMode && infoType.rep == 1 &&
+                    <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down"
+                                                                                             glyph="fa-angle-down"/>&nbsp;
+                    </div>}
 
                     <div key="container" className={partsCls}>
                         {parts}
@@ -726,16 +701,16 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         // # Má se zobrazovat ikona mazání z hlediska typu atributu?
         // ##
         /*if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') {    // můžeme smazat pouze, pokud má nějakou hodnotu, kterou lze smazat
-            var haveDBValue = false
-            descItemType.descItems.forEach(descItem => {
-                if (typeof descItem.id !== 'undefined') {   // je v db
-                    haveDBValue = true
-                }
-            })
-            if (!haveDBValue) {
-                return false
-            }
-        }*/
+         var haveDBValue = false
+         descItemType.descItems.forEach(descItem => {
+         if (typeof descItem.id !== 'undefined') {   // je v db
+         haveDBValue = true
+         }
+         })
+         if (!haveDBValue) {
+         return false
+         }
+         }*/
 
         return true
     }
@@ -778,8 +753,10 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
      * @return {Object} view
      */
     renderLabel() {
-        const {fundId, showNodeAddons, userDetail, descItemCopyFromPrevEnabled, singleDescItemTypeEdit,
-            copy, locked, descItemType, infoType, refType, conformityInfo, closed, readMode} = this.props;
+        const {
+            fundId, showNodeAddons, userDetail, descItemCopyFromPrevEnabled, singleDescItemTypeEdit,
+            copy, locked, descItemType, infoType, refType, conformityInfo, closed, readMode
+        } = this.props;
 
         const actions = [];
 
@@ -788,15 +765,24 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         if (hasPermission) {
             if (showNodeAddons && !closed && !readMode && !singleDescItemTypeEdit) {
                 actions.push(
-                    <NoFocusButton disabled={!descItemCopyFromPrevEnabled} title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book" onClick={this.handleDescItemTypeCopyFromPrev}><Icon glyph="fa-paste" /></NoFocusButton>,
-                    <NoFocusButton title={i18n('subNodeForm.descItemType.copy')} key="copy" onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>,
-                    <NoFocusButton title={i18n('subNodeForm.descItemType.lock')} key="lock" onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>
+                    <NoFocusButton disabled={!descItemCopyFromPrevEnabled}
+                                   title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book"
+                                   onClick={this.handleDescItemTypeCopyFromPrev}><Icon
+                        glyph="fa-paste"/></NoFocusButton>,
+                    <NoFocusButton title={i18n('subNodeForm.descItemType.copy')} key="copy"
+                                   onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'}
+                                                                               glyph="fa-files-o"/></NoFocusButton>,
+                    <NoFocusButton title={i18n('subNodeForm.descItemType.lock')} key="lock"
+                                   onClick={this.handleDescItemTypeLock}><Icon
+                        className={locked ? 'locked' : 'unlocked'} glyph="fa-lock"/></NoFocusButton>
                 );
             }
         }
 
         if (this.getShowDeleteDescItemType()) {
-            actions.push(<NoFocusButton key="delete" onClick={this.props.onDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Icon glyph="fa-trash" /></NoFocusButton>);
+            actions.push(<NoFocusButton key="delete" onClick={this.props.onDescItemTypeRemove}
+                                        title={i18n('subNodeForm.deleteDescItemType')}><Icon
+                glyph="fa-trash"/></NoFocusButton>);
         }
 
         // Zprávy o chybějících položkách
@@ -805,18 +791,19 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             const messages = missings.map(missing => missing.description);
             const tooltip = <Tooltip id="messages">{messages}</Tooltip>
             actions.push(<OverlayTrigger key="state" placement="right" overlay={tooltip}>
-                <div className='btn btn-default'><Icon className="messages" glyph="fa-exclamation-triangle" /></div>
+                <div className='btn btn-default'><Icon className="messages" glyph="fa-exclamation-triangle"/></div>
             </OverlayTrigger>);
         }
 
         if (infoType.cal === 1) {
             const title = infoType.calSt ? i18n('subNodeForm.calculate-user') : i18n('subNodeForm.calculate-auto');
-            actions.push(<NoFocusButton onClick={this.handleSwitchCalculating} key="calculate" title={title} className="alwaysVisible">
+            actions.push(<NoFocusButton onClick={this.handleSwitchCalculating} key="calculate" title={title}
+                                        className="alwaysVisible">
                 {infoType.calSt ?
                     <span className='fa-stack'>
-                      <Icon glyph='fa-calculator fa-stack-1x' />
-                      <Icon glyph='fa-ban fa-stack-2x' />
-                    </span> : <Icon glyph='fa-calculator' />
+                      <Icon glyph='fa-calculator fa-stack-1x'/>
+                      <Icon glyph='fa-ban fa-stack-2x'/>
+                    </span> : <Icon glyph='fa-calculator'/>
                 }
             </NoFocusButton>);
         }
@@ -833,18 +820,30 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
                 const {onDescItemAdd} = this.props;
                 if (this.props.rulDataType.code === "COORDINATES") {
                     actions.push(
-                        <NoFocusButton key="add" onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus"/></NoFocusButton>,
-                        <NoFocusButton key="upload" onClick={this.handleCoordinatesUploadButtonClick} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-upload"/></NoFocusButton>,
-                        <FormInput key="upload-field" className="hidden" accept="application/vnd.google-earth.kml+xml" type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload}/>
+                        <NoFocusButton key="add" onClick={onDescItemAdd}
+                                       title={i18n('subNodeForm.descItemType.title.add')}><Icon
+                            glyph="fa-plus"/></NoFocusButton>,
+                        <NoFocusButton key="upload" onClick={this.handleCoordinatesUploadButtonClick}
+                                       title={i18n('subNodeForm.descItemType.title.add')}><Icon
+                            glyph="fa-upload"/></NoFocusButton>,
+                        <FormInput key="upload-field" className="hidden" accept="application/vnd.google-earth.kml+xml"
+                                   type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload}/>
                     );
                 } else if (this.props.rulDataType.code === "JSON_TABLE") {
                     actions.push(
-                        <NoFocusButton key="add" onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton>,
-                        <NoFocusButton key="upload" onClick={this.handleJsonTableUploadButtonClick} title={i18n('subNodeForm.descItem.jsonTable.action.upload')}><Icon glyph="fa-upload" /></NoFocusButton>,
-                        <FormInput key="upload-field" className="hidden" accept="text/csv" type="file" ref='uploadInput' onChange={this.handleJsonTableUploadUpload} />
+                        <NoFocusButton key="add" onClick={onDescItemAdd}
+                                       title={i18n('subNodeForm.descItemType.title.add')}><Icon
+                            glyph="fa-plus"/></NoFocusButton>,
+                        <NoFocusButton key="upload" onClick={this.handleJsonTableUploadButtonClick}
+                                       title={i18n('subNodeForm.descItem.jsonTable.action.upload')}><Icon
+                            glyph="fa-upload"/></NoFocusButton>,
+                        <FormInput key="upload-field" className="hidden" accept="text/csv" type="file" ref='uploadInput'
+                                   onChange={this.handleJsonTableUploadUpload}/>
                     );
                 } else {
-                    actions.push(<NoFocusButton key="add" onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}><Icon glyph="fa-plus" /></NoFocusButton>);
+                    actions.push(<NoFocusButton key="add" onClick={onDescItemAdd}
+                                                title={i18n('subNodeForm.descItemType.title.add')}><Icon
+                        glyph="fa-plus"/></NoFocusButton>);
                 }
             }
         }
@@ -858,7 +857,8 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
                 <div key="actions" className='actions'>
                     {actions}
                 </div>
-                {descItemType.descItems.filter(i => i.touched).length > 0 && <span key="edited" className="desc-item-type-edited">{i18n('subNodeForm.descItem.edited')}</span>}
+                {descItemType.descItems.filter(i => i.touched).length > 0 &&
+                <span key="edited" className="desc-item-type-edited">{i18n('subNodeForm.descItem.edited')}</span>}
             </div>
         )
     }
@@ -900,7 +900,10 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
             const actions = [];
 
             if (!readMode && infoType.rep === 1) {
-                actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
+                actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="delete"
+                                            onClick={onDescItemRemove.bind(this, descItemIndex)}
+                                            title={i18n('subNodeForm.deleteDescItem')}><Icon
+                    glyph="fa-times"/></NoFocusButton>);
             }
 
             const errors = conformityInfo.errors[descItem.descItemObjectId];
@@ -908,7 +911,7 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
                 const messages = errors.map(error => error.description);
                 const tooltip = <Tooltip id="info">{messages}</Tooltip>
                 actions.push(<OverlayTrigger key="info" placement="left" overlay={tooltip}>
-                    <div className='btn btn-default'><Icon glyph="fa-exclamation-triangle" /></div>
+                    <div className='btn btn-default'><Icon glyph="fa-exclamation-triangle"/></div>
                 </OverlayTrigger>);
             }
 
@@ -931,7 +934,8 @@ const DescItemType = class DescItemType extends AbstractReactComponent {
         return (
             <Shortcuts name='DescItemType' className={cls} handler={this.handleDescItemTypeShortcuts}>
                 {label}
-                <div ref='dragOverContainer' className='desc-item-type-desc-items' onDragOver={this.handleDragOver} onDragLeave={this.handleDragLeave}>
+                <div ref='dragOverContainer' className='desc-item-type-desc-items' onDragOver={this.handleDragOver}
+                     onDragLeave={this.handleDragLeave}>
                     {descItems}
                 </div>
             </Shortcuts>
@@ -992,4 +996,4 @@ DescItemType.childContextTypes = {
     shortcuts: React.PropTypes.object.isRequired
 };
 
-module.exports = connect(mapStateToProps, null, null, { withRef: true })(DescItemType);
+module.exports = connect(mapStateToProps, null, null, {withRef: true})(DescItemType);

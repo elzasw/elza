@@ -80,6 +80,11 @@ public class RulDescItemTypeVO {
     private List<ElzaColumn> columnsDefinition;
 
     /**
+     * Kategorie specifikací.
+     */
+    private List<ItemSpecsCategory> itemSpecsTree;
+
+    /**
      * šířka atributu (0 - maximální počet sloupců, 1..N - počet sloupců)
      */
     private Integer width;
@@ -194,5 +199,13 @@ public class RulDescItemTypeVO {
 
     public void setColumnsDefinition(final List<ElzaColumn> columnsDefinition) {
         this.columnsDefinition = columnsDefinition;
+    }
+
+    public List<ItemSpecsCategory> getItemSpecsTree() {
+        return itemSpecsTree;
+    }
+
+    public void setItemSpecsTree(final List<ItemSpecsCategory> itemSpecsTree) {
+        this.itemSpecsTree = itemSpecsTree;
     }
 }

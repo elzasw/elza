@@ -1,7 +1,3 @@
-/**
- * Formulář inline editace výstupu.
- */
-
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
@@ -11,7 +7,12 @@ import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import {initForm} from "actions/form/inlineForm.jsx"
 import {indexById} from 'stores/app/utils.jsx'
 
-const OutputInlineForm = class OutputInlineForm extends AbstractReactComponent {
+/**
+ * Formulář inline editace výstupu.
+ */
+class OutputInlineForm extends AbstractReactComponent {
+
+    static fields = ['name', 'outputTypeId', 'internalCode', 'templateId'];
 
     /**
      * Validace formuláře.
@@ -33,10 +34,7 @@ const OutputInlineForm = class OutputInlineForm extends AbstractReactComponent {
         templates: React.PropTypes.array.isRequired
     };
 
-    constructor(props) {
-        super(props);
-        this.state = {};
-    }
+    state = {};
 
     componentWillReceiveProps(nextProps) {
         const {fields: {outputTypeId}, outputTypes} = nextProps;
@@ -76,28 +74,30 @@ const OutputInlineForm = class OutputInlineForm extends AbstractReactComponent {
             }
         }
 
-        return (
-            <div className="edit-output-form-container">
-                <form>
-                    <FormInput type="text" label={i18n('arr.output.name')} disabled={disabled} {...name} {...decorateFormField(name, true)} />
-                    <FormInput type="text" label={i18n('arr.output.internalCode')} disabled={disabled} {...internalCode} {...decorateFormField(internalCode, true)} />
+        return <div className="edit-output-form-container">
+            <form>
+                <FormInput type="text" label={i18n('arr.output.name')}
+                           disabled={disabled} {...name} {...decorateFormField(name, true)} />
+                <FormInput type="text" label={i18n('arr.output.internalCode')}
+                           disabled={disabled} {...internalCode} {...decorateFormField(internalCode, true)} />
+                <div className="row-layout">
                     <FormInput type="text" label={i18n('arr.output.outputType')} disabled value={outputType}/>
-                    <FormInput componentClass="select" label={i18n('arr.output.template')} disabled={disabled || !outputTypeId.value || !templates} {...templateId} {...decorateFormField(templateId, true)} >
+                    <FormInput componentClass="select" label={i18n('arr.output.template')}
+                               disabled={disabled || !outputTypeId.value || !templates} {...templateId} {...decorateFormField(templateId, true)} >
                         <option key='-templateId'/>
                         {templates && templates.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
                     </FormInput>
-                </form>
-            </div>
-        )
+                </div>
+            </form>
+        </div>;
     }
 }
 
-const fields = ['name', 'outputTypeId', 'internalCode', 'templateId'];
-module.exports = reduxForm({
+export default reduxForm({
         form: 'outputEditForm',
-        fields,
+        fields: OutputInlineForm.fields,
         validate: OutputInlineForm.validate,
-    },(state, props) => {
+    }, (state, props) => {
         return {
             initialValues: props.initData,
             outputTypes: state.refTables.outputTypes.items,

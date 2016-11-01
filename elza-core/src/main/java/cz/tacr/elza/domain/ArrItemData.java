@@ -2,6 +2,8 @@ package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import java.util.Objects;
+
 /**
  * Abstraktní datový objekt.
  *
@@ -19,5 +21,18 @@ public abstract class ArrItemData implements cz.tacr.elza.api.ArrItemData {
 
     public void setSpec(final RulItemSpec spec) {
         this.spec = spec;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ArrItemData itemData = (ArrItemData) o;
+        return Objects.equals(spec, itemData.spec);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(spec);
     }
 }

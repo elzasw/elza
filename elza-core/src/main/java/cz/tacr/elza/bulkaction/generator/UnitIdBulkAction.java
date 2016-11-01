@@ -398,8 +398,7 @@ public class UnitIdBulkAction extends BulkAction {
     @Override
     public String toString() {
         return "UnitIdBulkAction{" +
-                "change=" + change +
-                ", version=" + version +
+                "version=" + version +
                 '}';
     }
 }

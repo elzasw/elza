@@ -42,6 +42,11 @@ public class CopyAction extends Action {
      */
     private List<ArrItemData> dataItems = new ArrayList<>();
 
+    /**
+     * Provést distinct při vracení výsledků?
+     */
+    private boolean distinct;
+
     CopyAction(final Yaml config) {
         super(config);
     }
@@ -50,6 +55,7 @@ public class CopyAction extends Action {
     public void init() {
         Set<String> inputTypes = config.getStringList("input_types", null).stream().collect(Collectors.toSet());
         String outputType = config.getString("output_type", null);
+        distinct = config.getBoolean("distinct", false);
 
         inputItemTypes = findItemTypes(inputTypes);
         outputItemType = findItemType(outputType, "output_type");
@@ -65,10 +71,18 @@ public class CopyAction extends Action {
     @Override
     public void apply(final ArrNode node, final List<ArrDescItem> items, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
         for (ArrItem item : items) {
+            // pouze hledaný typ
             if (inputItemTypes.contains(item.getItemType())) {
                 ArrItemData itemData = item.getItem();
                 itemData.setSpec(item.getItemSpec());
-                dataItems.add(itemData);
+
+                if (distinct) {
+                    if (!dataItems.contains(itemData)) {
+                        dataItems.add(itemData);
+                    }
+                } else {
+                    dataItems.add(itemData);
+                }
             }
         }
     }

@@ -3,6 +3,7 @@
 @autocomplete-dropdown-width: 35px;
 @autocomplete-dropdown-height: 18px;
 @party-item-padding: 5px;
+@autocomplete-tree-depth: 14px;
 
 .autocomplete-control-container {
     width: 100%;
@@ -69,11 +70,69 @@
             .item {
                 width: 100%;
 
+                &.depth-0 {
+                    padding-left: 0*@autocomplete-tree-depth;
+                }
+                &.depth-1 {
+                    padding-left: 1*@autocomplete-tree-depth;
+                }
+                &.depth-2 {
+                    padding-left: 2*@autocomplete-tree-depth;
+                }
+                &.depth-3 {
+                    padding-left: 3*@autocomplete-tree-depth;
+                }
+                &.depth-4 {
+                    padding-left: 4*@autocomplete-tree-depth;
+                }
+                &.depth-5 {
+                    padding-left: 5*@autocomplete-tree-depth;
+                }
+
+                .item-text {
+                    padding-right: 8px;
+                }
+
+                cursor: pointer;
+                &.not-selectable {
+                    cursor: default;
+                    .item-text {
+                        color: #808080;
+                    }
+                }
+                &.not-focusable {
+                    padding: 4px 0 2px 0;
+                    cursor: default;
+                    .item-text {
+                        color: #b9b9b9;
+                        font-style: italic;
+                    }
+                }
+
+                .node-expand-collapse {
+                    cursor: pointer;
+                    width: 20px;
+                    display: inline-block;
+                    //width: 16px;
+                    padding: 0px 4px 0px 5px;
+                    vertical-align: middle;
+                    &.expanded {
+                    }
+                    &.collapsed {
+                    }
+                }
+
                 &.active {
                     font-weight: bold;
                 }
                 &.focus {
                     background: #afafaf;
+                }
+                &.focus.not-focusable {
+                    background: transparent;
+                }
+                &.focus.not-selectable {
+                    background: #dfdfdf;
                 }
             }
         }
