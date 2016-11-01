@@ -28,6 +28,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
@@ -104,6 +108,10 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     @Autowired
     private ActionRecommendedRepository actionRecommendedRepository;
 
+    @Autowired
+    @Qualifier("transactionManager")
+    protected PlatformTransactionManager txManager;
+
     /**
      * Seznam běžících úloh instancí hromadných akcí.
      *
@@ -139,6 +147,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     public void onFailure(final Throwable ex) {
         // nenastane, protože ve workeru je catch na Exception
         logger.error("Worker nedoběhl správně", ex);
+        runNextWorker();
     }
 
     @Override
@@ -193,6 +202,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
         ArrBulkActionRun bulkActionRun = new ArrBulkActionRun();
 
+        bulkActionRun.setChange(arrangementService.createChange());
         bulkActionRun.setBulkActionCode(bulkActionCode);
         bulkActionRun.setUserId(userId);
         ArrFundVersion arrFundVersion = new ArrFundVersion();
@@ -279,10 +289,15 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * Spuštění dalších hromadných akcí, pokud splňují podmínky pro spuštění.
      */
     private void runNextWorker() {
-        List<ArrBulkActionRun> waitingActions = bulkActionRepository.findByStateGroupByFundOrderById(State.WAITING);
-        waitingActions.forEach(bulkActionRun -> {
-            if(canRun(bulkActionRun)) {
-                run(bulkActionRun);
+        (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(final TransactionStatus status) {
+                List<ArrBulkActionRun> waitingActions = bulkActionRepository.findByStateGroupByFundOrderById(State.WAITING);
+                waitingActions.forEach(bulkActionRun -> {
+                    if (canRun(bulkActionRun)) {
+                        run(bulkActionRun);
+                    }
+                });
             }
         });
     }
