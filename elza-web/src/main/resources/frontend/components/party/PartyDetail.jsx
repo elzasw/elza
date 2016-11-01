@@ -19,7 +19,9 @@ import * as perms from 'actions/user/Permission.jsx';
 
 const keyModifier = Utils.getKeyModifier();
 
-const keymap = {};
+const keymap = {
+    PartyDetail: {}
+};
 const shortcutManager = new ShortcutsManager(keymap);
 
 import './PartyFormStyles.less';
