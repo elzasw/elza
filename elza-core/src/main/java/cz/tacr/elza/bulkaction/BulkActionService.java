@@ -211,7 +211,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
         ArrBulkActionRun bulkActionRun = new ArrBulkActionRun();
 
-        bulkActionRun.setChange(arrangementService.createChange());
+        bulkActionRun.setChange(arrangementService.createChange(ArrChange.Type.BULK_ACTION));
         bulkActionRun.setBulkActionCode(bulkActionCode);
         bulkActionRun.setUserId(userId);
         ArrFundVersion arrFundVersion = new ArrFundVersion();
