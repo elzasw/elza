@@ -389,7 +389,7 @@ public class ArrangementService {
 
     public ArrLevel createLevel(final ArrChange createChange,
                                 final ArrNode parentNode,
-                                final Integer position,
+                                final int position,
                                 final ArrFund fund) {
         Assert.notNull(createChange);
 
