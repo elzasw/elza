@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -455,10 +456,12 @@ public class ClientFactoryDO {
         Assert.notNull(descItemType);
         Assert.notNull(filter);
 
-        List<DescItemCondition> conditions = new LinkedList<>();
-        createValuesEnumCondition(filter.getValuesType(), filter.getValues(), LuceneDescItemCondition.FULLTEXT_ATT, conditions);
-        createSpecificationsEnumCondition(filter.getSpecsType(), filter.getSpecs(), LuceneDescItemCondition.SPECIFICATION_ATT, conditions);
+        List<DescItemCondition> valuesConditions = createValuesEnumCondition(filter.getValuesType(), filter.getValues(),
+                LuceneDescItemCondition.FULLTEXT_ATT);
+        List<DescItemCondition> specsConditions = createSpecificationsEnumCondition(filter.getSpecsType(), filter.getSpecs(),
+                LuceneDescItemCondition.SPECIFICATION_ATT);
 
+        List<DescItemCondition> conditions = new LinkedList<>();
         Condition conditionType = filter.getConditionType();
         if (conditionType != null && conditionType != Condition.NONE) {
             conditionType.checkSupport(descItemType.getDataType().getCode());
@@ -613,9 +616,9 @@ public class ClientFactoryDO {
             }
         }
 
-        if (!conditions.isEmpty()) {
+        if (!valuesConditions.isEmpty() || !specsConditions.isEmpty() || !conditions.isEmpty()) {
             Class<? extends ArrData> typeClass = descriptionItemService.getDescItemDataTypeClass(descItemType);
-            return new DescItemTypeFilter(descItemType, typeClass, conditions);
+            return new DescItemTypeFilter(descItemType, typeClass, valuesConditions, specsConditions, conditions);
         }
 
         return null;
@@ -751,12 +754,13 @@ public class ClientFactoryDO {
      * @param valuesTypes typ výběru - zaškrtnutí/odškrtnutí
      * @param values hodnoty
      * @param attName název atributu na který se podmínka aplikuje
-     * @param conditions seznam podmínek do kterého se přidají nové podmínky
+     *
+     * @return seznam podmínek
      */
-    private void createValuesEnumCondition(final ValuesTypes valuesTypes, final List<String> values,
-            final String attName, final List<DescItemCondition> conditions) {
+    private List<DescItemCondition> createValuesEnumCondition(final ValuesTypes valuesTypes, final List<String> values,
+            final String attName) {
         if (valuesTypes == null && values == null) {
-            return;
+            return Collections.emptyList();
         }
         Assert.notNull(valuesTypes);
         Assert.notNull(values);
@@ -764,6 +768,7 @@ public class ClientFactoryDO {
         boolean noValues = CollectionUtils.isEmpty(values);
         boolean containsNull = FilterTools.removeNullValues(values);
 
+        List<DescItemCondition> conditions = new LinkedList<>();
         if (valuesTypes == ValuesTypes.SELECTED) {
             if (noValues) { // nehledat nic
                 conditions.add(new SelectsNothingCondition());
@@ -785,6 +790,8 @@ public class ClientFactoryDO {
                 // není potřeba vkládat podmínku, pokud vznikne ještě jiná podmínka tak by se udělal průnik výsledků a když bude seznam podmínek prázdný tak se vrátí všechna data
             }
         }
+
+        return conditions;
     }
 
     /**
@@ -795,10 +802,10 @@ public class ClientFactoryDO {
      * @param attName název atributu na který se podmínka aplikuje
      * @param conditions seznam podmínek do kterého se přidají nové podmínky
      */
-    private void createSpecificationsEnumCondition(final ValuesTypes valuesTypes, final List<Integer> values,
-            final String attName, final List<DescItemCondition> conditions) {
+    private List<DescItemCondition> createSpecificationsEnumCondition(final ValuesTypes valuesTypes, final List<Integer> values,
+            final String attName) {
         if (valuesTypes == null && values == null) {
-            return;
+            return Collections.emptyList();
         }
         Assert.notNull(valuesTypes);
         Assert.notNull(values);
@@ -806,6 +813,7 @@ public class ClientFactoryDO {
         boolean noValues = CollectionUtils.isEmpty(values);
         boolean containsNull = FilterTools.removeNullValues(values);
 
+        List<DescItemCondition> conditions = new LinkedList<>();
         if (valuesTypes == ValuesTypes.SELECTED) {
             if (noValues) { // nehledat nic
                 conditions.add(new SelectsNothingCondition());
@@ -827,6 +835,8 @@ public class ClientFactoryDO {
                 // není potřeba vkládat podmínku, pokud vznikne ještě jiná podmínka tak by se udělal průnik výsledků a když bude seznam podmínek prázdný tak se vrátí všechna data
             }
         }
+
+        return conditions;
     }
 
     /**

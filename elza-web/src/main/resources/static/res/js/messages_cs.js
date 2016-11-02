@@ -193,6 +193,7 @@ var messages = {
     "arr.fundAction.state.planned": "Naplánováno",
     "arr.fundAction.state.error": "Chyba",
     "arr.fundAction.state.interrupted": "Přerušeno",
+    "arr.fundAction.state.outdated": "Dokončeno (neplatný)",
     "arr.fundAction.state.unknown": "Neznamý stav",
 
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",

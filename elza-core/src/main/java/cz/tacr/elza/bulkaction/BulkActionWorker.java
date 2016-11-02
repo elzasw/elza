@@ -63,7 +63,7 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
     /**
      * Identfikátor uživatele, který spustil hromadnou akci (null, pokud to bylo systémové - od admina)
      */
-    private Integer userId;
+    //private Integer userId;
 
     private Integer processId;
 
@@ -125,11 +125,11 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
         setStateAndPublish(State.RUNNING);
         processId = ((int) Thread.currentThread().getId());
         try {
-            bulkActionRun.setChange(createChange(userId));
+            //bulkActionRun.setChange(createChange(userId));
             bulkActionService.storeBulkActionRun(bulkActionRun);
             bulkAction.run(inputNodeIds, bulkActionConfig, bulkActionRun);
 
-            //Thread.sleep(10000); // PRO TESTOVÁNÍ A DALŠÍ VÝVOJ
+            //Thread.sleep(30000); // PRO TESTOVÁNÍ A DALŠÍ VÝVOJ
 
             bulkActionRun.setDateFinished(new Date());
             setStateAndPublish(State.FINISHED);

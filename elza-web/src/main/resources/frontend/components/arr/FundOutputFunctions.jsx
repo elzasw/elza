@@ -8,8 +8,8 @@ import {indexById} from 'stores/app/utils.jsx'
 import {dateTimeToString} from 'components/Utils.jsx';
 import './FundOutputFunctions.less'
 
-const ACTION_RUNNING_STATE = ['RUNNING', 'WAITING', 'PLANNED',];
-const ACTION_NOT_RUNNING_STATE = ['FINISHED', 'ERROR', 'INTERRUPTED',];
+const ACTION_RUNNING_STATE = ['RUNNING', 'WAITING', 'PLANNED'];
+const ACTION_NOT_RUNNING_STATE = ['FINISHED', 'ERROR', 'INTERRUPTED', 'OUTDATED'];
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -90,11 +90,22 @@ class FundOutputFunctions extends AbstractReactComponent {
                 buttons = <Icon glyph="fa-stop" onClick={() => this.handleActionInterrupt(item.id)}/>
             }
         }
+
+        let dateToState = "";
+
+        if (item.dateFinished != null) {
+            dateToState = " (" + dateTimeToString(new Date(item.dateFinished)) + ")";
+        } else if (item.dateStarted != null) {
+            dateToState = " (" + dateTimeToString(new Date(item.dateStarted)) + ")";
+        } else if (item.datePlanned != null) {
+            dateToState = " (" + dateTimeToString(new Date(item.datePlanned)) + ")";
+        }
+
         return <div className='item' key={item.id}>
             <div>
                 <div>{name}</div>
                 <div>
-                    {i18n('arr.output.functions.state', state == null ? i18n('arr.output.functions.notStarted') : state + (item.dateFinished != null ? " (" + dateTimeToString(new Date(item.dateFinished)) + ")" : ''))}
+                    {i18n('arr.output.functions.state', state == null ? i18n('arr.output.functions.notStarted') : state + dateToState)}
                 </div>
             </div>
             <div>{buttons}</div>
