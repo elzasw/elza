@@ -53,12 +53,14 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
     getSpecItems = (refType, infoType, filterText) => {
         let result;
 
+        const lowerFilterText = filterText ? filterText.toLocaleLowerCase() : filterText;
+
         // Položky
         if (refType.itemSpecsTree && refType.itemSpecsTree.length > 0) {    // stromová reprezentace
             result = [];
             const treeNodeIndex = {index: 0};
             refType.itemSpecsTree.forEach(node => {
-                var newNode = this.getSpecTreeNode(node, refType, infoType, filterText, treeNodeIndex);
+                var newNode = this.getSpecTreeNode(node, refType, infoType, lowerFilterText, treeNodeIndex);
                 if (newNode) {
                     result.push(newNode);
                 }
@@ -72,7 +74,7 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
             const items = [];
             infoType.favoriteSpecIds.forEach(specId => {
                 const refSpec = refType.descItemSpecsMap[specId];
-                if (!filterText || (filterText && refSpec.name.toLocaleLowerCase().indexOf(filterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
+                if (!lowerFilterText || (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
                     const infoSpec = infoType.descItemSpecsMap[specId];
                     const value = {
                         ...refSpec,
@@ -102,11 +104,11 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
      * @param node node
      * @param refType ref type
      * @param infoType info type
-     * @param filterText filtr
+     * @param lowerFilterText filtr
      * @param treeNodeIndex index položky ve stromu (index plochého rozbaleného seznamu)
      * @return {*}
      */
-    getSpecTreeNode = (node, refType, infoType, filterText, treeNodeIndex) => {
+    getSpecTreeNode = (node, refType, infoType, lowerFilterText, treeNodeIndex) => {
         // Specifikace pro daný atribut v pro konkrétní formulář
         const specChildren = [];
         const nodeSpecIdsMap = getSetFromIdsList(node.specIds);
@@ -115,7 +117,7 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
                 const refSpec = refType.descItemSpecsMap[infoSpec.id];
 
                 // Filtr
-                if (!filterText || (filterText && refSpec.name.toLocaleLowerCase().indexOf(filterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
+                if (!lowerFilterText || (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
                     specChildren.push({
                         ...refSpec,
                         ...infoSpec,
@@ -124,8 +126,6 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
                 }
             }
         });
-
-        const lowerFilterText = filterText ? filterText.toLocaleLowerCase() : filterText;
 
         // Podřízené nody
         const children = [];
@@ -144,7 +144,7 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
             id: treeNodeIndex.index++,
             name: node.name,
             node: true,
-            expanded: filterText ? true : false,
+            expanded: lowerFilterText ? true : false,
             children: [...children, ...specChildren]
         };
     }
@@ -195,7 +195,7 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
             onBlur,
             onFocus,
             disabled: locked
-        }
+        };
 
         // Získání hodnoty jako objekt specifikace = autocomplete pořebuje na vstupu objekt
         const value = this.getValueObj(descItem, refType, infoType);

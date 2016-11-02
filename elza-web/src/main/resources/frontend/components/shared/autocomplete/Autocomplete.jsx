@@ -33,6 +33,12 @@ var keyDownHandlers = {
         const {tree} = this.props;
         if (tree) {
             var {highlightedIndex} = this.state
+
+            if (highlightedIndex != null) {
+                event.preventDefault(); // u stromu nechceme posouvat po inputu, pokud je highlightedIndex = má focus list s položkami a klávesy fungují na rozbalení a zabalení stromu
+                event.stopPropagation();
+            }
+
             var {expandedIds} = this.state
             if (highlightedIndex !== null) {
                 const items = this.getFilteredItems();
@@ -57,6 +63,12 @@ var keyDownHandlers = {
         const {tree} = this.props;
         if (tree) {
             var {highlightedIndex} = this.state;
+
+            if (highlightedIndex != null) {
+                event.preventDefault(); // u stromu nechceme posouvat po inputu, pokud je highlightedIndex = má focus list s položkami a klávesy fungují na rozbalení a zabalení stromu
+                event.stopPropagation();
+            }
+
             var {expandedIds} = this.state;
             if (highlightedIndex !== null) {
                 const items = this.getFilteredItems();
@@ -89,7 +101,8 @@ var keyDownHandlers = {
     Tab: ()=> {
     },
     ArrowDown: function (event) {
-        event.preventDefault()
+        event.preventDefault();
+        event.stopPropagation();
 
         if (event.altKey) {
             this.changeState({
@@ -98,11 +111,14 @@ var keyDownHandlers = {
                 this.props.onSearchChange(this.state.inputStrValue)
             })
         } else {
-            var { highlightedIndex } = this.state
-            // var index = (highlightedIndex === null || highlightedIndex === this.getFilteredItems().length - 1) ? 0 : highlightedIndex + 1
-            var index = this.getNextFocusableItem(highlightedIndex);
+            var {highlightedIndex} = this.state;
+            const {tree} = this.props;
 
-            this._performAutoCompleteOnKeyUp = true
+            var index = this.getNextFocusableItem(highlightedIndex, !tree);
+
+            if (index !== null) {   // je pokud je nějaká vybraná položka, zkusíme doplnit autocomplete text
+                this._performAutoCompleteOnKeyUp = true;
+            }
 
             this.changeState({
                 highlightedIndex: index,
@@ -111,15 +127,20 @@ var keyDownHandlers = {
     },
 
     ArrowUp: function (event) {
-        event.preventDefault()
+        event.preventDefault();
+        event.stopPropagation();
 
         if (event.altKey) {
             this.closeMenu();
         } else {
-            var { highlightedIndex } = this.state
-            // var index = (highlightedIndex === 0 || highlightedIndex === null) ? this.getFilteredItems().length - 1 : highlightedIndex - 1
-            var index = this.getPrevFocusableItem(highlightedIndex);
-            this._performAutoCompleteOnKeyUp = true
+            var {highlightedIndex} = this.state;
+            const {tree} = this.props;
+
+            var index = this.getPrevFocusableItem(highlightedIndex, !tree);
+
+            if (index !== null) {   // je pokud je nějaká vybraná položka, zkusíme doplnit autocomplete text
+                this._performAutoCompleteOnKeyUp = true;
+            }
 
             this.changeState({
                 highlightedIndex: index,
@@ -230,14 +251,17 @@ export default class Autocomplete extends AbstractReactComponent {
     /**
      * Získání indexu další možné položky pro focus.
      * @param index aktuální index
+     * @param loop pokud je true, focus na položkách cykluje
      * @return další možná položka nebo index, pokud jiná není
      */
-    getNextFocusableItem = (index) => {
+    getNextFocusableItem = (index, loop) => {
         const {allowFocusItem, getItemId} = this.props;
         const items = this.getFilteredItems();
         const start = index !== null ? index : 0;
         var ii = index != null ? start + 1 : start;
         if (ii >= items.length) {   // na konci přejdeme na začátek
+            if (!loop) return null;
+
             ii = 0;
         }
         while (true) {
@@ -248,6 +272,8 @@ export default class Autocomplete extends AbstractReactComponent {
             ii++;
 
             if (ii >= items.length) {   // na konci přejdeme na začátek
+                if (!loop) return null;
+
                 ii = 0;
             }
             if (ii === start) { // udělali jsme celé kolečko a nenalezli položku, na kterou se může dát další focus
@@ -260,14 +286,17 @@ export default class Autocomplete extends AbstractReactComponent {
     /**
      * Získání indexu předchozí možné položky pro focus.
      * @param index aktuální index
+     * @param loop pokud je true, focus na položkách cykluje
      * @return další možná položka nebo index, pokud jiná není
      */
-    getPrevFocusableItem = (index) => {
+    getPrevFocusableItem = (index, loop) => {
         const {allowFocusItem, getItemId} = this.props;
         const items = this.getFilteredItems();
         const start = index !== null ? index : items.length - 1;
         var ii = index !== null ? index - 1 : start;
         if (ii < 0) {   // na konci přejdeme na začátek
+            if (!loop) return null;
+
             ii = items.length - 1;
         }
         while (true) {
@@ -278,6 +307,8 @@ export default class Autocomplete extends AbstractReactComponent {
             ii--;
 
             if (ii < 0) {   // na konci přejdeme na začátek
+                if (!loop) return null;
+
                 ii = items.length - 1;
             }
             if (ii === start) { // udělali jsme celé kolečko a nenalezli položku, na kterou se může dát další focus
@@ -294,7 +325,7 @@ export default class Autocomplete extends AbstractReactComponent {
      */
     expandNode = (node, expand) => {
         const {expandedIds, inputStrValue, shouldItemRender} = this.state;
-        const {items, customFilter, tree, getItemId} = this.props;
+        const {items, customFilter, tree, getItemId, allowSelectItem, allowFocusItem} = this.props;
         const id = this.props.getItemId(node);
         let newExpandedIds;
 
@@ -305,7 +336,7 @@ export default class Autocomplete extends AbstractReactComponent {
             delete newExpandedIds[id];
         }
 
-        const newItemsInfo = this.getNewFilteredItems(items, customFilter, shouldItemRender, inputStrValue, tree, newExpandedIds, getItemId);
+        const newItemsInfo = this.getNewFilteredItems(items, customFilter, shouldItemRender, inputStrValue, tree, newExpandedIds, getItemId, allowSelectItem, allowFocusItem, false);
 
         this.changeState({
             expandedIds: newExpandedIds,
@@ -322,9 +353,12 @@ export default class Autocomplete extends AbstractReactComponent {
      */
     changeState = (nextState, callback = null) => {
         if (typeof nextState.inputStrValue !== 'undefined' && nextState.inputStrValue !== this.state.inputStrValue) {   // chce změnit vstupní řetězec, musíme přefiltrovat
-            const newItemsInfo = this.getNewFilteredItems(this.props.items, this.props.customFilter, this.state.shouldItemRender, nextState.inputStrValue, this.props.tree, this.state.expandedIds, this.props.getItemId);
+            const newItemsInfo = this.getNewFilteredItems(this.props.items, this.props.customFilter, this.state.shouldItemRender, nextState.inputStrValue, this.props.tree, this.state.expandedIds, this.props.getItemId, this.props.allowSelectItem, this.props.allowFocusItem, true);
             nextState.items = newItemsInfo.items;
             nextState.itemsDepth = newItemsInfo.itemsDepth;
+            if (!this.props.customFilter) {
+                nextState.expandedIds = newItemsInfo.newExpandedIds;
+            }
         }
 
         this.setState(nextState, callback);
@@ -384,17 +418,23 @@ export default class Autocomplete extends AbstractReactComponent {
 
         // ---
         // Sesbírání vstupních expanded, provedení filtru položek, případně u stromu na flat a získání depth položek ve stromu
-        if (props.items !== nextProps.items || result.inputStrValue !== state.inputStrValue) {
-            const newItemsInfo = this.getNewFilteredItems(nextProps.items, nextProps.customFilter, result.shouldItemRender, result.inputStrValue, nextProps.tree, null, nextProps.getItemId);
+        if ((props.items !== nextProps.items) || (prevId !== newId) || (prevId === newId && result.inputStrValue !== state.inputStrValue)) {
+            // console.log(999999999, this.state, result, props, nextProps)
+            // console.log(999999999, result.inputStrValue, props.items !== nextProps.items, prevId !== newId, result.inputStrValue !== state.inputStrValue)
+            const newItemsInfo = this.getNewFilteredItems(nextProps.items, nextProps.customFilter, result.shouldItemRender, result.inputStrValue, nextProps.tree, null, nextProps.getItemId, nextProps.allowSelectItem, nextProps.allowFocusItem, true);
             result.items = newItemsInfo.items;
             result.itemsDepth = newItemsInfo.itemsDepth;
-            const expandedIds = {}; // mapa id na true, pokud je položky rozbalená
-            newItemsInfo.items.forEach(item => {  // vždy se inicializuje při změně vstupu, ten říká, co je rozbalené a co ne
-                if (item.expanded) {
-                    expandedIds[nextProps.getItemId(item)] = true;
-                }
-            })
-            result.expandedIds = expandedIds;
+            if (nextProps.customFilter) {
+                const expandedIds = {}; // mapa id na true, pokud je položky rozbalená
+                newItemsInfo.items.forEach(item => {  // vždy se inicializuje při změně vstupu, ten říká, co je rozbalené a co ne
+                    if (item.expanded) {
+                        expandedIds[nextProps.getItemId(item)] = true;
+                    }
+                })
+                result.expandedIds = expandedIds;
+            } else {
+                result.expandedIds = newItemsInfo.newExpandedIds;
+            }
         }
         // ---
 
@@ -446,7 +486,12 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     renderMenuContainer(items, value, style) {
+        const {highlightedIndex} = this.state;
+
         var cls = 'autocomplete-menu-container';
+        if (highlightedIndex != null) {
+            cls += " active";
+        }
 
         var header;
         if (this.props.header) {
@@ -545,6 +590,75 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     /**
+     * Sestavuje strom pro daný node a jeho podstrom.
+     * @param node node
+     * @param lowerFilterText filtr
+     * @param newExpandedIds mapa id na true, do kterého se přidají aktuálně rozbalené položky - ty co mají pod sebou ty, co odpovídají filtru
+     * @param getItemId funkce pro načtení id z node
+     * @param shouldItemRender funkce pro filtr
+     * @param allowSelectItem funkce, která vrací true, pokud lze položku vybrat
+     * @param allowFocusItem funkce, která vrací true, pokud lze na dát focus - ostatní jsou např. informační atp.
+     * @return {*}
+     */
+    getFilteredTreeNode = (node, lowerFilterText, newExpandedIds, getItemId, shouldItemRender, allowSelectItem, allowFocusItem) => {
+        // Podřízené nody
+        const nodeChildren = [];
+        node.children && node.children.forEach(subNode => {
+            const newSubNode = this.getFilteredTreeNode(subNode, lowerFilterText, newExpandedIds, getItemId, shouldItemRender, allowSelectItem, allowFocusItem);
+            if (newSubNode) {
+                nodeChildren.push(newSubNode);
+            }
+        });
+
+        if (nodeChildren.length === 0 && nodeChildren.length === 0) {   // nemá potomky, chceme ho jen v případě, že je sám slectable a vyhovuje hledanému výrazu nebo že je allowFocusItem na false - ty dáváme vždy
+            const id = getItemId(node);
+            const selectable = allowSelectItem(id, node);
+            const focusable = allowFocusItem(id, node);
+            const show = shouldItemRender(node, lowerFilterText || "");
+            if (!focusable || ((selectable || focusable) && show)) {
+                // Pokud potomci neodpovídají hledanému výrazu, můžeme je všechny přidat - hledám podle nadřazeného node a můžu se podívat na potomky - pokud to nebude někde třeba, dáme na konfiguraci
+                return {
+                    ...node,
+                }
+
+                // Jen node, bez přidání potomků
+                // return {
+                //     ...node,
+                //     children: null,
+                // }
+            } else {
+                return null;
+            }
+        }
+
+        // Má potomky, bude vždy rozbalený, pokud je nastaven nějaký filtr - má položky, které filtru odpovídají
+        if (lowerFilterText) {
+            newExpandedIds[getItemId(node)] = true;
+        }
+
+        return {
+            ...node,
+            expanded: lowerFilterText ? true : false,
+            children: [...nodeChildren]
+        };
+    }
+
+    getFilteredTree = (items, expandedIds, getItemId, filterText, newExpandedIds, shouldItemRender, allowSelectItem, allowFocusItem) => {
+        const result = [];
+
+        const lowerFilterText = filterText ? filterText.toLocaleLowerCase() : filterText;
+
+        items.forEach(node => {
+            var newNode = this.getFilteredTreeNode(node, lowerFilterText, newExpandedIds, getItemId, shouldItemRender, allowSelectItem, allowFocusItem);
+            if (newNode) {
+                result.push(newNode);
+            }
+        });
+
+        return result;
+    }
+
+    /**
      * Provede novou filtraci položek, převede případný stromu na plochý seznam a načte hloubku jednotlivých položek ve stromu.
      * Pokud je nastaven customFilter, neprovádí se filtrování, jinak se provádí a k tomu se využívá shouldItemRender a inputStrValue.
      * @param items seznam položek
@@ -554,35 +668,55 @@ export default class Autocomplete extends AbstractReactComponent {
      * @param tree jedná se stromovou komponentu?
      * @param expandedIds mapa aktuálně rozbalených id
      * @param getItemId metoda pro načtení id z položky
-     * @return v případě stromu vrací: { items: [], itemsDepth: []}, jinak vrací { items: [] }
+     * @param allowSelectItem funkce, která vrací true, pokud lze položku vybrat
+     * @param allowFocusItem funkce, která vrací true, pokud lze položku dát focus
+     * @param modifyExpanded pokud je true, bude se brát expanded na základě hledání ve stromu, jinak se použije ten předaný jako expandedIds
+     * @return v případě stromu vrací: { items: [], itemsDepth: [], newExpandedIds: {}}, jinak vrací { items: [] }
      */
-    getNewFilteredItems = (items, customFilter, shouldItemRender, inputStrValue, tree, expandedIds, getItemId) => {
-        // Spploštění stromu, pokud je potřeba
+    getNewFilteredItems = (items, customFilter, shouldItemRender, inputStrValue, tree, expandedIds, getItemId, allowSelectItem, allowFocusItem, modifyExpanded) => {
+        // Sploštění stromu, pokud je potřeba a jeho filtrování, pokud není customFilter
         var result;
         if (tree) {
-            const flatTree = this.getFlatTree(items, expandedIds, getItemId);
+             // Filtrování stromu, pokud není nastaven customFilter
+            let filteredItems; 
+            let newExpandedIds;
+            if (!customFilter && shouldItemRender) {
+                newExpandedIds = {};
+                filteredItems = this.getFilteredTree(items, expandedIds, getItemId, inputStrValue, newExpandedIds, shouldItemRender, allowSelectItem, allowFocusItem);
+                // filteredItems = items;
+            } else {
+                filteredItems = items;
+            }
+
+            let flatTree;
+            if (!customFilter && modifyExpanded) {
+                flatTree = this.getFlatTree(filteredItems, newExpandedIds, getItemId);
+            } else {
+                flatTree = this.getFlatTree(filteredItems, expandedIds, getItemId);
+            }
             result = {
                 items: flatTree.list,
-                itemsDepth: flatTree.depthList
+                itemsDepth: flatTree.depthList,
+                newExpandedIds: newExpandedIds
             }
         } else {
             result = {
                 items
             };
-        }
-
-        // Jendoduchý filtr
-        if (!customFilter && shouldItemRender) {
-            var filteredItems = [];
-            var filteredItemsDepth = [];
-            result.items.forEach((item, index) => {
-                if (shouldItemRender(item, inputStrValue || "")) {
-                    filteredItems.push(item);
-                    tree && filteredItemsDepth.push(result.itemsDepth[index]);
-                }
-            });
-            result.items = filteredItems;
-            result.itemsDepth = filteredItemsDepth;
+            
+            // Jendoduchý filtr - pouze v případě plochého seznamu - ne stromu, strom se filtruje jinak 
+            if (!customFilter && shouldItemRender) {
+                var filteredItems = [];
+                var filteredItemsDepth = [];
+                result.items.forEach((item, index) => {
+                    if (shouldItemRender(item, inputStrValue || "")) {
+                        filteredItems.push(item);
+                        tree && filteredItemsDepth.push(result.itemsDepth[index]);
+                    }
+                });
+                result.items = filteredItems;
+                result.itemsDepth = filteredItemsDepth;
+            }
         }
 
         return result
@@ -692,7 +826,7 @@ export default class Autocomplete extends AbstractReactComponent {
         prop.list.push(node);
         prop.depthList.push(depth);
         if (expandedIds ? expandedIds[getItemId(node)] : node.expanded) {
-            node.children.forEach(ch => this._getFlatTree(ch, prop, expandedIds, getItemId, depth + 1))
+            node.children && node.children.forEach(ch => this._getFlatTree(ch, prop, expandedIds, getItemId, depth + 1))
         }
     }
 
@@ -868,8 +1002,8 @@ export default class Autocomplete extends AbstractReactComponent {
                                 value={this.state.inputStrValue}
                             />
                             <div disabled={this.props.disabled} ref='openClose'
-                                 className={this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed'}
-                                 onClick={()=>{this.state.isOpen ? this.closeMenu() : this.openMenu()}}><Icon
+                                 className={(this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed') + (this.props.disabled ? " disabled" : "")}
+                                 onClick={()=>{if (!this.props.disabled) {this.state.isOpen ? this.closeMenu() : this.openMenu()}}}><Icon
                                 glyph={glyph}/></div>
                             {this.props.actions}
                             {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
