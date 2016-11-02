@@ -1,16 +1,26 @@
 package cz.tacr.elza.service.output;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.exception.ProcessException;
+import cz.tacr.elza.service.OutputService;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +101,12 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
     private OutputGeneratorWorkerFactory workerFactory;
 
     @Autowired
+    private BulkActionService bulkActionService;
+
+    @Autowired
+    private OutputService outputService;
+
+    @Autowired
     @Qualifier("threadPoolTaskExecutorOG")
     private ThreadPoolTaskExecutor taskExecutor;
 
@@ -118,9 +134,10 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
      * @param fund      AS výstupu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public void generateOutput(final ArrOutput arrOutput,
+    public String generateOutput(final ArrOutput arrOutput,
                                final Integer userId,
-                               @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) {
+                               @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                                 final boolean forced) {
         ArrOutputResult outputResult = outputResultRepository.findByOutputDefinition(arrOutput.getOutputDefinition());
         Assert.isNull(outputResult, "Tento výstup byl již vygenerován.");
 
@@ -130,6 +147,49 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
 
         ArrOutputDefinition outputDefinition = arrOutput.getOutputDefinition();
 
+        if (!forced) {
+
+            // -- kontrola spuštění doporučených akcí
+            Set<RulAction> recommendedActions = bulkActionService.getRecommendedActions(outputDefinition.getOutputType());
+            ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fund.getFundId());
+
+            bulkActionService.checkOutdatedActions(fundVersion.getFundVersionId());
+
+            Set<ArrNode> nodesForOutput = new HashSet<>(outputService.getNodesForOutput(arrOutput));
+            List<ArrBulkActionRun> finishedAction = bulkActionService.findBulkActionsByNodes(fundVersion, nodesForOutput, ArrBulkActionRun.State.FINISHED);
+
+            Map<RulAction, ArrChange> lastChangeAction = new HashMap<>();
+            for (RulAction recommendedAction : recommendedActions) {
+                boolean found = false;
+                for (ArrBulkActionRun bulkActionRun : finishedAction) {
+                    String bulkActionFilename = bulkActionRun.getBulkActionCode() + ".yaml";
+                    if (bulkActionFilename.equalsIgnoreCase(recommendedAction.getFilename())) {
+                        found = true;
+                        ArrChange arrChange = lastChangeAction.get(recommendedAction);
+                        if (arrChange == null) {
+                            lastChangeAction.put(recommendedAction, bulkActionRun.getChange());
+                        } else {
+                            if (bulkActionRun.getChange().getChangeDate().isAfter(arrChange.getChangeDate())) {
+                                lastChangeAction.put(recommendedAction, bulkActionRun.getChange());
+                            }
+                        }
+                    }
+                }
+                if (!found) {
+                    return "Nebyly spuštěny všechny doporučené akce";
+                }
+            }
+            // -- !kontrola spuštění doporučených akcí
+
+            Map<ArrChange, Boolean> changeBooleanMap = arrangementService.detectChangeNodes(nodesForOutput, new HashSet<>(lastChangeAction.values()), false, true);
+            for (Map.Entry<ArrChange, Boolean> entry : changeBooleanMap.entrySet()) {
+                if (BooleanUtils.isTrue(entry.getValue())) {
+                    return "Byly detekovány změny v Pořádání";
+                }
+            }
+
+        }
+
         if (outputDefinition.getTemplate() == null) {
             throw new IllegalStateException("Nelze spustit generování, protože výstup nemá vybranou šablonu");
         }
@@ -138,6 +198,7 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
         publishOutputStateEvent(outputDefinition, null);
         outputQueue.add(createWorker(arrOutput, userId));
         runNextOutput(); // zkusí sputit frontu
+        return null;
     }
 
 

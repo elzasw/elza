@@ -283,7 +283,6 @@ public class SerialNumberBulkAction extends BulkAction {
     public String toString() {
         return "SerialNumberBulkAction{" +
                 "version=" + version +
-                ", change=" + change +
                 '}';
     }
 }

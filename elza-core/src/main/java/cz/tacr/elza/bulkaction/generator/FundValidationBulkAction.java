@@ -80,11 +80,7 @@ public class FundValidationBulkAction extends BulkAction {
 
         List<ArrLevel> childLevels = getChildren(level);
 
-        try {
-            bulkActionService.setConformityInfoInNewTransaction(level.getLevelId(), version.getFundVersionId());
-        } catch (Exception e){
-            logger.warn("Nastal problém při validaci uzlu v hromadné akci", e);
-        }
+        bulkActionService.setConformityInfoInNewTransaction(level.getLevelId(), version.getFundVersionId());
 
         for (ArrLevel childLevel : childLevels) {
             generate(childLevel);
@@ -122,8 +118,7 @@ public class FundValidationBulkAction extends BulkAction {
     @Override
     public String toString() {
         return "FundValidationBulkAction{" +
-                "version=" + version +
-                ", change=" + change +
+                "change=" + change +
                 '}';
     }
 }

@@ -37,3 +37,13 @@ then
     $itemType.setType(RulItemType.Type.REQUIRED);
     $itemType.setRepeatable(false);
 end
+
+// Povinné opakovatelné prvky popisu
+rule "Povinné opakovatelné prvky popisu"
+no-loop 
+when
+	$itemType : RulItemTypeExt( code in ( 
+		"ZP2015_ARRANGER", "ZP2015_ORIGINATOR", "ZP2015_LANGUAGE" ) )
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+end
