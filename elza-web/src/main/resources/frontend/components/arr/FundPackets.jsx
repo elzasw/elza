@@ -33,11 +33,12 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
     }
 
     componentWillMount(){
+        const {packetTypes} = this.props;
         this.pf = new PacketFormatter(packetTypes);
     }
 
     componentDidMount() {
-        const {versionId, fundId, packetTypes} = this.props;
+        const {versionId, fundId} = this.props;
         this.dispatch(fetchFundPacketsIfNeeded(versionId, fundId));
     }
 
