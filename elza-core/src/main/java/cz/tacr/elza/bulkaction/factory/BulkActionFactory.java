@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import cz.tacr.elza.bulkaction.generator.BulkAction;
 import cz.tacr.elza.bulkaction.generator.FundValidationBulkAction;
 import cz.tacr.elza.bulkaction.generator.SerialNumberBulkAction;
+import cz.tacr.elza.bulkaction.generator.TestDataGenerator;
 import cz.tacr.elza.bulkaction.generator.UnitIdBulkAction;
 
 
@@ -45,6 +46,9 @@ public class BulkActionFactory {
             case MultipleBulkAction.TYPE:
                 return new MultipleBulkAction();
 
+            case TestDataGenerator.TYPE:
+            	return new TestDataGenerator();
+            	
             default:
                 throw new IllegalStateException("Hromadna akce " + code + " neexistuje");
         }
