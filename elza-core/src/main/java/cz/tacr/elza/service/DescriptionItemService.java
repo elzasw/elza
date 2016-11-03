@@ -178,7 +178,6 @@ public class DescriptionItemService {
         Assert.notNull(nodeVersion);
         Assert.notNull(fundVersionId);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemObjectId);
 
@@ -190,6 +189,7 @@ public class DescriptionItemService {
 
         ArrDescItem descItem = descItems.get(0);
         descItem.getNode().setVersion(nodeVersion);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM, descItem.getNode());
 
         // uložení uzlu (kontrola optimistických zámků)
         saveNode(descItem.getNode(), change);
@@ -221,7 +221,6 @@ public class DescriptionItemService {
                                                 final Integer nodeVersion,
                                                 final Integer descItemTypeId) {
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
 
@@ -229,6 +228,7 @@ public class DescriptionItemService {
         Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         ArrNode node = nodeRepository.findOne(nodeId);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
         node.setVersion(nodeVersion);
 
         // uložení uzlu (kontrola optimistických zámků)
@@ -269,7 +269,6 @@ public class DescriptionItemService {
                                                               final Integer nodeVersion,
                                                               final Integer descItemTypeId) {
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
 
@@ -277,6 +276,7 @@ public class DescriptionItemService {
         Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         ArrNode node = nodeRepository.findOne(nodeId);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
 
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemType, node);
 
@@ -322,7 +322,7 @@ public class DescriptionItemService {
         ArrNode node = nodeRepository.findOne(nodeId);
         Assert.notNull(node);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
 
         // uložení uzlu (kontrola optimistických zámků)
         node.setVersion(nodeVersion);
@@ -358,7 +358,7 @@ public class DescriptionItemService {
         ArrNode node = nodeRepository.findOne(nodeId);
         Assert.notNull(node);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
 
         // uložení uzlu (kontrola optimistických zámků)
         node.setVersion(nodeVersion);
@@ -381,7 +381,7 @@ public class DescriptionItemService {
                                              final ArrFundVersion version,
                                              @Nullable final ArrChange createChange) {
 
-        ArrChange change = createChange == null ? arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM) : createChange;
+        ArrChange change = createChange == null ? arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node) : createChange;
 
         descItem.setNode(node);
         descItem.setCreateChange(change);
@@ -414,7 +414,7 @@ public class DescriptionItemService {
                                                     final ArrFundVersion version,
                                                     @Nullable final ArrChange createChange) {
 
-        ArrChange change = createChange == null ? arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM) : createChange;
+        ArrChange change = createChange == null ? arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node) : createChange;
         List<ArrDescItem> createdItems = new ArrayList<>();
         for (ArrDescItem descItem :
                 descItems) {
@@ -733,7 +733,7 @@ public class DescriptionItemService {
             node.setVersion(nodeVersion);
 
             // vytvoření změny
-            change = arrangementService.createChange(ArrChange.Type.UPDATE_DESC_ITEM);
+            change = arrangementService.createChange(ArrChange.Type.UPDATE_DESC_ITEM, node);
 
             // uložení uzlu (kontrola optimistických zámků)
             saveNode(node, change);

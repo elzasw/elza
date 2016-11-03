@@ -244,8 +244,8 @@ public abstract class AbstractTest {
         descItemRepository.deleteAll();
         itemRepository.deleteAll();
         itemSpecRegisterRepository.deleteAll();
-        nodeRepository.deleteAll();
         changeRepository.deleteAll();
+        nodeRepository.deleteAll();
         fundRepository.deleteAll();
         institutionRepository.deleteAll();
     }

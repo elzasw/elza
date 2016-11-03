@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrNode;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,4 +14,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ChangeRepository extends JpaRepository<ArrChange, Integer> {
 
+    void deleteByPrimaryNode(ArrNode node);
 }

@@ -598,7 +598,7 @@ public class RegistryService {
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_RECORD_NODE);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_RECORD_NODE, node);
 
         node.setVersion(nodeRegister.getNode().getVersion());
         saveNode(node, change);
@@ -630,7 +630,7 @@ public class RegistryService {
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.UPDATE_RECORD_NODE);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.UPDATE_RECORD_NODE, node);
 
         node.setVersion(nodeRegister.getNode().getVersion());
         saveNode(node, change);
@@ -669,7 +669,7 @@ public class RegistryService {
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_RECORD_NODE);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_RECORD_NODE, node);
 
         node.setVersion(nodeRegister.getNode().getVersion());
         saveNode(node, change);

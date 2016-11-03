@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
  * @author vavrejn
  *
  */
-public interface ArrChange<U extends UsrUser, L extends ArrLevel> extends Serializable {
+public interface ArrChange<U extends UsrUser, N extends ArrNode> extends Serializable {
 
     /**
      * Typ změny.
@@ -126,12 +126,12 @@ public interface ArrChange<U extends UsrUser, L extends ArrLevel> extends Serial
     void setType(Type type);
 
     /**
-     * @return primární level změny
+     * @return primární uzel změny
      */
-    L getPrimaryLevel();
+    N getPrimaryNode();
 
     /**
-     * @param primaryLevel primární level změny
+     * @param primaryNode primární uzel změny
      */
-    void setPrimaryLevel(L primaryLevel);
+    void setPrimaryNode(N primaryNode);
 }
