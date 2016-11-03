@@ -20,6 +20,120 @@ import {storeLoadData, storeLoad} from 'actions/store/store.jsx'
 import {Combobox} from 'react-input-enhancements'
 import {setInputFocus, dateToString} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+
+const rows = []
+const selectedIds = [0, 1, 2, 3, 4]
+let focus
+
+for (let a=0; a<40; a++) {
+    rows.push({
+        id: a,
+        firstname: 'jan ' + a,
+        surname: 'novak ' + a,
+        age: 10+2*a,
+        address: 'Nejaka ulice ' + a + ', 330 22, Plzen',
+        tel: 2*a%10 + 3*a%10 + 4*a%10 + 5*a%10 + 6*a%10 + 7*a%10 + 8*a%10 + 9*a%10 + 2*a%10
+    })
+    if (a % 4 == 0) {
+        rows[rows.length-1].address = rows[rows.length-1].address + rows[rows.length-1].address + rows[rows.length-1].address
+    }
+}
+
+const cols = []
+
+cols.push({
+    dataName: 'id',
+    title: 'Id',
+    desc: 'popis id',
+    width: 60,
+})
+cols.push({
+    dataName: 'firstname',
+    title: 'Jmeno',
+    desc: 'popis jmena',
+    width: 120,
+})
+cols.push({
+    dataName: 'surname',
+    title: 'Prijmeni',
+    desc: 'popis prijmeni',
+    width: 120,
+})
+cols.push({
+    dataName: 'age',
+    title: 'Vek',
+    desc: 'popis vek',
+    width: 160,
+})
+cols.push({
+    dataName: 'address',
+    title: 'Adresa',
+    desc: 'popis adresy',
+    width: 220,
+})
+cols.push({
+    dataName: 'tel',
+    title: 'Telefon',
+    desc: 'popis telefonu',
+    width: 120,
+})
+
+// const data = [
+//     {
+//         id: 1,
+//         node: true,
+//         name: "nazev 1",
+//         expanded: false,
+//         children: [
+//             {
+//                 id: 10,
+//                 name: "pod nazev 1-1",
+//                 expanded: false,
+//                 children: [
+//                     {id: 101, name: "pod nazev 1-1-1"},
+//                     {id: 102, name: "pod nazev 1-1-2"},
+//                 ]
+//             },
+//             {
+//                 id: 11,
+//                 name: "pod nazev 1-2"
+//             },
+//         ]
+//     },
+//     {
+//         id: 2,
+//         node: true,
+//         name: "nazev 2",
+//         expanded: false,
+//         children: [
+//             {id: 21, name: "pod nazev 2-1"},
+//         ]
+//     },
+//     {
+//         id: 3,
+//         node: true,
+//         name: "nazev 3",
+//         expanded: false,
+//         children: [
+//             {id: 32, name: "pod nazev 3-1"},
+//         ]
+//     },
+//     {
+//         id: 4,
+//         name: "nazev 4",
+//         expanded: false,
+//         children: [
+//             {id: 43, name: "pod nazev 4-2"},
+//         ]
+//     },
+// ]
+// const data = [
+//     {id: 1, name: "nazev 1"},
+//     {id: 2, name: "nazev 2"},
+//     {id: 3, name: "nazev 3"},
+//     {id: 4, name: "nazev 4"},
+// ]
+
 const HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -33,6 +147,10 @@ const HomePage = class HomePage extends AbstractReactComponent {
             'trySetFocus',
             'buildRibbon'
         );
+
+        // this.state = {
+        //     data: data
+        // };
     }
 
     componentWillReceiveProps(nextProps) {
@@ -211,8 +329,32 @@ const HomePage = class HomePage extends AbstractReactComponent {
         );
     }
 
+    handleSearchChange = (x) => {
+        console.log(x);
+    }
+    handleChange = (id, obj) => {
+        console.log(id, obj);
+    }
+
     render() {
         const {splitter} = this.props;
+
+        {/*return (*/}
+            {/*<div>*/}
+        //         1111111111
+        //         <Autocomplete
+        //             _customFilter
+        //             tree
+        //             value={this.state.value}
+        //             items={this.state.data}
+        //             onSearchChange={this.handleSearchChange}
+        //             onChange={this.handleChange}
+        //             allowSelectItem={(id, item) => !item.node}
+        //             allowFocusItem={(id, item) => id > 2}
+        //             />
+        //         222222222
+        //     </div>
+        // )
 
         let centerPanel = (
             <div className='splitter-home'>

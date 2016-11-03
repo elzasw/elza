@@ -1,17 +1,96 @@
 const React = require('react')
 import ReactDOM from 'react-dom';
 import {Button, Input, HelpBlock} from 'react-bootstrap';
-const scrollIntoView = require('dom-scroll-into-view')
 import {Icon, AbstractReactComponent} from 'components/index.jsx';
 import {getBootstrapInputComponentInfo} from 'components/form/FormUtils.jsx';
-
+const scrollIntoView = require('dom-scroll-into-view')
 require('./Autocomplete.less')
 let _debugStates = false
+import {propsEquals} from 'components/Utils.jsx'
+
+/**
+ * Komponenta pro text input - defoinována pro překrytí a kontrolu shouldComponentUpdate. Pokud se v autocomplete
+ * dovyplní a označí zbytek textu a input se překreslil, zmizel daný text. Tato komponenta tomuz zabrání - testuje změnu value.
+ */
+const TextInput = class extends AbstractReactComponent {
+    constructor(props) {
+        super(props);
+    }
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsEquals(this.props, nextProps);
+    }
+    render() {
+        return (
+            <input
+                {...this.props}
+            />
+        )
+    }
+}
 
 var keyDownHandlers = {
-    ArrowRight: ()=> {
+    ArrowRight: function (event) {
+        const {tree} = this.props;
+        if (tree) {
+            var {highlightedIndex} = this.state
+
+            if (highlightedIndex != null) {
+                event.preventDefault(); // u stromu nechceme posouvat po inputu, pokud je highlightedIndex = má focus list s položkami a klávesy fungují na rozbalení a zabalení stromu
+                event.stopPropagation();
+            }
+
+            var {expandedIds} = this.state
+            if (highlightedIndex !== null) {
+                const items = this.getFilteredItems();
+                const node = items[highlightedIndex];
+                const id = this.props.getItemId(node);
+                if (node.children && node.children.length > 0) {
+                    if (expandedIds[id]) {  // je rozbalený, přejdeme na potomka
+                        if (highlightedIndex + 1 < items.length) {
+                            this._performAutoCompleteOnKeyUp = true
+                            this.changeState({
+                                highlightedIndex: highlightedIndex + 1,
+                            })
+                        }
+                    } else {    // není rozbalený, rozbalíme
+                        this.expandNode(node, true)
+                    }
+                }
+            }
+        }
     },
-    ArrowLeft: ()=> {
+    ArrowLeft: function (event) {
+        const {tree} = this.props;
+        if (tree) {
+            var {highlightedIndex} = this.state;
+
+            if (highlightedIndex != null) {
+                event.preventDefault(); // u stromu nechceme posouvat po inputu, pokud je highlightedIndex = má focus list s položkami a klávesy fungují na rozbalení a zabalení stromu
+                event.stopPropagation();
+            }
+
+            var {expandedIds} = this.state;
+            if (highlightedIndex !== null) {
+                const items = this.getFilteredItems();
+                const node = items[highlightedIndex];
+                const id = this.props.getItemId(node);
+                if (node.children && node.children.length > 0 && expandedIds[id]) { // je rozbalený, zablíme
+                    this.expandNode(node, false)
+                } else {    // není rozbalený, přejmede na parenta
+                    const currDepth = this.state.itemsDepth[highlightedIndex];
+                    var index = highlightedIndex - 1;
+                    while (index >= 0 && this.state.itemsDepth[index] >= currDepth) {
+                        index--;
+                    }
+                    if (index >= 0) {
+                        this._performAutoCompleteOnKeyUp = true
+                        this.changeState({
+                            highlightedIndex: index,
+                        })
+                    }
+                }
+            }
+        }
     },
     Home: ()=> {
     },
@@ -21,38 +100,49 @@ var keyDownHandlers = {
     },
     Tab: ()=> {
     },
-
     ArrowDown: function (event) {
-        event.preventDefault()
+        event.preventDefault();
+        event.stopPropagation();
 
         if (event.altKey) {
-            this.setState({
+            this.changeState({
                 isOpen: true,
             }, () => {
                 this.props.onSearchChange(this.state.inputStrValue)
             })
         } else {
-            var { highlightedIndex } = this.state
-            var index = (highlightedIndex === null || highlightedIndex === this.getFilteredItems().length - 1) ? 0 : highlightedIndex + 1
-            this._performAutoCompleteOnKeyUp = true
+            var {highlightedIndex} = this.state;
+            const {tree} = this.props;
 
-            this.setState({
+            var index = this.getNextFocusableItem(highlightedIndex, !tree);
+
+            if (index !== null) {   // je pokud je nějaká vybraná položka, zkusíme doplnit autocomplete text
+                this._performAutoCompleteOnKeyUp = true;
+            }
+
+            this.changeState({
                 highlightedIndex: index,
             })
         }
     },
 
     ArrowUp: function (event) {
-        event.preventDefault()
+        event.preventDefault();
+        event.stopPropagation();
 
         if (event.altKey) {
             this.closeMenu();
         } else {
-            var { highlightedIndex } = this.state
-            var index = (highlightedIndex === 0 || highlightedIndex === null) ? this.getFilteredItems().length - 1 : highlightedIndex - 1
-            this._performAutoCompleteOnKeyUp = true
+            var {highlightedIndex} = this.state;
+            const {tree} = this.props;
 
-            this.setState({
+            var index = this.getPrevFocusableItem(highlightedIndex, !tree);
+
+            if (index !== null) {   // je pokud je nějaká vybraná položka, zkusíme doplnit autocomplete text
+                this._performAutoCompleteOnKeyUp = true;
+            }
+
+            this.changeState({
                 highlightedIndex: index,
             })
         }
@@ -76,21 +166,22 @@ var keyDownHandlers = {
                 item = this.getFilteredItems()[this.state.highlightedIndex];
                 id = this.props.getItemId(item);
             }
-            this.setState({
-                inputStrValue: '',
-                value: '',
-                isOpen: false,
-                highlightedIndex: null
-            }, () => {
-                this.props.onChange(id, item)
-            })
-
+            if (this.props.allowSelectItem(id, item)) {
+                this.changeState({
+                    inputStrValue: '',
+                    value: '',
+                    isOpen: false,
+                    highlightedIndex: null
+                }, () => {
+                    this.props.onChange(id, item)
+                })
+            }
         } else {
             if (this.state.highlightedIndex == null) {
                 event.stopPropagation();
                 event.preventDefault();
                 // hit enter after focus but before typing anything so no autocomplete attempt yet
-                this.setState({
+                this.changeState({
                     isOpen: false,
                     inputStrValue: '',
                     value: null,
@@ -103,19 +194,23 @@ var keyDownHandlers = {
                 event.preventDefault();
 
                 var item = this.getFilteredItems()[this.state.highlightedIndex]
-                this.setState({
-                    inputStrValue: this.props.getItemName(item),
-                    value: item,
-                    isOpen: false,
-                    highlightedIndex: null
-                }, () => {
-                    //ReactDOM.findDOMNode(this.refs.input).focus() // TODO: file issue
-                    ReactDOM.findDOMNode(this.refs.input).setSelectionRange(
-                        this.state.inputStrValue.length,
-                        this.state.inputStrValue.length
-                    )
-                    this.props.onChange(this.props.getItemId(item), item)
-                })
+
+                const id = this.props.getItemId(item);
+                if (this.props.allowSelectItem(id, item)) {
+                    this.changeState({
+                        inputStrValue: this.props.getItemName(item),
+                        value: item,
+                        isOpen: false,
+                        highlightedIndex: null
+                    }, () => {
+                        //ReactDOM.findDOMNode(this.refs.input).focus() // TODO: file issue
+                        ReactDOM.findDOMNode(this.refs.input).setSelectionRange(
+                            this.state.inputStrValue.length,
+                            this.state.inputStrValue.length
+                        )
+                        this.props.onChange(id, item)
+                    })
+                }
             }
         }
     },
@@ -153,6 +248,122 @@ export default class Autocomplete extends AbstractReactComponent {
         }
     }
 
+    /**
+     * Získání indexu další možné položky pro focus.
+     * @param index aktuální index
+     * @param loop pokud je true, focus na položkách cykluje
+     * @return další možná položka nebo index, pokud jiná není
+     */
+    getNextFocusableItem = (index, loop) => {
+        const {allowFocusItem, getItemId} = this.props;
+        const items = this.getFilteredItems();
+        const start = index !== null ? index : 0;
+        var ii = index != null ? start + 1 : start;
+        if (ii >= items.length) {   // na konci přejdeme na začátek
+            if (!loop) return null;
+
+            ii = 0;
+        }
+        while (true) {
+            var item = items[ii];
+            if (allowFocusItem(getItemId(item), item)) {
+                return ii;
+            }
+            ii++;
+
+            if (ii >= items.length) {   // na konci přejdeme na začátek
+                if (!loop) return null;
+
+                ii = 0;
+            }
+            if (ii === start) { // udělali jsme celé kolečko a nenalezli položku, na kterou se může dát další focus
+                return index;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Získání indexu předchozí možné položky pro focus.
+     * @param index aktuální index
+     * @param loop pokud je true, focus na položkách cykluje
+     * @return další možná položka nebo index, pokud jiná není
+     */
+    getPrevFocusableItem = (index, loop) => {
+        const {allowFocusItem, getItemId} = this.props;
+        const items = this.getFilteredItems();
+        const start = index !== null ? index : items.length - 1;
+        var ii = index !== null ? index - 1 : start;
+        if (ii < 0) {   // na konci přejdeme na začátek
+            if (!loop) return null;
+
+            ii = items.length - 1;
+        }
+        while (true) {
+            var item = items[ii];
+            if (allowFocusItem(getItemId(item), item)) {
+                return ii;
+            }
+            ii--;
+
+            if (ii < 0) {   // na konci přejdeme na začátek
+                if (!loop) return null;
+
+                ii = items.length - 1;
+            }
+            if (ii === start) { // udělali jsme celé kolečko a nenalezli položku, na kterou se může dát další focus
+                return index;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Rozbalení nebo zabalení položky ve stromu.
+     * @param node položka
+     * @param expand true, pokud se má rozbalit
+     */
+    expandNode = (node, expand) => {
+        const {expandedIds, inputStrValue, shouldItemRender} = this.state;
+        const {items, customFilter, tree, getItemId, allowSelectItem, allowFocusItem} = this.props;
+        const id = this.props.getItemId(node);
+        let newExpandedIds;
+
+        if (expand) {
+            newExpandedIds = {...expandedIds, [id]: true};
+        } else {
+            newExpandedIds = {...expandedIds};
+            delete newExpandedIds[id];
+        }
+
+        const newItemsInfo = this.getNewFilteredItems(items, customFilter, shouldItemRender, inputStrValue, tree, newExpandedIds, getItemId, allowSelectItem, allowFocusItem, false);
+
+        this.changeState({
+            expandedIds: newExpandedIds,
+            items: newItemsInfo.items,
+            itemsDepth: newItemsInfo.itemsDepth,
+        })
+
+    }
+
+    /**
+     * Metoda pro změnu stavu - měla by se volat místo this.setState, protože kontroluje, zda se mají položky přefiltrovat.
+     * @param nextState
+     * @param callback
+     */
+    changeState = (nextState, callback = null) => {
+        if (typeof nextState.inputStrValue !== 'undefined' && nextState.inputStrValue !== this.state.inputStrValue) {   // chce změnit vstupní řetězec, musíme přefiltrovat
+            const newItemsInfo = this.getNewFilteredItems(this.props.items, this.props.customFilter, this.state.shouldItemRender, nextState.inputStrValue, this.props.tree, this.state.expandedIds, this.props.getItemId, this.props.allowSelectItem, this.props.allowFocusItem, true);
+            nextState.items = newItemsInfo.items;
+            nextState.itemsDepth = newItemsInfo.itemsDepth;
+            if (!this.props.customFilter) {
+                nextState.expandedIds = newItemsInfo.newExpandedIds;
+            }
+        }
+
+        this.setState(nextState, callback);
+    }
+
     focus() {
         ReactDOM.findDOMNode(this.refs.input).focus()
     }
@@ -169,7 +380,9 @@ export default class Autocomplete extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         this._performAutoCompleteOnUpdate = true;
-        this.setState(this.getStateFromProps(this.props, nextProps, this.state));
+        const newState = this.getStateFromProps(this.props, nextProps, this.state);
+        // console.log("SSSS", this.state, newState)
+        this.setState(newState);
     }
 
     getStateFromProps(props, nextProps, state) {
@@ -202,6 +415,28 @@ export default class Autocomplete extends AbstractReactComponent {
             value: nextProps.value,
             inputStrValue: inputStrValue,
         }
+
+        // ---
+        // Sesbírání vstupních expanded, provedení filtru položek, případně u stromu na flat a získání depth položek ve stromu
+        if ((props.items !== nextProps.items) || (prevId !== newId) || (prevId === newId && result.inputStrValue !== state.inputStrValue)) {
+            // console.log(999999999, this.state, result, props, nextProps)
+            // console.log(999999999, result.inputStrValue, props.items !== nextProps.items, prevId !== newId, result.inputStrValue !== state.inputStrValue)
+            const newItemsInfo = this.getNewFilteredItems(nextProps.items, nextProps.customFilter, result.shouldItemRender, result.inputStrValue, nextProps.tree, null, nextProps.getItemId, nextProps.allowSelectItem, nextProps.allowFocusItem, true);
+            result.items = newItemsInfo.items;
+            result.itemsDepth = newItemsInfo.itemsDepth;
+            if (nextProps.customFilter) {
+                const expandedIds = {}; // mapa id na true, pokud je položky rozbalená
+                newItemsInfo.items.forEach(item => {  // vždy se inicializuje při změně vstupu, ten říká, co je rozbalené a co ne
+                    if (item.expanded) {
+                        expandedIds[nextProps.getItemId(item)] = true;
+                    }
+                })
+                result.expandedIds = expandedIds;
+            } else {
+                result.expandedIds = newItemsInfo.newExpandedIds;
+            }
+        }
+        // ---
 
         _debugStates && console.log("getStateFromProps", result);
 
@@ -251,7 +486,12 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     renderMenuContainer(items, value, style) {
+        const {highlightedIndex} = this.state;
+
         var cls = 'autocomplete-menu-container';
+        if (highlightedIndex != null) {
+            cls += " active";
+        }
 
         var header;
         if (this.props.header) {
@@ -319,7 +559,7 @@ export default class Autocomplete extends AbstractReactComponent {
         if (keyDownHandlers[event.key]) {
             keyDownHandlers[event.key].call(this, event)
         } else {
-            this.setState({
+            this.changeState({
                 highlightedIndex: null,
                 isOpen: true
             })
@@ -328,7 +568,7 @@ export default class Autocomplete extends AbstractReactComponent {
 
     handleChange(event) {
         this._performAutoCompleteOnKeyUp = true
-        this.setState({
+        this.changeState({
             inputStrValue: event.target.value,
         }, () => {
             this.props.onSearchChange(this.state.inputStrValue)
@@ -346,17 +586,140 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     getFilteredItems() {
-        let items = this.props.items
+        return this.state.items;
+    }
 
-        if (!this.props.customFilter) {
-            if (this.state.shouldItemRender) {
-                items = items.filter((item) => (
-                    this.state.shouldItemRender(item, this.state.inputStrValue)
-                ))
+    /**
+     * Sestavuje strom pro daný node a jeho podstrom.
+     * @param node node
+     * @param lowerFilterText filtr
+     * @param newExpandedIds mapa id na true, do kterého se přidají aktuálně rozbalené položky - ty co mají pod sebou ty, co odpovídají filtru
+     * @param getItemId funkce pro načtení id z node
+     * @param shouldItemRender funkce pro filtr
+     * @param allowSelectItem funkce, která vrací true, pokud lze položku vybrat
+     * @param allowFocusItem funkce, která vrací true, pokud lze na dát focus - ostatní jsou např. informační atp.
+     * @return {*}
+     */
+    getFilteredTreeNode = (node, lowerFilterText, newExpandedIds, getItemId, shouldItemRender, allowSelectItem, allowFocusItem) => {
+        // Podřízené nody
+        const nodeChildren = [];
+        node.children && node.children.forEach(subNode => {
+            const newSubNode = this.getFilteredTreeNode(subNode, lowerFilterText, newExpandedIds, getItemId, shouldItemRender, allowSelectItem, allowFocusItem);
+            if (newSubNode) {
+                nodeChildren.push(newSubNode);
+            }
+        });
+
+        if (nodeChildren.length === 0 && nodeChildren.length === 0) {   // nemá potomky, chceme ho jen v případě, že je sám slectable a vyhovuje hledanému výrazu nebo že je allowFocusItem na false - ty dáváme vždy
+            const id = getItemId(node);
+            const selectable = allowSelectItem(id, node);
+            const focusable = allowFocusItem(id, node);
+            const show = shouldItemRender(node, lowerFilterText || "");
+            if (!focusable || ((selectable || focusable) && show)) {
+                // Pokud potomci neodpovídají hledanému výrazu, můžeme je všechny přidat - hledám podle nadřazeného node a můžu se podívat na potomky - pokud to nebude někde třeba, dáme na konfiguraci
+                return {
+                    ...node,
+                }
+
+                // Jen node, bez přidání potomků
+                // return {
+                //     ...node,
+                //     children: null,
+                // }
+            } else {
+                return null;
             }
         }
 
-        return items
+        // Má potomky, bude vždy rozbalený, pokud je nastaven nějaký filtr - má položky, které filtru odpovídají
+        if (lowerFilterText) {
+            newExpandedIds[getItemId(node)] = true;
+        }
+
+        return {
+            ...node,
+            expanded: lowerFilterText ? true : false,
+            children: [...nodeChildren]
+        };
+    }
+
+    getFilteredTree = (items, expandedIds, getItemId, filterText, newExpandedIds, shouldItemRender, allowSelectItem, allowFocusItem) => {
+        const result = [];
+
+        const lowerFilterText = filterText ? filterText.toLocaleLowerCase() : filterText;
+
+        items.forEach(node => {
+            var newNode = this.getFilteredTreeNode(node, lowerFilterText, newExpandedIds, getItemId, shouldItemRender, allowSelectItem, allowFocusItem);
+            if (newNode) {
+                result.push(newNode);
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Provede novou filtraci položek, převede případný stromu na plochý seznam a načte hloubku jednotlivých položek ve stromu.
+     * Pokud je nastaven customFilter, neprovádí se filtrování, jinak se provádí a k tomu se využívá shouldItemRender a inputStrValue.
+     * @param items seznam položek
+     * @param customFilter jsou položky filtrovány externě?
+     * @param shouldItemRender metoda, která vrací informaci, zda se má položka renderovat v případě ne customFilter
+     * @param inputStrValue zadaný vyhledávací výraz
+     * @param tree jedná se stromovou komponentu?
+     * @param expandedIds mapa aktuálně rozbalených id
+     * @param getItemId metoda pro načtení id z položky
+     * @param allowSelectItem funkce, která vrací true, pokud lze položku vybrat
+     * @param allowFocusItem funkce, která vrací true, pokud lze položku dát focus
+     * @param modifyExpanded pokud je true, bude se brát expanded na základě hledání ve stromu, jinak se použije ten předaný jako expandedIds
+     * @return v případě stromu vrací: { items: [], itemsDepth: [], newExpandedIds: {}}, jinak vrací { items: [] }
+     */
+    getNewFilteredItems = (items, customFilter, shouldItemRender, inputStrValue, tree, expandedIds, getItemId, allowSelectItem, allowFocusItem, modifyExpanded) => {
+        // Sploštění stromu, pokud je potřeba a jeho filtrování, pokud není customFilter
+        var result;
+        if (tree) {
+             // Filtrování stromu, pokud není nastaven customFilter
+            let filteredItems; 
+            let newExpandedIds;
+            if (!customFilter && shouldItemRender) {
+                newExpandedIds = {};
+                filteredItems = this.getFilteredTree(items, expandedIds, getItemId, inputStrValue, newExpandedIds, shouldItemRender, allowSelectItem, allowFocusItem);
+                // filteredItems = items;
+            } else {
+                filteredItems = items;
+            }
+
+            let flatTree;
+            if (!customFilter && modifyExpanded) {
+                flatTree = this.getFlatTree(filteredItems, newExpandedIds, getItemId);
+            } else {
+                flatTree = this.getFlatTree(filteredItems, expandedIds, getItemId);
+            }
+            result = {
+                items: flatTree.list,
+                itemsDepth: flatTree.depthList,
+                newExpandedIds: newExpandedIds
+            }
+        } else {
+            result = {
+                items
+            };
+            
+            // Jendoduchý filtr - pouze v případě plochého seznamu - ne stromu, strom se filtruje jinak 
+            if (!customFilter && shouldItemRender) {
+                var filteredItems = [];
+                var filteredItemsDepth = [];
+                result.items.forEach((item, index) => {
+                    if (shouldItemRender(item, inputStrValue || "")) {
+                        filteredItems.push(item);
+                        tree && filteredItemsDepth.push(result.itemsDepth[index]);
+                    }
+                });
+                result.items = filteredItems;
+                result.itemsDepth = filteredItemsDepth;
+            }
+        }
+
+        return result
     }
 
     maybeAutoCompleteText() {
@@ -390,7 +753,7 @@ export default class Autocomplete extends AbstractReactComponent {
                 }
             }
             if (highlightedIndex === null) {
-                this.setState({highlightedIndex: 0}, setSelection)
+                this.changeState({highlightedIndex: 0}, setSelection)
             } else {
                 setSelection()
             }
@@ -404,7 +767,7 @@ export default class Autocomplete extends AbstractReactComponent {
         var marginBottom = parseInt(computedStyle.marginBottom, 10)
         var marginLeft = parseInt(computedStyle.marginLeft, 10)
         var marginRight = parseInt(computedStyle.marginRight, 10)
-        this.setState({
+        this.changeState({
             menuTop: rect.bottom + marginBottom,
             menuLeft: rect.left + marginLeft,
             menuWidth: rect.width + marginLeft + marginRight
@@ -412,30 +775,36 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     highlightItemFromMouse(index) {
-        this.setState({highlightedIndex: index})
+        this.changeState({highlightedIndex: index})
     }
 
     selectItemFromMouse(item) {
-        if (this.props.tags) {
-            this.setState({
-                inputStrValue: '',
-                value: '',
-                isOpen: false,
-                highlightedIndex: null
-            }, () => {
-                this.props.onChange(this.props.getItemId(item), item);
-            })
-        } else {
-            this.setState({
-                inputStrValue: this.props.getItemName(item),
-                value: item,
-                isOpen: false,
-                highlightedIndex: null
-            }, () => {
-                this.props.onChange(this.props.getItemId(item), item)
-                ReactDOM.findDOMNode(this.refs.input).focus()
-                this.setIgnoreBlur(false)
-            })
+        const {getItemId, allowSelectItem, allowFocusItem} = this.props;
+        const id = getItemId(item);
+        const allowSelect = allowSelectItem(id, item);
+        const allowFocus = allowFocusItem(id, item);
+        if (allowSelect && allowFocus) {
+            if (this.props.tags) {
+                this.changeState({
+                    inputStrValue: '',
+                    value: '',
+                    isOpen: false,
+                    highlightedIndex: null
+                }, () => {
+                    this.props.onChange(this.props.getItemId(item), item);
+                })
+            } else {
+                this.changeState({
+                    inputStrValue: this.props.getItemName(item),
+                    value: item,
+                    isOpen: false,
+                    highlightedIndex: null
+                }, () => {
+                    this.props.onChange(this.props.getItemId(item), item)
+                    ReactDOM.findDOMNode(this.refs.input).focus()
+                    this.setIgnoreBlur(false)
+                })
+            }
         }
     }
 
@@ -443,18 +812,63 @@ export default class Autocomplete extends AbstractReactComponent {
         this._ignoreBlur = ignore
     }
 
+    getFlatTree = (rows, expandedIds, getItemId) => {
+        var prop = {
+            index: 0,
+            list: [],
+            depthList: [],
+        };
+        rows.forEach(node => this._getFlatTree(node, prop, expandedIds, getItemId, 0));
+        return prop;
+    }
+
+    _getFlatTree = (node, prop, expandedIds, getItemId, depth) => {
+        prop.list.push(node);
+        prop.depthList.push(depth);
+        if (expandedIds ? expandedIds[getItemId(node)] : node.expanded) {
+            node.children && node.children.forEach(ch => this._getFlatTree(ch, prop, expandedIds, getItemId, depth + 1))
+        }
+    }
+
+    handleExpandCollapse = (node, index, e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const {expandedIds} = this.state;
+        const {getItemId} = this.props;
+
+        const id = getItemId(node);
+        const expanded = expandedIds[id];
+
+        this.expandNode(node, expanded ? false : true);
+    }
+
     renderMenu() {
+        const {tree, allowSelectItem, allowFocusItem} = this.props;
+
         var items = this.getFilteredItems().map((item, index) => {
+            const id = this.props.getItemId(item);
+            const allowSelect = allowSelectItem(id, item);
+            const allowFocus = allowFocusItem(id, item);
+            const treeInfo = tree ? {
+                expanded: this.state.expandedIds[id],
+                depth: this.state.itemsDepth[index],
+                onExpandCollapse: (e) => this.handleExpandCollapse(item, index, e)
+            } : null;
             var element = this.props.renderItem(
                 item,
                 this.state.highlightedIndex === index,
-                this.state.value && this.props.getItemId(this.state.value) === this.props.getItemId(item)
-            )
+                this.state.value && this.props.getItemId(this.state.value) === id,
+                allowSelect,
+                allowFocus,
+                treeInfo
+            );
             return React.cloneElement(element, {
                 onMouseDown: () => this.setIgnoreBlur(true),
                 onMouseEnter: () => this.highlightItemFromMouse(index),
                 onClick: () => this.selectItemFromMouse(item),
                 ref: `item-${index}`,
+                key: `item-${index}`,
             })
         })
         var style = {
@@ -470,7 +884,7 @@ export default class Autocomplete extends AbstractReactComponent {
         _debugStates && console.log('...handleInputBlur', 'state.hasFocus', this.state.hasFocus, '_ignoreBlur', this._ignoreBlur);
 
         if (!this._ignoreBlur) {
-            this.setState({hasFocus: false})
+            this.changeState({hasFocus: false})
             this.closeMenu(true);
             //this.props.onBlur && this.props.onBlur();
         } else {
@@ -479,14 +893,6 @@ export default class Autocomplete extends AbstractReactComponent {
 
 
         return true;
-        if (this._ignoreBlur) {
-            return
-        }
-        this.setState({
-            isOpen: false,
-            highlightedIndex: null,
-            inputStrValue: this.props.getItemName(this.state.value)
-        })
     }
 
     handleInputFocus() {
@@ -496,7 +902,7 @@ export default class Autocomplete extends AbstractReactComponent {
             return;
         }
 
-        this.setState({hasFocus: true})
+        this.changeState({hasFocus: true})
 
         if (!this._ignoreBlur) {
             this.props.onFocus && this.props.onFocus();
@@ -507,7 +913,7 @@ export default class Autocomplete extends AbstractReactComponent {
         if (this._ignoreBlur) {
             return
         }
-        this.setState({isOpen: true})
+        this.changeState({isOpen: true})
     }
 
     openMenu() {
@@ -515,7 +921,7 @@ export default class Autocomplete extends AbstractReactComponent {
             return
         }
 
-        this.setState({isOpen: true}, () => {
+        this.changeState({isOpen: true}, () => {
             this.props.onSearchChange(this.state.inputStrValue)
             ReactDOM.findDOMNode(this.refs.input).select()
         })
@@ -536,41 +942,17 @@ export default class Autocomplete extends AbstractReactComponent {
             inputStrValue: this.props.getItemName(this.state.value)
         }
         _debugStates && console.log("#### closeMenu", "prev state", this.state, "props", this.props, "state change", addState);
-        this.setState(addState, () => {
+        this.changeState(addState, () => {
             //ReactDOM.findDOMNode(this.refs.input).select()
             if (callBlurAfterSetState) {
                 this.props.onBlur && this.props.onBlur(this.state.value);
             }
         })
-
-        /// Konec
-        return
-
-        /*
-        if (!this.state.isOpen) {
-            if (callBlurAfterSetState) {
-                this.props.onBlur && this.props.onBlur(this.state.value);
-            }
-            return;
-        }
-
-        var addState = {
-            isOpen: false,
-            highlightedIndex: null,
-            inputStrValue: this.props.getItemName(this.state.value)
-        }
-        _debugStates && console.log("#### closeMenu", "prev state", this.state, "props", this.props, "state change", addState);
-        this.setState(addState, () => {
-            //ReactDOM.findDOMNode(this.refs.input).select()
-            if (callBlurAfterSetState) {
-                this.props.onBlur && this.props.onBlur(this.state.value);
-            }
-        })*/
     }
 
     handleInputClick() {
         /*if (this.state.isOpen === false) {
-         this.setState({ isOpen: true })
+         this.changeState({ isOpen: true })
          }*/
     }
 
@@ -599,8 +981,9 @@ export default class Autocomplete extends AbstractReactComponent {
                 <div className='autocomplete-control-box'>
                     <div className={cls}>
                         {this.props.label && <label className='control-label'>{this.props.label}</label>}
-                        <div className={'autocomplete-input-container form-group' + (hasError ? " has-error" : "")}>
-                            <input
+                        <div key="inputWrapper" className={'autocomplete-input-container form-group' + (hasError ? " has-error" : "")}>
+                            <TextInput
+                                key="input"
                                 className='form-control'
                                 type='text'
                                 {...inlineProps}
@@ -612,15 +995,15 @@ export default class Autocomplete extends AbstractReactComponent {
                                 ref="input"
                                 onFocus={this.handleInputFocus}
                                 onBlur={this.handleInputBlur}
-                                onChange={(event) => this.handleChange(event)}
-                                onKeyDown={(event) => this.handleKeyDown(event)}
-                                onKeyUp={(event) => this.handleKeyUp(event)}
+                                onChange={this.handleChange}
+                                onKeyDown={this.handleKeyDown}
+                                onKeyUp={this.handleKeyUp}
                                 onClick={this.handleInputClick}
                                 value={this.state.inputStrValue}
                             />
                             <div disabled={this.props.disabled} ref='openClose'
-                                 className={this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed'}
-                                 onClick={()=>{this.state.isOpen ? this.closeMenu() : this.openMenu()}}><Icon
+                                 className={(this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed') + (this.props.disabled ? " disabled" : "")}
+                                 onClick={()=>{if (!this.props.disabled) {this.state.isOpen ? this.closeMenu() : this.openMenu()}}}><Icon
                                 glyph={glyph}/></div>
                             {this.props.actions}
                             {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
@@ -638,13 +1021,19 @@ export default class Autocomplete extends AbstractReactComponent {
 
 Autocomplete.defaultProps = {
     inputProps: {},
-    onSearchChange () {
+    onSearchChange (text) {
     },
     onChange (value, item) {
     },
+    allowSelectItem (id, item) { // vrati true, když může být daná položka vybrána
+        return true;
+    },
+    allowFocusItem (id, item) { // vrati true, když může na danou položku najet klávesnicí nebo myší a může být focusovatelná
+        return true;
+    },
     getItemId: (item) => item ? item.id : null,
     getItemName: (item) => item ? item.name : '',
-    renderItem: (item, isHighlighted, isSelected) => {
+    renderItem: (item, isHighlighted, isSelected, allowSelect = true, allowFocus = true, treeInfo = null /*{expanded, depth, onExpandCollapse}*/) => {
         var cls = 'item';
         if (isHighlighted) {
             cls += ' focus'
@@ -652,24 +1041,57 @@ Autocomplete.defaultProps = {
         if (isSelected) {
             cls += ' active'
         }
+        if (!allowSelect) {
+            cls += ' not-selectable';
+        }
+        if (!allowFocus) {
+            cls += ' not-focusable';
+        }
+        if (treeInfo !== null) {
+            cls += " depth-" + treeInfo.depth;
+        }
+        if (item.className) {
+            cls += " " + item.className;
+        }
 
         var itemStr;
         if (item.name && item.name.length > 0) {
-            itemStr = item.name;
+            itemStr = <span className="item-text">{item.name}</span>;
         } else {
-            itemStr = <div>&nbsp;</div>;
+            itemStr = <span className="item-text">&nbsp;</span>;
+        }
+
+        let treeTogle;
+        if (treeInfo) {
+            if (item.children && item.children.length > 0) {
+                treeTogle = (
+                    <div
+                        className={`node-expand-collapse ${treeInfo.expanded ? 'expanded' : 'collapsed'}`}
+                        onClick={treeInfo.onExpandCollapse}
+                    >
+                        <Icon glyph={treeInfo.expanded ? "fa-minus-square-o" : "fa-plus-square-o"}/>
+                    </div>
+                )
+            } else {
+                treeTogle = <div className={`node-expand-collapse`}>
+                </div>
+            }
         }
 
         return (
             <div
                 className={cls}
                 key={item.id}
-            >{itemStr}</div>
+            >
+                {treeTogle}
+                {itemStr}
+            </div>
         )
     },
     inline: false,
     error: null,
     touched: false,
+    tree: false,
 }
 Autocomplete.propTypes = {
     initialValue: React.PropTypes.any,
@@ -686,4 +1108,7 @@ Autocomplete.propTypes = {
     inline: React.PropTypes.bool,
     touched: React.PropTypes.bool,
     error: React.PropTypes.string,
+    allowSelectItem: React.PropTypes.func,  // vrací true, pokud je možné řádek vybrat jako hodnotu
+    allowFocusItem: React.PropTypes.func,   // vrací true, pokud se na řádek d8 najet focusem, např. přes klávesnici
+    tree: React.PropTypes.bool, // jedná se o stromovou reprezentaci dat?
 }

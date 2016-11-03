@@ -170,13 +170,17 @@ class ArrOutputDetail extends AbstractReactComponent {
             fund, versionId, packets, packetTypes, descItemTypes,
             calendarTypes, rulDataTypes, closed, readMode} = this.props;
 
+        console.log("*********** SELECT OUTPUT ***********");
+        console.log(fundOutputDetail);
+        if (!fundOutputDetail.fetched) {
+            return <div className="unselected-msg">
+                <div className="title">{i18n('arr.output.noSelection.title')}</div>
+                <div className="msg-text">{i18n('arr.output.noSelection.message')}</div>
+            </div>;
+        }
+            
         if (fundOutputDetail.id === null) {
-            return <div className='arr-output-detail-container'>
-                        <div className="unselected-msg">
-                            <div className="title">{i18n('arr.output.noSelection.title')}</div>
-                            <div className="msg-text">{i18n('arr.output.noSelection.message')}</div>
-                        </div>
-                    </div>
+            return <div className='arr-output-detail-container'></div>
         }
 
         if (!fundOutputDetail.fetched) {
@@ -218,8 +222,8 @@ class ArrOutputDetail extends AbstractReactComponent {
                     </div>}
                 </div>
 
-                <div className="">
-                    <h2>{i18n("arr.output.title.nodes")}</h2>
+                <div>
+                    <label className="control-label">{i18n("arr.output.title.nodes")}</label>
                     <FundNodesList
                         nodes={fundOutputDetail.outputDefinition.nodes}
                         onDeleteNode={this.handleRemoveNode}
@@ -227,7 +231,7 @@ class ArrOutputDetail extends AbstractReactComponent {
                         readOnly={closed || readMode || !this.isEditable()}
                     />
                 </div>
-
+                <hr className="small"/>
                 {form}
             </div>
         </Shortcuts>;

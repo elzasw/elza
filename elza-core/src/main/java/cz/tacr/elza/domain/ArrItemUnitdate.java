@@ -1,6 +1,8 @@
 package cz.tacr.elza.domain;
 
 
+import java.util.Objects;
+
 /**
  * Rozšiřuje atribut archivního popisu o jeho hodnotu.
  *
@@ -126,5 +128,26 @@ public class ArrItemUnitdate extends ArrItemData implements cz.tacr.elza.api.Arr
 
     public Long getNormalizedFrom() {
         return normalizedFrom;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ArrItemUnitdate that = (ArrItemUnitdate) o;
+        return Objects.equals(valueFrom, that.valueFrom) &&
+                Objects.equals(valueFromEstimated, that.valueFromEstimated) &&
+                Objects.equals(valueTo, that.valueTo) &&
+                Objects.equals(valueToEstimated, that.valueToEstimated) &&
+                Objects.equals(calendarType, that.calendarType) &&
+                Objects.equals(format, that.format) &&
+                Objects.equals(normalizedTo, that.normalizedTo) &&
+                Objects.equals(normalizedFrom, that.normalizedFrom);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), valueFrom, valueFromEstimated, valueTo, valueToEstimated, calendarType, format, normalizedTo, normalizedFrom);
     }
 }

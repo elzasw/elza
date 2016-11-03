@@ -46,7 +46,12 @@ public interface UISettings<U extends UsrUser> {
         /**
          * Vazba na archivní fond.
          */
-        FUND
+        FUND,
+
+        /**
+         * Vazba na typ atributu.
+         */
+        ITEM_TYPE;
 
     }
 
@@ -57,7 +62,12 @@ public interface UISettings<U extends UsrUser> {
 
         FUND_READ_MODE(EntityType.FUND),
         FUND_RIGHT_PANEL(EntityType.FUND),
-        FUND_CENTER_PANEL(EntityType.FUND);
+        FUND_CENTER_PANEL(EntityType.FUND),
+
+        /**
+         * oblíbené specifikace u typu atributu
+         */
+        FAVORITE_ITEM_SPECS(EntityType.ITEM_TYPE);
 
         /**
          * Typ oprávnění

@@ -221,13 +221,17 @@ export default function subNodeForm(state = initialState, action = {}) {
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
             var refType = state.refTypesMap[loc.descItemType.id]
-            
-            loc.descItem.descItemSpecId = action.value;
-            loc.descItem.touched = true;
-            loc.descItem.error = validate(loc.descItem, refType);
 
-            state.formData = {...state.formData};
-            return {...state};
+            if (loc.descItem.descItemSpecId !== action.value) {
+                loc.descItem.descItemSpecId = action.value;
+                loc.descItem.touched = true;
+                loc.descItem.error = validate(loc.descItem, refType);
+
+                state.formData = {...state.formData};
+                return {...state};
+            } else {
+                return state;
+            }
         case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
             loc.descItem.hasFocus = false;
             loc.descItemType.hasFocus = false;

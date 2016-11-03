@@ -227,8 +227,7 @@ public class MultipleBulkAction extends BulkAction {
     @Override
     public String toString() {
         return "MultipleBulkAction{" +
-                "change=" + change +
-                ", version=" + fundVersion +
+                "version=" + fundVersion +
                 '}';
     }
 }
