@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import cz.tacr.elza.repository.ItemSettingsRepository;
+import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -189,6 +190,9 @@ public class ArrangementService {
 
     @Autowired
     private OutputResultRepository outputResultRepository;
+
+    @Autowired
+    private OutputFileRepository outputFileRepository;
 
     @Autowired
     private ItemSettingsRepository itemSettingsRepository;
@@ -521,6 +525,7 @@ public class ArrangementService {
                 outputItemRepository.deleteByOutputDefinition(outputDefinition);
                 faBulkActionRepository.deleteByOutputDefinition(outputDefinition);
                 itemSettingsRepository.deleteByOutputDefinition(outputDefinition);
+                outputFileRepository.deleteByOutputDefinition(outputDefinition);
                 outputResultRepository.deleteByOutputDefinition(outputDefinition);
                 outputDefinitionRepository.delete(outputDefinition);
             }
@@ -538,10 +543,18 @@ public class ArrangementService {
 
 
         policyService.deleteFundVisiblePolicies(fund);
-
+        userService.deleteByFund(fund);
 
         deleteFundLevels(rootLevel);
         changeRepository.deleteByPrimaryNode(node);
+
+        nodeRegisterRepository.findByNode(node).forEach(relation -> {
+            nodeRegisterRepository.delete(relation);
+        });
+
+        nodeConformityInfoRepository.findByNode(node).forEach(conformityInfo -> {
+            deleteConformityInfo(conformityInfo);
+        });
         nodeRepository.delete(node);
 
         dmsService.deleteFilesByFund(fund);
