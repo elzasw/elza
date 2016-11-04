@@ -16,10 +16,13 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.repository.ComplementTypeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -215,6 +218,9 @@ public class ClientFactoryVO {
     @Autowired
     private BulkActionNodeRepository bulkActionNodeRepository;
 
+    @Autowired
+    private ComplementTypeRepository complementTypeRepository;
+
     /**
      * Vytvoří objekt informací o přihlášeném uživateli.
      * @param userDetail detail objekt
@@ -278,6 +284,13 @@ public class ClientFactoryVO {
         return mapper.map(template, RulTemplateVO.class);
     }
 
+    private void nameBuilderHelper(StringBuilder a, String b) {
+        if (b != null) {
+            a.append(b);
+            a.append(" ");
+        }
+    }
+
     /**
      * Vytvoří detailní objekt osoby. Načte všechna navázaná data.
      *
@@ -291,9 +304,13 @@ public class ClientFactoryVO {
 
 
         //partyNames
-        result.setPartyNames(createList(partyNameRepository.findByParty(party), ParPartyNameVO.class, (n) ->
-                        createParPartyNameDetail(n)
-        ));
+        result.setPartyNames(createList(partyNameRepository.findByParty(party), ParPartyNameVO.class, this::createParPartyNameDetail));
+
+        List<ParPartyNameVO> collect = result.getPartyNames().stream().filter(ParPartyNameVO::isPrefferedName).collect(Collectors.toList());
+        ParPartyNameVO prefferedName = null;
+        if (collect != null && !collect.isEmpty()) {
+            prefferedName = collect.get(0);
+        }
 
         result.getPartyNames().sort((a, b) -> {
                     if (a.isPrefferedName()) {
@@ -307,6 +324,42 @@ public class ClientFactoryVO {
                 }
         );
 
+        if (prefferedName != null) {
+            List<ParComplementType> all = complementTypeRepository.findAll();
+            Map<Integer, ParComplementType> map = all.stream().collect(Collectors.toMap(ParComplementType::getComplementTypeId, i -> i));
+
+            StringBuilder nameBuilder = new StringBuilder();
+            nameBuilderHelper(nameBuilder, prefferedName.getDegreeBefore());
+            nameBuilderHelper(nameBuilder, prefferedName.getMainPart());
+            nameBuilderHelper(nameBuilder, prefferedName.getOtherPart());
+
+            String roman = null, geoAddon = null, addon = null;
+
+            for (ParPartyNameComplementVO b : prefferedName.getPartyNameComplements()) {
+                ParComplementType type = map.get(b.getComplementTypeId());
+                if (type != null) {
+                    if (type.getCode().equals("2")) {
+                        addon = b.getComplement();
+                    } else if (type.getCode().equals("3")) {
+                        roman = b.getComplement();
+                    } else if (type.getCode().equals("4")) {
+                        geoAddon = b.getComplement();
+                    }
+                }
+            }
+
+            nameBuilderHelper(nameBuilder, roman);
+            nameBuilderHelper(nameBuilder, geoAddon);
+            nameBuilderHelper(nameBuilder, addon);
+
+            if (prefferedName.getDegreeAfter() != null) {
+                nameBuilder.deleteCharAt(nameBuilder.length()-1);
+                nameBuilder.append(", ");
+                nameBuilder.append(prefferedName.getDegreeAfter());
+            }
+
+            result.setName(nameBuilder.toString());
+        }
 
         result.setRelations(createPartyRelations(party));
         result.setCreators(createPartyList(partyRepository.findCreatorsByParty(party)));

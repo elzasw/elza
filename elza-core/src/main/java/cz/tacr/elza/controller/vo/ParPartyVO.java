@@ -21,6 +21,11 @@ public class ParPartyVO {
     private Integer partyId;
 
     /**
+     * Složený název osoby
+     */
+    private String name;
+
+    /**
      * Typ osoby.
      */
     private ParPartyTypeVO partyType;
@@ -72,6 +77,14 @@ public class ParPartyVO {
         this.partyId = partyId;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public ParPartyTypeVO getPartyType() {
         return partyType;
     }
@@ -79,7 +92,6 @@ public class ParPartyVO {
     public void setPartyType(final ParPartyTypeVO partyType) {
         this.partyType = partyType;
     }
-
 
     public String getHistory() {
         return history;

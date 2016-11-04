@@ -61,7 +61,7 @@ const rootReducer = combineReducers({
     app,
     arrRegion,
     refTables,
-    //registryRegion,
+    registryRegion,
     registryRegionRecordTypes,
     toastr,
     developer,

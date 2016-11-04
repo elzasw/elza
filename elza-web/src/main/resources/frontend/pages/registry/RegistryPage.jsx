@@ -531,7 +531,7 @@ class RegistryPage extends AbstractReactComponent {
                         value={registryTypesId}
                         onChange={this.handleRegistryTypesSelect.bind(this)}
                         disabled={registryParentId !== null}
-                    />;
+                    />
                     <SearchWithGoto
                         onFulltextSearch={this.handleSearch}
                         onClear={this.handleSearchClear}

@@ -24,7 +24,7 @@ const keymap = {
 };
 const shortcutManager = new ShortcutsManager(keymap);
 
-import './PartyFormStyles.less';
+import './PartyDetail.less';
 
 /**
  * PARTY DETAIL
@@ -143,7 +143,15 @@ class PartyDetail extends AbstractReactComponent {
         return <Shortcuts name='PartyDetail' handler={this.handleShortcuts}>
             <div ref='partyDetail' className="party-detail">
                 <div className="party-header">
-                    {/* TODO @compel */}
+                    <div>
+                        <h3>{party.name}</h3>
+                        {party.record.external_id && party.record.externalSource && <span className="description">{party.partyType.description + ':' + party.partyId}</span>}
+                        {party.record.external_id && !party.record.externalSource && <span className="description">{'UNKNOWN:' + party.record.external_id}</span>}
+                        {!party.record.external_id && <span className="description">{party.partyType.description + ':' + party.partyId}</span>}
+                    </div>
+                    <div>
+                        {party.partyType.description}
+                    </div>
                 </div>
             </div>
         </Shortcuts>;
