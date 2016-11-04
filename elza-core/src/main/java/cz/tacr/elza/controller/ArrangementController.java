@@ -43,6 +43,7 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.*;
 import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.output.OutputGeneratorService;
+import cz.tacr.elza.service.vo.ChangesResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -156,6 +157,12 @@ public class ArrangementController {
 
     @Autowired
     private OutputGeneratorService outputGeneratorService;
+
+    @Autowired
+    private RevertingChangesService revertingChangesService;
+
+    @Autowired
+    private ChangeRepository changeRepository;
 
     /**
      * Seznam typů obalů.
@@ -1777,6 +1784,37 @@ public class ArrangementController {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
         outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId());
+    }
+
+    /**
+     * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param maxSize       maximální počet záznamů
+     * @param offset        počet přeskočených záznamů
+     * @param changeId      identifikátor změny, vůči které chceme počítat offset (pokud není vyplněn, bere se vždy poslední)
+     * @param nodeId        identifikátor JP u které vyhledáváme změny (pokud není vyplně, vyhledává se přes celý AS)
+     * @return výsledek hledání
+     */
+    @RequestMapping(value = "/changes/{fundVersionId}", method = RequestMethod.GET)
+    public ChangesResult findChanges(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                     @RequestParam(value = "maxSize", required = false, defaultValue = "20") final Integer maxSize,
+                                     @RequestParam(value = "offset", required = false, defaultValue = "0") final Integer offset,
+                                     @RequestParam(value = "changeId", required = false) final Integer changeId,
+                                     @RequestParam(value = "nodeId", required = false) final Integer nodeId) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        if (fundVersion.getLockChange() != null) {
+            throw new IllegalStateException("Nelze prováděn změny v uzavřené verzi");
+        }
+        ArrChange change = null;
+        if (changeId != null) {
+            change = changeRepository.getOneCheckExist(changeId);
+        }
+        ArrNode node = null;
+        if (nodeId != null) {
+            node = nodeRepository.getOneCheckExist(nodeId);
+        }
+        return revertingChangesService.findChanges(fundVersion.getFund(), node, maxSize, offset, change);
     }
 
     /**

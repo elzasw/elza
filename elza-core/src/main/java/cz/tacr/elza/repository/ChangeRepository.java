@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
  * @since 22.7.15
  */
 @Repository
-public interface ChangeRepository extends JpaRepository<ArrChange, Integer> {
+public interface ChangeRepository extends ElzaJpaRepository<ArrChange, Integer> {
 
     void deleteByPrimaryNode(ArrNode node);
 }
