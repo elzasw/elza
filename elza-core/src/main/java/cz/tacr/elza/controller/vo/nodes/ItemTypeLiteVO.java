@@ -46,6 +46,11 @@ public class ItemTypeLiteVO {
     private List<DescItemSpecLiteVO> specs;
 
     /**
+     * seznam identifikátorů oblíbených specifikací u typu
+     */
+    private List<Integer> favoriteSpecIds;
+
+    /**
      * šířka atributu (0 - maximální počet sloupců, 1..N - počet sloupců)
      */
     private Integer width;
@@ -104,5 +109,13 @@ public class ItemTypeLiteVO {
 
     public void setCal(final Integer cal) {
         this.cal = cal;
+    }
+
+    public List<Integer> getFavoriteSpecIds() {
+        return favoriteSpecIds;
+    }
+
+    public void setFavoriteSpecIds(final List<Integer> favoriteSpecIds) {
+        this.favoriteSpecIds = favoriteSpecIds;
     }
 }

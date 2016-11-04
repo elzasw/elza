@@ -43,6 +43,12 @@ action:
       - SRD_TITLE
     output_type: SRD_TITLE
 
+  - COPY
+    distinct: true
+    input_types:
+      - SRD_TITLE
+    output_type: SRD_UNIT_ARR
+
   - TABLE_STATISTIC
     input_types:
       - SRD_TITLE

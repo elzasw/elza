@@ -9,7 +9,16 @@ import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
 import cz.tacr.elza.bulkaction.factory.BulkActionWorkerFactory;
 import cz.tacr.elza.bulkaction.generator.BulkAction;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrBulkActionNode;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulActionRecommended;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.LevelTreeCacheService;
@@ -28,6 +37,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
@@ -104,6 +117,10 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     @Autowired
     private ActionRecommendedRepository actionRecommendedRepository;
 
+    @Autowired
+    @Qualifier("transactionManager")
+    protected PlatformTransactionManager txManager;
+
     /**
      * Seznam běžících úloh instancí hromadných akcí.
      *
@@ -139,11 +156,24 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     public void onFailure(final Throwable ex) {
         // nenastane, protože ve workeru je catch na Exception
         logger.error("Worker nedoběhl správně", ex);
+        runNextWorker();
     }
 
     @Override
     public void onSuccess(final BulkActionWorker result) {
         runningWorkers.remove(result.getVersionId());
+
+        ArrBulkActionRun bulkActionRun = result.getBulkActionRun();
+
+        // změna stavu výstupů na open
+        outputService.changeOutputsStateByNodes(bulkActionRun.getFundVersion(),
+                bulkActionRun.getArrBulkActionNodes()
+                        .stream()
+                        .map(ArrBulkActionNode::getNode)
+                        .collect(Collectors.toSet()),
+                OutputState.OPEN,
+                OutputState.COMPUTING);
+
         runNextWorker();
     }
 
@@ -181,6 +211,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
         ArrBulkActionRun bulkActionRun = new ArrBulkActionRun();
 
+        bulkActionRun.setChange(arrangementService.createChange(ArrChange.Type.BULK_ACTION));
         bulkActionRun.setBulkActionCode(bulkActionCode);
         bulkActionRun.setUserId(userId);
         ArrFundVersion arrFundVersion = new ArrFundVersion();
@@ -267,10 +298,15 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * Spuštění dalších hromadných akcí, pokud splňují podmínky pro spuštění.
      */
     private void runNextWorker() {
-        List<ArrBulkActionRun> waitingActions = bulkActionRepository.findByStateGroupByFundOrderById(State.WAITING);
-        waitingActions.forEach(bulkActionRun -> {
-            if(canRun(bulkActionRun)) {
-                run(bulkActionRun);
+        (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(final TransactionStatus status) {
+                List<ArrBulkActionRun> waitingActions = bulkActionRepository.findByStateGroupByFundOrderById(State.WAITING);
+                waitingActions.forEach(bulkActionRun -> {
+                    if (canRun(bulkActionRun)) {
+                        run(bulkActionRun);
+                    }
+                });
             }
         });
     }
@@ -385,6 +421,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             user.setUserId(userId);
             change.setUser(user);
         }
+        change.setType(ArrChange.Type.BULK_ACTION);
         return changeRepository.save(change);
     }
 
@@ -426,21 +463,33 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         Assert.notNull(bulkActionRunId);
         ArrBulkActionRun bulkActionRun = bulkActionRepository.findOne(bulkActionRunId);
         checkAuthBA(bulkActionRun.getFundVersion());
+        return bulkActionRun;
+    }
 
-        if (bulkActionRun.getState() == State.FINISHED) {
-            Set<ArrNode> collect = bulkActionRun.getArrBulkActionNodes().stream().map(ArrBulkActionNode::getNode).collect(Collectors.toSet());
-            HashSet<ArrChange> arrChanges = new HashSet<>(1);
-            ArrChange change = bulkActionRun.getChange();
-            arrChanges.add(change);
+    /**
+     * Kontroluje ve verzi dokončené hromadné akce, jestli zda-li jsou aktuální.
+     * V případě, že je detekovaná změna, provede změnu stavu hromadné akce na neaktuální.
+     *
+     * @param fundVersionId id verze archivní pomůcky
+     */
+    public void checkOutdatedActions(final Integer fundVersionId) {
+        List<ArrBulkActionRun> bulkActions = bulkActionRepository.findByFundVersionIdAndState(fundVersionId, State.FINISHED);
 
-            Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(collect, arrChanges, true, true);
-            if (arrChangeBooleanMap.containsKey(change) && arrChangeBooleanMap.get(change)) {
-                bulkActionRun.setState(State.OUTDATED);
-                bulkActionRepository.save(bulkActionRun);
+        for (ArrBulkActionRun bulkAction : bulkActions) {
+            if (bulkAction.getState() == State.FINISHED) {
+                Set<ArrNode> arrNodes = bulkAction.getArrBulkActionNodes().stream().map(ArrBulkActionNode::getNode).collect(Collectors.toSet());
+                HashSet<ArrChange> arrChanges = new HashSet<>(1);
+                ArrChange changeBulkAction = bulkAction.getChange();
+                arrChanges.add(changeBulkAction);
+
+                Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(arrNodes, arrChanges, true, true);
+                if (arrChangeBooleanMap.containsKey(changeBulkAction) && arrChangeBooleanMap.get(changeBulkAction)) {
+                    bulkAction.setState(State.OUTDATED);
+                    bulkActionRepository.save(bulkAction);
+                    eventPublishBulkAction(bulkAction);
+                }
             }
         }
-
-        return bulkActionRun;
     }
 
     /**
@@ -565,7 +614,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
         try {
             logger.info("Zahájení překlopení výsledku hromadné akce do výstupů");
-            ArrChange change = arrangementService.createChange();
+            ArrChange change = arrangementService.createChange(null);
             outputService.storeResultBulkAction(bulkActionRun, nodes, change, null);
             logger.info("Překlopení výsledku hromadné akce bylo úspěšně dokončeno");
         } catch (Exception e) {

@@ -121,6 +121,16 @@ public interface RulItemSpec<RIT extends RulItemType, P extends RulPackage> exte
     void setPolicyTypeCode(String policyTypeCode);
 
     /**
+     * @return kategorie umožňující vytvoření stromu v UI ("Indoevropské|Slovanské")
+     */
+    String getCategory();
+
+    /**
+     * @param category kategorie umožňující vytvoření stromu v UI ("Indoevropské|Slovanské")
+     */
+    void setCategory(String category);
+
+    /**
      * @return balíček
      */
     P getPackage();

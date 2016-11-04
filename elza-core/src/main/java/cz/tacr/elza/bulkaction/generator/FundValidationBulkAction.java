@@ -118,8 +118,7 @@ public class FundValidationBulkAction extends BulkAction {
     @Override
     public String toString() {
         return "FundValidationBulkAction{" +
-                "version=" + version +
-                ", change=" + change +
+                "change=" + change +
                 '}';
     }
 }

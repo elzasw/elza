@@ -153,330 +153,549 @@
         <name>indoevropské - blíže neurčené</name>
         <description>indoevropské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>indoevropské</category>
+        </categories>
         <view-order>1</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_2" item-type="SRD_LANGUAGE">
         <name>indoevropské - baltské - blíže neurčené</name>
         <description>indoevropské - baltské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>baltské</category>
+        </categories>
         <view-order>2</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_3" item-type="SRD_LANGUAGE">
         <name>indoevropské - baltské - litevština</name>
         <description>indoevropské - baltské - litevština</description>
         <shortcut>litevština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>baltské</category>
+        </categories>
         <view-order>3</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_4" item-type="SRD_LANGUAGE">
         <name>indoevropské - baltské - lotyština</name>
         <description>indoevropské - baltské - lotyština</description>
         <shortcut>lotyština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>baltské</category>
+        </categories>
         <view-order>4</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_5" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - blíže neurčené</name>
         <description>indoevropské - germánské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>5</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_6" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - afrikánština</name>
         <description>indoevropské - germánské - afrikánština</description>
         <shortcut>afrikánština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>6</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_7" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - alsaština</name>
         <description>indoevropské - germánské - alsaština</description>
         <shortcut>alsaština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>7</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_8" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - angličtina</name>
         <description>indoevropské - germánské - angličtina</description>
         <shortcut>angličtina</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>8</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_9" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - dánština</name>
         <description>indoevropské - germánské - dánština</description>
         <shortcut>dánština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>9</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_10" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - dolnoněmčina</name>
         <description>indoevropské - germánské - dolnoněmčina</description>
         <shortcut>dolnoněmčina</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>10</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_11" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - faerština</name>
         <description>indoevropské - germánské - faerština</description>
         <shortcut>faerština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>11</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_12" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - fríština</name>
         <description>indoevropské - germánské - fríština</description>
         <shortcut>fríština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>12</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_13" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - holandština (nizozemština)</name>
         <description>indoevropské - germánské - holandština (nizozemština)</description>
         <shortcut>holandština (nizozemština)</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>13</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_14" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - islandština</name>
         <description>indoevropské - germánské - islandština</description>
         <shortcut>islandština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>14</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_15" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - jidiš</name>
         <description>indoevropské - germánské - jidiš</description>
         <shortcut>jidiš</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>15</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_16" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - judendeutsch</name>
         <description>indoevropské - germánské - judendeutsch</description>
         <shortcut>judendeutsch</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>16</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_17" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - lucemburština</name>
         <description>indoevropské - germánské - lucemburština</description>
         <shortcut>lucemburština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>17</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_18" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - němčina</name>
         <description>indoevropské - germánské - němčina</description>
         <shortcut>němčina</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>18</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_19" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - norština</name>
         <description>indoevropské - germánské - norština</description>
         <shortcut>norština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>19</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_20" item-type="SRD_LANGUAGE">
         <name>indoevropské - germánské - švédština</name>
         <description>indoevropské - germánské - švédština</description>
         <shortcut>švédština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>germánské</category>
+        </categories>
         <view-order>20</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_21" item-type="SRD_LANGUAGE">
         <name>indoevropské - keltské - blíže neurčené</name>
         <description>indoevropské - keltské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>keltské</category>
+        </categories>
         <view-order>21</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_22" item-type="SRD_LANGUAGE">
         <name>indoevropské - keltské - bretonština</name>
         <description>indoevropské - keltské - bretonština</description>
         <shortcut>bretonština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>keltské</category>
+        </categories>
         <view-order>22</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_23" item-type="SRD_LANGUAGE">
         <name>indoevropské - keltské - irština</name>
         <description>indoevropské - keltské - irština</description>
         <shortcut>irština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>keltské</category>
+        </categories>
         <view-order>23</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_24" item-type="SRD_LANGUAGE">
         <name>indoevropské - keltské - skotská gaelština</name>
         <description>indoevropské - keltské - skotská gaelština</description>
         <shortcut>skotská gaelština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>keltské</category>
+        </categories>
         <view-order>24</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_25" item-type="SRD_LANGUAGE">
         <name>indoevropské - keltské - velština</name>
         <description>indoevropské - keltské - velština</description>
         <shortcut>velština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>keltské</category>
+        </categories>
         <view-order>25</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_26" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - blíže neurčené</name>
         <description>indoevropské - románské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>románské</category>
+        </categories>
         <view-order>26</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_27" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - francouzština</name>
         <description>indoevropské - románské - francouzština</description>
         <shortcut>francouzština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>románské</category>
+        </categories>
         <view-order>27</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_28" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - galicijština</name>
         <description>indoevropské - románské - galicijština</description>
         <shortcut>galicijština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>románské</category>
+        </categories>
         <view-order>28</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_29" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - italština</name>
         <description>indoevropské - románské - italština</description>
         <shortcut>italština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>románské</category>
+        </categories>
         <view-order>29</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_30" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - katalánština</name>
         <description>indoevropské - románské - katalánština</description>
         <shortcut>katalánština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>románské</category>
+        </categories>
         <view-order>30</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_31" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - korsičtina</name>
         <description>indoevropské - románské - korsičtina</description>
         <shortcut>korsičtina</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>románské</category>
+        </categories>
         <view-order>31</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_32" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - latina</name>
         <description>indoevropské - románské - latina</description>
         <shortcut>latina</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>románské</category>
+        </categories>
         <view-order>32</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_33" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - moldavština</name>
         <description>indoevropské - románské - moldavština</description>
         <shortcut>moldavština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>románské</category>
+        </categories>
         <view-order>33</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_34" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - okcitánština</name>
         <description>indoevropské - románské - okcitánština</description>
         <shortcut>okcitánština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>románské</category>
+        </categories>
         <view-order>34</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_35" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - portugalština</name>
         <description>indoevropské - románské - portugalština</description>
         <shortcut>portugalština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>románské</category>
+        </categories>
         <view-order>35</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_36" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - rétorománština</name>
         <description>indoevropské - románské - rétorománština</description>
         <shortcut>rétorománština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>románské</category>
+        </categories>
         <view-order>36</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_37" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - rumunština</name>
         <description>indoevropské - románské - rumunština</description>
         <shortcut>rumunština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>románské</category>
+        </categories>
         <view-order>37</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_38" item-type="SRD_LANGUAGE">
         <name>indoevropské - románské - španělština</name>
         <description>indoevropské - románské - španělština</description>
         <shortcut>španělština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>románské</category>
+        </categories>
         <view-order>38</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_39" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - blíže neurčené</name>
         <description>indoevropské - slovanské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>39</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_40" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - běloruština</name>
         <description>indoevropské - slovanské - běloruština</description>
         <shortcut>běloruština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>40</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_41" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - bosenština</name>
         <description>indoevropské - slovanské - bosenština</description>
         <shortcut>bosenština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>41</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_42" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - bulharština</name>
         <description>indoevropské - slovanské - bulharština</description>
         <shortcut>bulharština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>42</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_43" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - čeština</name>
         <description>indoevropské - slovanské - čeština</description>
         <shortcut>čeština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>43</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_44" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - chorvatština</name>
         <description>indoevropské - slovanské - chorvatština</description>
         <shortcut>chorvatština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>44</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_45" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - kašubština</name>
         <description>indoevropské - slovanské - kašubština</description>
         <shortcut>kašubština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>45</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_46" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - lužická srbština dolní (dolnolužičtina)</name>
         <description>indoevropské - slovanské - lužická srbština dolní (dolnolužičtina)</description>
         <shortcut>lužická srbština dolní (dolnolužičtina)</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>46</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_47" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - lužická srbština horní (hornolužičtina)</name>
         <description>indoevropské - slovanské - lužická srbština horní (hornolužičtina)</description>
         <shortcut>lužická srbština horní (hornolužičtina)</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>47</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_48" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - makedonština</name>
         <description>indoevropské - slovanské - makedonština</description>
         <shortcut>makedonština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>48</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_49" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - polština</name>
         <description>indoevropské - slovanské - polština</description>
         <shortcut>polština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>49</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_50" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - rusínština</name>
         <description>indoevropské - slovanské - rusínština</description>
         <shortcut>rusínština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>50</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_51" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - ruština</name>
         <description>indoevropské - slovanské - ruština</description>
         <shortcut>ruština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>51</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_52" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - slovenština</name>
         <description>indoevropské - slovanské - slovenština</description>
         <shortcut>slovenština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>52</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_53" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - slovinština</name>
         <description>indoevropské - slovanské - slovinština</description>
         <shortcut>slovinština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>53</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_54" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - srbochorvatština</name>
         <description>indoevropské - slovanské - srbochorvatština</description>
         <shortcut>srbochorvatština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>54</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_55" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - srbština</name>
         <description>indoevropské - slovanské - srbština</description>
         <shortcut>srbština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>55</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_56" item-type="SRD_LANGUAGE">
@@ -484,47 +703,77 @@
         <description>indoevropské - slovanské - staroslověnština, církevní slovanština</description>
         <shortcut>staroslověnština, církevní slovanština</shortcut>
         <view-order>56</view-order>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_57" item-type="SRD_LANGUAGE">
         <name>indoevropské - slovanské - ukrajinština</name>
         <description>indoevropské - slovanské - ukrajinština</description>
         <shortcut>ukrajinština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>slovanské</category>
+        </categories>
         <view-order>57</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_58" item-type="SRD_LANGUAGE">
         <name>indoevropské - ostatní - blíže neurčené</name>
         <description>indoevropské - ostatní - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>ostatní</category>
+        </categories>
         <view-order>58</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_59" item-type="SRD_LANGUAGE">
         <name>indoevropské - ostatní - albánština</name>
         <description>indoevropské - ostatní - albánština</description>
         <shortcut>albánština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>ostatní</category>
+        </categories>
         <view-order>59</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_60" item-type="SRD_LANGUAGE">
         <name>indoevropské - ostatní - arménština</name>
         <description>indoevropské - ostatní - arménština</description>
         <shortcut>arménština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>ostatní</category>
+        </categories>
         <view-order>60</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_61" item-type="SRD_LANGUAGE">
         <name>indoevropské - ostatní - řečtina</name>
         <description>indoevropské - ostatní - řečtina</description>
         <shortcut>řečtina</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>ostatní</category>
+        </categories>
         <view-order>61</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_62" item-type="SRD_LANGUAGE">
         <name>uralské - blíže neurčené</name>
         <description>uralské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>uralské</category>
+        </categories>
         <view-order>62</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_63" item-type="SRD_LANGUAGE">
         <name>uralské - estonština</name>
         <description>uralské - estonština</description>
         <shortcut>estonština</shortcut>
+        <categories>
+            <category>uralské</category>
+        </categories>
         <view-order>63</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_64" item-type="SRD_LANGUAGE">
@@ -537,552 +786,883 @@
         <name>uralské - maďarština</name>
         <description>uralské - maďarština</description>
         <shortcut>maďarština</shortcut>
+        <categories>
+            <category>uralské</category>
+        </categories>
         <view-order>65</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_66" item-type="SRD_LANGUAGE">
         <name>uralské - livština</name>
         <description>uralské - livština</description>
         <shortcut>livština</shortcut>
+        <categories>
+            <category>uralské</category>
+        </categories>
         <view-order>66</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_67" item-type="SRD_LANGUAGE">
         <name>izolované - baskičtina</name>
         <description>izolované - baskičtina</description>
         <shortcut>baskičtina</shortcut>
+        <categories>
+            <category>izolované</category>
+        </categories>
         <view-order>67</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_68" item-type="SRD_LANGUAGE">
         <name>afroasijské - blíže neurčené</name>
         <description>afroasijské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>afroasijské</category>
+        </categories>
         <view-order>68</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_69" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - blíže neurčené</name>
         <description>afroasijské - semitské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>afroasijské</category>
+            <category>semitské</category>
+        </categories>
         <view-order>69</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_70" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - (novo)hebrejština</name>
         <description>afroasijské - semitské - (novo)hebrejština</description>
         <shortcut>(novo)hebrejština</shortcut>
+        <categories>
+            <category>afroasijské</category>
+            <category>semitské</category>
+        </categories>
         <view-order>70</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_71" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - amharština</name>
         <description>afroasijské - semitské - amharština</description>
         <shortcut>amharština</shortcut>
+        <categories>
+            <category>afroasijské</category>
+            <category>semitské</category>
+        </categories>
         <view-order>71</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_72" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - arabština</name>
         <description>afroasijské - semitské - arabština</description>
         <shortcut>arabština</shortcut>
+        <categories>
+            <category>afroasijské</category>
+            <category>semitské</category>
+        </categories>
         <view-order>72</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_73" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - aramejština</name>
         <description>afroasijské - semitské - aramejština</description>
         <shortcut>aramejština</shortcut>
+        <categories>
+            <category>afroasijské</category>
+            <category>semitské</category>
+        </categories>
         <view-order>73</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_74" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - hauština</name>
         <description>afroasijské - semitské - hauština</description>
         <shortcut>hauština</shortcut>
+        <categories>
+            <category>afroasijské</category>
+            <category>semitské</category>
+        </categories>
         <view-order>74</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_75" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - maltština</name>
         <description>afroasijské - semitské - maltština</description>
         <shortcut>maltština</shortcut>
+        <categories>
+            <category>afroasijské</category>
+            <category>semitské</category>
+        </categories>
         <view-order>75</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_76" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - stará hebrejština</name>
         <description>afroasijské - semitské - stará hebrejština</description>
         <shortcut>stará hebrejština</shortcut>
+        <categories>
+            <category>afroasijské</category>
+            <category>semitské</category>
+        </categories>
         <view-order>76</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_77" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - akkadština</name>
         <description>afroasijské - semitské - akkadština</description>
         <shortcut>akkadština</shortcut>
+        <categories>
+            <category>afroasijské</category>
+            <category>semitské</category>
+        </categories>
         <view-order>77</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_78" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - assyrština</name>
         <description>afroasijské - semitské - assyrština</description>
         <shortcut>assyrština</shortcut>
+        <categories>
+            <category>afroasijské</category>
+            <category>semitské</category>
+        </categories>
         <view-order>78</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_79" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - babylonština</name>
         <description>afroasijské - semitské - babylonština</description>
         <shortcut>babylonština</shortcut>
+        <categories>
+            <category>afroasijské</category>
+            <category>semitské</category>
+        </categories>
         <view-order>79</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_80" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - chetitština</name>
         <description>afroasijské - semitské - chetitština</description>
         <shortcut>chetitština</shortcut>
+        <categories>
+            <category>afroasijské</category>
+            <category>semitské</category>
+        </categories>
         <view-order>80</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_81" item-type="SRD_LANGUAGE">
         <name>afroasijské - semitské - sumerština</name>
         <description>afroasijské - semitské - sumerština</description>
         <shortcut>sumerština</shortcut>
+        <categories>
+            <category>afroasijské</category>
+            <category>semitské</category>
+        </categories>
         <view-order>81</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_82" item-type="SRD_LANGUAGE">
         <name>afroasijské - egyptština</name>
         <description>afroasijské - egyptština</description>
         <shortcut>egyptština</shortcut>
+        <categories>
+            <category>afroasijské</category>
+        </categories>
         <view-order>82</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_83" item-type="SRD_LANGUAGE">
         <name>afroasijské - koptština</name>
         <description>afroasijské - koptština</description>
         <shortcut>koptština</shortcut>
+        <categories>
+            <category>afroasijské</category>
+        </categories>
         <view-order>83</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_84" item-type="SRD_LANGUAGE">
         <name>nigerokonžské - blíže neurčené</name>
         <description>nigerokonžské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>nigerokonžské</category>
+        </categories>
         <view-order>84</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_85" item-type="SRD_LANGUAGE">
         <name>nigerokonžské - svahilština</name>
         <description>nigerokonžské - svahilština</description>
         <shortcut>svahilština</shortcut>
+        <categories>
+            <category>nigerokonžské</category>
+        </categories>
         <view-order>85</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_86" item-type="SRD_LANGUAGE">
         <name>altajské - blíže neurčené</name>
         <description>altajské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>altajské</category>
+        </categories>
         <view-order>86</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_87" item-type="SRD_LANGUAGE">
         <name>altajské - japonština</name>
         <description>altajské - japonština</description>
         <shortcut>japonština</shortcut>
+        <categories>
+            <category>altajské</category>
+        </categories>
         <view-order>87</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_88" item-type="SRD_LANGUAGE">
         <name>altajské - korejština</name>
         <description>altajské - korejština</description>
         <shortcut>korejština</shortcut>
+        <categories>
+            <category>altajské</category>
+        </categories>
         <view-order>88</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_89" item-type="SRD_LANGUAGE">
         <name>altajské - mongolské - blíže neurčené</name>
         <description>altajské - mongolské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>altajské</category>
+            <category>mongolské</category>
+        </categories>
         <view-order>89</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_90" item-type="SRD_LANGUAGE">
         <name>altajské - mongolské - mongolština</name>
         <description>altajské - mongolské - mongolština</description>
         <shortcut>mongolština</shortcut>
+        <categories>
+            <category>altajské</category>
+            <category>mongolské</category>
+        </categories>
         <view-order>90</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_91" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - blíže neurčené</name>
         <description>altajské - turkické - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>altajské</category>
+            <category>turkické</category>
+        </categories>
         <view-order>91</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_92" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - azerbajdžánština</name>
         <description>altajské - turkické - azerbajdžánština</description>
         <shortcut>azerbajdžánština</shortcut>
+        <categories>
+            <category>altajské</category>
+            <category>turkické</category>
+        </categories>
         <view-order>92</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_93" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - baškirština</name>
         <description>altajské - turkické - baškirština</description>
         <shortcut>baškirština</shortcut>
+        <categories>
+            <category>altajské</category>
+            <category>turkické</category>
+        </categories>
         <view-order>93</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_94" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - gagauzština</name>
         <description>altajské - turkické - gagauzština</description>
         <shortcut>gagauzština</shortcut>
+        <categories>
+            <category>altajské</category>
+            <category>turkické</category>
+        </categories>
         <view-order>94</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_95" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - hazarština</name>
         <description>altajské - turkické - hazarština</description>
         <shortcut>hazarština</shortcut>
+        <categories>
+            <category>altajské</category>
+            <category>turkické</category>
+        </categories>
         <view-order>95</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_96" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - kyrgyzština</name>
         <description>altajské - turkické - kyrgyzština</description>
         <shortcut>kyrgyzština</shortcut>
+        <categories>
+            <category>altajské</category>
+            <category>turkické</category>
+        </categories>
         <view-order>96</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_97" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - krymská tatarština</name>
         <description>altajské - turkické - krymská tatarština</description>
         <shortcut>krymská tatarština</shortcut>
+        <categories>
+            <category>altajské</category>
+            <category>turkické</category>
+        </categories>
         <view-order>97</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_98" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - tatarština</name>
         <description>altajské - turkické - tatarština</description>
         <shortcut>tatarština</shortcut>
+        <categories>
+            <category>altajské</category>
+            <category>turkické</category>
+        </categories>
         <view-order>98</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_99" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - turečtina</name>
         <description>altajské - turkické - turečtina</description>
         <shortcut>turečtina</shortcut>
+        <categories>
+            <category>altajské</category>
+            <category>turkické</category>
+        </categories>
         <view-order>99</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_100" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - turkménština</name>
         <description>altajské - turkické - turkménština</description>
         <shortcut>turkménština</shortcut>
+        <categories>
+            <category>altajské</category>
+            <category>turkické</category>
+        </categories>
         <view-order>100</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_101" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - ujgurština</name>
         <description>altajské - turkické - ujgurština</description>
         <shortcut>ujgurština</shortcut>
+        <categories>
+            <category>altajské</category>
+            <category>turkické</category>
+        </categories>
         <view-order>101</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_102" item-type="SRD_LANGUAGE">
         <name>altajské - turkické - uzbečtina</name>
         <description>altajské - turkické - uzbečtina</description>
         <shortcut>uzbečtina</shortcut>
+        <categories>
+            <category>altajské</category>
+            <category>turkické</category>
+        </categories>
         <view-order>102</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_103" item-type="SRD_LANGUAGE">
         <name>austroasijské - blíže neurčené</name>
         <description>austroasijské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>austroasijské</category>
+        </categories>
         <view-order>103</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_104" item-type="SRD_LANGUAGE">
         <name>austroasijské - mundské - santalština</name>
         <description>austroasijské - mundské - santalština</description>
         <shortcut>santalština</shortcut>
+        <categories>
+            <category>austroasijské</category>
+            <category>mundské</category>
+        </categories>
         <view-order>104</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_105" item-type="SRD_LANGUAGE">
         <name>austroasijské - khmérština</name>
         <description>austroasijské - khmérština</description>
         <shortcut>khmérština</shortcut>
+        <categories>
+            <category>austroasijské</category>
+        </categories>
         <view-order>105</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_106" item-type="SRD_LANGUAGE">
         <name>austroasijské - vietnamština</name>
         <description>austroasijské - vietnamština</description>
         <shortcut>vietnamština</shortcut>
+        <categories>
+            <category>austroasijské</category>
+        </categories>
         <view-order>106</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_107" item-type="SRD_LANGUAGE">
         <name>austronéské - blíže neurčené</name>
         <description>austronéské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>austronéské</category>
+        </categories>
         <view-order>107</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_108" item-type="SRD_LANGUAGE">
         <name>austronéské - indonéština</name>
         <description>austronéské - indonéština</description>
         <shortcut>indonéština</shortcut>
+        <categories>
+            <category>austronéské</category>
+        </categories>
         <view-order>108</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_109" item-type="SRD_LANGUAGE">
         <name>austronéské - malajština</name>
         <description>austronéské - malajština</description>
         <shortcut>malajština</shortcut>
+        <categories>
+            <category>austronéské</category>
+        </categories>
         <view-order>109</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_110" item-type="SRD_LANGUAGE">
         <name>drávidské - blíže neurčené</name>
         <description>drávidské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>drávidské</category>
+        </categories>
         <view-order>110</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_111" item-type="SRD_LANGUAGE">
         <name>drávidské - kannadština (též kannarština)</name>
         <description>drávidské - kannadština (též kannarština)</description>
         <shortcut>kannadština (též kannarština)</shortcut>
+        <categories>
+            <category>drávidské</category>
+        </categories>
         <view-order>111</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_112" item-type="SRD_LANGUAGE">
         <name>drávidské - malajalámština</name>
         <description>drávidské - malajalámština</description>
         <shortcut>malajalámština</shortcut>
+        <categories>
+            <category>drávidské</category>
+        </categories>
         <view-order>112</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_113" item-type="SRD_LANGUAGE">
         <name>drávidské - tamilština</name>
         <description>drávidské - tamilština</description>
         <shortcut>tamilština</shortcut>
+        <categories>
+            <category>drávidské</category>
+        </categories>
         <view-order>113</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_114" item-type="SRD_LANGUAGE">
         <name>drávidské - telugština</name>
         <description>drávidské - telugština</description>
         <shortcut>telugština</shortcut>
+        <categories>
+            <category>drávidské</category>
+        </categories>
         <view-order>114</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_115" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - blíže neurčené</name>
         <description>indoevropské - indoárijské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>115</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_116" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - asámština</name>
         <description>indoevropské - indoárijské - asámština</description>
         <shortcut>asámština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>116</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_117" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - bengálština</name>
         <description>indoevropské - indoárijské - bengálština</description>
         <shortcut>bengálština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>117</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_118" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - Bihárštiina (maithilština)</name>
         <description>indoevropské - indoárijské - Bihárštiina (maithilština)</description>
         <shortcut>Bihárštiina (maithilština)</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>118</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_119" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - dógrí</name>
         <description>indoevropské - indoárijské - dógrí</description>
         <shortcut>dógrí</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>119</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_120" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - gudžarátština</name>
         <description>indoevropské - indoárijské - gudžarátština</description>
         <shortcut>gudžarátština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>120</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_121" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - hindština</name>
         <description>indoevropské - indoárijské - hindština</description>
         <shortcut>hindština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>121</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_122" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - kašmírština</name>
         <description>indoevropské - indoárijské - kašmírština</description>
         <shortcut>kašmírština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>122</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_123" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - konkánština</name>
         <description>indoevropské - indoárijské - konkánština</description>
         <shortcut>konkánština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>123</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_124" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - maráthština</name>
         <description>indoevropské - indoárijské - maráthština</description>
         <shortcut>maráthština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>124</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_125" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - pahárské jazyky (nepálština)</name>
         <description>indoevropské - indoárijské - pahárské jazyky (nepálština)</description>
         <shortcut>pahárské jazyky (nepálština)</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>125</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_126" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - pandžábština</name>
         <description>indoevropské - indoárijské - pandžábština</description>
         <shortcut>pandžábština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>126</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_127" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - romština</name>
         <description>indoevropské - indoárijské - romština</description>
         <shortcut>romština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>127</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_128" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - sanskrt</name>
         <description>indoevropské - indoárijské - sanskrt</description>
         <shortcut>sanskrt</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>128</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_129" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - sindština</name>
         <description>indoevropské - indoárijské - sindština</description>
         <shortcut>sindština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>129</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_130" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - sinhálština</name>
         <description>indoevropské - indoárijské - sinhálština</description>
         <shortcut>sinhálština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>130</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_131" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - urdština</name>
         <description>indoevropské - indoárijské - urdština</description>
         <shortcut>urdština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>131</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_132" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoárijské - urijština</name>
         <description>indoevropské - indoárijské - urijština</description>
         <shortcut>urijština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoárijské</category>
+        </categories>
         <view-order>132</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_133" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoíránské - blíže neurčené</name>
         <description>indoevropské - indoíránské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoíránské</category>
+        </categories>
         <view-order>133</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_134" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoíránské - (novo)perština</name>
         <description>indoevropské - indoíránské - (novo)perština</description>
         <shortcut>(novo)perština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoíránské</category>
+        </categories>
         <view-order>134</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_135" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoíránské - kurdština</name>
         <description>indoevropské - indoíránské - kurdština</description>
         <shortcut>kurdština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoíránské</category>
+        </categories>
         <view-order>135</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_136" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoíránské - paštština</name>
         <description>indoevropské - indoíránské - paštština</description>
         <shortcut>paštština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoíránské</category>
+        </categories>
         <view-order>136</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_137" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoíránské - stará perština</name>
         <description>indoevropské - indoíránské - stará perština</description>
         <shortcut>stará perština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoíránské</category>
+        </categories>
         <view-order>137</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_138" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoíránské - střední perština</name>
         <description>indoevropské - indoíránské - střední perština</description>
         <shortcut>střední perština</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoíránské</category>
+        </categories>
         <view-order>138</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_139" item-type="SRD_LANGUAGE">
         <name>indoevropské - indoíránské - tádžičtina</name>
         <description>indoevropské - indoíránské - tádžičtina</description>
         <shortcut>tádžičtina</shortcut>
+        <categories>
+            <category>indoevropské</category>
+            <category>indoíránské</category>
+        </categories>
         <view-order>139</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_140" item-type="SRD_LANGUAGE">
         <name>kartvelské - blíže neurčené</name>
         <description>kartvelské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>kartvelské</category>
+        </categories>
         <view-order>140</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_141" item-type="SRD_LANGUAGE">
         <name>kartvelské - gruzínština</name>
         <description>kartvelské - gruzínština</description>
         <shortcut>gruzínština</shortcut>
+        <categories>
+            <category>kartvelské</category>
+        </categories>
         <view-order>141</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_142" item-type="SRD_LANGUAGE">
         <name>severokavkazské - blíže neurčené</name>
         <description>severokavkazské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>severokavkazské</category>
+        </categories>
         <view-order>142</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_143" item-type="SRD_LANGUAGE">
         <name>severokavkazské - abcházština</name>
         <description>severokavkazské - abcházština</description>
         <shortcut>abcházština</shortcut>
+        <categories>
+            <category>severokavkazské</category>
+        </categories>
         <view-order>143</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_144" item-type="SRD_LANGUAGE">
         <name>tajsko-kadajské - blíže neurčené</name>
         <description>tajsko-kadajské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>tajsko-kadajské</category>
+        </categories>
         <view-order>144</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_145" item-type="SRD_LANGUAGE">
         <name>tajsko-kadajské - laoština</name>
         <description>tajsko-kadajské - laoština</description>
         <shortcut>laoština</shortcut>
+        <categories>
+            <category>tajsko-kadajské</category>
+        </categories>
         <view-order>145</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_146" item-type="SRD_LANGUAGE">
         <name>tajsko-kadajské - thajština</name>
         <description>tajsko-kadajské - thajština</description>
         <shortcut>thajština</shortcut>
+        <categories>
+            <category>tajsko-kadajské</category>
+        </categories>
         <view-order>146</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_147" item-type="SRD_LANGUAGE">
         <name>tibetskočínské - blíže neurčené</name>
         <description>tibetskočínské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>tibetskočínské</category>
+        </categories>
         <view-order>147</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_148" item-type="SRD_LANGUAGE">
         <name>tibetskočínské - barmština</name>
         <description>tibetskočínské - barmština</description>
         <shortcut>barmština</shortcut>
+        <categories>
+            <category>tibetskočínské</category>
+        </categories>
         <view-order>148</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_149" item-type="SRD_LANGUAGE">
         <name>tibetskočínské - bodo</name>
         <description>tibetskočínské - bodo</description>
         <shortcut>bodo</shortcut>
+        <categories>
+            <category>tibetskočínské</category>
+        </categories>
         <view-order>149</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_150" item-type="SRD_LANGUAGE">
         <name>tibetskočínské - bhútánština</name>
         <description>tibetskočínské - bhútánština</description>
         <shortcut>bhútánština</shortcut>
+        <categories>
+            <category>tibetskočínské</category>
+        </categories>
         <view-order>150</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_151" item-type="SRD_LANGUAGE">
         <name>tibetskočínské - manípurština</name>
         <description>tibetskočínské - manípurština</description>
         <shortcut>manípurština</shortcut>
+        <categories>
+            <category>tibetskočínské</category>
+        </categories>
         <view-order>151</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_152" item-type="SRD_LANGUAGE">
         <name>tibetskočínské - čínština</name>
         <description>tibetskočínské - čínština</description>
         <shortcut>čínština</shortcut>
+        <categories>
+            <category>tibetskočínské</category>
+        </categories>
         <view-order>152</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_153" item-type="SRD_LANGUAGE">
         <name>tibetskočínské - tibetština</name>
         <description>tibetskočínské - tibetština</description>
         <shortcut>tibetština</shortcut>
+        <categories>
+            <category>tibetskočínské</category>
+        </categories>
         <view-order>153</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_154" item-type="SRD_LANGUAGE">
         <name>eskymácko - aleutské - blíže neurčené</name>
         <description>eskymácko - aleutské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>eskymácko</category>
+            <category>aleutské</category>
+        </categories>
         <view-order>154</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_155" item-type="SRD_LANGUAGE">
         <name>eskymácko - aleutské - grónština</name>
         <description>eskymácko - aleutské - grónština</description>
         <shortcut>grónština</shortcut>
+        <categories>
+            <category>eskymácko</category>
+            <category>aleutské</category>
+        </categories>
         <view-order>155</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_156" item-type="SRD_LANGUAGE">
         <name>indiánské - blíže neurčené</name>
         <description>indiánské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>indiánské</category>
+        </categories>
         <view-order>156</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_157" item-type="SRD_LANGUAGE">
@@ -1095,54 +1675,81 @@
         <name>izolované - blíže neurčené</name>
         <description>izolované - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>izolované</category>
+        </categories>
         <view-order>158</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_159" item-type="SRD_LANGUAGE">
         <name>kreolské - blíže neurčené</name>
         <description>kreolské - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>kreolské</category>
+        </categories>
         <view-order>159</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_160" item-type="SRD_LANGUAGE">
         <name>umělé - blíže neurčené</name>
         <description>umělé - blíže neurčené</description>
         <shortcut></shortcut>
+        <categories>
+            <category>umělé</category>
+        </categories>
         <view-order>160</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_161" item-type="SRD_LANGUAGE">
         <name>umělé - esperanto</name>
         <description>umělé - esperanto</description>
         <shortcut>esperanto</shortcut>
+        <categories>
+            <category>umělé</category>
+        </categories>
         <view-order>161</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_162" item-type="SRD_LANGUAGE">
         <name>umělé - ido</name>
         <description>umělé - ido</description>
         <shortcut>ido</shortcut>
+        <categories>
+            <category>umělé</category>
+        </categories>
         <view-order>162</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_163" item-type="SRD_LANGUAGE">
         <name>umělé - interlingua</name>
         <description>umělé - interlingua</description>
         <shortcut>interlingua</shortcut>
+        <categories>
+            <category>umělé</category>
+        </categories>
         <view-order>163</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_164" item-type="SRD_LANGUAGE">
         <name>umělé - interlingue</name>
         <description>umělé - interlingue</description>
         <shortcut>interlingue</shortcut>
+        <categories>
+            <category>umělé</category>
+        </categories>
         <view-order>164</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_165" item-type="SRD_LANGUAGE">
         <name>umělé - volapük</name>
         <description>umělé - volapük</description>
         <shortcut>volapük</shortcut>
+        <categories>
+            <category>umělé</category>
+        </categories>
         <view-order>165</view-order>
     </item-spec>
     <item-spec code="SRD_LANGUAGE_166" item-type="SRD_LANGUAGE">
         <name>umělé - slovio</name>
         <description>umělé - slovio</description>
         <shortcut>slovio</shortcut>
+        <categories>
+            <category>umělé</category>
+        </categories>
         <view-order>166</view-order>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_1" item-type="SRD_ENTITY_ROLE">
