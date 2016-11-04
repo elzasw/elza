@@ -783,4 +783,13 @@ public class UserService {
     private void deleteGroupEvent(final UsrGroup group) {
         eventNotificationService.publishEvent(new EventId(EventType.GROUP_DELETE, group.getGroupId()));
     }
+
+    /**
+     * Odstraní oprávnění podle AS.
+     *
+     * @param fund archivní souboru
+     */
+    public void deleteByFund(final ArrFund fund) {
+        permissionRepository.deleteByFund(fund);
+    }
 }
