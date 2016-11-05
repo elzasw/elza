@@ -34,18 +34,21 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
 
     componentWillMount(){
         const {packetTypes} = this.props;
-        this.pf = new PacketFormatter(packetTypes);
+        if(packetTypes.fetched){
+            this.pf = new PacketFormatter(packetTypes);
+        }
     }
-
     componentDidMount() {
         const {versionId, fundId} = this.props;
         this.dispatch(fetchFundPacketsIfNeeded(versionId, fundId));
     }
 
     componentWillReceiveProps(nextProps) {
-        const {versionId, fundId} = this.props;
+        const {versionId, fundId, packetTypes} = this.props;
         this.dispatch(fetchFundPacketsIfNeeded(versionId, fundId));
-
+        if(nextProps.packetTypes.fetched && packetTypes.fetched !== nextProps.packetTypes.fetched){
+            this.pf = new PacketFormatter(nextProps.packetTypes);
+        }
     }
 
     handleSelectionChange(selectionType, ids, unselectedIds, type) {
@@ -98,7 +101,7 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
             onSubmitForm={this.handleChangePacketNumberSubmit.bind(this, selectedIds)}
         />
 
-        this.dispatch(modalDialogShow(this, i18n('arr.packet.title.add'), form));
+        this.dispatch(modalDialogShow(this, i18n('arr.packet.title.changeNumbers'), form));
     }
 
     handleDelete() {
@@ -116,7 +119,7 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
             onSubmitForm={this.handleCreatePacketFormSubmit.bind(this, "SINGLE")}
         />
 
-        this.dispatch(modalDialogShow(this, i18n('arr.packet.title.add'), form));
+        this.dispatch(modalDialogShow(this, i18n('arr.packet.title.addOne'), form));
     }
 
     handleAddMany() {
@@ -129,7 +132,7 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
             onSubmitForm={this.handleCreatePacketFormSubmit.bind(this, "MORE")}
         />
 
-        this.dispatch(modalDialogShow(this, i18n('arr.packet.title.add'), form));
+        this.dispatch(modalDialogShow(this, i18n('arr.packet.title.addMany'), form));
     }
 
     handleCreatePacketFormSubmit(type, data) {
@@ -152,9 +155,8 @@ var FundPackets = class FundPackets extends AbstractReactComponent {
     }
 
     render() {
-        const {versionId, filterState, filterText, fetched, packets, selectedIds} = this.props
-
-        if (!fetched) {
+        const {versionId, filterState, filterText, fetched, packets, selectedIds, packetTypes} = this.props;
+        if (!fetched || !packetTypes.fetched || !this.pf) {
             return <Loading/>
         }
 
