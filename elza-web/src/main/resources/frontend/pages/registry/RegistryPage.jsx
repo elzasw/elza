@@ -13,7 +13,7 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
 import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
         SearchWithGoto, RegistryPanel, DropDownTree, AddRegistryForm, ImportForm,
-        ListBox} from 'components';
+        ListBox, Autocomplete} from 'components';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
@@ -46,6 +46,7 @@ import {Utils} from 'components/index.jsx';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+import {getTreeItemById} from "./../../components/registry/registryUtils";
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -64,6 +65,9 @@ const shortcutManager = new ShortcutsManager(keymap);
 const RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
+
+        this.state = {items: []};
+
         this.bindMethods(
             'buildRibbon',
             'canMoveApplyCancelRegistry',
@@ -443,7 +447,9 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     render() {
-        const {splitter, registryRegion: {countRecords, records, selectedId, registryTypesId, parents, typesToRoot, panel, fetched, filterText, registryParentId}} = this.props;
+        const {refTables, splitter, registryRegion: {countRecords, records, selectedId, registryTypesId, parents, typesToRoot, panel, fetched, filterText, registryParentId}} = this.props;
+        const recordTypes = refTables.recordTypes;
+        const treeItems = recordTypes.items ? recordTypes.items : [];
 
         let regListBox = <div className='search-norecord'>{i18n('registry.listNoRecord')}</div>
         if (records.length) {
@@ -495,14 +501,17 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         }
 
-        const dropDownForSearch = <DropDownTree
-            nullValue={{id: null, name: i18n('registry.all')}}
-            key='search'
-            items={this.props.refTables.recordTypes.items}
-            value={registryTypesId}
-            onChange={this.handleRegistryTypesSelect.bind(this)}
-            disabled={registryParentId !== null}
-        />;
+        const value = registryTypesId === null ? null : getTreeItemById(registryTypesId, treeItems);
+        const treeSearch = (
+            <Autocomplete
+                inputProps={ {placeholder: registryTypesId === null ? i18n('registry.all') : ""} }
+                items={treeItems}
+                tree
+                allowSelectItem={(id, item) => item.addRecord}
+                value={value}
+                onChange={(id, item) => this.handleRegistryTypesSelect.bind(this)(id)}
+                />
+        )
 
         const arrPanel = panel.versionId != null ? <ArrPanel onReset={this.handleArrReset} name={panel.name} /> : null;
 
@@ -510,7 +519,7 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
             <div className="registry-list">
                 <div className='registry-list-header-container'>
                     {arrPanel}
-                    {dropDownForSearch}
+                    {treeSearch}
                     <SearchWithGoto
                         onFulltextSearch={this.handleSearch}
                         onClear={this.handleSearchClear}

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 
@@ -21,6 +22,7 @@ public class TestController {
 	@Autowired
 	private SimpMessagingTemplate messagingTemplate;
 
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	@MessageMapping("/chat")
 	public void chat(Message message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
 		message.updateMessage(headerAccessor.getUser());
@@ -29,7 +31,7 @@ public class TestController {
 		} else {
 			messagingTemplate.convertAndSendToUser(message.getRecipient(), MessageBrokerConfigurer.BROKER_DESTINATION + "/chat", message);
 		}
-		return;
+		System.out.println(headerAccessor.getSessionAttributes());
 	}
 
 	@MessageMapping("/traffic")

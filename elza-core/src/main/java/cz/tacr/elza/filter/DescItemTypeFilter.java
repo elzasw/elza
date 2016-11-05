@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
@@ -39,7 +38,13 @@ public class DescItemTypeFilter {
     /** Třída na kterou se bude aplikovat filtr. */
     private Class<?> cls;
 
-    /** Seznam podmínek. */
+    /** Podmínky pro seznam hodnot. */
+    private List<DescItemCondition> valuesConditions;
+
+    /** Podmínky pro seznam specifikací. */
+    private List<DescItemCondition> specsConditions;
+
+    /** Logické podmínky. */
     private List<DescItemCondition> conditions;
 
     /**
@@ -49,13 +54,19 @@ public class DescItemTypeFilter {
      * @param cls třída na kterou se mají podmínky aplikovat
      * @param conditions podmínky
      */
-    public DescItemTypeFilter(final RulItemType descItemType, final Class<?> cls, final List<DescItemCondition> conditions) {
+    public DescItemTypeFilter(
+            final RulItemType descItemType,
+            final Class<?> cls,
+            final List<DescItemCondition> valuesConditions,
+            final List<DescItemCondition> specsConditions,
+            final List<DescItemCondition> conditions) {
         Assert.notNull(descItemType);
         Assert.notNull(cls);
-        Assert.notEmpty(conditions);
 
         this.descItemType = descItemType;
         this.cls = cls;
+        this.valuesConditions = valuesConditions;
+        this.specsConditions = specsConditions;
         this.conditions = conditions;
     }
 
@@ -70,15 +81,25 @@ public class DescItemTypeFilter {
      *
      * @return id nodů se seznamem id hodnot
      */
-    public Map<Integer, List<String>> resolveConditions(final FullTextEntityManager fullTextEntityManager, final QueryBuilder queryBuilder, final Integer fundId, final EntityManager entityManager, final Integer lockChangeId) {
-        FilterQueries filterQueries = createFilterQuries(queryBuilder, entityManager, fundId, lockChangeId);
+    public Map<Integer, Set<String>> resolveConditions(final FullTextEntityManager fullTextEntityManager, final QueryBuilder queryBuilder,
+            final Integer fundId, final EntityManager entityManager, final Integer lockChangeId) {
+        Map<Integer, Set<String>> valuesResult = resolveSectionConditions(valuesConditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
+        Map<Integer, Set<String>> specsResult = resolveSectionConditions(specsConditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
+        Map<Integer, Set<String>> logicalResult = resolveSectionConditions(conditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
 
-        Map<Integer, List<String>> nodeIdToDescItemIds = processLuceneQueries(fullTextEntityManager, queryBuilder,
+        return joinQueriesResultsAnd(valuesResult, specsResult, logicalResult);
+    }
+
+    private Map<Integer, Set<String>> resolveSectionConditions(final List<DescItemCondition> sectionConditions, final FullTextEntityManager fullTextEntityManager,
+            final QueryBuilder queryBuilder, final Integer fundId, final EntityManager entityManager, final Integer lockChangeId) {
+        FilterQueries filterQueries = createFilterQuries(sectionConditions, queryBuilder, entityManager, fundId, lockChangeId);
+
+        Map<Integer, Set<String>> nodeIdToDescItemIds = processLuceneQueries(fullTextEntityManager, queryBuilder,
                 fundId, filterQueries.getLuceneQueries());
 
         Set<Integer> nodeIds = processHibernateQueries(filterQueries.getHibernateQueries());
 
-        return joinQueriesResultsAnd(nodeIdToDescItemIds, nodeIds);
+        return joinQueriesResultsOr(nodeIdToDescItemIds, nodeIds);
     }
 
     /**
@@ -87,19 +108,23 @@ public class DescItemTypeFilter {
      * @param nodeIdToDescItemIds id nodů se seznamem id hodnot z lucene queries
      * @param nodeIds id nodů z hibernate queries
      */
-    private Map<Integer, List<String>> joinQueriesResultsOr(final Map<Integer, List<String>> nodeIdToDescItemIds,
+    private Map<Integer, Set<String>> joinQueriesResultsOr(final Map<Integer, Set<String>> nodeIdToDescItemIds,
             final Set<Integer> nodeIds) {
-        Map<Integer, List<String>> result = null;
+        if (nodeIdToDescItemIds == null && nodeIds == null) {
+            return null;
+        }
+
+        Map<Integer, Set<String>> result = null;
         if (nodeIdToDescItemIds == null) {
             result = new HashMap<>();
             for (Integer nodeId : nodeIds) {
-                result.put(nodeId, new LinkedList<>());
+                result.put(nodeId, new HashSet<>());
             }
         } else if (nodeIds != null) {
             result = new HashMap<>(nodeIdToDescItemIds);
             for (Integer nodeId : nodeIds) {
                 if (!nodeIdToDescItemIds.containsKey(nodeId)) {
-                    result.put(nodeId, new LinkedList<>());
+                    result.put(nodeId, new HashSet<>());
                 }
             }
         } else {
@@ -114,29 +139,52 @@ public class DescItemTypeFilter {
      *
      * @param nodeIdToDescItemIds id nodů se seznamem id hodnot z lucene queries
      * @param nodeIds id nodů z hibernate queries
+     * @param expressionsNodeIdToDescItemIds
      */
-    private Map<Integer, List<String>> joinQueriesResultsAnd(final Map<Integer, List<String>> nodeIdToDescItemIds,
-            final Set<Integer> nodeIds) {
-        if (nodeIdToDescItemIds == null && nodeIds == null) {
+    private Map<Integer, Set<String>> joinQueriesResultsAnd(
+            final Map<Integer, Set<String>> valuesResult,
+            final Map<Integer, Set<String>> specsResult,
+            final Map<Integer, Set<String>> logicalResult) {
+        // pokud není naplněna ani jedna mapa, vrátímě prázdný výsledek
+        if (valuesResult == null && specsResult == null && logicalResult == null) {
             return Collections.emptyMap();
         }
 
-        if (nodeIdToDescItemIds == null) {
-            Map<Integer, List<String>> result = new HashMap<>(nodeIdToDescItemIds);
-            for (Integer nodeId : nodeIds) {
-                result.put(nodeId, new LinkedList<>());
+        List<Map<Integer, Set<String>>> listOfResultMaps = new LinkedList<>();
+        if (valuesResult != null) {
+            listOfResultMaps.add(valuesResult);
+        }
+        if (specsResult != null) {
+            listOfResultMaps.add(specsResult);
+        }
+        if (logicalResult != null) {
+            listOfResultMaps.add(logicalResult);
+        }
+
+        // pokud je naplněna jen jedna mapa tak ji vrátíme
+        if (listOfResultMaps.size() == 1) {
+            return listOfResultMaps.iterator().next();
+        }
+
+        // pokud je naplněno více map, uděláme průnik
+        Set<Integer> resultNodeIds = null; // průnik id nodů ze všech výsledků
+        for (Map<Integer, Set<String>> resultMap : listOfResultMaps) {
+            if (resultNodeIds == null) {
+                resultNodeIds = new HashSet<>(resultMap.keySet());
+            } else {
+                resultNodeIds.retainAll(resultMap.keySet());
             }
-
-            return result;
         }
 
-        if (nodeIds == null) {
-            return nodeIdToDescItemIds;
+        Map<Integer, Set<String>> result = new HashMap<>();
+        for (Integer nodeId : resultNodeIds) {
+            result.put(nodeId, new HashSet<>());
+            for (Map<Integer, Set<String>> resultMap : listOfResultMaps) {
+                result.get(nodeId).addAll(resultMap.get(nodeId));
+            }
         }
 
-        return nodeIdToDescItemIds.entrySet().stream().
-                filter((entry) -> nodeIds.contains(entry.getKey())).
-                collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+        return result;
     }
 
     /**
@@ -168,9 +216,9 @@ public class DescItemTypeFilter {
      * @param fundId
      * @param luceneQueries
      */
-    private Map<Integer, List<String>> processLuceneQueries(final FullTextEntityManager fullTextEntityManager,
+    private Map<Integer, Set<String>> processLuceneQueries(final FullTextEntityManager fullTextEntityManager,
             final QueryBuilder queryBuilder, final Integer fundId, final List<Query> luceneQueries) {
-        Map<Integer, List<String>> nodeIdToDescItemIds = null;
+        Map<Integer, Set<String>> nodeIdToDescItemIds = null;
         if (!luceneQueries.isEmpty()) {
             BooleanJunction<BooleanJunction> booleanJunction = queryBuilder.bool();
             booleanJunction.must(createDescItemTypeQuery(queryBuilder));
@@ -187,9 +235,9 @@ public class DescItemTypeFilter {
                 Object[] rowArray = (Object[]) row;
                 Integer nodeId = (Integer) rowArray[0];
                 String descItemId = (String) rowArray[1];
-                List<String> descItemIds = nodeIdToDescItemIds.get(nodeId);
+                Set<String> descItemIds = nodeIdToDescItemIds.get(nodeId);
                 if (descItemIds == null) {
-                    descItemIds = new LinkedList<>();
+                    descItemIds = new HashSet<>();
                     nodeIdToDescItemIds.put(nodeId, descItemIds);
                 }
                 descItemIds.add(descItemId);
@@ -200,25 +248,37 @@ public class DescItemTypeFilter {
 
     /**
      * Vytvoří VO ve kterém budou rozdělené lucene a hibernate dotazy.
+     * @param sectionConditions
      */
-    private FilterQueries createFilterQuries(final QueryBuilder queryBuilder, final EntityManager entityManager, final Integer fundId, final Integer lockChangeId) {
+    private FilterQueries createFilterQuries(final List<DescItemCondition> sectionConditions, final QueryBuilder queryBuilder, final EntityManager entityManager, final Integer fundId, final Integer lockChangeId) {
         List<Query> luceneQueries = new LinkedList<>();
         List<javax.persistence.Query> hibernateQueries = new LinkedList<>();
         FilterQueries filterQueries = new FilterQueries(luceneQueries, hibernateQueries);
 
-        for (DescItemCondition condition : conditions) {
+        if (sortConditions(sectionConditions, queryBuilder, entityManager, fundId, lockChangeId, luceneQueries, hibernateQueries)) {
+            return new FilterQueries(Collections.emptyList(), Collections.emptyList());
+        }
+
+        return filterQueries;
+    }
+
+    /** @return příznak zda je v podmínkách podmínka typu SelectsNothingCondition */
+    private boolean sortConditions(final List<DescItemCondition> descItemConditions, final QueryBuilder queryBuilder, final EntityManager entityManager,
+            final Integer fundId, final Integer lockChangeId, final List<Query> luceneQueries,
+            final List<javax.persistence.Query> hibernateQueries) {
+        for (DescItemCondition condition : descItemConditions) {
             if (condition instanceof LuceneDescItemCondition) {
                 LuceneDescItemCondition luceneCondition = (LuceneDescItemCondition) condition;
                 luceneQueries.add(luceneCondition.createLuceneQuery(queryBuilder));
             } else if (condition instanceof SelectsNothingCondition) {
-                return new FilterQueries(Collections.emptyList(), Collections.emptyList());
+                return true;
             } else {
                 HibernateDescItemCondition hibernateCondition = (HibernateDescItemCondition) condition;
                 hibernateQueries.add(hibernateCondition.createHibernateQuery(entityManager, fundId, descItemType.getItemTypeId(), lockChangeId));
             }
         }
 
-        return filterQueries;
+        return false;
     }
 
     /**

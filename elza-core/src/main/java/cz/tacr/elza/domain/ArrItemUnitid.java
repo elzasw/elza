@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.util.Objects;
+
 /**
  * Rozšiřuje atribut archivního popisu o jeho hodnotu.
  *
@@ -23,5 +25,19 @@ public class ArrItemUnitid extends ArrItemData implements cz.tacr.elza.api.ArrIt
     @Override
     public String toString() {
         return value;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ArrItemUnitid that = (ArrItemUnitid) o;
+        return Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), value);
     }
 }

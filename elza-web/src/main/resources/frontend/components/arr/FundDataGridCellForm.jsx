@@ -27,14 +27,20 @@ var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactCompo
         this.bindMethods('getFundDataGrid')
 
         this.state = {
-            fundDataGrid: this.getFundDataGrid(props)
+            fundDataGrid: this.getFundDataGrid(props),
+            dataLoaded: false,  // data dialogu jsou načtena a můžeme dialog správně napozicovat
         }
     }
 
     componentWillReceiveProps(nextProps) {
+        const {dataLoaded} = this.state;
         const newFundDataGrid = this.getFundDataGrid(nextProps)
 
-        this.requestData(nextProps.versionId, newFundDataGrid)
+        const hasData = this.requestData(nextProps.versionId, newFundDataGrid)
+
+        if (hasData && dataLoaded !== hasData) {   // data byla načtená a předtím ještě ne, napozivujeme jednou dialog
+            this.setState({}, this.handlePosition);
+        }
 
         const loadingChanged = this.isLoading(this.props, this.state.fundDataGrid) !== this.isLoading(nextProps, newFundDataGrid)
 
@@ -60,23 +66,66 @@ var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactCompo
         return false
     }
 
-    componentDidMount() {
+    /**
+     * Napoyicuje dialog na sprvávnou pozici tak, aby se vešel na obrazovku
+     */
+    handlePosition = () => {
         const {position} = this.props
 
-        this.requestData(this.props.versionId, this.state.fundDataGrid)
+        if (position) {
+            const dialog = $('.fund-data-grid-cell-edit .modal-dialog');
+            const screen = $(document);
+            let dialogSize = {w: dialog.width(), h: dialog.height()};
+            const dialogInnerSize = {w: dialog.innerWidth(), h: dialog.innerHeight()};
+            const windowSize = {w: screen.width(), h: screen.height()};
+            console.log(dialog[0], dialogSize, dialogInnerSize, windowSize);
 
-        $('.fund-data-grid-cell-edit .modal-dialog').css({
-            top: position.y + 'px',
-            left: position.x + 'px',
-        })
+            let x = position.x;
+            let y = position.y;
+            if (x + dialogSize.w > windowSize.w) {
+                x = windowSize.w - dialogSize.w;
+                if (x < 0) {
+                    dialogSize.w += x;
+                    x = 0;
+                }
+            }
+            if (y + dialogSize.h > windowSize.h) {
+                y = windowSize.h - dialogSize.h;
+                if (y < 0) {
+                    dialogSize.h += y;
+                    y = 0;
+                }
+            }
+
+            $('.fund-data-grid-cell-edit .modal-dialog').css({
+                top: y + 'px',
+                left: x + 'px',
+                width: dialogSize.w,
+                height: dialogSize.h,
+                visibility: "visible"
+            })
+        }
+    }
+
+    componentDidMount() {
+        const {dataLoaded} = this.state;
+
+        const hasData = this.requestData(this.props.versionId, this.state.fundDataGrid);
+
+        if (hasData && dataLoaded !== hasData) {   // data byla načtená a předtím ještě ne, napozivujeme jednou dialog
+            this.setState({}, this.handlePosition);
+        }
     }
 
     /**
      * Načtení dat, pokud je potřeba.
      * @param versionId {String} verze AS
+     * @return ture, pokud již má data
      */
     requestData(versionId, validFundDataGrid) {
         const routingKey = 'DATA_GRID'
+
+        let result = false;
 
         this.dispatch(descItemTypesFetchIfNeeded());
         this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, routingKey));
@@ -90,8 +139,14 @@ var FundDataGridCellForm = class FundDataGridCellForm extends AbstractReactCompo
 
             if (!this.containsDescItem(formData, validFundDataGrid.descItemTypeId)) {
                 this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, validFundDataGrid.descItemTypeId));
+            } else {
+                // Máme data a jsou v pořádku
+                this.setState({dataLoaded: true})
+                result = true;
             }
         }
+
+        return result;
     }
 
     getFundDataGrid(props) {

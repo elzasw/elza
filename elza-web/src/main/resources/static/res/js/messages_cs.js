@@ -214,6 +214,7 @@ var messages = {
     "arr.fundAction.state.planned": "Naplánováno",
     "arr.fundAction.state.error": "Chyba",
     "arr.fundAction.state.interrupted": "Přerušeno",
+    "arr.fundAction.state.outdated": "Dokončeno (neplatný)",
     "arr.fundAction.state.unknown": "Neznamý stav",
 
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",
@@ -441,6 +442,8 @@ var messages = {
     "subNodeForm.descItemType.lock": "Nastavení zamknutí úprav hodnot PP",
     "subNodeForm.descItemType.copyFromPrev": "Kopírovat hodnoty PP z předchozí JP",
     "subNodeForm.descItemType.calculable": "Hodnota počítána funkcí",
+    "subNodeForm.descItemType.spec.favorite": "Oblíbené",
+    "subNodeForm.descItemType.spec.all": "Všechny záznamy",
     "subNodeForm.addNodeAfter": "JP za",
 
     "subNodeForm.descItem.edited": "Editováno",

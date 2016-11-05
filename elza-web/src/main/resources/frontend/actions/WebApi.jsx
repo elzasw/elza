@@ -898,8 +898,8 @@ class WebApi{
         return AjaxUtils.ajaxGet(WebApi.actionUrl + '/output/' + outputId, {'recommended': getRecommended});
     }
 
-    outputGenerate(outputId) {
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/output/generate/' + outputId);
+    outputGenerate(outputId, forced = false) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/output/generate/' + outputId, {forced});
     }
 
     outputRevert(versionId, outputId) {

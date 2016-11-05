@@ -323,7 +323,7 @@ public class ArrangementService {
                                           final String internalCode,
                                           final ParInstitution institution,
                                           final String dateRange) {
-        ArrChange change = createChange();
+        ArrChange change = createChange(null);
 
         ArrFund fund = createFund(name, ruleSet, change, null, internalCode, institution, dateRange);
 
@@ -433,7 +433,7 @@ public class ArrangementService {
         return nodeRepository.save(node);
     }
 
-    public ArrChange createChange() {
+    public ArrChange createChange(@Nullable final ArrChange.Type type) {
         ArrChange change = new ArrChange();
         UserDetail userDetail = userService.getLoggedUserDetail();
         change.setChangeDate(LocalDateTime.now());
@@ -443,6 +443,8 @@ public class ArrangementService {
             user.setUserId(userDetail.getId());
             change.setUser(user);
         }
+
+        change.setType(type);
 
         return changeRepository.save(change);
     }
@@ -542,7 +544,7 @@ public class ArrangementService {
             throw new IllegalStateException("Nelze uzavřít verzi, protože běží validace");
         }
 
-        ArrChange change = createChange();
+        ArrChange change = createChange(null);
         version.setLockChange(change);
         fundVersionRepository.save(version);
 

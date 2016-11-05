@@ -38,7 +38,9 @@ import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
+import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.interfaces.IArrItemStringValue;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
@@ -60,6 +62,7 @@ import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -155,6 +158,9 @@ public class OutputService {
 
     @Autowired
     private ItemTypeActionRepository itemTypeActionRepository;
+
+    @Autowired
+    private RuleService ruleService;
 
     private static final Logger logger = LoggerFactory.getLogger(OutputService.class);
 
@@ -336,7 +342,7 @@ public class OutputService {
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public ArrOutput outputLock(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                 final ArrOutput output) {
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
         return outputLock(fundVersion, output, change);
     }
 
@@ -421,7 +427,7 @@ public class OutputService {
 
         outputDefinitionRepository.save(outputDefinition);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
         ArrOutput output = createOutputWithChange(outputDefinition, change);
         List<ArrOutput> outputs = new ArrayList<>();
         outputs.add(output);
@@ -465,7 +471,7 @@ public class OutputService {
     public void removeNodesNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                        final ArrOutput output,
                                        final List<Integer> nodeIds) {
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
         removeNodesNamedOutput(fundVersion, output, nodeIds, change);
     }
 
@@ -611,7 +617,7 @@ public class OutputService {
     public void addNodesNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                     final ArrOutput output,
                                     final List<Integer> nodeIds) {
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
         addNodesNamedOutput(fundVersion, output, nodeIds, change);
     }
 
@@ -886,7 +892,7 @@ public class OutputService {
                                           final ArrOutputDefinition outputDefinition,
                                           final ArrFundVersion fundVersion,
                                           @Nullable final ArrChange createChange) {
-        ArrChange change = createChange == null ? arrangementService.createChange() : createChange;
+        ArrChange change = createChange == null ? arrangementService.createChange(null) : createChange;
 
         outputItem.setOutputDefinition(outputDefinition);
 
@@ -979,7 +985,7 @@ public class OutputService {
         Assert.notNull(outputVersion);
         Assert.notNull(fundVersionId);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(descItemObjectId);
 
@@ -1098,7 +1104,7 @@ public class OutputService {
             saveOutputDefinition(outputDefinition);
 
             // vytvoření změny
-            change = arrangementService.createChange();
+            change = arrangementService.createChange(null);
         }
 
         ArrOutputItem outputItemUpdated = updateOutputItem(outputItem, outputItemDB, fundVersion, change, createNewVersion);
@@ -1335,7 +1341,7 @@ public class OutputService {
         if (outputDefinition.getState() != OutputState.OPEN) {
             throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
         }
-        ArrChange change = createChange == null ? arrangementService.createChange() : createChange;
+        ArrChange change = createChange == null ? arrangementService.createChange(null) : createChange;
         List<ArrOutputItem> createdItems = new ArrayList<>();
         for (ArrOutputItem outputItem :
                 outputItems) {
@@ -1365,7 +1371,7 @@ public class OutputService {
     public ArrOutputDefinition deleteOutputItemsByTypeWithoutVersion(final Integer fundVersionId,
                                                                      final Integer outputDefinitionId,
                                                                      final Integer descItemTypeId) {
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
 
@@ -1405,7 +1411,7 @@ public class OutputService {
                                                        final Integer outputDefinitionVersion,
                                                        final Integer itemTypeId) {
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
 
@@ -1553,6 +1559,15 @@ public class OutputService {
                         .map(ArrItemSettings::getItemType)
                         .collect(Collectors.toSet());
 
+                // načtení typy atributů z pravidel výstupů,
+                // přidá do seznamu ignorovaných ty, které jsou nemožné
+                List<RulItemTypeExt> outputItemTypes = ruleService.getOutputItemTypes(outputDefinition);
+                for (RulItemTypeExt outputItemType : outputItemTypes) {
+                    if (outputItemType.getType().equals(RulItemType.Type.IMPOSSIBLE)) {
+                        itemTypesIgnored.add(outputItemType);
+                    }
+                }
+
                 for (ActionResult actionResult : result.getResults()) {
                     RulItemType itemTypeStore = storeActionResult(outputDefinition, actionResult, fundVersion, change, itemType, itemTypesIgnored);
                     if (itemTypeStore != null) {
@@ -1655,6 +1670,9 @@ public class OutputService {
         }
 
         if (itemTypesIgnored != null && itemTypesIgnored.contains(type)) {
+            logger.warn("Při ukládání výsledků hromadné akce do výstupu " + outputDefinition.getName()
+                    + " [ID=" + outputDefinition.getOutputDefinitionId() + "] byl přeskočen atribut " + type.getName()
+                    + " [CODE=" + type.getCode() + "], protože je v seznamu ignorovaných");
             return null;
         }
 
@@ -1724,6 +1742,14 @@ public class OutputService {
                 if (EqualsBuilder.reflectionEquals(next, item)) {
                     iterator.remove();
                     break;
+                } else if (next instanceof IArrItemStringValue && item instanceof IArrItemStringValue) {
+                    // pokud se jedná o textové hodnoty atributu, porovnávám na úrovni textové hodnoty a specifikace
+                    String nextValue = ((IArrItemStringValue) next).getValue();
+                    String itemValue = ((IArrItemStringValue) item).getValue();
+                    if (ObjectUtils.equals(nextValue, itemValue) && ObjectUtils.equals(next.getSpec(), item.getSpec())) {
+                        iterator.remove();
+                        break;
+                    }
                 }
             }
         }
@@ -1767,7 +1793,7 @@ public class OutputService {
 
         ArrItemSettings itemSettings = itemSettingsRepository.findOneByOutputDefinitionAndItemType(outputDefinition, itemType);
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = arrangementService.createChange(null);
 
         if (itemSettings == null) {
             itemSettings = new ArrItemSettings();
