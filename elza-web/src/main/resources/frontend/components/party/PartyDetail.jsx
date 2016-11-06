@@ -4,7 +4,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {PartyDetailCreators, PartyDetailIdentifiers, PartyDetailNames, AbstractReactComponent, Search, i18n, FormInput} from 'components/index.jsx';
+import {PartyDetailCreators, PartyDetailIdentifiers, PartyDetailNames, AbstractReactComponent, Search, i18n, FormInput, NoFocusButton, Icon} from 'components/index.jsx';
+import {Panel, PanelGroup} from 'react-bootstrap';
 import {AppActions} from 'stores/index.jsx';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
@@ -32,6 +33,10 @@ import './PartyDetail.less';
  * Detail osoby
  */
 class PartyDetail extends AbstractReactComponent {
+
+    state = {
+        activeIndexes: {}
+    };
 
     static PropTypes = {
         focus: React.PropTypes.object.isRequired,
@@ -116,6 +121,10 @@ class PartyDetail extends AbstractReactComponent {
         // Not defined shortcuts
     };
 
+    handleActive = (index) => {
+        this.setState({activeIndexes:{...this.state.activeIndexes, [index]: !this.state.activeIndexes[index]}})
+    };
+
     /**
      * RENDER
      * *********************************************
@@ -140,6 +149,27 @@ class PartyDetail extends AbstractReactComponent {
 
         let canEdit = userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: party.record.scopeId});
 
+        const parts = [
+            {
+                type:"FORM_NAMES"
+            },{
+                type:"A",
+                name:"Stručná charakteristika"
+            },{
+                type:"A",
+                name:"Životopisné údaje"
+            },{
+                type:"A",
+                name:"Vztahy"
+            },{
+                type:"A",
+                name:"Poznámka"
+            },{
+                type:"A",
+                name:"Zdroje informací, autoři"
+            }
+        ];
+
         return <Shortcuts name='PartyDetail' handler={this.handleShortcuts}>
             <div ref='partyDetail' className="party-detail">
                 <div className="party-header">
@@ -152,6 +182,18 @@ class PartyDetail extends AbstractReactComponent {
                     <div>
                         {party.partyType.description}
                     </div>
+                </div>
+                <div className="party-body">
+                    {parts.map((i, index) => {
+                        if (i.type == "FORM_NAMES") {
+                            return <PanelGroup activeKey={this.state.activeIndexes[index] ? index : false} onSelect={this.handleActive} accordion>
+                                <Panel header={<div>Formy jména<NoFocusButton className="pull-right hover-button"><Icon glyph="fa-thumb-tack" /></NoFocusButton></div>} eventKey={index}>Body</Panel>
+                            </PanelGroup>;
+                        }
+                        return <PanelGroup activeKey={this.state.activeIndexes[index] ? index : false} onSelect={this.handleActive} accordion>
+                            <Panel header={<div>{i.name}<NoFocusButton className="pull-right hover-button"><Icon glyph="fa-thumb-tack" /></NoFocusButton></div>} eventKey={index}>Body</Panel>
+                        </PanelGroup>
+                    })}
                 </div>
             </div>
         </Shortcuts>;
