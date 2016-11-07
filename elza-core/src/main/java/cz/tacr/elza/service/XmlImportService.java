@@ -145,6 +145,7 @@ import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitId;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Fund;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Level;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Packet;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.PacketState;
 import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
 import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Dynasty;
@@ -821,7 +822,9 @@ public class XmlImportService {
     private ArrPacket importPacket(final Packet packet, final ArrFund fund, final boolean stopOnError) throws InvalidDataException {
         ArrPacket arrPacket = new ArrPacket();
         arrPacket.setFund(fund);
-        arrPacket.setState(packet.getState());
+
+        PacketState packetState = packet.getState();
+        arrPacket.setState(ArrPacket.State.valueOf(packetState.name()));
 
         String packetTypeCode = packet.getPacketTypeCode();
         if (packetTypeCode != null) {

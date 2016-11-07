@@ -8,7 +8,6 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import cz.tacr.elza.api.ArrPacket;
 import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 
 /**
@@ -31,7 +30,7 @@ public class Packet {
 
     /** Stav */
     @XmlAttribute(name = "state")
-    private ArrPacket.State state;
+    private PacketState state;
 
     public String getPacketTypeCode() {
         return packetTypeCode;
@@ -49,11 +48,11 @@ public class Packet {
         this.storageNumber = storageNumber;
     }
 
-    public ArrPacket.State getState() {
+    public PacketState getState() {
         return state;
     }
 
-    public void setState(final ArrPacket.State state) {
+    public void setState(final PacketState state) {
         this.state = state;
     }
 
