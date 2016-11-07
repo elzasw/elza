@@ -485,7 +485,7 @@ export default class Autocomplete extends AbstractReactComponent {
         document.removeEventListener("mousedown", this.handleDocumentClick, false)
     }
 
-    renderMenuContainer(items, value, style) {
+    renderMenuContainer(items, value) {
         const {highlightedIndex} = this.state;
 
         var cls = 'autocomplete-menu-container';
@@ -516,7 +516,7 @@ export default class Autocomplete extends AbstractReactComponent {
         }
 
         return (
-            <div ref='menuParent' className={cls} style={style}>
+            <div ref='menuParent' className={cls}>
                 {header}
                 <div className='autocomplete-menu-wrapper'>
                     <div ref='menu' className='autocomplete-menu'>
@@ -535,9 +535,7 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (this.state.isOpen === true && prevState.isOpen === false) {
-            this.setMenuPositions()
-        }
+        this.setMenuPositions();
 
         if (this.state.isOpen && this._performAutoCompleteOnUpdate) {
             this._performAutoCompleteOnUpdate = false
@@ -677,8 +675,8 @@ export default class Autocomplete extends AbstractReactComponent {
         // Sploštění stromu, pokud je potřeba a jeho filtrování, pokud není customFilter
         var result;
         if (tree) {
-             // Filtrování stromu, pokud není nastaven customFilter
-            let filteredItems; 
+            // Filtrování stromu, pokud není nastaven customFilter
+            let filteredItems;
             let newExpandedIds;
             if (!customFilter && shouldItemRender) {
                 newExpandedIds = {};
@@ -703,8 +701,8 @@ export default class Autocomplete extends AbstractReactComponent {
             result = {
                 items
             };
-            
-            // Jendoduchý filtr - pouze v případě plochého seznamu - ne stromu, strom se filtruje jinak 
+
+            // Jendoduchý filtr - pouze v případě plochého seznamu - ne stromu, strom se filtruje jinak
             if (!customFilter && shouldItemRender) {
                 var filteredItems = [];
                 var filteredItemsDepth = [];
@@ -761,16 +759,39 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     setMenuPositions() {
+        if (!this.state.isOpen) {   // jen pokud je menu zobrazeno
+            return;
+        }
+
         var node = ReactDOM.findDOMNode(this.refs.input)
         var rect = node.getBoundingClientRect()
         var computedStyle = getComputedStyle(node)
         var marginBottom = parseInt(computedStyle.marginBottom, 10)
         var marginLeft = parseInt(computedStyle.marginLeft, 10)
-        var marginRight = parseInt(computedStyle.marginRight, 10)
-        this.changeState({
-            menuTop: rect.bottom + marginBottom,
-            menuLeft: rect.left + marginLeft,
-            menuWidth: rect.width + marginLeft + marginRight
+
+        const position = {x: rect.left + marginLeft, y: rect.bottom + marginBottom};
+        const inputHeight = rect.height;
+
+        const elementNode = ReactDOM.findDOMNode(this.refs.menuParent);
+        const element = $(elementNode);
+        const screen = $(document);
+        let elementSize = {w: element.width(), h: element.height()};
+        const windowSize = {w: screen.width(), h: screen.height()};
+
+        let x = position.x;
+        let y = position.y;
+
+        if (y + elementSize.h > windowSize.h) { // nevejde se dolu, dáme ho nahoru
+            y = y - elementSize.h - inputHeight - 2;    // číslo 2 kvůli border 1px
+
+            if (y < 0) {    // nevejde se nahoru ani dolu, neřešíme
+                y = position.y;
+            }
+        }
+
+        element.css({
+            top: y + 'px',
+            left: x + 'px',
         })
     }
 
@@ -871,12 +892,7 @@ export default class Autocomplete extends AbstractReactComponent {
                 key: `item-${index}`,
             })
         })
-        var style = {
-            left: this.state.menuLeft,
-            top: this.state.menuTop,
-            _minWidth: this.state.menuWidth,
-        }
-        var menu = this.renderMenuContainer(items, this.state.value, style)
+        var menu = this.renderMenuContainer(items, this.state.value)
         return React.cloneElement(menu)
     }
 
