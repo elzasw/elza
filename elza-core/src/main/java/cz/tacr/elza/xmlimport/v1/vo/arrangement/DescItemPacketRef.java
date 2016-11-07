@@ -3,7 +3,7 @@ package cz.tacr.elza.xmlimport.v1.vo.arrangement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
@@ -19,15 +19,25 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 public class DescItemPacketRef extends AbstractDescItem {
 
     /** Odkaz do seznamu obalů. */
-    @XmlIDREF
     @XmlAttribute(name = "packet-id", required = true)
+    private String packetId;
+
+    @XmlTransient
     private Packet packet;
+
+    public String getPacketId() {
+        return packetId;
+    }
+
+    public void setPacketId(final String packetId) {
+        this.packetId = packetId;
+    }
 
     public Packet getPacket() {
         return packet;
     }
 
-    public void setPacket(Packet packet) {
+    public void setPacket(final Packet packet) {
         this.packet = packet;
     }
 }

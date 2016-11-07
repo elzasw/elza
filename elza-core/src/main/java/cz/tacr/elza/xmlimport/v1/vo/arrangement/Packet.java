@@ -3,13 +3,12 @@ package cz.tacr.elza.xmlimport.v1.vo.arrangement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
 
-import cz.tacr.elza.api.ArrPacket;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import cz.tacr.elza.api.ArrPacket;
 import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 
 /**
@@ -27,7 +26,6 @@ public class Packet {
     private String packetTypeCode;
 
     /** Úložné číslo*/
-    @XmlID
     @XmlAttribute(name = "storage-number")
     private String storageNumber;
 
@@ -39,7 +37,7 @@ public class Packet {
         return packetTypeCode;
     }
 
-    public void setPacketTypeCode(String packetTypeCode) {
+    public void setPacketTypeCode(final String packetTypeCode) {
         this.packetTypeCode = packetTypeCode;
     }
 
@@ -47,7 +45,7 @@ public class Packet {
         return storageNumber;
     }
 
-    public void setStorageNumber(String storageNumber) {
+    public void setStorageNumber(final String storageNumber) {
         this.storageNumber = storageNumber;
     }
 

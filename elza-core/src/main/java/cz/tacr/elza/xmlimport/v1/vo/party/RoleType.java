@@ -4,7 +4,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -29,7 +29,9 @@ public class RoleType {
 
     /** Rejstříkové heslo. */
     @XmlAttribute(name = "record-id", required = true)
-    @XmlIDREF
+    private String recordId;
+
+    @XmlTransient
     private Record record;
 
     /** Zdroj informace. */
@@ -40,15 +42,23 @@ public class RoleType {
         return roleTypeCode;
     }
 
-    public void setRoleTypeCode(String roleTypeCode) {
+    public void setRoleTypeCode(final String roleTypeCode) {
         this.roleTypeCode = roleTypeCode;
+    }
+
+    public String getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(final String recordId) {
+        this.recordId = recordId;
     }
 
     public Record getRecord() {
         return record;
     }
 
-    public void setRecord(Record record) {
+    public void setRecord(final Record record) {
         this.record = record;
     }
 
@@ -56,7 +66,7 @@ public class RoleType {
         return source;
     }
 
-    public void setSource(String source) {
+    public void setSource(final String source) {
         this.source = source;
     }
 

@@ -7,8 +7,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlID;
-import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
@@ -34,13 +32,14 @@ import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 public abstract class AbstractParty {
 
     /** Pro vazbu z hodnoty party_ref. */
-    @XmlID
     @XmlAttribute(name = "party-id", required = true)
     private String partyId;
 
     /** Vazba na rejstřík. */
-    @XmlIDREF
     @XmlAttribute(name = "record-id", required = true)
+    private String recordId;
+
+    @XmlTransient
     private Record record;
 
     /** Kód typu osoby. */
@@ -77,9 +76,11 @@ public abstract class AbstractParty {
     private ComplexDate toDate;
 
     /** Autoři. */
-    @XmlIDREF
     @XmlElement(name = "creator")
     @XmlElementWrapper(name = "creator-name-list")
+    private List<String> creatorIds;
+
+    @XmlTransient
     private List<AbstractParty> creators;
 
     /** Vztahy. */
@@ -211,5 +212,21 @@ public abstract class AbstractParty {
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    public String getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(final String recordId) {
+        this.recordId = recordId;
+    }
+
+    public List<String> getCreatorIds() {
+        return creatorIds;
+    }
+
+    public void setCreatorIds(final List<String> creatorIds) {
+        this.creatorIds = creatorIds;
     }
 }
