@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {DropDownTree, AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading} from 'components/index.jsx';
+import {Autocomplete, AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading} from 'components/index.jsx';
 import {Modal, Button, HelpBlock, FormGroup, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
@@ -11,6 +11,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList.jsx'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 import {submitReduxForm} from 'components/form/FormUtils.jsx'
+import {getTreeItemById} from "./../../components/registry/registryUtils";
 
 /**
  * ADD PARTY FORM
@@ -73,8 +74,43 @@ class AddPartyForm extends AbstractReactComponent {
         this.dataRefresh();
     }
 
+    /**
+     * Vrátí id typu rejstříku, který je první možné vybrat.
+     * @param recordTypes již načtené typy rejstříků
+     * @return id nebo null
+     */
+    getPreselectRecordTypeId = (recordTypes) => {
+        const items = recordTypes.item;
+
+        const loop = (item) => {
+            if (item.addRecord) {
+                return item;
+            }
+
+            if (item.children && item.children.length > 0) {
+                for (let child of item.children) {
+                    const found = loop(child);
+                    if (found) {
+                        return found;
+                    }
+                }
+            }
+            return null;
+        };
+
+        let found;
+        for (let type of items) {
+            found = loop(type);
+            if (found) {
+                break;
+            }
+        }
+
+        return found ? found.id : null;
+    }
+
     dataRefresh = (props = this.props) => {
-        const {refTables:{partyTypes, partyNameFormTypes, scopesData:{scopes}}, partyTypeId} = props;
+        const {recordTypes, refTables:{partyTypes, partyNameFormTypes, scopesData:{scopes}}, partyTypeId} = props;
         this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
         this.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
         this.dispatch(refPartyTypesFetchIfNeeded());        // načtení seznamu typů jmen
@@ -85,6 +121,9 @@ class AddPartyForm extends AbstractReactComponent {
 
         // Inicializace pokud všechny podmínky OK pak spustí loadData
         !this.state.initialized &&
+            recordTypes.fetched &&
+            !recordTypes.isFetching &&
+            recordTypes.registryTypeId === partyTypeId &&
             partyNameFormTypes.fetched &&
             !partyNameFormTypes.isFetching &&
             partyTypes.fetched &&
@@ -99,12 +138,15 @@ class AddPartyForm extends AbstractReactComponent {
      * Pokud nejsou nastaveny hodnoty - nastavíme hodnotu do pole nameFormTypeId a scopeId
      */
     loadData(props) {
-        const {refTables: {partyNameFormTypes, scopesData:{scopes}, partyTypes}, partyTypeId} = props;
+        const {recordTypes, refTables: {partyNameFormTypes, scopesData:{scopes}, partyTypes}, partyTypeId} = props;
+
+        const recordTypeId = this.getPreselectRecordTypeId(recordTypes);
         const nameFormTypeId = partyNameFormTypes.items[0].nameFormTypeId;
         const scopeId = scopes.filter(i => i.versionId === null)[0].scopes[0].id;
         const complementsTypes = partyTypes.items.filter(i => i.partyTypeId == partyTypeId)[0].complementTypes;
+
         this.setState({initialized: true, complementsTypes});
-        this.props.load({nameFormTypeId, scopeId});
+        this.props.load({nameFormTypeId, scopeId, recordTypeId});
     }
 
     /**
@@ -162,6 +204,9 @@ class AddPartyForm extends AbstractReactComponent {
 
         const {initialized} = this.state;
 
+        const treeItems = recordTypes.fetched ? recordTypes.item : [];
+        const value = recordTypeId.value === null ? null : getTreeItemById(recordTypeId.value, treeItems);
+
         return (
             <div>
                 {initialized ? <div>
@@ -169,9 +214,16 @@ class AddPartyForm extends AbstractReactComponent {
                     <Modal.Body>
                         <div className="line">
                             <FormGroup validationState={recordTypeId.touched && recordTypeId.error ? 'error' : null}>
-                                <DropDownTree label={i18n('party.recordType')}
-                                              items={recordTypes.fetched ? recordTypes.item : []}  {...recordTypeId}
-                                              preselect={true} addRegistryRecord={true} />
+                                <Autocomplete
+                                    label={i18n('party.recordType')}
+                                    items={treeItems}
+                                    tree
+                                    allowSelectItem={(id, item) => item.addRecord}
+                                    {...recordTypeId}
+                                    value={value}
+                                    onChange={(id, item) => recordTypeId.onChange(id)}
+                                    onBlur={(id, item) => recordTypeId.onBlur(id)}
+                                />
                                 {recordTypeId.touched && recordTypeId.error && <HelpBlock>{recordTypeId.error}</HelpBlock>}
                             </FormGroup>
                             <Scope versionId={versionId} label={i18n('party.recordScope')} {...scopeId} />

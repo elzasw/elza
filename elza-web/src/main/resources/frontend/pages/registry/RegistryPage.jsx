@@ -12,7 +12,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
 import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
-        SearchWithGoto, RegistryPanel, DropDownTree, AddRegistryForm, ImportForm,
+        SearchWithGoto, RegistryPanel, AddRegistryForm, ImportForm,
         ListBox, Autocomplete} from 'components';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';

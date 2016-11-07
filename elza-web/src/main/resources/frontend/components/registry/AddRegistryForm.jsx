@@ -122,7 +122,7 @@ class AddRegistryForm extends AbstractReactComponent {
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
                             onChange={(id, item) => registerTypeId.onChange(id)}
-                            onBlur={(id, item) => registerTypeId.onBlur(value ? value.id : null)}
+                            onBlur={(id, item) => registerTypeId.onBlur(id)}
                             value={value}
                             disabled={this.state.disabled}
                             />

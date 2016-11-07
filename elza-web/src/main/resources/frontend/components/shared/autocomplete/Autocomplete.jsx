@@ -947,7 +947,10 @@ export default class Autocomplete extends AbstractReactComponent {
         if (!this.state.isOpen && this.state.highlightedIndex === null && this.state.inputStrValue === this.props.getItemName(this.state.value)) {
             // Není třeba nastavovat state
             if (callBlurAfterSetState) {
-                this.props.onBlur && this.props.onBlur(this.state.value);
+                const {onBlur, getItemId} = this.props;
+                const {value} = this.state;
+                const id = value ? getItemId(value) : null;
+                onBlur && onBlur(id, value);
             }
             return;
         }
@@ -961,7 +964,10 @@ export default class Autocomplete extends AbstractReactComponent {
         this.changeState(addState, () => {
             //ReactDOM.findDOMNode(this.refs.input).select()
             if (callBlurAfterSetState) {
-                this.props.onBlur && this.props.onBlur(this.state.value);
+                const {onBlur, getItemId} = this.props;
+                const {value} = this.state;
+                const id = value ? getItemId(value) : null;
+                onBlur && onBlur(id, value);
             }
         })
     }
