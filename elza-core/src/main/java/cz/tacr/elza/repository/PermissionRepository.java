@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
@@ -34,4 +35,6 @@ public interface PermissionRepository extends JpaRepository<UsrPermission, Integ
     List<UsrPermission> findByGroupOrderByPermissionIdAsc(UsrGroup group);
 
     void deleteByGroup(UsrGroup group);
+
+    void deleteByFund(ArrFund fund);
 }
