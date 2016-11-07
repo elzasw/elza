@@ -35,6 +35,7 @@ import status from './app/status.jsx';
 import app from './app/app.jsx';
 
 import addPartyForm from './app/party/form/addPartyForm.jsx';
+import addPartyNameForm from './app/party/form/addPartyNameForm.jsx';
 import partyNameForm from './app/party/form/partyNameForm.jsx';
 import partyIdentifierForm from './app/party/form/partyIdentifierForm.jsx';
 import partyCreatorForm from './app/party/form/partyCreatorForm.jsx';
@@ -82,9 +83,11 @@ const rootReducer = combineReducers({
     form: formReducer.plugin({
         fundForm: fundForm,
         outputEditForm: inlineForm,
+        partyForm: inlineForm,
         permissionsEditForm: inlineForm,
         addPacketForm: addPacketForm,
         addPartyForm: addPartyForm,
+        addPartyNameForm: addPartyNameForm,
         partyNameForm: partyNameForm,
         partyIdentifierForm: partyIdentifierForm,
         partyCreatorForm: partyCreatorForm,

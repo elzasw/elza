@@ -1,17 +1,16 @@
-/**
- * Komponenta detailu osoby
- */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {PartyDetailCreators, PartyDetailIdentifiers, PartyDetailNames, AbstractReactComponent, Search, i18n, FormInput, NoFocusButton, Icon} from 'components/index.jsx';
-import {Panel, PanelGroup} from 'react-bootstrap';
+import {PartyDetailCreators, PartyDetailIdentifiers, PartyDetailNames, AddPartyNameForm, AbstractReactComponent, Search, i18n, FormInput, NoFocusButton, Icon} from 'components/index.jsx';
+import {Panel, PanelGroup, FormControl, FormGroup} from 'react-bootstrap';
 import {AppActions} from 'stores/index.jsx';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {updateParty} from 'actions/party/party.jsx'
 import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 import {Utils} from 'components/index.jsx';
+import {objectById} from 'stores/app/utils.jsx';
 import {setInputFocus} from 'components/Utils.jsx'
 const ShortcutsManager = require('react-shortcuts');
 const Shortcuts = require('react-shortcuts/component');
@@ -27,15 +26,17 @@ const shortcutManager = new ShortcutsManager(keymap);
 
 import './PartyDetail.less';
 
+const PARTY_TYPE_IDENT = "ident";
+const PARTY_TYPE_CONCLUSION = "conclusion";
+const PARTY_TYPE_CORPORATION_CODE = 'GROUP_PARTY';
+
 /**
- * PARTY DETAIL
- * *********************************************
- * Detail osoby
+ * Komponenta detailu osoby
  */
 class PartyDetail extends AbstractReactComponent {
 
     state = {
-        activeIndexes: {}
+        activeIndexes: {},
     };
 
     static PropTypes = {
@@ -125,13 +126,17 @@ class PartyDetail extends AbstractReactComponent {
         this.setState({activeIndexes:{...this.state.activeIndexes, [index]: !this.state.activeIndexes[index]}})
     };
 
-    /**
-     * RENDER
-     * *********************************************
-     * Vykreslení detailu osoby
-     */ 
+    getPartyType = () => {
+        return objectById(this.props.partyTypes.items, this.props.partyDetail.data.partyType.partyTypeId, 'partyTypeId');
+    };
+
+    handleNameAdd = () => {
+        const partyType = this.getPartyType();
+        this.dispatch(modalDialogShow(this, i18n('party.detail.name.new') , <AddPartyNameForm partyType={partyType} />));
+    };
+
     render() {
-        const {userDetail, partyDetail, refTables: {partyTypes, calendarTypes}} = this.props;
+        const {userDetail, partyDetail, refTables: {calendarTypes}} = this.props;
         //const {fromCalendar, toCalendar} = this.state;
         const party = partyDetail.data;
 
@@ -151,24 +156,26 @@ class PartyDetail extends AbstractReactComponent {
 
         const parts = [
             {
-                type:"FORM_NAMES"
+                type:PARTY_TYPE_IDENT
             },{
-                type:"A",
+                type:"GENERAL",
                 name:"Stručná charakteristika"
             },{
-                type:"A",
+                type:"GENERAL",
                 name:"Životopisné údaje"
             },{
-                type:"A",
+                type:"GENERAL",
                 name:"Vztahy"
             },{
-                type:"A",
+                type:"GENERAL",
                 name:"Poznámka"
             },{
-                type:"A",
+                type:PARTY_TYPE_CONCLUSION,
                 name:"Zdroje informací, autoři"
             }
         ];
+
+        const partyType = this.getPartyType();
 
         return <Shortcuts name='PartyDetail' handler={this.handleShortcuts}>
             <div ref='partyDetail' className="party-detail">
@@ -185,13 +192,73 @@ class PartyDetail extends AbstractReactComponent {
                 </div>
                 <div className="party-body">
                     {parts.map((i, index) => {
-                        if (i.type == "FORM_NAMES") {
-                            return <PanelGroup activeKey={this.state.activeIndexes[index] ? index : false} onSelect={this.handleActive} accordion>
-                                <Panel header={<div>Formy jména<NoFocusButton className="pull-right hover-button"><Icon glyph="fa-thumb-tack" /></NoFocusButton></div>} eventKey={index}>Body</Panel>
-                            </PanelGroup>;
+                        if (i.type == PARTY_TYPE_IDENT) {
+                            return <div>
+                                <PanelGroup activeKey={this.state.activeIndexes[PARTY_TYPE_IDENT + '_FORM_NAMES'] ? PARTY_TYPE_IDENT + '_FORM_NAMES' : PARTY_TYPE_IDENT + '_FORM_NAMES'} onSelect={this.handleActive} accordion>
+                                    <Panel header={<div>Formy jména<NoFocusButton className="pull-right hover-button"><Icon glyph="fa-thumb-tack" /></NoFocusButton></div>} eventKey={PARTY_TYPE_IDENT + '_FORM_NAMES'}>
+                                        <div>
+                                            <label>Formy jména</label>
+                                            <NoFocusButton bsStyle="default" onClick={this.handleNameAdd}><Icon glyph="fa-plus" /></NoFocusButton>
+                                        </div>
+                                        {party.partyNames.map((name, index) => {
+                                            const res = [];
+                                            const hlp = (a,b) => {
+                                                if (a) {
+                                                    b.push(a);
+                                                }
+                                            };
+
+                                            console.log("val", name);
+                                            hlp(name.degreeBefore, res);
+                                            hlp(name.mainPart, res);
+                                            hlp(name.otherPart, res);
+                                            let roman = null, geoAddon = null, addon = null;
+                                            name.partyNameComplements.forEach((e) => {
+                                                const type = objectById(partyType.complementTypes, e.complementTypeId, 'complementTypeId');
+                                                if (type) {
+                                                    if (type.code == "2") {
+                                                        addon = e.complement;
+                                                    } else if (type.code == "3") {
+                                                        roman = e.complement;
+                                                    } else if (type.code == "4") {
+                                                        geoAddon = e.complement;
+                                                    }
+                                                }
+                                            });
+                                            hlp(roman, res);
+                                            hlp(geoAddon, res);
+                                            hlp(addon, res);
+                                            let str = res.join(' ')
+                                            if (name.degreeAfter != null && name.degreeAfter.length > 0) {
+                                                str += ', ' + name.degreeAfter;
+                                            }
+                                            return <div>
+                                                <FormControl.Static>{str}</FormControl.Static>
+                                                <NoFocusButton><Icon glyph="fa-pencil" /></NoFocusButton>
+                                                <NoFocusButton><Icon glyph="fa-times" /></NoFocusButton>
+                                                {name.prefferedName ? "(Preferovná forma jména)" : <NoFocusButton><Icon glyph="fa-check" /></NoFocusButton>}
+                                            </div>
+                                        })}
+                                    </Panel>
+                                </PanelGroup>
+                                {party.partyType.code == PARTY_TYPE_CORPORATION_CODE && <PanelGroup activeKey={this.state.activeIndexes[PARTY_TYPE_IDENT + '_CORP_IDENT'] ? PARTY_TYPE_IDENT + '_CORP_IDENT' : false} onSelect={this.handleActive} accordion>
+                                    <Panel header={<div>Identifikátory korporace<NoFocusButton className="pull-right hover-button"><Icon glyph="fa-thumb-tack" /></NoFocusButton></div>} eventKey={PARTY_TYPE_IDENT + '_CORP_IDENT'}>
+                                        Body
+                                    </Panel>
+                                </PanelGroup>}
+                            </div>;
+                        } else if (i.type == PARTY_TYPE_CONCLUSION) {
+                            return <div>
+                                <PanelGroup activeKey={this.state.activeIndexes[PARTY_TYPE_CONCLUSION + '_SOURCES'] ? PARTY_TYPE_CONCLUSION + '_SOURCES' : false} onSelect={this.handleActive} accordion>
+                                    <Panel header={<div>Zdroje informací<NoFocusButton className="pull-right hover-button"><Icon glyph="fa-thumb-tack" /></NoFocusButton></div>} eventKey={PARTY_TYPE_CONCLUSION + '_SOURCES'}>{/* TBD */}</Panel>
+                                </PanelGroup>
+                                <PanelGroup activeKey={this.state.activeIndexes[PARTY_TYPE_CONCLUSION + '_CREATORS'] ? PARTY_TYPE_CONCLUSION + '_CREATORS' : false} onSelect={this.handleActive} accordion>
+                                    <Panel header={<div>Autoři<NoFocusButton className="pull-right hover-button"><Icon glyph="fa-thumb-tack" /></NoFocusButton></div>} eventKey={PARTY_TYPE_CONCLUSION + '_CREATORS'}>{/* TBD */}</Panel>
+                                </PanelGroup>
+                            </div>;
                         }
                         return <PanelGroup activeKey={this.state.activeIndexes[index] ? index : false} onSelect={this.handleActive} accordion>
-                            <Panel header={<div>{i.name}<NoFocusButton className="pull-right hover-button"><Icon glyph="fa-thumb-tack" /></NoFocusButton></div>} eventKey={index}>Body</Panel>
+                            <Panel header={<div>{i.name}<NoFocusButton className="pull-right hover-button"><Icon glyph="fa-thumb-tack" /></NoFocusButton></div>} eventKey={index}>{/* TBD */}</Panel>
                         </PanelGroup>
                     })}
                 </div>
@@ -201,11 +268,12 @@ class PartyDetail extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {app: {partyDetail}, focus, userDetail} = state;
+    const {app: {partyDetail}, focus, userDetail, refTables: {partyTypes}} = state;
     return {
         partyDetail,
         focus,
-        userDetail
+        userDetail,
+        partyTypes
     }
 }
 

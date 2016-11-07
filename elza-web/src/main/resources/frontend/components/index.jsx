@@ -101,6 +101,7 @@ exports.PartyDetailIdentifiers = require('components/party/PartyDetailIdentifier
 exports.PartyDetailCreators = require('components/party/PartyDetailCreators.jsx');
 exports.PartyEntities = require('components/party/PartyEntities.jsx');
 exports.AddPartyForm = require('components/party/AddPartyForm.jsx');
+exports.AddPartyNameForm = require('components/party/AddPartyNameForm.jsx');
 exports.PartyNameForm = require('components/party/PartyNameForm.jsx');
 exports.PartyIdentifierForm = require('components/party/PartyIdentifierForm.jsx');
 exports.PartyCreatorForm = require('components/party/PartyCreatorForm.jsx');
