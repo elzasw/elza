@@ -335,15 +335,17 @@ public class ClientFactoryVO {
 
             String roman = null, geoAddon = null, addon = null;
 
-            for (ParPartyNameComplementVO b : prefferedName.getPartyNameComplements()) {
-                ParComplementType type = map.get(b.getComplementTypeId());
-                if (type != null) {
-                    if (type.getCode().equals("2")) {
-                        addon = b.getComplement();
-                    } else if (type.getCode().equals("3")) {
-                        roman = b.getComplement();
-                    } else if (type.getCode().equals("4")) {
-                        geoAddon = b.getComplement();
+            if (prefferedName.getPartyNameComplements() != null && !prefferedName.getPartyNameComplements().isEmpty()) {
+                for (ParPartyNameComplementVO b : prefferedName.getPartyNameComplements()) {
+                    ParComplementType type = map.get(b.getComplementTypeId());
+                    if (type != null) {
+                        if (type.getCode().equals("2")) {
+                            addon = b.getComplement();
+                        } else if (type.getCode().equals("3")) {
+                            roman = b.getComplement();
+                        } else if (type.getCode().equals("4")) {
+                            geoAddon = b.getComplement();
+                        }
                     }
                 }
             }
