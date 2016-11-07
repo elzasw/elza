@@ -250,7 +250,7 @@ export default class Autocomplete extends AbstractReactComponent {
         document.removeEventListener("mousedown", this.handleDocumentClick, false)
     }
 
-    renderMenuContainer(items, value, style) {
+    renderMenuContainer(items, value) {
         var cls = 'autocomplete-menu-container';
 
         var header;
@@ -276,7 +276,7 @@ export default class Autocomplete extends AbstractReactComponent {
         }
 
         return (
-            <div ref='menuParent' className={cls} style={style}>
+            <div ref='menuParent' className={cls}>
                 {header}
                 <div className='autocomplete-menu-wrapper'>
                     <div ref='menu' className='autocomplete-menu'>
@@ -295,9 +295,7 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (this.state.isOpen === true && prevState.isOpen === false) {
-            this.setMenuPositions()
-        }
+        this.setMenuPositions();
 
         if (this.state.isOpen && this._performAutoCompleteOnUpdate) {
             this._performAutoCompleteOnUpdate = false
@@ -398,16 +396,39 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     setMenuPositions() {
+        if (!this.state.isOpen) {   // jen pokud je menu zobrazeno
+            return;
+        }
+
         var node = ReactDOM.findDOMNode(this.refs.input)
         var rect = node.getBoundingClientRect()
         var computedStyle = getComputedStyle(node)
         var marginBottom = parseInt(computedStyle.marginBottom, 10)
         var marginLeft = parseInt(computedStyle.marginLeft, 10)
-        var marginRight = parseInt(computedStyle.marginRight, 10)
-        this.setState({
-            menuTop: rect.bottom + marginBottom,
-            menuLeft: rect.left + marginLeft,
-            menuWidth: rect.width + marginLeft + marginRight
+
+        const position = {x: rect.left + marginLeft, y: rect.bottom + marginBottom};
+        const inputHeight = rect.height;
+
+        const elementNode = ReactDOM.findDOMNode(this.refs.menuParent);
+        const element = $(elementNode);
+        const screen = $(document);
+        let elementSize = {w: element.width(), h: element.height()};
+        const windowSize = {w: screen.width(), h: screen.height()};
+
+        let x = position.x;
+        let y = position.y;
+
+        if (y + elementSize.h > windowSize.h) { // nevejde se dolu, dáme ho nahoru
+            y = y - elementSize.h - inputHeight - 2;    // číslo 2 kvůli border 1px
+
+            if (y < 0) {    // nevejde se nahoru ani dolu, neřešíme
+                y = position.y;
+            }
+        }
+
+        element.css({
+            top: y + 'px',
+            left: x + 'px',
         })
     }
 
@@ -457,12 +478,8 @@ export default class Autocomplete extends AbstractReactComponent {
                 ref: `item-${index}`,
             })
         })
-        var style = {
-            left: this.state.menuLeft,
-            top: this.state.menuTop,
-            _minWidth: this.state.menuWidth,
-        }
-        var menu = this.renderMenuContainer(items, this.state.value, style)
+
+        var menu = this.renderMenuContainer(items, this.state.value)
         return React.cloneElement(menu)
     }
 
