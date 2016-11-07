@@ -18,67 +18,77 @@ public interface ArrChange<U extends UsrUser, N extends ArrNode> extends Seriali
         /**
          * Založení JP.
          */
-        ADD_LEVEL,
+        ADD_LEVEL("založení JP"),
 
         /**
          * Přesun JP.
          */
-        MOVE_LEVEL,
+        MOVE_LEVEL("přesun JP"),
 
         /**
          * Zrušení JP.
          */
-        DELETE_LEVEL,
+        DELETE_LEVEL("zrušení JP"),
 
         /**
          * Založení rejstříkového hesla k JP.
          */
-        ADD_RECORD_NODE,
+        ADD_RECORD_NODE("založení rejstříkového hesla k JP"),
 
         /**
          * Zrušení rejstříkového hesla k JP.
          */
-        DELETE_RECORD_NODE,
+        DELETE_RECORD_NODE("zrušení rejstříkového hesla k JP"),
 
         /**
          * Změna rejstříkového hesla k JP.
          */
-        UPDATE_RECORD_NODE,
+        UPDATE_RECORD_NODE("změna rejstříkového hesla k JP"),
 
         /**
          * Změna atributu včetně změny pořadí.
          */
-        UPDATE_DESC_ITEM,
+        UPDATE_DESC_ITEM("změna atributu"),
 
         /**
          * Založení atributu.
          */
-        ADD_DESC_ITEM,
+        ADD_DESC_ITEM("založení atributu"),
 
         /**
          * Zrušení atributu.
          */
-        DELETE_DESC_ITEM,
+        DELETE_DESC_ITEM("zrušení atributu"),
 
         /**
          * Hromadná změna atributů - změny z tabulkového zobrazení, pokud se týká jen jedné JP, tak jde o typ Změna atributu.
          */
-        BATCH_CHANGE_DESC_ITEM,
+        BATCH_CHANGE_DESC_ITEM("hromadná změna atributů"),
 
         /**
          * Hromadné vymazání atributů - změny z tabulkového zobrazení, pokud se týká jen jedné JP, tak jde o typ Zrušení atributu.
          */
-        BATCH_DELETE_DESC_ITEM,
+        BATCH_DELETE_DESC_ITEM("hromadné vymazání atributů"),
 
         /**
          * Hromadné funkce.
          */
-        BULK_ACTION,
+        BULK_ACTION("hromadná funkce"),
 
         /**
          * Import AS.
          */
-        IMPORT
+        IMPORT("import AS");
+
+        private String description;
+
+        Type(final String description) {
+            this.description = description;
+        }
+
+        public String getDescription() {
+            return description;
+        }
     }
 
     /**

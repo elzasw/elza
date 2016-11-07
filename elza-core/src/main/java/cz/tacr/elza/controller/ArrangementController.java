@@ -47,6 +47,7 @@ import cz.tacr.elza.service.vo.ChangesResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
@@ -58,6 +59,7 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -1815,6 +1817,34 @@ public class ArrangementController {
             node = nodeRepository.getOneCheckExist(nodeId);
         }
         return revertingChangesService.findChanges(fundVersion.getFund(), node, maxSize, offset, change);
+    }
+
+    /**
+     * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param maxSize       maximální počet záznamů
+     * @param fromDate      datum vůči kterému vyhledávám v seznamu (př. formátu query parametru: 2016-11-07T10:32:04)
+     * @param changeId      identifikátor změny, vůči které chceme počítat offset (pokud není vyplněn, bere se vždy poslední)
+     * @param nodeId        identifikátor JP u které vyhledáváme změny (pokud není vyplně, vyhledává se přes celý AS)
+     * @return výsledek hledání
+     */
+    @RequestMapping(value = "/changes/{fundVersionId}/date", method = RequestMethod.GET)
+    public ChangesResult findChangesByDate(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                           @RequestParam(value = "maxSize", required = false, defaultValue = "20") final Integer maxSize,
+                                           @RequestParam(value = "fromDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime fromDate,
+                                           @RequestParam(value = "changeId") final Integer changeId,
+                                           @RequestParam(value = "nodeId", required = false) final Integer nodeId) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        if (fundVersion.getLockChange() != null) {
+            throw new IllegalStateException("Nelze prováděn změny v uzavřené verzi");
+        }
+        ArrChange change = changeRepository.getOneCheckExist(changeId);
+        ArrNode node = null;
+        if (nodeId != null) {
+            node = nodeRepository.getOneCheckExist(nodeId);
+        }
+        return revertingChangesService.findChangesByDate(fundVersion.getFund(), node, maxSize, fromDate, change);
     }
 
     /**

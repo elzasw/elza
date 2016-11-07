@@ -3,22 +3,37 @@ package cz.tacr.elza.service.vo;
 import java.util.List;
 
 /**
- * TODO: vyplnit popis třídy
+ * Value objekt se seznamem změn.
  *
  * @author Martin Šlapa
  * @since 03.11.2016
  */
 public class ChangesResult {
 
+    /**
+     * Maximální počet položek v seznamu.
+     */
     private Integer maxSize;
 
+    /**
+     * Počet přeskočených položek v celkovém seznamu.
+     */
     private Integer offset;
 
+    /**
+     * Celkový počet položek v seznamu.
+     */
+    private Integer totalCount;
+
+    /**
+     * Je seznam neaktuální?
+     */
     private Boolean outdated;
 
+    /**
+     * Požadovaná část změn ze seznamu.
+     */
     private List<Change> changes;
-
-    private Integer totalCount;
 
     public Integer getMaxSize() {
         return maxSize;

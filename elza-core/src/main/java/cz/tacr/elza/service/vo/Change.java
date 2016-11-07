@@ -5,7 +5,7 @@ import cz.tacr.elza.domain.ArrChange;
 import java.time.LocalDateTime;
 
 /**
- * TODO: vyplnit popis třídy
+ * Value objekt konkrétní změny.
  *
  * @author Martin Šlapa
  * @since 03.11.2016
@@ -41,6 +41,16 @@ public class Change {
      * Počet JP, které změna ovlivnila.
      */
     private Integer nodeChanges;
+
+    /**
+     * Textový popis změny.
+     */
+    private String description;
+
+    /**
+     * Může se vrátit?
+     */
+    private Boolean revert;
 
     public Integer getChangeId() {
         return changeId;
@@ -88,5 +98,21 @@ public class Change {
 
     public void setNodeChanges(final Integer nodeChanges) {
         this.nodeChanges = nodeChanges;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(final String description) {
+        this.description = description;
+    }
+
+    public Boolean getRevert() {
+        return revert;
+    }
+
+    public void setRevert(final Boolean revert) {
+        this.revert = revert;
     }
 }
