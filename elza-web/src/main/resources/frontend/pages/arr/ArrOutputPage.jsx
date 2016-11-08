@@ -545,13 +545,13 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     renderFunctionsPanel(readMode) {
-        
+
         const activeFund = this.getActiveFund(this.props);
-        const {userDetail} = this.props;        
-        if(!userDetail.hasFundActionPage(activeFund)){          //Pokud uživatel nemá oprávnění spouštět funkce 
+        const {userDetail} = this.props;
+        if(!userDetail.hasFundActionPage(activeFund.id)){          //Pokud uživatel nemá oprávnění spouštět funkce
            return <span>{i18n("arr.output.functions.noPermissions")}</span>
         }
-        
+
         const {fundOutput} = activeFund;
         if (fundOutput.fundOutputDetail.fetched) {
             return <FundOutputFunctions

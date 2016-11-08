@@ -81,7 +81,8 @@ public class ArrMoveLevelService {
 
         Assert.notEmpty(transportNodes);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
+        arrangementService.setPrimaryNode(change, staticNode);
 
         ArrLevel staticLevelParent = arrangementService.lockNode(staticParentNode, version, change);
         ArrLevel transportLevelParent = transportParentNode.equals(staticParentNode)
@@ -199,7 +200,7 @@ public class ArrMoveLevelService {
                                 final ArrNode transportParentNode) {
         Assert.notEmpty(transportNodes);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
 
         ArrLevel staticLevelParent = arrangementService.lockNode(staticParentNode, version, change);
         ArrLevel transportLevelParent = transportParentNode.equals(staticParentNode)
@@ -311,7 +312,7 @@ public class ArrMoveLevelService {
                                 final Collection<ArrNode> transportNodes,
                                 final ArrNode transportParentNode) {
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
 
         ArrLevel staticLevel = arrangementService.lockNode(staticNode, version, change);
         ArrLevel transportLevelParent = staticNode.equals(transportParentNode)
@@ -336,7 +337,6 @@ public class ArrMoveLevelService {
 
         // vkládaný nesmí být rodičem uzlu za který ho vkládám
         checkCycle(transportLevels.get(0), staticLevel);
-
 
         moveLevelUnder(version, staticLevel, transportLevels, change);
     }
@@ -401,7 +401,7 @@ public class ArrMoveLevelService {
         Assert.notNull(version);
         Assert.notNull(deleteNode);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_LEVEL);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_LEVEL, deleteNode);
 
         ArrLevel deleteLevel = arrangementService.lockNode(deleteNode, version, change);
         if (deleteNodeParent != null) {
@@ -596,7 +596,7 @@ public class ArrMoveLevelService {
 
         arrangementService.isValidAndOpenVersion(version);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_LEVEL);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_LEVEL, staticNode);
 
         final ArrLevel staticLevelParent = arrangementService.lockNode(staticNodeParent, version, change);
         Assert.notNull(staticLevelParent);
@@ -635,7 +635,7 @@ public class ArrMoveLevelService {
 
         arrangementService.isValidAndOpenVersion(version);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_LEVEL);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_LEVEL, staticNode);
         final ArrLevel staticLevel = arrangementService.lockNode(staticNode, version, change);
         Assert.notNull(staticLevel);
 

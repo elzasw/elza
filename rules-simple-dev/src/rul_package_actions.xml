@@ -21,6 +21,12 @@
     </package-action>
 
     <package-action filename="SRD_GENERATOR_MULTIPLE.yaml">
+        <action-item-types>
+            <action-item-type item-type="SRD_UNIT_COUNT" />
+            <action-item-type item-type="SRD_TITLE" />
+            <action-item-type item-type="SRD_STATISTICS" />
+            <action-item-type item-type="SRD_UNIT_HIST" />
+        </action-item-types>
         <action-recommendeds>
             <action-recommended output-type="SRD_INVENTORY" />
             <action-recommended output-type="SRD_ADHOC" />

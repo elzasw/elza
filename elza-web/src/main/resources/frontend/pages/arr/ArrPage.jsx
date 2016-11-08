@@ -766,6 +766,15 @@ class ArrPage extends ArrParentPage {
                     actionAddons={<Button onClick={() => {this.handleSetExtendedView(false)}} className='extended-view-toggle'><Icon glyph='fa-compress'/></Button>}
                 />
             )
+        } else if(activeFund.nodes.activeIndex === null){
+            return (
+                <div className='arr-output-detail-container'>
+                   <div className="unselected-msg">
+                        <div className="title">{i18n('arr.node.noSelection.title')}</div>
+                        <div className="msg-text">{i18n('arr.node.noSelection.message')}</div>
+                    </div>
+                </div>
+            );
         } else {    // standardní zobrazení pořádání - záložky node
             var packets = [];
             var fundId = activeFund.id;

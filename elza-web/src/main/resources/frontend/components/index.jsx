@@ -21,7 +21,6 @@ exports.ToggleContent = require('components/shared/toggle-content/ToggleContent.
 exports.Tabs = require('components/shared/tabs/Tabs.jsx');
 exports.Search = require('components/shared/search/Search.jsx');
 exports.SearchWithGoto = require('components/shared/search/SearchWithGoto.jsx');
-exports.DropDownTree = require('components/shared/drop-down-tree/DropDownTree.jsx');
 exports.Loading = require('components/shared/loading/Loading.jsx');
 exports.VirtualList = require('components/shared/virtual-list/VirtualList.jsx');
 exports.AddRemoveList = require('components/shared/list/AddRemoveList.jsx');

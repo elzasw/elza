@@ -1,0 +1,10 @@
+<packet-types>
+    <packet-type code="BOX">
+        <name>Karton</name>
+        <shortcut>kar</shortcut>
+    </packet-type>
+    <packet-type code="FASCICLE">
+        <name>Fascikl</name>
+        <shortcut>fas</shortcut>
+    </packet-type>
+</packet-types>

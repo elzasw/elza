@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-
-import {AbstractReactComponent, i18n, DropDownTree, Scope, FormInput} from 'components/index.jsx';
+import {Autocomplete, AbstractReactComponent, i18n, Scope, FormInput} from 'components/index.jsx';
 import {Modal, Button, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm, submitReduxFormWithProp} from 'components/form/FormUtils.jsx'
 import {getRegistryRecordTypesIfNeeded, getRegistry} from 'actions/registry/registryRegionList.jsx'
 import {WebApi} from 'actions/index.jsx';
+import {getTreeItemById} from "./registryUtils";
 
 /**
  * Formulář přidání nového rejstříkového hesla
@@ -44,31 +44,32 @@ class AddRegistryForm extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(getRegistryRecordTypesIfNeeded());
+        this.prepareState(nextProps);
     }
 
     componentDidMount() {
-        /*if (this.props.initData) {
-            this.props.load(this.props.initData);
-        }/**/
-
         this.dispatch(getRegistryRecordTypesIfNeeded());
-        this.prepareState();
+        this.prepareState(this.props);
     }
 
-    prepareState(props = this.props){
-        const {parentRecordId, registryRegion, registryRegionRecordTypes} = props;
-        if (parentRecordId !== null) {
-            this.setState({disabled: true});
-            WebApi.getRegistry(parentRecordId).then(json => {
-                this.props.load(json);
-            });
-        } else {
-            this.setState({disabled: false});
-            if (registryRegion.registryTypesId && this.isValueUseable(registryRegionRecordTypes.item, registryRegion.registryTypesId)){
-                this.props.load({registerTypeId: registryRegion.registryTypesId});
+    prepareState(props){
+        const {fields: {registerTypeId}, parentRecordId, registryRegion, registryRegionRecordTypes} = props;
+
+        // Pokud není nastaven typ rejstříku, pokusíme se ho nastavit
+        if (!registerTypeId || registerTypeId.value === "") {
+            // Pokud je předán parentRecordId, přednačte se do prvku výběr rejstříku a tento prvek se nastaví jako disabled
+            if (parentRecordId !== null) {
+                this.setState({disabled: true});
+                WebApi.getRegistry(parentRecordId).then(json => {
+                    this.props.load(json);
+                });
+            } else {    //  pokud není předán parentRecordId, může se výběr rejstříku editovat
+                this.setState({disabled: false});
+                if (registryRegion.registryTypesId && this.isValueUseable(registryRegionRecordTypes.item, registryRegion.registryTypesId)){ // pokud o vybrání nějaké položky, která je uvedena v registryRegion.registryTypesId
+                    this.props.load({registerTypeId: registryRegion.registryTypesId});
+                }
             }
         }
-
     }
 
     isValueUseable(items, value) {
@@ -96,14 +97,7 @@ class AddRegistryForm extends AbstractReactComponent {
 
         const okSubmitForm = submitReduxFormWithProp.bind(this, AddRegistryForm.validate, 'store');
         const okAndDetailSubmitForm = submitReduxFormWithProp.bind(this, AddRegistryForm.validate, 'storeAndViewDetail');
-
-        const itemsForDropDownTree = registryRegionRecordTypes.item ? registryRegionRecordTypes.item : [];
-
-
-        let registerTypesIdValue = registerTypeId.value;
-        if (registryRegion.registryTypesId && !registerTypeId.value && this.isValueUseable(registryRegionRecordTypes.item, registryRegion.registryTypesId)){
-            registerTypesIdValue = registryRegion.registryTypesId;
-        }
+        const items = registryRegionRecordTypes.item ? registryRegionRecordTypes.item : [];
 
         let scopeIdValue = scopeId.value;
         if (!scopeId.value) {
@@ -113,18 +107,23 @@ class AddRegistryForm extends AbstractReactComponent {
             }
         }
 
+        const value = getTreeItemById(registerTypeId ? registerTypeId.value : "", items);
+
         return (
             <div key={this.props.key}>
                 <Form onSubmit={handleSubmit(okSubmitForm)}>
                     <Modal.Body>
                         <Scope disabled={this.state.disabled} versionId={versionId} label={i18n('registry.scopeClass')} {...scopeId} value={scopeIdValue} {...decorateFormField(scopeId)}/>
-                        <DropDownTree
+                        <Autocomplete
                             label={i18n('registry.add.type')}
-                            items={itemsForDropDownTree}
-                            addRegistryRecord={true}
+                            items={items}
+                            tree
+                            allowSelectItem={(id, item) => item.addRecord}
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
-                            value={registerTypesIdValue}
+                            onChange={(id, item) => registerTypeId.onChange(id)}
+                            onBlur={(id, item) => registerTypeId.onBlur(id)}
+                            value={value}
                             disabled={this.state.disabled}
                             />
                         <FormInput type="text" label={i18n('registry.name')} {...record} {...decorateFormField(record)}/>

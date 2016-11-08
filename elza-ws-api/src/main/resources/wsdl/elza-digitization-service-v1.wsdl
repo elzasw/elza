@@ -13,8 +13,13 @@
 	</wsdl:message>
 	<wsdl:portType name="DigitizationFrontdesk">
 		<wsdl:operation name="PostRequest">
-			<wsdl:input name="digitizationRrequest" message="tns:DigitizationRequest"/>
-			<wsdl:output name="requestId" message="tns:DigitizationRequestResponse"/>
+			<wsdl:documentation>Post new digitization request.</wsdl:documentation>
+			<wsdl:input name="digitizationRequest" message="tns:DigitizationRequest">
+				<wsdl:documentation>Description of the archival units to be digitized</wsdl:documentation>
+			</wsdl:input>
+			<wsdl:output name="requestId" message="tns:DigitizationRequestResponse">
+				<wsdl:documentation>Return id of the request in the receiving system. This can be some internal unique ID of the accepted request or method can simply return incomming identifier of the request.</wsdl:documentation>
+			</wsdl:output>
 			<wsdl:fault name="digitizationServiceException" message="tns:DigitizationServiceException"/>
 		</wsdl:operation>
 	</wsdl:portType>
@@ -22,7 +27,7 @@
 		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 		<wsdl:operation name="PostRequest">
 			<soap:operation soapAction="http://tacr.elza.cz/ws/digitization/postRequest" style="document"/>
-			<wsdl:input name="digitizationRrequest">
+			<wsdl:input name="digitizationRequest">
 				<soap:body use="literal"/>
 			</wsdl:input>
 			<wsdl:output name="requestId">

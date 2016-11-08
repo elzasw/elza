@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import cz.tacr.elza.repository.ItemSettingsRepository;
+import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -189,6 +190,9 @@ public class ArrangementService {
 
     @Autowired
     private OutputResultRepository outputResultRepository;
+
+    @Autowired
+    private OutputFileRepository outputFileRepository;
 
     @Autowired
     private ItemSettingsRepository itemSettingsRepository;
@@ -389,7 +393,7 @@ public class ArrangementService {
 
     public ArrLevel createLevel(final ArrChange createChange,
                                 final ArrNode parentNode,
-                                final Integer position,
+                                final int position,
                                 final ArrFund fund) {
         Assert.notNull(createChange);
 
@@ -433,7 +437,15 @@ public class ArrangementService {
         return nodeRepository.save(node);
     }
 
-    public ArrChange createChange(@Nullable final ArrChange.Type type) {
+    /**
+     * Vytvoření objektu pro změny s primárním uzlem.
+     *
+     * @param type        typ změny
+     * @param primaryNode primární uzel
+     * @return objekt změny
+     */
+    public ArrChange createChange(@Nullable final ArrChange.Type type,
+                                  @Nullable final ArrNode primaryNode) {
         ArrChange change = new ArrChange();
         UserDetail userDetail = userService.getLoggedUserDetail();
         change.setChangeDate(LocalDateTime.now());
@@ -445,7 +457,45 @@ public class ArrangementService {
         }
 
         change.setType(type);
+        change.setPrimaryNode(primaryNode);
 
+        return changeRepository.save(change);
+    }
+
+    /**
+     * Vytvoření objektu pro změny.
+     *
+     * @param type typ změny
+     * @return objekt změny
+     */
+    public ArrChange createChange(@Nullable final ArrChange.Type type) {
+        return createChange(type, null);
+    }
+
+    /**
+     * Dodatečné nastavení primární vazby u změny.
+     *
+     * @param change        změna u které primární uzel nastavujeme
+     * @param primaryNodeId identifikátor uzlu
+     * @return upravená změna
+     */
+    public ArrChange setPrimaryNodeId(final ArrChange change,
+                                      final Integer primaryNodeId) {
+        ArrNode primaryNode = new ArrNode();
+        primaryNode.setNodeId(primaryNodeId);
+        return setPrimaryNode(change, primaryNode);
+    }
+
+    /**
+     * Dodatečné nastavení primární vazby u změny.
+     *
+     * @param change      změna u které primární uzel nastavujeme
+     * @param primaryNode uzel
+     * @return upravená změna
+     */
+    public ArrChange setPrimaryNode(final ArrChange change,
+                                    final ArrNode primaryNode) {
+        change.setPrimaryNode(primaryNode);
         return changeRepository.save(change);
     }
 
@@ -475,6 +525,7 @@ public class ArrangementService {
                 outputItemRepository.deleteByOutputDefinition(outputDefinition);
                 faBulkActionRepository.deleteByOutputDefinition(outputDefinition);
                 itemSettingsRepository.deleteByOutputDefinition(outputDefinition);
+                outputFileRepository.deleteByOutputDefinition(outputDefinition);
                 outputResultRepository.deleteByOutputDefinition(outputDefinition);
                 outputDefinitionRepository.delete(outputDefinition);
             }
@@ -492,9 +543,18 @@ public class ArrangementService {
 
 
         policyService.deleteFundVisiblePolicies(fund);
-
+        userService.deleteByFund(fund);
 
         deleteFundLevels(rootLevel);
+        changeRepository.deleteByPrimaryNode(node);
+
+        nodeRegisterRepository.findByNode(node).forEach(relation -> {
+            nodeRegisterRepository.delete(relation);
+        });
+
+        nodeConformityInfoRepository.findByNode(node).forEach(conformityInfo -> {
+            deleteConformityInfo(conformityInfo);
+        });
         nodeRepository.delete(node);
 
         dmsService.deleteFilesByFund(fund);
@@ -626,6 +686,8 @@ public class ArrangementService {
         nodeConformityInfoRepository.findByNode(node).forEach(conformityInfo -> {
             deleteConformityInfo(conformityInfo);
         });
+
+        changeRepository.deleteByPrimaryNode(node);
 
         nodeRepository.delete(node);
     }

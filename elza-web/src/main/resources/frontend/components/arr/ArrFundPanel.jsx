@@ -45,6 +45,7 @@ var ArrFundPanel = class ArrFundPanel extends AbstractReactComponent {
 
         if (fund.lockDate || !userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
             readMode = true;
+            action = <div className="action"><span>{i18n('arr.fund.panel.readOnly')}</span></div>
         } else {
             if (readMode) {
                 action = <div className="action"><Button onClick={this.setReadMode.bind(this, false)}>{i18n('arr.fund.panel.allowEdit')}</Button></div>

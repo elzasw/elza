@@ -1,10 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, DropDownTree, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, Autocomplete, FormInput} from 'components/index.jsx';
 import {Modal, Button, Form} from 'react-bootstrap';
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList.jsx'
+import {getTreeItemById} from "./registryUtils";
 
 /**
  * Formulář editace rejstříkového hesla
@@ -43,24 +44,27 @@ class EditRegistryForm extends AbstractReactComponent {
         this.dispatch(getRegistryRecordTypesIfNeeded());
     }
 
-
     render() {
         const {fields: { record, characteristics, registerTypeId}, handleSubmit, onClose, initData, registryRegionRecordTypes, parentRecordId} = this.props;
 
         const submitForm = handleSubmit(submitReduxForm.bind(this, EditRegistryForm.validate));
-
-        const itemsForDropDownTree = registryRegionRecordTypes.item != null ? registryRegionRecordTypes.item : [];
-
+        const items = registryRegionRecordTypes.item != null ? registryRegionRecordTypes.item : [];
         const registerTypesIdValue = initData.registerTypeId && !registerTypeId.value ? initData.registerTypeId : registerTypeId.value;
+
+        const value = getTreeItemById(registerTypeId ? registerTypeId.value : "", items);
+
         return <Form onSubmit={submitForm}>
             <Modal.Body>
-                <DropDownTree
+                <Autocomplete
                     label={i18n('registry.update.type')}
-                    items = {itemsForDropDownTree}
-                    addRegistryRecord={true}
+                    items = {items}
+                    tree
+                    allowSelectItem={(id, item) => item.addRecord}
                     {...registerTypeId}
                     {...decorateFormField(registerTypeId)}
-                    value={registerTypesIdValue}
+                    onChange={(id, item) => registerTypeId.onChange(id)}
+                    onBlur={(id, item) => registerTypeId.onBlur(id)}
+                    value={value}
                     disabled={parentRecordId != null}
                 />
                 <FormInput type="text" label={i18n('registry.name')} {...record} {...decorateFormField(record)}/>

@@ -5,7 +5,7 @@
 	<wsdl:message name="DaoServiceException">
 		<wsdl:part name="errorDescription" type="eat:errorDescription"/>
 	</wsdl:message>
-	<wsdl:message name="DesctructionRequestResponse">
+	<wsdl:message name="DestructionRequestResponse">
 		<wsdl:part name="requestId" type="eat:requestId"/>
 	</wsdl:message>
 	<wsdl:message name="DesctructionRequest">
@@ -26,7 +26,7 @@
 	<wsdl:portType name="DaoRequests">
 		<wsdl:operation name="PostDestructionRequest">
 			<wsdl:input name="destructionRequest" message="tns:DesctructionRequest"/>
-			<wsdl:output name="requestId" message="tns:DesctructionRequestResponse"/>
+			<wsdl:output name="requestId" message="tns:DestructionRequestResponse"/>
 			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
 		</wsdl:operation>
 		<wsdl:operation name="PostTransferRequest">

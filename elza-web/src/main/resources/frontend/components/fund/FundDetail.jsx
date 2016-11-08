@@ -40,10 +40,15 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
 
 
     render() {
-        const {fundDetail, focus, refTables: {institutions, ruleSet}} = this.props;
+        const {fundDetail, focus, fundCount, refTables: {institutions, ruleSet}} = this.props;
 
         if (fundDetail.id === null) {
-            return <div className='fund-detail-container'></div>
+            return <div className='fund-detail-container'>
+                        <div className="unselected-msg">
+                            <div className="title">{fundCount > 0 ? i18n('fund.noSelection.title') : i18n('fund.emptyList.title')}</div>
+                            <div className="msg-text">{fundCount > 0 ? i18n('fund.noSelection.message') : i18n('fund.emptyList.message') }</div>
+                        </div>
+                    </div>
         }
 
         if (!fundDetail.fetched) {
@@ -82,7 +87,8 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
 };
 
 FundDetail.propTypes = {
-    fundDetail: React.PropTypes.object.isRequired
+    fundDetail: React.PropTypes.object.isRequired,
+    fundCount: React.PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {

@@ -140,6 +140,8 @@ const HomePage = class HomePage extends AbstractReactComponent {
             'handleAddFund',
             'renderHistory',
             'renderHistoryItem',
+            'renderMessage',
+            'renderLink',
             'getFundDesc',
             'trySetFocus',
             'buildRibbon'
@@ -159,7 +161,7 @@ const HomePage = class HomePage extends AbstractReactComponent {
     }
 
     trySetFocus(props) {
-        const {focus} = props
+        const {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
@@ -215,7 +217,7 @@ const HomePage = class HomePage extends AbstractReactComponent {
                 break;
             case 'ARR_REGION_FUND':
                 glyph = 'fa-file-text';
-                break;            
+                break;
         }
 
         const hasDesc = desc && desc.length > 0
@@ -226,7 +228,7 @@ const HomePage = class HomePage extends AbstractReactComponent {
             descComp = <small>&nbsp;</small>
         }
         return (
-            <Button className='history-list-item' onClick={() => this.dispatch(storeLoadData(type, data))} key={"button-" + keyIndex}>
+            <Button className='history-list-item history-button' onClick={() => this.dispatch(storeLoadData(type, data))} key={"button-" + keyIndex}>
                 <Icon glyph={glyph}/>
                 <div className='history-name'>{name}</div>
                 {false && descComp}
@@ -256,34 +258,74 @@ const HomePage = class HomePage extends AbstractReactComponent {
 
     renderHistory() {
         const {stateRegion} = this.props;
-
-        const partyItems = stateRegion.partyRegionFront.map((x, index) => {
+        var partyItems = stateRegion.partyRegionFront.map((x, index) => {
             if (x._info) {
                 const name = x._info.name;
                 const desc = x._info.desc
                 return this.renderHistoryItem(name, desc, 'PARTY_REGION', x, index)
             }
         })
-        const registryItems = stateRegion.registryRegionFront.map((x, index) => {
-            if (x._info) {
-                const name = x._info.name;
-                const desc = x._info.desc
+        var registryItems = stateRegion.registryRegionFront.map((x, index) => {
+            if (x.registryRegionData._info) {
+                const name = x.registryRegionData._info.name;
+                const desc = x.registryRegionData._info.desc
                 return this.renderHistoryItem(name, desc, 'REGISTRY_REGION', x, index)
             }
         })
-        const arrItems = stateRegion.arrRegionFront.map((x, index) => {
+        var arrItems = stateRegion.arrRegionFront.map((x, index) => {
             const name = x.name + (x.lockDate ? ' ' + dateToString(new Date(x.lockDate)) : '');
             const desc = this.getFundDesc(x)
             return this.renderHistoryItem(name, desc, 'ARR_REGION_FUND', x, index)
         })
 
+        if(arrItems.length === 0){
+            arrItems.push(this.renderMessage(i18n('home.recent.fund.emptyList.title'), i18n('home.recent.fund.emptyList.message')));
+        }
+        if(registryItems.length === 1){ //registryItems vzdy obsahuje 1 objekt
+            registryItems.push(this.renderMessage(i18n('home.recent.registry.emptyList.title'), i18n('home.recent.registry.emptyList.message')));
+        }
+        if(partyItems.length === 1){ //partyItems vzdy obsahuje 1 objekt
+            partyItems.push(this.renderMessage(i18n('home.recent.party.emptyList.title'), i18n('home.recent.party.emptyList.message')));
+        }
+
+        arrItems.push(this.renderLink("/fund",i18n('home.recent.fund.goTo')));
+        partyItems.push(this.renderLink("/party",i18n('home.recent.party.goTo')));
+        registryItems.push(this.renderLink("/registry",i18n('home.recent.registry.goTo')));
+
         return (
             <div ref='list' className='history-list-container'>
-                <div>{arrItems}</div>
-                <div>{registryItems}</div>
-                <div>{partyItems}</div>
+                <div className="button-container">
+                    <h4>{i18n('home.recent.fund.title')}</h4>
+                    <div className="section">{arrItems}</div>
+                    <h4>{i18n('home.recent.party.title')}</h4>
+                    <div className="section">{partyItems}</div>
+                    <h4>{i18n('home.recent.registry.title')}</h4>
+                    <div className="section">{registryItems}</div>
+                </div>
             </div>
         )
+    }
+    /*
+     * Vykreslení informace o prázné historii
+     */
+    renderMessage(title,message){
+        return(<div className="unselected-msg history-list-item no-history">
+                    <div className="title">{title}</div>
+                    <div className="message">{message}</div>
+                </div>);
+    }
+    /*
+     * Vykreslení odkazu do příslušných modulů
+     */
+    renderLink(to, text, glyph = "fa-arrow-right"){
+        return(
+            <LinkContainer to={to}>
+                <Button className='history-list-item history-button link'>
+                    <Icon glyph={glyph}/>
+                    <div className='history-name'>{text}</div>
+                </Button>
+            </LinkContainer>
+        );
     }
 
     handleSearchChange = (x) => {
@@ -315,13 +357,9 @@ const HomePage = class HomePage extends AbstractReactComponent {
 
         let centerPanel = (
             <div className='splitter-home'>
-                {false && <div>
-                    <Button onClick={() => this.dispatch(storeLoad())}>LOAD</Button></div>}
                 {this.renderHistory()}
             </div>
         )
-
-        centerPanel = <div>{centerPanel}</div>;
 
         return (
             <PageLayout
