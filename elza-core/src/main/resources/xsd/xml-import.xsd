@@ -219,6 +219,7 @@
       <xs:element name="preferred-name" type="xs:string"/>
       <xs:element minOccurs="0" name="characteristics" type="xs:string"/>
       <xs:element minOccurs="0" name="note" type="xs:string"/>
+      <xs:element minOccurs="0" name="last-update" type="xs:dateTime"/>
       <xs:element minOccurs="0" name="variant-name-list">
         <xs:complexType>
           <xs:sequence>
@@ -240,6 +241,7 @@
     <xs:attribute name="external-source-code" type="xs:string"/>
     <xs:attribute name="external-id" type="xs:string" use="required"/>
     <xs:attribute name="local" type="xs:boolean" use="required"/>
+    <xs:attribute name="uuid" type="xs:string"/>
   </xs:complexType>
 
   <xs:complexType name="variant-name">
@@ -290,8 +292,6 @@
       </xs:element>
       <xs:element minOccurs="0" name="history" type="xs:string"/>
       <xs:element minOccurs="0" name="source-informations" type="xs:string"/>
-      <xs:element minOccurs="0" name="from-date" type="tns:complex-date"/>
-      <xs:element minOccurs="0" name="to-date" type="tns:complex-date"/>
       <xs:element minOccurs="0" name="creator-name-list">
         <xs:complexType>
           <xs:sequence>
@@ -339,6 +339,7 @@
       <xs:element minOccurs="0" name="text-date" type="xs:string"/>
       <xs:element minOccurs="0" name="specific-date-from" type="xs:dateTime"/>
       <xs:element minOccurs="0" name="specific-date-to" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="note" type="xs:string"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -364,13 +365,14 @@
         </xs:complexType>
       </xs:element>
     </xs:sequence>
-    <xs:attribute name="class-type-code" type="xs:string"/>
+    <xs:attribute name="class-type-code" type="xs:string" use="required"/>
     <xs:attribute name="relation-type-code" type="xs:string" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="role-type">
     <xs:sequence>
       <xs:element minOccurs="0" name="source" type="xs:string"/>
+      <xs:element minOccurs="0" name="note" type="xs:string"/>
     </xs:sequence>
     <xs:attribute name="role-type-code" type="xs:string"/>
     <xs:attribute name="record-id" type="xs:string" use="required"/>
@@ -439,8 +441,8 @@
 
   <xs:simpleType name="packet-type">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="OPEN"/>
       <xs:enumeration value="CLOSED"/>
+      <xs:enumeration value="OPEN"/>
       <xs:enumeration value="CANCELED"/>
     </xs:restriction>
   </xs:simpleType>
