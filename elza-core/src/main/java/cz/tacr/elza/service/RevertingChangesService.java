@@ -61,10 +61,10 @@ public class RevertingChangesService {
         Integer fromChangeId = fromChange == null ? null : fromChange.getChangeId();
 
         // dotaz pro vyhledání
-        Query query = createQuery(fundId, nodeId, maxSize, offset, fromChangeId);
+        Query query = createFindQuery(fundId, nodeId, maxSize, offset, fromChangeId);
 
         // dotaz pro celkový počet položek
-        Query queryCount = createQueryCount(fundId, nodeId, fromChangeId);
+        Query queryCount = createFindQueryCount(fundId, nodeId, fromChangeId);
 
         // dotaz pro zjištění poslední změny (pro nastavení parametru outdated)
         Query queryLastChange = createQueryLastChange(fundId, nodeId);
@@ -120,6 +120,145 @@ public class RevertingChangesService {
         Integer count = ((BigInteger) queryIndex.getSingleResult()).intValue();
 
         return findChanges(fund, node, maxSize, count, fromChange);
+    }
+
+    /**
+     * Provede revertování dat ke zvolené změně.
+     *
+     * @param fund       AS nad kterým provádím obnovu
+     * @param node       JP omezující obnovu
+     * @param fromChange změna od které se provádí revert (pouze pro kontrolu, že se jedná o poslední)
+     * @param toChange   změna ke které se provádí revert (včetně)
+     */
+    public void revertChanges(@NotNull final ArrFund fund,
+                              @Nullable final ArrNode node,
+                              @NotNull final ArrChange fromChange,
+                              @NotNull final ArrChange toChange) {
+        Assert.notNull(fund);
+        Assert.notNull(fromChange);
+        Assert.notNull(toChange);
+
+        Integer fundId = fund.getFundId();
+        Integer nodeId = node == null ? null : node.getNodeId();
+        Integer fromChangeId = fromChange.getChangeId();
+        Integer toChangeId = toChange.getChangeId();
+
+        Query updateEntityQuery;
+        Query deleteEntityQuery;
+
+        int changes = 0;
+
+        updateEntityQuery = createUpdateEntityQuery(fundId, nodeId, "delete_change_id", "arr_level", toChangeId);
+        deleteEntityQuery = createDeleteEntityQuery(fundId, nodeId, "create_change_id", "arr_level", toChangeId);
+        changes += updateEntityQuery.executeUpdate();
+        changes += deleteEntityQuery.executeUpdate();
+
+        updateEntityQuery = createUpdateEntityQuery(fundId, nodeId, "delete_change_id", "arr_node_register", toChangeId);
+        deleteEntityQuery = createDeleteEntityQuery(fundId, nodeId, "create_change_id", "arr_node_register", toChangeId);
+        changes += updateEntityQuery.executeUpdate();
+        changes += deleteEntityQuery.executeUpdate();
+
+        updateEntityQuery = createExtendUpdateEntityQuery(fundId, nodeId, "item_id", "delete_change_id", "arr_desc_item", "arr_item", toChangeId);
+        deleteEntityQuery = createExtendDeleteEntityQuery(fundId, nodeId, "item_id", "create_change_id", "arr_desc_item", "arr_item", toChangeId);
+        changes += updateEntityQuery.executeUpdate();
+        changes += deleteEntityQuery.executeUpdate();
+
+        System.out.println("changes: " + changes);
+
+    }
+
+    private Query createUpdateEntityQuery(@NotNull final Integer fundId,
+                                           @Nullable final Integer nodeId,
+                                           @NotNull final String changeNameColumn,
+                                           @NotNull final String table,
+                                           @NotNull final Integer changeId) {
+        String nodeIdsQuery = createFindChangesQuery(changeNameColumn, table, createSubNodeQuery(fundId, nodeId), changeId);
+        String queryString = String.format("UPDATE %1$s SET %2$s = NULL WHERE %2$s IN (%3$s)", table, changeNameColumn, nodeIdsQuery);
+
+        Query query = entityManager.createNativeQuery(queryString);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fundId", fundId);
+        if (nodeId != null) {
+            query.setParameter("nodeId", nodeId);
+        }
+
+        return query;
+    }
+
+    private Query createExtendUpdateEntityQuery(@NotNull final Integer fundId,
+                                                @Nullable final Integer nodeId,
+                                                @NotNull final String entityNameColumn,
+                                                @NotNull final String changeNameColumn,
+                                                @NotNull final String table,
+                                                @NotNull final String tableJoin,
+                                                @NotNull final Integer changeId) {
+        String nodeIdsQuery = createFindChangesQuery(changeNameColumn, table, createSubNodeQuery(fundId, nodeId), changeId);
+        String entityQuery = String.format("SELECT t.%4$s FROM %1$s t JOIN %2$s tj ON t.%4$s = tj.%4$s WHERE tj.%3$s IN (%5$s)",
+                table, tableJoin, changeNameColumn, entityNameColumn, nodeIdsQuery);
+        String queryString = String.format("UPDATE %1$s SET %2$s = NULL WHERE %3$s IN (%4$s)",
+                tableJoin, changeNameColumn, entityNameColumn, entityQuery);
+
+        Query query = entityManager.createNativeQuery(queryString);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fundId", fundId);
+        if (nodeId != null) {
+            query.setParameter("nodeId", nodeId);
+        }
+
+        return query;
+    }
+
+    private Query createDeleteEntityQuery(@NotNull final Integer fundId,
+                                           @Nullable final Integer nodeId,
+                                           @NotNull final String changeNameColumn,
+                                           @NotNull final String table,
+                                           @NotNull final Integer changeId) {
+        String nodeIdsQuery = createFindChangesQuery(changeNameColumn, table, createSubNodeQuery(fundId, nodeId), changeId);
+        String queryString = String.format("DELETE FROM %1$s WHERE %2$s IN (%3$s)", table, changeNameColumn, nodeIdsQuery);
+
+        Query query = entityManager.createQuery(queryString);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fundId", fundId);
+        if (nodeId != null) {
+            query.setParameter("nodeId", nodeId);
+        }
+
+        return query;
+    }
+
+    private Query createExtendDeleteEntityQuery(@NotNull final Integer fundId,
+                                                @Nullable final Integer nodeId,
+                                                @NotNull final String entityNameColumn,
+                                                @NotNull final String changeNameColumn,
+                                                @NotNull final String table,
+                                                @NotNull final String tableJoin,
+                                                @NotNull final Integer changeId) {
+        String nodeIdsQuery = createFindChangesQuery(changeNameColumn, table, createSubNodeQuery(fundId, nodeId), changeId);
+        String entityQuery = String.format("SELECT t.%4$s FROM %1$s t JOIN %2$s tj ON t.%4$s = tj.%4$s WHERE tj.%3$s IN (%5$s)",
+                table, tableJoin, changeNameColumn, entityNameColumn, nodeIdsQuery);
+        String queryString = String.format("DELETE FROM %1$s WHERE %2$s IN (%3$s)",
+                table, entityNameColumn, entityQuery);
+
+        Query query = entityManager.createNativeQuery(queryString);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fundId", fundId);
+        if (nodeId != null) {
+            query.setParameter("nodeId", nodeId);
+        }
+
+        return query;
+    }
+
+    private String createFindChangesQuery(@NotNull final String changeNameColumn,
+                                          @NotNull final String table,
+                                          @NotNull final String inNodeId,
+                                          @NotNull final Integer changeId) {
+        return String.format("SELECT DISTINCT %1$s AS change_id FROM %2$s WHERE node_id IN (%3$s) AND %1$s >= %4$d",
+                changeNameColumn, table, inNodeId, changeId);
     }
 
     /**
@@ -226,7 +365,7 @@ public class RevertingChangesService {
      *
      * @return SQL řetězec
      */
-    private String createQuerySkeleton() {
+    private String createFindQuerySkeleton() {
         return "SELECT\n" +
                 "%1$s\n" +
                 "FROM\n" +
@@ -266,12 +405,12 @@ public class RevertingChangesService {
      * @param fromChangeId identifikátor změny, vůči které provádíme vyhledávání
      * @return query objekt
      */
-    private Query createQuery(final Integer fundId,
-                              final Integer nodeId,
-                              final int maxSize,
-                              final int offset,
-                              final Integer fromChangeId) {
-        String querySkeleton = createQuerySkeleton();
+    private Query createFindQuery(final Integer fundId,
+                                  final Integer nodeId,
+                                  final int maxSize,
+                                  final int offset,
+                                  final Integer fromChangeId) {
+        String querySkeleton = createFindQuerySkeleton();
 
         // doplňující parametry dotazu
         String selectParams = "ch.change_id, ch.change_date, ch.user_id, ch.type, ch.primary_node_id, chl.node_changes, chl.weights";
@@ -311,7 +450,7 @@ public class RevertingChangesService {
                                    final Integer nodeId,
                                    final Integer fromChangeId,
                                    final LocalDateTime fromDate) {
-        String querySkeleton = createQuerySkeleton();
+        String querySkeleton = createFindQuerySkeleton();
 
         // doplňující parametry dotazu
         String selectParams = "COUNT(*)";
@@ -340,7 +479,7 @@ public class RevertingChangesService {
      * @return query objekt
      */
     private Query createQueryLastChange(final Integer fundId, final Integer nodeId) {
-        return createQuery(fundId, nodeId, 1, 0, null);
+        return createFindQuery(fundId, nodeId, 1, 0, null);
     }
 
     /**
@@ -351,8 +490,8 @@ public class RevertingChangesService {
      * @param fromChangeId identifikátor změny, vůči které provádíme vyhledávání
      * @return query objekt
      */
-    private Query createQueryCount(final Integer fundId, final Integer nodeId, final Integer fromChangeId) {
-        String querySkeleton = createQuerySkeleton();
+    private Query createFindQueryCount(final Integer fundId, final Integer nodeId, final Integer fromChangeId) {
+        String querySkeleton = createFindQuerySkeleton();
 
         String selectParams = "COUNT(*)";
         String querySpecification = "";

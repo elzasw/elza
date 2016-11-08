@@ -1851,6 +1851,33 @@ public class ArrangementController {
     }
 
     /**
+     * Provede revertování AS / JP k požadovanému stavu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param fromChangeId  identifikátor změny, vůči které provádíme revertování (od)
+     * @param toChangeId    identifikátor změny, ke které provádíme revertování (do)
+     * @param nodeId        identifikátor JP u které provádíme změny (pokud není vyplněn, revertuje se přes celý AS)
+     */
+    @RequestMapping(value = "/changes/{fundVersionId}/revert", method = RequestMethod.GET)
+    @Transactional
+    public void revertChanges(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                              @RequestParam(value = "fromChangeId") final Integer fromChangeId,
+                              @RequestParam(value = "toChangeId") final Integer toChangeId,
+                              @RequestParam(value = "nodeId", required = false) final Integer nodeId) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        if (fundVersion.getLockChange() != null) {
+            throw new IllegalStateException("Nelze prováděn změny v uzavřené verzi");
+        }
+        ArrChange fromChange = changeRepository.getOneCheckExist(fromChangeId);
+        ArrChange toChange = changeRepository.getOneCheckExist(toChangeId);
+        ArrNode node = null;
+        if (nodeId != null) {
+            node = nodeRepository.getOneCheckExist(nodeId);
+        }
+        revertingChangesService.revertChanges(fundVersion.getFund(), node, fromChange, toChange);
+    }
+
+    /**
      * Výstupní objekt pro chybové jednotky popisu.
      */
     public static class ValidationItems {
