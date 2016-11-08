@@ -93,13 +93,14 @@ exports.FundTreeMovementsLeft = require('components/arr/FundTreeMovementsLeft.js
 exports.FundTreeMovementsRight = require('components/arr/FundTreeMovementsRight.jsx');
 exports.AddNodeCross = require('components/arr/AddNodeCross.jsx');
 
-exports.PartySearch = require('components/party/PartySearch.jsx');
+exports.PartyList = require('components/party/PartyList.jsx');
 exports.PartyDetail = require('components/party/PartyDetail.jsx');
 exports.PartyDetailNames = require('components/party/PartyDetailNames.jsx');
 exports.PartyDetailIdentifiers = require('components/party/PartyDetailIdentifiers.jsx');
 exports.PartyDetailCreators = require('components/party/PartyDetailCreators.jsx');
 exports.PartyEntities = require('components/party/PartyEntities.jsx');
 exports.AddPartyForm = require('components/party/AddPartyForm.jsx');
+exports.AddPartyNameForm = require('components/party/AddPartyNameForm.jsx');
 exports.PartyNameForm = require('components/party/PartyNameForm.jsx');
 exports.PartyIdentifierForm = require('components/party/PartyIdentifierForm.jsx');
 exports.PartyCreatorForm = require('components/party/PartyCreatorForm.jsx');

@@ -10,7 +10,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 import cz.tacr.elza.print.Record;
-import cz.tacr.elza.print.UnitDateText;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -24,8 +23,6 @@ public abstract class Party {
     private String sourceInformation;
     private String characteristics;
     private Record record;
-    private UnitDateText unitdateFrom;
-    private UnitDateText unitdateTo;
     private String type;
     private String typeCode;
 
@@ -106,22 +103,6 @@ public abstract class Party {
 
     public void setTypeCode(final String typeCode) {
         this.typeCode = typeCode;
-    }
-
-    public UnitDateText getUnitdateFrom() {
-        return unitdateFrom;
-    }
-
-    public void setUnitdateFrom(final UnitDateText unitdateFrom) {
-        this.unitdateFrom = unitdateFrom;
-    }
-
-    public UnitDateText getUnitdateTo() {
-        return unitdateTo;
-    }
-
-    public void setUnitdateTo(final UnitDateText unitdateTo) {
-        this.unitdateTo = unitdateTo;
     }
 
     @Override

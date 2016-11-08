@@ -4,10 +4,29 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <changeSet id="57" author="slapa">
-        <addColumn tableName="rul_item_spec">
-            <column type="VARCHAR(1000)" name="category"/>
-        </addColumn>
+    <changeSet id="57" author="vanek">
+        <createTable tableName="ui_party_group">
+            <column name="party_group_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="party_type_id" type="int">
+                <constraints nullable="true" foreignKeyName="fk_party_type" referencedTableName="par_party_type" referencedColumnNames="party_type_id"/>
+            </column>
+            <column name="code" type="varchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="view_order" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="char(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content_definition" type="text">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
     </changeSet>
-
 </databaseChangeLog>

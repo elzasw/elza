@@ -17,7 +17,6 @@ import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {createFund} from 'actions/arr/fund.jsx'
 import {storeLoadData, storeLoad} from 'actions/store/store.jsx'
-import {Combobox} from 'react-input-enhancements'
 import {WebApi} from 'actions/index.jsx';
 import {dateToString} from 'components/Utils.jsx'
 
@@ -384,21 +383,6 @@ var items = getStates();
     </div>}
 {false && <List data={colors} />}
 
-{false && <Combobox defaultValue={'1'}
-              options={this.state.options}
-              dropdownProps={{ style: { width: '100%' } }}
-              onChange={e => console.log('onChange', e.target.value)}
-              onValueChange={c => console.log('onValueChange', c)}
-              autocomplete>
-      {inputProps =>
-        <input {...inputProps}
-               type='text'
-               className={`${inputProps.className} form-control`}
-               placeholder='No Country'
-               addonAfter={<div>ddddddd</div>}
-        />
-      }
-    </Combobox>}
 
             </div>
         )

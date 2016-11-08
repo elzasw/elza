@@ -19,7 +19,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.utils.PartyType;
 import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
-import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
 import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 
 /**
@@ -63,18 +62,6 @@ public abstract class AbstractParty {
     /** Zdroje informací. */
     @XmlElement(name = "source-informations")
     private String sourceInformations;
-
-    /**
-     * Působnost od.
-     */
-    @XmlElement(name = "from-date")
-    private ComplexDate fromDate;
-
-    /**
-     * Působnost do.
-     */
-    @XmlElement(name = "to-date")
-    private ComplexDate toDate;
 
     /** Autoři. */
     @XmlIDREF
@@ -129,22 +116,6 @@ public abstract class AbstractParty {
 
     public void setPreferredName(final PartyName prefferedName) {
         this.preferredName = prefferedName;
-    }
-
-    public ComplexDate getFromDate() {
-        return fromDate;
-    }
-
-    public void setFromDate(final ComplexDate fromDate) {
-        this.fromDate = fromDate;
-    }
-
-    public ComplexDate getToDate() {
-        return toDate;
-    }
-
-    public void setToDate(final ComplexDate toDate) {
-        this.toDate = toDate;
     }
 
     public String getHistory() {

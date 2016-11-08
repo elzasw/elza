@@ -17,6 +17,7 @@ function fileExist(filePath){
 
 module.exports = {
     entry: [
+        'webpack-dev-server/client?http://localhost:8090',
         'webpack/hot/only-dev-server',
         ///'react-hot-loader/patch',// - HOT3
         './index.jsx',
@@ -73,6 +74,7 @@ module.exports = {
     },
     plugins: [
         // Webpack 1 - pro hot
+        new webpack.HotModuleReplacementPlugin(),
         new webpack.optimize.OccurenceOrderPlugin(),
         new webpack.NoErrorsPlugin(),
         new webpack.ProvidePlugin({

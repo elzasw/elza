@@ -4,7 +4,7 @@
 
 require('./FundActionPage.less');
 
-const ArrParentPage = require("./ArrParentPage.jsx");
+import ArrParentPage from "./ArrParentPage.jsx";
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -64,7 +64,7 @@ var keymap = ArrParentPage.mergeKeymap({
 
 const shortcutManager = new ShortcutsManager(keymap)
 
-const FundActionPage = class FundActionPage extends ArrParentPage {
+class FundActionPage extends ArrParentPage {
 
     static propTypes = {};
 

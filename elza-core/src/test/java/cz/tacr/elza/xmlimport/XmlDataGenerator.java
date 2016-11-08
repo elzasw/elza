@@ -615,8 +615,6 @@ public class XmlDataGenerator {
         party.setEvents(createEvents(records, config));
         party.setHistory("history " + index);
         party.setSourceInformations("sourceInformations " + index);
-        party.setFromDate(createComplexDate());
-        party.setToDate(createComplexDate());
         party.setCharacteristics("characteristics");
     }
 
@@ -637,7 +635,7 @@ public class XmlDataGenerator {
             event.setClassTypeCode("classTypeCode ");
             event.setRelationTypeCode("relationTypeCode " + index);
         } else {
-            event.setClassTypeCode(randomRelationType.getClassType());
+            event.setClassTypeCode(randomRelationType.getRelationClassType().getCode());
             event.setRelationTypeCode(randomRelationType.getCode());
         }
 

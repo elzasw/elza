@@ -1,5 +1,3 @@
-require('./FundSettingsForm.less')
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
@@ -9,10 +7,13 @@ import {indexById, objectById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx'
 
+import './FundSettingsForm.less';
+
 class FundSettingsForm extends AbstractReactComponent {
 
     /**
      * Validace formuláře.
+     * @todo šlapa odstranit
      */
     static validate = (values, props) => {
         const errors = {};
@@ -22,17 +23,9 @@ class FundSettingsForm extends AbstractReactComponent {
 
     state = {};
 
-    componentWillReceiveProps(nextProps) {
-
-    }
-
-    componentDidMount() {
-
-    }
-
     render() {
         const {fields: {rightPanel: {tabs}, centerPanel: {panels}}, handleSubmit, onClose} = this.props;
-        var submitForm = submitReduxForm.bind(this, FundSettingsForm.validate);
+        const submitForm = submitReduxForm.bind(this, FundSettingsForm.validate);
 
         return <Form onSubmit={handleSubmit(submitForm)}>
                 <Modal.Body>
@@ -67,8 +60,4 @@ export default reduxForm({
     form: 'fundSettingsForm',
     fields: ['rightPanel.tabs[].checked', 'rightPanel.tabs[].key', 'rightPanel.tabs[].name',
              'centerPanel.panels[].checked', 'centerPanel.panels[].key', 'centerPanel.panels[].name']
-}, state => ({
-    //initialValues: {records: state.arrRegion.visiblePolicy.data},
-    //visiblePolicy: state.arrRegion.visiblePolicy,
-    //visiblePolicyTypes: state.refTables.visiblePolicyTypes
-}))(FundSettingsForm)
+})(FundSettingsForm)

@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/ActionTypes.js';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components/index.jsx';
 import {Modal, Button, Checkbox} from 'react-bootstrap';
@@ -10,6 +9,7 @@ import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx'
 
 /**
  * Validace formuláře.
+ * @todo šlapa odstranit
  */
 const validate = (values, props) => {
     const errors = {};
@@ -17,38 +17,33 @@ const validate = (values, props) => {
     return errors;
 };
 
-var VisiblePolicyForm = class VisiblePolicyForm extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-        this.bindMethods('handleResetVisiblePolicy');
-        this.state = {};
+class VisiblePolicyForm extends AbstractReactComponent {
+    state = {};
+
+    componentDidMount() {
+        this.loadVisiblePolicy();
     }
 
     componentWillReceiveProps(nextProps) {
         this.loadVisiblePolicy();
     }
 
-    componentDidMount() {
-        this.loadVisiblePolicy();
-    }
-
-    loadVisiblePolicy() {
+    loadVisiblePolicy = () => {
         const {nodeId, fundVersionId} = this.props;
         this.dispatch(visiblePolicyFetchIfNeeded(nodeId, fundVersionId));
-    }
+    };
 
-    handleResetVisiblePolicy() {
+    handleResetVisiblePolicy = () => {
         if(confirm(i18n('visiblePolicy.action.reset.confirm'))) {
             this.props.onSubmitForm({records: []});
         }
-    }
+    };
 
     render() {
-        const {fields: {records}, handleSubmit, onClose, nodeId, fundVersionId, visiblePolicy, visiblePolicyTypes,
-            arrRegion} = this.props;
-        var submitForm = submitReduxForm.bind(this, validate)
+        const {fields: {records}, handleSubmit, onClose, nodeId, fundVersionId, visiblePolicy, visiblePolicyTypes, arrRegion} = this.props;
+        const submitForm = submitReduxForm.bind(this, validate);
 
-        var activeFund = null;
+        let activeFund = null;
         if (arrRegion.activeIndex != null) {
             activeFund = arrRegion.funds[arrRegion.activeIndex];
         }
@@ -61,7 +56,7 @@ var VisiblePolicyForm = class VisiblePolicyForm extends AbstractReactComponent {
             let activeVersion = activeFund.activeVersion;
             visiblePolicyTypeItems = {};
 
-            for(var id in visiblePolicyTypes.items) {
+            for(let id in visiblePolicyTypes.items) {
                 let item = visiblePolicyTypes.items[id];
                 if (activeVersion.ruleSetId === item.ruleSetId) {
                     visiblePolicyTypeItems[id] = item;
@@ -90,7 +85,7 @@ var VisiblePolicyForm = class VisiblePolicyForm extends AbstractReactComponent {
     }
 }
 
-module.exports = reduxForm({
+export default reduxForm({
     form: 'visiblePolicyForm',
     fields: ['records[].id', 'records[].checked']
 }, state => ({

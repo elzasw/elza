@@ -11,6 +11,7 @@ var messages = {
 
     "global.title.yes": "Ano",
     "global.title.no": "Ne",
+    "global.all": "Vše",
 
     "global.title.selectAll": "Vybrat vše",
     "global.title.unselectAll": "Vymazat",

@@ -1,17 +1,23 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.api.UseUnitdateEnum;
 
 
 /**
@@ -20,23 +26,7 @@ import javax.persistence.Id;
 @Entity(name = "par_relation_type")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ParRelationType implements cz.tacr.elza.api.ParRelationType {
-
-    public enum ClassType{
-        VZNIK("B"),
-        ZANIK("E"),
-        VZTAH("R");
-
-        private String classType;
-
-        ClassType(final String classType) {
-            this.classType = classType;
-        }
-
-        public String getClassType() {
-            return classType;
-        }
-    }
+public class ParRelationType implements cz.tacr.elza.api.ParRelationType<ParRelationClassType> {
 
     @Id
     @GeneratedValue
@@ -48,9 +38,13 @@ public class ParRelationType implements cz.tacr.elza.api.ParRelationType {
     @Column(length = 50, nullable = false, unique = true)
     private String code;
 
-    @Column(length = 50)
-    private String classType;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UseUnitdateEnum useUnitdate;
 
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParRelationClassType.class)
+    @JoinColumn(name = "relationClassTypeId", nullable = false)
+    private ParRelationClassType relationClassType;
 
     @Override
     public Integer getRelationTypeId() {
@@ -83,13 +77,23 @@ public class ParRelationType implements cz.tacr.elza.api.ParRelationType {
     }
 
     @Override
-    public String getClassType() {
-        return classType;
+    public ParRelationClassType getRelationClassType() {
+        return relationClassType;
     }
 
     @Override
-    public void setClassType(final String classType) {
-        this.classType = classType;
+    public void setRelationClassType(final ParRelationClassType relationClassType) {
+        this.relationClassType = relationClassType;
+    }
+
+    @Override
+    public UseUnitdateEnum getUseUnitdate() {
+        return useUnitdate;
+    }
+
+    @Override
+    public void setUseUnitdate(final UseUnitdateEnum useUnitdate) {
+        this.useUnitdate = useUnitdate;
     }
 
     @Override
@@ -115,5 +119,4 @@ public class ParRelationType implements cz.tacr.elza.api.ParRelationType {
     public String toString() {
         return "ParRelationType pk=" + relationTypeId;
     }
-
 }

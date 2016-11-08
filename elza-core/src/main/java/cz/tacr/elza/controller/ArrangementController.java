@@ -73,6 +73,9 @@ import java.util.*;
 @RequestMapping("/api/arrangement")
 public class ArrangementController {
 
+    /** Formát popisu atributu - krátká verze. */
+    public static final String FORMAT_ATTRIBUTE_SHORT = "SHORT";
+
     @Autowired
     private FundVersionRepository fundVersionRepository;
 

@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,11 +16,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
@@ -92,6 +93,12 @@ public class RegRecord extends AbstractVersionableEntity
     @JsonIgnore
     private RegScope scope;
 
+    @Column(length = StringLength.LENGTH_36, nullable = false, unique = true)
+    private String uuid;
+
+    @Column(nullable = false)
+    private LocalDateTime lastUpdate;
+
     /* Konstanty pro vazby a fieldy. */
     public static final String VARIANT_RECORD_LIST = "variantRecordList";
     public static final String REGISTER_TYPE = "registerType";
@@ -102,6 +109,8 @@ public class RegRecord extends AbstractVersionableEntity
     public static final String LOCAL = "local";
     public static final String RECORD_ID = "recordId";
     public static final String SCOPE = "scope";
+    public static final String UUID = "uuid";
+    public static final String LAST_UPDATE = "lastUpdate";
 
 
     @Override
@@ -205,6 +214,32 @@ public class RegRecord extends AbstractVersionableEntity
     }
 
     @Override
+    @JsonIgnore
+    public RegScope getRegScope() {
+        return scope;
+    }
+
+    @Override
+    public String getUuid() {
+        return uuid;
+    }
+
+    @Override
+    public void setUuid(final String uuid) {
+        this.uuid = uuid;
+    }
+
+    @Override
+    public LocalDateTime getLastUpdate() {
+        return lastUpdate;
+    }
+
+    @Override
+    public void setLastUpdate(final LocalDateTime lastUpdate) {
+        this.lastUpdate = lastUpdate;
+    }
+
+    @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof cz.tacr.elza.api.RegRecord)) {
             return false;
@@ -226,11 +261,5 @@ public class RegRecord extends AbstractVersionableEntity
     @Override
     public String toString() {
         return "RegRecord pk=" + recordId;
-    }
-
-    @Override
-    @JsonIgnore
-    public RegScope getRegScope() {
-        return scope;
     }
 }

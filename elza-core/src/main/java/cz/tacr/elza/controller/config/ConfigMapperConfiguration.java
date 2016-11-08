@@ -1,26 +1,12 @@
 package cz.tacr.elza.controller.config;
 
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
-import com.vividsolutions.jts.io.WKTWriter;
-import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.nodes.*;
-import cz.tacr.elza.controller.vo.nodes.descitems.*;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.security.UserPermission;
-import cz.tacr.elza.service.RuleService;
-import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
-import ma.glasnost.orika.*;
-import ma.glasnost.orika.converter.BidirectionalConverter;
-import ma.glasnost.orika.converter.builtin.PassThroughConverter;
-import ma.glasnost.orika.impl.DefaultMapperFactory;
-import ma.glasnost.orika.metadata.Type;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +14,183 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.Assert;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
+import com.vividsolutions.jts.io.WKTWriter;
+
+import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrChangeVO;
+import cz.tacr.elza.controller.vo.ArrFileVO;
+import cz.tacr.elza.controller.vo.ArrFundBaseVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
+import cz.tacr.elza.controller.vo.ArrOutputFileVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.BulkActionRunVO;
+import cz.tacr.elza.controller.vo.BulkActionVO;
+import cz.tacr.elza.controller.vo.DmsFileVO;
+import cz.tacr.elza.controller.vo.NodeConformityErrorVO;
+import cz.tacr.elza.controller.vo.NodeConformityMissingVO;
+import cz.tacr.elza.controller.vo.NodeConformityVO;
+import cz.tacr.elza.controller.vo.ParComplementTypeVO;
+import cz.tacr.elza.controller.vo.ParDynastyVO;
+import cz.tacr.elza.controller.vo.ParEventVO;
+import cz.tacr.elza.controller.vo.ParInstitutionTypeVO;
+import cz.tacr.elza.controller.vo.ParInstitutionVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupVO;
+import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPersonVO;
+import cz.tacr.elza.controller.vo.ParRelationClassTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationEntityVO;
+import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.ParUnitdateVO;
+import cz.tacr.elza.controller.vo.RegCoordinatesVO;
+import cz.tacr.elza.controller.vo.RegExternalSourceVO;
+import cz.tacr.elza.controller.vo.RegRecordSimple;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
+import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.RulTemplateVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.UIPartyGroupVO;
+import cz.tacr.elza.controller.vo.UISettingsVO;
+import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.controller.vo.UserPermissionInfoVO;
+import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.controller.vo.XmlImportConfigVO;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFileRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPacketVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemCoordinates;
+import cz.tacr.elza.domain.ArrItemDecimal;
+import cz.tacr.elza.domain.ArrItemEnum;
+import cz.tacr.elza.domain.ArrItemFileRef;
+import cz.tacr.elza.domain.ArrItemFormattedText;
+import cz.tacr.elza.domain.ArrItemInt;
+import cz.tacr.elza.domain.ArrItemJsonTable;
+import cz.tacr.elza.domain.ArrItemPacketRef;
+import cz.tacr.elza.domain.ArrItemPartyRef;
+import cz.tacr.elza.domain.ArrItemRecordRef;
+import cz.tacr.elza.domain.ArrItemString;
+import cz.tacr.elza.domain.ArrItemText;
+import cz.tacr.elza.domain.ArrItemUnitdate;
+import cz.tacr.elza.domain.ArrItemUnitid;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputFile;
+import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.DmsFile;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParCreator;
+import cz.tacr.elza.domain.ParDynasty;
+import cz.tacr.elza.domain.ParEvent;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.ParInstitutionType;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroup;
+import cz.tacr.elza.domain.ParPartyGroupIdentifier;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPerson;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationClassType;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.RegCoordinates;
+import cz.tacr.elza.domain.RegExternalSource;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.UIPartyGroup;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.FundFileRepository;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.security.UserPermission;
+import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
+import ma.glasnost.orika.CustomMapper;
+import ma.glasnost.orika.MapperFactory;
+import ma.glasnost.orika.MappingContext;
+import ma.glasnost.orika.converter.BidirectionalConverter;
+import ma.glasnost.orika.converter.builtin.PassThroughConverter;
+import ma.glasnost.orika.impl.DefaultMapperFactory;
+import ma.glasnost.orika.metadata.Type;
 
 
 /**
@@ -304,12 +461,12 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrBulkActionRun.class, BulkActionRunVO.class).field("bulkActionRunId", "id").field("bulkActionCode", "code").byDefault().register();
         mapperFactory.classMap(ArrFile.class, ArrFileVO.class).field("fileId", "id").exclude("file").byDefault().customize(new CustomMapper<ArrFile, ArrFileVO>() {
             @Override
-            public void mapAtoB(ArrFile arrFile, ArrFileVO arrFileVO, MappingContext mappingContext) {
+            public void mapAtoB(final ArrFile arrFile, final ArrFileVO arrFileVO, final MappingContext mappingContext) {
                 arrFileVO.setFundId(arrFile.getFund().getFundId());
             }
 
             @Override
-            public void mapBtoA(ArrFileVO arrFileVO, ArrFile arrFile, MappingContext mappingContext) {
+            public void mapBtoA(final ArrFileVO arrFileVO, final ArrFile arrFile, final MappingContext mappingContext) {
                 if (arrFileVO.getFundId() != null) {
                     ArrFund fund = fundRepository.findOne(arrFileVO.getFundId());
                     Assert.notNull(fund, "Archivní pomůcka neexistuje (ID=" + arrFileVO.getFundId() + ")");
@@ -319,12 +476,12 @@ public class ConfigMapperConfiguration {
         }).register();
         mapperFactory.classMap(ArrOutputFile.class, ArrOutputFileVO.class).field("fileId", "id").exclude("file").byDefault().customize(new CustomMapper<ArrOutputFile, ArrOutputFileVO>() {
             @Override
-            public void mapAtoB(ArrOutputFile arrOutputFile, ArrOutputFileVO arrOutputFileVO, MappingContext mappingContext) {
+            public void mapAtoB(final ArrOutputFile arrOutputFile, final ArrOutputFileVO arrOutputFileVO, final MappingContext mappingContext) {
                 arrOutputFileVO.setOutputResultId(arrOutputFile.getOutputResult().getOutputResultId());
             }
 
             @Override
-            public void mapBtoA(ArrOutputFileVO arrOutputFileVO, ArrOutputFile arrOutputFile, MappingContext mappingContext) {
+            public void mapBtoA(final ArrOutputFileVO arrOutputFileVO, final ArrOutputFile arrOutputFile, final MappingContext mappingContext) {
                 ArrOutputResult result = outputResultRepository.findOne(arrOutputFileVO.getOutputResultId());
                 Assert.notNull(result, "Archivní pomůcka neexistuje (ID=" + arrOutputFileVO.getOutputResultId() + ")");
                 arrOutputFile.setOutputResult(result);
@@ -803,6 +960,14 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(UISettings.class, UISettingsVO.class)
                 .byDefault()
                 .field("settingsId", "id")
+                .register();
+
+        mapperFactory.classMap(ParRelationClassType.class, ParRelationClassTypeVO.class)
+                .byDefault()
+                .register();
+
+        mapperFactory.classMap(UIPartyGroup.class, UIPartyGroupVO.class)
+                .byDefault()
                 .register();
     }
 

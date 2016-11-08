@@ -15,12 +15,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.service.eventnotification.events.ActionEvent;
-import cz.tacr.elza.service.eventnotification.events.EventId;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrFund;
@@ -52,6 +49,7 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
@@ -77,6 +75,8 @@ import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.ActionEvent;
+import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
@@ -263,15 +263,6 @@ public class PartyService {
         }
         saveParty.setPartyType(partyType);
 
-        //synchronizace datace
-        Set<ParUnitdate> removeUnitdate = new HashSet<>();
-        removeUnitdate.add(synchUnitdate(saveParty, newParty.getFrom(), (g) -> g.getFrom(),
-                (g, f) -> g.setFrom(f)));
-        removeUnitdate.add(synchUnitdate(saveParty, newParty.getTo(), (g) -> g.getTo(),
-                (g, f) -> g.setTo(f)));
-        removeUnitdate.remove(null);
-        unitdateRepository.delete(removeUnitdate);
-
         //synchronizace rejstříkového hesla
         synchRecord(newParty);
 
@@ -331,6 +322,7 @@ public class PartyService {
             ParParty dbParty = partyRepository.findOne(party.getPartyId());
             recordFromGroovy.setRecordId(dbParty.getRecord().getRecordId());
             recordFromGroovy.setVersion(dbParty.getRecord().getVersion());
+            recordFromGroovy.setUuid(dbParty.getRecord().getUuid());
         }
         RegRecord savedRecord = registryService.saveRecord(recordFromGroovy, true);
         party.setRecord(savedRecord);
@@ -617,7 +609,6 @@ public class PartyService {
         eventNotificationService.publishEvent(new EventId(EventType.PARTY_DELETE, party.getPartyId()));
         partyRepository.delete(party);
         registryService.deleteRecord(party.getRecord(), false);
-        deleteUnitDates(party.getFrom(), party.getTo());
     }
 
 
@@ -899,7 +890,7 @@ public class PartyService {
      *
      * @return neuložená instituce
      */
-    public ParInstitution createInstitution(String internalCode, ParInstitutionType institutionType, ParParty party) {
+    public ParInstitution createInstitution(final String internalCode, final ParInstitutionType institutionType, final ParParty party) {
         ParInstitution institution = new ParInstitution();
         institution.setInternalCode(internalCode);
         institution.setInstitutionType(institutionType);
@@ -915,7 +906,7 @@ public class PartyService {
      *
      * @return uložená instituce
      */
-    public ParInstitution saveInstitution(ParInstitution institution) {
+    public ParInstitution saveInstitution(final ParInstitution institution) {
         Assert.notNull(institution);
         eventNotificationService.publishEvent(new ActionEvent(EventType.INSTITUTION_CHANGE));
         return institutionRepository.save(institution);

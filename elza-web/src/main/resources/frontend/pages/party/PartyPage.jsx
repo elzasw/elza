@@ -1,15 +1,10 @@
-/**
- * Stránka archivních pomůcek.
- */
-
-require('./PartyPage.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap'; 
+import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {ControllableDropdownButton, Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, PartyEntities, i18n, ImportForm} from 'components/index.jsx';
+import {ControllableDropdownButton, Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartyList, PartyDetail, PartyEntities, i18n, ImportForm} from 'components/index.jsx';
 import {RelationForm, AddPartyForm} from 'components/index.jsx';
 import {ButtonGroup, MenuItem, DropdownButton, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
@@ -17,15 +12,17 @@ import {AppStore} from 'stores/index.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {partyDetailFetch, findPartyFetch, findPartyFetchIfNeeded} from 'actions/party/party.jsx'
-import {partyAdd, insertParty, insertRelation, deleteParty} from 'actions/party/party.jsx'
+import {partyDetailFetchIfNeeded, partyListInvalidate} from 'actions/party/party.jsx'
+import {partyAdd, insertParty, insertRelation, partyDelete} from 'actions/party/party.jsx'
 const ShortcutsManager = require('react-shortcuts');
 const Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components/index.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 
-const keyModifier = Utils.getKeyModifier()
+import './PartyPage.less';
+
+const keyModifier = Utils.getKeyModifier();
 
 const keymap = {
     Party: {
@@ -35,62 +32,57 @@ const keymap = {
         area2: keyModifier + '2',
         area3: keyModifier + '3',
     },
-}
-const shortcutManager = new ShortcutsManager(keymap)
+};
+const shortcutManager = new ShortcutsManager(keymap);
 
 /**
  * PARTY PAGE
  * *********************************************
  * Stránka osob
- */ 
-const PartyPage = class PartyPage extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-        this.state = {};                                // id gregoriánského kalendáře - TODO: potřeba ho dovypočíst
+ */
+class PartyPage extends AbstractReactComponent {
 
-        this.bindMethods(                               // pripojení funkcím "this"
-            'buildRibbon',                              // sestavení menu
-            'handleAddParty',                           // kliknutí na tlačítko přidat osobu
-            'handleDeleteParty',                        // kliknutí na tlačítko smazzat osobu
-            'handleAddRelation',                        // kliknutí na tlačítko přidat ossobě vztah
-            'addParty',                                 // vytvoření osoby
-            'deleteParty',                              // smazání osoby
-            'addRelation',                              // vytvoření relace
-            'handleImport',                              // Import dialog
-            'handleShortcuts'
-        );
-    }
 
-    componentDidMount(){
+    static PropTypes = {
+        splitter: React.PropTypes.object.isRequired,
+        partyRegion: React.PropTypes.object.isRequired,
+        userDetail: React.PropTypes.object.isRequired,
+        refTables: React.PropTypes.object.isRequired
+    };
+
+
+    static childContextTypes = {
+        shortcuts: React.PropTypes.object.isRequired
+    };
+
+    componentDidMount() {
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
-        this.dispatch(findPartyFetchIfNeeded(this.props.partyRegion.filterText, this.props.partyRegion.panel.versionId));
     }
 
-    componentWillReceiveProps(nextProps){
+    componentWillReceiveProps(nextProps) {
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
-        this.dispatch(findPartyFetchIfNeeded(nextProps.partyRegion.filterText, nextProps.partyRegion.panel.versionId));
     }
 
-    handleShortcuts(action) {
+    handleShortcuts = (action) => {
         console.log("#handleShortcuts", '[' + action + ']', this);
         switch (action) {
             case 'addParty':
-                this.refs.addParty.setOpen(true)
-                break
+                this.refs.addParty.setOpen(true);
+                break;
             case 'addRelation':
-                this.refs.addRelation.setOpen(true)
-                break
+                this.refs.addRelation.setOpen(true);
+                break;
             case 'area1':
-                this.dispatch(setFocus('party', 1))
-                break
+                this.dispatch(setFocus('party', 1));
+                break;
             case 'area2':
-                this.dispatch(setFocus('party', 2))
+                this.dispatch(setFocus('party', 2));
                 break
             case 'area3':
-                this.dispatch(setFocus('party', 3))
-                break
+                this.dispatch(setFocus('party', 3));
+                break;
         }
-    }
+    };
 
     getChildContext() {
         return { shortcuts: shortcutManager };
@@ -101,10 +93,10 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
      * *********************************************
      * Uložení nové osoby
      */ 
-    addParty(data) {
-        this.dispatch(partyDetailFetch(data.partyId));
-        this.dispatch(findPartyFetch(this.props.partyRegion.filterText));
-    }
+    addParty = (data) => {
+        this.dispatch(partyDetailFetchIfNeeded(data.partyId));
+        this.dispatch(partyListInvalidate());
+    };
 
     /**
      * HANDLE ADD PARTY
@@ -112,10 +104,9 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
      * Kliknutí na tlačítko pro založení nové osoby
      * @param partyTypeId - identifikátor typu osoby (osoba, rod, korporace, ..)
      */ 
-    handleAddParty(partyTypeId) {
-        const {partyRegion} = this.props;
-        this.dispatch(partyAdd(partyTypeId, partyRegion.panel.versionId, this.addParty, false));
-    }
+    handleAddParty = (partyTypeId) => {
+        this.dispatch(partyAdd(partyTypeId, null, this.addParty, false));
+    };
 
     /**
      * ADD RELATION
@@ -123,7 +114,7 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
      * Uložení nového vztahu
      * @param data - data vztahu z formuláře
      */ 
-    addRelation(data) {
+    addRelation = (data) => {
         var entities = [];                                                          // seznam entit vztahu
         console.log(data.entities);
         for(var i = 0; i<data.entities.length; i++){                                // projdeme data entit z formuláře
@@ -154,14 +145,14 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
         }
         console.log(relation);
         this.dispatch(insertRelation(relation, this.props.partyRegion.selectedPartyID));  //uložení vztahu a znovunačtení osoby             
-    }
+    };
 
     /**
      * HANDLE ADD RELATION
      * *********************************************
      * Kliknutí na volnu přidání nového vztahu
      */     
-    handleAddRelation(classType){
+    handleAddRelation = (classType) => {
         var data = {                    
             partyTypeId: this.props.partyRegion.selectedPartyData.partyType.partyTypeId,
             partyId: this.props.partyRegion.selectedPartyID,
@@ -182,51 +173,38 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
                 roleTypeId : null,
                 sources: '',
             }]
-        }
+        };
         this.dispatch(modalDialogShow(this, this.props.partyRegion.selectedPartyData.record.record , <RelationForm initData={data} refTables={this.props.refTables} onSave={this.addRelation} />));
-    }
+    };
 
 
-    handleImport() {
+    handleImport = () => {
         this.dispatch(
             modalDialogShow(this,
                 i18n('import.title.party'),
                 <ImportForm party/>
             )
         );
-    }
+    };
 
     /**
      * HANDLE DELETE PARTY
      * *********************************************
      * Kliknutí na tlačítko pro smazání osoby
      */ 
-    handleDeleteParty(){
-        var result = confirm(i18n('party.delete.confirm')); // potvrzení smazání
-        if (result) {                                       // pokud uživatel potvrdil smazání
-            this.dispatch(this.deleteParty());    // smaže osobu - smazána bude aktualně vybraná osoba uložená party regionu
-        }
-    }
-
-    /**
-     * DELETE PARTY
-     * *********************************************
-     * Smazání osoby
-     */ 
-    deleteParty() {
-        var partyId = this.props.partyRegion.selectedPartyData.partyId;                         // bude smazána aktuální osoba, uložená v partyRegionu
-        return deleteParty(partyId, this.props.partyRegion.filterText);                 // smazání osoby, znovunačtení osoby i hledaných osob
-    }    
+    handleDeleteParty = () => {
+        confirm(i18n('party.delete.confirm')) && this.dispatch(partyDelete(this.props.partyDetail.data.partyId));
+    };
 
     /**
      * BUILD RIBBON
      * *********************************************
      * Sestavení Ribbon Menu - přidání položek pro osoby
      */ 
-    buildRibbon() {
-        const {userDetail, partyRegion, refTables} = this.props
+    buildRibbon = () => {
+        const {userDetail, partyDetail, refTables} = this.props;
 
-        const isSelected = partyRegion.selectedPartyID ? true : false;
+        const isSelected = partyDetail.id !== null;
         const altActions = [];
         if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
             altActions.push(
@@ -246,8 +224,8 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
         }
 
         const itemActions = [];
-        if (isSelected && partyRegion.fetchedDetail && !partyRegion.isFetchingDetail) {
-            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyRegion.selectedPartyData.record.scopeId})) {
+        if (isSelected && partyDetail.fetched && !partyDetail.isFetching) {
+            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyDetail.data.record.scopeId})) {
                 itemActions.push(
                     <ControllableDropdownButton key='add-relation' ref='addRelation' id='addRelation'
                                                 title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.relation.add')}</span></div></span>}>
@@ -277,10 +255,8 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
             itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>
         }
 
-        return (
-            <Ribbon party altSection={altSection} itemSection={itemSection} {...this.props} />
-        )
-    }
+        return <Ribbon party altSection={altSection} itemSection={itemSection} {...this.props} />;
+    };
 
     /**
      * RENDER
@@ -288,74 +264,41 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
      * Vykreslení stránky pro osoby
      */ 
     render() {
-        const {splitter, userDetail, partyRegion} = this.props;
-        var canEdit = false
-        if (partyRegion.fetchedDetail && !partyRegion.isFetchingDetail) {
-            if (partyRegion.selectedPartyData
-                && userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyRegion.selectedPartyData.record.scopeId})) {
-                canEdit = true
-            }
-        }
+        const {splitter, userDetail, partyDetail, refTables} = this.props;
+        const canEdit = partyDetail.fetched &&
+            !partyDetail.isFetching &&
+            partyDetail.data &&
+            userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyDetail.data.record.scopeId});
 
-        var leftPanel = (
-            <PartySearch 
-                items={this.props.partyRegion.items} 
-                selectedPartyID={this.props.partyRegion.selectedPartyID}
-                filterText={this.props.partyRegion.filterText}
-                panel={this.props.partyRegion.panel}
+        const leftPanel = <PartyList />;
+
+        const centerPanel = <PartyDetail
+            refTables={refTables}
+        />;
+
+        return <Shortcuts name='Party' handler={this.handleShortcuts}>
+            <PageLayout
+                splitter={splitter}
+                className='party-page'
+                ribbon={this.buildRibbon()}
+                leftPanel={leftPanel}
+                centerPanel={centerPanel}
             />
-        )
-
-        var centerPanel = (
-            <PartyDetail 
-                refTables={this.props.refTables} 
-            />
-        )
-
-        var rightPanel = (
-            <PartyEntities 
-                partyRegion={this.props.partyRegion}
-                canEdit={canEdit}
-            />
-        )
-
-        return (
-            <Shortcuts name='Party' handler={this.handleShortcuts}>
-                <PageLayout
-                    splitter={splitter}
-                    className='party-page'
-                    ribbon={this.buildRibbon()}
-                    leftPanel={leftPanel}
-                    centerPanel={centerPanel}
-                    rightPanel={rightPanel}
-                />
-            </Shortcuts>
-        )
+        </Shortcuts>;
     }
 }
 
 
 function mapStateToProps(state) {
-    const {splitter, partyRegion, refTables, userDetail} = state
+    const {app:{partyList, partyDetail}, splitter, refTables, userDetail} = state;
     return {
+        partyList,
+        partyDetail,
         splitter,
-        partyRegion,
         refTables,
         userDetail,
     }
 }
 
-PartyPage.propTypes = {
-    splitter: React.PropTypes.object.isRequired,
-    partyRegion: React.PropTypes.object.isRequired,
-    userDetail: React.PropTypes.object.isRequired,
-    refTables: React.PropTypes.object.isRequired
-};
-
-
-PartyPage.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
-};
-
-module.exports = connect(mapStateToProps)(PartyPage);
+export default connect(mapStateToProps)(PartyPage);
 

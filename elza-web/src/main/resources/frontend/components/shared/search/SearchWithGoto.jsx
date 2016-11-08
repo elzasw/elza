@@ -1,28 +1,38 @@
-/**
- *  Komponenta hledání s možností "skákání" po výsledcích hledání. Je založená na komponentě Search s přidanými addons.
- */
 import React from 'react';
-
-import {Button, Input} from 'react-bootstrap';
 import {Search, i18n, Icon, NoFocusButton, AbstractReactComponent} from 'components/index.jsx';
 import ReactDOM from 'react-dom'
 
-require ('./SearchWithGoto.less');
+import './SearchWithGoto.less';
 
-var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
-    constructor(props) {
-        super(props)
+/**
+ *  Komponenta hledání s možností "skákání" po výsledcích hledání. Je založená na komponentě Search s přidanými addons.
+ */
+class SearchWithGoto extends AbstractReactComponent {
+    static PropTypes = {
+        filterText: React.PropTypes.string,
+        itemsCount: React.PropTypes.number.isRequired,
+        allItemsCount: React.PropTypes.number,
+        textAreaInput: React.PropTypes.bool,
+        selIndex: React.PropTypes.number.isRequired,
+        showFilterResult: React.PropTypes.bool.isRequired,
+        onFulltextChange: React.PropTypes.func,
+        onFulltextSearch: React.PropTypes.func,
+        onFulltextNextItem: React.PropTypes.func,
+        onFulltextPrevItem: React.PropTypes.func,
+        type: React.PropTypes.string.isRequired,
+    };
 
-        this.bindMethods('handleFulltextChange', 'handleOnSearch', 'handleClear')
+    static defaultProps = {
+        type: "GO_TO",
+    };
 
-        this.state = {
-            filterText: props.filterText || '',
-            showFilterResult: typeof props.showFilterResult !== 'undefined' ? props.showFilterResult : false,
-        }
-    }
+    state = {
+        filterText: this.props.filterText || '',
+        showFilterResult: typeof this.props.showFilterResult !== 'undefined' ? this.props.showFilterResult : false,
+    };
 
     componentWillReceiveProps(nextProps){
-        var filterText = this.state.filterText
+        var filterText = this.state.filterText;
         if (nextProps.filterText !== 'undefined' && nextProps.filterText !== this.props.filterText) {
             filterText = nextProps.filterText
         }
@@ -33,8 +43,8 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
         })
     }
 
-    handleOnSearch(filterText, searchByEnter, shiftKey) {
-        const {type, onFulltextNextItem, onFulltextPrevItem, itemsCount, selIndex, showFilterResult, onFulltextSearch} = this.props
+    handleOnSearch = (filterText, searchByEnter, shiftKey) => {
+        const {type, onFulltextNextItem, onFulltextPrevItem, itemsCount, selIndex, showFilterResult, onFulltextSearch} = this.props;
 
         switch (type) {
             case "GO_TO":
@@ -57,12 +67,12 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
                 }
                 break;
             case "INFO":
-                onFulltextSearch(filterText)
+                onFulltextSearch(filterText);
                 break;
         }
-    }
+    };
 
-    handleFulltextChange(value) {
+    handleFulltextChange = (value) => {
         const {onFulltextChange} = this.props;
 
         this.setState({
@@ -71,41 +81,37 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
         }, () => {
             onFulltextChange && onFulltextChange(value)
         })
-    }
+    };
 
-    handleClear() {
-        const {onFulltextSearch} = this.props
+    handleClear = () => {
+        const {onFulltextSearch} = this.props;
 
         this.handleFulltextChange('');
         onFulltextSearch('')
-    }
+    };
 
     render() {
         const {type, itemsCount, allItemsCount, textAreaInput, placeholder, selIndex, onFulltextNextItem, onFulltextPrevItem} = this.props;
         const {filterText, showFilterResult} = this.state;
 
-        var actionAddons = []
+        const actionAddons = [];
         switch (type) {
             case "GO_TO": {
                 if (showFilterResult) {
-                    var searchedInfo
+                    let searchedInfo;
                     if (itemsCount > 0) {
-                        searchedInfo = (
-                            <div className='fa-tree-lazy-search-info'>
-                                ({selIndex + 1} z {itemsCount})
-                            </div>
-                        )
+                        searchedInfo = <div className='fa-tree-lazy-search-info'>
+                            ({selIndex + 1} z {itemsCount})
+                        </div>
                     } else {
-                        searchedInfo = (
-                            <div className='fa-tree-lazy-search-info'>
-                                ({i18n('search.not.found')})
-                            </div>
-                        )
+                        searchedInfo = <div className='fa-tree-lazy-search-info'>
+                            ({i18n('search.not.found')})
+                        </div>
                     }
 
                     if (itemsCount > 1) {
-                        var prevButtonEnabled = selIndex > 0;
-                        var nextButtonEnabled = selIndex < itemsCount - 1;
+                        let prevButtonEnabled = selIndex > 0;
+                        let nextButtonEnabled = selIndex < itemsCount - 1;
 
                         actionAddons.push(<NoFocusButton disabled={!nextButtonEnabled} className="next" onClick={onFulltextNextItem}><Icon glyph='fa-chevron-down'/></NoFocusButton>)
                         actionAddons.push(<NoFocusButton disabled={!prevButtonEnabled} className="prev" onClick={onFulltextPrevItem}><Icon glyph='fa-chevron-up'/></NoFocusButton>)
@@ -116,7 +122,7 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
             break;
             case "INFO": {
                 if (showFilterResult) {
-                    var searchedText
+                    let searchedText;
                     const filtered = this.props.filterText ? true : false;
 
                     if (filtered) {
@@ -140,36 +146,16 @@ var SearchWithGoto = class SearchWithGoto extends AbstractReactComponent {
             break;
         }
 
-        return (
-            <Search
-                placeholder={placeholder || i18n('search.input.search')}
-                textAreaInput={textAreaInput}
-                filterText={filterText}
-                onChange={e => this.handleFulltextChange(e.target.value)}
-                onClear={this.handleClear}
-                onSearch={this.handleOnSearch}
-                actionAddons={actionAddons}
-            />
-        )
+        return <Search
+            placeholder={placeholder || i18n('search.input.search')}
+            textAreaInput={textAreaInput}
+            filterText={filterText}
+            onChange={e => this.handleFulltextChange(e.target.value)}
+            onClear={this.handleClear}
+            onSearch={this.handleOnSearch}
+            actionAddons={actionAddons}
+        />
     }
 }
 
-SearchWithGoto.propTypes = {
-    filterText: React.PropTypes.string,
-    itemsCount: React.PropTypes.number.isRequired,
-    allItemsCount: React.PropTypes.number,
-    textAreaInput: React.PropTypes.bool,
-    selIndex: React.PropTypes.number.isRequired,
-    showFilterResult: React.PropTypes.bool.isRequired,
-    onFulltextChange: React.PropTypes.func,
-    onFulltextSearch: React.PropTypes.func,
-    onFulltextNextItem: React.PropTypes.func,
-    onFulltextPrevItem: React.PropTypes.func,
-    type: React.PropTypes.string.isRequired,
-}
-
-SearchWithGoto.defaultProps = {
-    type: "GO_TO",
-}
-
-module.exports = SearchWithGoto
+export default SearchWithGoto

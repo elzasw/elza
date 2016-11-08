@@ -259,8 +259,6 @@ public class OutputFactoryService implements NodeLoader {
         partyGroup.setHistory(parParty.getHistory());
         partyGroup.setSourceInformation(parParty.getSourceInformation());
         partyGroup.setCharacteristics(parParty.getCharacteristics());
-        partyGroup.setUnitdateFrom(createUnitDateText(parParty.getFrom()));
-        partyGroup.setUnitdateTo(createUnitDateText(parParty.getTo()));
         partyGroup.setPreferredName(createPartyName(parParty.getPreferredName()));
 
         List<ParPartyName> partyNames = parParty.getPartyNames();
@@ -299,11 +297,11 @@ public class OutputFactoryService implements NodeLoader {
 
         // partyGroup k instituci
         final ParParty parParty = arrFundInstitution.getParty();
-        
+
         // Check party type
         final ParPartyType partyType = parParty.getPartyType();
         if(!ParPartyType.PartyTypeEnum.GROUP_PARTY.toString().equals(partyType.getCode())) {
-        	throw new IllegalStateException("Party for institution is not GROUP_PARTY, partyId = "+parParty.getPartyId());        	
+            throw new IllegalStateException("Party for institution is not GROUP_PARTY, partyId = "+parParty.getPartyId());
         }
         // create party group
         final PartyGroup partyGroup = createPartyGroup(output, parParty);
@@ -690,8 +688,6 @@ public class OutputFactoryService implements NodeLoader {
         party.setSourceInformation(parParty.getSourceInformation());
         party.setCharacteristics(parParty.getCharacteristics());
         party.setRecord(getRecordByParty(output, parParty.getRecord()));
-        party.setUnitdateFrom(createUnitDateText(parParty.getFrom()));
-        party.setUnitdateTo(createUnitDateText(parParty.getTo()));
         party.setType(parParty.getPartyType().getName());
         party.setTypeCode(parParty.getPartyType().getCode());
     }
@@ -701,9 +697,9 @@ public class OutputFactoryService implements NodeLoader {
         Packet packet = new Packet();
         RulPacketType packetType = arrPacket.getPacketType();
         if (packetType != null) {
-        	packet.setType(packetType.getName());
-        	packet.setTypeCode(packetType.getCode());
-        	packet.setTypeShortcut(packetType.getShortcut());
+            packet.setType(packetType.getName());
+            packet.setTypeCode(packetType.getCode());
+            packet.setTypeShortcut(packetType.getShortcut());
         }
         packet.setStorageNumber(arrPacket.getStorageNumber());
         packet.setState(arrPacket.getState().name());

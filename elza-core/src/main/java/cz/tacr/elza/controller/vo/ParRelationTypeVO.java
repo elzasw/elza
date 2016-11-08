@@ -3,6 +3,8 @@ package cz.tacr.elza.controller.vo;
 import java.util.LinkedList;
 import java.util.List;
 
+import cz.tacr.elza.api.UseUnitdateEnum;
+
 
 /**
  * VO pro Seznam typů vztahů.
@@ -27,9 +29,12 @@ public class ParRelationTypeVO {
     /**
      * Typ třídy.
      */
-    private String classType;
+    private ParRelationClassTypeVO relationClassType;
 
     private List<ParRelationRoleTypeVO> relationRoleTypes;
+
+    /** Způsob použití datace. */
+    private UseUnitdateEnum useUnitdate;
 
     public Integer getRelationTypeId() {
         return relationTypeId;
@@ -55,12 +60,12 @@ public class ParRelationTypeVO {
         this.code = code;
     }
 
-    public String getClassType() {
-        return classType;
+    public ParRelationClassTypeVO getRelationClassType() {
+        return relationClassType;
     }
 
-    public void setClassType(final String classType) {
-        this.classType = classType;
+    public void setRelationClassType(final ParRelationClassTypeVO relationClassType) {
+        this.relationClassType = relationClassType;
     }
 
     public List<ParRelationRoleTypeVO> getRelationRoleTypes() {
@@ -79,4 +84,11 @@ public class ParRelationTypeVO {
         relationRoleTypes.add(relationRoleTypeVO);
     }
 
+    public UseUnitdateEnum getUseUnitdate() {
+        return useUnitdate;
+    }
+
+    public void setUseUnitdate(final UseUnitdateEnum useUnitdate) {
+        this.useUnitdate = useUnitdate;
+    }
 }

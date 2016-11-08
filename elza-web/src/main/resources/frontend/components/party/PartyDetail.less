@@ -1,0 +1,35 @@
+@import "~variables.less";
+.party-detail {
+    .party-header {
+        display: flex;
+        padding: 5px;
+        border-bottom: 1px #eee solid;
+
+        > div {
+            flex: 1;
+
+            &:last-of-type {
+                text-align: right;
+            }
+
+            h3 {
+                margin-top: 0;
+                margin-bottom: 5px;
+            }
+        }
+    }
+
+    .party-body {
+        .panel-group {
+            margin-bottom: 0;
+            &:hover {
+                .hover-button {
+                    visibility: visible;
+                }
+            }
+            .hover-button {
+                visibility: hidden;
+            }
+        }
+    }
+}
