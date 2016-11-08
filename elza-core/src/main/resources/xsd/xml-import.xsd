@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://v1_0_0.import.elza.tacr.cz" targetNamespace="http://v1_0_0.import.elza.tacr.cz" version="1.0">
 
-  <xs:import schemaLocation="schema2.xsd"/>
-
   <xs:element name="xml-import" type="tns:xml-import"/>
 
   <xs:complexType name="xml-import">
@@ -81,7 +79,7 @@
       <xs:element minOccurs="0" name="record-list">
         <xs:complexType>
           <xs:sequence>
-            <xs:element maxOccurs="unbounded" name="record" type="xs:IDREF"/>
+            <xs:element maxOccurs="unbounded" name="record" type="xs:string"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
@@ -140,44 +138,80 @@
     <xs:complexContent>
       <xs:extension base="tns:abstract-desc-item">
         <xs:sequence/>
-        <xs:attribute name="party-id" type="xs:IDREF" use="required"/>
+        <xs:attribute name="party-id" type="xs:string" use="required"/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType abstract="true" name="abstract-party">
-    <xs:sequence>
-      <xs:element name="preferred-name" type="tns:party-name"/>
-      <xs:element minOccurs="0" name="variant-name-list">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="variant-name" type="tns:party-name"/>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element minOccurs="0" name="history" type="xs:string"/>
-      <xs:element minOccurs="0" name="source-informations" type="xs:string"/>
-      <xs:element minOccurs="0" name="from-date" type="tns:complex-date"/>
-      <xs:element minOccurs="0" name="to-date" type="tns:complex-date"/>
-      <xs:element minOccurs="0" name="creator-name-list">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="creator" type="xs:IDREF"/>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element minOccurs="0" name="relation-list">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="relation" type="tns:relation"/>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element minOccurs="0" name="characteristics" type="xs:string"/>
-      <xs:element minOccurs="0" name="institution" type="tns:institution"/>
-    </xs:sequence>
-    <xs:attribute name="party-id" type="xs:ID" use="required"/>
-    <xs:attribute name="record-id" type="xs:IDREF" use="required"/>
+  <xs:complexType name="desc-item-record-ref">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-desc-item">
+        <xs:sequence/>
+        <xs:attribute name="record-id" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="desc-item-string">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-desc-item">
+        <xs:sequence>
+          <xs:element name="value" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="desc-item-text">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-desc-item">
+        <xs:sequence>
+          <xs:element name="value" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="desc-item-unit-date">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-desc-item">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="value-from" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="value-from-estimated" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="value-to" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="value-to-estimated" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="format" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="calendar-type-code" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="desc-item-unit-id">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-desc-item">
+        <xs:sequence>
+          <xs:element name="value" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="desc-item-packet-ref">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-desc-item">
+        <xs:sequence/>
+        <xs:attribute name="packet-id" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="desc-item-enum">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-desc-item">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="record">
@@ -201,7 +235,7 @@
         </xs:complexType>
       </xs:element>
     </xs:sequence>
-    <xs:attribute name="record-id" type="xs:ID" use="required"/>
+    <xs:attribute name="record-id" type="xs:string" use="required"/>
     <xs:attribute name="register-type-code" type="xs:string" use="required"/>
     <xs:attribute name="external-source-code" type="xs:string"/>
     <xs:attribute name="external-id" type="xs:string" use="required"/>
@@ -234,6 +268,49 @@
       <xs:element minOccurs="0" name="coordinate" type="xs:string"/>
     </xs:sequence>
     <xs:attribute name="position" type="xs:int"/>
+  </xs:complexType>
+
+  <xs:complexType name="person">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-party">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType abstract="true" name="abstract-party">
+    <xs:sequence>
+      <xs:element name="preferred-name" type="tns:party-name"/>
+      <xs:element minOccurs="0" name="variant-name-list">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="variant-name" type="tns:party-name"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="0" name="history" type="xs:string"/>
+      <xs:element minOccurs="0" name="source-informations" type="xs:string"/>
+      <xs:element minOccurs="0" name="from-date" type="tns:complex-date"/>
+      <xs:element minOccurs="0" name="to-date" type="tns:complex-date"/>
+      <xs:element minOccurs="0" name="creator-name-list">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="creator" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="0" name="relation-list">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="relation" type="tns:relation"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="0" name="characteristics" type="xs:string"/>
+      <xs:element minOccurs="0" name="institution" type="tns:institution"/>
+    </xs:sequence>
+    <xs:attribute name="party-id" type="xs:string" use="required"/>
+    <xs:attribute name="record-id" type="xs:string" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="party-name">
@@ -296,21 +373,13 @@
       <xs:element minOccurs="0" name="source" type="xs:string"/>
     </xs:sequence>
     <xs:attribute name="role-type-code" type="xs:string"/>
-    <xs:attribute name="record-id" type="xs:IDREF" use="required"/>
+    <xs:attribute name="record-id" type="xs:string" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="institution">
     <xs:sequence/>
     <xs:attribute name="internal-code" type="xs:string" use="required"/>
     <xs:attribute name="type-code" type="xs:string" use="required"/>
-  </xs:complexType>
-
-  <xs:complexType name="person">
-    <xs:complexContent>
-      <xs:extension base="tns:abstract-party">
-        <xs:sequence/>
-      </xs:extension>
-    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="dynasty">
@@ -361,81 +430,18 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="desc-item-record-ref">
-    <xs:complexContent>
-      <xs:extension base="tns:abstract-desc-item">
-        <xs:sequence/>
-        <xs:attribute name="record-id" type="xs:IDREF" use="required"/>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="desc-item-string">
-    <xs:complexContent>
-      <xs:extension base="tns:abstract-desc-item">
-        <xs:sequence>
-          <xs:element name="value" type="xs:string"/>
-        </xs:sequence>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="desc-item-text">
-    <xs:complexContent>
-      <xs:extension base="tns:abstract-desc-item">
-        <xs:sequence>
-          <xs:element name="value" type="xs:string"/>
-        </xs:sequence>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="desc-item-unit-date">
-    <xs:complexContent>
-      <xs:extension base="tns:abstract-desc-item">
-        <xs:sequence>
-          <xs:element minOccurs="0" name="value-from" type="xs:dateTime"/>
-          <xs:element minOccurs="0" name="value-from-estimated" type="xs:boolean"/>
-          <xs:element minOccurs="0" name="value-to" type="xs:dateTime"/>
-          <xs:element minOccurs="0" name="value-to-estimated" type="xs:boolean"/>
-          <xs:element minOccurs="0" name="format" type="xs:string"/>
-        </xs:sequence>
-        <xs:attribute name="calendar-type-code" type="xs:string"/>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="desc-item-unit-id">
-    <xs:complexContent>
-      <xs:extension base="tns:abstract-desc-item">
-        <xs:sequence>
-          <xs:element name="value" type="xs:string"/>
-        </xs:sequence>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="desc-item-packet-ref">
-    <xs:complexContent>
-      <xs:extension base="tns:abstract-desc-item">
-        <xs:sequence/>
-        <xs:attribute name="packet-id" type="xs:IDREF" use="required"/>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
   <xs:complexType name="packet">
     <xs:sequence/>
     <xs:attribute name="packet-type-code" type="xs:string"/>
-    <xs:attribute name="storage-number" type="xs:ID"/>
-    <xs:attribute name="state" type="state"/>
+    <xs:attribute name="storage-number" type="xs:string"/>
+    <xs:attribute name="state" type="tns:packet-type"/>
   </xs:complexType>
 
-  <xs:complexType name="desc-item-enum">
-    <xs:complexContent>
-      <xs:extension base="tns:abstract-desc-item">
-        <xs:sequence/>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
+  <xs:simpleType name="packet-type">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="OPEN"/>
+      <xs:enumeration value="CLOSED"/>
+      <xs:enumeration value="CANCELED"/>
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

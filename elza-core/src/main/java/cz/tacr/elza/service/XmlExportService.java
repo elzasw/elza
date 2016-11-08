@@ -33,6 +33,7 @@ import com.vividsolutions.jts.io.WKTWriter;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.ArrPacket.State;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -107,6 +108,7 @@ import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitId;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Fund;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Level;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Packet;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.PacketState;
 import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Dynasty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Event;
@@ -335,7 +337,9 @@ public class XmlExportService {
         if (packetType != null) {
             packet.setPacketTypeCode(packetType.getCode());
         }
-        packet.setState(arrPacket.getState());
+        State arrPacketState = arrPacket.getState();
+        packet.setState(PacketState.valueOf(arrPacketState.name()));
+
         packet.setStorageNumber(arrPacket.getStorageNumber());
 
         return packet;

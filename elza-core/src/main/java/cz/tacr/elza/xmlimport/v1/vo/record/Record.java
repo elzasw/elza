@@ -8,7 +8,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -27,7 +26,6 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 public class Record {
 
     /** Pro vazbu z osoby a hodnoty record_ref. */
-    @XmlID
     @XmlAttribute(name = "record-id", required = true)
     private String recordId;
 

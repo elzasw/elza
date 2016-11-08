@@ -751,13 +751,14 @@ class ArrPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        const {arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+        const {focus, arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
         const showRegisterJp = arrRegion.showRegisterJp;
         const activeFund = this.getActiveFund(this.props);
 
         if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, renderuje se zde
             return (
                 <FundTreeMain
+                    focus={focus}
                     className="extended-tree"
                     fund={activeFund}
                     cutLongLabels={false}

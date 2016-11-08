@@ -103,11 +103,11 @@
         <dependency>
            <groupId>org.hibernate</groupId>
            <artifactId>hibernate-search-orm</artifactId>
-        </dependency>           
-		<dependency>
-		  <groupId>org.hibernate</groupId>
-		  <artifactId>hibernate-entitymanager</artifactId>
-		</dependency>
+        </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-entitymanager</artifactId>
+    </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-spatial</artifactId>
@@ -188,8 +188,8 @@
             <version>${geotools.version}</version>
         </dependency>
         <dependency>
-        	<groupId>org.apache.lucene</groupId>
-        	<artifactId>lucene-queryparser</artifactId>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-queryparser</artifactId>
         </dependency>
 
         <dependency>
@@ -254,7 +254,7 @@
                         <phase>compile</phase>
 
                         <configuration>
-                            <outputDirectory>${project.build.directory}/xsd/</outputDirectory>
+                            <outputDirectory>${project.basedir}/src/main/resources/xsd/</outputDirectory>
                             <sources>
                                 <source>src/main/java/cz/tacr/elza/xmlimport/v1/vo/XmlImport.java</source>
                             </sources>
@@ -272,7 +272,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>            
+            </plugin>
         </plugins>
     </build>
 

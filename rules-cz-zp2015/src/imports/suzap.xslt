@@ -354,6 +354,7 @@
                     <packet>
                       <xsl:attribute name="packet-type-code">BOX</xsl:attribute>
                       <xsl:attribute name="invalid">false</xsl:attribute>
+                      <xsl:attribute name="state">OPEN</xsl:attribute>
                       <xsl:attribute name="storage-number">
                         <xsl:value-of select="./ap:cisloEVJ"/>
                       </xsl:attribute>
