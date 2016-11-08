@@ -60,3 +60,5 @@ Package fund - ukázka reálného nasazení v aplikaci a vytvoøení pøíslušných endpo
 
 # Budoucí zmìny
 Pøepracování WebSocketTaskProcessor, aby využíval ThreadPool
+Pro využití Scope("session") bude nutné využít abstrakci nad HttpSession, napøíklad: Spring session
+ * session je pak platná i po dobu websocket komunikace, viz: https://spring.io/blog/2014/09/16/preview-spring-security-websocket-support-sessions
