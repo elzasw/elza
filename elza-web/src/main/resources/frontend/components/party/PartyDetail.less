@@ -1,13 +1,19 @@
 @import "~variables.less";
 .party-detail {
+    height:100%;
+    display:flex;
+    flex-direction: column;
     .party-header {
         display: flex;
         padding: 5px;
         border-bottom: 1px #eee solid;
 
         > div {
-            flex: 1;
 
+
+            &:first-of-type {
+                flex:1;
+            }
             &:last-of-type {
                 text-align: right;
             }
@@ -20,15 +26,33 @@
     }
 
     .party-body {
+        flex:1;
+        overflow: auto;
         .panel-group {
             margin-bottom: 0;
-            &:hover {
-                .hover-button {
-                    visibility: visible;
+            .panel-title {
+                &:hover {
+                    .hover-button {
+                        visibility: visible;
+                    }
                 }
-            }
-            .hover-button {
-                visibility: hidden;
+                .hover-button {
+                    visibility: hidden;
+                }
+                .btn{
+                    padding: 2px;
+                    border: none;
+                    margin: 0;
+                    background: transparent;
+                    height: 2em;
+                    font-size: 0.9em;
+                    .icon  {
+                        color: @node-form-actions-color;
+                        height: 1.35em;
+                        line-height: 1.35em;
+                        width: 1.35em;
+                        vertical-align: middle;
+                    }}
             }
         }
     }

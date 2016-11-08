@@ -313,16 +313,15 @@ public class ClientFactoryVO {
         }
 
         result.getPartyNames().sort((a, b) -> {
-                    if (a.isPrefferedName()) {
-                        return Integer.MIN_VALUE;
-                    }
-                    if (b.isPrefferedName()) {
-                        return Integer.MAX_VALUE;
-                    }
+            if (a.isPrefferedName()) {
+                return Integer.MIN_VALUE;
+            }
+            if (b.isPrefferedName()) {
+                return Integer.MAX_VALUE;
+            }
 
-                    return a.getPartyNameId().compareTo(b.getPartyNameId());
-                }
-        );
+            return a.getPartyNameId().compareTo(b.getPartyNameId());
+        });
 
         if (prefferedName != null) {
             List<ParComplementType> all = complementTypeRepository.findAll();

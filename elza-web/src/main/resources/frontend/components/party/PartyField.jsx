@@ -1,5 +1,3 @@
-require('./PartyField.less');
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -15,7 +13,9 @@ import {routerNavigate} from 'actions/router.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 
-const PartyField = class PartyField extends AbstractReactComponent {
+import './PartyField.less'
+
+class PartyField extends AbstractReactComponent {
 
     static defaultProps = {
         detail: false
@@ -30,31 +30,35 @@ const PartyField = class PartyField extends AbstractReactComponent {
         versionId: React.PropTypes.number
     };
 
-    constructor(props) {
-        super(props);
-        this.bindMethods('handleChange', 'renderParty', 'handleSearchChange', 'renderFooter', 'handleDetail', 'focus');
-
-        this.state = {partyList: []};
-    }
-
-    focus() {
-        this.refs.autocomplete.focus()
-    }
+    state = {partyList: []};
 
     componentDidMount() {
         this.dispatch(refPartyTypesFetchIfNeeded());
     }
+
+    focus = () => {
+        this.refs.autocomplete.focus()
+    };
 
     /**
      * Zajistíme vrácení onChange pouze objekt nebo null
      * @param id
      * @param valueObj
      */
-    handleChange(id, valueObj) {
+    handleChange = (id, valueObj) => {
         this.props.onChange(valueObj.partyId ? valueObj : null);
-    }
+    };
 
-    handleSearchChange(text) {
+    /**
+     * Zajistíme vrácení onBlur pouze objekt nebo null
+     * @param id
+     * @param valueObj
+     */
+    handleBlur = (id, valueObj) => {
+        this.props.onBlur(valueObj.partyId ? valueObj : null);
+    };
+
+    handleSearchChange = (text) => {
 
         text = text == "" ? null : text;
 
@@ -63,14 +67,14 @@ const PartyField = class PartyField extends AbstractReactComponent {
                 partyList: json.rows
             })
         })
-    }
+    };
 
-    handleCreateParty(partyTypeId) {
+    handleCreateParty = (partyTypeId) => {
         this.refs.autocomplete.closeMenu();
         this.props.onCreate(partyTypeId);
-    }
+    };
 
-    renderParty(item, isHighlighted, isSelected) {
+    renderParty = (item, isHighlighted, isSelected) => {
         let cls = 'item';
         if (isHighlighted) {
             cls += ' focus'
@@ -86,9 +90,9 @@ const PartyField = class PartyField extends AbstractReactComponent {
                     <div className="characteristics" title={item.record.characteristics}>{item.record.characteristics}</div>
                 </div>
         )
-    }
+    };
 
-    renderFooter() {
+    renderFooter = () => {
         const {refTables} = this.props;
         return (
             <div className="create-party">
@@ -97,9 +101,9 @@ const PartyField = class PartyField extends AbstractReactComponent {
                 </DropdownButton>
             </div>
         )
-    }
+    };
 
-    handleDetail(partyId) {
+    handleDetail = (partyId) => {
         if (this.props.onDetail) {
             this.props.onDetail(partyId);
         } else {
@@ -107,11 +111,11 @@ const PartyField = class PartyField extends AbstractReactComponent {
             this.dispatch(partySelect(partyId, null));
             this.dispatch(routerNavigate('party'));
         }
-    }
+    };
 
     render() {
-        /** onChange nutno excludnout z other props - jinak by vlezno na autocomplete a přestal by fugnovat event on Change na komponentě **/
-        const {userDetail, locked, value, onChange, detail, ...otherProps} = this.props;
+        /** onChange a onBlur nutno excludnout z other props - jinak by vlezno na autocomplete a přestal by fugnovat event on Change na komponentě **/
+        const {userDetail, locked, value, onChange, onBlur, detail, ...otherProps} = this.props;
 
         let footer;
         if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR)) {
@@ -125,32 +129,30 @@ const PartyField = class PartyField extends AbstractReactComponent {
                                   className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
             }
         }
-        return (
-            <div className='desc-item-value desc-item-value-parts'>
-                <Autocomplete
-                    ref='autocomplete'
-                    customFilter
-                    footer={footer}
-                    value={value}
-                    items={this.state.partyList}
-                    getItemId={(item) => item ? item.partyId : null}
-                    getItemName={(item) => item && item.record ? item.record.record : ''}
-                    onSearchChange={this.handleSearchChange}
-                    onChange={this.handleChange}
-                    renderItem={this.renderParty}
-                    actions={[actions]}
-                    {...otherProps}
-                />
-            </div>
-        )
+        return <div className='desc-item-value desc-item-value-parts'>
+            <Autocomplete
+                ref='autocomplete'
+                customFilter
+                footer={footer}
+                value={value}
+                items={this.state.partyList}
+                getItemId={(item) => item ? item.partyId : null}
+                getItemName={(item) => item && item.record ? item.record.record : ''}
+                onSearchChange={this.handleSearchChange}
+                onChange={this.handleChange}
+                onBlur={this.handleBlur}
+                renderItem={this.renderParty}
+                actions={[actions]}
+                {...otherProps}
+            />
+        </div>;
     }
 }
 
-function mapStateToProps(state) {
+export default connect((state) => {
     const {refTables, userDetail} = state;
     return {
         refTables,
         userDetail,
     }
-}
-export default connect(mapStateToProps, null, null, { withRef: true })(PartyField);
+}, null, null, { withRef: true })(PartyField);

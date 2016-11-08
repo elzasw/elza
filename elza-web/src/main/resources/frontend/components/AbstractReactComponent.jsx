@@ -5,7 +5,7 @@
 import React from 'react';
 import {propsEquals} from 'components/Utils.jsx'
 
-var AbstractReactComponent = class AbstractReactComponent extends React.Component {
+class AbstractReactComponent extends React.Component {
     constructor(props) {
         super(props);
 
@@ -39,4 +39,4 @@ var AbstractReactComponent = class AbstractReactComponent extends React.Componen
     }
 }
 
-module.exports = AbstractReactComponent;
+export default AbstractReactComponent;

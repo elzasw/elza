@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.api.UISettings.SettingsType;
 import cz.tacr.elza.api.UISettings.EntityType;
 
@@ -9,6 +10,7 @@ import cz.tacr.elza.api.UISettings.EntityType;
  * @author Martin Šlapa
  * @since 19.07.2016
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UISettingsVO {
 
     private Integer id;

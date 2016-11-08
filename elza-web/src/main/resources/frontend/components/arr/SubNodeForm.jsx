@@ -1,9 +1,3 @@
-/**
- * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
- */
-
-require('./SubNodeForm.less');
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyForm, AddRegistryForm,
@@ -22,11 +16,16 @@ import {selectTab} from 'actions/global/tab.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {fundPacketsCreate} from 'actions/arr/fundPackets.jsx'
 import {fundFilesCreate} from 'actions/arr/fundFiles.jsx'
-var classNames = require('classnames');
+const classNames = require('classnames');
 import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
-var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
+import './SubNodeForm.less'
+
+/**
+ * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
+ */
+class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -58,6 +57,26 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'handleJsonTableDownload'
         );
     }
+
+    static PropTypes = {
+        versionId: React.PropTypes.number.isRequired,
+        fundId: React.PropTypes.number.isRequired,
+        routingKey: React.PropTypes.string,
+        nodeSetting: React.PropTypes.object,
+        rulDataTypes: React.PropTypes.object.isRequired,
+        calendarTypes: React.PropTypes.object.isRequired,
+        descItemTypes: React.PropTypes.object.isRequired,
+        packetTypes: React.PropTypes.object.isRequired,
+        packets: React.PropTypes.array.isRequired,
+        subNodeForm: React.PropTypes.object.isRequired,
+        closed: React.PropTypes.bool.isRequired,
+        readMode: React.PropTypes.bool.isRequired,
+        conformityInfo: React.PropTypes.object.isRequired,
+        descItemCopyFromPrevEnabled: React.PropTypes.bool.isRequired,
+        focus: React.PropTypes.object,
+        formActions: React.PropTypes.object.isRequired,
+        showNodeAddons: React.PropTypes.bool.isRequired,
+    };
 
     componentDidMount() {
 /*
@@ -743,52 +762,50 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             }
         }
 
-        return (
-            <DescItemType key={descItemType.id}
-                ref={'descItemType' + descItemType.id}
-                descItemType={descItemType}
-                singleDescItemTypeEdit={singleDescItemTypeEdit}
-                refType={refType}
-                infoType={infoType}
-                rulDataType={rulDataType}
-                calendarTypes={calendarTypes}
-                packetTypes={packetTypes}
-                packets={packets}
-                onCreateParty={this.handleCreateParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onDetailParty={this.handleDetailParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onCreateRecord={this.handleCreateRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onDetailRecord={this.handleDetailRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onCreatePacket={this.handleCreatePacket.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onFundPackets={this.handleFundPackets.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onCreateFile={this.handleCreateFile.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onFundFiles={this.handleFundFiles.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onCoordinatesUpload={this.handleCoordinatesUpload.bind(this, descItemType.id)}
-                onJsonTableUpload={this.handleJsonTableUpload.bind(this, descItemType.id)}
-                onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onCoordinatesDownload={this.handleCoordinatesDownload.bind(this)}
-                onJsonTableDownload={this.handleJsonTableDownload.bind(this)}
-                onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onChangePosition={this.handleChangePosition.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onChangeSpec={this.handleChangeSpec.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onBlur={this.handleBlur.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onFocus={this.handleFocus.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onDescItemTypeRemove={this.handleDescItemTypeRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onSwitchCalculating={this.handleSwitchCalculating.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onDescItemTypeLock={this.handleDescItemTypeLock.bind(this, descItemType.id)}
-                onDescItemTypeCopy={this.handleDescItemTypeCopy.bind(this, descItemType.id)}
-                onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev.bind(this, descItemGroupIndex, descItemTypeIndex, descItemType.id)}
-                showNodeAddons={showNodeAddons}
-                locked={singleDescItemTypeEdit ? false : locked}
-                closed={closed}
-                copy={copy}
-                conformityInfo={conformityInfo}
-                descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
-                versionId={versionId}
-                fundId={fundId}
-                readMode={readMode}
-            />
-        )
+        return <DescItemType key={descItemType.id}
+            ref={'descItemType' + descItemType.id}
+            descItemType={descItemType}
+            singleDescItemTypeEdit={singleDescItemTypeEdit}
+            refType={refType}
+            infoType={infoType}
+            rulDataType={rulDataType}
+            calendarTypes={calendarTypes}
+            packetTypes={packetTypes}
+            packets={packets}
+            onCreateParty={this.handleCreateParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onDetailParty={this.handleDetailParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onCreateRecord={this.handleCreateRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onDetailRecord={this.handleDetailRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onCreatePacket={this.handleCreatePacket.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onFundPackets={this.handleFundPackets.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onCreateFile={this.handleCreateFile.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onFundFiles={this.handleFundFiles.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onCoordinatesUpload={this.handleCoordinatesUpload.bind(this, descItemType.id)}
+            onJsonTableUpload={this.handleJsonTableUpload.bind(this, descItemType.id)}
+            onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onCoordinatesDownload={this.handleCoordinatesDownload.bind(this)}
+            onJsonTableDownload={this.handleJsonTableDownload.bind(this)}
+            onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onChangePosition={this.handleChangePosition.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onChangeSpec={this.handleChangeSpec.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onBlur={this.handleBlur.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onFocus={this.handleFocus.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onDescItemTypeRemove={this.handleDescItemTypeRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onSwitchCalculating={this.handleSwitchCalculating.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            onDescItemTypeLock={this.handleDescItemTypeLock.bind(this, descItemType.id)}
+            onDescItemTypeCopy={this.handleDescItemTypeCopy.bind(this, descItemType.id)}
+            onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev.bind(this, descItemGroupIndex, descItemTypeIndex, descItemType.id)}
+            showNodeAddons={showNodeAddons}
+            locked={singleDescItemTypeEdit ? false : locked}
+            closed={closed}
+            copy={copy}
+            conformityInfo={conformityInfo}
+            descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
+            versionId={versionId}
+            fundId={fundId}
+            readMode={readMode}
+        />
     }
 
     render() {
@@ -813,32 +830,10 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 }
 
-function mapStateToProps(state) {
-    const {userDetail} = state
+export default connect((state) => {
+    const {userDetail} = state;
 
     return {
         userDetail
     }
-}
-
-SubNodeForm.propTypes = {
-    versionId: React.PropTypes.number.isRequired,
-    fundId: React.PropTypes.number.isRequired,
-    routingKey: React.PropTypes.string,
-    nodeSetting: React.PropTypes.object,
-    rulDataTypes: React.PropTypes.object.isRequired,
-    calendarTypes: React.PropTypes.object.isRequired,
-    descItemTypes: React.PropTypes.object.isRequired,
-    packetTypes: React.PropTypes.object.isRequired,
-    packets: React.PropTypes.array.isRequired,
-    subNodeForm: React.PropTypes.object.isRequired,
-    closed: React.PropTypes.bool.isRequired,
-    readMode: React.PropTypes.bool.isRequired,
-    conformityInfo: React.PropTypes.object.isRequired,
-    descItemCopyFromPrevEnabled: React.PropTypes.bool.isRequired,
-    focus: React.PropTypes.object,
-    formActions: React.PropTypes.object.isRequired,
-    showNodeAddons: React.PropTypes.bool.isRequired,
-}
-
-module.exports = connect(mapStateToProps, null, null, { withRef: true })(SubNodeForm);
+}, null, null, { withRef: true })(SubNodeForm);

@@ -15,6 +15,55 @@ import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {SimpleListActions} from 'shared/list'
 import {DetailActions} from 'shared/detail'
 
+/**
+ * Načtení seznamu osob dle filtru
+ *
+ * @param filter {Object} - objekt filtru
+ * @param versionId int - versionId
+ */
+export function partyListFetchIfNeeded(filter, versionId = null) {
+    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, () => WebApi.findParty(filter.text, versionId, filter.type))
+}
+
+/**
+ * Filtr osob
+ *
+ * @param filter {Object} - objekt filtru
+ */
+export function partyListFilter(filter) {
+    return SimpleListActions.filter(AREA_PARTY_LIST, filter);
+}
+
+/**
+ * Invalidace seznamu osob
+ */
+export function partyListInvalidate() {
+    return SimpleListActions.invalidate(AREA_PARTY_LIST, null);
+}
+
+export function partyDetailFetchIfNeeded(id) {
+    return DetailActions.fetchIfNeeded(AREA_PARTY_DETAIL, id, () => WebApi.getParty(id));
+}
+
+export function partyDetailInvalidate() {
+    return DetailActions.invalidate(AREA_PARTY_DETAIL, null)
+}
+
+export function partyDetailClear() {
+    return partyDetailFetchIfNeeded(null);
+}
+
+
+export function partySettingsPinSave(settings) {
+    return dispatch => {
+        WebApi.setUserSettings(settings)
+            .then(data => {
+                dispatch(userDetailResponseSettings(data));
+                dispatch(modalDialogHide());
+            });
+    }
+}
+
 
 export const AREA_PARTY_LIST = 'partyList';
 export const AREA_PARTY_DETAIL = 'partyDetail';
@@ -35,6 +84,7 @@ export const AREA_PARTY_DETAIL = 'partyDetail';
  * @param degreeBefore string - titul před jménem osoby
  * @param degreeAfter string - titul za jménem osoby
  * @param scope string - !! cosi co netuším k čemu je, ale nejde bez toho uložit korporace - uklada se aktualne vždycky prazdny řetězec !!
+ * @deprecated
  */
 export function insertParty(partyType, filterText, partyTypeId, nameFormTypeId, nameMain, nameOther, validFrom, valiedTo, calendarTypeId, degreeBefore, degreeAfter, scope) {
     return dispatch => {
@@ -76,45 +126,6 @@ export function partyDelete(partyId) {
             dispatch(partyListInvalidate());
         })
     }
-}
-
-
-/**
- * Načtení seznamu osob dle filtru
- *
- * @param filter {Object} - objekt filtru
- * @param versionId int - versionId
- */
-export function partyListFetchIfNeeded(filter, versionId = null) {
-    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, () => WebApi.findParty(filter.text, versionId, filter.type))
-}
-
-/**
- * Filtr osob
- *
- * @param filter {Object} - objekt filtru
- */
-export function partyListFilter(filter) {
-    return SimpleListActions.filter(AREA_PARTY_LIST, filter);
-}
-
-/**
- * Invalidace seznamu osob
- */
-export function partyListInvalidate() {
-    return SimpleListActions.invalidate(AREA_PARTY_LIST, null);
-}
-
-export function partyDetailFetchIfNeeded(id) {
-    return DetailActions.fetchIfNeeded(AREA_PARTY_DETAIL, id, () => WebApi.getParty(id));
-}
-
-export function partyDetailInvalidate() {
-    return DetailActions.invalidate(AREA_PARTY_DETAIL, null)
-}
-
-export function partyDetailClear() {
-    return partyDetailFetchIfNeeded(null);
 }
 
 /**

@@ -67,7 +67,12 @@ public interface UISettings<U extends UsrUser> {
         /**
          * oblíbené specifikace u typu atributu
          */
-        FAVORITE_ITEM_SPECS(EntityType.ITEM_TYPE);
+        FAVORITE_ITEM_SPECS(EntityType.ITEM_TYPE),
+
+        /**
+         * Připnutí sekcí osob
+         */
+        PARTY_PIN(EntityType.NONE);
 
         /**
          * Typ oprávnění

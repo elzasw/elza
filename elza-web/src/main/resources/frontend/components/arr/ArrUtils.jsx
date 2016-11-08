@@ -131,25 +131,25 @@ export function getNodeParents(nodes, nodeId) {
  *
  * @param items seznam itemů
  * @param id    id konkrétního nastavení
- * @param item  položka, kterou ukládám
+ * @param newItem  položka, kterou ukládám
  * @returns {Array} seznam itemů
  */
-export function setSettings(items, id, item) {
+export function setSettings(items, id, newItem) {
     if (items == null) {
         items = [];
-        items.push(item);
+        items.push(newItem);
         return items;
     }
 
     if (id == null) {
-        items.push(item);
+        items.push(newItem);
         return items;
     }
 
     for (let i = 0; i < items.length; i++) {
         let item = items[i];
         if (item.id == id) {
-            items[i] = item;
+            items[i] = newItem;
             break;
         }
     }
@@ -193,7 +193,7 @@ export function getOneSettings(items, type = null, entityType = null, entityId =
  * @returns {Array} seznam itemů
  */
 export function getSettings(items, type = null, entityType = null, entityId = null) {
-    var result = [];
+    const result = [];
 
     if (items == null) {
         return result;

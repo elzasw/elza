@@ -10,6 +10,13 @@ import {WebApi} from 'actions/index.jsx';
 
 import './PartyList.less';
 
+const PARTY_TYPE_CODES = {
+    GROUP_PARTY: 'GROUP_PARTY',
+    PERSON: 'PERSON',
+    DYNASTY: 'DYNASTY',
+    EVENT: 'EVENT',
+};
+
 /**
  * Komponenta list osob
  */
@@ -73,17 +80,17 @@ class PartyList extends AbstractReactComponent {
 
     renderListItem = (item) => {
         let icon;
-        switch(item.partyType.description) {
-            case 'OSOBA':
+        switch(item.partyType.code) {
+            case PARTY_TYPE_CODES.PERSON:
                 icon = 'fa-user';
                 break;
-            case 'KORPORACE':
+            case PARTY_TYPE_CODES.GROUP_PARTY:
                 icon = 'fa-building';
                 break;
-            case 'DOČASNÁ KORPORACE':
+            case PARTY_TYPE_CODES.EVENT:
                 icon = 'fa-hospital-o';
                 break;
-            case 'ROD':
+            case PARTY_TYPE_CODES.DYNASTY:
                 icon = 'fa-shield';
                 break;
             default:
