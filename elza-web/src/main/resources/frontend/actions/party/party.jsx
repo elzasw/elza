@@ -49,8 +49,21 @@ export function partyDetailInvalidate() {
     return DetailActions.invalidate(AREA_PARTY_DETAIL, null)
 }
 
+export function partyDetail() {
+    return DetailActions.invalidate(AREA_PARTY_DETAIL, null)
+}
+
 export function partyDetailClear() {
     return partyDetailFetchIfNeeded(null);
+}
+
+
+export function partyUpdate(party) {
+    return dispatch => {
+        return savingApiWrapper(dispatch, WebApi.updateParty(party)).then((json) => {
+            dispatch(partyDetailInvalidate());
+        });
+    }
 }
 
 
@@ -93,22 +106,6 @@ export function insertParty(partyType, filterText, partyTypeId, nameFormTypeId, 
                 dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
                 dispatch(partyDetailFetch(json.partyId));   // otevření detailu aktuálně vložené osoby
                 dispatch(findPartyFetch(filterText));       // znovu načtení leveho panelu s vyfiltrovanými osobami (aby se tam pridala nová)
-            });
-    }
-}
-
-/**
- * UPDATE PARTY
- * *********************************************
- * Volání webového rozhraní pro upravu základních udaju ossob (inplace editace)
- * @param party json - kompletni objekt osoby se všemi změnami
-*/
-export function updateParty(party){ 
-    return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.updateParty(party))
-            .then((json) => {
-                dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
-                dispatch(partyDetailFetch(party.partyId));   // otevření detailu aktuálně vložené osoby
             });
     }
 }

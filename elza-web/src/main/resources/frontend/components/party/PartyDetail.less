@@ -39,20 +39,30 @@
                 .hover-button {
                     visibility: hidden;
                 }
-                .btn{
-                    padding: 2px;
-                    border: none;
-                    margin: 0;
-                    background: transparent;
-                    height: 2em;
-                    font-size: 0.9em;
-                    .icon  {
-                        color: @node-form-actions-color;
-                        height: 1.35em;
-                        line-height: 1.35em;
-                        width: 1.35em;
-                        vertical-align: middle;
-                    }}
+            }
+            .panel-body {
+                .value-group {
+                    display: flex;
+                    .form-control-static {
+                        flex:1
+                    }
+                }
+            }
+
+            .btn {
+                padding: 2px;
+                border: none;
+                margin: 0;
+                background: transparent;
+                height: 2em;
+                font-size: 0.9em;
+                .icon {
+                    color: @node-form-actions-color;
+                    height: 1.35em;
+                    line-height: 1.35em;
+                    width: 1.35em;
+                    vertical-align: middle;
+                }
             }
         }
     }

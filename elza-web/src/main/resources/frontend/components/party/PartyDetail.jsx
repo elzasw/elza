@@ -1,13 +1,26 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {PartyDetailCreators, PartyDetailIdentifiers, PartyDetailNames, AddPartyNameForm, AbstractReactComponent, Search, i18n, FormInput, NoFocusButton, Icon, CollapsablePanel} from 'components/index.jsx';
+import {
+    PartyDetailCreators,
+    PartyIdentifierForm,
+    PartyDetailIdentifiers,
+    PartyDetailNames,
+    PartyNameForm,
+    AbstractReactComponent,
+    Search,
+    i18n,
+    FormInput,
+    NoFocusButton,
+    Icon,
+    CollapsablePanel
+} from 'components/index.jsx';
 import {FormControl} from 'react-bootstrap';
 import {AppActions} from 'stores/index.jsx';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {updateParty} from 'actions/party/party.jsx'
+import {partyUpdate} from 'actions/party/party.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 import {Utils} from 'components/index.jsx';
@@ -40,7 +53,7 @@ const SETTINGS_PARTY_PIN = "PARTY_PIN";
 class PartyDetail extends AbstractReactComponent {
 
     state = {
-        activeIndexes: {},
+        activeIndexes: {[PARTY_TYPE_IDENT + '_FORM_NAMES']: true},
         visibilitySettings: {},
         visibilitySettingsValue: {}
     };
@@ -160,44 +173,6 @@ class PartyDetail extends AbstractReactComponent {
         return objectById(this.props.partyTypes.items, this.props.partyDetail.data.partyType.partyTypeId, 'partyTypeId');
     };
 
-    getPartyName = (partyName, partyType) => {
-        const res = [];
-        const hlp = (a,b) => {
-            if (a) {
-                b.push(a);
-            }
-        };
-
-        hlp(partyName.degreeBefore, res);
-        hlp(partyName.mainPart, res);
-        hlp(partyName.otherPart, res);
-        let roman = null, geoAddon = null, addon = null;
-        partyName.partyNameComplements.forEach((e) => {
-            const type = objectById(partyType.complementTypes, e.complementTypeId, 'complementTypeId');
-            if (type) {
-                if (type.code == "2") {
-                    addon = e.complement;
-                } else if (type.code == "3") {
-                    roman = e.complement;
-                } else if (type.code == "4") {
-                    geoAddon = e.complement;
-                }
-            }
-        });
-        hlp(roman, res);
-        hlp(geoAddon, res);
-        hlp(addon, res);
-        let str = res.join(' ');
-        if (partyName.degreeAfter != null && partyName.degreeAfter.length > 0) {
-            str += ', ' + partyName.degreeAfter;
-        }
-        return str;
-    };
-
-    handleNameAdd = () => {
-        const partyType = this.getPartyType();
-        this.dispatch(modalDialogShow(this, i18n('party.detail.name.new') , <AddPartyNameForm partyType={partyType} />));
-    };
 
     handlePinToggle = (identificator) => {
         const oldSettings = getOneSettings(this.props.userDetail.settings, SETTINGS_PARTY_PIN);
@@ -213,6 +188,11 @@ class PartyDetail extends AbstractReactComponent {
         let newSettings = this.props.userDetail.settings ? [...this.props.userDetail.settings] : [];
         newSettings = setSettings(newSettings, newVisibilitySettings.id, newVisibilitySettings);
         this.dispatch(userDetailsSaveSettings(newSettings))
+    };
+
+
+    handlePartyUpdate = (party) => {
+        this.dispatch(partyUpdate(party));
     };
 
     render() {
@@ -281,19 +261,10 @@ class PartyDetail extends AbstractReactComponent {
                             const corpKey = PARTY_TYPE_IDENT + '_CORP_IDENT';
                             return <div key={index}>
                                 <CollapsablePanel isOpen={activeIndexes[key]} pinned={visibilitySettingsValue[key]} header={i18n("party.detail.formNames")} eventKey={key} {...events}>
-                                    <div>
-                                        <label>{i18n("party.detail.formNames")}</label>
-                                        <NoFocusButton bsStyle="default" onClick={this.handleNameAdd}><Icon glyph="fa-plus" /></NoFocusButton>
-                                    </div>
-                                    {party.partyNames.map((partyName, index) => <div key={partyName.partyNameId}>
-                                        <FormControl.Static>{this.getPartyName(partyName, partyType)}</FormControl.Static>
-                                        <NoFocusButton><Icon glyph="fa-pencil" /></NoFocusButton>
-                                        <NoFocusButton><Icon glyph="fa-times" /></NoFocusButton>
-                                        {partyName.prefferedName ? i18n('party.detail.formNames.prefferedName') : <NoFocusButton><Icon glyph="fa-check" /></NoFocusButton>}
-                                    </div>)}
+                                    <PartyDetailNames party={party} partyType={partyType} onPartyUpdate={this.handlePartyUpdate} />
                                 </CollapsablePanel>
-                                {party.partyType.code == PARTY_TYPE_CORPORATION_CODE && <CollapsablePanel isOpen={activeIndexes[corpKey]} pinned={visibilitySettingsValue[corpKey]} header={i18n("party.detail.partyGroupIdentificators")} eventKey={corpKey} {...events}>
-                                    {/* TBD */}
+                                {party.partyType.code == PARTY_TYPE_CORPORATION_CODE && <CollapsablePanel isOpen={activeIndexes[corpKey]} pinned={visibilitySettingsValue[corpKey]} header={i18n("party.detail.partyGroupIdentifiers")} eventKey={corpKey} {...events}>
+                                    <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} />
                                 </CollapsablePanel>}
                             </div>;
                         } else if (i.type == PARTY_TYPE_CONCLUSION) {

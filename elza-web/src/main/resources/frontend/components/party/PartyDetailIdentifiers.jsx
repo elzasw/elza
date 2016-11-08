@@ -1,188 +1,85 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {connect} from 'react-redux'
+import {FormControl} from 'react-bootstrap'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
+import {i18n, AbstractReactComponent, NoFocusButton, Icon} from 'components/index.jsx'
+import {indexById} from 'stores/app/utils.jsx'
+
+
 /**
  * Identifikátory zadané osoby - pouze u korporací
  */
+class PartyDetailIdentifiers extends AbstractReactComponent {
 
-import React from 'react';
-import {connect} from 'react-redux'
-import {Button} from 'react-bootstrap';
-import {PartyIdentifierForm, AbstractReactComponent, i18n, Icon} from 'components/index.jsx';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {deleteIdentifier, updateParty} from 'actions/party/party.jsx'
+    static PropTypes = {
+        party: React.PropTypes.object.isRequired,
+        onPartyUpdate: React.PropTypes.func.isRequired,
+    };
 
-/*
-@@@@@@@@@@@@@@@@@@@
-
-POZOR - zde se pracuje s props.partyRegion.selectedPartyData a to se primo upravuje !!!!!!!!!!!!!!!!!!!!!!!
-
-@@@@@@@@@@@@@@@@@@@
-*/
-
-const PartyDetailIdentifiers = class PartyDetailIdentifiers extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-        this.bindMethods(
-            'handleAddIdentifier',
-            'handleUpdateIdentifier',
-            'handleDeleteIdentifier', 
-            'addIdentifier',
-            'updateIdentifier',
-            'deleteIdentifier'
-        );
-
-        const party = this.props.partyRegion.selectedPartyData;
-        if (!party.partyGroupIdentifiers) {
-            party.partyGroupIdentifiers = []
-        }
-    }
-
-    /**
-     * HANDLE DELETE IDENTIFIER
-     * *********************************************
-     * Kliknutí na tlačítko smazání identifikátoru
-     * @param identifierId - identifikátor jména osoby
-     * @param event - událost kliknutí
-     */     
-    handleDeleteIdentifier(identifierId, event){
-        if(confirm(i18n('party.detail.identifier.delete'))) {              // pokud uživatel potvrdí smazání
-            this.deleteIdentifier(identifierId);                          // identifikátor se smaže
-        }
-    }
-
-    /**
-     * DELETE IDENTIFIER
-     * *********************************************
-     * Smazání identifikátoru
-     * @param identifierId - identifikátor jména osoby
-     */ 
-    deleteIdentifier(identifierId){
-        const party = this.props.partyRegion.selectedPartyData;                               // aktuální osoba
-        let identifiers = [];                                                               // nový seznam identifikátorů
-        for(let i = 0; i<party.partyGroupIdentifiers.length; i++){                          // projdeme původní identifikátory
-            if(party.partyGroupIdentifiers[i].partyGroupIdentifierId != identifierId){      // a pokud se nejedna o mazaný identifikátor
-                identifiers[identifiers.length] = party.partyGroupIdentifiers[i];           // přidáme ho do seznamu identifikátorů, co budou zachovány
-            }
-        }
-        party.partyGroupIdentifiers = identifiers;                                          // vyměníme starý seznam identifikátorů za nový
-        this.dispatch(updateParty(party));                                                  // změny uložíme
-    }
-
-    /**
-     * ADD IDENTIFIER
-     * *********************************************
-     * Vložení nového identifikátorů
-     * @param data object - data identifikátorů z formuláře
-     */ 
-    addIdentifier(data) {
-        const party = this.props.partyRegion.selectedPartyData;                   // aktuálně upravovaná osoba
-        party.partyGroupIdentifiers[party.partyGroupIdentifiers.length] = {     // nový identifikátor vložíme na konec seznamu jmen
-            note: data.note,
-            identifier: data.identifier,
-            source: data.source,
-            from: data.from,
-            to: data.to
+    partyGroupIdentifierDelete = (id) => {
+        const partyGroupIdentifiers = this.props.party.partyGroupIdentifiers;
+        const index = indexById(partyGroupIdentifiers, id, 'partyGroupIdentifierId');
+        const party = {
+            ...this.props.party,
+            partyGroupIdentifiers: [
+                ...partyGroupIdentifiers.slice(0, index),
+                ...partyGroupIdentifiers.slice(index+1)
+            ]
         };
-        this.dispatch(updateParty(party));                                      // identifikátor se uloží a osoba znovu načte     
-    }
+        this.props.onPartyUpdate(party);
+    };
 
-    /**
-     * HANDLE ADD IDENTIFIER
-     * *********************************************
-     * Kliknutí na vložení nového identifikátoru
-     */ 
-    handleAddIdentifier() {
-        const party = this.props.partyRegion.selectedPartyData;                       // načtení aktualní osoby ze store
-        const data = {                                                                // výchozí data formuláře
-            partyTypeId: party.partyType.partyTypeId,                               // identifikátor typu osoby, jejíž jménu upravujeme
-            from: {
-                textDate: "",    
-                calendarTypeId: this.props.partyRegion.gregorianCalendarId        
-            },
-            to: {
-                textDate: "",    
-                calendarTypeId: this.props.partyRegion.gregorianCalendarId           
-            }
-        }
-        this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.new') , <PartyIdentifierForm initData={data} onSave={this.addIdentifier} />));    // otevře se formuláš nového identifikátoru   
-    }
-
-    /**
-     * HANDLE UPDATE IDENTIFIER
-     * *********************************************
-     * Kliknutí na ikonu editace identifikátoru
-     * @param identifierId - identifikátor jména osoby
-     */ 
-    handleUpdateIdentifier(identifierId) {
-        const party = this.props.partyRegion.selectedPartyData;                               // načtení aktualní osoby ze store
-        let identifier = {};                                                                // pripravený objekt pro identifikátor
-        for(let i = 0; i<party.partyGroupIdentifiers.length; i++){                          // prohledáme všechny identifikátory
-            if(party.partyGroupIdentifiers[i].partyGroupIdentifierId == identifierId){      // a ten které hledáme
-                identifier = party.partyGroupIdentifiers[i];                                // si uložíme
-            }
+    addIdentifier = (data) => {
+        const party = {
+            ...this.props.party,
+            partyGroupIdentifiers: [
+                ...this.props.party.partyGroupIdentifiers,
+                {
+                    note: data.note,
+                    identifier: data.identifier,
+                    source: data.source,
+                    from: {
+                        textDate: data.fromText,
+                        calendarTypeId: data.fromCalendar
+                    },
+                    to: {
+                        textDate: data.toText,
+                        calendarTypeId: data.toCalendar
+                    }
+                }
+            ]
         };
-       
-        const data = {                                                                // data, která udou poslána formuláři
-            partyGroupIdentifierId: identifier.partyGroupIdentifierId,              // id upravovaného identifikátoru
-            partyTypeId: party.partyType.partyTypeId,                               // id typu osoby, jejíž identifikátor upravujeme
-            source: identifier.source,                                              // zdroje dat
-            note: identifier.note,                                                  // poznámka
-            identifier: identifier.identifier,                                      // identifikátor
-            from: {                                                                 // datace od
-                textDate: (identifier.from != null ? identifier.from.textDate : ""),    
-                calendarTypeId: (identifier.from != null ? identifier.from.calendarTypeId : 0)
-            },
-            to: {                                                                   // datace do
-                textDate: (identifier.to != null ? identifier.to.textDate : ""), 
-                calendarTypeId: (identifier.to != null ? identifier.to.calendarTypeId : 0)
-            }
-        }
-        this.dispatch(modalDialogShow(this, identifier.mainPart , <PartyIdentifierForm initData={data} onSave={this.updateIdentifier} />));
-    }
+        this.props.onPartyUpdate(party);
+        this.dispatch(modalDialogHide())
+    };
 
-    /**
-     * UPDATE IDENTIFIER
-     * *********************************************
-     * Uložení změn v identifikátoru
-     * @param data object - data vyplněná v formuláři
-     */ 
-    updateIdentifier(data) {
-        const party = this.props.partyRegion.selectedPartyData;                           // id osoby, které patří měněný identifikátor
-        let identifiers = party.partyGroupIdentifiers;                                  // původní identifikátory osoby
-        for(let i = 0; i<identifiers.length; i++){                                      // je potřeba ho najít mezi ostatními jmény
-            if(identifiers[i].partyGroupIdentifierId == data.partyGroupIdentifierId){   // to je ono            
-                party.partyGroupIdentifiers[i].source = data.source;                    // zdroj dat
-                party.partyGroupIdentifiers[i].note = data.note;                        // poznámka
-                party.partyGroupIdentifiers[i].identifier = data.identifier;            // identifikátoru
-                party.partyGroupIdentifiers[i].from = data.from;                        // datace identifikátoru od
-                party.partyGroupIdentifiers[i].to = data.to;                            // datace identifikátoru do
-            }
-        }
-        this.dispatch(updateParty(party));                                              // uložení změn a znovu načtení dat osoby              
-    }
+    handlePartyGroupIdentifierAdd = () => {
+        this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.new') , <PartyIdentifierForm onSubmitForm={this.addIdentifier} />));
+    };
 
-    /**
-     * RENDER
-     * *********************************************
-     * Vykreslení bloku identifikátorů
-     */ 
+    handleDelete = (id) => {
+        if (confirm(i18n('party.detail.identifier.delete'))) {
+            this.partyGroupIdentifierDelete(id);
+        }
+    };
+
     render() {
-       const {canEdit} = this.props
-
-        const party = this.props.partyRegion.selectedPartyData;
-        return  <div className="party-identifiers">
-            <table>
-                <tbody>
-                    {party.partyGroupIdentifiers && party.partyGroupIdentifiers.map(i=> {return <tr className="identifier" key={'party-group-identifier'+i.partyGroupIdentifierId}>
-                        <th className="identifier column">{i.identifier}</th>
-                        <td className="buttons">
-                            {canEdit && <Button classIdentifier="column" onClick={this.handleUpdateIdentifier.bind(this, i.partyGroupIdentifierId)}><Icon glyph="fa-pencil" /></Button>}
-                            {canEdit && <Button classIdentifier="column" onClick={this.handleDeleteIdentifier.bind(this, i.partyGroupIdentifierId)}><Icon glyph="fa-trash" /></Button>}
-                        </td>
-                    </tr>})}
-                </tbody>
-            </table>
-            {canEdit && <Button className="column" onClick={this.handleAddIdentifier}><Icon glyph="fa-plus" /> { i18n('party.detail.identifier.new')}</Button>}
+        const {party} = this.props;
+        return <div>
+            <div>
+                <label>{i18n("party.detail.partyGroupIdentifiers")}</label>
+                <NoFocusButton bsStyle="default" onClick={this.handlePartyGroupIdentifierAdd}><Icon glyph="fa-plus" /></NoFocusButton>
+            </div>
+            {party.partyGroupIdentifiers.map((partyGroupIdentifier, index) => <div key={partyGroupIdentifier.partyGroupIdentifierId} className="value-group">
+                <FormControl.Static>{partyGroupIdentifier.identifier}</FormControl.Static>
+                <div className="actions">
+                    <NoFocusButton><Icon glyph="fa-pencil" /></NoFocusButton>
+                    <NoFocusButton onClick={() => this.partyGroupIdentifierDelete(partyGroupIdentifier.partyGroupIdentifierId)}><Icon glyph="fa-times" /></NoFocusButton>
+                </div>
+            </div>)}
         </div>
     }
 }
 
-module.exports = connect()(PartyDetailIdentifiers);
+export default connect()(PartyDetailIdentifiers);

@@ -542,7 +542,7 @@ var messages = {
     "party.detail.identifier.delete": "Opravdu chcete smazat tento identifikátor",
     "party.detail.formNames" : "Formy jména",
     "party.detail.formNames.prefferedName" : "(Preferovná forma jména)",
-    "party.detail.partyGroupIdentificators" : "Identifikátory korporace",
+    "party.detail.partyGroupIdentifiers" : "Identifikátory korporace",
     "party.creator.creator": "Autor osoby",
     "party.creator.errors.undefinedCreator": "Nebyl vybrán autor",
     "party.errors.undefinedMainPart": "Nebyla vyplněna hlavní část jména",

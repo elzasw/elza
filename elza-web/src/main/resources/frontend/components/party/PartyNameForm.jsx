@@ -1,277 +1,168 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Icon, FormInput} from 'components/index.jsx';
-import {Modal, Button, Form} from 'react-bootstrap';
+import {DropDownTree, AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading} from 'components/index.jsx';
+import {Modal, Button, HelpBlock, FormGroup, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField} from 'components/form/FormUtils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList.jsx'
+import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
+import {submitReduxForm} from 'components/form/FormUtils.jsx'
 
+const PARTY_TYPE_PERSON = 'PERSON';
 
 /**
- * PARTY NAME FORM
- * *********************************************
- * Formulář jména osoby
+ * Formulář formy jména osoby
  */
 class PartyNameForm extends AbstractReactComponent {
-    state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
-        data : this.props.initData,                     // předvyplněná data formuláře
-        errors: []                                      // sezn chyb k vypsání uživateli
-    };
 
-    componentDidMount() {
-        this.dispatch(refPartyNameFormTypesFetchIfNeeded());// seznam typů jmén (uřední, ...)
-        this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
-        this.dispatch(refPartyTypesFetchIfNeeded());        // budeme potřebovat také seznam typů osob (osoba, rod, korporace, ..)
-    }
+    static fields = [
+        'nameFormTypeId',
+        'degreeBefore',
+        'degreeAfter',
+        'mainPart',
+        'otherPart',
+        'complements[].complementTypeId',
+        'complements[].complement',
+    ];
 
-    componentWillReceiveProps() {
-        this.dispatch(refPartyNameFormTypesFetchIfNeeded());// seznam typů jmén (uřední, ...)
-        this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
-        this.dispatch(refPartyTypesFetchIfNeeded());        // budeme potřebovat také seznam typů osob (osoba, rod, korporace, ..)
-    }
-
-    /**
-     * UPDATE VALUE
-     * *********************************************
-     * aktualizace nějaké hodnoty ve formuláři (kromě doplňků jmen)
-     * @params event - událost která změnu vyvolala
-     */
-    updateValue = (event) => {
-        const value = event.target.value;                                                     // hodnota změněného pole formuláře
-        const variable = event.target.name;                                                   // nazeb měněné hodnoty
-        const data = this.state.data;                                                         // puvodni data formuláře
-        switch(variable) {
-            case "nameFormTypeId" : data.nameFormTypeId = value; break;        // změna typu jména
-            case "mainPart" : data.mainPart = value; break;                    // změna hlavní části jména
-            case "otherPart" : data.otherPart = value; break;                  // změna vedlejší části jména
-            case "degreeAfter" : data.degreeAfter = value; break;
-            case "degreeBefore" : data.degreeBefore = value; break;
-            case "fromText" : data.validFrom.textDate = value; break;          // změna data od
-            case "toText" : data.validTo.textDate = value; break;              // změna data do
-            case "fromCalendar" : data.validFrom.calendarTypeId = value; break;// změna typu kalendáře od
-            case "toCalendar" : data.validTo.calendarTypeId = value; break;    // změna typu kalendáře do
-        }
-        this.setState({
-            data : data                                                                     // uložení změn do state
-        });
-    };
-
-    /**
-     * UPDATE COMPLEMENT VALUE
-     * *********************************************
-     * aktualizace nějaké hodnoty entity doplňku jména
-     * @params obj complement - obsahuje index doplňku jména a měněnou hodnotu, např {index 5, variable: 'complementTypeId'} 
-     * @params event - událost která změnu vyvolala
-     */   
-    updateComplementValue = (complement, event) => {
-        const data = this.state.data;                             // puvodní data formuláře
-        for(let i=0; i<data.complements.length; i++) {           // procházejí se všechny doplňky
-            if(i == complement.index) {                          // nalezení toho pravého, který máme změnit
-                switch(complement.variable) {                        
-                    case "complementTypeId" : data.complements[complement.index].complementTypeId = event.target.value; break;
-                    case "complement" : data.complements[complement.index].complement = event.target.value; break;
-                }
+    static requireFields = (...names) => data =>
+        names.reduce((errors, name) => {
+            if (!data[name]) {
+                errors[name] = i18n('global.validation.required')
             }
-        }
-        this.setState({
-            data : data                                         // uložení změny do state
-        });
-    };
-
-
-    /**
-     * ADD COMPLEMENT
-     * *********************************************
-     * přidání nového doplňku jména
-     */ 
-    addComplement = () => {
-        const data = this.state.data;                         // původní data jména (formuláře)
-        data.complements[data.complements.length]={         // pridání nového prázdného doplňku na konec seznamu jmen
-            complementTypeId: null,
-            complement: null
-        };
-        this.setState({
-            data : data                                     // uložení výsledku do state
-        });
-    };
-
-    /**
-     * REMOVE COMPLEMENT
-     * *********************************************
-     * odstranění jednoho doplňku jména
-     * @params int index - lokální index doplňku, který se má odstranit 
-     * @params event - událost která změnu vyvolala
-     */ 
-    removeComplement = (index, event) => {
-        const data = this.state.data;                                 // původní data formuláře
-        const complement = [];                                        // nový seznnam doplňků
-        for(let i=0; i<data.complements.length; i++) {               // procházejí se původní doplňky
-            if(i != index) {                                         // a všechny co nejsou mazaný doplněk
-               complement[complement.length] = data.complements[i]; // přidáme do nových doplňků
-            }
-        }
-        data.complements = complement;                              // stare doplňky v datech vymeníme za nové
-        this.setState({
-            data : data                                             // a uložíme nová data do state
-        });
-    };
+            return errors
+        }, {});
 
     /**
      * VALIDATE
      * *********************************************
-     * Kontrola vyplnění formuláře jména
-     * @return array errors - seznam chyb 
+     * Kontrola vyplnění formuláře identifikátoru
+     * @return object errors - seznam chyb
      */
-    validate = () => {
-        const errors = [];                                        // seznam chyb
-        const data = this.state.data;                             // zadaná data z formuláře
-
-        //kontrola vyplnění typu jména
-        if(data.nameFormTypeId == 0 || data.nameFormTypeId == null ||  data.nameFormTypeId == undefined) {
-            errors[errors.length] = i18n('party.name.errors.undefinedNameFormType');
+    static validate = function (values) {
+        let errors = PartyNameForm.requireFields('mainPart', 'nameFormTypeId')(values);
+        errors.complements = values.complements.map(PartyNameForm.requireFields('complementTypeId', 'complement'));
+        if (errors.complements.filter(i => Object.keys(i).length !== 0).length === 0) {
+            delete errors.complements;
         }
-
-        //kontrola vyplnění hlavního jména
-        if(data.mainPart == "" || data.mainPart == null ||  data.mainPart == undefined) {
-            errors[errors.length] = i18n('party.name.errors.undefinedMainPart');
-        }
-
-        for(let i=0; i<data.complements.length; i++) {
-            if(data.complements[i].complementTypeId == 0 || data.complements[i].complementTypeId == null ||  data.complements[i].complementTypeId == undefined) {
-                errors[errors.length] = i18n('party.name.errors.undefinedComplementType');
-                break;
-            }
-        }
-
-        for(let i=0; i<data.complements.length; i++) {
-            if(data.complements[i].complement == '' || data.complements[i].complement == null ||  data.complements[i].complement == undefined) {
-                errors[errors.length] = i18n('party.name.errors.undefinedComplementValue');
-                break;
-            }
-        }
-
-        return errors;                                          // vrácení seznamu chyb
+        return errors;
     };
 
-   /**
-     * HANDLE CLOSE
-     * *********************************************
-     * Zavření dialogového okénka formuláře
-     */
-    handleClose =() => {
-        this.dispatch(modalDialogHide());
+    static PropTypes = {
+        partyType: React.PropTypes.object.isRequired,
+    };
+
+    state = {
+        complementsTypes: [],
+        initialized: false,
+    };
+
+    componentDidMount() {
+        this.dataRefresh();
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.dataRefresh(nextProps);
+    }
+
+    dataRefresh = (props = this.props) => {
+        const {refTables:{partyNameFormTypes}, partyTypeId} = props;
+        this.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
+        this.dispatch(refPartyTypesFetchIfNeeded());        // načtení seznamu typů jmen
+        this.dispatch(getRegistryRecordTypesIfNeeded(partyTypeId));
+
+        partyNameFormTypes.fetched &&
+        !partyNameFormTypes.isFetching &&
+        this.loadData(props);
     };
 
     /**
-     * HANDLE SUBMIT
-     * *********************************************
-     * Odeslání formuláře
+     * Pokud nejsou nastaveny hodnoty - nastavíme hodnotu do pole nameFormTypeId a scopeId
      */
-    handleSubmit = (e) => {
-        e.preventDefault();
-        const errors = this.validate();               // seznam  chyb ve vyplněných datech
-        if(errors.length > 0) {                      // pokud je formulář chybně vyplnění
-            this.setState({             
-                errors : errors                     // seznam chyb se uloží do state => dojde s přerenderování, při kterém budou chyby vypsany
+    loadData(props) {
+        const {refTables: {partyNameFormTypes}, partyType} = props;
+        const nameFormTypeId = partyNameFormTypes.items[0].nameFormTypeId;
+        if (!this.state.initialized) {
+            this.setState({initialized: true, complementsTypes: partyType.complementTypes}, () => {
+                this.props.load({nameFormTypeId});
             });
-        }else{                                      // formulář je vyplněn dobře
-            this.props.onSave(this.state.data);     // vyplněná data se pošlou do funkce definované nadřazenou komponentou v proměnné onSave 
         }
-    };
+    }
 
-
-    /**
-     * RENDER
-     * *********************************************
-     * Vykreslení formuláře
-     */
     render() {
-        let complementsTypes = [];                                                                              // seznam aktuálních typů doplňků možných pro daný typ osoby
-        for(let i=0; i<this.props.refTables.partyTypes.items.length; i++) {                                      // projdu všechny typy osob co jsou
-            if(this.props.refTables.partyTypes.items[i].partyTypeId == this.props.initData.partyTypeId) {        // a z té která odpovídá typu této osoby
-                complementsTypes = this.props.refTables.partyTypes.items[i].complementTypes;                    // si vemu seznam typů doplňků jmen
-            }
-        }
-        return (
-            <div>
-                <Form onSubmit={this.handleSubmit}>
-                    <Modal.Body>
-                        <ul className="errors">
-                            {this.state.errors.map((i, index)=> {return <li key={index}>{i}</li>})}
-                        </ul>
-                            <FormInput componentClass="select" label={i18n('party.nameFormType')} name="nameFormTypeId" value={this.state.data.nameFormTypeId} onChange={this.updateValue}>
-                                <option value="0" key="0"/>
-                                {this.props.refTables.partyNameFormTypes.items.map(i=> {return <option value={i.nameFormTypeId} key={i.nameFormTypeId}>{i.name}</option>})}
-                            </FormInput>
+        const {complementsTypes} = this.state;
 
-                            {this.state.data.partyTypeCode == "PERSON" ?
-                             <div className="line">
-                                <FormInput type="text" label={i18n('party.degreeBefore')} name="degreeBefore" value={this.state.data.degreeBefore} onChange={this.updateValue} />
-                                <FormInput type="text" label={i18n('party.degreeAfter')} name="degreeAfter" value={this.state.data.degreeAfter} onChange={this.updateValue} />
-                            </div> : "" }
+        const submit = submitReduxForm.bind(this, PartyNameForm.validate);
 
-                            <FormInput type="text" label={i18n('party.nameMain')} name="mainPart" value={this.state.data.mainPart} onChange={this.updateValue} />
-                            <FormInput type="text" label={i18n('party.nameOther')} name="otherPart" value={this.state.data.otherPart} onChange={this.updateValue} />
-                            <div className="line datation">
-                                <div className="date line">
-                                    <div>
-                                        <label>{i18n('party.name.from')}</label>
-                                        <div className="line">
-                                            <FormInput componentClass="select" name="fromCalendar" value={this.state.data.validFrom.calendarTypeId} onChange={this.updateValue} >
-                                                {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
-                                            </FormInput>
-                                            <FormInput type="text"  name="fromText" value={this.state.data.validFrom.textDate} onChange={this.updateValue} />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label>{i18n('party.name.to')}</label>
-                                        <div className="line">
-                                            <FormInput componentClass="select" name="toCalendar" value={this.state.data.validTo.calendarTypeId} onChange={this.updateValue} >
-                                                {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
-                                            </FormInput>
-                                            <FormInput type="text" name="toText" value={this.state.data.validTo.textDate} onChange={this.updateValue} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        const {
+            fields: {
+                complements,
+                nameFormTypeId,
+                degreeBefore,
+                degreeAfter,
+                mainPart,
+                otherPart
+            },
+            refTables:{partyNameFormTypes},
+            handleSubmit,
+            submitting,
+            partyType,
+            onClose
+        } = this.props;
+
+        const {initialized} = this.state;
+
+        return initialized ? <Form onSubmit={handleSubmit(submit)}>
+            <Modal.Body>
+                <FormInput componentClass="select" label={i18n('party.nameFormType')} {...nameFormTypeId}>
+                    <option key="0"/>
+                    {partyNameFormTypes.items.map((i)=> {
+                        return <option value={i.nameFormTypeId} key={i.nameFormTypeId}>{i.name}</option>
+                    })}
+                </FormInput>
+
+                <hr/>
+                {partyType.code == PARTY_TYPE_PERSON && <div className="line">
+                    <FormInput type="text" label={i18n('party.degreeBefore')} {...degreeBefore}/>
+                    <FormInput type="text" label={i18n('party.degreeAfter')} {...degreeAfter}/>
+                </div>}
+
+                <FormInput type="text" label={i18n('party.nameMain')} {...mainPart} />
+                <FormInput type="text" label={i18n('party.nameOther')} {...otherPart} />
+                <hr/>
+                <div>
+                    <label>{i18n('party.nameComplements')}</label>
+                    {complements.map((complement, index) => <div className="block complement" key={'complement' + index}>
                             <div className="line">
-                                <label>{i18n('party.nameComplements')}</label>
-                                {this.state.data.complements.map((j,index)=> {return <div className="block complement">
-                                    <div className="line">
-                                        <FormInput componentClass="select" value={j.complementTypeId} onChange={this.updateComplementValue.bind(this, {index:index, variable: 'complementTypeId'})}>
-                                            <option value={0} key={0}/>
-                                            {complementsTypes ? complementsTypes.map(i=> {return <option value={i.complementTypeId} key={i.complementTypeId}>{i.name}</option>}) : null}
-                                        </FormInput>
-                                        <FormInput type="text" value={j.complement} onChange={this.updateComplementValue.bind(this, {index:index, variable: 'complement'})}/>
-                                        <Button onClick={this.removeComplement.bind(this, index)}><Icon glyph="fa-trash"/></Button>
-                                    </div>
-                                </div>})}
-                                <Button onClick={this.addComplement}><Icon glyph="fa-plus"/></Button>
+                                <FormInput type="text" {...complement.complement}/>
+                                <FormInput componentClass="select" {...complement.complementTypeId}>
+                                    <option key='0'/>
+                                    {complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>)}
+                                </FormInput>
+                                <Button className="btn-icon" onClick={() => {complements.removeField(index)}}><Icon glyph="fa-trash"/></Button>
                             </div>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button type="submit" onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
-                        <Button bsStyle="link" onClick={this.handleClose}>{i18n('global.action.cancel')}</Button>
-                    </Modal.Footer>
-                </Form>
-            </div>
-        )
+                        </div>
+                    )}
+                    <Button className="btn-icon block" onClick={() => {complements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
+                </div>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
+                <Button bsStyle="link" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
+            </Modal.Footer>
+        </Form> : <Loading />;
     }
 }
 
 export default reduxForm({
-    form: 'PartyNameForm',
-    fields: [],
-},state => ({
-    initialValues: state.form.partyNameForm.initialValues,
-    refTables: state.refTables
-}),
-{load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'partyNameForm', data})}
-)(PartyNameForm)
-
-
-
+        form: 'partyNameForm',
+        fields: PartyNameForm.fields,
+    }, state => ({
+        initialValues: state.form.partyNameForm.initialValues,
+        refTables: state.refTables,
+    }),
+    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'partyNameForm', data}),}
+)(PartyNameForm);
