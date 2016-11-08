@@ -218,7 +218,7 @@ public class RevertingChangesService {
         String nodeIdsQuery = createFindChangesQuery(changeNameColumn, table, createSubNodeQuery(fundId, nodeId), changeId);
         String queryString = String.format("DELETE FROM %1$s WHERE %2$s IN (%3$s)", table, changeNameColumn, nodeIdsQuery);
 
-        Query query = entityManager.createQuery(queryString);
+        Query query = entityManager.createNativeQuery(queryString);
 
         // nastavení parametrů dotazu
         query.setParameter("fundId", fundId);
@@ -228,6 +228,7 @@ public class RevertingChangesService {
 
         return query;
     }
+
 
     private Query createExtendDeleteEntityQuery(@NotNull final Integer fundId,
                                                 @Nullable final Integer nodeId,
