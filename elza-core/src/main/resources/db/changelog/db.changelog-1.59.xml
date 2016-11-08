@@ -15,7 +15,7 @@
             <column name="uuid" type="char(36)" />
         </addColumn>
 
-        <customChange class="cz.tacr.elza.dbchangelog.DBChangelog1_55"/>
+        <customChange class="cz.tacr.elza.dbchangelog.DBChangelog1_59"/>
 
         <addUniqueConstraint columnNames="uuid" tableName="reg_record"/>
         <addNotNullConstraint tableName="reg_record" columnName="uuid" columnDataType="char(36)"/>

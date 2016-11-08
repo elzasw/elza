@@ -18,7 +18,7 @@ import java.sql.SQLException;
  * @author Martin Šlapa
  * @since 24.10.2016
  */
-public class DbUpgrade1_57 implements CustomTaskChange {
+public class DbUpgrade1_55 implements CustomTaskChange {
 
     @Override
     public String getConfirmationMessage() {
