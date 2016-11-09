@@ -45,6 +45,8 @@ const FormInput = class FormInput extends AbstractReactComponent {
                         ref='input'
                         value={value}
                         onChange={this.handleChange}
+                        children={children}
+                        type={type}
                         {...otherProps}
                         {...inlineProps}
                     />
