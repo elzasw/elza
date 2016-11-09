@@ -191,8 +191,8 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
         });
 
         const descItemSpecProps = {
-            onChange,
-            onBlur,
+            onChange: value => onChange(value ? value.id : null),
+            onBlur: value => onBlur(value ? value.id : null),
             onFocus,
             disabled: locked
         };

@@ -137,12 +137,10 @@ class ImportForm extends AbstractReactComponent {
                                             getItemId={(item) => item ? item : null}
                                             getItemName={(item) => item ? item.name : ''}
                                             onChange={
-                                                (id, value) => {
-                                                    if (value.name.trim() == '') {
-                                                        return;
+                                                value => {
+                                                    if (value) {
+                                                        recordScope.onChange({id: value.id, name: value.name});
                                                     }
-
-                                                    recordScope.onChange({id: value.id, name:value.name});
                                                 }
                                             }
                                         />

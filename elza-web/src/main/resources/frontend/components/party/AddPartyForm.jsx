@@ -221,8 +221,8 @@ class AddPartyForm extends AbstractReactComponent {
                                     allowSelectItem={(id, item) => item.addRecord}
                                     {...recordTypeId}
                                     value={value}
-                                    onChange={(id, item) => recordTypeId.onChange(id)}
-                                    onBlur={(id, item) => recordTypeId.onBlur(id)}
+                                    onChange={item => recordTypeId.onChange(item ? item.id : null)}
+                                    onBlur={item => recordTypeId.onBlur(item ? item.id : null)}
                                 />
                                 {recordTypeId.touched && recordTypeId.error && <HelpBlock>{recordTypeId.error}</HelpBlock>}
                             </FormGroup>

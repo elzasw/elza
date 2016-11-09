@@ -26,10 +26,6 @@ class DescItemFileRef extends AbstractReactComponent {
         this.refs.autocomplete.focus()
     };
 
-    handleChange = (id, valueObj) => {
-        this.props.onChange(valueObj);
-    };
-
     handleSearchChange = (text) => {
 
         text = text == "" ? null : text;
@@ -67,7 +63,7 @@ class DescItemFileRef extends AbstractReactComponent {
     };
 
     render() {
-        const {descItem, locked, readMode} = this.props;
+        const {descItem, locked, onChange, onBlur, readMode} = this.props;
         const value = descItem.file ? descItem.file : null;
 
         if (readMode) {
@@ -90,7 +86,8 @@ class DescItemFileRef extends AbstractReactComponent {
                 getItemId={(item) => item ? item.id : null}
                 getItemName={(item) => item ? item.name : ''}
                 onSearchChange={this.handleSearchChange}
-                onChange={this.handleChange}
+                onChange={onChange}
+                onBlur={onBlur}
                 footer={footer}
             />
         </div>;

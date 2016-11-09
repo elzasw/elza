@@ -523,7 +523,7 @@ class RegistryPage extends AbstractReactComponent {
                 tree
                 allowSelectItem={(id, item) => item.addRecord}
                 value={value}
-                onChange={(id, item) => this.handleRegistryTypesSelect.bind(this)(id)}
+                onChange={item => this.handleRegistryTypesSelect.bind(this)(item ? item.id : null)}
                 />
         )
 

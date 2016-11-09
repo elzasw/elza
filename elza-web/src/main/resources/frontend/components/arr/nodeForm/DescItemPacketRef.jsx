@@ -108,10 +108,6 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
         }
     }
 
-    handleChange(id, valueObj) {
-        this.props.onChange(valueObj);
-    }
-
     renderFooter() {
         const {refTables} = this.props;
         return (
@@ -123,7 +119,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked, packetTypes, packets, singleDescItemTypeEdit, readMode, cal} = this.props;
+        const {descItem, onChange, onBlur, locked, packetTypes, packets, singleDescItemTypeEdit, readMode, cal} = this.props;
         var value = descItem.packet ? descItem.packet : null;
 
         if (readMode) {
@@ -159,7 +155,8 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                     disabled={locked}
                     items={this.state.packetTypes}
                     onSearchChange={this.handleSearchChange}
-                    onChange={this.handleChange}
+                    onChange={onChange}
+                    onBlur={onBlur}
                     renderItem={this.renderPacket}
                     getItemName={(item) => item ? item.storageNumber : ''}
                     footer={footer}

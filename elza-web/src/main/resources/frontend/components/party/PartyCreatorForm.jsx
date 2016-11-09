@@ -29,17 +29,22 @@ class PartyCreatorForm extends AbstractReactComponent {
      * aktualizace nějaké hodnoty ve formuláři
      * @params event - událost která změnu vyvolala
      */
-    updateValue = (id, valueObj) => {
-        console.log(valueObj);
-        var value = id;                                               // hodnota změněného pole formuláře
-        var data = this.state.data;
-        data.creatorId = value;
-        data.creatorName = valueObj.name;
-        data["@type"] = valueObj["@type"];
+    updateValue = (valueObj) => {
+        if (!valueObj) {
+            this.setState({
+                data : null                                                                     // uložení změn do state
+            });
+        } else {
+            var value = valueObj.id;                                               // hodnota změněného pole formuláře
+            var data = this.state.data;
+            data.creatorId = value;
+            data.creatorName = valueObj.name;
+            data["@type"] = valueObj["@type"];
 
-        this.setState({
-            data : data                                                                     // uložení změn do state
-        });
+            this.setState({
+                data : data                                                                     // uložení změn do state
+            });
+        }
     };
 
     /**

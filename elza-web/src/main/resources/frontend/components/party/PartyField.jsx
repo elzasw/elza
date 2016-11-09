@@ -40,24 +40,6 @@ class PartyField extends AbstractReactComponent {
         this.refs.autocomplete.focus()
     };
 
-    /**
-     * Zajistíme vrácení onChange pouze objekt nebo null
-     * @param id
-     * @param valueObj
-     */
-    handleChange = (id, valueObj) => {
-        this.props.onChange(valueObj.partyId ? valueObj : null);
-    };
-
-    /**
-     * Zajistíme vrácení onBlur pouze objekt nebo null
-     * @param id
-     * @param valueObj
-     */
-    handleBlur = (id, valueObj) => {
-        this.props.onBlur(valueObj.partyId ? valueObj : null);
-    };
-
     handleSearchChange = (text) => {
 
         text = text == "" ? null : text;
@@ -114,8 +96,7 @@ class PartyField extends AbstractReactComponent {
     };
 
     render() {
-        /** onChange a onBlur nutno excludnout z other props - jinak by vlezno na autocomplete a přestal by fugnovat event on Change na komponentě **/
-        const {userDetail, locked, value, onChange, onBlur, detail, ...otherProps} = this.props;
+        const {userDetail, locked, value, detail, ...otherProps} = this.props;
 
         let footer;
         if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR)) {
@@ -139,8 +120,6 @@ class PartyField extends AbstractReactComponent {
                 getItemId={(item) => item ? item.partyId : null}
                 getItemName={(item) => item && item.record ? item.record.record : ''}
                 onSearchChange={this.handleSearchChange}
-                onChange={this.handleChange}
-                onBlur={this.handleBlur}
                 renderItem={this.renderParty}
                 actions={[actions]}
                 {...otherProps}

@@ -28,10 +28,6 @@ const DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
         this.dispatch(refPartyTypesFetchIfNeeded());
     }
 
-    handleChange(id, valueObj) {
-        this.props.onChange(valueObj);
-    }
-
     handleSearchChange(text) {
         text = text == '' ? null : text;
 
@@ -81,7 +77,7 @@ const DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     }
 
     render() {
-        const {userDetail, descItem, locked, singleDescItemTypeEdit, readMode, cal} = this.props;
+        const {userDetail, onChange, onBlur, descItem, locked, singleDescItemTypeEdit, readMode, cal} = this.props;
         const value = descItem.party ? descItem.party : null;
 
         if (readMode) {
@@ -123,7 +119,8 @@ const DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
                         getItemId={(item) => item ? item.partyId : null}
                         getItemName={(item) => item && item.record ? item.record.record : ''}
                         onSearchChange={this.handleSearchChange}
-                        onChange={this.handleChange}
+                        onChange={onChange}
+                        onBlur={onBlur}
                         renderItem={this.renderParty}
                         actions={[actions]}
                 />

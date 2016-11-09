@@ -232,7 +232,7 @@ const PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompo
                                 getItemId={(item) => item ? item.id : null}
                                 getItemName={(item) => item ? item.name : ''}
                                 onSearchChange={text => {this.handleSearchChange(selectedPartyData.partyId, text) }}
-                                onChange={(id,valObj) =>{this.creatorChange(i.partyId, valObj)}}
+                                onChange={valObj =>{this.creatorChange(i.partyId, valObj)}}
                                 renderItem={this.renderParty}
                             />
                         </td>

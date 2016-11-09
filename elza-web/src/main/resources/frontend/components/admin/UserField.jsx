@@ -37,15 +37,6 @@ const UserField = class UserField extends AbstractReactComponent {
         this.refs.autocomplete.focus()
     }
 
-    /**
-     * Zajistíme vrácení onChange pouze objekt nebo null
-     * @param id
-     * @param valueObj
-     */
-    handleChange(id, valueObj) {
-        this.props.onChange(valueObj.id ? valueObj : null);
-    }
-
     handleSearchChange(text) {
         text = text == "" ? null : text;
 
@@ -58,7 +49,7 @@ const UserField = class UserField extends AbstractReactComponent {
 
     render() {
         // onChange nutno excludnout z other props - jinak by vlezno na autocomplete a přestal by fugnovat event on Change na komponentě
-        const {tags, value, onChange, ...otherProps} = this.props;
+        const {tags, value, ...otherProps} = this.props;
         const {dataList} = this.state;
 
         return (
@@ -70,7 +61,6 @@ const UserField = class UserField extends AbstractReactComponent {
                 value={value}
                 items={dataList}
                 onSearchChange={this.handleSearchChange}
-                onChange={this.handleChange}
                 {...otherProps}
                 renderItem={renderUserItem}
             />

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Icon, FormInput, Autocomplete, VersionValidationState, PartyField} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, Icon, FormInput, VersionValidationState, PartyField} from 'components/index.jsx';
 import {Modal, Button, Form} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'

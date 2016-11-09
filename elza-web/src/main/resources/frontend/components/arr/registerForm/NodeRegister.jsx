@@ -28,10 +28,6 @@ export default class NodeRegister extends AbstractReactComponent {
         recordList: []
     };
 
-    handleChange = (id, record) => {
-        this.props.onChange(record);
-    };
-
     handleSearchChange = (text) => {
         WebApi.findRegistry(text == "" ? null : text, null, null, this.props.versionId)
                 .then(json => {
@@ -69,7 +65,7 @@ export default class NodeRegister extends AbstractReactComponent {
     };
 
     render() {
-        const {item, closed} = this.props;
+        const {item, closed, onChange, onBlur} = this.props;
         const footer = this.renderFooter();
         const record = item.record ? item.record : null;
 
@@ -87,7 +83,8 @@ export default class NodeRegister extends AbstractReactComponent {
                 getItemId={(item) => item ? item.recordId : null}
                 getItemName={(item) => item ? item.record : ''}
                 onSearchChange={this.handleSearchChange}
-                onChange={this.handleChange}
+                onChange={onChange}
+                onBlur={onBlur}
                 renderItem={this.renderRecord}
                 actions={actions}
             />

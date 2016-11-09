@@ -135,8 +135,8 @@ class FundForm extends AbstractReactComponent {
                     getItemId={(item) => item ? item.id : null}
                     getItemName={(item) => item ? item.name : ''}
                     onChange={
-                        (id, value) => {
-                            if (value.name.trim() == '') {
+                        (value) => {
+                            if (!value || value.name.trim() == '') {
                                 return;
                             }
                             let index = this.findIndexInFields(this.props.fields.regScopes, value.name, 'name');

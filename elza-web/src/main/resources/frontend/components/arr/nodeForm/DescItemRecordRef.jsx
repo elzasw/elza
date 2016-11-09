@@ -24,10 +24,6 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
         this.refs.autocomplete.focus()
     }
 
-    handleChange(id, valueObj) {
-        this.props.onChange(valueObj);
-    }
-
     handleSearchChange(text) {
 
         text = text == "" ? null : text;
@@ -77,7 +73,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     }
 
     render() {
-        const {userDetail, descItem, locked, singleDescItemTypeEdit, readMode, cal} = this.props;
+        const {userDetail, onChange, onBlur, descItem, locked, singleDescItemTypeEdit, readMode, cal} = this.props;
         var value = descItem.record ? descItem.record : null;
 
         if (readMode) {
@@ -119,7 +115,8 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
                             getItemId={(item) => item ? item.recordId : null}
                             getItemName={(item) => item ? item.record : ''}
                             onSearchChange={this.handleSearchChange}
-                            onChange={this.handleChange}
+                            onChange={onChange}
+                            onBlur={onBlur}
                             renderItem={this.renderRecord}
                             actions={[actions]}
                             />

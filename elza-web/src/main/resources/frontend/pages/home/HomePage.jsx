@@ -338,23 +338,6 @@ const HomePage = class HomePage extends AbstractReactComponent {
     render() {
         const {splitter} = this.props;
 
-        {/*return (*/}
-            {/*<div>*/}
-        //         1111111111
-        //         <Autocomplete
-        //             _customFilter
-        //             tree
-        //             value={this.state.value}
-        //             items={this.state.data}
-        //             onSearchChange={this.handleSearchChange}
-        //             onChange={this.handleChange}
-        //             allowSelectItem={(id, item) => !item.node}
-        //             allowFocusItem={(id, item) => id > 2}
-        //             />
-        //         222222222
-        //     </div>
-        // )
-
         let centerPanel = (
             <div className='splitter-home'>
                 {this.renderHistory()}
