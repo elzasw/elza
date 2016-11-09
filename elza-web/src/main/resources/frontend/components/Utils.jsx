@@ -416,6 +416,20 @@ function dateToString(date) {
 }
 
 /**
+ * Převod času do řetězce - v budoucnu při více locale nahradit metodou pracující s locale.
+ * @param date {Date} datum
+ * @return {String} datum
+ */
+function timeToString(date) {
+    var hh = date.getHours().toString();
+    var ii = date.getMinutes().toString();
+    var ss = date.getSeconds().toString();
+    /** Formátování - místo 01 = 1 **/
+    var f = (col) => (col[1] ? col : "0" + col[0]);
+    return f(hh) + ":" + f(ii) + ":" + f(ss);
+}
+
+/**
  * Převod Obejct:Date do řetězce včetně času
  * @param date {Date} datum a čas
  * @return {String} datum
@@ -589,6 +603,7 @@ module.exports = {
     getScrollbarWidth: getScrollbarWidth,
     valuesEquals: valuesEquals,
     dateToString: dateToString,
+    timeToString: timeToString,
     dateTimeToString: dateTimeToString,
     StringSet: StringSet,
     StringMap: StringMap,

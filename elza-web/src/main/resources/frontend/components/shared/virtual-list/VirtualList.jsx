@@ -7,6 +7,7 @@ var VirtualList = React.createClass({
         items: React.PropTypes.array,   // v případě, že máme položky na klientovi, je zde seznam všech položek
         lazyItemsCount: React.PropTypes.number,  //  v případě, že máme položky jen na serveru, zde je počet položek
         itemHeight: React.PropTypes.number.isRequired,
+        scrollToIndex: React.PropTypes.oneOfType([ React.PropTypes.number, React.PropTypes.shape({ index: React.PropTypes.number }) ]), // pokud je změněn, provede se scroll na daný index - lépe použít objekt, protože při stejném indexu lze kvůli odscrolování změnit referenci na objekt
         renderItem: React.PropTypes.func.isRequired,
         onViewChange: React.PropTypes.func,
         container: React.PropTypes.object.isRequired,
@@ -98,9 +99,11 @@ return true;
         if (typeof nextProps.scrollToIndex !== 'undefined' && this.props.scrollToIndex !== nextProps.scrollToIndex) {
             var scrollTopPadding = this.props.scrollTopPadding || 0
 
+            const scrollToIndexNum = typeof nextProps.scrollToIndex === "number" ? nextProps.scrollToIndex : nextProps.scrollToIndex.index;
+
             this.setState(state, () => {
                 var box = ReactDOM.findDOMNode(this.refs.box)
-                var itemTop = nextProps.scrollToIndex * this.props.itemHeight + this.props.scrollTopPadding
+                var itemTop = scrollToIndexNum * this.props.itemHeight + this.props.scrollTopPadding
 
                 var from = this.state.bufferStart + this.props.scrollTopPadding
                 var to = from + box.parentNode.clientHeight - 2*this.props.scrollTopPadding

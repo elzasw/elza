@@ -118,6 +118,10 @@ class WebApi{
         return AjaxUtils.ajaxDelete(WebApi.partyUrl + '/' + partyId);
     }
 
+    findChanges(versionId, nodeId, offset, maxSize, changeId){
+        return AjaxUtils.ajaxGet(WebApi.changesUrl + '/' + versionId, {nodeId, offset, maxSize, changeId});
+    }
+
     validateUnitdate(value) {
         return AjaxUtils.ajaxGet(WebApi.validateUrl + '/unitDate', {value: value || ''});
     }
@@ -902,6 +906,7 @@ WebApi.exportUrl = WebApi.baseUrl + '/export';
 WebApi.actionUrl = WebApi.baseUrl + '/action';
 WebApi.kmlUrl = WebApi.baseUrl + '/kml';
 WebApi.ruleUrl = WebApi.baseUrl + '/rule';
+WebApi.changesUrl = WebApi.arrangementUrl + '/changes';
 WebApi.dmsUrl = WebApi.baseUrl + '/dms';
 WebApi.userUrl = WebApi.baseUrl + '/user';
 WebApi.adminUrl = WebApi.baseUrl + '/admin';

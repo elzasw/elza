@@ -1798,7 +1798,7 @@ public class ArrangementController {
      * @param maxSize       maximální počet záznamů
      * @param offset        počet přeskočených záznamů
      * @param changeId      identifikátor změny, vůči které chceme počítat offset (pokud není vyplněn, bere se vždy poslední)
-     * @param nodeId        identifikátor JP u které vyhledáváme změny (pokud není vyplně, vyhledává se přes celý AS)
+     * @param nodeId        identifikátor JP u které vyhledáváme změny (pokud není vyplněn, vyhledává se přes celý AS)
      * @return výsledek hledání
      */
     @RequestMapping(value = "/changes/{fundVersionId}", method = RequestMethod.GET)

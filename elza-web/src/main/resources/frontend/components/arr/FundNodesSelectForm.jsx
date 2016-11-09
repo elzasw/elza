@@ -15,18 +15,27 @@ import {
     fundTreeFocusNode,
     fundTreeFetchIfNeeded,
     fundTreeNodeExpand,
-    fundTreeNodeCollapse
+    fundTreeNodeCollapse,
+    fundTreeConfigure
 } from 'actions/arr/fundTree.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
-import './FundNodesAddForm.less';
+import './FundNodesSelectForm.less';
 
 /**
- * Formulář přidání uzlů verse souboru - výběr uzlů ve stromu z jedné úrovně.
+ * Formulář vybrání uzlů v konkrétní verzi souboru - výběr uzlů na základě konfigurace - např. single nebo multiple select.
+ * Implicitně pokud se neuvede, je výběr multiselect libovolných položek ve stromu.
  */
+class FundNodesSelectForm extends AbstractReactComponent {
 
-class FundNodesAddForm extends AbstractReactComponent {
+    static propTypes = {
+        multipleSelection: React.PropTypes.bool,
+        multipleSelectionOneLevel: React.PropTypes.bool,
+    };
 
-    static PropTypes = {};
+    static defaultProps = {
+        multipleSelection: true,
+        multipleSelectionOneLevel: false,
+    };
 
     state = {
         nodes: {}
@@ -36,6 +45,10 @@ class FundNodesAddForm extends AbstractReactComponent {
         const fund = this.getActiveFund(this.props);
         const fundTreeNodes = fund.fundTreeNodes;
         const versionId = fund.versionId;
+
+        const {multipleSelection, multipleSelectionOneLevel} = this.props;
+        this.props.dispatch(fundTreeConfigure(types.FUND_TREE_AREA_NODES, versionId, multipleSelection, multipleSelectionOneLevel));
+
         this.requestFundTreeData(versionId, fundTreeNodes.expandedIds, fundTreeNodes.selectedIds);
     }
 
@@ -90,14 +103,21 @@ class FundNodesAddForm extends AbstractReactComponent {
     };
 
     handleSubmit = () => {
-        const {onSubmitForm} = this.props;
+        const {multipleSelection, onSubmitForm} = this.props;
         const fund = this.getActiveFund(this.props);
         const fundTreeNodes = fund.fundTreeNodes;
-        
-        const nodesMap = getMapFromList(fundTreeNodes.nodes);
-        const nodes = Object.keys(fundTreeNodes.selectedIds).map(id => nodesMap[id]);
-        
-        onSubmitForm(Object.keys(fundTreeNodes.selectedIds), nodes)
+
+        if (multipleSelection) {
+            const nodesMap = getMapFromList(fundTreeNodes.nodes);
+            const nodes = Object.keys(fundTreeNodes.selectedIds).map(id => nodesMap[id]);
+
+            onSubmitForm(Object.keys(fundTreeNodes.selectedIds), nodes);
+        } else {
+            const nodesMap = getMapFromList(fundTreeNodes.nodes);
+            const node = nodesMap[fundTreeNodes.selectedId];
+
+            onSubmitForm(fundTreeNodes.selectedId, node);
+        }
     };
 
     getActiveFund = (props) => {
@@ -115,10 +135,17 @@ class FundNodesAddForm extends AbstractReactComponent {
     };
 
     render() {
-        const { onClose} = this.props;
+        const {multipleSelection, onClose} = this.props;
         const fund = this.getActiveFund(this.props);
         const fundTreeNodes = fund.fundTreeNodes;
         const versionId = fund.versionId;
+
+        let someSelected;
+        if (multipleSelection) {
+            someSelected = Object.keys(fundTreeNodes.selectedIds).length > 0;
+        } else {
+            someSelected = fundTreeNodes.selectedId !== null;
+        }
 
         return (
             <div className="add-nodes-form-container">
@@ -137,7 +164,7 @@ class FundNodesAddForm extends AbstractReactComponent {
                     />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button disabled={Object.keys(fundTreeNodes.selectedIds).length === 0} onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
+                    <Button disabled={!someSelected} onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
@@ -152,5 +179,5 @@ function mapStateToProps(state) {
     }
 }
 
-export default connect(mapStateToProps)(FundNodesAddForm);
+export default connect(mapStateToProps)(FundNodesSelectForm);
 

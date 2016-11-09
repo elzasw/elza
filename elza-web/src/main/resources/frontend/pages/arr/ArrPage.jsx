@@ -46,6 +46,7 @@ import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
 import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction.jsx'
 import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
 import {createFundRoot} from 'components/arr/ArrUtils.jsx'
+import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
@@ -55,7 +56,7 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-
+import {getMapFromList} from 'stores/app/utils.jsx'
 
 const keyModifier = Utils.getKeyModifier()
 
@@ -325,6 +326,25 @@ class ArrPage extends ArrParentPage {
     }
 
     /**
+     * Zobrazení formuláře historie.
+     * @param versionId verze AS
+     */
+    handleShowFundHistory = (versionId) => {
+        const form = <ArrHistoryForm versionId={versionId} />
+        this.dispatch(modalDialogShow(this, i18n('arr.history.title.fund'), form));
+    }
+
+    /**
+     * Zobrazení formuláře historie konkrétní JP.
+     * @param versionId verze AS
+     * @param node node
+     */
+    handleShowNodeHistory = (versionId, node) => {
+        const form = <ArrHistoryForm versionId={versionId} node={node} />
+        this.dispatch(modalDialogShow(this, i18n('arr.history.title.node'), form));
+    }
+
+    /**
      * Sestavení Ribbonu.
      * @return {Object} view
      */
@@ -363,11 +383,24 @@ class ArrPage extends ArrParentPage {
             altActions.push(
                 <Button key="fund-settings" onClick={this.handleChangeFundSettings.bind(this)} ><Icon glyph="fa-wrench"/>
                     <div><span className="btnText">{i18n('ribbon.action.arr.fund.settings.ui')}</span></div>
-                </Button>)
+                </Button>);
+
+            // Zobrazení historie změn
+            if (userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId: activeFund.id}, perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
+                altActions.push(
+                    <Button active={show} onClick={() => this.handleShowFundHistory(activeFund.versionId)} key="show-fund-history">
+                        <Icon glyph="fa-clock-o"/>
+                        <div>
+                            <span className="btnText">{i18n('ribbon.action.showFundHistory')}</span>
+                        </div>
+                    </Button>
+                )
+            }
 
             var nodeIndex = activeFund.nodes.activeIndex;
             if (nodeIndex !== null) {
                 var activeNode = activeFund.nodes.nodes[nodeIndex];
+                const activeNodeObj = getMapFromList(activeNode.allChildNodes)[activeNode.selectedSubNodeId];
 
                 if (activeNode.selectedSubNodeId !== null) {
                     itemActions.push(
@@ -384,6 +417,17 @@ class ArrPage extends ArrParentPage {
                                 <div><span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span></div>
                             </Button>
                         );
+                    }
+                    // Zobrazení historie změn
+                    if (userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId: activeFund.id}, perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
+                        itemActions.push(
+                            <Button active={show} onClick={() => this.handleShowNodeHistory(activeFund.versionId, activeNodeObj)} key="show-fund-history">
+                                <Icon glyph="fa-clock-o"/>
+                                <div>
+                                    <span className="btnText">{i18n('ribbon.action.showNodeHistory')}</span>
+                                </div>
+                            </Button>
+                        )
                     }
                 }
             }

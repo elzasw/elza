@@ -3,7 +3,7 @@ import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
 import Utils from "components/Utils.jsx";
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
-import {Loading, i18n, OutputSubNodeForm, FundNodesAddForm, FundNodesList, AbstractReactComponent, FormInput} from 'components/index.jsx';
+import {Loading, i18n, OutputSubNodeForm, FundNodesSelectForm, FundNodesList, AbstractReactComponent, FormInput} from 'components/index.jsx';
 import {fundOutputDetailFetchIfNeeded, fundOutputEdit} from 'actions/arr/fundOutput.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
@@ -154,7 +154,7 @@ class ArrOutputDetail extends AbstractReactComponent {
         const {fund, fundOutputDetail} = this.props;
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
-            <FundNodesAddForm
+            <FundNodesSelectForm
                 onSubmitForm={(ids, nodes) => {
                     this.dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids))
                 }}

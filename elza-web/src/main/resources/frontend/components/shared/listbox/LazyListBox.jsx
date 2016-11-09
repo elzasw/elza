@@ -127,7 +127,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
             itemsToIndex: 0,    // do jakého indexu máme položky
             items: [],  // načtené položky
             view: {from: 0, to: 0},
-            scrollToIndex: 0,
+            scrollToIndex: {index: 0},
             selectedItem: props.selectedItem,
         }
     }
@@ -194,7 +194,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
             const onCallback = this.props[onCallbackName]
             if (onCallback) {
                 const item = items[index - itemsFromIndex]
-                onCallback(item)
+                onCallback(item, index)
                 this.callbackInfo[onCallbackName] = null
             }
         } else {    // musíme počkat, až se data načtou a pak danou akci zavolat
@@ -270,7 +270,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
 
     ensureItemVisible(index) {
         this.setState({
-            scrollToIndex: index,
+            scrollToIndex: {index},
         })
     }
 
@@ -402,7 +402,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
     }
 
     handleRenderItem(index) {
-        const {items, itemsFromIndex, itemsToIndex, activeIndex, selectedIndex} = this.state
+        const {className, items, itemsFromIndex, itemsToIndex, activeIndex, selectedIndex} = this.state
         const {renderItemContent} = this.props;
 
         var data = null
@@ -413,11 +413,17 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
         const active = (index === selectedIndex)
         const focus = (index === activeIndex)
 
-        var cls = classNames({
+        const clsObj = {
             'listbox-item': true,
             'active': active,
             'focus': focus,
-        })
+        };
+
+        if (className) {
+            clsObj[className] = true;
+        }
+
+        var cls = classNames(clsObj);
 
         return (
             <div
@@ -438,7 +444,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
     
     render() {
         const {className, items, renderItemContent} = this.props;
-        const {activeIndex, activeIndexes} = this.state;
+        const {scrollToIndex, activeIndex, activeIndexes} = this.state;
 
         var cls = "lazy-listbox-container listbox-container";
         if (className) {
@@ -454,7 +460,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
                     renderItem={this.handleRenderItem}
                     itemHeight={this.props.itemHeight}
                     onViewChange={this.handleViewChange}
-                    scrollToIndex={this.state.scrollToIndex}
+                    scrollToIndex={scrollToIndex}
                     />
             </div>
         )

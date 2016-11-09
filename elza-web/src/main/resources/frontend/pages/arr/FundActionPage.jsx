@@ -18,7 +18,7 @@ import {
     AbstractReactComponent,
     ListBox,
     RibbonGroup,
-    FundNodesAddForm,
+    FundNodesSelectForm,
     FundNodesList,
     FormInput,
     ArrFundPanel
@@ -168,7 +168,7 @@ class FundActionPage extends ArrParentPage {
         const fund = this.getActiveFund(this.props);
         const {versionId} = fund;
         this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
-            <FundNodesAddForm
+            <FundNodesSelectForm
                 onSubmitForm={(nodeIds, nodes) => {
                     const fund = this.getActiveFund(this.props);
                     const {fundAction:{form}} = fund;
