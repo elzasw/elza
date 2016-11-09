@@ -555,6 +555,7 @@ const save = function(store) {
  */
 inlineFormSupport.addForm("outputEditForm");
 inlineFormSupport.addForm("permissionsEditForm");
+inlineFormSupport.addForm("partyDetail");
 
 // ----------------------------------------------------
 export default {

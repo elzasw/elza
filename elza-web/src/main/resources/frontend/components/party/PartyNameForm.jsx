@@ -115,6 +115,8 @@ class PartyNameForm extends AbstractReactComponent {
 
         const {initialized} = this.state;
 
+        const complementsList = complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>);
+
         return initialized ? <Form onSubmit={handleSubmit(submit)}>
             <Modal.Body>
                 <FormInput componentClass="select" label={i18n('party.nameFormType')} {...nameFormTypeId}>
@@ -140,7 +142,7 @@ class PartyNameForm extends AbstractReactComponent {
                                 <FormInput type="text" {...complement.complement}/>
                                 <FormInput componentClass="select" {...complement.complementTypeId}>
                                     <option key='0'/>
-                                    {complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>)}
+                                    {complementsList}
                                 </FormInput>
                                 <Button className="btn-icon" onClick={() => {complements.removeField(index)}}><Icon glyph="fa-trash"/></Button>
                             </div>

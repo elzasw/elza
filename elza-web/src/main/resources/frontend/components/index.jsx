@@ -52,6 +52,7 @@ exports.AddRegistryForm = require('components/registry/AddRegistryForm.jsx');
 exports.EditRegistryForm = require('components/registry/EditRegistryForm.jsx');
 exports.RegistryLabel = require('components/registry/RegistryLabel.jsx');
 exports.RegistryCoordinates = require('components/registry/RegistryCoordinates.jsx');
+exports.RegistryField = require('components/registry/RegistryField.jsx');
 
 exports.FundDetail = require('components/fund/FundDetail.jsx');
 exports.FundDetailExt = require('components/fund/FundDetailExt.jsx');
@@ -106,6 +107,7 @@ exports.PartyIdentifierForm = require('components/party/PartyIdentifierForm.jsx'
 exports.PartyCreatorForm = require('components/party/PartyCreatorForm.jsx');
 exports.RelationForm = require('components/party/RelationForm.jsx');
 exports.PartyField = require('components/party/PartyField.jsx');
+exports.PartyDetailRelations = require('components/party/PartyDetailRelations.jsx');
 
 exports.AdminPackagesList = require('components/admin/AdminPackagesList.jsx');
 exports.AdminPackagesUpload = require('components/admin/AdminPackagesUpload.jsx');

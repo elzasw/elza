@@ -15,8 +15,8 @@ class CollapsablePanel extends AbstractReactComponent {
     };
 
     render() {
-        const {children, header, isOpen, onSelect, onPin, eventKey, pinned} = this.props;
-        return <PanelGroup activeKey={isOpen} onSelect={() => onSelect(eventKey)} accordion>
+        const {children, header, isOpen, onSelect, onPin, eventKey, pinned, ...otherProps} = this.props;
+        return <PanelGroup activeKey={isOpen} onSelect={() => onSelect(eventKey)} accordion {...otherProps}>
             <Panel eventKey={true}
                    header={<div>
                        {header}

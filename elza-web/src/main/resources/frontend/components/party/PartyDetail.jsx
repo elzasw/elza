@@ -1,11 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
+import {reduxForm} from 'redux-form'
 import {
     PartyDetailCreators,
     PartyIdentifierForm,
     PartyDetailIdentifiers,
     PartyDetailNames,
+    PartyDetailRelations,
     PartyNameForm,
     AbstractReactComponent,
     Search,
@@ -15,7 +16,7 @@ import {
     Icon,
     CollapsablePanel
 } from 'components/index.jsx';
-import {FormControl} from 'react-bootstrap';
+import {Form} from 'react-bootstrap';
 import {AppActions} from 'stores/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
@@ -31,6 +32,7 @@ const Shortcuts = require('react-shortcuts/component');
 import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
+import {initForm} from "actions/form/inlineForm.jsx"
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -43,7 +45,14 @@ import './PartyDetail.less';
 
 const PARTY_TYPE_IDENT = "ident";
 const PARTY_TYPE_CONCLUSION = "conclusion";
-const PARTY_TYPE_CORPORATION_CODE = 'GROUP_PARTY';
+
+
+const PARTY_TYPE_CODES = {
+    GROUP_PARTY: 'GROUP_PARTY',
+    PERSON: 'PERSON',
+    DYNASTY: 'DYNASTY',
+    EVENT: 'EVENT',
+};
 
 const SETTINGS_PARTY_PIN = "PARTY_PIN";
 
@@ -66,11 +75,40 @@ class PartyDetail extends AbstractReactComponent {
         shortcuts: React.PropTypes.object.isRequired
     };
 
+    static fields = [
+        'sourceInformation',
+        'history',
+        'source_information',
+        'characteristics',
+        'genealogy',
+        'scope',
+        'foundingNorm',
+        'scopeNorm',
+        'organization',
+    ];
+
+    static requireFields = (...names) => data =>
+        names.reduce((errors, name) => {
+            if (!data[name]) {
+                errors[name] = i18n('global.validation.required')
+            }
+            return errors
+        }, {});
+
+    static validate = (values) => {
+        const errors = {};
+
+        // TODO @compel validation
+
+        return errors;
+    };
+
     componentDidMount() {
         //this.trySetFocus();
         //this.initCalendarTypes(this.props, this.props);
         this.fetchIfNeeded();
         this.updateStateFromProps();
+        this.props.initForm(this.handlePartyUpdate);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -192,11 +230,17 @@ class PartyDetail extends AbstractReactComponent {
 
 
     handlePartyUpdate = (party) => {
-        this.dispatch(partyUpdate(party));
+        this.dispatch(partyUpdate({
+            ...this.props.partyDetail.data,
+            ...party
+        }));
     };
 
     render() {
-        const {userDetail, partyDetail, refTables: {calendarTypes}} = this.props;
+        const {userDetail, partyDetail, refTables: {calendarTypes},
+            fields: {sourceInformation}
+        } = this.props;
+        const fields = this.props.fields;
         //const {fromCalendar, toCalendar} = this.state;
         const party = partyDetail.data;
         const {activeIndexes, visibilitySettingsValue} = this.state;
@@ -215,28 +259,152 @@ class PartyDetail extends AbstractReactComponent {
 
         let canEdit = userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: party.record.scopeId});
 
-        const parts = [
+        const partyType = this.getPartyType();
+
+        let parts = [
             {
                 type:PARTY_TYPE_IDENT
-            },{
-                type:"GENERAL",
-                name:"Stručná charakteristika"
-            },{
-                type:"GENERAL",
-                name:"Životopisné údaje"
-            },{
-                type:"GENERAL",
-                name:"Vztahy"
-            },{
-                type:"GENERAL",
-                name:"Poznámka"
-            },{
-                type:PARTY_TYPE_CONCLUSION,
-                name:"Zdroje informací, autoři"
-            }
+            },
         ];
+        const defGeneral = {
+            type:"GENERAL",
+            name:"Stručná charakteristika",
+            contentDefinition: {
 
-        const partyType = this.getPartyType();
+                history: {
+                    "name": "Historie",
+                    "desc": "Zadejte historii osoby...",
+                    "type": "text",
+                    "definition": "history",
+                    "width": 2
+                },
+                characteristics: {
+                    "name": "Charakteristika",
+                    "desc": "Zadejte charakteristiku osoby...",
+                    "type": "text",
+                    "definition": "characteristics",
+                    "width": 2
+                }
+            }
+        };
+        switch (partyType.code) {
+            case PARTY_TYPE_CODES.GROUP_PARTY: {
+                parts.push(
+                    {
+                        type:"GENERAL",
+                        name:"Stručná charakteristika",
+                        contentDefinition: {
+
+                            history: {
+                                "name": "Historie",
+                                "desc": "Zadejte historii osoby...",
+                                "type": "text",
+                                "definition": "history",
+                                "width": 2
+                            },
+                            characteristics: {
+                                "name": "Charakteristika",
+                                "desc": "Zadejte charakteristiku osoby...",
+                                "type": "text",
+                                "definition": "characteristics",
+                                "width": 2
+                            },
+                            scope: {
+                                "name": "scope",
+                                "desc": "Zadejte scope rodu...",
+                                "type": "text",
+                                "definition": "scope",
+                                "width": 2
+                            },
+                            foundingNorm: {
+                                "name": "foundingNorm",
+                                "desc": "Zadejte foundingNorm rodu...",
+                                "type": "text",
+                                "definition": "foundingNorm",
+                                "width": 2
+                            },
+                            scopeNorm: {
+                                "name": "scopeNorm",
+                                "desc": "Zadejte scopeNorm rodu...",
+                                "type": "text",
+                                "definition": "scopeNorm",
+                                "width": 2
+                            },
+                            organization: {
+                                "name": "organization",
+                                "desc": "Zadejte organization rodu...",
+                                "type": "text",
+                                "definition": "organization",
+                                "width": 2
+                            }
+                        }
+                    }
+                );
+                break;
+            }
+            case PARTY_TYPE_CODES.DYNASTY: {
+                parts.push(
+                    {
+                        type:"GENERAL",
+                        name:"Stručná charakteristika",
+                        contentDefinition: {
+
+                            history: {
+                                "name": "Historie",
+                                "desc": "Zadejte historii osoby...",
+                                "type": "text",
+                                "definition": "history",
+                                "width": 2
+                            },
+                            characteristics: {
+                                "name": "Charakteristika",
+                                "desc": "Zadejte charakteristiku osoby...",
+                                "type": "textarea",
+                                "definition": "characteristics",
+                                "width": 0
+                            },
+                            genealogy: {
+                                "name": "Genealogy",
+                                "desc": "Zadejte genealogy rodu...",
+                                "type": "textarea",
+                                "definition": "genealogy",
+                                "width": 0
+                            }
+                        }
+                    }
+                );
+                break;
+            }
+            case PARTY_TYPE_CODES.PERSON: {
+                parts.push(defGeneral);
+                parts.push({
+                    type:"GENERAL",
+                    name:"Vztahy",
+                    contentDefinition: {
+                        birth: {
+                            "name": "Narození",
+                            "desc": "Zadejte Narození osoby...",
+                            "type": "relation",
+                            "definition": "2",
+                            "width": 0
+                        }
+                    }
+                });
+                break;
+            }
+            default:
+                parts.push(defGeneral)
+        }
+
+        parts.push({
+            type:"GENERAL",
+            name:"Poznámka",
+            contentDefinition:{}
+        });
+        parts.push({
+            type:PARTY_TYPE_CONCLUSION,
+            name:"Zdroje informací, autoři"
+        });
 
         const events = {onPin:this.handlePinToggle, onSelect: this.handleToggleActive};
 
@@ -254,7 +422,7 @@ class PartyDetail extends AbstractReactComponent {
                         <div>{dateTimeToString(new Date(party.record.lastUpdate))}</div>
                     </div>
                 </div>
-                <div className="party-body">
+                <Form className="party-body">
                     {parts.map((i, index) => {
                         if (i.type == PARTY_TYPE_IDENT) {
                             const key = PARTY_TYPE_IDENT + '_FORM_NAMES';
@@ -263,7 +431,7 @@ class PartyDetail extends AbstractReactComponent {
                                 <CollapsablePanel isOpen={activeIndexes[key]} pinned={visibilitySettingsValue[key]} header={i18n("party.detail.formNames")} eventKey={key} {...events}>
                                     <PartyDetailNames party={party} partyType={partyType} onPartyUpdate={this.handlePartyUpdate} />
                                 </CollapsablePanel>
-                                {party.partyType.code == PARTY_TYPE_CORPORATION_CODE && <CollapsablePanel isOpen={activeIndexes[corpKey]} pinned={visibilitySettingsValue[corpKey]} header={i18n("party.detail.partyGroupIdentifiers")} eventKey={corpKey} {...events}>
+                                {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <CollapsablePanel isOpen={activeIndexes[corpKey]} pinned={visibilitySettingsValue[corpKey]} header={i18n("party.detail.partyGroupIdentifiers")} eventKey={corpKey} {...events}>
                                     <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} />
                                 </CollapsablePanel>}
                             </div>;
@@ -272,29 +440,72 @@ class PartyDetail extends AbstractReactComponent {
                             const creatorsKey = PARTY_TYPE_CONCLUSION + '_CREATORS';
                             return <div key={index}>
                                 <CollapsablePanel isOpen={activeIndexes[sourcesKey]} pinned={visibilitySettingsValue[sourcesKey]} header={i18n("party.detail.sources")} eventKey={sourcesKey} {...events}>
-                                    {/* TBD */}
+                                    <FormInput componentClass="textarea" {...sourceInformation} />
                                 </CollapsablePanel>
                                 <CollapsablePanel isOpen={activeIndexes[creatorsKey]} pinned={visibilitySettingsValue[creatorsKey]} header={i18n("party.detail.creators")} eventKey={creatorsKey} {...events}>
                                     {/* TBD */}
                                 </CollapsablePanel>
                             </div>;
                         }
+                        const items = [];
+
+                        if (i.contentDefinition) {
+                            for (let key in i.contentDefinition) {
+                                if (i.contentDefinition.hasOwnProperty(key)) {
+                                    const item = i.contentDefinition[key];
+                                    const inputProps = {
+                                        ...fields[item.definition],
+                                        label: item.name,
+                                        title: item.desc
+                                    };
+
+                                    let element = null;
+
+                                    if (item.type === "text") {
+                                        element = <FormInput {...inputProps} type={item.type} />
+                                    } else if (item.type === "textarea") {
+                                        element = <FormInput {...inputProps} componentClass={item.type} />
+                                    } else if (item.type === "relation") {
+                                        const type = objectById(partyType.relationTypes, item.definition, 'code');
+                                        if (type) {
+                                            element = <PartyDetailRelations party={party} relationType={type} label={item.name} />
+                                        } else {
+                                            element = "Neznámý typ relace"
+                                        }
+                                    }
+
+                                    items.push(<div key={key} className={"el-" + (item.width ? item.width : 0)}>
+                                        {element}
+                                    </div>);
+                                }
+                            }
+                        }
+
                         return <CollapsablePanel key={index} isOpen={activeIndexes[index]} pinned={visibilitySettingsValue[index]} header={i.name} eventKey={index} {...events}>
-                            {/* TBD */}
+                            <div className="elements-container">
+                                {items}
+                            </div>
                         </CollapsablePanel>
                     })}
-                </div>
+                </Form>
             </div>
         </Shortcuts>;
     }
 }
 
-export default connect((state) => {
-    const {app: {partyDetail}, focus, userDetail, refTables: {partyTypes}} = state;
-    return {
-        partyDetail,
-        focus,
-        userDetail,
-        partyTypes
-    }
-})(PartyDetail);
+export default reduxForm({
+        form: 'partyDetail',
+        fields: PartyDetail.fields,
+        validate: PartyDetail.validate
+    },(state) => {
+        const {app: {partyDetail}, focus, userDetail, refTables: {partyTypes}} = state;
+        return {
+            partyDetail,
+            focus,
+            userDetail,
+            partyTypes,
+            initialValues: partyDetail.fetched ? partyDetail.data : {}
+        }
+    },
+    {initForm: (onSave) => (initForm('partyDetail', PartyDetail.validate, onSave))}
+)(PartyDetail);
