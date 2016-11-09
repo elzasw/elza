@@ -200,6 +200,7 @@ public class UserService {
                                      @NotNull final List<UsrPermission> permissions) {
         List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
         changePermission(user, null, permissions, permissionsDB);
+        recalcUserPermission(user);
         changeUserEvent(user);
     }
 

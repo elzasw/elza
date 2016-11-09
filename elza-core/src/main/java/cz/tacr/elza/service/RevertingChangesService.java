@@ -22,7 +22,9 @@ import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Arrays;
 import java.util.List;
 
@@ -437,7 +439,7 @@ public class RevertingChangesService {
             Change change = new Change();
             change.setChangeId(changeResult.changeId);
             change.setNodeChanges(changeResult.nodeChanges == null ? null : changeResult.nodeChanges.intValue());
-            change.setChangeDate(changeResult.changeDate);
+            change.setChangeDate(Date.from(changeResult.changeDate.atZone(ZoneId.systemDefault()).toInstant()));
             change.setPrimaryNodeId(changeResult.primaryNodeId);
             change.setType(StringUtils.isEmpty(changeResult.type) ? null : ArrChange.Type.valueOf(changeResult.type));
             change.setUserId(changeResult.userId);

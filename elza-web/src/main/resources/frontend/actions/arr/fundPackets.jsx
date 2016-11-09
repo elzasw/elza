@@ -130,12 +130,6 @@ export function fundPacketsDelete(versionId, fundId, ids) {
         WebApi.deletePackets(fundId, ids)
             .then(() => {
                 dispatch(fundPacketsChangeSelection(versionId, []))
-            }).catch((err) => {
-                if (err.controller) {
-                    dispatch(addToastrWarning(i18n('arr.fund.packets.action.delete.problem'), err.data.message));
-                } else {
-                    reject(err);
-                }
             });
     }
 }

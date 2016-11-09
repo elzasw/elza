@@ -1,8 +1,10 @@
 package cz.tacr.elza.service.vo;
 
 import cz.tacr.elza.domain.ArrChange;
+import org.exolab.castor.types.DateTime;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * Value objekt konkrétní změny.
@@ -20,7 +22,7 @@ public class Change {
     /**
      * Datum změny.
      */
-    private LocalDateTime changeDate;
+    private Date changeDate;
 
     /**
      * Identifikátor uživatele, který změnu provedl.
@@ -60,11 +62,11 @@ public class Change {
         this.changeId = changeId;
     }
 
-    public LocalDateTime getChangeDate() {
+    public Date getChangeDate() {
         return changeDate;
     }
 
-    public void setChangeDate(final LocalDateTime changeDate) {
+    public void setChangeDate(final Date changeDate) {
         this.changeDate = changeDate;
     }
 

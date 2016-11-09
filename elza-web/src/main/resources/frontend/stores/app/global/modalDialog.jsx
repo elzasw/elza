@@ -9,19 +9,19 @@ export default function modalDialog(state = initialState, action) {
         case types.GLOBAL_MODAL_DIALOG_SHOW:
             return {
                 items: [
+                    ...state.items,
                     {
                         title: action.title,
                         component: action.component,
                         content: action.content,
                         dialogClassName: action.dialogClassName,
                         onClose: action.onClose,
-                    },
-                    ...state.items
+                    }
                 ]
             };
         case types.GLOBAL_MODAL_DIALOG_HIDE:
             return state.items.length > 0 ? {
-                items: [...state.items.slice(1)]
+                items: [...state.items.slice(0, state.items.length - 1)]
             } : state;
         default:
             return state

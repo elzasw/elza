@@ -39,16 +39,24 @@ class ModalDialog extends AbstractReactComponent {
         if (items.length < 1) {
             return <div></div>;
         }
-        const dialog = items[0];
 
-        const children = React.Children.map(dialog.content, (el) => React.cloneElement(el, {
-                onClose: this.handleClose.bind(this, "DIALOG_CONTENT")
-            })
-        );
+        const dialogs = items.map((dialog, index) => {
+            const visible = index === items.length - 1;
+            const children = React.Children.map(dialog.content, (el) => React.cloneElement(el, {
+                    onClose: this.handleClose.bind(this, "DIALOG_CONTENT")
+                })
+            );
 
-        return <ModalDialogWrapper className={dialog.dialogClassName} ref='wrapper' title={dialog.title} onHide={this.handleClose.bind(this, "DIALOG")}>
-            {children}
-        </ModalDialogWrapper>
+            return (
+                <ModalDialogWrapper key={index} className={`${visible ? "dialog-visible" : "dialog-hidden"} ${dialog.dialogClassName}`} title={dialog.title} onHide={this.handleClose.bind(this, "DIALOG")}>
+                    {children}
+                </ModalDialogWrapper>
+            )
+        });
+
+        return <div>
+            {dialogs}
+        </div>
     }
 }
 
