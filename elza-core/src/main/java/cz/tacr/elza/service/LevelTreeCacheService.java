@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.RulItemType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -630,6 +631,18 @@ public class LevelTreeCacheService {
 
 
         return versionTreeMap;
+    }
+
+    /**
+     * Invalidace všech verzí AS v cache.
+     *
+     * @param fund archivní soubor
+     */
+    synchronized public void invalidateFundVersion(final ArrFund fund) {
+        Assert.notNull(fund);
+        for (ArrFundVersion fundVersion: fund.getVersions()) {
+            versionCache.remove(fundVersion.getFundVersionId());
+        }
     }
 
     @Subscribe

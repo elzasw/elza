@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import cz.tacr.elza.api.ArrBulkActionRun;
 import cz.tacr.elza.api.UsrPermission;
+import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
@@ -22,6 +23,7 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -38,6 +40,12 @@ public class RevertingChangesService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private LevelTreeCacheService levelTreeCacheService;
+
+    @Autowired
+    private UpdateConformityInfoService updateConformityInfoService;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -138,128 +146,269 @@ public class RevertingChangesService {
         Assert.notNull(fromChange);
         Assert.notNull(toChange);
 
-        Integer fundId = fund.getFundId();
-        Integer nodeId = node == null ? null : node.getNodeId();
-        Integer fromChangeId = fromChange.getChangeId();
-        Integer toChangeId = toChange.getChangeId();
+        // TODO: oprávnění, kontrola změny, ...
 
         Query updateEntityQuery;
         Query deleteEntityQuery;
 
         int changes = 0;
 
-        updateEntityQuery = createUpdateEntityQuery(fundId, nodeId, "delete_change_id", "arr_level", toChangeId);
-        deleteEntityQuery = createDeleteEntityQuery(fundId, nodeId, "create_change_id", "arr_level", toChangeId);
+        deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, toChange, "arr_node_conformity_error");
+        changes += deleteEntityQuery.executeUpdate();
+
+        deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, toChange, "arr_node_conformity_missing");
+        changes += deleteEntityQuery.executeUpdate();
+
+        deleteEntityQuery = createConformityDeleteEntityQuery(fund, node, toChange);
+        changes += deleteEntityQuery.executeUpdate();
+
+        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
+        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_level", toChange);
         changes += updateEntityQuery.executeUpdate();
         changes += deleteEntityQuery.executeUpdate();
 
-        updateEntityQuery = createUpdateEntityQuery(fundId, nodeId, "delete_change_id", "arr_node_register", toChangeId);
-        deleteEntityQuery = createDeleteEntityQuery(fundId, nodeId, "create_change_id", "arr_node_register", toChangeId);
+        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_register", toChange);
+        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_register", toChange);
         changes += updateEntityQuery.executeUpdate();
         changes += deleteEntityQuery.executeUpdate();
 
-        updateEntityQuery = createExtendUpdateEntityQuery(fundId, nodeId, "item_id", "delete_change_id", "arr_desc_item", "arr_item", toChangeId);
-        deleteEntityQuery = createExtendDeleteEntityQuery(fundId, nodeId, "item_id", "create_change_id", "arr_desc_item", "arr_item", toChangeId);
+        updateEntityQuery = createExtendUpdateEntityQuery(fund, node, "deleteChange", "arr_desc_item", "arr_item", toChange);
         changes += updateEntityQuery.executeUpdate();
+
+        deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_data", toChange);
         changes += deleteEntityQuery.executeUpdate();
+
+        // TODO: ověřit, proč se tady musím fakticky mazat znovu arr_node_conformity_error
+        deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "descItem", "arr_node_conformity_error", toChange);
+        changes += deleteEntityQuery.executeUpdate();
+
+        deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_item", toChange);
+        changes += deleteEntityQuery.executeUpdate();
+
+        Query deleteNotUseChangesQuery = createDeleteNotUseChangesQuery();
+        changes += deleteNotUseChangesQuery.executeUpdate();
+
+        Query deleteNotUseNodesQuery = createDeleteNotUseNodesQuery();
+        changes += deleteNotUseNodesQuery.executeUpdate();
+
 
         System.out.println("changes: " + changes);
 
-    }
-
-    private Query createUpdateEntityQuery(@NotNull final Integer fundId,
-                                           @Nullable final Integer nodeId,
-                                           @NotNull final String changeNameColumn,
-                                           @NotNull final String table,
-                                           @NotNull final Integer changeId) {
-        String nodeIdsQuery = createFindChangesQuery(changeNameColumn, table, createSubNodeQuery(fundId, nodeId), changeId);
-        String queryString = String.format("UPDATE %1$s SET %2$s = NULL WHERE %2$s IN (%3$s)", table, changeNameColumn, nodeIdsQuery);
-
-        Query query = entityManager.createNativeQuery(queryString);
-
-        // nastavení parametrů dotazu
-        query.setParameter("fundId", fundId);
-        if (nodeId != null) {
-            query.setParameter("nodeId", nodeId);
+        if (node == null) {
+            // invalidace
+            levelTreeCacheService.invalidateFundVersion(fund);
+            // TODO: přepočítat celou verzi AS
+        } else {
+            //updateConformityInfoService.updateConformityInfo(node.getNodeId(), );
+            // TODO: pouze přepočítat uzel
         }
 
+    }
+
+    protected Query createConformityDeleteEntityQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
+        String nodesHql = createHQLFindChanges("createChange", "arr_level", createHqlSubNodeQuery(fund, node));
+        String hqlSubSelect = String.format("SELECT i.node FROM %1$s i WHERE %2$s IN (%3$s)", "arr_level", "createChange", nodesHql);
+        String hql = String.format("DELETE FROM arr_node_conformity WHERE node IN (%1$s)", hqlSubSelect);
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", toChange);
+        if (node != null) {
+            query.setParameter("node", node);
+        }
         return query;
     }
 
-    private Query createExtendUpdateEntityQuery(@NotNull final Integer fundId,
-                                                @Nullable final Integer nodeId,
-                                                @NotNull final String entityNameColumn,
+    private Query createConformityDeleteForeignEntityQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange, final @NotNull String table) {
+        String nodesHql = createHQLFindChanges("createChange", "arr_level", createHqlSubNodeQuery(fund, node));
+        String hqlSubSelect = String.format("SELECT i.node FROM %1$s i WHERE %2$s IN (%3$s)", "arr_level", "createChange", nodesHql);
+        String hql = String.format("DELETE FROM %1$s ncx WHERE ncx.nodeConformity IN (SELECT nc FROM arr_node_conformity nc WHERE node IN (%2$s))", table, hqlSubSelect);
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", toChange);
+        if (node != null) {
+            query.setParameter("node", node);
+        }
+        return query;
+    }
+
+    private Query createDeleteNotUseNodesQuery() {
+        String[][] configUnionTables = new String[][] {
+                {"arr_level", "node"},
+                {"arr_level", "nodeParent"},
+                {"arr_node_register", "node"},
+                {"arr_node_conformity", "node"},
+                {"arr_fund_version", "rootNode"},
+                {"ui_visible_policy", "node"},
+                {"arr_node_output", "node"},
+                {"arr_bulk_action_node", "node"},
+                {"arr_desc_item", "node"},
+                {"arr_change", "primaryNode"},
+        };
+
+        List<String[]> nodesTables = Arrays.asList(configUnionTables);
+        List<String> unionPart = new ArrayList<>();
+        for (String[] nodeTable : nodesTables) {
+            unionPart.add(String.format("n.nodeId NOT IN (SELECT i.%2$s.nodeId FROM %1$s i WHERE i.%2$s IS NOT NULL)", nodeTable[0], nodeTable[1]));
+        }
+        String changesHql = String.join("\nAND\n", unionPart);
+
+        String hql = String.format("DELETE FROM arr_node n WHERE %1$s", changesHql);
+
+        return entityManager.createQuery(hql);
+    }
+
+    private Query createDeleteNotUseChangesQuery() {
+
+        String[][] configUnionTables = new String[][] {
+                {"arr_level", "createChange"},
+                {"arr_level", "deleteChange"},
+                {"arr_item", "createChange"},
+                {"arr_item", "deleteChange"},
+                {"arr_node_register", "createChange"},
+                {"arr_node_register", "deleteChange"},
+
+                {"arr_fund_version", "createChange"},
+                {"arr_fund_version", "lockChange"},
+                {"arr_bulk_action_run", "change"},
+                {"arr_output", "createChange"},
+                {"arr_output", "lockChange"},
+                {"arr_node_output", "createChange"},
+                {"arr_node_output", "deleteChange"},
+                {"arr_output_result", "change"}
+        };
+
+        List<String[]> changeTables = Arrays.asList(configUnionTables);
+        List<String> unionPart = new ArrayList<>();
+        for (String[] changeTable : changeTables) {
+            unionPart.add(String.format("c.changeId NOT IN (SELECT i.%2$s.changeId FROM %1$s i WHERE i.%2$s IS NOT NULL)", changeTable[0], changeTable[1]));
+        }
+        String changesHql = String.join("\nAND\n", unionPart);
+
+        String hql = String.format("DELETE FROM arr_change c WHERE %1$s", changesHql);
+
+        return entityManager.createQuery(hql);
+    }
+
+    private Query createExtendUpdateEntityQuery(@NotNull final ArrFund fund,
+                                                @Nullable final ArrNode node,
                                                 @NotNull final String changeNameColumn,
                                                 @NotNull final String table,
-                                                @NotNull final String tableJoin,
-                                                @NotNull final Integer changeId) {
-        String nodeIdsQuery = createFindChangesQuery(changeNameColumn, table, createSubNodeQuery(fundId, nodeId), changeId);
-        String entityQuery = String.format("SELECT t.%4$s FROM %1$s t JOIN %2$s tj ON t.%4$s = tj.%4$s WHERE tj.%3$s IN (%5$s)",
-                table, tableJoin, changeNameColumn, entityNameColumn, nodeIdsQuery);
-        String queryString = String.format("UPDATE %1$s SET %2$s = NULL WHERE %3$s IN (%4$s)",
-                tableJoin, changeNameColumn, entityNameColumn, entityQuery);
+                                                @NotNull final String subTable,
+                                                @NotNull final ArrChange change) {
+        String nodesHql = createHQLFindChanges(changeNameColumn, table, createHqlSubNodeQuery(fund, node));
 
-        Query query = entityManager.createNativeQuery(queryString);
+        String hqlSubSelect = String.format("SELECT i.%2$s FROM %1$s i WHERE %2$s IN (%3$s)", subTable, changeNameColumn, nodesHql);
+        String hql = String.format("UPDATE %1$s SET %2$s = NULL WHERE %2$s IN (%3$s)", table, changeNameColumn, hqlSubSelect);
+        Query query = entityManager.createQuery(hql);
 
         // nastavení parametrů dotazu
-        query.setParameter("fundId", fundId);
-        if (nodeId != null) {
-            query.setParameter("nodeId", nodeId);
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
+        if (node != null) {
+            query.setParameter("node", node);
         }
 
         return query;
     }
 
-    private Query createDeleteEntityQuery(@NotNull final Integer fundId,
-                                           @Nullable final Integer nodeId,
-                                           @NotNull final String changeNameColumn,
-                                           @NotNull final String table,
-                                           @NotNull final Integer changeId) {
-        String nodeIdsQuery = createFindChangesQuery(changeNameColumn, table, createSubNodeQuery(fundId, nodeId), changeId);
-        String queryString = String.format("DELETE FROM %1$s WHERE %2$s IN (%3$s)", table, changeNameColumn, nodeIdsQuery);
+    private Query createDeleteForeignEntityQuery(@NotNull final ArrFund fund,
+                                                 @Nullable final ArrNode node,
+                                                 @NotNull final String changeNameColumn,
+                                                 @NotNull final String table,
+                                                 @NotNull final String joinNameColumn,
+                                                 @NotNull final String subTable,
+                                                 @NotNull final ArrChange change) {
+        String nodesHql = createHQLFindChanges(changeNameColumn, table, createHqlSubNodeQuery(fund, node));
 
-        Query query = entityManager.createNativeQuery(queryString);
+        String hqlSubSelect = String.format("SELECT i FROM %1$s i WHERE %2$s IN (%3$s)", table, changeNameColumn, nodesHql);
+        String hql = String.format("DELETE FROM %1$s WHERE %2$s IN (%3$s)", subTable, joinNameColumn, hqlSubSelect);
+
+        Query query = entityManager.createQuery(hql);
 
         // nastavení parametrů dotazu
-        query.setParameter("fundId", fundId);
-        if (nodeId != null) {
-            query.setParameter("nodeId", nodeId);
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
+        if (node != null) {
+            query.setParameter("node", node);
         }
 
         return query;
     }
 
-
-    private Query createExtendDeleteEntityQuery(@NotNull final Integer fundId,
-                                                @Nullable final Integer nodeId,
-                                                @NotNull final String entityNameColumn,
+    private Query createExtendDeleteEntityQuery(@NotNull final ArrFund fund,
+                                                @Nullable final ArrNode node,
                                                 @NotNull final String changeNameColumn,
                                                 @NotNull final String table,
-                                                @NotNull final String tableJoin,
-                                                @NotNull final Integer changeId) {
-        String nodeIdsQuery = createFindChangesQuery(changeNameColumn, table, createSubNodeQuery(fundId, nodeId), changeId);
-        String entityQuery = String.format("SELECT t.%4$s FROM %1$s t JOIN %2$s tj ON t.%4$s = tj.%4$s WHERE tj.%3$s IN (%5$s)",
-                table, tableJoin, changeNameColumn, entityNameColumn, nodeIdsQuery);
-        String queryString = String.format("DELETE FROM %1$s WHERE %2$s IN (%3$s)",
-                table, entityNameColumn, entityQuery);
+                                                @NotNull final String joinNameColumn,
+                                                @NotNull final String subTable,
+                                                @NotNull final ArrChange change) {
+        String nodesHql = createHQLFindChanges(changeNameColumn, table, createHqlSubNodeQuery(fund, node));
 
-        Query query = entityManager.createNativeQuery(queryString);
+        String hqlSubSelect = String.format("SELECT i.%2$s FROM %1$s i WHERE %2$s IN (%3$s)", subTable, changeNameColumn, nodesHql);
+        String hql = String.format("DELETE FROM %1$s WHERE %2$s IN (%3$s)", table, changeNameColumn, hqlSubSelect);
+
+        Query query = entityManager.createQuery(hql);
 
         // nastavení parametrů dotazu
-        query.setParameter("fundId", fundId);
-        if (nodeId != null) {
-            query.setParameter("nodeId", nodeId);
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
+        if (node != null) {
+            query.setParameter("node", node);
         }
 
         return query;
     }
 
-    private String createFindChangesQuery(@NotNull final String changeNameColumn,
-                                          @NotNull final String table,
-                                          @NotNull final String inNodeId,
-                                          @NotNull final Integer changeId) {
-        return String.format("SELECT DISTINCT %1$s AS change_id FROM %2$s WHERE node_id IN (%3$s) AND %1$s >= %4$d",
-                changeNameColumn, table, inNodeId, changeId);
+    private Query createSimpleUpdateEntityQuery(@NotNull final ArrFund fund,
+                                                @Nullable final ArrNode node,
+                                                @NotNull final String changeNameColumn,
+                                                @NotNull final String table,
+                                                @NotNull final ArrChange change) {
+        String nodesHql = createHQLFindChanges(changeNameColumn, table, createHqlSubNodeQuery(fund, node));
+        String hql = String.format("UPDATE %1$s SET %2$s = NULL WHERE %2$s IN (%3$s)", table, changeNameColumn, nodesHql);
+
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
+        if (node != null) {
+            query.setParameter("node", node);
+        }
+
+        return query;
+    }
+
+    private Query createSimpleDeleteEntityQuery(@NotNull final ArrFund fund,
+                                                @Nullable final ArrNode node,
+                                                @NotNull final String changeNameColumn,
+                                                @NotNull final String table,
+                                                @NotNull final ArrChange change) {
+        String nodesHql = createHQLFindChanges(changeNameColumn, table, createHqlSubNodeQuery(fund, node));
+        String hql = String.format("DELETE FROM %1$s WHERE %2$s IN (%3$s)", table, changeNameColumn, nodesHql);
+
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
+        if (node != null) {
+            query.setParameter("node", node);
+        }
+
+        return query;
+    }
+
+
+    private String createHQLFindChanges(@NotNull final String changeNameColumn,
+                                        @NotNull final String table,
+                                        @NotNull final String hqlNodes) {
+        return String.format("SELECT DISTINCT c.%1$s FROM %2$s c WHERE c.node IN (%3$s) AND %1$s >= :change",
+                changeNameColumn, table, hqlNodes);
     }
 
     /**
@@ -342,6 +491,23 @@ public class RevertingChangesService {
         // pokud je váha (weights) rovna nule, nebyl ovlivněna žádná JP
         change.setNodeChanges(((BigInteger) o[6]).intValue() == 0 ? BigInteger.ZERO : ((BigInteger) o[5]));
         return change;
+    }
+
+    /**
+     * Sestavení řetězce pro vnořený dotaz, který vrací seznam JP omezený AS nebo JP.
+     *
+     * @param fund AS
+     * @param node JP
+     * @return HQL řetězec
+     */
+    private String createHqlSubNodeQuery(@NotNull final ArrFund fund,
+                                         @Nullable final ArrNode node) {
+        Assert.notNull(fund, "AS musí být vyplněn");
+        String query = "SELECT n FROM arr_node n WHERE fund = :fund";
+        if (node != null) {
+            query += " AND node = :node";
+        }
+        return query;
     }
 
     /**
