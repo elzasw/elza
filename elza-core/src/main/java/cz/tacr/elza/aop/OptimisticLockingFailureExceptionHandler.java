@@ -1,12 +1,13 @@
 package cz.tacr.elza.aop;
 
+import cz.tacr.elza.exception.codes.BaseCode;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.exception.ConcurrentUpdateException;
 
 /**
  * Konvertuje Hibernate výjimku na naší aby mohla být uvedena v api a nemusela tam být závislost na Hibernate.
@@ -27,7 +28,7 @@ public class OptimisticLockingFailureExceptionHandler {
         try {
             return pjp.proceed();
         } catch (OptimisticLockingFailureException e) {
-            throw new ConcurrentUpdateException(e);
+            throw new ConcurrentUpdateException(e, BaseCode.OPTIMISTIC_LOCKING_ERROR);
         }
     }
 }

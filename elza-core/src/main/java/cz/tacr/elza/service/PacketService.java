@@ -8,8 +8,9 @@ import java.util.stream.Collectors;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.controller.exception.DeleteException;
+import cz.tacr.elza.exception.DeleteException;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DataPacketRefRepository;
 import cz.tacr.elza.utils.ObjectListIterator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -248,9 +249,8 @@ public class PacketService {
         List<ArrPacket> usePackets = dataPacketRefRepository.findUsePacketsByPacketIds(integers);
 
         if (usePackets.size() > 0) {
-            throw new DeleteException("Nelze smazat obaly (" +
-                    String.join(", ", usePackets.stream().map(ArrPacket::getStorageNumber).collect(Collectors.toList()))
-                    + "), protože existují navázané entity.");
+            throw new DeleteException(ArrangementCode.PACKET_DELETE_ERROR)
+                    .set("packets", usePackets.stream().map(ArrPacket::getStorageNumber).collect(Collectors.toList()));
         }
 
         ObjectListIterator<Integer> packetIdsIterator = new ObjectListIterator<>(integers);

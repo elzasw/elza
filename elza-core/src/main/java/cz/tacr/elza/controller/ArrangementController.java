@@ -2,7 +2,7 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.*;

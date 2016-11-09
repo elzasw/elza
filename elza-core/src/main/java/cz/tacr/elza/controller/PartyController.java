@@ -2,7 +2,7 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.exception.DeleteException;
+import cz.tacr.elza.exception.DeleteException;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -20,10 +20,10 @@ import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.codes.UserCode;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.UserService;
-import cz.tacr.elza.service.exception.DeleteFailedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -171,7 +171,7 @@ public class PartyController {
         ParParty party = partyRepository.getOneCheckExist(partyId);
 
         if (!userService.findUsersByParty(party).isEmpty()) {
-            throw new DeleteException("Osobu nelze smazat, kvůli navázaným uživatelům.");
+            throw new DeleteException(UserCode.USER_DELETE_ERROR);
         }
 
         partyService.deleteParty(party);

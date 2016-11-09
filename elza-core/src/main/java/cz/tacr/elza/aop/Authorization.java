@@ -89,7 +89,7 @@ public class Authorization {
             }
         }
 
-        throw new AccessDeniedException("Nedostatečné oprávnění");
+        throw new AccessDeniedException(declaredAnnotation.permission());
     }
 
     /**

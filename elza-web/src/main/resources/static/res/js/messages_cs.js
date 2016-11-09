@@ -37,6 +37,17 @@ var messages = {
     "global.action.downloadAll": "Stáhnout vše",
     "global.action.run": "Spustit",
 
+    "global.exception.permission.denied": "Nedostatečná oprávnění",
+    "global.exception.permission.need": "Požadované oprávnění",
+    "global.exception.undefined": "Neznámá chyba",
+    "global.exception.optimistic.locking": "Zaznamenána práce s neaktuálními daty",
+
+    "arr.exception.delete.packets": "Nelze smazat obaly ({0}), protože existují navázané entity.",
+    "arr.exception.version.already.closed": "Verze AS je již uzavřena.",
+    "arr.exception.fund.not.found": "Archivní fond neexistuje.",
+    "arr.exception.version.cannot.close.action": "Nelze uzavřít verzi, protože běží hromadná akce.",
+    "arr.exception.version.cannot.close.validation": "Nelze uzavřít verzi, protože běží validace.",
+
     "search.input.search": "Vyhledat...",
     "search.not.found": "nenalezeno",
     "search.found": "({0})",
