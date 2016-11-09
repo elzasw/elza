@@ -163,7 +163,7 @@ class PartyDetail extends AbstractReactComponent {
         // Not defined shortcuts
     };
 
-    handleActive = (index) => {
+    handleToggleActive = (index) => {
         if (!this.state.visibilitySettingsValue[index]) {
             this.setState({activeIndexes:{...this.state.activeIndexes, [index]: !this.state.activeIndexes[index]}})
         }
@@ -238,7 +238,7 @@ class PartyDetail extends AbstractReactComponent {
 
         const partyType = this.getPartyType();
 
-        const events = {onPin:this.handlePinToggle, onSelect:this.handleActive};
+        const events = {onPin:this.handlePinToggle, onSelect: this.handleToggleActive};
 
         return <Shortcuts name='PartyDetail' handler={this.handleShortcuts}>
             <div ref='partyDetail' className="party-detail">
