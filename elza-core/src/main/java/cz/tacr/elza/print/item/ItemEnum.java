@@ -6,7 +6,7 @@ import cz.tacr.elza.print.NodeId;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class ItemEnum extends AbstractItem<String> {
+public class ItemEnum extends AbstractItem {
 
     public ItemEnum(final NodeId nodeId, final String value) {
         super(nodeId, value);
