@@ -10,7 +10,7 @@ import cz.tacr.elza.print.NodeId;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class ItemFile extends AbstractItem<File> {
+public class ItemFile extends AbstractItem {
 
     private Integer fileId;
     private String name;
@@ -38,7 +38,7 @@ public class ItemFile extends AbstractItem<File> {
     }
 
     public File getFile() {
-        return getValue();
+        return getValue(File.class);
     }
 
     public String getFileName() {
