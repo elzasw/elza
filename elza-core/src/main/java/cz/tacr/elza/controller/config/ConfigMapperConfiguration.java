@@ -289,8 +289,8 @@ public class ConfigMapperConfiguration {
                 }).byDefault().register();
 
 
-       mapperFactory.classMap(ArrItemCoordinates.class, ArrItemCoordinatesVO.class).customize(
-                new CustomMapper<ArrItemCoordinates, ArrItemCoordinatesVO>() {
+       mapperFactory.classMap(ArrItemCoordinates.class, ArrItemCoordinatesVO.class)
+               .customize(new CustomMapper<ArrItemCoordinates, ArrItemCoordinatesVO>() {
             @Override
             public void mapAtoB(final ArrItemCoordinates coordinates,
                                 final ArrItemCoordinatesVO coordinatesVO,
@@ -491,6 +491,7 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
         mapperFactory.classMap(ParParty.class, ParPartyVO.class)
+                .field("partyId", "id")
                 .exclude("preferredName")
                 .exclude("partyNames")
                 .exclude("partyCreators")
@@ -508,7 +509,7 @@ public class ConfigMapperConfiguration {
                             for (ParPartyVO creator : parPartyVO.getCreators()) {
                                 ParCreator parCreator = new ParCreator();
                                 ParParty creatorParty = new ParParty();
-                                creatorParty.setPartyId(creator.getPartyId());
+                                creatorParty.setPartyId(creator.getId());
                                 parCreator.setCreatorParty(creatorParty);
                                 creators.add(parCreator);
                             }
@@ -532,7 +533,9 @@ public class ConfigMapperConfiguration {
 
 
         mapperFactory.classMap(ParPartyGroup.class, ParPartyGroupVO.class).byDefault().register();
-        mapperFactory.classMap(ParPartyGroupIdentifier.class, ParPartyGroupIdentifierVO.class).customize(
+        mapperFactory.classMap(ParPartyGroupIdentifier.class, ParPartyGroupIdentifierVO.class)
+                .field("partyGroupIdentifierId", "id")
+                .customize(
                 new CustomMapper<ParPartyGroupIdentifier, ParPartyGroupIdentifierVO>() {
                     @Override
                     public void mapAtoB(final ParPartyGroupIdentifier parPartyGroupIdentifier,
@@ -543,7 +546,9 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().register();
 
-        mapperFactory.classMap(ParPartyName.class, ParPartyNameVO.class).customize(
+        mapperFactory.classMap(ParPartyName.class, ParPartyNameVO.class)
+                .field("partyNameId", "id")
+                .customize(
                 new CustomMapper<ParPartyName, ParPartyNameVO>() {
                     @Override
                     public void mapAtoB(final ParPartyName parPartyName,
@@ -563,6 +568,7 @@ public class ConfigMapperConfiguration {
                 }).byDefault().register();
 
         mapperFactory.classMap(ParPartyNameComplement.class, ParPartyNameComplementVO.class)
+                .field("partyNameComplementId", "id")
                 .exclude("partyName").customize(new CustomMapper<ParPartyNameComplement, ParPartyNameComplementVO>() {
             @Override
             public void mapAtoB(final ParPartyNameComplement complement,
@@ -584,14 +590,14 @@ public class ConfigMapperConfiguration {
             }
         }).byDefault().register();
 
-        mapperFactory.classMap(ParPartyNameFormType.class, ParPartyNameFormTypeVO.class).byDefault().register();
+        mapperFactory.classMap(ParPartyNameFormType.class, ParPartyNameFormTypeVO.class).field("nameFormTypeId", "id").byDefault().register();
 
-        mapperFactory.classMap(ParPartyType.class, ParPartyTypeVO.class).byDefault().register();
+        mapperFactory.classMap(ParPartyType.class, ParPartyTypeVO.class).field("partyTypeId", "id").byDefault().register();
 
 
         mapperFactory.classMap(ParPerson.class, ParPersonVO.class).byDefault().register();
 
-        mapperFactory.classMap(ParRelation.class, ParRelationVO.class).customize(
+        mapperFactory.classMap(ParRelation.class, ParRelationVO.class).field("relationId", "id").customize(
                 new CustomMapper<ParRelation, ParRelationVO>() {
                     @Override
                     public void mapAtoB(final ParRelation parRelation,
@@ -614,7 +620,7 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().register();
 
-        mapperFactory.classMap(ParRelationEntity.class, ParRelationEntityVO.class).customize(
+        mapperFactory.classMap(ParRelationEntity.class, ParRelationEntityVO.class).field("relationEntityId", "id").customize(
                 new CustomMapper<ParRelationEntity, ParRelationEntityVO>() {
                     @Override
                     public void mapAtoB(final ParRelationEntity parRelationEntity,
@@ -631,7 +637,7 @@ public class ConfigMapperConfiguration {
 
                         if (relationEntityVO.getRoleType() != null) {
                             ParRelationRoleType roleType = new ParRelationRoleType();
-                            roleType.setRoleTypeId(relationEntityVO.getRoleType().getRoleTypeId());
+                            roleType.setRoleTypeId(relationEntityVO.getRoleType().getId());
                             parRelationEntity.setRoleType(roleType);
                         }
 
@@ -644,8 +650,8 @@ public class ConfigMapperConfiguration {
                 }).byDefault().register();
 
 
-        mapperFactory.classMap(ParRelationRoleType.class, ParRelationRoleTypeVO.class).byDefault().register();
-        mapperFactory.classMap(ParRelationType.class, ParRelationTypeVO.class).byDefault().register();
+        mapperFactory.classMap(ParRelationRoleType.class, ParRelationRoleTypeVO.class).field("roleTypeId", "id").byDefault().register();
+        mapperFactory.classMap(ParRelationType.class, ParRelationTypeVO.class).field("relationTypeId", "id").byDefault().register();
         mapperFactory.classMap(ParUnitdate.class, ParUnitdateVO.class)
                 .exclude("valueFrom").exclude("valueFromEstimated")
                 .exclude("valueTo").exclude("valueToEstimated")

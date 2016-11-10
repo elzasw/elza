@@ -1,7 +1,3 @@
-/**
- * Web api pro komunikaci se serverem.
- */
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {WebApi} from 'actions/index.jsx';
@@ -11,9 +7,20 @@ import {i18n, AddPartyForm} from 'components/index.jsx';
 import {getPartyTypeById} from 'actions/refTables/partyTypes.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
+import {objectById} from 'stores/app/utils.jsx'
 
 import {SimpleListActions} from 'shared/list'
 import {DetailActions} from 'shared/detail'
+
+export const AREA_PARTY_LIST = 'partyList';
+export const AREA_PARTY_DETAIL = 'partyDetail';
+
+export const PARTY_TYPE_CODES = {
+    GROUP_PARTY: 'GROUP_PARTY',
+    PERSON: 'PERSON',
+    DYNASTY: 'DYNASTY',
+    EVENT: 'EVENT',
+};
 
 /**
  * Načtení seznamu osob dle filtru
@@ -57,7 +64,6 @@ export function partyDetailClear() {
     return partyDetailFetchIfNeeded(null);
 }
 
-
 export function partyUpdate(party) {
     return dispatch => {
         return savingApiWrapper(dispatch, WebApi.updateParty(party)).then((json) => {
@@ -67,45 +73,12 @@ export function partyUpdate(party) {
 }
 
 
-export function partySettingsPinSave(settings) {
+export function partyCreate(party) {
     return dispatch => {
-        WebApi.setUserSettings(settings)
-            .then(data => {
-                dispatch(userDetailResponseSettings(data));
+        return savingApiWrapper(dispatch, WebApi.createParty(party))
+            .then(newParty => {
                 dispatch(modalDialogHide());
-            });
-    }
-}
-
-
-export const AREA_PARTY_LIST = 'partyList';
-export const AREA_PARTY_DETAIL = 'partyDetail';
-
-/**
- * INSERT PARTY
- * *********************************************
- * Volání webového rozhraní pro vložení nové osoby
- * @param partyType string - typ osoby (ParPersonEditVO, ParDynastyEditVO, ...)
- * @param filterText string - aktualni filtr nad seznamem osob - aby se uzivateli vratil, doplneny pripadne o novou osobu
- * @param partyTypeId int - identifikátor typu osoby (1 - ParPersonEditVO, 2 - ParDynastyEditVO, ...)
- * @param nameFormTypeId int - identifikator typu jmena (uredni, svetske, za svobodna, ...)
- * @param nameMain string - hlavní jméno osoby
- * @param nameOther string - doplňující jméno osoby
- * @param validFrom string - OD - rozsah období, ve kterém je záznam platný/aktivní (1.1.2000 - 31.5.2003, 19. století, leden 1978, ...)
- * @param valiedTo string - DO - rozsah období, ve kterém je záznam platný/aktivní (1.1.2000 - 31.5.2003, 19. století, leden 1978, ...)
- * @param calendarTypeId int - identifikator kalendáře, ve kterém je rozsah období uveden (Gregoriánský, Juliánský)
- * @param degreeBefore string - titul před jménem osoby
- * @param degreeAfter string - titul za jménem osoby
- * @param scope string - !! cosi co netuším k čemu je, ale nejde bez toho uložit korporace - uklada se aktualne vždycky prazdny řetězec !!
- * @deprecated
- */
-export function insertParty(partyType, filterText, partyTypeId, nameFormTypeId, nameMain, nameOther, validFrom, valiedTo, calendarTypeId, degreeBefore, degreeAfter, scope) {
-    return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.insertParty(partyType))
-            .then((json) => { 
-                dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
-                dispatch(partyDetailFetch(json.partyId));   // otevření detailu aktuálně vložené osoby
-                dispatch(findPartyFetch(filterText));       // znovu načtení leveho panelu s vyfiltrovanými osobami (aby se tam pridala nová)
+                dispatch(partyDetailFetchIfNeeded(newParty.id));
             });
     }
 }
@@ -179,67 +152,47 @@ export function deleteRelation(relationId, partyId) {
 
 export function partyAdd(partyTypeId, versionId, callback, showSubmitTypes = false) {
     return (dispatch, getState) => {
-        const state = getState();
-        const partyTypeCode = getPartyTypeById(partyTypeId, state.refTables.partyTypes.items).code;
+        const {refTables: {partyTypes}} = getState();
+        const partyType = objectById(partyTypes.items, partyTypeId);
 
         let label;
-        switch(partyTypeCode){                                        // podle typu osoby bude různý nadpis
-            case "PERSON": label = i18n('party.addParty'); break;   // rod
-            case "DYNASTY": label = i18n('party.addPartyDynasty'); break;     // korporace
-            case "GROUP_PARTY": label = i18n('party.addPartyGroup'); break;     // událost
-            case "EVENT": label = i18n('party.addPartyEvent'); break;     // událost
+        switch (partyType.code) {                                        // podle typu osoby bude různý nadpis
+            case PARTY_TYPE_CODES.PERSON: label = i18n('party.addParty'); break;
+            case PARTY_TYPE_CODES.DYNASTY: label = i18n('party.addPartyDynasty'); break;
+            case PARTY_TYPE_CODES.GROUP_PARTY: label = i18n('party.addPartyGroup'); break;
+            case PARTY_TYPE_CODES.EVENT: label = i18n('party.addPartyEvent'); break;
             default: label = i18n('party.addParty');
         }
 
-        dispatch(modalDialogShow(this, label, <AddPartyForm partyTypeCode={partyTypeCode} partyTypeId={partyTypeId} showSubmitTypes={showSubmitTypes} versionId={versionId} onSubmitForm={partyAddSubmit.bind(null, callback, dispatch)} />));
+        dispatch(modalDialogShow(this, label, <AddPartyForm partyType={partyType} showSubmitTypes={showSubmitTypes} versionId={versionId} onSubmitForm={partyAddSubmit.bind(null, callback, dispatch)} />));
     }
 }
 
 function partyAddSubmit(callback, dispatch, submitType, data) {
-    let partyType = '';                                     // typ osoby - je potreba uvest i jako specialni klivcove slovo
-    switch(data.partyTypeId){
-        case 1: partyType = '.ParPersonVO'; break;          // typ osoby osoba
-        case 2: partyType = '.ParDynastyVO'; break;         // typ osoby rod
-        case 3: partyType = '.ParPartyGroupVO'; break;      // typ osoby korporace
-        case 4: partyType = '.ParEventVO'; break;           // typ osoby docasna korporace - udalost
+    let classType = '';                                     // typ osoby - je potreba uvest i jako specialni klivcove slovo
+    switch (data.partyType.code) {
+        case PARTY_TYPE_CODES.PERSON: classType = '.ParPersonVO'; break;          // typ osoby osoba
+        case PARTY_TYPE_CODES.DYNASTY: classType = '.ParDynastyVO'; break;         // typ osoby rod
+        case PARTY_TYPE_CODES.GROUP_PARTY: classType = '.ParPartyGroupVO'; break;      // typ osoby korporace
+        case PARTY_TYPE_CODES.EVENT: classType = '.ParEventVO'; break;           // typ osoby docasna korporace - udalost
     }
-    const party = {                                           // objekt osoby
-        '@type': partyType,                                 // typ osoby - speciální klíčové slovo
-        partyType: {                                        // typ osoby
-            partyTypeId: data.partyTypeId                   // identikátor typu osoby
-        },
-        genealogy: data.mainPart,                           // název rodu pro soby typu rod
-        scope: data.scopeId,                                          // cosi, co tu musí být
-        record: {                                           // záznam patřící k ossobě
+    const {prefferedName, ...other} = data;
+    const party = {
+        '@type': classType,
+        ...other,
+        record: {
             '@class': "cz.tacr.elza.controller.vo.RegRecordVO",
-            registerTypeId: data.recordTypeId,              // identifikátor typu záznamu
-            scopeId: data.scopeId                           // identifikátor tridy rejstriku
+            ...other.record
         },
-        from: data.from,                                    // datace od
-        to: data.to,                                        // datace do
-        partyNames : [{                                     // jména osoby
-            nameFormType: {                                 // typ formy jména
-                nameFormTypeId: parseInt(data.nameFormTypeId) // identifikátor typu jména osoby
-            },
-            displayName: data.mainPart,
-            mainPart: data.mainPart,                        // hlavní část jména
-            otherPart: data.otherPart,                      // vedlejší část jména
-            degreeBefore: data.degreeBefore,                // titul před jménem
-            degreeAfter: data.degreeAfter,                  // titul za jménem
-            prefferedName: true,                            // hlavní jmno osoby
-            from: data.from,                                // datace od
-            to: data.to,                                    // datace do
-            partyNameComplements: data.complements          // doplnky jména
-        }]
+        partyNames : [
+            {
+                ...prefferedName,
+                prefferedName: true,
+            }
+        ]
     };
-    if(party.from && (party.from.textDate == "" || party.from.textDate == null || party.from.textDate == undefined)){
-        party.from = null;                                  // pokud není zadaný textová část data, celý datum se ruší
-    }
-    if(party.to && (party.to.textDate == "" || party.to.textDate == null || party.to.textDate == undefined)){
-        party.to = null;                                    // pokud není zadaný textová část data, celý datum se ruší
-    }
 
-    savingApiWrapper(dispatch, WebApi.insertParty(party)).then((json) => {
+    savingApiWrapper(dispatch, WebApi.createParty(party)).then((json) => {
         dispatch(modalDialogHide());
         callback && callback(json, submitType);
     });

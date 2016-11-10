@@ -23,7 +23,7 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {partyUpdate} from 'actions/party/party.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
+import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded, PARTY_TYPE_CODES} from 'actions/party/party.jsx'
 import {Utils} from 'components/index.jsx';
 import {objectById, indexById} from 'stores/app/utils.jsx';
 import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
@@ -45,14 +45,6 @@ import './PartyDetail.less';
 
 const PARTY_TYPE_IDENT = "ident";
 const PARTY_TYPE_CONCLUSION = "conclusion";
-
-
-const PARTY_TYPE_CODES = {
-    GROUP_PARTY: 'GROUP_PARTY',
-    PERSON: 'PERSON',
-    DYNASTY: 'DYNASTY',
-    EVENT: 'EVENT',
-};
 
 const SETTINGS_PARTY_PIN = "PARTY_PIN";
 
@@ -208,7 +200,7 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     getPartyType = () => {
-        return objectById(this.props.partyTypes.items, this.props.partyDetail.data.partyType.partyTypeId, 'partyTypeId');
+        return objectById(this.props.partyTypes.items, this.props.partyDetail.data.partyType.id, 'id');
     };
 
 
@@ -413,9 +405,9 @@ class PartyDetail extends AbstractReactComponent {
                 <div className="party-header">
                     <div>
                         <h3>{party.name}</h3>
-                        {party.record.external_id && party.record.externalSource && <span className="description">{party.partyType.description + ':' + party.partyId}</span>}
+                        {party.record.external_id && party.record.externalSource && <span className="description">{party.partyType.description + ':' + party.id}</span>}
                         {party.record.external_id && !party.record.externalSource && <span className="description">{'UNKNOWN:' + party.record.external_id}</span>}
-                        {!party.record.external_id && <span className="description">{party.partyType.description + ':' + party.partyId}</span>}
+                        {!party.record.external_id && <span className="description">{party.partyType.description + ':' + party.id}</span>}
                     </div>
                     <div>
                         <h3>{party.partyType.description}</h3>

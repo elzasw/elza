@@ -623,13 +623,13 @@ public class PartyService {
                                     @Nullable final Collection<ParRelationEntity> relationEntities) {
 
 
-        Assert.notNull(relationSource.getComplementType());
-        Assert.notNull(relationSource.getComplementType().getRelationTypeId());
+        Assert.notNull(relationSource.getRelationType());
+        Assert.notNull(relationSource.getRelationType().getRelationTypeId());
 
         Set<ParUnitdate> unitdateRemove = new HashSet<>();
 
         ParRelationType relationType = relationTypeRepository
-                .findOne(relationSource.getComplementType().getRelationTypeId());
+                .findOne(relationSource.getRelationType().getRelationTypeId());
 
 
         ParRelation relation;
@@ -669,7 +669,7 @@ public class PartyService {
         Assert.notNull(party);
 
         relation.setParty(party);
-        relation.setComplementType(relationType);
+        relation.setRelationType(relationType);
         relation.setDateNote(relationSource.getDateNote());
         relation.setNote(relationSource.getNote());
 
@@ -819,10 +819,10 @@ public class PartyService {
         //typ role entity odpovídající typu vztahu dle par_relation_type_role_type
         ParRelationRoleType roleType = relationEntity.getRoleType();
         List<ParRelationType> possibleRelationTypes = relationTypeRepository.findByRelationRoleType(roleType);
-        if (!possibleRelationTypes.contains(relationEntity.getRelation().getComplementType())) {
+        if (!possibleRelationTypes.contains(relationEntity.getRelation().getRelationType())) {
             throw new IllegalArgumentException(
                     "Typ role entity " + roleType.getName() + " nespadá do typu vztahu " + relationEntity.getRelation()
-                            .getComplementType().getName());
+                            .getRelationType().getName());
         }
 
 

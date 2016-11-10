@@ -1,56 +1,24 @@
-/**
- * Autoři zadané osoby 
- */
-
 import React from 'react';
 import {WebApi} from 'actions/index.jsx';
 import {connect} from 'react-redux'
-import {Input, Button} from 'react-bootstrap';
+import {Button} from 'react-bootstrap';
 import {PartyCreatorForm, AbstractReactComponent, i18n, Icon, Autocomplete} from 'components/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {AppActions} from 'stores/index.jsx';
 import {deleteCreator, updateParty} from 'actions/party/party.jsx'
-import {refPartyListFetchIfNeeded} from 'actions/refTables/partyList.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 
 /**
- * PARTY DETAIL CREATORS
- * *********************************************
- * formulář autora osoby
+ * Autoři osoby
  */
-const PartyDetailCreators = class PartyDetailCreators extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-        this.bindMethods(
-            'handleAddCreator',
-            'handleDeleteCreator', 
-            'addCreator',
-            'deleteCreator',
-            'handleSearchChange',
-            'creatorChange'
-        );
-        this.state = {partyList: []};
-    }
+//TODO @compel
+class PartyDetailCreators extends AbstractReactComponent {
 
-    componentDidMount() {
-        this.dispatch(refPartyListFetchIfNeeded());         // načtení osob pro autory osoby
-    }
-
-    componentWillReceiveProps(nextProps) {
-        this.dispatch(refPartyListFetchIfNeeded());         // načtení osob pro autory osoby
-    }
-
-    /**
-     * HANDLE DELETE CREATOR
-     * *********************************************
-     * Kliknutí na tlačítko smazání autora
-     * @param creatorId - identifikátor autora osoby
-     */     
-    handleDeleteCreator(creatorId) {
-        if(confirm(i18n('party.detail.creator.delete'))) {              // pokud uživatel potvrdí smazání
+    handleDeleteCreator = (creatorId) => {
+        if (confirm(i18n('party.detail.creator.delete'))) {              // pokud uživatel potvrdí smazání
             this.deleteCreator(creatorId);                             // autor se smaže
         }
-    }
+    };
 
     /**
      * DELETE CREATOR

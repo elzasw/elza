@@ -19,7 +19,7 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
 
     partyGroupIdentifierDelete = (id) => {
         const partyGroupIdentifiers = this.props.party.partyGroupIdentifiers;
-        const index = indexById(partyGroupIdentifiers, id, 'partyGroupIdentifierId');
+        const index = indexById(partyGroupIdentifiers, id);
         const party = {
             ...this.props.party,
             partyGroupIdentifiers: [
@@ -71,11 +71,11 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
                 <label>{i18n("party.detail.partyGroupIdentifiers")}</label>
                 <NoFocusButton bsStyle="default" onClick={this.handlePartyGroupIdentifierAdd}><Icon glyph="fa-plus" /></NoFocusButton>
             </div>
-            {party.partyGroupIdentifiers.map((partyGroupIdentifier, index) => <div key={partyGroupIdentifier.partyGroupIdentifierId} className="value-group">
+            {party.partyGroupIdentifiers.map((partyGroupIdentifier, index) => <div key={partyGroupIdentifier.id} className="value-group">
                 <FormControl.Static>{partyGroupIdentifier.identifier}</FormControl.Static>
                 <div className="actions">
                     <NoFocusButton><Icon glyph="fa-pencil" /></NoFocusButton>
-                    <NoFocusButton onClick={() => this.partyGroupIdentifierDelete(partyGroupIdentifier.partyGroupIdentifierId)}><Icon glyph="fa-times" /></NoFocusButton>
+                    <NoFocusButton onClick={() => this.partyGroupIdentifierDelete(partyGroupIdentifier.id)}><Icon glyph="fa-times" /></NoFocusButton>
                 </div>
             </div>)}
         </div>

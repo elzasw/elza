@@ -2,7 +2,7 @@
  * Home stránka
  */
 
-require('./HomePage.less')
+import './HomePage.less'
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -367,5 +367,5 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(HomePage);
+export default connect(mapStateToProps)(HomePage);
 

@@ -1093,7 +1093,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
             case "PARTY_REF": {
                 descItem = new ArrItemPartyRefVO();
-                ((ArrItemPartyRefVO) descItem).setValue(((ParPartyVO) value).getPartyId());
+                ((ArrItemPartyRefVO) descItem).setValue(((ParPartyVO) value).getId());
                 break;
             }
 
@@ -1997,7 +1997,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     protected ParPartyVO updateParty(final ParPartyVO partyVO) {
-        return put(spec -> spec.body(partyVO).pathParam("partyId", partyVO.getPartyId()), UPDATE_PARTY).getBody().as(ParPartyVO.class);
+        return put(spec -> spec.body(partyVO).pathParam("partyId", partyVO.getId()), UPDATE_PARTY).getBody().as(ParPartyVO.class);
     }
 
     /**
@@ -2108,7 +2108,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return vytvořená relace
      */
     protected ParRelationVO updateRelation(ParRelationVO relationVO) {
-        return put(spec -> spec.body(relationVO).pathParam("relationId", relationVO.getRelationId()), UPDATE_RELATIONS).getBody().as(ParRelationVO.class);
+        return put(spec -> spec.body(relationVO).pathParam("relationId", relationVO.getId()), UPDATE_RELATIONS).getBody().as(ParRelationVO.class);
     }
 
     /**

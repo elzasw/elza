@@ -17,7 +17,10 @@ class PartyDetailRelations extends AbstractReactComponent {
     };
 
     addIdentifier = (relation) => {
-        insertRelation(relation, this.props.party.partyId);
+        this.dispatch(insertRelation({
+            ...relation,
+
+        }, this.props.party.id));
         this.dispatch(modalDialogHide());
     };
 
@@ -32,7 +35,7 @@ class PartyDetailRelations extends AbstractReactComponent {
                 <label>{label}</label>
                 <NoFocusButton bsStyle="default" onClick={this.handleRelationAdd}><Icon glyph="fa-plus" /></NoFocusButton>
             </div>
-            {party.relations && party.relations.filter(i => i.relationTypeId == relationType.relationTypeId).map((relation, index) => <div key={relation.relationId} className="value-group">
+            {party.relations && party.relations.filter(i => i.relationTypeId == relationType.relationTypeId).map((relation, index) => <div key={relation.id} className="value-group">
                 <FormControl.Static>a</FormControl.Static>
                 <div className="actions">
                     <NoFocusButton><Icon glyph="fa-pencil" /></NoFocusButton>

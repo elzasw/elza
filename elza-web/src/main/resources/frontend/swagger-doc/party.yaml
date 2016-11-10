@@ -268,7 +268,7 @@ definitions:
   ParPartyTypeVO:
     type: object
     properties:
-      partyTypeId:
+      id:
         type: integer
       code:
         type: string
@@ -279,7 +279,7 @@ definitions:
   ParPartyVO:
     type: object
     properties:
-      partyId:
+      id:
         type: integer
       partyType:
         $ref: '#/definitions/ParPartyTypeVO'

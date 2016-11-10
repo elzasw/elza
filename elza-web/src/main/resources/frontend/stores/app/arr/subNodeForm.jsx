@@ -177,7 +177,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             var refType = state.refTypesMap[loc.descItemType.id]
             switch (refType.dataType.code) {
                 case 'PARTY_REF':
-                    loc.descItem.value = action.value.partyId;
+                    loc.descItem.value = action.value.id;
                     loc.descItem.party = action.value;
                     break;
                 case 'FILE_REF':

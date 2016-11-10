@@ -4,18 +4,11 @@ import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel, Loading
 import FormInput from 'components/form/FormInput.jsx';
 import {AppActions} from 'stores/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {partyListFetchIfNeeded, partyListFilter, partyDetailFetchIfNeeded, partyArrReset} from 'actions/party/party.jsx'
+import {partyListFetchIfNeeded, partyListFilter, partyDetailFetchIfNeeded, partyArrReset, PARTY_TYPE_CODES} from 'actions/party/party.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {WebApi} from 'actions/index.jsx';
 
 import './PartyList.less';
-
-const PARTY_TYPE_CODES = {
-    GROUP_PARTY: 'GROUP_PARTY',
-    PERSON: 'PERSON',
-    DYNASTY: 'DYNASTY',
-    EVENT: 'EVENT',
-};
 
 /**
  * Komponenta list osob
@@ -71,7 +64,7 @@ class PartyList extends AbstractReactComponent {
     };
 
     handlePartyDetail = (item, e) => {
-        this.dispatch(partyDetailFetchIfNeeded(item.partyId));
+        this.dispatch(partyDetailFetchIfNeeded(item.id));
     };
 
     handleArrReset = () => {
@@ -104,9 +97,9 @@ class PartyList extends AbstractReactComponent {
             </div>
             <div>
                 <span className="date">{/** TODO Dodat datum **/}</span>
-                {item.record.external_id && item.record.externalSource && <span className="description">{item.partyType.description + ':' + item.partyId}</span>}
+                {item.record.external_id && item.record.externalSource && <span className="description">{item.partyType.description + ':' + item.id}</span>}
                 {item.record.external_id && !item.record.externalSource && <span className="description">{'UNKNOWN:' + item.record.external_id}</span>}
-                {!item.record.external_id && <span className="description">{item.partyType.description + ':' + item.partyId}</span>}
+                {!item.record.external_id && <span className="description">{item.partyType.description + ':' + item.id}</span>}
             </div>
         </div>
     };
@@ -131,7 +124,7 @@ class PartyList extends AbstractReactComponent {
 
             }
 
-            var activeIndex = indexById(partyList, this.props.selectedPartyID, 'partyId')
+            var activeIndex = indexById(partyList, this.props.selectedPartyID, 'id')
             partyListRows = (
 
             )            
@@ -155,7 +148,7 @@ class PartyList extends AbstractReactComponent {
                 {arrPanel}
                 <FormInput componentClass="select" onChange={this.handleFilterType}>
                     <option value={-1}>{i18n('global.all')}</option>
-                    {partyTypes.map(i => <option value={i.partyTypeId} key={i.partyTypeId}>{i.name}</option>)}
+                    {partyTypes.map(type => <option value={type.id} key={type.id}>{type.name}</option>)}
                 </FormInput>
                 <SearchWithGoto
                     onFulltextSearch={this.handleFilterText}

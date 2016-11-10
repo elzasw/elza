@@ -24,7 +24,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
- * //TODO marik missing comment
+ * Vztah osob k entitám
  *
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  */
@@ -46,7 +46,7 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
     @RestResource(exported = false)
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ParRelationType.class)
     @JoinColumn(name = "relationTypeId", nullable = false)
-    private ParRelationType complementType;
+    private ParRelationType relationType;
 
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "fromUnitdateId")
@@ -64,7 +64,6 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
 
     @Column
     private String source;
-
 
     @Override
     public Integer getRelationId() {
@@ -86,14 +85,12 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
         this.party = party;
     }
 
-    @Override
-    public ParRelationType getComplementType() {
-        return complementType;
+    public ParRelationType getRelationType() {
+        return relationType;
     }
 
-    @Override
-    public void setComplementType(final ParRelationType complementType) {
-        this.complementType = complementType;
+    public void setRelationType(final ParRelationType relationType) {
+        this.relationType = relationType;
     }
 
     @Override

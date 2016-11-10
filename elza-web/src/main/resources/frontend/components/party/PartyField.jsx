@@ -66,7 +66,7 @@ class PartyField extends AbstractReactComponent {
         }
 
         return (
-                <div className={cls} key={item.partyId} >
+                <div className={cls} key={item.id} >
                     <div className="name" title={item.record.record}>{item.record.record}</div>
                     <div className="type">{item.partyType.name}</div>
                     <div className="characteristics" title={item.record.characteristics}>{item.record.characteristics}</div>
@@ -79,7 +79,7 @@ class PartyField extends AbstractReactComponent {
         return (
             <div className="create-party">
                 <DropdownButton id="party-field" noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>}>
-                    {refTables.partyTypes.items.map(i=> {return <MenuItem key={'party' + i.partyTypeId} onClick={() => this.handleCreateParty(i.partyTypeId)} eventKey={i.partyTypeId}>{i.name}</MenuItem>})}
+                    {refTables.partyTypes.items.map(type => <MenuItem key={'party' + type.id} onClick={() => this.handleCreateParty(type.id)} eventKey={type.id}>{type.name}</MenuItem>)}
                 </DropdownButton>
             </div>
         )
@@ -104,9 +104,9 @@ class PartyField extends AbstractReactComponent {
         }
 
         const actions = [];
-        if (value && value.partyId && detail) {
+        if (value && value.id && detail) {
             if (userDetail.hasOne(perms.REG_SCOPE_RD_ALL, {type: perms.REG_SCOPE_RD, scopeId: value.record.scopeId})) {
-                actions.push(<div onClick={this.handleDetail.bind(this, value.partyId)}
+                actions.push(<div onClick={this.handleDetail.bind(this, value.id)}
                                   className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
             }
         }
@@ -117,7 +117,7 @@ class PartyField extends AbstractReactComponent {
                 footer={footer}
                 value={value}
                 items={this.state.partyList}
-                getItemId={(item) => item ? item.partyId : null}
+                getItemId={(item) => item ? item.id : null}
                 getItemName={(item) => item && item.record ? item.record.record : ''}
                 onSearchChange={this.handleSearchChange}
                 renderItem={this.renderParty}

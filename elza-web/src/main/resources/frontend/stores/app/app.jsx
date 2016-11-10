@@ -9,7 +9,7 @@ const initialState = {
 };
 
 export default function app(state = initialState, action) {
-    if (action.area) {
+    if (action.area && typeof action.area  === "string") {
         return processAreaStores(state, action);
     }
 

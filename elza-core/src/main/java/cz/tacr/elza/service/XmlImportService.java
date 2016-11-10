@@ -1034,7 +1034,7 @@ public class XmlImportService {
                     + " a s třídou " + classTypeCode);
         }
 
-        parRelation.setComplementType(parRelationType);
+        parRelation.setRelationType(parRelationType);
 
         parRelation.setDateNote(XmlImportUtils.trimStringValue(relation.getDateNote(), StringLength.LENGTH_1000, stopOnError));
         parRelation.setFrom(importComplexDate(relation.getFromDate()));

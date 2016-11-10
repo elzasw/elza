@@ -7,7 +7,6 @@ import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {refPartyListFetchIfNeeded} from 'actions/refTables/partyList.jsx'
 
 /**
  * Formulář přidání nového / úpravu identifikátoru osobě
@@ -15,12 +14,10 @@ import {refPartyListFetchIfNeeded} from 'actions/refTables/partyList.jsx'
 class PartyIdentifierForm extends AbstractReactComponent {
 
     componentDidMount() {
-        this.dispatch(refPartyListFetchIfNeeded());         // načtení osob pro autory osoby
         this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
     }
 
     componentWillReceiveProps() {
-        this.dispatch(refPartyListFetchIfNeeded());         // načtení osob pro autory osoby
         this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
     }
 
@@ -62,6 +59,8 @@ class PartyIdentifierForm extends AbstractReactComponent {
 
         const submit = submitReduxForm.bind(this, PartyIdentifierForm.validate);
 
+        const calendarsList = calendarTypes ? calendarTypes.items.map(i=> <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>) : null;
+
         return <Form onSubmit={handleSubmit(submit)}>
             <Modal.Body>
                 <FormInput type="text" label={i18n('party.identifier.source')} {...source} />
@@ -73,7 +72,7 @@ class PartyIdentifierForm extends AbstractReactComponent {
                             <label>{i18n('party.identifier.from')}</label>
                             <div className="line">
                                 <FormInput componentClass="select" {...fromCalendar}>
-                                    {calendarTypes.items.map(i=> <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>)}
+                                    {calendarsList}
                                 </FormInput>
                                 <FormInput type="text" {...fromText} />
                             </div>
@@ -82,7 +81,7 @@ class PartyIdentifierForm extends AbstractReactComponent {
                             <label>{i18n('party.identifier.to')}</label>
                             <div className="line">
                                 <FormInput componentClass="select" {...toCalendar}>
-                                    {calendarTypes.items.map(i=> <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>)}
+                                    {calendarsList}
                                 </FormInput>
                                 <FormInput type="text" {...toText} />
                             </div>

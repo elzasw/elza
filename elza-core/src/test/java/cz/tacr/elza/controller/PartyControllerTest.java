@@ -109,7 +109,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         ParPersonVO personO1 = new ParPersonVO();
         RegRecordVO recordO1 = new RegRecordVO();
 
-        recordO1.setRegisterTypeId(findRegisterTypeAddable(recordTypesForPartyType(typeO1.getPartyTypeId())).getId());
+        recordO1.setRegisterTypeId(findRegisterTypeAddable(recordTypesForPartyType(typeO1.getId())).getId());
         recordO1.setScopeId(scope.getId());
         personO1.setRecord(recordO1);
         personO1.setPartyType(typeO1);
@@ -133,7 +133,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         ParPartyGroupVO groupK1 = new ParPartyGroupVO();
         RegRecordVO recordK1 = new RegRecordVO();
 
-        recordK1.setRegisterTypeId(findRegisterTypeAddable(recordTypesForPartyType(typeK1.getPartyTypeId())).getId());
+        recordK1.setRegisterTypeId(findRegisterTypeAddable(recordTypesForPartyType(typeK1.getId())).getId());
         recordK1.setScopeId(scope.getId());
 
         groupK1.setRecord(recordK1);
@@ -157,7 +157,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         ParDynastyVO dynastyR1 = new ParDynastyVO();
         RegRecordVO recordR1 = new RegRecordVO();
 
-        recordR1.setRegisterTypeId(findRegisterTypeAddable(recordTypesForPartyType(typeR1.getPartyTypeId())).getId());
+        recordR1.setRegisterTypeId(findRegisterTypeAddable(recordTypesForPartyType(typeR1.getId())).getId());
         recordR1.setScopeId(scope.getId());
 
         dynastyR1.setRecord(recordR1);
@@ -179,7 +179,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         ParEventVO eventU1 = new ParEventVO();
         RegRecordVO recordU1 = new RegRecordVO();
 
-        recordU1.setRegisterTypeId(findRegisterTypeAddable(recordTypesForPartyType(typeU1.getPartyTypeId())).getId());
+        recordU1.setRegisterTypeId(findRegisterTypeAddable(recordTypesForPartyType(typeU1.getId())).getId());
         recordU1.setScopeId(scope.getId());
 
         eventU1.setRecord(recordU1);
@@ -206,11 +206,11 @@ public class PartyControllerTest extends AbstractControllerTest {
             Assert.assertTrue("Očekáváme neprázdný rejstříkový záznam", party.getRecord() != null);
         }
 
-        parties = findParty(null, null, null, groupK1.getPartyType().getPartyTypeId(), null);
+        parties = findParty(null, null, null, groupK1.getPartyType().getId(), null);
         Assert.assertTrue("Očekáváme 1 záznam", parties.size() == 1);
         parties = findParty("U1", null, null, null, null);
         Assert.assertTrue("Očekáváme 1 záznam", parties.size() == 1);
-        parties = findParty("O1", null, null, personO1.getPartyType().getPartyTypeId(), null);
+        parties = findParty("O1", null, null, personO1.getPartyType().getId(), null);
         Assert.assertTrue("Očekáváme 1 záznam", parties.size() == 1);
 
         /** Změna jména a přidání doplňků */
@@ -248,7 +248,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         personO1.setSourceInformation(changedSource);
 
         personO1 = (ParPersonVO) updateParty(personO1);
-        personO1 = (ParPersonVO) getParty(personO1.getPartyId());
+        personO1 = (ParPersonVO) getParty(personO1.getId());
 
         Assert.assertTrue("Očekáváme projevené úpravy",
                 personO1.getCharacteristics().equals(changedCharacter) &&
@@ -260,7 +260,7 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         /** Změna creators rodu **/
         ParDynastyVO referenceDynastyR1 = new ParDynastyVO();
-        referenceDynastyR1.setPartyId(dynastyR1.getPartyId());
+        referenceDynastyR1.setId(dynastyR1.getId());
         dynastyR1.setCreators(Arrays.asList(referenceDynastyR1, personO1));
         dynastyR1 = (ParDynastyVO) updateParty(dynastyR1);
 
@@ -269,7 +269,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         /** Změna creators rodu **/
         dynastyR1.setCreators(Collections.singletonList(personO1));
         dynastyR1 = (ParDynastyVO) updateParty(dynastyR1);
-        dynastyR1 = (ParDynastyVO) getParty(dynastyR1.getPartyId());
+        dynastyR1 = (ParDynastyVO) getParty(dynastyR1.getId());
 
         Assert.assertTrue("Očekáváme 1 creator", dynastyR1.getCreators().size() == 1);
 
@@ -284,7 +284,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         groupK1.setScope(changedScope);
 
         groupK1 = (ParPartyGroupVO) updateParty(groupK1);
-        groupK1 = (ParPartyGroupVO) getParty(groupK1.getPartyId());
+        groupK1 = (ParPartyGroupVO) getParty(groupK1.getId());
 
         Assert.assertTrue("Očekáváme projevené úpravy",
                 groupK1.getFoundingNorm().equals(changedNorm) &&
@@ -294,12 +294,12 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         /** Přidání identifikátorů korporace **/
         ParPartyGroupIdentifierVO identifier1 = new ParPartyGroupIdentifierVO();
-        identifier1.setPartyId(groupK1.getPartyId());
+        identifier1.setPartyId(groupK1.getId());
         identifier1.setIdentifier("Identifier1");
         identifier1.setSource("Identifier2Source");
 
         ParPartyGroupIdentifierVO identifier2 = new ParPartyGroupIdentifierVO();
-        identifier2.setPartyId(groupK1.getPartyId());
+        identifier2.setPartyId(groupK1.getId());
         identifier2.setIdentifier("Identifier2");
         identifier2.setSource("Identifier2Source");
 
@@ -318,7 +318,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         /** Test zda neexistuje nějaké heslo s tímto typem pro přidání (test metody findRecordForRelation) **/
         ParRelationTypeVO spawnRelationType = findRelationTypeByCode(typeO1.getRelationTypes(), "2");
         ParRelationRoleTypeVO spawnRelationRoleType = findRelationRoleTypeByCode(spawnRelationType.getRelationRoleTypes(), "11");
-        List<RegRecordVO> recordForRelation = findRecordForRelation(null, null, null, spawnRelationRoleType.getRoleTypeId(), personO1.getPartyId());
+        List<RegRecordVO> recordForRelation = findRecordForRelation(null, null, null, spawnRelationRoleType.getId(), personO1.getId());
 
         Assert.assertTrue("Očekáváme 0 záznamů", recordForRelation.size() == 0);
 
@@ -333,7 +333,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         record = createRecord(record);
 
         /** Test zda existuje heslo s tímto typem pro přidání (test metody findRecordForRelation) **/
-        recordForRelation = findRecordForRelation(null, null, null, spawnRelationRoleType.getRoleTypeId(), personO1.getPartyId());
+        recordForRelation = findRecordForRelation(null, null, null, spawnRelationRoleType.getId(), personO1.getId());
         Assert.assertTrue("Očekáváme 1 záznam", recordForRelation.size() == 1);
 
         /** Vznik **/
@@ -343,19 +343,19 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         spawnRelationEntity.setRoleType(spawnRelationRoleType);
         spawnRelation.setRelationEntities(Collections.singletonList(spawnRelationEntity));
-        spawnRelation.setComplementType(spawnRelationType);
+        spawnRelation.setRelationType(spawnRelationType);
         spawnRelation.setFrom(testFromDate);
         spawnRelation.setTo(testToDate);
-        spawnRelation.setPartyId(personO1.getPartyId());
+        spawnRelation.setPartyId(personO1.getId());
         spawnRelation = insertRelation(spawnRelation);
 
         /** Zánik **/
         ParRelationVO dieRelation = new ParRelationVO();
         ParRelationTypeVO dieRelationType = findRelationTypeByCode(typeO1.getRelationTypes(), "6");
-        dieRelation.setComplementType(dieRelationType);
+        dieRelation.setRelationType(dieRelationType);
         dieRelation.setFrom(testFromDate);
         dieRelation.setTo(testToDate);
-        dieRelation.setPartyId(personO1.getPartyId());
+        dieRelation.setPartyId(personO1.getId());
         dieRelation = insertRelation(dieRelation);
 
         /** Zaměstnavatel **/
@@ -364,12 +364,12 @@ public class PartyControllerTest extends AbstractControllerTest {
         ParRelationEntityVO workRelationEntity = new ParRelationEntityVO();
         workRelationEntity.setRecord(recordK1);
         workRelationEntity.setRoleType(findRelationRoleTypeByCode(workRelationType.getRelationRoleTypes(), "167"));
-        workRelation.setComplementType(workRelationType);
-        workRelation.setPartyId(personO1.getPartyId());
+        workRelation.setRelationType(workRelationType);
+        workRelation.setPartyId(personO1.getId());
         workRelation = insertRelation(workRelation);
 
         /** Ověření **/
-        personO1 = (ParPersonVO) getParty(personO1.getPartyId());
+        personO1 = (ParPersonVO) getParty(personO1.getId());
         Assert.assertTrue("Očekáváme 3 relace", personO1.getRelations().size() == 3);
 
         /** Úprava relací **/
@@ -377,7 +377,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         workRelation.setTo(testToDate);
         workRelation = updateRelation(workRelation);
 
-        personO1 = (ParPersonVO) getParty(personO1.getPartyId());
+        personO1 = (ParPersonVO) getParty(personO1.getId());
         ParRelationVO testWorkRelation = personO1.getRelations().get(2);
 
         Assert.assertTrue("Očekáváme projevení změn",
@@ -385,21 +385,21 @@ public class PartyControllerTest extends AbstractControllerTest {
                         testWorkRelation.getTo().getTextDate().equals(testToDate.getTextDate()));
 
         /** Smazání relace **/
-        deleteRelation(workRelation.getRelationId());
+        deleteRelation(workRelation.getId());
 
-        personO1 = (ParPersonVO) getParty(personO1.getPartyId());
+        personO1 = (ParPersonVO) getParty(personO1.getId());
         Assert.assertTrue("Očekáváme 2 relace", personO1.getRelations().size() == 2);
 
         /** Vyhledání osob podle osoby **/
-        List<ParPartyVO> partyList = findPartyForParty(personO1.getPartyId(), null, null, null, null, null);
+        List<ParPartyVO> partyList = findPartyForParty(personO1.getId(), null, null, null, null, null);
 
         Assert.assertTrue("Očekáváme 4 záznamy", partyList.size() == 4);
 
         /** Smazání a kontrola počtu **/
-        deleteParty(eventU1.getPartyId());
+        deleteParty(eventU1.getId());
         parties = findParty(null, null, null, null, null);
         Assert.assertTrue("Očekáváme 3 záznamy", parties.size() == 3);
-        partyList = findPartyForParty(personO1.getPartyId(), null, null, null, null, null);
+        partyList = findPartyForParty(personO1.getId(), null, null, null, null, null);
         Assert.assertTrue("Očekáváme 3 záznamy", partyList.size() == 3);
     }
 

@@ -175,7 +175,7 @@ public class UserControllerTest extends AbstractControllerTest {
     private UsrUserVO createUser() {
         List<ParPartyVO> party = findParty(null, 0, 1, null, null);
 
-        UsrUserVO user = createUser(USER, PASS, party.get(0).getPartyId());
+        UsrUserVO user = createUser(USER, PASS, party.get(0).getId());
         Assert.notNull(user);
         Assert.notNull(user.getId());
         return user;

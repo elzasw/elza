@@ -1,18 +1,5 @@
 package cz.tacr.elza.controller.vo;
 
-import javax.persistence.Column;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-
-import org.springframework.data.rest.core.annotation.RestResource;
-
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParUnitdate;
-
 
 /**
  * Identifikace o přiřazených kódech původce, například IČO.
@@ -21,7 +8,7 @@ import cz.tacr.elza.domain.ParUnitdate;
  * @since 23.12.2015
  */
 public class ParPartyGroupIdentifierVO {
-    private Integer partyGroupIdentifierId;
+    private Integer id;
 
     private ParUnitdateVO to;
 
@@ -35,12 +22,12 @@ public class ParPartyGroupIdentifierVO {
 
     private String identifier;
 
-    public Integer getPartyGroupIdentifierId() {
-        return partyGroupIdentifierId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setPartyGroupIdentifierId(final Integer partyGroupIdentifierId) {
-        this.partyGroupIdentifierId = partyGroupIdentifierId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public ParUnitdateVO getTo() {

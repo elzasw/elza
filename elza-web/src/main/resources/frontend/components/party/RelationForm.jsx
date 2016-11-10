@@ -7,7 +7,6 @@ import {Modal, Button, Form} from 'react-bootstrap'
 import {indexById} from 'stores/app/utils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
-import {refRegistryListFetchIfNeeded} from 'actions/refTables/registryRegionList.jsx'
 import {submitReduxForm} from 'components/form/FormUtils.jsx'
 
 import './PartyFormStyles.less';
@@ -29,7 +28,6 @@ class RelationForm extends AbstractReactComponent {
         'source',
         'entities[].roleTypeId',
         'entities[].record',
-
     ];
 
     static validate = (values) => {
@@ -50,7 +48,7 @@ class RelationForm extends AbstractReactComponent {
             }
         }
 
-        for (let i=0; i<data.entities.length; i++) {
+        for (let i=0; i<values.entities.length; i++) {
             if (!values.entities[i].roleTypeId) {
                 errors['entities['+i+'].roleTypeId'] = i18n('party.relation.errors.undefinedRoleType');
             }
@@ -68,12 +66,11 @@ class RelationForm extends AbstractReactComponent {
     }
 
     render() {
-        const {relationType: {roleTypes}, refTables: {calendarTypes}, onClose, handleSubmit, fields: {from, to, entities, dateNote, note, source}} = this.props;
-        const calendars = calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>});
-        const roleTypesList = roleTypes ? roleTypes.map(i=> {return <option value={i.roleTypeId} key={i.roleTypeId}>{i.name}</option>}) : null;
+        const {relationType: {relationRoleTypes}, refTables: {calendarTypes}, onClose, handleSubmit, fields: {from, to, entities, dateNote, note, source}} = this.props;
+        const calendars = calendarTypes ? calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>}) : null;
+        const roleTypesList = relationRoleTypes ? relationRoleTypes.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>}) : null;
 
         const submit = submitReduxForm.bind(this, RelationForm.validate);
-
         return <div className="relations-edit">
             <Form onSubmit={handleSubmit(submit)}>
                 <Modal.Body>
@@ -83,7 +80,6 @@ class RelationForm extends AbstractReactComponent {
                                 <label>{i18n('party.relation.from')}</label>
                                 <div className="line">
                                     <FormInput componentClass="select" {...from.calendarTypeId}>
-                                        <option key={0}/>
                                         {calendars}
                                     </FormInput>
                                     <FormInput type="text" {...from.textDate}/>
@@ -111,25 +107,24 @@ class RelationForm extends AbstractReactComponent {
                             <div className="title">
                                 <label className="type">{i18n('party.relation.roleType')}</label>
                                 <label className="record">{i18n('party.relation.record')}</label>
-                                <label className="icon"></label>
                             </div>
 
                             {entities.map((i,index) => <div className="relation-row" key={index}>
                                 <div className="type">
-                            <FormInput componentClass="select" {...i.roleTypeId}>
-                                <option key={0}/>
-                                {roleTypesList}
-                            </FormInput>
+                                    <FormInput componentClass="select" {...i.roleTypeId}>
+                                        <option key={0}/>
+                                        {roleTypesList}
+                                    </FormInput>
                                 </div>
                                 <div className="record">
-                                 <RegistryField {...i.record}/>
+                                    <RegistryField {...i.record}/>
                                 </div>
                                 <div className="icon">
                                     <Button onClick={() => entities.removeField(index)}><Icon glyph="fa-trash" /></Button>
                                 </div>
                              </div>)}
                         </div>
-                    <Button className="relation-add" onClick={() => entities.addField()}><Icon glyph="fa-plus" /></Button>
+                    <Button className="relation-add" onClick={() => entities.addField({record:null, roleTypeId: null})}><Icon glyph="fa-plus" /></Button>
                     </div>
                 </Modal.Body>
                 <Modal.Footer>

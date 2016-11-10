@@ -320,7 +320,7 @@ public class ClientFactoryVO {
                 return Integer.MAX_VALUE;
             }
 
-            return a.getPartyNameId().compareTo(b.getPartyNameId());
+            return a.getId().compareTo(b.getId());
         });
 
         if (prefferedName != null) {
@@ -394,7 +394,7 @@ public class ClientFactoryVO {
         for (final ParParty party : parties) {
             ParPartyVO partyVO = mapper.map(party, ParPartyVO.class);
 
-            partyMap.put(partyVO.getPartyId(), partyVO);
+            partyMap.put(partyVO.getId(), partyVO);
 
 
             List<ParPartyName> partyNames = partyNameMap.get(party.getPartyId());

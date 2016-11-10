@@ -1,9 +1,3 @@
-    /**
- * Entity pro vybranou osobu
- */
-
-require('./PartyEntities.less');
-
 import React from 'react';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
@@ -12,13 +6,13 @@ import {AppActions} from 'stores/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {updateRelation, deleteRelation} from 'actions/party/party.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-    import * as perms from 'actions/user/Permission.jsx';
-    
+import * as perms from 'actions/user/Permission.jsx';
+import './PartyEntities.less';
+
 /**
-* PARTY ENTITIES
-* *********************************************
-* panel pro správu entit jedné osoby
-*/ 
+ * Entity pro vybranou osobu
+ */
+//TODO @compel
 const PartyEntities = class PartyEntities extends AbstractReactComponent {
     constructor(props) {
         super(props);

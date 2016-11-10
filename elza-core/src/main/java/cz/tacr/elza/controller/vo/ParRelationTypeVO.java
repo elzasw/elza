@@ -7,7 +7,7 @@ import cz.tacr.elza.api.UseUnitdateEnum;
 
 
 /**
- * VO pro Seznam typů vztahů.
+ * VO pro typů vztahu.
  *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
@@ -17,7 +17,7 @@ public class ParRelationTypeVO {
     /**
      * Id.
      */
-    private Integer relationTypeId;
+    private Integer id;
     /**
      * Název.
      */
@@ -33,15 +33,17 @@ public class ParRelationTypeVO {
 
     private List<ParRelationRoleTypeVO> relationRoleTypes;
 
-    /** Způsob použití datace. */
+    /**
+     * Způsob použití datace.
+     */
     private UseUnitdateEnum useUnitdate;
 
-    public Integer getRelationTypeId() {
-        return relationTypeId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setRelationTypeId(final Integer relationTypeId) {
-        this.relationTypeId = relationTypeId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public String getName() {

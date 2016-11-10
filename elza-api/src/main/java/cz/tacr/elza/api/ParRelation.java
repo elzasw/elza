@@ -22,9 +22,9 @@ public interface ParRelation<PP extends ParParty, PRT extends ParRelationType, P
 
     void setParty(PP party);
 
-    PRT getComplementType();
+    PRT getRelationType();
 
-    void setComplementType(PRT complementType);
+    void setRelationType(PRT relationType);
 
     PU getFrom();
 

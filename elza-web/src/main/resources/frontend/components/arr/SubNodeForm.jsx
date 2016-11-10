@@ -550,12 +550,7 @@ class SubNodeForm extends AbstractReactComponent {
         this.dispatch(setFocus('arr', 3, null, null));
     }
 
-    /**
-     * Vytvoření obalu po vyplnění formuláře.
-     *
-     * @param valueLocation pozice hodnoty atributu
-     * @param form {Object} data z formuláře
-     */
+
     handleCreatedParty(valueLocation, data, submitType) {
         const {versionId, routingKey, fund, subNodeForm} = this.props;
 
@@ -564,7 +559,7 @@ class SubNodeForm extends AbstractReactComponent {
 
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
-            this.dispatch(partySelect(data.partyId, fund));
+            this.dispatch(partySelect(data.id, fund));
             this.dispatch(routerNavigate('party'));
         } else {    // nastavení focus zpět na prvek
             var formData = subNodeForm.formData

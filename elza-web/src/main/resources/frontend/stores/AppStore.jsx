@@ -522,7 +522,6 @@ if (_logStoreSize) {
  */
 import arrRegion from './app/arr/arrRegion.jsx';
 import registryRegion from './app/registry/registryRegion.jsx';
-import partyRegion from './app/party/partyRegion.jsx';
 import fundRegion from './app/fund/fundRegion.jsx';
 import splitter from './app/global/splitter.jsx';
 import adminRegion from './app/admin/adminRegion.jsx';
@@ -539,7 +538,7 @@ const save = function(store) {
     // result.registryRegion.selectedId = result.registryRegion.registryRegionData.selectedId
 
     const result = {
-        //partyRegion: partyRegion(store.partyRegion, action),
+        //partyRegion: partyRegion(store.partyRegion, action), TODO @compel
         registryRegion: registryRegion(store.registryRegion, action),
         arrRegion: arrRegion(store.arrRegion, action),
         fundRegion: fundRegion(store.fundRegion, action),

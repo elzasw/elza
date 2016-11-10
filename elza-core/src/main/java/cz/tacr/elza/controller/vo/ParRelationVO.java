@@ -12,9 +12,9 @@ import java.util.List;
  */
 public class ParRelationVO {
 
-    private Integer relationId;
+    private Integer id;
 
-    private ParRelationTypeVO complementType;
+    private ParRelationTypeVO relationType;
 
     private ParUnitdateVO from;
 
@@ -35,20 +35,20 @@ public class ParRelationVO {
 
     private List<ParRelationEntityVO> relationEntities;
 
-    public Integer getRelationId() {
-        return relationId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setRelationId(final Integer relationId) {
-        this.relationId = relationId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
-    public ParRelationTypeVO getComplementType() {
-        return complementType;
+    public ParRelationTypeVO getRelationType() {
+        return relationType;
     }
 
-    public void setComplementType(final ParRelationTypeVO complementType) {
-        this.complementType = complementType;
+    public void setRelationType(final ParRelationTypeVO relationType) {
+        this.relationType = relationType;
     }
 
     public ParUnitdateVO getFrom() {

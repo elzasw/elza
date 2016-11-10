@@ -148,7 +148,7 @@ public class PartyController {
     public ParPartyVO createParty(@RequestBody final ParPartyVO partyVO) {
         Assert.notNull(partyVO);
 
-        if(partyVO.getPartyId() != null){
+        if(partyVO.getId() != null){
             throw new IllegalArgumentException("Nová osoba nesmí mít nastaveno ID");
         }
 
@@ -187,8 +187,8 @@ public class PartyController {
         Assert.notNull(partyVO);
 
         Assert.isTrue(
-            partyVO.getPartyId().equals(partyId),
-            "V url požadavku je odkazováno na jiné ID (" + partyId + ") než ve VO (" + partyVO.getPartyId() + ")."
+            partyVO.getId().equals(partyId),
+            "V url požadavku je odkazováno na jiné ID (" + partyId + ") než ve VO (" + partyVO.getId() + ")."
         );
         validationVOService.checkPartyUpdate(partyVO);
 
@@ -296,7 +296,7 @@ public class PartyController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ParRelationVO insertRelation(@RequestBody final ParRelationVO relationVO) {
 
-        Assert.isNull(relationVO.getRelationId());
+        Assert.isNull(relationVO.getId());
 
         validationVOService.checkRelation(relationVO);
 
@@ -325,7 +325,7 @@ public class PartyController {
             @RequestBody final ParRelationVO relationVO) {
 
 
-        relationVO.setRelationId(relationId);
+        relationVO.setId(relationId);
         validationVOService.checkRelation(relationVO);
 
 
@@ -453,7 +453,7 @@ public class PartyController {
         }
 
         for (ParPartyTypeVO partyTypeVO : partyTypeVoMap.values()) {
-            ParPartyType partyType = partyTypeRepository.findOne(partyTypeVO.getPartyTypeId());
+            ParPartyType partyType = partyTypeRepository.findOne(partyTypeVO.getId());
             List<RegRegisterType> partyRegisterTypes = registerTypeRepository
                     .findByPartyTypeEnableAdding(partyType);
 

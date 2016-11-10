@@ -1,19 +1,17 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {Link, IndexLink} from 'react-router';
 import {ControllableDropdownButton, Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartyList, PartyDetail, PartyEntities, i18n, ImportForm} from 'components/index.jsx';
 import {RelationForm, AddPartyForm} from 'components/index.jsx';
-import {ButtonGroup, MenuItem, DropdownButton, Button, Glyphicon} from 'react-bootstrap';
+import {MenuItem, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {AppStore} from 'stores/index.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {partyDetailFetchIfNeeded, partyListInvalidate} from 'actions/party/party.jsx'
-import {partyAdd, insertParty, insertRelation, partyDelete} from 'actions/party/party.jsx'
+import {partyAdd, partyCreate, insertRelation, partyDelete} from 'actions/party/party.jsx'
 const ShortcutsManager = require('react-shortcuts');
 const Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components/index.jsx';
@@ -94,7 +92,7 @@ class PartyPage extends AbstractReactComponent {
      * Uložení nové osoby
      */ 
     addParty = (data) => {
-        this.dispatch(partyDetailFetchIfNeeded(data.partyId));
+        this.dispatch(partyDetailFetchIfNeeded(data.id));
         this.dispatch(partyListInvalidate());
     };
 
@@ -193,7 +191,7 @@ class PartyPage extends AbstractReactComponent {
      * Kliknutí na tlačítko pro smazání osoby
      */ 
     handleDeleteParty = () => {
-        confirm(i18n('party.delete.confirm')) && this.dispatch(partyDelete(this.props.partyDetail.data.partyId));
+        confirm(i18n('party.delete.confirm')) && this.dispatch(partyDelete(this.props.partyDetail.data.id));
     };
 
     /**
@@ -208,19 +206,14 @@ class PartyPage extends AbstractReactComponent {
         const altActions = [];
         if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
             altActions.push(
-                <ControllableDropdownButton key='addParty' ref='addParty' id='addParty'
-                                            title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
-                    {refTables.partyTypes.items.map(i=> {
-                        return <MenuItem key={i.partyTypeId} eventKey={i.partyTypeId}
-                                         onClick={this.handleAddParty.bind(this, i.partyTypeId)}>{i.name}</MenuItem>
-                    })}
+                <ControllableDropdownButton key='add-party' ref='add-party' id='add-party' title={<span className="dropContent"><Icon glyph='fa-download fa-fw' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
+                    {refTables.partyTypes.items.map(type => <MenuItem key={type.id} eventKey={type.id} onClick={this.handleAddParty.bind(this, type.id)}>{type.name}</MenuItem>)}
                 </ControllableDropdownButton>
             );
-            altActions.push(
-                <Button key='export-party' onClick={this.handleImport}><Icon glyph='fa-download'/>
-                    <div><span className="btnText">{i18n('ribbon.action.party.import')}</span></div>
-                </Button>
-            );
+            altActions.push(<Button key='export-party' onClick={this.handleImport}>
+                <Icon glyph='fa-download fa-fw' />
+                <div><span className="btnText">{i18n('ribbon.action.party.import')}</span></div>
+            </Button>);
         }
 
         const itemActions = [];

@@ -14,7 +14,6 @@ import refTables from './app/refTables/refTables.jsx';
 import registryRegion from './app/registry/registryRegion.jsx';
 import registryRegionRecordTypes from './app/registry/registryRegionRecordTypes.jsx';
 import toastr from '../components/shared/toastr/ToastrStore.jsx';
-import partyRegion from './app/party/partyRegion.jsx';
 import fundRegion from './app/fund/fundRegion.jsx';
 import contextMenu from './app/global/contextMenu.jsx';
 import modalDialog from './app/global/modalDialog.jsx';
@@ -35,10 +34,7 @@ import status from './app/status.jsx';
 import app from './app/app.jsx';
 
 import addPartyForm from './app/party/form/addPartyForm.jsx';
-import addPartyNameForm from './app/party/form/addPartyNameForm.jsx';
 import partyNameForm from './app/party/form/partyNameForm.jsx';
-import partyIdentifierForm from './app/party/form/partyIdentifierForm.jsx';
-import partyCreatorForm from './app/party/form/partyCreatorForm.jsx';
 import relationForm from './app/party/form/relationForm.jsx';
 
 import addRegistryForm from './app/registry/form/addRegistryForm.jsx';
@@ -66,7 +62,6 @@ const rootReducer = combineReducers({
     registryRegionRecordTypes,
     toastr,
     developer,
-    partyRegion,
     fundRegion,
     contextMenu,
     modalDialog,
@@ -89,7 +84,6 @@ const rootReducer = combineReducers({
         addPacketForm: addPacketForm,
         addPartyForm: addPartyForm,
         partyNameForm: partyNameForm,
-        partyCreatorForm: partyCreatorForm,
         relationForm: relationForm,
         addRegistryForm: addRegistryForm,
         editRegistryForm: editRegistryForm,
