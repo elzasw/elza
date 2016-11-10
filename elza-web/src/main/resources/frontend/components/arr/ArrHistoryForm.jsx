@@ -56,10 +56,11 @@ class ArrHistoryForm extends AbstractReactComponent {
     }
 
     getItems = (fromIndex, toIndex) => {
-        const {versionId, node} = this.props;
-        const {changeId} = this.state;
+        const {versionId} = this.props;
+        const {changeId, node, showHistoryForNode} = this.state;
 
-        return WebApi.findChanges(versionId, node ? node.id : null, fromIndex, toIndex - fromIndex, changeId)
+        const useNodeId = showHistoryForNode ? ( node ? node.id : null ) : null;
+        return WebApi.findChanges(versionId, useNodeId, fromIndex, toIndex - fromIndex, changeId)
             .then(json => {
                 console.log(json);
                 if (json.totalCount > 0 && changeId === null) {    // pokud nemáme uložen první changeId, uložíme si ho do state
@@ -117,24 +118,50 @@ class ArrHistoryForm extends AbstractReactComponent {
             <FundNodesSelectForm
                 multipleSelection={false}
                 onSubmitForm={(id, node) => {
-                    console.log(11111, id, node);
-                    this.setState({node});
+                    this.setState({
+                        node,
+                        selectedItem: null,
+                        selectedIndex: null,
+                        changeId: null,
+                        activeIndex: null,
+                    }, this.refreshRows);
                     this.dispatch(modalDialogHide());
                 }}
             />))
     }
 
+    onChangeRadio = (showHistoryForNode) => {
+        this.setState({
+            showHistoryForNode,
+            selectedItem: null,
+            selectedIndex: null,
+            changeId: null,
+            activeIndex: null,
+        }, this.refreshRows);
+    }
+
+    refreshRows = () => {
+        this.refs.listbox.reload();
+    }
+
+    handleDeleteChanges = () => {
+        const {onDeleteChanges} = this.props;
+        const {node, changeId, selectedItem} = this.state;
+
+        onDeleteChanges(node ? node.id : null, changeId, selectedItem.changeId);
+    }
+
     render() {
-        const {node, showHistoryForNode, selectedIndex, activeIndex} = this.state;
+        const {selectedItem, node, showHistoryForNode, selectedIndex, activeIndex} = this.state;
         const {onClose} = this.props;
 
         return (
             <div className="arr-history-form-container">
                 <Modal.Body>
                     <FormGroup>
-                        <FormInput type="radio" checked={!showHistoryForNode} onClick={() => this.setState({showHistoryForNode:false})} label={i18n('arr.history.title.globalChanges')}/>
+                        <FormInput type="radio" checked={!showHistoryForNode} onClick={() => this.onChangeRadio(false)} label={i18n('arr.history.title.globalChanges')}/>
                         <div className="selected-node-container">
-                            <FormInput type="radio" checked={showHistoryForNode} onClick={() => this.setState({showHistoryForNode:true})} label={i18n('arr.history.title.nodeChanges')}/>
+                            <FormInput type="radio" checked={showHistoryForNode} onClick={() => this.onChangeRadio(true)} label={i18n('arr.history.title.nodeChanges')}/>
                             <FormInput className="selected-node-info-container" type="static" label={false}>
                                 <input type="text" value={node ? node.name : ""} disabled />
                                 <Button disabled={!showHistoryForNode} onClick={this.handleChooseNode}>{i18n("global.action.choose")}</Button>
@@ -165,7 +192,7 @@ class ArrHistoryForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     {selectedIndex !== null ? i18n("arr.history.title.changesForDelete", selectedIndex + 1) + " " : ""}
-                    <Button type="submit" onClick={()=>{}}>{i18n('arr.history.action.deleteChanges')}</Button>
+                    <Button disabled={selectedItem === null || (showHistoryForNode && !node)} type="submit" onClick={this.handleDeleteChanges}>{i18n('arr.history.action.deleteChanges')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>

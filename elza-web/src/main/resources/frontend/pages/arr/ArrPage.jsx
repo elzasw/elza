@@ -31,7 +31,7 @@ import {
 import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {WebApi} from 'actions/index.jsx';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {showRegisterJp, fundExtendedView, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
 import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
 import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
@@ -330,8 +330,20 @@ class ArrPage extends ArrParentPage {
      * @param versionId verze AS
      */
     handleShowFundHistory = (versionId) => {
-        const form = <ArrHistoryForm versionId={versionId} />
+        const form = <ArrHistoryForm
+            versionId={versionId}
+            onDeleteChanges={this.handleDeleteChanges}
+        />
         this.dispatch(modalDialogShow(this, i18n('arr.history.title.fund'), form));
+    }
+
+    handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
+        const activeFund = this.getActiveFund(this.props);
+        const versionId = activeFund.versionId;
+        WebApi.revertChanges(versionId, nodeId, fromChangeId, toChangeId)
+            .then(() => {
+                this.dispatch(modalDialogHide());
+            });
     }
 
     /**

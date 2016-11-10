@@ -122,6 +122,10 @@ class WebApi{
         return AjaxUtils.ajaxGet(WebApi.changesUrl + '/' + versionId, {nodeId, offset, maxSize, changeId});
     }
 
+    revertChanges(versionId, nodeId, fromChangeId, toChangeId){
+        return AjaxUtils.ajaxGet(WebApi.changesUrl + '/' + versionId + '/revert', {nodeId, fromChangeId, toChangeId});
+    }
+
     validateUnitdate(value) {
         return AjaxUtils.ajaxGet(WebApi.validateUrl + '/unitDate', {value: value || ''});
     }

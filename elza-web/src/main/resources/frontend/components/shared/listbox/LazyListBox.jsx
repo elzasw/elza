@@ -390,15 +390,26 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
         this.callCallbackAction(index, 'onDoubleClick')
     }
 
-    fetchNow() {
-            // activeIndex: this.getActiveIndexForUse(this.props, this.state),
-        // this.setState({
-        //     activeIndex: 3,
-        //     selectedIndex: 3,
-        //     items: [],
-        // })
+    /**
+     * Provede kompletní reload dat, nezachovává pozice atp.
+     */
+    reload = () => {
+        this.setState({
+            activeIndex: this.getActiveIndexForUse(this.props, {}),
+            selectedIndex: this.getSelectedIndexForUse(this.props, {}),
+            lastFocus: null,
+            itemsCount: typeof this.props.itemsCount !== 'undefined' ? this.props.itemsCount : 0, // zatím počet položek neznáme
+            itemsFromIndex: 0,  // od jakého indexu máme položky
+            itemsToIndex: 0,    // do jakého indexu máme položky
+            items: [],  // načtené položky
+            view: {from: 0, to: 0},
+            scrollToIndex: {index: 0},
+            selectedItem: this.props.selectedItem,
+        }, this.fetchNow);
+    }
 
-        this.callFetch(this.state.itemsFromIndex, this.state.itemsToIndex, true)
+    fetchNow() {
+        this.callFetch(0, 1, true)
     }
 
     handleRenderItem(index) {
@@ -454,6 +465,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
         return (
             <div className={cls} ref="mainContainer" onKeyDown={this.handleKeyDown} tabIndex={0}>
                 <VirtualList
+                    ref="virtualList"
                     tagName='div'
                     container={this.state.mainContainer}
                     lazyItemsCount={this.state.itemsCount}
