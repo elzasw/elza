@@ -5,11 +5,16 @@ import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.service.vo.Change;
 import cz.tacr.elza.service.vo.ChangesResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -37,6 +42,8 @@ import java.util.List;
 @Service
 public class RevertingChangesService {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -48,6 +55,9 @@ public class RevertingChangesService {
 
     @Autowired
     private UpdateConformityInfoService updateConformityInfoService;
+
+    @Autowired
+    private StartupService startupService;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -150,64 +160,135 @@ public class RevertingChangesService {
 
         // TODO: oprávnění, kontrola změny, ...
 
+        // zastavení probíhajících výpočtů pro validaci uzlů u verzí
+        stopConformityInfFundVersions(fund);
+
         Query updateEntityQuery;
         Query deleteEntityQuery;
 
         int changes = 0;
+        int partChange;
 
         deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, toChange, "arr_node_conformity_error");
-        changes += deleteEntityQuery.executeUpdate();
+        partChange = deleteEntityQuery.executeUpdate();
+        logger.info("Odstraněno " + partChange + " záznamů z arr_node_conformity_error");
+        changes += partChange;
 
         deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, toChange, "arr_node_conformity_missing");
-        changes += deleteEntityQuery.executeUpdate();
+        partChange += deleteEntityQuery.executeUpdate();
+        logger.info("Odstraněno " + partChange + " záznamů z arr_node_conformity_missing");
+        changes += partChange;
 
         deleteEntityQuery = createConformityDeleteEntityQuery(fund, node, toChange);
-        changes += deleteEntityQuery.executeUpdate();
+        partChange += deleteEntityQuery.executeUpdate();
+        logger.info("Odstraněno " + partChange + " záznamů z arr_node_conformity");
+        changes += partChange;
 
         updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
         deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_level", toChange);
-        changes += updateEntityQuery.executeUpdate();
-        changes += deleteEntityQuery.executeUpdate();
+        partChange += updateEntityQuery.executeUpdate();
+        logger.info("Upraveno " + partChange + " záznamů z arr_level");
+        changes += partChange;
+        partChange += deleteEntityQuery.executeUpdate();
+        logger.info("Odstraněno " + partChange + " záznamů z arr_level");
+        changes += partChange;
 
         updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_register", toChange);
         deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_register", toChange);
-        changes += updateEntityQuery.executeUpdate();
-        changes += deleteEntityQuery.executeUpdate();
+        partChange += updateEntityQuery.executeUpdate();
+        logger.info("Upraveno " + partChange + " záznamů z arr_node_register");
+        changes += partChange;
+        partChange += deleteEntityQuery.executeUpdate();
+        logger.info("Odstraněno " + partChange + " záznamů z arr_node_register");
+        changes += partChange;
 
         updateEntityQuery = createExtendUpdateEntityQuery(fund, node, "deleteChange", "arr_desc_item", "arr_item", toChange);
-        changes += updateEntityQuery.executeUpdate();
+        partChange += updateEntityQuery.executeUpdate();
+        logger.info("Upraveno " + partChange + " záznamů z arr_desc_item");
+        changes += partChange;
 
         deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_data", toChange);
-        changes += deleteEntityQuery.executeUpdate();
+        partChange += deleteEntityQuery.executeUpdate();
+        logger.info("Odstraněno " + partChange + " záznamů z arr_data");
+        changes += partChange;
 
         // TODO: ověřit, proč se tady musím fakticky mazat znovu arr_node_conformity_error
+        // - musí se vyřešit předchozí mazání conformity info, pak nebude třeba
         deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "descItem", "arr_node_conformity_error", toChange);
-        changes += deleteEntityQuery.executeUpdate();
+        partChange += deleteEntityQuery.executeUpdate();
+        logger.info("Odstraněno " + partChange + " záznamů z arr_node_conformity_error");
+        changes += partChange;
 
         deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_item", toChange);
-        changes += deleteEntityQuery.executeUpdate();
+        partChange += deleteEntityQuery.executeUpdate();
+        logger.info("Odstraněno " + partChange + " záznamů z arr_desc_item");
+        changes += partChange;
 
         Query deleteNotUseChangesQuery = createDeleteNotUseChangesQuery();
-        changes += deleteNotUseChangesQuery.executeUpdate();
+        partChange += deleteNotUseChangesQuery.executeUpdate();
+        logger.info("Odstraněno " + partChange + " záznamů z arr_change");
+        changes += partChange;
 
         Query deleteNotUseNodesQuery = createDeleteNotUseNodesQuery();
-        changes += deleteNotUseNodesQuery.executeUpdate();
+        partChange += deleteNotUseNodesQuery.executeUpdate();
+        logger.info("Odstraněno " + partChange + " záznamů z arr_node");
+        changes += partChange;
 
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
+            @Override
+            public void suspend() {
+            }
 
-        System.out.println("changes: " + changes);
+            @Override
+            public void resume() {
+            }
 
-        if (node == null) {
-            // invalidace
-            levelTreeCacheService.invalidateFundVersion(fund);
-            // TODO: přepočítat celou verzi AS
-        } else {
-            //updateConformityInfoService.updateConformityInfo(node.getNodeId(), );
-            // TODO: pouze přepočítat uzel
-        }
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void beforeCommit(final boolean b) {
+            }
+
+            @Override
+            public void beforeCompletion() {
+            }
+
+            @Override
+            public void afterCommit() {
+
+                if (node == null) {
+                    // invalidace
+                    levelTreeCacheService.invalidateFundVersion(fund);
+                }
+
+                // přidá do fronty JP, které je potřeba přepočítat
+                startupService.revalidateNodes();
+            }
+
+            @Override
+            public void afterCompletion(final int i) {
+            }
+        });
+
+        logger.info("changes: " + changes);
 
     }
 
-    protected Query createConformityDeleteEntityQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
+    /**
+     * Zastavení probíhajících výpočtů pro validaci uzlů u verzí.
+     *
+     * @param fund AS nad kterým provádím zastavení
+     */
+    private void stopConformityInfFundVersions(final @NotNull ArrFund fund) {
+        for (ArrFundVersion fundVersion : fund.getVersions()) {
+            updateConformityInfoService.terminateWorkerInVersionAndWait(fundVersion);
+        }
+    }
+
+    // TODO: vyřešit správně
+    private Query createConformityDeleteEntityQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
         String nodesHql = createHQLFindChanges("createChange", "arr_level", createHqlSubNodeQuery(fund, node));
         String hqlSubSelect = String.format("SELECT i.node FROM %1$s i WHERE %2$s IN (%3$s)", "arr_level", "createChange", nodesHql);
         String hql = String.format("DELETE FROM arr_node_conformity WHERE node IN (%1$s)", hqlSubSelect);
@@ -222,6 +303,7 @@ public class RevertingChangesService {
         return query;
     }
 
+    // TODO: vyřešit správně
     private Query createConformityDeleteForeignEntityQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange, final @NotNull String table) {
         String nodesHql = createHQLFindChanges("createChange", "arr_level", createHqlSubNodeQuery(fund, node));
         String hqlSubSelect = String.format("SELECT i.node FROM %1$s i WHERE %2$s IN (%3$s)", "arr_level", "createChange", nodesHql);

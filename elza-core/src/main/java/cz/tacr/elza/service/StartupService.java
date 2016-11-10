@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -86,7 +87,7 @@ public class StartupService {
      * <p>
      * Metoda je pouštěna po startu aplikačního serveru.
      */
-    private void revalidateNodes() {
+    public void revalidateNodes() {
         TransactionTemplate tmpl = new TransactionTemplate(txManager);
         Map<Integer, ArrFundVersion> fundVersionMap = new HashMap<>();
         Map<Integer, List<ArrNode>> fundNodesMap = new HashMap<>();
