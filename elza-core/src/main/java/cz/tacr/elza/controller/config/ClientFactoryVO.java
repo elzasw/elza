@@ -1,14 +1,85 @@
 package cz.tacr.elza.controller.config;
 
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.repository.ComplementTypeRepository;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.config.ConfigRules;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.nodes.*;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFileVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
+import cz.tacr.elza.controller.vo.ArrOutputExtVO;
+import cz.tacr.elza.controller.vo.ArrOutputFileVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.BulkActionRunVO;
+import cz.tacr.elza.controller.vo.BulkActionVO;
+import cz.tacr.elza.controller.vo.DmsFileVO;
+import cz.tacr.elza.controller.vo.ItemSpecsCategory;
+import cz.tacr.elza.controller.vo.NodeConformityVO;
+import cz.tacr.elza.controller.vo.ParInstitutionVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParRelationEntityVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RegCoordinatesVO;
+import cz.tacr.elza.controller.vo.RegRecordSimple;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
+import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.RulTemplateVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.UISettingsVO;
+import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
-import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
@@ -54,28 +125,27 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.repository.BulkActionNodeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.GroupRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
+import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
+import cz.tacr.elza.repository.PartyNameComplementRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PermissionRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationEntityRepository;
+import cz.tacr.elza.repository.RelationRepository;
+import cz.tacr.elza.repository.UnitdateRepository;
+import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.SettingsService;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 /**
@@ -148,6 +218,9 @@ public class ClientFactoryVO {
     @Autowired
     private BulkActionNodeRepository bulkActionNodeRepository;
 
+    @Autowired
+    private ComplementTypeRepository complementTypeRepository;
+
     /**
      * Vytvoří objekt informací o přihlášeném uživateli.
      * @param userDetail detail objekt
@@ -211,6 +284,13 @@ public class ClientFactoryVO {
         return mapper.map(template, RulTemplateVO.class);
     }
 
+    private void nameBuilderHelper(StringBuilder a, String b) {
+        if (b != null) {
+            a.append(b);
+            a.append(" ");
+        }
+    }
+
     /**
      * Vytvoří detailní objekt osoby. Načte všechna navázaná data.
      *
@@ -224,9 +304,13 @@ public class ClientFactoryVO {
 
 
         //partyNames
-        result.setPartyNames(createList(partyNameRepository.findByParty(party), ParPartyNameVO.class, (n) ->
-                        createParPartyNameDetail(n)
-        ));
+        result.setPartyNames(createList(partyNameRepository.findByParty(party), ParPartyNameVO.class, this::createParPartyNameDetail));
+
+        List<ParPartyNameVO> collect = result.getPartyNames().stream().filter(ParPartyNameVO::isPrefferedName).collect(Collectors.toList());
+        ParPartyNameVO prefferedName = null;
+        if (collect != null && !collect.isEmpty()) {
+            prefferedName = collect.get(0);
+        }
 
         result.getPartyNames().sort((a, b) -> {
                     if (a.isPrefferedName()) {
@@ -240,6 +324,44 @@ public class ClientFactoryVO {
                 }
         );
 
+        if (prefferedName != null) {
+            List<ParComplementType> all = complementTypeRepository.findAll();
+            Map<Integer, ParComplementType> map = all.stream().collect(Collectors.toMap(ParComplementType::getComplementTypeId, i -> i));
+
+            StringBuilder nameBuilder = new StringBuilder();
+            nameBuilderHelper(nameBuilder, prefferedName.getDegreeBefore());
+            nameBuilderHelper(nameBuilder, prefferedName.getMainPart());
+            nameBuilderHelper(nameBuilder, prefferedName.getOtherPart());
+
+            String roman = null, geoAddon = null, addon = null;
+
+            if (prefferedName.getPartyNameComplements() != null && !prefferedName.getPartyNameComplements().isEmpty()) {
+                for (ParPartyNameComplementVO b : prefferedName.getPartyNameComplements()) {
+                    ParComplementType type = map.get(b.getComplementTypeId());
+                    if (type != null) {
+                        if (type.getCode().equals("2")) {
+                            addon = b.getComplement();
+                        } else if (type.getCode().equals("3")) {
+                            roman = b.getComplement();
+                        } else if (type.getCode().equals("4")) {
+                            geoAddon = b.getComplement();
+                        }
+                    }
+                }
+            }
+
+            nameBuilderHelper(nameBuilder, roman);
+            nameBuilderHelper(nameBuilder, geoAddon);
+            nameBuilderHelper(nameBuilder, addon);
+
+            if (prefferedName.getDegreeAfter() != null) {
+                nameBuilder.deleteCharAt(nameBuilder.length()-1);
+                nameBuilder.append(", ");
+                nameBuilder.append(prefferedName.getDegreeAfter());
+            }
+
+            result.setName(nameBuilder.toString());
+        }
 
         result.setRelations(createPartyRelations(party));
         result.setCreators(createPartyList(partyRepository.findCreatorsByParty(party)));
@@ -259,8 +381,6 @@ public class ClientFactoryVO {
         }
 
         //načtení dat do session
-        unitdateRepository.findForFromTimeRangeByParties(parties);
-        unitdateRepository.findForToTimeRangeByParties(parties);
         unitdateRepository.findForFromPartyNameByParties(parties);
         unitdateRepository.findForToPartyNameByParties(parties);
         recordRepository.findByParties(parties);
@@ -381,7 +501,7 @@ public class ClientFactoryVO {
      * @return seznam rejstříkových hesel
      */
     public List<RegRecordVO> createRegRecords(final List<RegRecord> records,
-                                              final Map<Integer, Integer> recordIdPartyIdMap, boolean fillParents,
+                                              final Map<Integer, Integer> recordIdPartyIdMap, final boolean fillParents,
                                               @Nullable final RegRecord fillToParent) {
         List<RegRecordVO> result = new ArrayList<>(records.size());
         for (final RegRecord record : records) {
@@ -403,7 +523,7 @@ public class ClientFactoryVO {
      */
     public RegRecordVO createRegRecord(final RegRecord regRecord,
                                        @Nullable final Integer partyId,
-                                       boolean fillParents, final RegRecord fillToParent) {
+                                       final boolean fillParents, final RegRecord fillToParent) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RegRecordVO result = mapper.map(regRecord, RegRecordVO.class);
         result.setPartyId(partyId);
@@ -743,7 +863,7 @@ public class ClientFactoryVO {
      * @param fundVersion verze archivní pomůcky
      * @return VO verze archivní pomůcky
      */
-    public ArrFundVersionVO createFundVersion(ArrFundVersion fundVersion) {
+    public ArrFundVersionVO createFundVersion(final ArrFundVersion fundVersion) {
         Assert.notNull(fundVersion);
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
@@ -1425,7 +1545,7 @@ public class ClientFactoryVO {
         return mapper.map(outputType, RulOutputTypeVO.class);
     }
 
-    public List<BulkActionRunVO> createBulkActionsList(List<ArrBulkActionRun> allBulkActions) {
+    public List<BulkActionRunVO> createBulkActionsList(final List<ArrBulkActionRun> allBulkActions) {
         return createList(allBulkActions, BulkActionRunVO.class, this::createBulkActionRun);
     }
 
@@ -1541,7 +1661,7 @@ public class ClientFactoryVO {
      * @param file DO
      * @return VO
      */
-    public DmsFileVO createDmsFile(DmsFile file) {
+    public DmsFileVO createDmsFile(final DmsFile file) {
         return mapperFactory.getMapperFacade().map(file, DmsFileVO.class);
     }
 
@@ -1550,7 +1670,7 @@ public class ClientFactoryVO {
      * @param filesList List DO
      * @return List VO
      */
-    public List<DmsFileVO> createDmsFilesList(List<DmsFile> filesList) {
+    public List<DmsFileVO> createDmsFilesList(final List<DmsFile> filesList) {
         return createList(filesList, DmsFileVO.class, this::createDmsFile);
     }
 
@@ -1559,7 +1679,7 @@ public class ClientFactoryVO {
      * @param file DO
      * @return VO
      */
-    public ArrFileVO createArrFile(ArrFile file) {
+    public ArrFileVO createArrFile(final ArrFile file) {
         return mapperFactory.getMapperFacade().map(file, ArrFileVO.class);
     }
 
@@ -1568,7 +1688,7 @@ public class ClientFactoryVO {
      * @param filesList List DO
      * @return List VO
      */
-    public List<ArrFileVO> createArrFilesList(List<ArrFile> filesList) {
+    public List<ArrFileVO> createArrFilesList(final List<ArrFile> filesList) {
         return createList(filesList, ArrFileVO.class, this::createArrFile);
     }
 
@@ -1577,7 +1697,7 @@ public class ClientFactoryVO {
      * @param file DO
      * @return VO
      */
-    public ArrOutputFileVO createArrOutputFile(ArrOutputFile file) {
+    public ArrOutputFileVO createArrOutputFile(final ArrOutputFile file) {
         return mapperFactory.getMapperFacade().map(file, ArrOutputFileVO.class);
     }
 
@@ -1586,7 +1706,7 @@ public class ClientFactoryVO {
      * @param filesList List DO
      * @return List VO
      */
-    public List<ArrOutputFileVO> createArrOutputFilesList(List<ArrOutputFile> filesList) {
+    public List<ArrOutputFileVO> createArrOutputFilesList(final List<ArrOutputFile> filesList) {
         return createList(filesList, ArrOutputFileVO.class, this::createArrOutputFile);
     }
 

@@ -12,7 +12,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {RibbonGroup, RibbonSplit, i18n, Icon, Ribbon, ModalDialog, NodeTabs, PartySearch, AbstractReactComponent} from 'components/index.jsx';
+import {RibbonGroup, RibbonSplit, i18n, Icon, Ribbon, ModalDialog, NodeTabs, AbstractReactComponent} from 'components/index.jsx';
 import {ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {developerSet} from 'actions/global/developer.jsx'

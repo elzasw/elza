@@ -9,7 +9,6 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {refRegistryListFetchIfNeeded} from 'actions/refTables/registryRegionList.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {Combobox} from 'react-input-enhancements'
 
 import './PartyFormStyles.less';
 

@@ -1,12 +1,5 @@
-/**
- * Správa souborů.
- */
-
-require('./FundFiles.less')
-
 import React from 'react';
 import ReactDOM from 'react-dom';
-
 import {connect} from 'react-redux'
 import {AbstractReactComponent, Icon, i18n, FileListBox, Loading, AddFileForm, FormInput} from 'components/index.jsx';
 import {Button} from 'react-bootstrap'
@@ -14,66 +7,69 @@ import {fetchFundFilesIfNeeded, fundFilesFilterByText, fundFilesCreate, fundFile
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {UrlFactory} from 'actions/index.jsx';
 
-var _ReplaceId = null;
+import './FundFiles.less'
 
-const FundFiles = class FundFiles extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+let _ReplaceId = null;
 
-        this.bindMethods(
-            'handleTextSearch',
-            'handleDelete',
-            'handleCreate',
-            'handleCreateSubmit',
-            'handleDownload',
-            'handleReplace',
-            'handleReplaceSubmit',
-            'focus'
-        );
+/**
+ * Správa souborů.
+ */
+class FundFiles extends AbstractReactComponent {
 
-        this.state = {
-            selectedId:0
-        }
-    }
+    static PropTypes = {
+        fundId: React.PropTypes.number.isRequired,
+        versionId: React.PropTypes.number.isRequired,
+        files: React.PropTypes.array,
+        filterText: React.PropTypes.string.isRequired,
+        fetched: React.PropTypes.bool.isRequired
+    };
+
+    state = {
+        selectedId: 0
+    };
 
     componentDidMount() {
-        const {versionId, fundId} = this.props;
-        this.dispatch(fetchFundFilesIfNeeded(versionId, fundId));
+        this.fetchIfNeeded();
     }
 
     componentWillReceiveProps(nextProps) {
-        const {versionId, fundId} = this.props;
-        this.dispatch(fetchFundFilesIfNeeded(versionId, fundId));
+        this.fetchIfNeeded(nextProps);
     }
-    handleTextSearch(text) {
+
+    fetchIfNeeded = (props = this.props) => {
+        const {versionId, fundId} = props;
+        this.dispatch(fetchFundFilesIfNeeded(versionId, fundId));
+    };
+
+    handleTextSearch = (text) => {
         const {versionId} = this.props;
         this.dispatch(fundFilesFilterByText(versionId, text));
-    }
+    };
 
-    handleDelete(id) {
+    handleDelete = (id) => {
         const {fundId, versionId} = this.props;
         this.dispatch(fundFilesDelete(versionId, fundId, id));
-    }
+    };
 
-    handleCreate() {
+    handleCreate = () => {
         this.dispatch(modalDialogShow(this, i18n('dms.file.title.add'), <AddFileForm onSubmitForm={this.handleCreateSubmit.bind(this)} />));
-    }
+    };
 
-    handleCreateSubmit(data) {
+    handleCreateSubmit = (data) => {
         const {fundId} = this.props;
         this.dispatch(fundFilesCreate(fundId, data))
-    }
+    };
 
-    handleDownload(id) {
+    handleDownload = (id) => {
         window.open(UrlFactory.downloadDmsFile(id))
-    }
+    };
 
-    handleReplace(id) {
+    handleReplace = (id) => {
         ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
         _ReplaceId = id;
-    }
+    };
 
-    handleReplaceSubmit(e) {
+    handleReplaceSubmit = (e) => {
         const fileList = e.target.files;
         
         if (fileList.length != 1) {
@@ -84,16 +80,16 @@ const FundFiles = class FundFiles extends AbstractReactComponent {
         this.dispatch(fundFilesReplace(_ReplaceId, file));
         e.target.value = null;
         _ReplaceId = null;
-    }
+    };
 
-    focus() {
+    focus = () => {
         if (this.refs.listBox) {
-            this.refs.listBox.focus()
+            this.refs.listBox.focus();
             return true;
         } else {
             return false;
         }
-    }
+    };
 
     render() {
         const {filterText, fetched, data} = this.props;
@@ -102,36 +98,26 @@ const FundFiles = class FundFiles extends AbstractReactComponent {
             return <Loading/>
         }
 
-        return (
-            <div className='fund-files'>
-                <div className="actions-container">
-                    <div className="actions">
-                        <Button onClick={this.handleCreate} eventKey='add'><Icon glyph='fa-plus' /> {i18n('arr.fund.files.action.add')}</Button>
-                    </div>
+        return <div className='fund-files'>
+            <div className="actions-container">
+                <div className="actions">
+                    <Button onClick={this.handleCreate} eventKey='add'><Icon glyph='fa-plus' /> {i18n('arr.fund.files.action.add')}</Button>
                 </div>
-                <FormInput className="hidden" type="file" ref='uploadInput' onChange={this.handleReplaceSubmit} />
-
-                <FileListBox
-                    ref="listBox"
-                    items={data.list}
-                    searchable
-                    filterText={filterText}
-                    onSearch={this.handleTextSearch}
-                    onDownload={this.handleDownload}
-                    onReplace={this.handleReplace}
-                    onDelete={this.handleDelete}
-                />
             </div>
-        )
+            <FormInput className="hidden" type="file" ref='uploadInput' onChange={this.handleReplaceSubmit} />
+
+            <FileListBox
+                ref="listBox"
+                items={data.rows}
+                searchable
+                filterText={filterText}
+                onSearch={this.handleTextSearch}
+                onDownload={this.handleDownload}
+                onReplace={this.handleReplace}
+                onDelete={this.handleDelete}
+            />
+        </div>
     }
-};
+}
 
-FundFiles.propTypes = {
-    fundId: React.PropTypes.number.isRequired,
-    versionId: React.PropTypes.number.isRequired,
-    files: React.PropTypes.array,
-    filterText: React.PropTypes.string.isRequired,
-    fetched: React.PropTypes.bool.isRequired
-};
-
-module.exports = connect(null, null, null, { withRef: true })(FundFiles);
+export default connect(null, null, null, { withRef: true })(FundFiles);

@@ -5,7 +5,7 @@
 'use strict'
 
 // Import css Bootstrapu
-require('./elza-styles.less');
+import './elza-styles.less';
 
 import React from 'react';
 import { render } from 'react-dom';
@@ -18,8 +18,12 @@ import {userDetailChange} from 'actions/user/userDetail.jsx'
 
 // Globální init
 Utils.init();
+// es6-symbol polyfill nefunguje s kodem vygenerovanym pres babel (for-of iterace), musime pouzit core-js
+require('core-js/fn/symbol');
+require('core-js/fn/array');
 const es6promise = require('es6-promise');
 //var es5Shim = require('es5-shim');
+es6promise.polyfill();
 
 // Nastavení neomezeného počtu listenerů pro event emitter - v ELZA je emitter použit pro klávesové zkratky, kde je více listenerů
 const EventEmitter = require('events').EventEmitter;
@@ -69,18 +73,18 @@ import SplitToggle from './node_modules/react-bootstrap/lib/SplitToggle';
 SplitToggle.defaultProps = {
     ...SplitToggle.defaultProps,
     tabIndex: -1
-}
+};
 
 // Pokud dostane focus body, chceme jej změnit na implcitiní focus pro ribbon
 import {setFocus} from 'actions/global/focus.jsx';
 {
-    function testBodyfocus() {
+    const testBodyfocus = () => {
         if (document.activeElement === document.body) { // focus je na body, nastavíme ho podle aktuálně přepnuté oblasti
             AppStore.store.dispatch(setFocus(null, 1));
         }
 
         setTimeout(testBodyfocus, 150)
-    }
+    };
     //testBodyfocus()
 }
 /*

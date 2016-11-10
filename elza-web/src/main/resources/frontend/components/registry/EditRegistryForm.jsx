@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Autocomplete, DropDownTree, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, Autocomplete, FormInput} from 'components/index.jsx';
 import {Modal, Button, Form} from 'react-bootstrap';
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList.jsx'
@@ -63,7 +63,7 @@ class EditRegistryForm extends AbstractReactComponent {
                     {...registerTypeId}
                     {...decorateFormField(registerTypeId)}
                     onChange={(id, item) => registerTypeId.onChange(id)}
-                    onBlur={(id, item) => registerTypeId.onBlur(value ? value.id : null)}
+                    onBlur={(id, item) => registerTypeId.onBlur(id)}
                     value={value}
                     disabled={parentRecordId != null}
                 />

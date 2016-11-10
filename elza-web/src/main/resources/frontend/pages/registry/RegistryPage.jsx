@@ -1,34 +1,29 @@
-/**
- * Stránka rejstříků.
- * Zobrazuje stranku s vyberem rejstriku a jeho detailem/editaci
- */
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-require('./RegistryPage.less');
 const classNames = require('classnames');
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components/index.jsx';
 import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
-        SearchWithGoto, RegistryPanel, DropDownTree, AddRegistryForm, ImportForm,
+        SearchWithGoto, RegistryPanel, AddRegistryForm, ImportForm,
         ListBox, Autocomplete} from 'components';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {registryRegionDataSelectRecord,
-        registrySearchData,
-        registryClearSearch,
-        registryChangeParent,
-        registryDeleteRegistry,
-        registryStartMove,
-        registryCancelMove,
-        registryUnsetParents,
-        registryRecordUpdate,
-        registryRecordMove,
-        registryDelete
+import {
+    registryRegionDataSelectRecord,
+    registrySearchData,
+    registryClearSearch,
+    registryChangeParent,
+    registryDeleteRegistry,
+    registryStartMove,
+    registryCancelMove,
+    registryUnsetParents,
+    registryRecordUpdate,
+    registryRecordMove,
+    registryDelete
 } from 'actions/registry/registryRegionData.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {
@@ -48,6 +43,8 @@ import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {getTreeItemById} from "./../../components/registry/registryUtils";
 
+import './RegistryPage.less';
+
 const keyModifier = Utils.getKeyModifier();
 
 const keymap = {
@@ -62,7 +59,24 @@ const keymap = {
 };
 const shortcutManager = new ShortcutsManager(keymap);
 
-const RegistryPage = class RegistryPage extends AbstractReactComponent {
+/**
+ * Stránka rejstříků.
+ * Zobrazuje stranku s vyberem rejstriku a jeho detailem/editaci
+ */
+class RegistryPage extends AbstractReactComponent {
+
+    static PropTypes = {
+        splitter: React.PropTypes.object.isRequired,
+        registryRegion: React.PropTypes.object.isRequired,
+        refTables: React.PropTypes.object.isRequired,
+        focus: React.PropTypes.object.isRequired,
+        userDetail: React.PropTypes.object.isRequired
+    };
+
+    static childContextTypes = {
+        shortcuts: React.PropTypes.object.isRequired
+    };
+
     constructor(props) {
         super(props);
 
@@ -95,15 +109,15 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
         );
     }
 
+    componentDidMount() {
+        this.initData();
+    }
+
     componentWillReceiveProps(nextProps) {
         this.initData(nextProps);
     }
 
-    componentDidMount() {
-        this.initData(this.props);
-    }
-
-    initData(props) {
+    initData(props = this.props) {
         const {registryRegion: {filterText, registryParentId, registryTypesId, panel: {versionId}}} = props;
         this.dispatch(fetchRegistryIfNeeded(filterText, registryParentId, registryTypesId, versionId));
         this.dispatch(refRecordTypesFetchIfNeeded());
@@ -536,23 +550,19 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
             </div>
         );
 
-        const centerPanel = (
-            <div className='registry-page'>
-                <RegistryPanel selectedId={selectedId}/>
-            </div>
-        );
+        const centerPanel = <div className='registry-page'>
+            <RegistryPanel selectedId={selectedId}/>
+        </div>;
 
-        return (
-            <Shortcuts name='Registry' handler={this.handleShortcuts}>
-                <PageLayout
-                    splitter={splitter}
-                    key='registryPage'
-                    ribbon={this.buildRibbon()}
-                    leftPanel={leftPanel}
-                    centerPanel={centerPanel}
-                />
-            </Shortcuts>
-        )
+        return <Shortcuts name='Registry' handler={this.handleShortcuts}>
+            <PageLayout
+                splitter={splitter}
+                key='registryPage'
+                ribbon={this.buildRibbon()}
+                leftPanel={leftPanel}
+                centerPanel={centerPanel}
+            />
+        </Shortcuts>
     }
 };
 
@@ -567,16 +577,4 @@ function mapStateToProps(state) {
     }
 }
 
-RegistryPage.propTypes = {
-    splitter: React.PropTypes.object.isRequired,
-    registryRegion: React.PropTypes.object.isRequired,
-    refTables: React.PropTypes.object.isRequired,
-    focus: React.PropTypes.object.isRequired,
-    userDetail: React.PropTypes.object.isRequired
-};
-
-RegistryPage.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
-};
-
-module.exports = connect(mapStateToProps)(RegistryPage);
+export default connect(mapStateToProps)(RegistryPage);

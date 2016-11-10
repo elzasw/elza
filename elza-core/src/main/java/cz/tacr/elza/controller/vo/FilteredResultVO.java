@@ -13,33 +13,33 @@ import java.util.List;
  */
 public class FilteredResultVO<T> {
     /** Celkový počet záznamů pro daná kriteria hledání. */
-    private long totalCount;
+    private long count;
 
     /** Seznam objektů. */
     @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-    private List<T> list;
+    private List<T> rows;
 
     public FilteredResultVO() {
     }
 
-    public FilteredResultVO(final List<T> list, final long totalCount) {
-        this.totalCount = totalCount;
-        this.list = list;
+    public FilteredResultVO(final List<T> rows, final long count) {
+        this.count = count;
+        this.rows = rows;
     }
 
-    public long getTotalCount() {
-        return totalCount;
+    public long getCount() {
+        return count;
     }
 
-    public void setTotalCount(final long totalCount) {
-        this.totalCount = totalCount;
+    public void setCount(final long count) {
+        this.count = count;
     }
 
-    public List<T> getList() {
-        return list;
+    public List<T> getRows() {
+        return rows;
     }
 
-    public void setList(final List<T> list) {
-        this.list = list;
+    public void setRows(final List<T> rows) {
+        this.rows = rows;
     }
 }

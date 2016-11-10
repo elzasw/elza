@@ -188,12 +188,16 @@ VirtualList.getItems = function(viewTop, viewHeight, listTop, itemHeight, itemCo
     
     // list is below viewport
     if (viewBox.bottom < listBox.top) return {
-        itemsInView: 0
+        //firstItemIndex: 0,
+        itemsInView: 0,
+        //lastItemIndex: 0
     };
     
     // list is above viewport
     if (viewBox.top > listBox.bottom) return {
-        itemsInView: 0
+        firstItemIndex: 0,
+        itemsInView: 0,
+        lastItemIndex: 0
     };
     
     var listViewBox = VirtualList.getBox(viewBox, listBox);

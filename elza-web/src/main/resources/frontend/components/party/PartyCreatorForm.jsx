@@ -91,9 +91,9 @@ class PartyCreatorForm extends AbstractReactComponent {
         text = text == "" ? null : text;
 
         WebApi.findPartyForParty(this.props.partyId, text)
-                .then(json => {
+                .then(res => {
                     this.setState({
-                        partyList: json.map(party => {
+                        partyList: res.rows.map(party => {
                             return {
                                 id: party.partyId,
                                 name: party.record.record,

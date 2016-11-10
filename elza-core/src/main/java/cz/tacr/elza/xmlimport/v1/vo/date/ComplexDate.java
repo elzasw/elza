@@ -38,11 +38,15 @@ public class ComplexDate {
     @XmlElement(name = "specific-date-to")
     private Date specificDateTo;
 
+    /** Poznámka. */
+    @XmlElement(name = "note")
+    private String note;
+
     public Date getSpecificDate() {
         return specificDate;
     }
 
-    public void setSpecificDate(Date specificDate) {
+    public void setSpecificDate(final Date specificDate) {
         this.specificDate = specificDate;
     }
 
@@ -50,7 +54,7 @@ public class ComplexDate {
         return textDate;
     }
 
-    public void setTextDate(String textDate) {
+    public void setTextDate(final String textDate) {
         this.textDate = textDate;
     }
 
@@ -58,7 +62,7 @@ public class ComplexDate {
         return specificDateFrom;
     }
 
-    public void setSpecificDateFrom(Date specificDateFrom) {
+    public void setSpecificDateFrom(final Date specificDateFrom) {
         this.specificDateFrom = specificDateFrom;
     }
 
@@ -66,8 +70,16 @@ public class ComplexDate {
         return specificDateTo;
     }
 
-    public void setSpecificDateTo(Date specificDateTo) {
+    public void setSpecificDateTo(final Date specificDateTo) {
         this.specificDateTo = specificDateTo;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(final String note) {
+        this.note = note;
     }
 
     @Override

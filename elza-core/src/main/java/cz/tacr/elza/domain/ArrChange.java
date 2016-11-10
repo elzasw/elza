@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  */
 @Entity(name = "arr_change")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrChange implements cz.tacr.elza.api.ArrChange<UsrUser, ArrLevel> {
+public class ArrChange implements cz.tacr.elza.api.ArrChange<UsrUser, ArrNode> {
 
     @Id
     @GeneratedValue
@@ -26,9 +26,9 @@ public class ArrChange implements cz.tacr.elza.api.ArrChange<UsrUser, ArrLevel> 
     @JoinColumn(name = "userId", nullable = true)
     private UsrUser user;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrLevel.class)
-    @JoinColumn(name = "primaryLevelId", nullable = true)
-    private ArrLevel primaryLevel;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
+    @JoinColumn(name = "primaryNodeId", nullable = true)
+    private ArrNode primaryNode;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 25, nullable = true)
@@ -75,13 +75,13 @@ public class ArrChange implements cz.tacr.elza.api.ArrChange<UsrUser, ArrLevel> 
     }
 
     @Override
-    public ArrLevel getPrimaryLevel() {
-        return primaryLevel;
+    public ArrNode getPrimaryNode() {
+        return primaryNode;
     }
 
     @Override
-    public void setPrimaryLevel(final ArrLevel primaryLevel) {
-        this.primaryLevel = primaryLevel;
+    public void setPrimaryNode(final ArrNode primaryNode) {
+        this.primaryNode = primaryNode;
     }
 
     @Override

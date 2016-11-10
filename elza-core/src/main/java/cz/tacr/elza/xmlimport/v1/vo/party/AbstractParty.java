@@ -7,8 +7,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlID;
-import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
@@ -19,7 +17,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.utils.PartyType;
 import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
-import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
 import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 
 /**
@@ -34,13 +31,14 @@ import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 public abstract class AbstractParty {
 
     /** Pro vazbu z hodnoty party_ref. */
-    @XmlID
     @XmlAttribute(name = "party-id", required = true)
     private String partyId;
 
     /** Vazba na rejstřík. */
-    @XmlIDREF
     @XmlAttribute(name = "record-id", required = true)
+    private String recordId;
+
+    @XmlTransient
     private Record record;
 
     /** Kód typu osoby. */
@@ -64,22 +62,12 @@ public abstract class AbstractParty {
     @XmlElement(name = "source-informations")
     private String sourceInformations;
 
-    /**
-     * Působnost od.
-     */
-    @XmlElement(name = "from-date")
-    private ComplexDate fromDate;
-
-    /**
-     * Působnost do.
-     */
-    @XmlElement(name = "to-date")
-    private ComplexDate toDate;
-
     /** Autoři. */
-    @XmlIDREF
     @XmlElement(name = "creator")
     @XmlElementWrapper(name = "creator-name-list")
+    private List<String> creatorIds;
+
+    @XmlTransient
     private List<AbstractParty> creators;
 
     /** Vztahy. */
@@ -129,22 +117,6 @@ public abstract class AbstractParty {
 
     public void setPreferredName(final PartyName prefferedName) {
         this.preferredName = prefferedName;
-    }
-
-    public ComplexDate getFromDate() {
-        return fromDate;
-    }
-
-    public void setFromDate(final ComplexDate fromDate) {
-        this.fromDate = fromDate;
-    }
-
-    public ComplexDate getToDate() {
-        return toDate;
-    }
-
-    public void setToDate(final ComplexDate toDate) {
-        this.toDate = toDate;
     }
 
     public String getHistory() {
@@ -211,5 +183,21 @@ public abstract class AbstractParty {
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    public String getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(final String recordId) {
+        this.recordId = recordId;
+    }
+
+    public List<String> getCreatorIds() {
+        return creatorIds;
+    }
+
+    public void setCreatorIds(final List<String> creatorIds) {
+        this.creatorIds = creatorIds;
     }
 }

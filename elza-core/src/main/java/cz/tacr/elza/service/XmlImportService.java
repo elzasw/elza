@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -144,6 +147,7 @@ import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitId;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Fund;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Level;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Packet;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.PacketState;
 import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
 import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Dynasty;
@@ -175,6 +179,9 @@ public class XmlImportService {
 
     @Autowired
     private PartyService partyService;
+
+    @Autowired
+    private RegistryService registryServiceService;
 
     @Autowired
     private ExternalSourceRepository externalSourceRepository;
@@ -612,7 +619,6 @@ public class XmlImportService {
     }
 
     private ArrDescItem createArrDescItem(final ArrChange change, final ArrNode node, final AbstractDescItem descItem) throws LevelImportException {
-
         String descItemTypeCode = descItem.getDescItemTypeCode();
         RulItemType descItemType = null;
         if (descItemTypeCode !=  null) {
@@ -820,7 +826,9 @@ public class XmlImportService {
     private ArrPacket importPacket(final Packet packet, final ArrFund fund, final boolean stopOnError) throws InvalidDataException {
         ArrPacket arrPacket = new ArrPacket();
         arrPacket.setFund(fund);
-        arrPacket.setState(packet.getState());
+
+        PacketState packetState = packet.getState();
+        arrPacket.setState(ArrPacket.State.valueOf(packetState.name()));
 
         String packetTypeCode = packet.getPacketTypeCode();
         if (packetTypeCode != null) {
@@ -989,8 +997,8 @@ public class XmlImportService {
         return parRelation;
     }
 
-    private ParRelationEntity createRoleType(final Map<String, RegRecord> xmlIdIntIdRecordMap, final ParRelation parRelation, final RoleType roleType)
-            throws PartyImportException {
+    private ParRelationEntity createRoleType(final Map<String, RegRecord> xmlIdIntIdRecordMap, final ParRelation parRelation,
+            final RoleType roleType) throws PartyImportException {
         ParRelationEntity parRelationEntity = new ParRelationEntity();
         Record record = roleType.getRecord();
         RegRecord regRecord = xmlIdIntIdRecordMap.get(record.getRecordId());
@@ -1007,31 +1015,25 @@ public class XmlImportService {
             throw new PartyImportException("Nebyl nalezen seznam rolí entit ve vztahu s kódem " + roleTypeCode);
         }
         parRelationEntity.setRoleType(parRelationRoleType);
+        parRelationEntity.setNote(roleType.getNote());
 
         return parRelationEntity;
     }
 
-    private ParRelation createRelation(final ParParty parParty, final Relation relation, final boolean stopOnError) throws PartyImportException,
-            InvalidDataException {
+    private ParRelation createRelation(final ParParty parParty, final Relation relation, final boolean stopOnError)
+            throws PartyImportException, InvalidDataException {
         ParRelation parRelation = new ParRelation();
 
 
         String relationTypeCode = relation.getRelationTypeCode();
         String classTypeCode = relation.getClassTypeCode();
 
-        ParRelationType parRelationType;
-        if (classTypeCode == null) {
-            parRelationType = relationTypeRepository.findByCodeAndClassTypeIsNull(relationTypeCode);
-            if (parRelationType ==  null) {
-                throw new PartyImportException("Nebyl nalezen typ vztahu s kódem " + relationTypeCode);
-            }
-        } else {
-            parRelationType = relationTypeRepository.findByCodeAndClassType(relationTypeCode, classTypeCode);
-            if (parRelationType ==  null) {
-                throw new PartyImportException("Nebyl nalezen typ vztahu s kódem " + relationTypeCode
-                        + " a s třídou " + classTypeCode);
-            }
+        ParRelationType parRelationType = relationTypeRepository.findByCodeAndClassTypeCode(relationTypeCode, classTypeCode);
+        if (parRelationType ==  null) {
+            throw new PartyImportException("Nebyl nalezen typ vztahu s kódem " + relationTypeCode
+                    + " a s třídou " + classTypeCode);
         }
+
         parRelation.setComplementType(parRelationType);
 
         parRelation.setDateNote(XmlImportUtils.trimStringValue(relation.getDateNote(), StringLength.LENGTH_1000, stopOnError));
@@ -1190,8 +1192,6 @@ public class XmlImportService {
 
         parParty.setHistory(party.getHistory());
         parParty.setSourceInformation(party.getSourceInformations());
-        parParty.setFrom(importComplexDate(party.getFromDate()));
-        parParty.setTo(importComplexDate(party.getFromDate()));
     }
 
     private ParPartyName importPartyName(final PartyName partyName, final ParParty parParty, final boolean stopOnError, final List<ParComplementType> partyComplementTypes) throws InvalidDataException, PartyImportException {
@@ -1292,52 +1292,91 @@ public class XmlImportService {
 
     private void importRecord(final Record record, final RegRecord parent, final boolean stopOnError, final Set<String> usedRecords,
             final Map<String, RegRecord> xmlIdIntIdRecordMap, final RegScope regScope) throws RecordImportException, InvalidDataException {
+        String uuid = record.getUuid();
         String externalId = record.getExternalId();
         String externalSourceCode = record.getExternalSourceCode();
-        RegRecord regRecord;
+        RegRecord regRecord = null;
         boolean isNew = false;
+        boolean update = false;
 
-        if (record.isLocal()) {
-            // vytvořit lokální
-            checkRequiredAttributes(record);
-            regRecord = createRecord(null, null, regScope, stopOnError);
-            isNew = true;
-        } else if (externalId != null && externalSourceCode != null) {
-            // zkusit napárovat -> update, create
-            regRecord = recordRepository.findRegRecordByExternalIdAndExternalSourceCode(externalId, externalSourceCode);
-            if (regRecord == null) {
-                if (stopOnError) {
-                    checkRequiredAttributes(record);
-                }
-                regRecord = createRecord(externalId, externalSourceCode, regScope, stopOnError);
-                isNew = true;
-            }
-        } else {
-            throw new RecordImportException("Globální rejstřík s identifikátorem " + record.getRecordId()
-                    + " nemá vyplněné externí id nebo typ zdroje.");
+        if (!record.isLocal()) {
+            regRecord = findExistingRecord(record.getRecordId(), uuid, externalId, externalSourceCode);
         }
 
-        updateRecord(record, regRecord, parent, stopOnError);
-        regRecord = recordRepository.save(regRecord);
-        xmlIdIntIdRecordMap.put(record.getRecordId(), regRecord);
-        syncVariantRecords(record, regRecord, isNew, stopOnError);
+        if (regRecord == null) { // je lokální nebo se páruje podle uuid nebo externalId a externalSourceCode a nenajde se
+            if (stopOnError) {
+                checkRequiredAttributes(record);
+            }
+            regRecord = createRecord(externalId, externalSourceCode, regScope, stopOnError, uuid);
+            isNew = true;
+            update = true;
+        } else {
+            update = isRecordInXmlNewer(record, regRecord);
+        }
 
-        if (record.getRecords() != null) {
-            for (Record subRecord : record.getRecords()) {
-                if (usedRecords.contains(record.getRecordId())) {
-                    try {
-                        importRecord(subRecord, regRecord, stopOnError, usedRecords, xmlIdIntIdRecordMap, regScope);
-                    } catch (NonFatalXmlImportException e) {
-                        if (stopOnError) {
-                            throw e;
+        if (update) {
+            updateRecord(record, regRecord, parent, stopOnError);
+            boolean partySave = false;
+            if (isNew) {
+                partySave = regRecord.getRegisterType().getPartyType() != null;
+            }
+            regRecord = registryServiceService.saveRecord(regRecord, partySave);
+            syncVariantRecords(record, regRecord, isNew, stopOnError);
+
+            if (record.getRecords() != null) {
+                for (Record subRecord : record.getRecords()) {
+                    if (usedRecords.contains(record.getRecordId())) {
+                        try {
+                            importRecord(subRecord, regRecord, stopOnError, usedRecords, xmlIdIntIdRecordMap, regScope);
+                        } catch (NonFatalXmlImportException e) {
+                            if (stopOnError) {
+                                throw e;
+                            }
                         }
                     }
-                }
-            };
+                };
+            }
+        }
+        xmlIdIntIdRecordMap.put(record.getRecordId(), regRecord);
+    }
+
+    /**
+     * Zjistí zda je importovaný rejstřík novější než ten v db.
+     *
+     * @param record
+     * @param regRecord
+     *
+     * @return příznak zda je importovaný rejstřík novější než ten v db
+     */
+    private boolean isRecordInXmlNewer(final Record record, final RegRecord regRecord) {
+        boolean isRecordInXmlNewer = false;
+
+        Date lastUpdate = record.getLastUpdate();
+        if (lastUpdate == null) { // last update je aktuální čas a  datum
+            isRecordInXmlNewer = true;
+        } else {
+            LocalDateTime xmlLastUpdate = LocalDateTime.ofInstant(lastUpdate.toInstant(), ZoneId.systemDefault());
+
+            isRecordInXmlNewer = xmlLastUpdate.isAfter(regRecord.getLastUpdate());
+        }
+
+        return isRecordInXmlNewer;
+    }
+
+    private RegRecord findExistingRecord(final String recordId, final String uuid, final String externalId, final String externalSourceCode)
+        throws RecordImportException {
+        if (uuid != null) {
+            return recordRepository.findRegRecordByUuid(uuid);
+        } else if (externalId != null && externalSourceCode != null) {
+            return recordRepository.findRegRecordByExternalIdAndExternalSourceCode(externalId, externalSourceCode);
+        } else {
+            throw new RecordImportException("Globální rejstřík s identifikátorem " + recordId
+                    + " nemá vyplněné uuid nebo externí id a typ zdroje.");
         }
     }
 
-    private void syncVariantRecords(final Record record, final RegRecord regRecord, final boolean isNew, final boolean stopOnError) throws InvalidDataException {
+    private void syncVariantRecords(final Record record, final RegRecord regRecord, final boolean isNew, final boolean stopOnError)
+        throws InvalidDataException {
         List<RegVariantRecord> existingVariantRecords;
         if (isNew) {
             existingVariantRecords = new ArrayList<>();
@@ -1391,12 +1430,14 @@ public class XmlImportService {
         regRecord.setRegisterType(regType);
     }
 
-    private RegRecord createRecord(final String externalId, final String externalSourceCode, final RegScope regScope, final boolean stopOnError) throws InvalidDataException {
+    private RegRecord createRecord(final String externalId, final String externalSourceCode, final RegScope regScope,
+            final boolean stopOnError, final String uuid) throws InvalidDataException {
         RegRecord regRecord = new RegRecord();
         regRecord.setExternalId(XmlImportUtils.trimStringValue(externalId, StringLength.LENGTH_250, stopOnError));
         regRecord.setScope(regScope);
         RegExternalSource externalSource = externalSourceRepository.findExternalSourceByCode(externalSourceCode);
         regRecord.setExternalSource(externalSource);
+        regRecord.setUuid(uuid);
 
         return regRecord;
     }
@@ -1438,7 +1479,10 @@ public class XmlImportService {
         }
 
         try {
-            return XmlUtils.unmarshallData(is, XmlImport.class);
+            XmlImport data = XmlUtils.unmarshallData(is, XmlImport.class);
+            updateReferences(data);
+
+            return data;
         } catch (JAXBException e) {
             throw new IllegalStateException("Chyba při převodu dat z xml ", e);
         } finally {
@@ -1448,6 +1492,173 @@ public class XmlImportService {
                 logger.error("Chyba při zavírání souboru " + is, ex);
             }
         }
+    }
+
+    /** Podle identifikátorů dosadí do entit objekty. */
+    private void updateReferences(final XmlImport data) {
+        Assert.notNull(data);
+
+        Map<String, Packet> packetMap = getPacketMap(data);
+        Map<String, AbstractParty> partyMap = getPartyMap(data);
+        Map<String, Record> recordMap = getRecordMap(data);
+
+        // uzly a hodnoty
+        updateReferencesInTree(data, packetMap, partyMap, recordMap);
+        // party a RoleType
+        updateParties(data, partyMap, recordMap);
+
+    }
+
+    private void updateParties(final XmlImport data, final Map<String, AbstractParty> partyMap, final Map<String, Record> recordMap) {
+        List<AbstractParty> parties = data.getParties();
+        if (parties == null) {
+            return;
+        }
+
+        for (AbstractParty party : parties) {
+            String recordId = party.getRecordId();
+            Record record = recordMap.get(recordId);
+            if (record == null) {
+                throw new IllegalStateException("Nebyl nalezen rejstřík s identifikátorem " + recordId);
+            }
+            party.setRecord(record);
+
+            List<String> creatorIds = party.getCreatorIds();
+            if (creatorIds != null) {
+                List<AbstractParty> creators = new ArrayList<>(creatorIds.size());
+                party.setCreators(creators);
+
+                for (String creatorId : creatorIds) {
+                    AbstractParty creator = partyMap.get(creatorId);
+                    if (creator == null) {
+                        throw new IllegalStateException("Nebyl nalezens osoba s identifikátorem " + creatorId);
+                    }
+                    creators.add(creator);
+                }
+            }
+
+            List<Relation> events = party.getEvents();
+            if (events == null) {
+                continue;
+            }
+
+            for (Relation event : events) {
+                List<RoleType> roleTypes = event.getRoleTypes();
+                if (roleTypes == null) {
+                    continue;
+                }
+
+                for (RoleType roleType : roleTypes) {
+                    String recordId2 = roleType.getRecordId();
+                    Record record2 = recordMap.get(recordId2);
+                    if (record2 == null) {
+                        throw new IllegalStateException("Nebyl nalezen rejstřík s identifikátorem " + recordId);
+                    }
+                    roleType.setRecord(record2);
+                }
+            }
+        }
+    }
+
+    private void updateReferencesInTree(final XmlImport data, final Map<String, Packet> packetMap,
+            final Map<String, AbstractParty> partyMap, final Map<String, Record> recordMap) {
+        Fund fund = data.getFund();
+        if (fund == null) {
+            return;
+        }
+
+        Level rootLevel = fund.getRootLevel();
+        if (rootLevel == null) {
+            return;
+        }
+
+        updateLevel(rootLevel, packetMap, partyMap, recordMap);
+
+    }
+
+    private void updateLevel(final Level level, final Map<String, Packet> packetMap, final Map<String, AbstractParty> partyMap,
+            final Map<String, Record> recordMap) {
+        if (level.getRecordIds() != null) {
+            List<Record> records = new ArrayList<>(level.getRecordIds().size());
+            level.setRecords(records);
+
+            for (String recordId : level.getRecordIds()) {
+                Record record = recordMap.get(recordId);
+                if (record == null) {
+                    throw new IllegalStateException("Nebyl nalezen rejstřík s identifikátorem " + recordId);
+                }
+                records.add(record);
+            }
+        }
+
+        if (level.getDescItems() != null) {
+            for (AbstractDescItem descItem : level.getDescItems()) {
+                if (descItem instanceof DescItemRecordRef) {
+                    DescItemRecordRef recordRefItem = (DescItemRecordRef) descItem;
+                    String recordId = recordRefItem.getRecordId();
+                    Record record = recordMap.get(recordId);
+                    if (record == null) {
+                        throw new IllegalStateException("Nebyl nalezen rejstřík s identifikátorem " + recordId);
+                    }
+                    recordRefItem.setRecord(record);
+                } else if (descItem instanceof DescItemPartyRef) {
+                    DescItemPartyRef partyRefItem = (DescItemPartyRef) descItem;
+                    String partyId = partyRefItem.getPartyId();
+                    AbstractParty party = partyMap.get(partyId);
+                    if (party == null) {
+                        throw new IllegalStateException("Nebyla nalezena osoba s identifikátorem " + partyId);
+                    }
+                    partyRefItem.setParty(party);
+                } else if (descItem instanceof DescItemPacketRef) {
+                    DescItemPacketRef packetRefItem = (DescItemPacketRef) descItem;
+                    String packetId = packetRefItem.getPacketId();
+                    Packet packet = packetMap.get(packetId);
+                    if (packet == null) {
+                        throw new IllegalStateException("Nebyl nalezen obal s identifikátorem " + packetId);
+                    }
+                    packetRefItem.setPacket(packet);
+                }
+            }
+        }
+
+        if (level.getSubLevels() != null) {
+            for (Level l : level.getSubLevels()) {
+                updateLevel(l, packetMap, partyMap, recordMap);
+            }
+        }
+    }
+
+    private Map<String, Record> getRecordMap(final XmlImport data) {
+        List<Record> records = data.getRecords();
+
+        if (records == null) {
+            return Collections.emptyMap();
+        }
+
+        return records.stream().collect(
+                Collectors.toMap(Record::getRecordId, Function.identity()));
+    }
+
+    private Map<String, AbstractParty> getPartyMap(final XmlImport data) {
+        List<AbstractParty> parties = data.getParties();
+
+        if (parties == null) {
+            return Collections.emptyMap();
+        }
+
+        return parties.stream().collect(
+                Collectors.toMap(AbstractParty::getPartyId, Function.identity()));
+    }
+
+    private Map<String, Packet> getPacketMap(final XmlImport data) {
+        List<Packet> packets = data.getPackets();
+
+        if (packets == null) {
+            return Collections.emptyMap();
+        }
+
+        return packets.stream().collect(
+                Collectors.toMap(Packet::getStorageNumber, Function.identity()));
     }
 
     private File getTransformationFileByName(final String transformationName) {

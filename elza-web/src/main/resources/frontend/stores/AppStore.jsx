@@ -539,7 +539,7 @@ const save = function(store) {
     // result.registryRegion.selectedId = result.registryRegion.registryRegionData.selectedId
 
     const result = {
-        partyRegion: partyRegion(store.partyRegion, action),
+        //partyRegion: partyRegion(store.partyRegion, action),
         registryRegion: registryRegion(store.registryRegion, action),
         arrRegion: arrRegion(store.arrRegion, action),
         fundRegion: fundRegion(store.fundRegion, action),
@@ -557,7 +557,7 @@ inlineFormSupport.addForm("outputEditForm");
 inlineFormSupport.addForm("permissionsEditForm");
 
 // ----------------------------------------------------
-module.exports = {
+export default {
     store,
     save
 };

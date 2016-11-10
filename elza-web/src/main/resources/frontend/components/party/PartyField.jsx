@@ -60,7 +60,7 @@ const PartyField = class PartyField extends AbstractReactComponent {
 
         WebApi.findParty(text, this.props.versionId).then(json => {
             this.setState({
-                partyList: json.records
+                partyList: json.rows
             })
         })
     }

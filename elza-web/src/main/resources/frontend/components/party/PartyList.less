@@ -1,0 +1,62 @@
+@import "~variables.less";
+
+.party-list {
+  padding: 5px;
+  background: @fa-file-tree-bg;
+  border: 1px solid @fa-file-tree-border;
+  border-top: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .arr-panel {
+    margin-bottom: 10px;
+  }
+
+  .party-listbox-container {
+    padding: 0;
+    display: flex;
+    background: @fa-file-tree-bg-list;
+    border: 1px solid @fa-file-tree-border;
+    flex-grow: 1;
+    margin: 0;
+    overflow: hidden;
+    overflow-y: auto;
+
+    .party-listbox {
+      flex-grow: 1;
+      border: 1px solid transparent;
+      overflow: hidden;
+      overflow-y: auto;
+
+      .search-result-row {
+        padding: 5px;
+        list-style-type: none;
+        border-bottom: 1px solid #EEEEEE;
+        display: block;
+        > div {
+          display:flex;
+          .icon {
+            flex: 0;
+            padding: 3px 5px 3px 0;
+          }
+          .name, .date, .description {
+            flex:1;
+            font-size: 0.8em;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+          }
+          .name {
+            flex-grow: 1;
+            font-size: 1em;
+          }
+          .description {
+            flex:2;
+            text-align: right;
+          }
+        }
+      }
+    }
+  }
+}

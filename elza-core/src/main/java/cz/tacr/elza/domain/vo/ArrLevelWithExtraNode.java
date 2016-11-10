@@ -2,7 +2,6 @@ package cz.tacr.elza.domain.vo;
 
 import java.util.List;
 
-import cz.tacr.elza.api.controller.ArrangementManager;
 import cz.tacr.elza.api.vo.ArrLevelPack;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
@@ -13,7 +12,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 /**
  * Zapouzdření {@link cz.tacr.elza.api.ArrLevel}, {@link cz.tacr.elza.api.ArrNode} a id archivní pomůcky.
  * Pro operace ve stromu archivního popisu. Pro různé operace se předpokládá rúzné naplnění/užití tohoto objektu.
- * Popis naplnění je vždy u API metod, viz {@link ArrangementManager}
+ * Popis naplnění je vždy u API metod
  *
  * @author Martin Šlapa
  * @since 28.8.2015

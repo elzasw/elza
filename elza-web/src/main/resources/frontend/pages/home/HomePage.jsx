@@ -17,7 +17,6 @@ import {PageLayout} from 'pages/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {createFund} from 'actions/arr/fund.jsx'
 import {storeLoadData, storeLoad} from 'actions/store/store.jsx'
-import {Combobox} from 'react-input-enhancements'
 import {setInputFocus, dateToString} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 

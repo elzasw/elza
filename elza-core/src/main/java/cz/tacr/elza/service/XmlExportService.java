@@ -4,7 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,6 +33,7 @@ import com.vividsolutions.jts.io.WKTWriter;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.api.ArrPacket.State;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -105,6 +108,7 @@ import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitId;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Fund;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Level;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Packet;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.PacketState;
 import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Dynasty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Event;
@@ -330,10 +334,12 @@ public class XmlExportService {
         Packet packet = new Packet();
 
         RulPacketType packetType = arrPacket.getPacketType();
-		if (packetType != null) {
-			packet.setPacketTypeCode(packetType.getCode());
-		}
-        packet.setState(arrPacket.getState());
+        if (packetType != null) {
+            packet.setPacketTypeCode(packetType.getCode());
+        }
+        State arrPacketState = arrPacket.getState();
+        packet.setState(PacketState.valueOf(arrPacketState.name()));
+
         packet.setStorageNumber(arrPacket.getStorageNumber());
 
         return packet;
@@ -451,7 +457,6 @@ public class XmlExportService {
         }
         party.setEvents(createEvents(parParty.getRelations(), recordMap));
 
-        party.setFromDate(XmlImportUtils.createComplexDate(parParty.getFrom()));
         party.setHistory(parParty.getHistory());
 
         ParInstitution parInstitution = institutionRepository.findByParty(parParty);
@@ -467,7 +472,6 @@ public class XmlExportService {
         party.setRecord(record);
 
         party.setSourceInformations(parParty.getSourceInformation());
-        party.setToDate(XmlImportUtils.createComplexDate(parParty.getTo()));
         List<ParPartyName> partyNames = parParty.getPartyNames();
         if (CollectionUtils.isNotEmpty(partyNames)) {
             List<ParPartyName> namesToExport = new ArrayList<>(partyNames);
@@ -505,7 +509,7 @@ public class XmlExportService {
 
         Relation relation = new Relation();
 
-        relation.setClassTypeCode(parRelation.getComplementType().getClassType());
+        relation.setClassTypeCode(parRelation.getComplementType().getRelationClassType().getCode());
         relation.setDateNote(parRelation.getDateNote());
         relation.setFromDate(XmlImportUtils.createComplexDate(parRelation.getFrom()));
         relation.setNote(parRelation.getNote());
@@ -550,6 +554,7 @@ public class XmlExportService {
         Record record = recordMap.get(parRelationEntity.getRecord().getRecordId());
         roleType.setRecord(record);
         roleType.setRoleTypeCode(parRelationEntity.getRoleType().getCode());
+        roleType.setNote(parRelationEntity.getNote());
         //roleType.setSource(); //nepoužívá se
 
         return roleType;
@@ -941,6 +946,8 @@ public class XmlExportService {
 //        record.setRecordCoordinates(); //zatím se s nimi nepracuje
         record.setRecordId(regRecord.getRecordId().toString());
         record.setRegisterTypeCode(regRecord.getRegisterType().getCode());
+        record.setUuid(regRecord.getUuid());
+        record.setLastUpdate(Date.from(regRecord.getLastUpdate().atZone(ZoneId.systemDefault()).toInstant()));
 
         List<RegVariantRecord> variantRecordList = regRecord.getVariantRecordList();
         if (CollectionUtils.isNotEmpty(variantRecordList)) {

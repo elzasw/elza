@@ -150,36 +150,28 @@ String generateCharacteristics(ParParty party) {
 
     //počátek existence
     ParUnitdate fromDate = null;
-    if(party.getFrom() == null){
-        if(party.getRelations() != null){
-            final ParRelationType.ClassType VZNIK = ParRelationType.ClassType.VZNIK;
-            for (ParRelation relation : party.getRelations()) {
-                if (relation.getComplementType().getClassType().equals(VZNIK.getClassType())
-                        && relation.getFrom() != null) {
-                    fromDate = relation.getFrom();
-                    break;
-                }
+    if(party.getRelations() != null) {
+        final ParRelationClassType.ClassType VZNIK = ParRelationClassType.ClassType.VZNIK;
+        for (ParRelation relation : party.getRelations()) {
+            if (relation.getComplementType().getRelationClassType().getCode().equals(VZNIK.getClassType())
+                    && relation.getFrom() != null) {
+                fromDate = relation.getFrom();
+                break;
             }
         }
-    }else{
-        fromDate = party.getFrom();
     }
 
     //konec existence
     ParUnitdate toDate = null;
-    if(party.getTo() == null){
-        if (party.getRelations() != null) {
-            final ParRelationType.ClassType ZANIK = ParRelationType.ClassType.ZANIK;
-            for (ParRelation relation : party.getRelations()) {
-                if (relation.getComplementType().getClassType().equals(ZANIK.getClassType())
-                        && relation.getTo() != null) {
-                    toDate = relation.getTo();
-                    break;
-                }
+    if (party.getRelations() != null) {
+        final ParRelationClassType.ClassType ZANIK = ParRelationClassType.ClassType.ZANIK;
+        for (ParRelation relation : party.getRelations()) {
+            if (relation.getComplementType().getRelationClassType().getCode().equals(ZANIK.getClassType())
+                    && relation.getTo() != null) {
+                toDate = relation.getTo();
+                break;
             }
         }
-    }else{
-        toDate = party.getTo();
     }
 
     String fromString = fromDate == null ? "" : UnitDateConvertor.convertParUnitDateToString(fromDate);

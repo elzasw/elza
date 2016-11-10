@@ -7,7 +7,7 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParRelationType extends Serializable {
+public interface ParRelationType<CT> extends Serializable {
 
     /**
      * Primární ID.
@@ -25,7 +25,11 @@ public interface ParRelationType extends Serializable {
 
     void setCode(String code);
 
-    String getClassType();
+    CT getRelationClassType();
 
-    void setClassType(String classType);
+    void setRelationClassType(CT relationClassType);
+
+    UseUnitdateEnum getUseUnitdate();
+
+    void setUseUnitdate(UseUnitdateEnum useUnitdate);
 }

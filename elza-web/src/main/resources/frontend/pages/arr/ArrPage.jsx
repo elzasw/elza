@@ -13,7 +13,7 @@ import {Link, IndexLink} from 'react-router';
 import {FundSettingsForm, Tabs, Icon, Ribbon, i18n, ArrFundPanel} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 
-var ArrParentPage = require("./ArrParentPage.jsx");
+import ArrParentPage from "./ArrParentPage.jsx";
 
 import {
     BulkActionsDialog,
@@ -49,8 +49,8 @@ import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
-var ShortcutsManager = require('react-shortcuts');
-var Shortcuts = require('react-shortcuts/component');
+const ShortcutsManager = require('react-shortcuts');
+const Shortcuts = require('react-shortcuts/component');
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
@@ -70,7 +70,25 @@ const keymap = ArrParentPage.mergeKeymap({
 
 const shortcutManager = new ShortcutsManager(keymap)
 
-const ArrPage = class ArrPage extends ArrParentPage {
+class ArrPage extends ArrParentPage {
+    static PropTypes = {
+        splitter: React.PropTypes.object.isRequired,
+        arrRegion: React.PropTypes.object.isRequired,
+        developer: React.PropTypes.object.isRequired,
+        rulDataTypes: React.PropTypes.object.isRequired,
+        calendarTypes: React.PropTypes.object.isRequired,
+        descItemTypes: React.PropTypes.object.isRequired,
+        packetTypes: React.PropTypes.object.isRequired,
+        focus: React.PropTypes.object.isRequired,
+        userDetail: React.PropTypes.object.isRequired,
+        ruleSet: React.PropTypes.object.isRequired,
+    };
+
+    state = {
+        developerExpandedSpecsIds: {},
+        fundNodesError: null,
+    };
+
     constructor(props) {
         super(props, "fa-page");
 
@@ -82,11 +100,6 @@ const ArrPage = class ArrPage extends ArrParentPage {
             'handleChangeFundSettingsSubmit',
             "handleSetExtendedView"
         );
-
-        this.state = {
-            developerExpandedSpecsIds: {},
-            fundNodesError: null
-        };
     }
     componentDidMount() {
         super.componentDidMount();
@@ -95,7 +108,7 @@ const ArrPage = class ArrPage extends ArrParentPage {
 
     componentWillReceiveProps(nextProps) {
         super.componentWillReceiveProps(nextProps);
-        const {tab, userDetail, arrRegion} = this.props;
+        const {tab} = this.props;
         let selected = tab.values['arr-as'];
         var activeFund = this.getActiveFund(nextProps);
         if (activeFund !== null) {
@@ -746,13 +759,14 @@ const ArrPage = class ArrPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        const {arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+        const {focus, arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
         const showRegisterJp = arrRegion.showRegisterJp;
         const activeFund = this.getActiveFund(this.props);
 
         if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, renderuje se zde
             return (
                 <FundTreeMain
+                    focus={focus}
                     className="extended-tree"
                     fund={activeFund}
                     cutLongLabels={false}
@@ -844,17 +858,4 @@ function mapStateToProps(state) {
     }
 }
 
-ArrPage.propTypes = {
-    splitter: React.PropTypes.object.isRequired,
-    arrRegion: React.PropTypes.object.isRequired,
-    developer: React.PropTypes.object.isRequired,
-    rulDataTypes: React.PropTypes.object.isRequired,
-    calendarTypes: React.PropTypes.object.isRequired,
-    descItemTypes: React.PropTypes.object.isRequired,
-    packetTypes: React.PropTypes.object.isRequired,
-    focus: React.PropTypes.object.isRequired,
-    userDetail: React.PropTypes.object.isRequired,
-    ruleSet: React.PropTypes.object.isRequired,
-}
-
-module.exports = connect(mapStateToProps)(ArrPage);
+export default connect(mapStateToProps)(ArrPage);

@@ -26,7 +26,6 @@ import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPartyWithCount;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegCoordinatesVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
@@ -213,14 +212,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations";
     protected static final String UPDATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations/{relationId}";
     protected static final String DELETE_RELATIONS = PARTY_CONTROLLER_URL + "/relations/{relationId}";
-    protected static final String FIND_PARTY = PARTY_CONTROLLER_URL + "/findParty";
+    protected static final String FIND_PARTY = PARTY_CONTROLLER_URL + "/";
     protected static final String FIND_PARTY_FOR_PARTY = PARTY_CONTROLLER_URL + "/findPartyForParty";
-    protected static final String GET_PARTY = PARTY_CONTROLLER_URL + "/getParty";
-    protected static final String GET_PARTY_TYPES = PARTY_CONTROLLER_URL + "/getPartyTypes";
-    protected static final String GET_PARTY_NAME_FORM_TYPES = PARTY_CONTROLLER_URL + "/getPartyNameFormTypes";
-    protected static final String INSERT_PARTY = PARTY_CONTROLLER_URL + "/insertParty";
-    protected static final String UPDATE_PARTY = PARTY_CONTROLLER_URL + "/updateParty/{partyId}";
-    protected static final String DELETE_PARTY = PARTY_CONTROLLER_URL + "/deleteParty";
+    protected static final String GET_PARTY = PARTY_CONTROLLER_URL + "/{partyId}";
+    protected static final String GET_PARTY_TYPES = PARTY_CONTROLLER_URL + "/partyTypes";
+    protected static final String GET_PARTY_NAME_FORM_TYPES = PARTY_CONTROLLER_URL + "/partyNameFormTypes";
+    protected static final String INSERT_PARTY = PARTY_CONTROLLER_URL + "/";
+    protected static final String UPDATE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}";
+    protected static final String DELETE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}";
+
+    protected static final String INSTITUTIONS = PARTY_CONTROLLER_URL + "/institutions";
 
     // REGISTRY
     protected static final String DEFAULT_SCOPES = REGISTRY_CONTROLLER_URL + "/defaultScopes";
@@ -248,8 +249,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/deleteVariantRecord";
 
     protected static final String RECORD_TYPES_FOR_PARTY_TYPE = REGISTRY_CONTROLLER_URL + "/recordTypesForPartyType";
-
-    protected static final String INSTITUTIONS = PARTY_CONTROLLER_URL + "/institutions";
 
     // RULE
     protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
@@ -2008,7 +2007,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return získaná osoba
      */
     protected ParPartyVO getParty(final int partyId) {
-        return get(spec -> spec.queryParam("partyId", partyId), GET_PARTY).getBody().as(ParPartyVO.class);
+        return get(spec -> spec.pathParam("partyId", partyId), GET_PARTY).getBody().as(ParPartyVO.class);
     }
 
     /**
@@ -2018,7 +2017,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return response
      */
     protected Response deleteParty(final int partyId) {
-        return delete(spec -> spec.queryParam("partyId", partyId), DELETE_PARTY);
+        return delete(spec -> spec.pathParam("partyId", partyId), DELETE_PARTY);
     }
 
     /**
@@ -2089,7 +2088,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.put("from", from != null ? from : 0);
         params.put("count", count != null ? count : 20);
 
-        return get(spec -> spec.queryParameters(params), FIND_PARTY).getBody().as(ParPartyWithCount.class).getRecordList();
+        return get(spec -> spec.queryParameters(params), FIND_PARTY).getBody().as(FilteredResultVO.class).getRows();
     }
 
     /**
@@ -2153,7 +2152,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.put("from", from != null ? from : 0);
         params.put("count", count != null ? count : 20);
 
-        return get(spec -> spec.queryParameters(params), FIND_PARTY_FOR_PARTY).getBody().as(ParPartyWithCount.class).getRecordList();
+        return get(spec -> spec.queryParameters(params), FIND_PARTY_FOR_PARTY).getBody().as(FilteredResultVO.class).getRows();
     }
 
     /**

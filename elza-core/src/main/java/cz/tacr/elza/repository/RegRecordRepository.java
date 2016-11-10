@@ -3,7 +3,6 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -63,7 +62,6 @@ public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Intege
     @Query("SELECT p.record FROM par_party p WHERE p IN (?1)")
     List<RegRecord> findByParties(Collection<ParParty> parties);
 
-
     /**
      * Najde hesla podle třídy rejstříku.
      *
@@ -71,4 +69,12 @@ public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Intege
      * @return nalezená hesla
      */
     List<RegRecord> findByScope(RegScope scope);
+
+    /**
+     * Najde heslo podle UUID.
+     *
+     * @param uuid UUID
+     * @return rejstříkové heslo
+     */
+    RegRecord findRegRecordByUuid(String uuid);
 }

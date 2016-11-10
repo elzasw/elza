@@ -53,8 +53,8 @@ public class UserControllerTest extends AbstractControllerTest {
         // vyhledání uživatele
         FilteredResultVO<UsrUserVO> dataUser = findUser(null, true, true, 0, 10, null);
         Assert.notNull(dataUser);
-        Assert.isTrue(dataUser.getTotalCount() == 1);
-        Assert.isTrue(dataUser.getList().get(0).getId().equals(user.getId()));
+        Assert.isTrue(dataUser.getCount() == 1);
+        Assert.isTrue(dataUser.getRows().get(0).getId().equals(user.getId()));
 
         UsrUserVO userReturn = getUser(user.getId());
         Assert.notNull(userReturn);
@@ -86,8 +86,8 @@ public class UserControllerTest extends AbstractControllerTest {
         // vyhledání skupiny
         FilteredResultVO<UsrGroupVO> dataGroup = findGroup(null, 0, 10);
         Assert.notNull(dataGroup);
-        Assert.isTrue(dataGroup.getTotalCount() == 1);
-        Assert.isTrue(dataGroup.getList().get(0).getId().equals(group.getId()));
+        Assert.isTrue(dataGroup.getCount() == 1);
+        Assert.isTrue(dataGroup.getRows().get(0).getId().equals(group.getId()));
 
         Set<Integer> groupIds = new HashSet<>();
         groupIds.add(group.getId());
@@ -96,13 +96,13 @@ public class UserControllerTest extends AbstractControllerTest {
 
         //Kontrola počtu uživatelů před přidáním
         FilteredResultVO<UsrUserVO> findUsers = findUser(null, true, false, 0, 10, group.getId());
-        Assert.isTrue(findUsers.getTotalCount() == 1);
+        Assert.isTrue(findUsers.getCount() == 1);
 
         joinGroup(groupIds, userIds);
 
         //Konstrola počtu uživatelů s vynechanou skupinou po přidání do skupiny
         findUsers = findUser(null, true, false, 0, 10, group.getId());
-        Assert.isTrue(findUsers.getTotalCount() == 0);
+        Assert.isTrue(findUsers.getCount() == 0);
 
         group = getGroup(group.getId());
         Assert.isTrue(group.getUsers().size() == 1);

@@ -15,14 +15,14 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import cz.tacr.elza.api.RegScope;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.api.RegScope;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 
@@ -68,16 +68,6 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     @JoinColumn(name = "preferredNameId")
     @JsonIgnore
     private ParPartyName preferredName;
-
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
-    @JoinColumn(name = "fromUnitdateId")
-    @JsonIgnore
-    private ParUnitdate from;
-
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
-    @JoinColumn(name = "toUnitdateId")
-    @JsonIgnore
-    private ParUnitdate to;
 
     @RestResource(exported = false)
     @OneToMany(mappedBy = "party", fetch = FetchType.LAZY)
@@ -142,22 +132,6 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     @Override
     public void setPreferredName(final ParPartyName preferredName) {
         this.preferredName = preferredName;
-    }
-
-    public ParUnitdate getFrom() {
-        return from;
-    }
-
-    public void setFrom(final ParUnitdate from) {
-        this.from = from;
-    }
-
-    public ParUnitdate getTo() {
-        return to;
-    }
-
-    public void setTo(final ParUnitdate to) {
-        this.to = to;
     }
 
     public List<ParPartyName> getPartyNames() {

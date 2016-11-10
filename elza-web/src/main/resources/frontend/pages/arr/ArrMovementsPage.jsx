@@ -16,7 +16,7 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {getNodeParents, getNodeParent} from 'components/arr/ArrUtils.jsx'
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes.jsx'
 
-var ArrParentPage = require("./ArrParentPage.jsx");
+import ArrParentPage from "./ArrParentPage.jsx";
 
 import {
     BulkActionsDialog,

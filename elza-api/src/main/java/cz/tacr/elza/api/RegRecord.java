@@ -1,9 +1,10 @@
 package cz.tacr.elza.api;
 
-import cz.tacr.elza.api.interfaces.IRegScope;
-
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import cz.tacr.elza.api.interfaces.IRegScope;
 
 /**
  * Záznam v rejstříku.
@@ -136,4 +137,24 @@ public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSou
      * @param scope třída rejstříku
      */
     void setScope(RS scope);
+
+    /** @return UUID */
+    String getUuid();
+
+    /**
+     * UUID.
+     *
+     * @param uuid UUID
+     */
+    void setUuid(String uuid);
+
+    /** @return čas poslední aktualizace rejstříku nebo osoby */
+    LocalDateTime getLastUpdate() ;
+
+    /**
+     * Čas poslední aktualizace rejstříku nebo osoby.
+     *
+     * @param lastUpdate as poslední aktualizace rejstříku nebo osoby
+     */
+    void setLastUpdate(LocalDateTime lastUpdate);
 }
