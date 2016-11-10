@@ -968,6 +968,7 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(UIPartyGroup.class, UIPartyGroupVO.class)
                 .byDefault()
+                .field("partyGroupId", "id")
                 .register();
     }
 

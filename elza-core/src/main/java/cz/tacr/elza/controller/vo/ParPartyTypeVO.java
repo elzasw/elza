@@ -36,6 +36,7 @@ public class ParPartyTypeVO {
     private List<ParRelationTypeVO> relationTypes;
     private List<ParComplementTypeVO> complementTypes;
     private List<RegRegisterTypeVO> registerTypes;
+    private List<UIPartyGroupVO> partyGroups;
 
     public Integer getPartyTypeId() {
         return partyTypeId;
@@ -114,6 +115,11 @@ public class ParPartyTypeVO {
         registerTypes.add(registerTypeVO);
     }
 
+    public List<UIPartyGroupVO> getPartyGroups() {
+        return partyGroups;
+    }
 
-
+    public void setPartyGroups(final List<UIPartyGroupVO> partyGroups) {
+        this.partyGroups = partyGroups;
+    }
 }

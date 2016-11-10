@@ -1,9 +1,39 @@
 package cz.tacr.elza.controller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.exception.DeleteException;
-import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.ParComplementTypeVO;
+import cz.tacr.elza.controller.vo.ParInstitutionVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.UIPartyGroupVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ParComplementType;
@@ -18,20 +48,27 @@ import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.DeleteException;
 import cz.tacr.elza.exception.codes.UserCode;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
+import cz.tacr.elza.repository.PartyTypeRelationRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
+import cz.tacr.elza.repository.UIPartyGroupRepository;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.util.*;
 
 
 /**
@@ -97,6 +134,9 @@ public class PartyController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UIPartyGroupRepository uiPartyGroupRepository;
 
     /**
      * Uložení nové osoby
@@ -390,6 +430,27 @@ public class PartyController {
             partyTypeVO.addRegisterType(regRegisterTypeVO);
         }
 
+        // načtení UIPartyGroup
+        List<UIPartyGroup> uiPartyGroups = uiPartyGroupRepository.findAll();
+        Map<Integer, UIPartyGroupVO> uiPartyGroupVOMap = new HashMap<>();
+        Map<String, List<UIPartyGroupVO>> partyTypeCodeToUIPartyGroupsVOMap = new HashMap<>();
+        for (UIPartyGroup uiPartyGroup : uiPartyGroups) {
+            UIPartyGroupVO uiPartyGroupVO = factoryVo.getOrCreateVo(uiPartyGroup.getPartyGroupId(), uiPartyGroup,
+                    uiPartyGroupVOMap, UIPartyGroupVO.class);
+
+            ParPartyTypeVO partyTypeVO = uiPartyGroupVO.getPartyType();
+            String partyTypeCode = null;
+            if (partyTypeVO != null) {
+                partyTypeCode = partyTypeVO.getCode();
+            }
+
+            List<UIPartyGroupVO> uiPartyGroupVOList = partyTypeCodeToUIPartyGroupsVOMap.get(partyTypeCode);
+            if (uiPartyGroupVOList == null) {
+                uiPartyGroupVOList = new LinkedList<>();
+                partyTypeCodeToUIPartyGroupsVOMap.put(partyTypeCode, uiPartyGroupVOList);
+            }
+            uiPartyGroupVOList.add(uiPartyGroupVO);
+        }
 
         for (ParPartyTypeVO partyTypeVO : partyTypeVoMap.values()) {
             ParPartyType partyType = partyTypeRepository.findOne(partyTypeVO.getPartyTypeId());
@@ -397,6 +458,26 @@ public class PartyController {
                     .findByPartyTypeEnableAdding(partyType);
 
             partyTypeVO.setRegisterTypes(factoryVo.createRegisterTypesTree(partyRegisterTypes, true, partyType));
+
+            List<UIPartyGroupVO> uiGroups = new LinkedList<>();
+            List<UIPartyGroupVO> commonUIGroups = partyTypeCodeToUIPartyGroupsVOMap.get(null);
+            List<UIPartyGroupVO> typeUIGroups = partyTypeCodeToUIPartyGroupsVOMap.get(partyTypeVO.getCode());
+            if (commonUIGroups != null) {
+                uiGroups.addAll(commonUIGroups);
+            }
+            if (typeUIGroups != null) {
+                uiGroups.addAll(typeUIGroups);
+            }
+            if (!uiGroups.isEmpty()) {
+                uiGroups.sort((g1, g2) -> {
+                    if (g1.getViewOrder().equals(g2.getViewOrder())) {
+                        return g1.getId().compareTo(g2.getId());
+                    } else {
+                        return g1.getViewOrder().compareTo(g2.getViewOrder());
+                    }
+                });
+                partyTypeVO.setPartyGroups(uiGroups);
+            }
         }
 
 
