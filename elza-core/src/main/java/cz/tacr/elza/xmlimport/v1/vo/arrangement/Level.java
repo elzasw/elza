@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -58,16 +58,18 @@ public class Level {
     private List<AbstractDescItem> descItems;
 
     /** Vazba na rejstřík. */
-    @XmlIDREF
     @XmlElement(name = "record", required = true)
     @XmlElementWrapper(name = "record-list")
+    private List<String> recordIds;
+
+    @XmlTransient
     private List<Record> records;
 
     public Integer getPosition() {
         return position;
     }
 
-    public void setPosition(Integer position) {
+    public void setPosition(final Integer position) {
         this.position = position;
     }
 
@@ -75,7 +77,7 @@ public class Level {
         return uuid;
     }
 
-    public void setUuid(String uuid) {
+    public void setUuid(final String uuid) {
         this.uuid = uuid;
     }
 
@@ -83,7 +85,7 @@ public class Level {
         return subLevels;
     }
 
-    public void setSubLevels(List<Level> subLevels) {
+    public void setSubLevels(final List<Level> subLevels) {
         this.subLevels = subLevels;
     }
 
@@ -91,7 +93,7 @@ public class Level {
         return descItems;
     }
 
-    public void setDescItems(List<AbstractDescItem> descItems) {
+    public void setDescItems(final List<AbstractDescItem> descItems) {
         this.descItems = descItems;
     }
 
@@ -99,8 +101,16 @@ public class Level {
         return records;
     }
 
-    public void setRecords(List<Record> records) {
+    public void setRecords(final List<Record> records) {
         this.records = records;
+    }
+
+    public List<String> getRecordIds() {
+        return recordIds;
+    }
+
+    public void setRecordIds(final List<String> recordIds) {
+        this.recordIds = recordIds;
     }
 
     @Override

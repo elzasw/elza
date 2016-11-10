@@ -3,10 +3,8 @@ package cz.tacr.elza.xmlimport.v1.vo.arrangement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
 
-import cz.tacr.elza.api.ArrPacket;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -27,19 +25,18 @@ public class Packet {
     private String packetTypeCode;
 
     /** Úložné číslo*/
-    @XmlID
     @XmlAttribute(name = "storage-number")
     private String storageNumber;
 
     /** Stav */
     @XmlAttribute(name = "state")
-    private ArrPacket.State state;
+    private PacketState state;
 
     public String getPacketTypeCode() {
         return packetTypeCode;
     }
 
-    public void setPacketTypeCode(String packetTypeCode) {
+    public void setPacketTypeCode(final String packetTypeCode) {
         this.packetTypeCode = packetTypeCode;
     }
 
@@ -47,15 +44,15 @@ public class Packet {
         return storageNumber;
     }
 
-    public void setStorageNumber(String storageNumber) {
+    public void setStorageNumber(final String storageNumber) {
         this.storageNumber = storageNumber;
     }
 
-    public ArrPacket.State getState() {
+    public PacketState getState() {
         return state;
     }
 
-    public void setState(final ArrPacket.State state) {
+    public void setState(final PacketState state) {
         this.state = state;
     }
 

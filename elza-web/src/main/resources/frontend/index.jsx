@@ -18,8 +18,12 @@ import {userDetailChange} from 'actions/user/userDetail.jsx'
 
 // Globální init
 Utils.init();
+// es6-symbol polyfill nefunguje s kodem vygenerovanym pres babel (for-of iterace), musime pouzit core-js
+require('core-js/fn/symbol');
+require('core-js/fn/array');
 const es6promise = require('es6-promise');
 //var es5Shim = require('es5-shim');
+es6promise.polyfill();
 
 // Nastavení neomezeného počtu listenerů pro event emitter - v ELZA je emitter použit pro klávesové zkratky, kde je více listenerů
 const EventEmitter = require('events').EventEmitter;

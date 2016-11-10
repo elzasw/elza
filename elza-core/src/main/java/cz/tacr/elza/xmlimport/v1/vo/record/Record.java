@@ -7,7 +7,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -26,7 +25,6 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 public class Record {
 
     /** Pro vazbu z osoby a hodnoty record_ref. */
-    @XmlID
     @XmlAttribute(name = "record-id", required = true)
     private String recordId;
 
@@ -79,7 +77,7 @@ public class Record {
         return recordId;
     }
 
-    public void setRecordId(String recordId) {
+    public void setRecordId(final String recordId) {
         this.recordId = recordId;
     }
 
@@ -87,7 +85,7 @@ public class Record {
         return registerTypeCode;
     }
 
-    public void setRegisterTypeCode(String registerTypeCode) {
+    public void setRegisterTypeCode(final String registerTypeCode) {
         this.registerTypeCode = registerTypeCode;
     }
 
@@ -95,7 +93,7 @@ public class Record {
         return externalSourceCode;
     }
 
-    public void setExternalSourceCode(String externalSourceCode) {
+    public void setExternalSourceCode(final String externalSourceCode) {
         this.externalSourceCode = externalSourceCode;
     }
 
@@ -103,7 +101,7 @@ public class Record {
         return externalId;
     }
 
-    public void setExternalId(String externalId) {
+    public void setExternalId(final String externalId) {
         this.externalId = externalId;
     }
 
@@ -111,7 +109,7 @@ public class Record {
         return preferredName;
     }
 
-    public void setPreferredName(String preferredName) {
+    public void setPreferredName(final String preferredName) {
         this.preferredName = preferredName;
     }
 
@@ -119,7 +117,7 @@ public class Record {
         return characteristics;
     }
 
-    public void setCharacteristics(String characteristics) {
+    public void setCharacteristics(final String characteristics) {
         this.characteristics = characteristics;
     }
 
@@ -127,7 +125,7 @@ public class Record {
         return note;
     }
 
-    public void setNote(String note) {
+    public void setNote(final String note) {
         this.note = note;
     }
 
@@ -135,7 +133,7 @@ public class Record {
         return local;
     }
 
-    public void setLocal(boolean local) {
+    public void setLocal(final boolean local) {
         this.local = local;
     }
 
@@ -143,7 +141,7 @@ public class Record {
         return variantNames;
     }
 
-    public void setVariantNames(List<VariantRecord> variantNames) {
+    public void setVariantNames(final List<VariantRecord> variantNames) {
         this.variantNames = variantNames;
     }
 
@@ -151,7 +149,7 @@ public class Record {
         return recordCoordinates;
     }
 
-    public void setRecordCoordinates(RecordCoordinates recordCoordinates) {
+    public void setRecordCoordinates(final RecordCoordinates recordCoordinates) {
         this.recordCoordinates = recordCoordinates;
     }
 
@@ -159,7 +157,7 @@ public class Record {
         return records;
     }
 
-    public void setRecords(List<Record> records) {
+    public void setRecords(final List<Record> records) {
         this.records = records;
     }
 
