@@ -204,7 +204,7 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="Import">
-			<wsdl:documentation>Import one or more packages. Import will also create corresponding links to described material.</wsdl:documentation>
+			<wsdl:documentation>Import one or more packages. Import will also create corresponding links to described material. If this method is used each package need to have specified fundIdentifier for each daoPackage.</wsdl:documentation>
 			<soap:operation style="document"/>
 			<wsdl:input name="daoImport">
 				<soap:body use="literal"/>
