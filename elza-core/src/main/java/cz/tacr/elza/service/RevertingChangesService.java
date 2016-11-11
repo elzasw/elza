@@ -3,12 +3,12 @@ package cz.tacr.elza.service;
 import cz.tacr.elza.api.ArrBulkActionRun;
 import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
@@ -31,8 +31,9 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -70,21 +71,21 @@ public class RevertingChangesService {
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
      *
-     * @param fund       AS nad kterým provádím vyhledávání
-     * @param node       JP omezující vyhledávání
-     * @param maxSize    maximální počet záznamů
-     * @param offset     počet přeskočených záznamů
-     * @param fromChange změna, vůči které chceme počítat offset (pokud není vyplněn, bere se vždy poslední)
+     * @param fundVersion verze AS nad kterou provádím vyhledávání
+     * @param node        JP omezující vyhledávání
+     * @param maxSize     maximální počet záznamů
+     * @param offset      počet přeskočených záznamů
+     * @param fromChange  změna, vůči které chceme počítat offset (pokud není vyplněn, bere se vždy poslední)
      * @return výsledek hledání
      */
-    public ChangesResult findChanges(@NotNull final ArrFund fund,
+    public ChangesResult findChanges(@NotNull final ArrFundVersion fundVersion,
                                      @Nullable final ArrNode node,
                                      final int maxSize,
                                      final int offset,
                                      @Nullable final ArrChange fromChange) {
-        Assert.notNull(fund);
+        Assert.notNull(fundVersion);
 
-        Integer fundId = fund.getFundId();
+        Integer fundId = fundVersion.getFund().getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
         Integer fromChangeId = fromChange == null ? null : fromChange.getChangeId();
 
@@ -104,9 +105,9 @@ public class RevertingChangesService {
         List<ChangeResult> sqlResult = convertResults(query.getResultList());
 
         // typ oprávnění, podle kterého se určuje, zda-li je možné provést rozsáhlejší revert, nebo pouze své změny
-        boolean fullRevertPermission = hasFullRevertPermission(fund);
+        boolean fullRevertPermission = hasFullRevertPermission(fundVersion.getFund());
 
-        List<Change> changes = convertChangeResults(sqlResult, fullRevertPermission);
+        List<Change> changes = convertChangeResults(sqlResult, fundVersion, fullRevertPermission);
 
         // sestavení odpovědi
         ChangesResult changesResult = new ChangesResult();
@@ -122,23 +123,23 @@ public class RevertingChangesService {
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS v závislosti na zvoleném datumu.
      *
-     * @param fund       AS nad kterým provádím vyhledávání
-     * @param node       JP omezující vyhledávání
-     * @param maxSize    maximální počet záznamů
-     * @param fromDate   datum od kterého vyhledávám v historii
-     * @param fromChange změna, vůči které chceme počítat offset - v tomto případě musí být vyplněná
+     * @param fundVersion verze AS nad kterou provádím vyhledávání
+     * @param node        JP omezující vyhledávání
+     * @param maxSize     maximální počet záznamů
+     * @param fromDate    datum od kterého vyhledávám v historii
+     * @param fromChange  změna, vůči které chceme počítat offset - v tomto případě musí být vyplněná
      * @return výsledek hledání
      */
-    public ChangesResult findChangesByDate(@NotNull final ArrFund fund,
+    public ChangesResult findChangesByDate(@NotNull final ArrFundVersion fundVersion,
                                            @Nullable final ArrNode node,
                                            final int maxSize,
                                            @NotNull final LocalDateTime fromDate,
                                            @NotNull final ArrChange fromChange) {
-        Assert.notNull(fund);
+        Assert.notNull(fundVersion);
         Assert.notNull(fromDate);
         Assert.notNull(fromChange);
 
-        Integer fundId = fund.getFundId();
+        Integer fundId = fundVersion.getFund().getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
         Integer fromChangeId = fromChange.getChangeId();
 
@@ -147,7 +148,7 @@ public class RevertingChangesService {
 
         Integer count = ((BigInteger) queryIndex.getSingleResult()).intValue();
 
-        return findChanges(fund, node, maxSize, count, fromChange);
+        return findChanges(fundVersion, node, maxSize, count, fromChange);
     }
 
     /**
@@ -214,6 +215,8 @@ public class RevertingChangesService {
 
         deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_item", toChange);
         deleteEntityQuery.executeUpdate();
+
+        // TODO: dodělat úpravů outputů
 
         updateEntityQuery = createUpdateActionQuery(fund, node, toChange);
         updateEntityQuery.executeUpdate();
@@ -311,7 +314,7 @@ public class RevertingChangesService {
     }
 
     private Query createDeleteNotUseNodesQuery() {
-        String[][] configUnionTables = new String[][] {
+        String[][] configUnionTables = new String[][]{
                 {"arr_level", "node"},
                 {"arr_level", "nodeParent"},
                 {"arr_node_register", "node"},
@@ -338,7 +341,7 @@ public class RevertingChangesService {
 
     private Query createDeleteNotUseChangesQuery() {
 
-        String[][] configUnionTables = new String[][] {
+        String[][] configUnionTables = new String[][]{
                 {"arr_level", "createChange"},
                 {"arr_level", "deleteChange"},
                 {"arr_item", "createChange"},
@@ -502,11 +505,11 @@ public class RevertingChangesService {
      * Převedení změn z databázového dotazu na změny pro odpověď.
      *
      * @param sqlResult            změny z dotazu
-     * @param fullRevertPermission má úplné oprávnění?
-     * @return seznam změn pro odpověď
+     * @param fundVersion          verze AS
+     * @param fullRevertPermission má úplné oprávnění?  @return seznam změn pro odpověď
      */
     private List<Change> convertChangeResults(final List<ChangeResult> sqlResult,
-                                              final boolean fullRevertPermission) {
+                                              final ArrFundVersion fundVersion, final boolean fullRevertPermission) {
 
         boolean canRevert = true;
 
@@ -527,6 +530,12 @@ public class RevertingChangesService {
         }
 
         Map<Integer, UsrUser> users = userService.findUserMap(userIds);
+        List<TreeNodeClient> nodesByIds = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId());
+
+        Map<Integer, TreeNodeClient> nodeMap = new HashMap<>();
+        for (TreeNodeClient nodesById : nodesByIds) {
+            nodeMap.put(nodesById.getId(), nodesById);
+        }
 
         for (ChangeResult changeResult : sqlResult) {
             Change change = new Change();
@@ -548,11 +557,18 @@ public class RevertingChangesService {
 
             }
 
-            // TODO: dopsat popis
-            String description = StringUtils.isEmpty(changeResult.type) ? "neznámý typ" : ArrChange.Type.valueOf(changeResult.type).getDescription();
-            description += ", primaryNodeId: " + (changeResult.primaryNodeId == null ? "?" : changeResult.primaryNodeId);
-            description += ", changeId: " + changeResult.changeId;
-            description += ", changeDate: " + changeResult.changeDate;
+            String description;
+            if (changeResult.primaryNodeId != null && nodeMap.get(changeResult.primaryNodeId) != null) {
+                TreeNodeClient treeNodeClient = nodeMap.get(changeResult.primaryNodeId);
+                description = treeNodeClient.getName();
+            } else {
+                // TODO: dopsat popis
+                description = StringUtils.isEmpty(changeResult.type) ? "neznámý typ" : ArrChange.Type.valueOf(changeResult.type).getDescription();
+                description += ", primaryNodeId: " + (changeResult.primaryNodeId == null ? "?" : changeResult.primaryNodeId);
+                description += ", changeId: " + changeResult.changeId;
+                description += ", changeDate: " + changeResult.changeDate;
+            }
+
 
             change.setDescription(description);
 

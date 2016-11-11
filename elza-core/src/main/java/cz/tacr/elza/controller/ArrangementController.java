@@ -1826,7 +1826,7 @@ public class ArrangementController {
         if (nodeId != null) {
             node = nodeRepository.getOneCheckExist(nodeId);
         }
-        return revertingChangesService.findChanges(fundVersion.getFund(), node, maxSize, offset, change);
+        return revertingChangesService.findChanges(fundVersion, node, maxSize, offset, change);
     }
 
     /**
@@ -1854,7 +1854,7 @@ public class ArrangementController {
         if (nodeId != null) {
             node = nodeRepository.getOneCheckExist(nodeId);
         }
-        return revertingChangesService.findChangesByDate(fundVersion.getFund(), node, maxSize, fromDate, change);
+        return revertingChangesService.findChangesByDate(fundVersion, node, maxSize, fromDate, change);
     }
 
     /**
