@@ -8,6 +8,9 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
 import cz.tacr.elza.service.vo.ChangesResult;
 import org.slf4j.Logger;
@@ -60,6 +63,9 @@ public class RevertingChangesService {
 
     @Autowired
     private StartupService startupService;
+
+    @Autowired
+    private IEventNotificationService eventNotificationService;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -165,6 +171,14 @@ public class RevertingChangesService {
         // zastavení probíhajících výpočtů pro validaci uzlů u verzí
         stopConformityInfFundVersions(fund);
 
+        ArrFundVersion openFundVersion = null;
+        for (ArrFundVersion fundVersion : fund.getVersions()) {
+            if (fundVersion.getLockChange() == null) {
+                openFundVersion = fundVersion;
+                break;
+            }
+        }
+
         Query updateEntityQuery;
         Query deleteEntityQuery;
 
@@ -212,6 +226,14 @@ public class RevertingChangesService {
 
         Query deleteNotUseNodesQuery = createDeleteNotUseNodesQuery();
         deleteNotUseNodesQuery.executeUpdate();
+
+        if (node != null) {
+            if (openFundVersion != null) {
+                eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, openFundVersion.getFundVersionId(), node.getNodeId()));
+            }
+        } else {
+            // TODO: dopsat aktualizaci celého stromu AS
+        }
 
         levelTreeCacheService.invalidateFundVersion(fund);
         startupService.revalidateNodes();
