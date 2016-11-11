@@ -400,7 +400,7 @@ class ArrPage extends ArrParentPage {
             // Zobrazení historie změn
             if (userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId: activeFund.id}, perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
                 altActions.push(
-                    <Button active={show} onClick={() => this.handleShowFundHistory(activeFund.versionId)} key="show-fund-history">
+                    <Button onClick={() => this.handleShowFundHistory(activeFund.versionId)} key="show-fund-history">
                         <Icon glyph="fa-clock-o"/>
                         <div>
                             <span className="btnText">{i18n('ribbon.action.showFundHistory')}</span>
@@ -433,7 +433,7 @@ class ArrPage extends ArrParentPage {
                     // Zobrazení historie změn
                     if (userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId: activeFund.id}, perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
                         itemActions.push(
-                            <Button active={show} onClick={() => this.handleShowNodeHistory(activeFund.versionId, activeNodeObj)} key="show-fund-history">
+                            <Button onClick={() => this.handleShowNodeHistory(activeFund.versionId, activeNodeObj)} key="show-fund-history">
                                 <Icon glyph="fa-clock-o"/>
                                 <div>
                                     <span className="btnText">{i18n('ribbon.action.showNodeHistory')}</span>
