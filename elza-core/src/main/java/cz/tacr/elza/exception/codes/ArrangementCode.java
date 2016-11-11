@@ -24,6 +24,11 @@ public enum ArrangementCode implements ErrorCode {
     FUND_NOT_FOUND,
 
     /**
+     * Verze archivního fondu neexistuje.
+     */
+    FUND_VERSION_NOT_FOUND,
+
+    /**
      * Nelze uzavřít verzi, protože běží hromadná akce.
      */
     VERSION_CANNOT_CLOSE_ACTION,
@@ -31,6 +36,11 @@ public enum ArrangementCode implements ErrorCode {
     /**
      * Nelze uzavřít verzi, protože běží validace.
      */
-    VERSION_CANNOT_CLOSE_VALIDATION;
+    VERSION_CANNOT_CLOSE_VALIDATION,
+
+    /**
+     * Jednotuka popisu neexistuje.
+     */
+    NODE_NOT_FOUND;
 
 }

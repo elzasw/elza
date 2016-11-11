@@ -37,6 +37,8 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.FilterExpiredException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
@@ -907,8 +909,13 @@ public class ArrangementController {
         ArrFundVersion version = fundVersionRepository.findOne(versionId);
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        Assert.notNull(version, "Verze AP neexistuje");
-        Assert.notNull(node, "Uzel neexistuje");
+        if (version == null) {
+            throw new ObjectNotFoundException(ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", versionId);
+        }
+
+        if (node == null) {
+            throw new ObjectNotFoundException(ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
+        }
 
         List<ArrDescItem> descItems = arrangementService.getDescItems(version, node);
         List<RulItemTypeExt> itemTypes;

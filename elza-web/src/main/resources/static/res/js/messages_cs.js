@@ -47,6 +47,8 @@ var messages = {
     "arr.exception.fund.not.found": "Archivní fond neexistuje.",
     "arr.exception.version.cannot.close.action": "Nelze uzavřít verzi, protože běží hromadná akce.",
     "arr.exception.version.cannot.close.validation": "Nelze uzavřít verzi, protože běží validace.",
+    "arr.exception.node.not.found": "Jednotka popisu nebyla nalezena, pravděpodobně byla odstraněna.",
+    "arr.exception.fund.version.not.found": "Verze archivního fondu neexistuje.",
 
     "search.input.search": "Vyhledat...",
     "search.not.found": "nenalezeno",

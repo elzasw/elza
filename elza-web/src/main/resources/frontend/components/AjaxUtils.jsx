@@ -75,6 +75,14 @@ function createMessage(result) {
         toaster = addToastrDanger(i18n('arr.exception.fund.not.found'), messages);
     }
 
+    if (result.type == 'ArrangementCode' && result.code == 'FUND_VERSION_NOT_FOUND') {
+        toaster = addToastrDanger(i18n('arr.exception.fund.version.not.found'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'NODE_NOT_FOUND') {
+        toaster = addToastrWarning(i18n('arr.exception.node.not.found'), messages);
+    }
+
     if (result.type == 'ArrangementCode' && result.code == 'VERSION_CANNOT_CLOSE_ACTION') {
         toaster = addToastrInfo(i18n('arr.exception.version.cannot.close.action'), messages);
     }

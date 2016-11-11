@@ -18,6 +18,8 @@ import javax.annotation.Nullable;
 
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
 import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -1292,7 +1294,9 @@ public class ClientFactoryVO {
      * @return VO uzlu AP
      */
     public ArrNodeVO createArrNode(final ArrNode node) {
-        Assert.notNull(node);
+        if (node == null) {
+            throw new ObjectNotFoundException(ArrangementCode.NODE_NOT_FOUND);
+        }
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrNodeVO result = mapper.map(node, ArrNodeVO.class);
         return result;
