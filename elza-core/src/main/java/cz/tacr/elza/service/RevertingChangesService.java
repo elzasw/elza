@@ -166,114 +166,83 @@ public class RevertingChangesService {
         Query updateEntityQuery;
         Query deleteEntityQuery;
 
-        int changes = 0;
-        int partChange;
-
         deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, toChange, "arr_node_conformity_error");
-        partChange = deleteEntityQuery.executeUpdate();
-        logger.info("Odstraněno " + partChange + " záznamů z arr_node_conformity_error");
-        changes += partChange;
+        deleteEntityQuery.executeUpdate();
 
         deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, toChange, "arr_node_conformity_missing");
-        partChange += deleteEntityQuery.executeUpdate();
-        logger.info("Odstraněno " + partChange + " záznamů z arr_node_conformity_missing");
-        changes += partChange;
+        deleteEntityQuery.executeUpdate();
 
         deleteEntityQuery = createConformityDeleteEntityQuery(fund, node, toChange);
-        partChange += deleteEntityQuery.executeUpdate();
-        logger.info("Odstraněno " + partChange + " záznamů z arr_node_conformity");
-        changes += partChange;
+        deleteEntityQuery.executeUpdate();
 
         updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
         deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_level", toChange);
-        partChange += updateEntityQuery.executeUpdate();
-        logger.info("Upraveno " + partChange + " záznamů z arr_level");
-        changes += partChange;
-        partChange += deleteEntityQuery.executeUpdate();
-        logger.info("Odstraněno " + partChange + " záznamů z arr_level");
-        changes += partChange;
+        updateEntityQuery.executeUpdate();
+        deleteEntityQuery.executeUpdate();
 
         updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_register", toChange);
         deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_register", toChange);
-        partChange += updateEntityQuery.executeUpdate();
-        logger.info("Upraveno " + partChange + " záznamů z arr_node_register");
-        changes += partChange;
-        partChange += deleteEntityQuery.executeUpdate();
-        logger.info("Odstraněno " + partChange + " záznamů z arr_node_register");
-        changes += partChange;
+        updateEntityQuery.executeUpdate();
+        deleteEntityQuery.executeUpdate();
 
         updateEntityQuery = createExtendUpdateEntityQuery(fund, node, "deleteChange", "arr_desc_item", "arr_item", toChange);
-        partChange += updateEntityQuery.executeUpdate();
-        logger.info("Upraveno " + partChange + " záznamů z arr_desc_item");
-        changes += partChange;
+        updateEntityQuery.executeUpdate();
 
         deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_data", toChange);
-        partChange += deleteEntityQuery.executeUpdate();
-        logger.info("Odstraněno " + partChange + " záznamů z arr_data");
-        changes += partChange;
+        deleteEntityQuery.executeUpdate();
 
         // TODO: ověřit, proč se tady musím fakticky mazat znovu arr_node_conformity_error
         // - musí se vyřešit předchozí mazání conformity info, pak nebude třeba
-        deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "descItem", "arr_node_conformity_error", toChange);
-        partChange += deleteEntityQuery.executeUpdate();
-        logger.info("Odstraněno " + partChange + " záznamů z arr_node_conformity_error");
-        changes += partChange;
+        /*deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "descItem", "arr_node_conformity_error", toChange);
+        deleteEntityQuery.executeUpdate();*/
 
         deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_item", toChange);
-        partChange += deleteEntityQuery.executeUpdate();
-        logger.info("Odstraněno " + partChange + " záznamů z arr_desc_item");
-        changes += partChange;
+        deleteEntityQuery.executeUpdate();
+
+        updateEntityQuery = createUpdateActionQuery(fund, node, toChange);
+        updateEntityQuery.executeUpdate();
+
+        deleteEntityQuery = createDeleteActionQuery(fund, node, toChange);
+        deleteEntityQuery.executeUpdate();
 
         Query deleteNotUseChangesQuery = createDeleteNotUseChangesQuery();
-        partChange += deleteNotUseChangesQuery.executeUpdate();
-        logger.info("Odstraněno " + partChange + " záznamů z arr_change");
-        changes += partChange;
+        deleteNotUseChangesQuery.executeUpdate();
 
         Query deleteNotUseNodesQuery = createDeleteNotUseNodesQuery();
-        partChange += deleteNotUseNodesQuery.executeUpdate();
-        logger.info("Odstraněno " + partChange + " záznamů z arr_node");
-        changes += partChange;
+        deleteNotUseNodesQuery.executeUpdate();
 
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
-            @Override
-            public void suspend() {
-            }
+        levelTreeCacheService.invalidateFundVersion(fund);
+        startupService.revalidateNodes();
+    }
 
-            @Override
-            public void resume() {
-            }
+    private Query createDeleteActionQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
+        Query query = entityManager.createQuery("DELETE FROM arr_bulk_action_node n WHERE n IN (" +
+                "SELECT rn FROM arr_bulk_action_node rn JOIN rn.bulkActionRun rs WHERE rn.node IN (" + createHqlSubNodeQuery(fund, node) + ") AND rs.change >= :change" +
+                ")");
 
-            @Override
-            public void flush() {
-            }
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", toChange);
+        if (node != null) {
+            query.setParameter("node", node);
+        }
+        return query;
+    }
 
-            @Override
-            public void beforeCommit(final boolean b) {
-            }
+    private Query createUpdateActionQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
+        Query query = entityManager.createQuery("UPDATE arr_bulk_action_run r SET r.state = :stateNew WHERE r IN (" +
+                "SELECT rs FROM arr_bulk_action_run rs JOIN rs.arrBulkActionNodes rn WHERE rn.node IN (" + createHqlSubNodeQuery(fund, node) + ") AND rs.change >= :change" +
+                ") AND r.state = :stateOld");
 
-            @Override
-            public void beforeCompletion() {
-            }
-
-            @Override
-            public void afterCommit() {
-
-                if (node == null) {
-                    // invalidace
-                    levelTreeCacheService.invalidateFundVersion(fund);
-                }
-
-                // přidá do fronty JP, které je potřeba přepočítat
-                startupService.revalidateNodes();
-            }
-
-            @Override
-            public void afterCompletion(final int i) {
-            }
-        });
-
-        logger.info("changes: " + changes);
-
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", toChange);
+        query.setParameter("stateNew", ArrBulkActionRun.State.OUTDATED);
+        query.setParameter("stateOld", ArrBulkActionRun.State.FINISHED);
+        if (node != null) {
+            query.setParameter("node", node);
+        }
+        return query;
     }
 
     /**
@@ -287,32 +256,30 @@ public class RevertingChangesService {
         }
     }
 
-    // TODO: vyřešit správně
     private Query createConformityDeleteEntityQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
-        String nodesHql = createHQLFindChanges("createChange", "arr_level", createHqlSubNodeQuery(fund, node));
-        String hqlSubSelect = String.format("SELECT i.node FROM %1$s i WHERE %2$s IN (%3$s)", "arr_level", "createChange", nodesHql);
-        String hql = String.format("DELETE FROM arr_node_conformity WHERE node IN (%1$s)", hqlSubSelect);
+        //String nodesHql = createHQLFindChanges("createChange", "arr_level", );
+        //String hqlSubSelect = String.format("SELECT i.node FROM %1$s i WHERE %2$s IN (%3$s)", "arr_level", "createChange", nodesHql);
+        String hql = String.format("DELETE FROM arr_node_conformity WHERE node IN (%1$s)", createHqlSubNodeQuery(fund, node));
         Query query = entityManager.createQuery(hql);
 
         // nastavení parametrů dotazu
         query.setParameter("fund", fund);
-        query.setParameter("change", toChange);
+        //query.setParameter("change", toChange);
         if (node != null) {
             query.setParameter("node", node);
         }
         return query;
     }
 
-    // TODO: vyřešit správně
     private Query createConformityDeleteForeignEntityQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange, final @NotNull String table) {
-        String nodesHql = createHQLFindChanges("createChange", "arr_level", createHqlSubNodeQuery(fund, node));
-        String hqlSubSelect = String.format("SELECT i.node FROM %1$s i WHERE %2$s IN (%3$s)", "arr_level", "createChange", nodesHql);
-        String hql = String.format("DELETE FROM %1$s ncx WHERE ncx.nodeConformity IN (SELECT nc FROM arr_node_conformity nc WHERE node IN (%2$s))", table, hqlSubSelect);
+        //String nodesHql = createHQLFindChanges("createChange", "arr_level", createHqlSubNodeQuery(fund, node));
+        //String hqlSubSelect = String.format("SELECT i.node FROM %1$s i WHERE %2$s IN (%3$s)", "arr_level", "createChange", nodesHql);
+        String hql = String.format("DELETE FROM %1$s ncx WHERE ncx.nodeConformity IN (SELECT nc FROM arr_node_conformity nc WHERE node IN (%2$s))", table, createHqlSubNodeQuery(fund, node));
         Query query = entityManager.createQuery(hql);
 
         // nastavení parametrů dotazu
         query.setParameter("fund", fund);
-        query.setParameter("change", toChange);
+        //query.setParameter("change", toChange);
         if (node != null) {
             query.setParameter("node", node);
         }
@@ -589,7 +556,7 @@ public class RevertingChangesService {
         Assert.notNull(fund, "AS musí být vyplněn");
         String query = "SELECT n FROM arr_node n WHERE fund = :fund";
         if (node != null) {
-            query += " AND node = :node";
+            query += " AND n = :node";
         }
         return query;
     }

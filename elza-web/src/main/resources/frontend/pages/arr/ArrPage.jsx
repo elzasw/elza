@@ -352,7 +352,7 @@ class ArrPage extends ArrParentPage {
      * @param node node
      */
     handleShowNodeHistory = (versionId, node) => {
-        const form = <ArrHistoryForm versionId={versionId} node={node} />
+        const form = <ArrHistoryForm versionId={versionId} node={node} onDeleteChanges={this.handleDeleteChanges} />
         this.dispatch(modalDialogShow(this, i18n('arr.history.title.node'), form));
     }
 
