@@ -30,6 +30,11 @@ public class Change {
     private Integer userId;
 
     /**
+     * Uživatelské jméno osoby, která změnu proveda.
+     */
+    private String username;
+
+    /**
      * Typ změny.
      */
     private ArrChange.Type type;
@@ -116,5 +121,13 @@ public class Change {
 
     public void setRevert(final Boolean revert) {
         this.revert = revert;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(final String username) {
+        this.username = username;
     }
 }

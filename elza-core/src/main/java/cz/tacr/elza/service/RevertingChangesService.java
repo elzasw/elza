@@ -7,14 +7,13 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.service.vo.Change;
 import cz.tacr.elza.service.vo.ChangesResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -31,7 +30,10 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Servisní třída pro práci s obnovou změn v archivní souboru - "UNDO".
@@ -483,7 +485,27 @@ public class RevertingChangesService {
      */
     private List<Change> convertChangeResults(final List<ChangeResult> sqlResult,
                                               final boolean fullRevertPermission) {
+
+        boolean canRevert = true;
+
         List<Change> changes = new ArrayList<>(sqlResult.size());
+
+        Set<Integer> nodeIds = new HashSet<>();
+        Set<Integer> userIds = new HashSet<>();
+
+        for (ChangeResult changeResult : sqlResult) {
+            Integer primaryNodeId = changeResult.getPrimaryNodeId();
+            if (primaryNodeId != null) {
+                nodeIds.add(primaryNodeId);
+            }
+            Integer userId = changeResult.getUserId();
+            if (userId != null) {
+                userIds.add(userId);
+            }
+        }
+
+        Map<Integer, UsrUser> users = userService.findUserMap(userIds);
+
         for (ChangeResult changeResult : sqlResult) {
             Change change = new Change();
             change.setChangeId(changeResult.changeId);
@@ -492,6 +514,17 @@ public class RevertingChangesService {
             change.setPrimaryNodeId(changeResult.primaryNodeId);
             change.setType(StringUtils.isEmpty(changeResult.type) ? null : ArrChange.Type.valueOf(changeResult.type));
             change.setUserId(changeResult.userId);
+
+            if (changeResult.userId != null) {
+                UsrUser usrUser = users.get(changeResult.userId);
+                change.setUsername(usrUser.getUsername());
+            }
+
+            if (change.getType() == null || change.getType().equals(ArrChange.Type.CREATE_AS)) {
+                canRevert = false;
+            } else {
+
+            }
 
             // TODO: dopsat popis
             String description = StringUtils.isEmpty(changeResult.type) ? "neznámý typ" : ArrChange.Type.valueOf(changeResult.type).getDescription();
@@ -502,7 +535,7 @@ public class RevertingChangesService {
             change.setDescription(description);
 
             // TODO: dopsat úplnou logiku vyhodnocení
-            change.setRevert(fullRevertPermission);
+            change.setRevert(canRevert && fullRevertPermission);
 
             changes.add(change);
         }

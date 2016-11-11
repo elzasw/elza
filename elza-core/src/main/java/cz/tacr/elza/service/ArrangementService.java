@@ -330,7 +330,7 @@ public class ArrangementService {
                                           final String internalCode,
                                           final ParInstitution institution,
                                           final String dateRange) {
-        ArrChange change = createChange(null);
+        ArrChange change = createChange(ArrChange.Type.CREATE_AS);
 
         ArrFund fund = createFund(name, ruleSet, change, null, internalCode, institution, dateRange);
 

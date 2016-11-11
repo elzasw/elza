@@ -50,7 +50,7 @@ class ArrHistoryForm extends AbstractReactComponent {
                 <div className="col col2">{timeToString(new Date(item.changeDate))}</div>
                 <div className="col col3">{item.description}</div>
                 <div className="col col4">{item.type}</div>
-                <div className="col col5">{item.userId}</div>
+                <div className="col col5">{item.username ? item.username : <i>System</i>}</div>
             </div>
         )
     }

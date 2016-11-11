@@ -15,6 +15,8 @@ public interface ArrChange<U extends UsrUser, N extends ArrNode> extends Seriali
      */
     enum Type {
 
+        CREATE_AS("vytvoření AS"),
+
         /**
          * Založení JP.
          */
