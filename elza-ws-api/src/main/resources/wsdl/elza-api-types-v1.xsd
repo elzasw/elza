@@ -11,11 +11,18 @@
 			<xs:element name="description" type="eat:description" minOccurs="0" maxOccurs="1"/>
 			<xs:element name="materials" type="eat:materials" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
-		<xs:attribute name="identifier" use="required" type="eat:identifier"/>
+		<xs:attribute name="identifier" use="required" type="eat:identifier">
+			<xs:annotation>
+				<xs:documentation>identifier of the request in the source system where the request was created</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 		<xs:attribute name="systemIdentifier" use="optional" type="eat:systemIdentifier"/>
 	</xs:complexType>
 	<xs:simpleType name="requestId">
-		<xs:restriction base="xs:string"/>
+		<xs:annotation>
+			<xs:documentation>Request ID in the system which will process given request.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:token"/>
 	</xs:simpleType>
 	<xs:complexType name="errorDescription">
 		<xs:annotation>
@@ -261,7 +268,11 @@ Note: Some types of DAO does not have to have link to any file.</xs:documentatio
 		</xs:annotation>
 		<xs:sequence/>
 		<xs:attribute name="description" use="optional" type="eat:description"/>
-		<xs:attribute name="identifier" use="required" type="eat:identifier"/>
+		<xs:attribute name="identifier" use="required" type="eat:identifier">
+			<xs:annotation>
+				<xs:documentation>identifier of the revoked request in the system where request was created</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 	</xs:complexType>
 	<xs:complexType name="daoImport">
 		<xs:annotation>
@@ -305,7 +316,7 @@ Note: Some types of DAO does not have to have link to any file.</xs:documentatio
 		</xs:sequence>
 		<xs:attribute name="identifier" use="required" type="eat:identifier">
 			<xs:annotation>
-				<xs:documentation>Identifier of the request</xs:documentation>
+				<xs:documentation>Identifier of the request in the source system where the request was created.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
