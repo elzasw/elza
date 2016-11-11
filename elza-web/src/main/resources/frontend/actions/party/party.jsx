@@ -66,7 +66,7 @@ export function partyDetailClear() {
 
 export function partyUpdate(party) {
     return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.updateParty(party)).then((json) => {
+        return savingApiWrapper(dispatch, WebApi.updateParty(party)).then(() => {
             dispatch(partyDetailInvalidate());
         });
     }
@@ -83,12 +83,6 @@ export function partyCreate(party) {
     }
 }
 
-/**
- * DELETE PARTY
- * *********************************************
- * Volání webového rozhraní pro smazání osoby
- * @param partyId string - identifikátor osoby, kterou chceme smazat
- */
 export function partyDelete(partyId) {
     return dispatch => {
         WebApi.deleteParty(partyId).then(() => {
@@ -98,55 +92,33 @@ export function partyDelete(partyId) {
     }
 }
 
-/**
- * INSERT RELATION
- * *********************************************
- * Volání webového rozhraní pro vložení nové relace
- * @param relation obj - objekt vztahu, který se má vytvořit
- * @param partyId int - identidikátor osoby, které se vztah zakládá
- */
-export function insertRelation(relation, partyId) {
+
+export function relationCreate(relation) {
     return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.insertRelation(relation))
-            .then((json) => { 
-                dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
-                dispatch(partyDetailFetch(partyId));        // přenačtení detailu osoby
+        return savingApiWrapper(dispatch, WebApi.createRelation(relation))
+            .then(() => {
+                dispatch(modalDialogHide());
+                dispatch(partyDetailInvalidate());
             });
     };
 }
 
-/**
- * UPDATE RELATION
- * *********************************************
- * Volání webového rozhraní pro uložení změny vztahu
- * @param relation obj - změněný objekt vztahu
- * @param partyId int - identidikátor osoby, které vztah patří
- */
-export function updateRelation(relation, partyId) {
+export function relationDelete(relationId) {
+    return dispatch => {
+        WebApi.deleteRelation(relationId).then(() => {
+            dispatch(partyDetailInvalidate());
+        });
+    }
+}
+
+export function relationUpdate(relation) {
     return dispatch => {
         return savingApiWrapper(dispatch, WebApi.updateRelation(relation))
-            .then((json) => { 
-                dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
-                dispatch(partyDetailFetch(partyId));        // přenačtení detailu osoby
+            .then(() => {
+                dispatch(modalDialogHide());
+                dispatch(partyDetailInvalidate());
             });
     };
-}
-
-
-/**
- * DELETE RELATION
- * *********************************************
- * Volání webového rozhraní pro smazání relace
- * @param relationId int - identifikator mazané relace
- * @param partyId int - identifikátor osoby, kterou chceme smazat
- */
-export function deleteRelation(relationId, partyId) {
-    return dispatch => {
-        return WebApi.deleteRelation(relationId)
-            .then((json) => {
-                dispatch(partyDetailFetch(partyId));        // přenačtení detailu osoby
-            });
-    }
 }
 
 
@@ -156,29 +128,27 @@ export function partyAdd(partyTypeId, versionId, callback, showSubmitTypes = fal
         const partyType = objectById(partyTypes.items, partyTypeId);
 
         let label;
-        switch (partyType.code) {                                        // podle typu osoby bude různý nadpis
-            case PARTY_TYPE_CODES.PERSON: label = i18n('party.addParty'); break;
-            case PARTY_TYPE_CODES.DYNASTY: label = i18n('party.addPartyDynasty'); break;
-            case PARTY_TYPE_CODES.GROUP_PARTY: label = i18n('party.addPartyGroup'); break;
-            case PARTY_TYPE_CODES.EVENT: label = i18n('party.addPartyEvent'); break;
-            default: label = i18n('party.addParty');
+        if (Object.keys(PARTY_TYPE_CODES).indexOf(partyType.code) !== -1) {
+            label = i18n('party.create.title.' + partyType.code);
+        } else {
+            label = i18n('party.addParty');
         }
 
         dispatch(modalDialogShow(this, label, <AddPartyForm partyType={partyType} showSubmitTypes={showSubmitTypes} versionId={versionId} onSubmitForm={partyAddSubmit.bind(null, callback, dispatch)} />));
     }
 }
 
+export const PARTY_CLASS_BY_TYPE = {
+    [PARTY_TYPE_CODES.PERSON]: '.ParPersonVO',
+    [PARTY_TYPE_CODES.DYNASTY]: '.ParDynastyVO',
+    [PARTY_TYPE_CODES.GROUP_PARTY]: '.ParPartyGroupVO',
+    [PARTY_TYPE_CODES.EVENT]: '.ParEventVO',
+};
+
 function partyAddSubmit(callback, dispatch, submitType, data) {
-    let classType = '';                                     // typ osoby - je potreba uvest i jako specialni klivcove slovo
-    switch (data.partyType.code) {
-        case PARTY_TYPE_CODES.PERSON: classType = '.ParPersonVO'; break;          // typ osoby osoba
-        case PARTY_TYPE_CODES.DYNASTY: classType = '.ParDynastyVO'; break;         // typ osoby rod
-        case PARTY_TYPE_CODES.GROUP_PARTY: classType = '.ParPartyGroupVO'; break;      // typ osoby korporace
-        case PARTY_TYPE_CODES.EVENT: classType = '.ParEventVO'; break;           // typ osoby docasna korporace - udalost
-    }
     const {prefferedName, ...other} = data;
     const party = {
-        '@type': classType,
+        '@type': PARTY_CLASS_BY_TYPE[data.partyType.code],
         ...other,
         record: {
             '@class': "cz.tacr.elza.controller.vo.RegRecordVO",

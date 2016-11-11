@@ -67,16 +67,16 @@ class WebApi {
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/nodes', null, {versionId: versionId, ids: nodeIds});
     }
 
-    insertRelation(relation) {
-        return AjaxUtils.ajaxPost(WebApi.partyUrl + '/relations', null,  relation);
+    createRelation(relation) {
+        return AjaxUtils.ajaxPost(WebApi.partyUrl + '/relation', null,  relation);
     }
 
     updateRelation(relation) {
-        return AjaxUtils.ajaxPut(WebApi.partyUrl + '/relations/' + relation.id, null,  relation);
+        return AjaxUtils.ajaxPut(WebApi.partyUrl + '/relation/' + relation.id, null,  relation);
     }
 
     deleteRelation(relationId) {
-        return AjaxUtils.ajaxDelete(WebApi.partyUrl + '/relations/' + relationId);
+        return AjaxUtils.ajaxDelete(WebApi.partyUrl + '/relation/' + relationId);
     }
 
     copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId) {
@@ -230,27 +230,6 @@ class WebApi {
         });
     }
 
-    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null){
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/findRecord', {
-            search: search,
-            from: 0,
-            count: 200,
-            parentRecordId: registryParent,
-            registerTypeId: registerTypeId,
-            versionId: versionId
-        });
-    }
-
-    findRecordForRelation(search = null, roleTypeId = null, partyId = null) {
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/findRecordForRelation',{
-            search: search,
-            from: 0,
-            count: 200,
-            roleTypeId: roleTypeId,
-            partyId: partyId
-        });
-    }
-
     getBulkActions(versionId) {
         return AjaxUtils.ajaxGet(WebApi.actionUrl + '/' + versionId, null);
     }
@@ -283,11 +262,6 @@ class WebApi {
         return AjaxUtils.ajaxPost(WebApi.actionUrl + '/queue/' + versionId + '/' + code, null, nodeIds);
     }
 
-
-    getRegistry(registryId) {
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/getRecord', {recordId: registryId});
-    }
-
     versionValidate(versionId, showAll = false) {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/validateVersion/' + versionId + '/' + showAll, null)
     }
@@ -296,8 +270,14 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/validateVersionCount/' + versionId, null)
     }
 
+
+    getFundPolicy(fundVersionId) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/fund/policy/' + fundVersionId, {});
+    }
+
+    /// Registry
     createRecord(record, characteristics, registerTypeId, parentId, scopeId) {
-        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/createRecord', null, {
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/', null, {
             '@class': 'cz.tacr.elza.controller.vo.RegRecordVO',
             record,
             characteristics,
@@ -308,52 +288,83 @@ class WebApi {
         });
     }
 
-    getFundPolicy(fundVersionId) {
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/fund/policy/' + fundVersionId, {});
+    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null){
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/', {
+            search: search,
+            from: 0,
+            count: 200,
+            parentRecordId: registryParent,
+            registerTypeId: registerTypeId,
+            versionId: versionId
+        });
+    }
+
+    findRecordForRelation(search = null, roleTypeId = null, partyId = null) {
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/findRecordForRelation',{
+            search: search,
+            from: 0,
+            count: 200,
+            roleTypeId: roleTypeId,
+            partyId: partyId
+        });
+    }
+
+    getRegistry(registryId) {
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/' + registryId);
+    }
+
+    updateRegistry(record) {
+        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/' + record.id, null, record);
+    }
+
+    deleteRegistry(recordId) {
+        return AjaxUtils.ajaxDelete(WebApi.registryUrl + '/' + recordId);
     }
 
     getScopes(versionId = null) {
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/fundScopes', {versionId: versionId});
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/fundScopes', {versionId});
     }
 
     getAllScopes() {
         return AjaxUtils.ajaxGet(WebApi.registryUrl + '/scopes', null);
     }
 
-    deleteRegistry(recordId) {
-        return AjaxUtils.ajaxDelete(WebApi.registryUrl + '/deleteRecord', {recordId}, null);
-    }
     getRecordTypesForAdd(partyTypeId = null){
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/recordTypesForPartyType', {partyTypeId: partyTypeId});
-    }
-
-    updateRegistry(data) {
-        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/updateRecord', null, data);
-    }
-
-    deleteVariantRecord(variantRecordId) {
-        return AjaxUtils.ajaxDelete(WebApi.registryUrl + '/deleteVariantRecord', {variantRecordId}, null);
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/recordTypesForPartyType', {partyTypeId});
     }
 
     addRegistryVariant(data) {
-        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/createVariantRecord', null, data);
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/variantRecord/', null, data);
     }
 
-    editRegistryVariant(data) {
-        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/updateVariantRecord', null, data);
+    editRegistryVariant(variantRecord) {
+        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/variantRecord/' + variantRecord.id, null, variantRecord);
     }
 
-    deleteRegCoordinates(coordinatesId) {
-        return AjaxUtils.ajaxDelete(WebApi.registryUrl + '/deleteRegCoordinates', {coordinatesId}, null);
+    deleteVariantRecord(variantRecordId) {
+        return AjaxUtils.ajaxDelete(WebApi.registryUrl + '/variantRecord/' + variantRecordId);
     }
 
     createRegCoordinates(data){
-        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/createRegCoordinates', null, data);
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/regCoordinates', null, data);
     }
 
-    updateRegCoordinates(data) {
-        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/updateRegCoordinates', null, data);
+    updateRegCoordinates(coordinates) {
+        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/regCoordinates/' + coordinates.id, null, coordinates);
     }
+
+    deleteRegCoordinates(coordinatesId) {
+        return AjaxUtils.ajaxDelete(WebApi.registryUrl + '/regCoordinates/' + coordinatesId);
+    }
+
+    getRecordTypes() {
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/recordTypes');
+    }
+
+    getDefaultScopes() {
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/defaultScopes');
+    }
+    // End registry
 
     getNodeForm(nodeId, versionId) {
         const node = findNodeById(_faRootNode, nodeId);
@@ -419,10 +430,6 @@ class WebApi {
 
     getTemplates(code = null) {
         return AjaxUtils.ajaxGet(WebApi.ruleUrl + '/templates', code ? {code} : null);
-    }
-
-    getRegisterTypes(partyTypeId) {
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/recordTypes', {partyTypeId: partyTypeId});
     }
 
     getPacketTypes() {
@@ -515,10 +522,6 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.partyUrl + '/partyNameFormTypes');
     }
 
-    getRecordTypes() {
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/recordTypes');
-    }
-
     getPartyTypes() {
         return AjaxUtils.ajaxGet(WebApi.partyUrl + '/partyTypes');
     }
@@ -587,10 +590,6 @@ class WebApi {
 
     getIndexingState() {
         return AjaxUtils.ajaxGet(WebApi.adminUrl + '/reindexStatus');
-    }
-
-    getDefaultScopes() {
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/defaultScopes');
     }
 
     getTransformations() {

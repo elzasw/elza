@@ -9,7 +9,7 @@ import cz.tacr.elza.domain.ParPartyType;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface PartyTypeRepository extends JpaRepository<ParPartyType, Integer> {
+public interface PartyTypeRepository extends ElzaJpaRepository<ParPartyType, Integer> {
 
     ParPartyType findPartyTypeByCode(String partyTypeCode);
 

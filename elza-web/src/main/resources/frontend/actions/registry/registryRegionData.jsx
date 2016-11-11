@@ -110,7 +110,7 @@ export function registryVariantUpdate(data) {
         const {registryRegion} = getState();
         var needFetch = false;
         registryRegion.registryRegionData.item.variantRecords.map(variant => {
-            if (variant.variantRecordId == data.variantRecordId && variant.record !== data.record) {
+            if (variant.id == data.id && variant.record !== data.record) {
                 needFetch = true;
             }
         });

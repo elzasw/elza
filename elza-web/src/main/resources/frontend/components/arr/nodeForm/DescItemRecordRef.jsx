@@ -1,5 +1,3 @@
-require ('./DescItemRecordRef.less')
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -10,8 +8,9 @@ import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {MenuItem, Button} from 'react-bootstrap';
 import * as perms from 'actions/user/Permission.jsx';
 import DescItemLabel from './DescItemLabel.jsx'
+import './DescItemRecordRef.less'
 
-var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
+class DescItemRecordRef extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.bindMethods('handleChange', 'renderRecord', 'handleSearchChange',
@@ -57,7 +56,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
         }
 
         return (
-                <div className={cls} key={item.recordId} >
+                <div className={cls} key={item.id} >
                     <div className="name" title={item.record}>{item.record}</div>
                     <div className="characteristics" title={item.characteristics}>{item.characteristics}</div>
                 </div>
@@ -112,7 +111,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
                             footer={footer}
                             value={value}
                             items={this.state.recordList}
-                            getItemId={(item) => item ? item.recordId : null}
+                            getItemId={(item) => item ? item.id : null}
                             getItemName={(item) => item ? item.record : ''}
                             onSearchChange={this.handleSearchChange}
                             onChange={onChange}
@@ -132,4 +131,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps, null, null, { withRef: true })(DescItemRecordRef);
+export default connect(mapStateToProps, null, null, { withRef: true })(DescItemRecordRef);

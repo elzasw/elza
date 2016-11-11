@@ -1,17 +1,23 @@
-require ('./RegistryCoordinates.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, NoFocusButton, Icon, FormInput} from 'components/index.jsx';
+import './RegistryCoordinates.less';
 
-var RegistryCoordinates = class RegistryCoordinates extends AbstractReactComponent {
+class RegistryCoordinates extends AbstractReactComponent {
+    static PropTypes = {
+        disabled: React.PropTypes.bool.isRequired,
+        onChange: React.PropTypes.func.isRequired,
+        onDelete: React.PropTypes.func.isRequired,
+        onDownload: React.PropTypes.func.isRequired,
+        onEnterKey: React.PropTypes.func.isRequired,
+        item: React.PropTypes.object.isRequired
+    };
+
     constructor(props) {
         super(props);
-
-        this.bindMethods('handleChangeValue', 'handleChangeDescription', 'handleKeyUp', 'focus');
-
         this.state = objectFromWKT(props.item.value);
     }
 
@@ -19,11 +25,11 @@ var RegistryCoordinates = class RegistryCoordinates extends AbstractReactCompone
         this.setState(objectFromWKT(nextProps.item.value));
     }
 
-    focus() {
+    focus = () => {
         this.refs.focusEl.focus()
-    }
+    };
 
-    handleKeyUp(e) {
+    handleKeyUp = (e) => {
         if (e.keyCode == 13) {
             if (this.props.item.value) {
                 if (this.props.item.hasError === undefined) {
@@ -34,9 +40,9 @@ var RegistryCoordinates = class RegistryCoordinates extends AbstractReactCompone
                 this.handleChangeValue({target: {value: ""}});
             }
         }
-    }
+    };
 
-    handleChangeDescription(e) {
+    handleChangeDescription = (e) => {
         const val = e.target.value;
         if (val != this.props.item.description) {
             this.props.onChange({
@@ -44,9 +50,9 @@ var RegistryCoordinates = class RegistryCoordinates extends AbstractReactCompone
                 description: val
             });
         }
-    }
+    };
 
-    handleChangeValue(e) {
+    handleChangeValue = (e) => {
         const val = wktFromTypeAndData(this.state.type, e.target.value);
         if (val != this.props.item.value) {
             this.props.onChange({
@@ -54,7 +60,7 @@ var RegistryCoordinates = class RegistryCoordinates extends AbstractReactCompone
                 value: val
             });
         }
-    }
+    };
 
     render() {
         const {item, disabled, onDelete, onBlur} = this.props;
@@ -81,12 +87,12 @@ var RegistryCoordinates = class RegistryCoordinates extends AbstractReactCompone
                                     value={this.state.data}
                                 />
                             </OverlayTrigger>
-                            {item.coordinatesId ? <i className='fa fa-download download btn' onClick={this.props.onDownload} title={i18n('registry.coordinates.download')} /> : null}
+                            {item.id ? <i className='fa fa-download download btn' onClick={this.props.onDownload} title={i18n('registry.coordinates.download')} /> : null}
                         </div>
                          : <div className='value-text'>
                             <Button bsStyle='default' disabled>{wktType(this.state.type)}</Button>
                             {i18n('subNodeForm.countOfCoordinates', this.state.data)}
-                            {item.coordinatesId ? <i className='fa fa-download download btn' onClick={this.props.onDownload} title={i18n('registry.coordinates.download')} /> : null}
+                            {item.id ? <i className='fa fa-download download btn' onClick={this.props.onDownload} title={i18n('registry.coordinates.download')} /> : null}
                         </div>
                 }
                 <div className='description'>
@@ -106,15 +112,6 @@ var RegistryCoordinates = class RegistryCoordinates extends AbstractReactCompone
             </div>
         )
     }
-};
+}
 
-RegistryCoordinates.propTypes = {
-    disabled: React.PropTypes.bool.isRequired,
-    onChange: React.PropTypes.func.isRequired,
-    onDelete: React.PropTypes.func.isRequired,
-    onDownload: React.PropTypes.func.isRequired,
-    onEnterKey: React.PropTypes.func.isRequired,
-    item: React.PropTypes.object.isRequired
-};
-
-module.exports = connect(null, null, null, { withRef: true })(RegistryCoordinates);
+export default connect(null, null, null, { withRef: true })(RegistryCoordinates);

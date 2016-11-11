@@ -606,6 +606,7 @@ public class ConfigMapperConfiguration {
                         ParParty party = parRelation.getParty();
                         parRelationVO.setPartyId(party.getPartyId());
                         parRelationVO.setDisplayName(parRelation.getNote());
+                        parRelationVO.setRelationTypeId(parRelation.getRelationType().getRelationTypeId());
                     }
 
                     @Override
@@ -617,6 +618,9 @@ public class ConfigMapperConfiguration {
                             party.setPartyId(relationVO.getPartyId());
                             parRelation.setParty(party);
                         }
+                        ParRelationType parRelationType = new ParRelationType();
+                        parRelationType.setRelationTypeId(relationVO.getRelationTypeId());
+                        parRelation.setRelationType(parRelationType);
                     }
                 }).byDefault().register();
 
@@ -643,7 +647,7 @@ public class ConfigMapperConfiguration {
 
                         if (relationEntityVO.getRecord() != null) {
                             RegRecord record = new RegRecord();
-                            record.setRecordId(relationEntityVO.getRecord().getRecordId());
+                            record.setRecordId(relationEntityVO.getRecord().getId());
                             parRelationEntity.setRecord(record);
                         }
                     }
@@ -691,6 +695,7 @@ public class ConfigMapperConfiguration {
                 .exclude("registerType")
                 .exclude("scope")
                 .exclude("variantRecordList")
+                .field("recordId", "id")
                 .customize(new CustomMapper<RegRecord, RegRecordVO>() {
                     @Override
                     public void mapAtoB(final RegRecord regRecord,
@@ -885,7 +890,9 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class).byDefault().field("outputId", "id").register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
 
-        mapperFactory.classMap(RegVariantRecord.class, RegVariantRecordVO.class).customize(
+        mapperFactory.classMap(RegVariantRecord.class, RegVariantRecordVO.class)
+                .field("variantRecordId", "id")
+                .customize(
                 new CustomMapper<RegVariantRecord, RegVariantRecordVO>() {
                     @Override
                     public void mapAtoB(final RegVariantRecord regVariantRecord,
@@ -907,7 +914,9 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().register();
 
-        mapperFactory.classMap(RegCoordinates.class, RegCoordinatesVO.class).customize(
+        mapperFactory.classMap(RegCoordinates.class, RegCoordinatesVO.class)
+                .field("coordinatesId", "id")
+                .customize(
                 new CustomMapper<RegCoordinates, RegCoordinatesVO>() {
                     @Override
                     public void mapAtoB(final RegCoordinates coordinates,

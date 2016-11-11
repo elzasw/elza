@@ -12,6 +12,8 @@ class RegistryField extends AbstractReactComponent {
         detail: false,
         registryParent: null,
         registerTypeId: null,
+        roleTypeId: null,
+        partyId: null,
         versionId: null,
     };
 
@@ -23,6 +25,8 @@ class RegistryField extends AbstractReactComponent {
         onCreate: React.PropTypes.func.isRequired,
         registryParent: React.PropTypes.number,
         registerTypeId: React.PropTypes.number,
+        roleTypeId: React.PropTypes.number,
+        partyId: React.PropTypes.number,
         versionId: React.PropTypes.number
     };
 
@@ -35,9 +39,17 @@ class RegistryField extends AbstractReactComponent {
 
     handleSearchChange = (text) => {
         text = text == "" ? null : text;
-        WebApi.findRegistry(text, this.props.registryParent, this.props.registerTypeId, this.props.versionId).then(json => {
+        const {roleTypeId, partyId, registryParent, registerTypeId, versionId} = this.props;
+        console.log(roleTypeId, partyId)
+        let promise = null;
+        if (roleTypeId || partyId) {
+            promise = WebApi.findRecordForRelation(text, roleTypeId, partyId);
+        } else {
+            promise = WebApi.findRegistry(text, registryParent, registerTypeId, versionId);
+        }
+        promise.then(json => {
             this.setState({
-                registryList: json.rows
+                registryList: json.recordList
             })
         })
     };
@@ -51,14 +63,23 @@ class RegistryField extends AbstractReactComponent {
             cls += ' active'
         }
 
-        return <div className={cls} key={item.recordId} >
+        return <div className={cls} key={item.id} >
             <div className="name" title={item.record}>{item.record}</div>
             <div className="characteristics" title={item.characteristics}>{item.characteristics}</div>
         </div>;
     };
 
+    normalizeValue = (call) => (obj,id) => {
+        // změna typu aby se objekt dal použít jako návazný
+        const newobj = {
+            ...obj,
+            '@class': 'cz.tacr.elza.controller.vo.RegRecordVO',
+        };
+        call(newobj, id);
+    };
+
     render() {
-        const {locked, ...otherProps} = this.props;
+        const {locked, onChange, onBlur, ...otherProps} = this.props;
 
         return <div className='desc-item-value desc-item-value-parts'>
             <Autocomplete
@@ -68,10 +89,10 @@ class RegistryField extends AbstractReactComponent {
                 getItemId={(item) => item ? item.id : null}
                 getItemName={(item) => item && item.record ? item.record : ''}
                 onSearchChange={this.handleSearchChange}
-                onChange={this.handleChange}
-                onBlur={this.handleBlur}
                 renderItem={this.renderRecord}
                 //actions={[actions]}
+                onChange={this.normalizeValue(onChange)}
+                onBlur={this.normalizeValue(onBlur)}
                 {...otherProps}
             />
         </div>;

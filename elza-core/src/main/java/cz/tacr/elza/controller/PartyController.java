@@ -78,7 +78,7 @@ import cz.tacr.elza.service.UserService;
  * @since 21.12.2015
  */
 @RestController
-@RequestMapping("/api/party")
+@RequestMapping(value = "/api/party", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class PartyController {
 
     @Autowired
@@ -187,7 +187,7 @@ public class PartyController {
         Assert.notNull(partyVO);
 
         Assert.isTrue(
-            partyVO.getId().equals(partyId),
+                partyId.equals(partyVO.getId()),
             "V url požadavku je odkazováno na jiné ID (" + partyId + ") než ve VO (" + partyVO.getId() + ")."
         );
         validationVOService.checkPartyUpdate(partyVO);
@@ -269,8 +269,7 @@ public class PartyController {
             @Nullable @RequestParam(required = false) final Integer partyTypeId,
             @RequestParam final Integer partyId) {
 
-        ParParty party = partyRepository.getOne(partyId);
-        Assert.notNull(party, "Nebyla nalezena osoba s id " + partyId);
+        ParParty party = partyRepository.getOneCheckExist(partyId);
         Set<Integer> scopeIds = new HashSet<>();
         scopeIds.add(party.getRecord().getScope().getScopeId());
 
@@ -292,9 +291,8 @@ public class PartyController {
      * @return vložený objekt
      */
     @Transactional
-    @RequestMapping(value = "/relations", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ParRelationVO insertRelation(@RequestBody final ParRelationVO relationVO) {
+    @RequestMapping(value = "/relation", method = RequestMethod.POST)
+    public ParRelationVO createRelation(@RequestBody final ParRelationVO relationVO) {
 
         Assert.isNull(relationVO.getId());
 
@@ -317,9 +315,7 @@ public class PartyController {
      * @return aktualizovaný objekt vztahu
      */
     @Transactional
-    @RequestMapping(value = "/relations/{relationId}", method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/relation/{relationId}", method = RequestMethod.PUT)
     public ParRelationVO updateRelation(
             @PathVariable(value = "relationId") final Integer relationId,
             @RequestBody final ParRelationVO relationVO) {
@@ -342,7 +338,7 @@ public class PartyController {
      * @param relationId id vztahu
      */
     @Transactional
-    @RequestMapping(value = "/relations/{relationId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/relation/{relationId}", method = RequestMethod.DELETE)
     public void deleteRelation(@PathVariable(value = "relationId") final Integer relationId) {
 
         ParRelation relation = relationRepository.findOne(relationId);

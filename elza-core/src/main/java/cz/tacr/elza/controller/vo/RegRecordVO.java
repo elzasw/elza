@@ -16,7 +16,7 @@ public class RegRecordVO extends AbstractRegRecord {
     /**
      * Id hesla.
      */
-    private Integer recordId;
+    private Integer id;
     /**
      * Typ rejstříku.
      */
@@ -100,12 +100,12 @@ public class RegRecordVO extends AbstractRegRecord {
 
     private Date lastUpdate;
 
-    public Integer getRecordId() {
-        return recordId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setRecordId(final Integer recordId) {
-        this.recordId = recordId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public Integer getRegisterTypeId() {

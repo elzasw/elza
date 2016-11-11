@@ -502,12 +502,12 @@ public class ClientFactoryVO {
      * @return seznam rejstříkových hesel
      */
     public List<RegRecordVO> createRegRecords(final List<RegRecord> records,
-                                              final Map<Integer, Integer> recordIdPartyIdMap, final boolean fillParents,
-                                              @Nullable final RegRecord fillToParent) {
+                                              final Map<Integer, Integer> recordIdPartyIdMap,
+                                              final boolean fillParents) {
         List<RegRecordVO> result = new ArrayList<>(records.size());
         for (final RegRecord record : records) {
             Integer partyId = recordIdPartyIdMap.get(record.getRecordId());
-            result.add(createRegRecord(record, partyId, fillParents, fillToParent));
+            result.add(createRegRecord(record, partyId, fillParents));
         }
 
         return result;
@@ -519,12 +519,9 @@ public class ClientFactoryVO {
      * @param regRecord   rejstříkové heslo
      * @param partyId     id osoby
      * @param fillParents příznak zda se mají načíst rodiče rejstříku
-     * @param fillToParent
      * @return rejstříkové heslo
      */
-    public RegRecordVO createRegRecord(final RegRecord regRecord,
-                                       @Nullable final Integer partyId,
-                                       final boolean fillParents, final RegRecord fillToParent) {
+    public RegRecordVO createRegRecord(final RegRecord regRecord, @Nullable final Integer partyId, final boolean fillParents) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RegRecordVO result = mapper.map(regRecord, RegRecordVO.class);
         result.setPartyId(partyId);

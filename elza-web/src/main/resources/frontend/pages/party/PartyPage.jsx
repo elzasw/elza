@@ -120,7 +120,7 @@ class PartyPage extends AbstractReactComponent {
                 source: data.entities[i].sources,                                   // poznámka ke vztahu o zdrojích dat
                 record: {
                     "@class": ".RegRecordVO",
-                    recordId: data.entities[i].record.id
+                    id: data.entities[i].record.id
                 },
                 roleType: {roleTypeId: data.entities[i].roleTypeId}                 // typ vztahu osoby a rejstříkové položky
             }

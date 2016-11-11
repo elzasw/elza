@@ -110,7 +110,7 @@ public class KmlControllerTest extends AbstractControllerTest {
         RegRecordVO record = records.iterator().next();
 
         HashMap<String, Object> params = new HashMap<>();
-        params.put("regRecordId", record.getRecordId());
+        params.put("regRecordId", record.getId());
         Integer[] ids = multipart(spec -> spec.multiPart("file", getFile(ALL)).params(params), IMPORT_REG_COORDINATES).getBody().as(Integer[].class);
         for (Integer id : ids) {
             get(spec -> spec.pathParam("regCoordinatesId", id), EXPORT_REG_COORDINATES);

@@ -11,7 +11,7 @@ public class RegCoordinatesVO {
     /**
      * Id.
      */
-    private Integer coordinatesId;
+    private Integer id;
 
     /**
      * Id rejstříkového hesla.
@@ -28,12 +28,12 @@ public class RegCoordinatesVO {
      */
     private String description;
 
-    public Integer getCoordinatesId() {
-        return coordinatesId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setCoordinatesId(Integer coordinatesId) {
-        this.coordinatesId = coordinatesId;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public Integer getRegRecordId() {

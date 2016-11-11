@@ -19,7 +19,7 @@ import cz.tacr.elza.domain.RegScope;
  * @since 27.01.2016
  */
 @Repository
-public interface ScopeRepository extends JpaRepository<RegScope, Integer> {
+public interface ScopeRepository extends ElzaJpaRepository<RegScope, Integer> {
 
     /**
      * Najde třídy podle kodů.

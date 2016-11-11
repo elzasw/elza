@@ -629,7 +629,7 @@ public class PartyService {
         Set<ParUnitdate> unitdateRemove = new HashSet<>();
 
         ParRelationType relationType = relationTypeRepository
-                .findOne(relationSource.getRelationType().getRelationTypeId());
+                .getOneCheckExist(relationSource.getRelationType().getRelationTypeId());
 
 
         ParRelation relation;
@@ -836,7 +836,7 @@ public class PartyService {
         //navázaná entita povoleného typu rejstříku dle par_registry_role (mělo by to ideálně i dědit)
         RegRegisterType entityRegisterType = relationEntity.getRecord().getRegisterType();
         Set<Integer> registerTypeIds = registerTypeRepository.findByRelationRoleType(roleType)
-                .stream().map(t -> t.getRegisterTypeId()).collect(Collectors.toSet());
+                .stream().map(RegRegisterType::getRegisterTypeId).collect(Collectors.toSet());
         registerTypeIds = registerTypeRepository.findSubtreeIds(registerTypeIds);
         if (!registerTypeIds.contains(entityRegisterType.getRegisterTypeId())) {
             throw new IllegalArgumentException(

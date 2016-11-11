@@ -190,7 +190,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItem.packet = action.value;
                     break;
                 case 'RECORD_REF':
-                    loc.descItem.value = action.value.recordId;
+                    loc.descItem.value = action.value.id;
                     loc.descItem.record = action.value;
                     break;
                 case 'UNITDATE':

@@ -11,7 +11,7 @@ public class RegVariantRecordVO {
     /**
      * Id.
      */
-    private Integer variantRecordId;
+    private Integer id;
 
     /**
      * Id rejstříkového hesla.
@@ -28,12 +28,12 @@ public class RegVariantRecordVO {
      */
     private Integer version;
 
-    public Integer getVariantRecordId() {
-        return variantRecordId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setVariantRecordId(final Integer variantRecordId) {
-        this.variantRecordId = variantRecordId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public Integer getRegRecordId() {

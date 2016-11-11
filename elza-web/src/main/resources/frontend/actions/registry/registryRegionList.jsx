@@ -86,7 +86,7 @@ export function registryRecordDetailRequest(dataKey) {
 export function registryRecordDetailReceive(json) {
     return {
         item: json,
-        selectedId: json.recordId,
+        selectedId: json.id,
         type: types.REGISTRY_RECORD_DETAIL_RECEIVE,
         receivedAt: Date.now()
     }

@@ -49,12 +49,12 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
 
         // TODO: sjednoceni od Pavla - ELZA-591
         this.dispatch(fundSubNodeRegisterValueFocus(versionId, selectedSubNodeId, routingKey, index));
-        this.dispatch(fundSubNodeRegisterValueChange(versionId, selectedSubNodeId, routingKey, index, data.recordId));
+        this.dispatch(fundSubNodeRegisterValueChange(versionId, selectedSubNodeId, routingKey, index, data.id));
         this.dispatch(fundSubNodeRegisterValueBlur(versionId, selectedSubNodeId, routingKey, index));
 
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
-            this.dispatch(registrySelect(data.recordId, fund));
+            this.dispatch(registrySelect(data.id, fund));
             this.dispatch(routerNavigate('registry'));
         } else {    // nastavení focus zpět na prvek
         }
@@ -91,7 +91,7 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
 
         if (readMode) {
             return register.value ?
-                <DescItemLabel key={"link-" + index} onClick={this.handleDetail.bind(this, register.record.recordId)} value={register.record.record} /> :
+                <DescItemLabel key={"link-" + index} onClick={this.handleDetail.bind(this, register.record.id)} value={register.record.record} /> :
                 <DescItemLabel key={"link-" + index} value="" />;
         } else {
             const deletable = (register.id && register.value === register.prevValue) || (!register.id && !register.value);

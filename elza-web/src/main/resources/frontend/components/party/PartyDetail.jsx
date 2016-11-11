@@ -54,7 +54,7 @@ const SETTINGS_PARTY_PIN = "PARTY_PIN";
 class PartyDetail extends AbstractReactComponent {
 
     state = {
-        activeIndexes: {[PARTY_TYPE_IDENT + '_FORM_NAMES']: true},
+        activeIndexes: {[PARTY_TYPE_IDENT + '_FORM_NAMES']: true, 2: true}, // TODO @compel smazat - testovací nastavení
         visibilitySettings: {},
         visibilitySettingsValue: {}
     };
@@ -378,6 +378,13 @@ class PartyDetail extends AbstractReactComponent {
                             "desc": "Zadejte Narození osoby...",
                             "type": "relation",
                             "definition": "2",
+                            "width": 0
+                        },
+                        family: {
+                            "name": "Rodinné vztahy osoby",
+                            "desc": "Rodinné vztahy",
+                            "type": "relation",
+                            "definition": "15",
                             "width": 0
                         }
                     }

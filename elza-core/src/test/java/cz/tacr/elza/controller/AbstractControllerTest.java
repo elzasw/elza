@@ -209,9 +209,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String VALIDATION_ERROR = ARRANGEMENT_CONTROLLER_URL + "/validation/{fundVersionId}/find/{nodeId}/{direction}";
 
     // Party
-    protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations";
-    protected static final String UPDATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations/{relationId}";
-    protected static final String DELETE_RELATIONS = PARTY_CONTROLLER_URL + "/relations/{relationId}";
+    protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relation";
+    protected static final String UPDATE_RELATIONS = PARTY_CONTROLLER_URL + "/relation/{relationId}";
+    protected static final String DELETE_RELATIONS = PARTY_CONTROLLER_URL + "/relation/{relationId}";
     protected static final String FIND_PARTY = PARTY_CONTROLLER_URL + "/";
     protected static final String FIND_PARTY_FOR_PARTY = PARTY_CONTROLLER_URL + "/findPartyForParty";
     protected static final String GET_PARTY = PARTY_CONTROLLER_URL + "/{partyId}";
@@ -227,26 +227,26 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DEFAULT_SCOPES = REGISTRY_CONTROLLER_URL + "/defaultScopes";
     protected static final String CREATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes";
     protected static final String UPDATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/{scopeId}";
-    protected static final String DELETE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/";
+    protected static final String DELETE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/{scopeId}";
     protected static final String FA_SCOPES = REGISTRY_CONTROLLER_URL + "/fundScopes";
     protected static final String ALL_SCOPES = REGISTRY_CONTROLLER_URL + "/scopes";
     protected static final String RECORD_TYPES = REGISTRY_CONTROLLER_URL + "/recordTypes";
 
-    protected static final String FIND_RECORD = REGISTRY_CONTROLLER_URL + "/findRecord";
+    protected static final String FIND_RECORD = REGISTRY_CONTROLLER_URL + "/";
     protected static final String FIND_RECORD_FOR_RELATION = REGISTRY_CONTROLLER_URL + "/findRecordForRelation";
-    protected static final String GET_RECORD = REGISTRY_CONTROLLER_URL + "/getRecord";
-    protected static final String CREATE_RECORD = REGISTRY_CONTROLLER_URL + "/createRecord";
-    protected static final String UPDATE_RECORD = REGISTRY_CONTROLLER_URL + "/updateRecord";
-    protected static final String DELETE_RECORD = REGISTRY_CONTROLLER_URL + "/deleteRecord";
+    protected static final String GET_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}";
+    protected static final String CREATE_RECORD = REGISTRY_CONTROLLER_URL + "/";
+    protected static final String UPDATE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}";
+    protected static final String DELETE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}";
 
 
-    protected static final String CREATE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/createRegCoordinates";
-    protected static final String UPDATE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/updateRegCoordinates";
-    protected static final String DELETE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/deleteRegCoordinates";
+    protected static final String CREATE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/regCoordinates/";
+    protected static final String UPDATE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/regCoordinates/{coordinatesId}";
+    protected static final String DELETE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/regCoordinates/{coordinatesId}";
 
-    protected static final String CREATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/createVariantRecord";
-    protected static final String UPDATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/updateVariantRecord";
-    protected static final String DELETE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/deleteVariantRecord";
+    protected static final String CREATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/variantRecord/";
+    protected static final String UPDATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/variantRecord/{variantRecordId}";
+    protected static final String DELETE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/variantRecord/{variantRecordId}";
 
     protected static final String RECORD_TYPES_FOR_PARTY_TYPE = REGISTRY_CONTROLLER_URL + "/recordTypesForPartyType";
 
@@ -1099,7 +1099,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
             case "RECORD_REF": {
                 descItem = new ArrItemRecordRefVO();
-                ((ArrItemRecordRefVO) descItem).setValue(((RegRecordVO) value).getRecordId());
+                ((ArrItemRecordRefVO) descItem).setValue(((RegRecordVO) value).getId());
                 break;
             }
 
@@ -1821,7 +1821,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param id id třídy.
      */
     protected Response deleteScope(final int id) {
-        return delete(spec -> spec.queryParam("scopeId", id), DELETE_SCOPE);
+        return delete(spec -> spec.pathParam("scopeId", id), DELETE_SCOPE);
     }
 
     /**
@@ -1857,7 +1857,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param recordId id požadovaného hesla
      */
     protected RegRecordVO getRecord(final int recordId) {
-        return get(spec -> spec.queryParameter("recordId", recordId), GET_RECORD).getBody().as(RegRecordVO.class);
+        return get(spec -> spec.pathParam("recordId", recordId), GET_RECORD).getBody().as(RegRecordVO.class);
     }
 
     /**
@@ -1866,7 +1866,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param record VO rejstříkové heslo
      */
     protected RegRecordVO createRecord(final RegRecordVO record) {
-        return put(spec -> spec.body(record), CREATE_RECORD).getBody().as(RegRecordVO.class);
+        return post(spec -> spec.body(record), CREATE_RECORD).getBody().as(RegRecordVO.class);
     }
 
     /**
@@ -1875,7 +1875,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param record VO rejstříkové heslo
      */
     protected RegRecordVO updateRecord(final RegRecordVO record) {
-        return put(spec -> spec.body(record), UPDATE_RECORD).getBody().as(RegRecordVO.class);
+        return put(spec -> spec.pathParam("recordId", record.getId()).body(record), UPDATE_RECORD).getBody().as(RegRecordVO.class);
     }
 
     /**
@@ -1884,7 +1884,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param recordId id rejstříkového hesla
      */
     protected Response deleteRecord(final Integer recordId) {
-        return delete(spec -> spec.queryParam("recordId", recordId), DELETE_RECORD);
+        return delete(spec -> spec.pathParam("recordId", recordId), DELETE_RECORD);
     }
 
     /**
@@ -1932,7 +1932,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return VO
      */
     protected RegVariantRecordVO createVariantRecord(final RegVariantRecordVO recordVO) {
-        return put(spec -> spec.body(recordVO), CREATE_VARIANT_RECORD).getBody().as(RegVariantRecordVO.class);
+        return post(spec -> spec.body(recordVO), CREATE_VARIANT_RECORD).getBody().as(RegVariantRecordVO.class);
     }
 
     /**
@@ -1942,7 +1942,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return VO
      */
     protected RegVariantRecordVO updateVariantRecord(final RegVariantRecordVO recordVO) {
-        return put(spec -> spec.body(recordVO), UPDATE_VARIANT_RECORD).getBody().as(RegVariantRecordVO.class);
+        return put(spec -> spec.pathParam("variantRecordId", recordVO.getId()).body(recordVO), UPDATE_VARIANT_RECORD).getBody().as(RegVariantRecordVO.class);
     }
 
     /**
@@ -1952,7 +1952,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return response
      */
     protected Response deleteVariantRecord(final int id) {
-        return delete(spec -> spec.queryParam("variantRecordId", id), DELETE_VARIANT_RECORD);
+        return delete(spec -> spec.pathParam("variantRecordId", id), DELETE_VARIANT_RECORD);
     }
 
 
@@ -1963,7 +1963,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return VO
      */
     protected RegCoordinatesVO createRegCoordinates(final RegCoordinatesVO coordinates) {
-        return put(spec -> spec.body(coordinates), CREATE_REG_COORDINATES).getBody().as(RegCoordinatesVO.class);
+        return post(spec -> spec.body(coordinates), CREATE_REG_COORDINATES).getBody().as(RegCoordinatesVO.class);
     }
 
     /**
@@ -1973,7 +1973,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return VO
      */
     protected RegCoordinatesVO updateRegCoordinates(final RegCoordinatesVO coordinates) {
-        return put(spec -> spec.body(coordinates), UPDATE_REG_COORDINATES).getBody().as(RegCoordinatesVO.class);
+        return put(spec -> spec.pathParam("coordinatesId", coordinates.getId()).body(coordinates), UPDATE_REG_COORDINATES).getBody().as(RegCoordinatesVO.class);
     }
 
     /**
@@ -1983,7 +1983,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return response
      */
     protected Response deleteRegCoordinates(final int id) {
-        return delete(spec -> spec.queryParam("coordinatesId", id), DELETE_REG_COORDINATES);
+        return delete(spec -> spec.pathParam("coordinatesId", id), DELETE_REG_COORDINATES);
     }
 
     /**
@@ -1992,7 +1992,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param partyVO Party VO
      * @return VO vytvořené party
      */
-    protected ParPartyVO insertParty(final ParPartyVO partyVO) {
+    protected ParPartyVO createParty(final ParPartyVO partyVO) {
         return post(spec -> spec.body(partyVO), INSERT_PARTY).getBody().as(ParPartyVO.class);
     }
 

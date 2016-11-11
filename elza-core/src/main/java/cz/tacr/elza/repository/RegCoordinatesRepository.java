@@ -9,9 +9,10 @@ import java.util.List;
 /**
  * Repository pro souřadnice rejstříkových hesel.
  *
- * @author Petr Compel
+ * @author Petr Compel <petr.compel@marbes.cz>
+ * @since 11.11.16
  */
-public interface RegCoordinatesRepository extends JpaRepository<RegCoordinates, Integer> {
+public interface RegCoordinatesRepository extends ElzaJpaRepository<RegCoordinates, Integer> {
 
     /**
      * @param recordId  id záznamu rejtříku

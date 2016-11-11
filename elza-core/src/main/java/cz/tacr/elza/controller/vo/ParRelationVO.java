@@ -14,7 +14,7 @@ public class ParRelationVO {
 
     private Integer id;
 
-    private ParRelationTypeVO relationType;
+    private Integer relationTypeId;
 
     private ParUnitdateVO from;
 
@@ -43,12 +43,12 @@ public class ParRelationVO {
         this.id = id;
     }
 
-    public ParRelationTypeVO getRelationType() {
-        return relationType;
+    public Integer getRelationTypeId() {
+        return relationTypeId;
     }
 
-    public void setRelationType(final ParRelationTypeVO relationType) {
-        this.relationType = relationType;
+    public void setRelationTypeId(final Integer relationTypeId) {
+        this.relationTypeId = relationTypeId;
     }
 
     public ParUnitdateVO getFrom() {

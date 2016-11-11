@@ -90,7 +90,7 @@ export default function subNodeRegister(state = initialState, action = {}) {
                         ...state.data.slice(0, action.index),
                         {
                             ...register,
-                            value: action.record.recordId,
+                            value: action.record.id,
                             record: action.record,
                             touched: true
                         },

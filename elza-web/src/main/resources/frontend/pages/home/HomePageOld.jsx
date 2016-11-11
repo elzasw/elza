@@ -309,7 +309,7 @@ setTimeout(()=>this.setState({options: options2}), 4000);
             .then(json => {
                 this.setState({
                     registryList: json.recordList.map(pp => {
-                        return {id: pp.recordId, name: pp.record}
+                        return {id: pp.id, name: pp.record}
                     })
                 })
             })

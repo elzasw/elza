@@ -362,7 +362,7 @@ class SubNodeForm extends AbstractReactComponent {
 
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
-            this.dispatch(registrySelect(data.recordId, fund));
+            this.dispatch(registrySelect(data.id, fund));
             this.dispatch(routerNavigate('registry'));
         } else {    // nastavení focus zpět na prvek
             var formData = subNodeForm.formData

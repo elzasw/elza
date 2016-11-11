@@ -16,7 +16,7 @@ import cz.tacr.elza.domain.ParRelationEntity;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 04.01.2016
  */
-public interface RelationEntityRepository extends JpaRepository<ParRelationEntity, Integer> {
+public interface RelationEntityRepository extends ElzaJpaRepository<ParRelationEntity, Integer> {
 
 
     /**

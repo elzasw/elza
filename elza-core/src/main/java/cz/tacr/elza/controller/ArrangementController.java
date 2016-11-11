@@ -1275,7 +1275,7 @@ public class ArrangementController {
         Assert.notNull(input);
         Assert.notNull(input.getVersionId());
 
-        ArrFundVersion version = fundVersionRepository.getOne(input.getVersionId());
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(input.getVersionId());
 
         Set<Integer> nodeIds = arrangementService.findNodeIdsByFulltext(version, input.getNodeId(),
                 input.getSearchValue(), input.getDepth());
