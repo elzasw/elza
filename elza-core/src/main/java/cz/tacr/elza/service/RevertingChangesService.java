@@ -580,11 +580,63 @@ public class RevertingChangesService {
                 TreeNodeClient treeNodeClient = nodeMap.get(changeResult.primaryNodeId);
                 description = treeNodeClient.getName();
             } else {
-                // TODO: dopsat popis
-                description = StringUtils.isEmpty(changeResult.type) ? "neznámý typ" : ArrChange.Type.valueOf(changeResult.type).getDescription();
-                description += ", primaryNodeId: " + (changeResult.primaryNodeId == null ? "?" : changeResult.primaryNodeId);
-                description += ", changeId: " + changeResult.changeId;
-                description += ", changeDate: " + changeResult.changeDate;
+
+                if (change.getType() == null) {
+                    // TODO: dopsat popis
+                    description = StringUtils.isEmpty(changeResult.type) ? "neznámý typ" : ArrChange.Type.valueOf(changeResult.type).getDescription();
+                    description += ", primaryNodeId: " + (changeResult.primaryNodeId == null ? "?" : changeResult.primaryNodeId);
+                    description += ", changeId: " + changeResult.changeId;
+                    description += ", changeDate: " + changeResult.changeDate;
+
+                } else {
+
+                    switch (change.getType()) {
+
+                        case BULK_ACTION: {
+                            description = "Funkce (Ovlivněno JP: " + change.getNodeChanges() + ")";
+                            break;
+                        }
+
+                        case ADD_NODES_OUTPUT: {
+                            description = "Připojení JP (" + change.getNodeChanges() + ") k výstupu";
+                            break;
+                        }
+
+                        case REMOVE_NODES_OUTPUT: {
+                            description = "Odpojení JP (" + change.getNodeChanges() + ") od výstupu";
+                            break;
+                        }
+
+                        case CREATE_AS: {
+                            description = "Vytvoření archivního souboru";
+                            break;
+                        }
+
+                        case BATCH_CHANGE_DESC_ITEM: {
+                            description = "Hromadná úprava hodnot atributů";
+                            break;
+                        }
+
+                        case BATCH_DELETE_DESC_ITEM: {
+                            description = "Hromadný výmaz hodnot atributů";
+                            break;
+                        }
+
+                        case IMPORT: {
+                            description = "Import do AS";
+                            break;
+                        }
+
+                        default: {
+                            description = StringUtils.isEmpty(changeResult.type) ? "neznámý typ" : ArrChange.Type.valueOf(changeResult.type).getDescription();
+                            description += ", primaryNodeId: " + (changeResult.primaryNodeId == null ? "?" : changeResult.primaryNodeId);
+                            description += ", changeId: " + changeResult.changeId;
+                            description += ", changeDate: " + changeResult.changeDate;
+                        }
+
+                    }
+
+                }
             }
 
 
