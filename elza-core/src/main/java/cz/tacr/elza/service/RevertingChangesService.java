@@ -8,6 +8,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -211,7 +212,13 @@ public class RevertingChangesService {
         deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_item", toChange);
         deleteEntityQuery.executeUpdate();
 
-        // TODO: dodělat úpravů outputů
+        updateEntityQuery = createUpdateOutputQuery(fund, node, toChange);
+        updateEntityQuery.executeUpdate();
+
+        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_output", toChange);
+        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_output", toChange);
+        updateEntityQuery.executeUpdate();
+        deleteEntityQuery.executeUpdate();
 
         updateEntityQuery = createUpdateActionQuery(fund, node, toChange);
         updateEntityQuery.executeUpdate();
@@ -235,6 +242,22 @@ public class RevertingChangesService {
 
         levelTreeCacheService.invalidateFundVersion(fund);
         startupService.revalidateNodes();
+    }
+
+    private Query createUpdateOutputQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
+        Query query = entityManager.createQuery("UPDATE arr_output_definition d SET d.state = :stateNew WHERE d.state IN (:stateOld) AND d IN (" +
+                "SELECT no.outputDefinition FROM arr_node_output no WHERE no.node IN (" + createHqlSubNodeQuery(fund, node) + ") AND no.createChange >= :change OR no.deleteChange >= :change" +
+                ")");
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", toChange);
+        query.setParameter("stateNew", ArrOutputDefinition.OutputState.OUTDATED);
+        query.setParameter("stateOld", Arrays.asList(ArrOutputDefinition.OutputState.FINISHED));
+        if (node != null) {
+            query.setParameter("node", node);
+        }
+        return query;
     }
 
     private Query createDeleteActionQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
