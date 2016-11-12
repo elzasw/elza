@@ -208,11 +208,6 @@ public class RevertingChangesService {
         deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_data", toChange);
         deleteEntityQuery.executeUpdate();
 
-        // TODO: ověřit, proč se tady musím fakticky mazat znovu arr_node_conformity_error
-        // - musí se vyřešit předchozí mazání conformity info, pak nebude třeba
-        /*deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "descItem", "arr_node_conformity_error", toChange);
-        deleteEntityQuery.executeUpdate();*/
-
         deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_item", toChange);
         deleteEntityQuery.executeUpdate();
 
@@ -674,6 +669,10 @@ public class RevertingChangesService {
                 "      SELECT create_change_id, node_id, 1 AS weight FROM arr_node_register WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +
                 "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_node_register WHERE node_id IN (%2$s)\n" +
+                "      UNION ALL\n" +
+                "      SELECT create_change_id, node_id, 1 AS weight FROM arr_node_output WHERE node_id IN (%2$s)\n" +
+                "      UNION ALL\n" +
+                "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_node_output WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +
                 "      SELECT change_id, null, 0 AS weight FROM arr_bulk_action_run r JOIN arr_fund_version v ON r.fund_version_id = v.fund_version_id WHERE v.fund_id = :fundId AND r.state = '" + ArrBulkActionRun.State.FINISHED + "'\n" +
                 "    ) chlx ORDER BY change_id DESC\n" +
