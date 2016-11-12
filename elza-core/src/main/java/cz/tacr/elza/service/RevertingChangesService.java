@@ -108,7 +108,8 @@ public class RevertingChangesService {
         // typ oprávnění, podle kterého se určuje, zda-li je možné provést rozsáhlejší revert, nebo pouze své změny
         boolean fullRevertPermission = hasFullRevertPermission(fundVersion.getFund());
 
-        List<Change> changes = convertChangeResults(sqlResult, fundVersion, fullRevertPermission);
+                                                                                                  // TODO: vyhodnocení předchozí stránek pro uživatele a pro jiné omezení
+        List<Change> changes = convertChangeResults(sqlResult, fundVersion, fullRevertPermission, true, true);
 
         // sestavení odpovědi
         ChangesResult changesResult = new ChangesResult();
@@ -527,9 +528,14 @@ public class RevertingChangesService {
      * @param fullRevertPermission má úplné oprávnění?  @return seznam změn pro odpověď
      */
     private List<Change> convertChangeResults(final List<ChangeResult> sqlResult,
-                                              final ArrFundVersion fundVersion, final boolean fullRevertPermission) {
+                                              final ArrFundVersion fundVersion,
+                                              final boolean fullRevertPermission,
+                                              final boolean canReverBefore,
+                                              final boolean canRevertByUserBefore) {
+        UsrUser loggedUser = userService.getLoggedUser();
 
-        boolean canRevert = true;
+        boolean canRevert = canReverBefore;
+        boolean canRevertByUser = canRevertByUserBefore;
 
         List<Change> changes = new ArrayList<>(sqlResult.size());
 
@@ -564,16 +570,23 @@ public class RevertingChangesService {
             change.setType(StringUtils.isEmpty(changeResult.type) ? null : ArrChange.Type.valueOf(changeResult.type));
             change.setUserId(changeResult.userId);
 
+            // nemůžu revertovat vytvoření AS
+            if (change.getType() == null || change.getType().equals(ArrChange.Type.CREATE_AS)) {
+                canRevert = false;
+            }
+
+            UsrUser usrUser = null;
             if (changeResult.userId != null) {
-                UsrUser usrUser = users.get(changeResult.userId);
+                usrUser = users.get(changeResult.userId);
                 change.setUsername(usrUser.getUsername());
             }
 
-            if (change.getType() == null || change.getType().equals(ArrChange.Type.CREATE_AS)) {
-                canRevert = false;
-            } else {
-
+            // pokud nemám plné oprávnění vracet změny a pokud nejsem uživatel provedené změny, nemůžu provést změny
+            if (!fullRevertPermission && !loggedUser.equals(usrUser)) {
+                canRevertByUser = false;
             }
+
+            change.setRevert(canRevert && canRevertByUser);
 
             String description;
             if (changeResult.primaryNodeId != null && nodeMap.get(changeResult.primaryNodeId) != null) {
@@ -639,12 +652,7 @@ public class RevertingChangesService {
                 }
             }
 
-
             change.setDescription(description);
-
-            // TODO: dopsat úplnou logiku vyhodnocení
-            change.setRevert(canRevert && fullRevertPermission);
-
             changes.add(change);
         }
         return changes;
