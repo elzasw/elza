@@ -49,7 +49,7 @@ public class ParPartyVO {
     /**
      * Seznam tvůrců osoby.
      */
-    @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@type")
+    @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
     private List<ParPartyVO> creators;
 
     /**

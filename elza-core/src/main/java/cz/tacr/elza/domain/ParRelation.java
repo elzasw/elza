@@ -39,12 +39,12 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
     private Integer relationId;
 
     @RestResource(exported = false)
-    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)
     @JoinColumn(name = "partyId", nullable = false)
     private ParParty party;
 
     @RestResource(exported = false)
-    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParRelationType.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParRelationType.class)
     @JoinColumn(name = "relationTypeId", nullable = false)
     private ParRelationType relationType;
 

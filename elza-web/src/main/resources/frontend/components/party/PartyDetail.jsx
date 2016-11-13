@@ -8,6 +8,7 @@ import {
     PartyDetailNames,
     PartyDetailRelations,
     PartyNameForm,
+    PartyField,
     AbstractReactComponent,
     Search,
     i18n,
@@ -54,7 +55,7 @@ const SETTINGS_PARTY_PIN = "PARTY_PIN";
 class PartyDetail extends AbstractReactComponent {
 
     state = {
-        activeIndexes: {[PARTY_TYPE_IDENT + '_FORM_NAMES']: true, 2: true}, // TODO @compel smazat - testovací nastavení
+        activeIndexes: {[PARTY_TYPE_IDENT + '_FORM_NAMES']: true, 2: true, [PARTY_TYPE_CONCLUSION + '_CREATORS']: true}, // TODO @compel smazat - testovací nastavení
         visibilitySettings: {},
         visibilitySettingsValue: {}
     };
@@ -77,6 +78,7 @@ class PartyDetail extends AbstractReactComponent {
         'foundingNorm',
         'scopeNorm',
         'organization',
+        'creators[]'
     ];
 
     static requireFields = (...names) => data =>
@@ -230,7 +232,7 @@ class PartyDetail extends AbstractReactComponent {
 
     render() {
         const {userDetail, partyDetail, refTables: {calendarTypes},
-            fields: {sourceInformation}
+            fields: {sourceInformation, creators}
         } = this.props;
         const fields = this.props.fields;
         //const {fromCalendar, toCalendar} = this.state;
@@ -442,7 +444,11 @@ class PartyDetail extends AbstractReactComponent {
                                     <FormInput componentClass="textarea" {...sourceInformation} />
                                 </CollapsablePanel>
                                 <CollapsablePanel isOpen={activeIndexes[creatorsKey]} pinned={visibilitySettingsValue[creatorsKey]} header={i18n("party.detail.creators")} eventKey={creatorsKey} {...events}>
-                                    {/* TBD */}
+                                    <div>{creators.map((creator, index) => <div key={index +"-"+creator.id} className="value-group">
+                                        <PartyField {...creator} />
+                                        <NoFocusButton bsStyle="default" onClick={() => creators.removeIndex(index)}><Icon glyph="fa-plus" /></NoFocusButton>
+                                    </div>)}</div>
+                                    <NoFocusButton bsStyle="default" onClick={() => creators.addField()}><Icon glyph="fa-plus" /></NoFocusButton>
                                 </CollapsablePanel>
                             </div>;
                         }
