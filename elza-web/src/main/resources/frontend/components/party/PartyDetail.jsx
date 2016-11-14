@@ -64,10 +64,6 @@ class PartyDetail extends AbstractReactComponent {
         visibilitySettingsValue: {}
     };
 
-    static PropTypes = {
-        focus: React.PropTypes.object.isRequired,
-    };
-
     static childContextTypes = {
         shortcuts: React.PropTypes.object.isRequired
     };
@@ -102,7 +98,7 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        //this.trySetFocus(); // TODO @compel focus
+        this.trySetFocus(); // TODO @compel focus
         this.fetchIfNeeded();
         this.updateStateFromProps();
         this.props.initForm(this.handlePartyUpdate);
@@ -110,7 +106,7 @@ class PartyDetail extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
-        //this.trySetFocus(nextProps); // TODO @compel focus
+        this.trySetFocus(nextProps); // TODO @compel focus
         this.updateStateFromProps(nextProps);
     }
 
@@ -146,7 +142,7 @@ class PartyDetail extends AbstractReactComponent {
     trySetFocus = (props = this.props) => {
         const {focus} = props;
 
-        if (canSetFocus()) {
+        if (canSetFocus() && focus) {
             if (isFocusFor(focus, 'party', 2)) {
                 this.setState({}, () => {
                     const el = ReactDOM.findDOMNode(this.refs.partyDetail);
@@ -222,7 +218,7 @@ class PartyDetail extends AbstractReactComponent {
 
         const partyType = this.getPartyType();
 
-        let parts = partyType ? partyType.partyGroups : [];
+        let parts = partyType && partyType.partyGroups ? partyType.partyGroups : [];
 
         const events = {onPin:this.handlePinToggle, onSelect: this.handleToggleActive};
 

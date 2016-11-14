@@ -33,7 +33,7 @@ class PartyList extends AbstractReactComponent {
     trySetFocus = (props = this.props) => {
         const {focus} = props;
 
-        if (canSetFocus()) {
+        if (canSetFocus() && focus) {
             if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
                 if (this.refs.partyList) {   // ještě nemusí existovat
                     this.setState({}, () => {
@@ -159,8 +159,9 @@ class PartyList extends AbstractReactComponent {
 }
 
 export default connect((state) => {
-    const {app:{partyList, partyDetail}, refTables:{partyTypes}} = state;
+    const {app:{partyList, partyDetail}, focus, refTables:{partyTypes}} = state;
     return {
+        focus,
         partyList,
         partyDetail,
         partyTypes: partyTypes.fetched ? partyTypes.items : false,
