@@ -49,6 +49,7 @@ var messages = {
     "arr.exception.version.cannot.close.validation": "Nelze uzavřít verzi, protože běží validace.",
     "arr.exception.node.not.found": "Jednotka popisu nebyla nalezena, pravděpodobně byla odstraněna.",
     "arr.exception.fund.version.not.found": "Verze archivního fondu neexistuje.",
+    "arr.exception.exists.newer.change": "Existuje novější změna, je potřeba přenačíst seznam",
 
     "search.input.search": "Vyhledat...",
     "search.not.found": "nenalezeno",

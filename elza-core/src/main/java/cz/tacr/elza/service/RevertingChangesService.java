@@ -10,6 +10,8 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
@@ -186,7 +188,8 @@ public class RevertingChangesService {
         Assert.notNull(fromChange);
         Assert.notNull(toChange);
 
-        // TODO: oprávnění, kontrola změny, ...
+        Integer fundId = fund.getFundId();
+        Integer nodeId = node == null ? null : node.getNodeId();
 
         // zastavení probíhajících výpočtů pro validaci uzlů u verzí
         stopConformityInfFundVersions(fund);
@@ -198,6 +201,9 @@ public class RevertingChangesService {
                 break;
             }
         }
+
+        // provede validaci prováděného revertování
+        revertChangesValidateAction(fromChange, fundId, nodeId);
 
         Query updateEntityQuery;
         Query deleteEntityQuery;
@@ -260,6 +266,26 @@ public class RevertingChangesService {
 
         levelTreeCacheService.invalidateFundVersion(fund);
         startupService.revalidateNodes();
+    }
+
+    /**
+     * Provádí validaci akce pro revertování změn.
+     *
+     * @param fromChange změna od které se provádí revert (pouze pro kontrolu, že se jedná o poslední)
+     * @param fundId     identifikátor AS
+     * @param nodeId     identifikátor JP
+     */
+    private void revertChangesValidateAction(final @NotNull ArrChange fromChange,
+                                             final @NotNull Integer fundId,
+                                             final @Nullable Integer nodeId) {
+        // dotaz pro zjištění poslední změny (pro nastavení parametru outdated)
+        Query queryLastChange = createQueryLastChange(fundId, nodeId);
+
+        ChangeResult lastChange = convertResult((Object[]) queryLastChange.getSingleResult());
+
+        if (!fromChange.getChangeId().equals(lastChange.getChangeId())) {
+            throw new BusinessException(ArrangementCode.EXISTS_NEWER_CHANGE);
+        }
     }
 
     private Query createUpdateOutputQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {

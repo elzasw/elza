@@ -41,6 +41,11 @@ public enum ArrangementCode implements ErrorCode {
     /**
      * Jednotuka popisu neexistuje.
      */
-    NODE_NOT_FOUND;
+    NODE_NOT_FOUND,
+
+    /**
+     * Existuje novější změna v AS/JP.
+     */
+    EXISTS_NEWER_CHANGE
 
 }

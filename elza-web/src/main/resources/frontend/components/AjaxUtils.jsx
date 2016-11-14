@@ -91,6 +91,10 @@ function createMessage(result) {
         toaster = addToastrInfo(i18n('arr.exception.version.cannot.close.validation'), messages);
     }
 
+    if (result.type == 'ArrangementCode' && result.code == 'EXISTS_NEWER_CHANGE') {
+        toaster = addToastrWarning(i18n('arr.exception.exists.newer.change'), messages);
+    }
+
     if (toaster == null) {
         if (result.message) {
             messages.push(<p><LongText text={result.message}/></p>);
