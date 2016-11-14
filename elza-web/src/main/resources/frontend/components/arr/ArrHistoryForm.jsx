@@ -66,7 +66,6 @@ class ArrHistoryForm extends AbstractReactComponent {
         const useNodeId = showHistoryForNode ? ( node ? node.id : null ) : null;
         return WebApi.findChanges(versionId, useNodeId, fromIndex, toIndex - fromIndex, changeId)
             .then(json => {
-                console.log(json);
                 if (json.totalCount > 0 && changeId === null) {    // pokud nemáme uložen první changeId, uložíme si ho do state
                     this.setState({
                         changeId: json.changes[0].changeId
@@ -172,7 +171,7 @@ class ArrHistoryForm extends AbstractReactComponent {
             goToDateValue = new Date(year, month - 1, day, hh, mm, ss, 0);
         }
         // console.log(value, dateArr);
-        console.log(goToDateValue, dateTimeToLocalUTC(goToDateValue));
+        // console.log(goToDateValue, dateTimeToLocalUTC(goToDateValue));
 
         this.setState({
             goToDate: value,
