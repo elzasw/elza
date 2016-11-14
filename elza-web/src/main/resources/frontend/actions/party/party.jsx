@@ -167,18 +167,3 @@ function partyAddSubmit(callback, dispatch, submitType, data) {
         callback && callback(json, submitType);
     });
 }
-
-export function partySelect(partyId, fund = null) {
-    return {
-        partyId: partyId,
-        fund,
-        type: types.PARTY_SELECT
-    }
-}
-
-export function partyArrReset() {
-    return {
-        type: types.PARTY_ARR_RESET
-    }
-
-}

@@ -2,7 +2,8 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {indexById} from 'stores/app/utils.jsx'
 
 const initialState = {
-    partyRegionFront: [],
+    partyDetailFront: [],
+    // partyRegionFront: [],
     registryRegionFront: [],
     arrRegion: null,
     fundRegion: null,
@@ -11,7 +12,7 @@ const initialState = {
 }
 
 function updateFront(front, item, index) {
-    var result;
+    let result;
 
     if (index !== null) {  // je ve frontě, dáme ho na začátek  
         var prevItem = front[index]
@@ -35,7 +36,7 @@ function updateFront(front, item, index) {
     }
 
     // Pokud máme moc dlouhou frontu, zkrátíme ji
-    result = result.slice(0, 5)
+    result = result.slice(0, 5);
 
     return result;
 }
@@ -56,17 +57,24 @@ export default function stateRegion(state = initialState, action) {
                 ...state,
                 ...action.storageData.stateRegion
             }
-        case types.STORE_STATE_DATA:
-            var result = {
+        case types.STORE_STATE_DATA: {
+            const result = {
                 ...state,
+            };
+            if (action.app) {
+                result.app = action.app;
+                if (action.app.partyDetail && action.app.partyDetail.data) {
+                    const index = indexById(result.partyDetailFront, action.app.partyDetail.id);
+                    result.partyDetailFront = updateFront(result.partyDetailFront, action.app.partyDetail, index);
+                }
             }
 
-            if (action.partyRegion) {
-                var index = indexById(result.partyRegionFront, action.partyRegion.selectedPartyID, 'selectedPartyID');
-                result.partyRegionFront = updateFront(result.partyRegionFront, action.partyRegion, index);
-            }
+            // if (action.partyRegion) {
+            //     var index = indexById(result.partyRegionFront, action.partyRegion.selectedPartyID, 'selectedPartyID');
+            //     result.partyRegionFront = updateFront(result.partyRegionFront, action.partyRegion, index);
+            // }
             if (action.registryRegion) {
-                var index = indexById(result.registryRegionFront, action.registryRegion.selectedId, 'selectedId');
+                const index = indexById(result.registryRegionFront, action.registryRegion.selectedId, 'selectedId');
                 result.registryRegionFront = updateFront(result.registryRegionFront, action.registryRegion, index);
             }
             if (action.fundRegion) {
@@ -76,10 +84,10 @@ export default function stateRegion(state = initialState, action) {
                 result.adminRegion = action.adminRegion
             }
             if (action.arrRegion) {
-                result.arrRegion = action.arrRegion
+                result.arrRegion = action.arrRegion;
 
                 // Aktivní index dáme do fronty jako poslední, takže bude umístěn na začátek
-                var activeIndex = action.arrRegion.activeIndex
+                const activeIndex = action.arrRegion.activeIndex;
                 action.arrRegion.funds.forEach((fundobj, i) => {
                     if (i !== activeIndex) {
                         var index = indexById(result.arrRegionFront, fundobj.versionId, 'versionId');
@@ -87,13 +95,14 @@ export default function stateRegion(state = initialState, action) {
                     }
                 })
                 if (activeIndex !== null) {
-                    var fundobj = action.arrRegion.funds[activeIndex]
-                    var index = indexById(result.arrRegionFront, fundobj.versionId, 'versionId');
+                    const fundobj = action.arrRegion.funds[activeIndex];
+                    const index = indexById(result.arrRegionFront, fundobj.versionId, 'versionId');
                     result.arrRegionFront = updateFront(result.arrRegionFront, fundobj, index);
                 }
             }
 
             return result;
+        }
         default:
             return state
     }

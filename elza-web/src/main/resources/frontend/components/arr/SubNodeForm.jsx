@@ -6,7 +6,7 @@ import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPar
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
 import DescItemType from './nodeForm/DescItemType.jsx'
-import {partySelect, partyAdd} from 'actions/party/party.jsx'
+import {partyDetailFetchIfNeeded, partyAdd} from 'actions/party/party.jsx'
 import {registrySelect, registryAdd} from 'actions/registry/registryRegionList.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {setInputFocus} from 'components/Utils.jsx'
@@ -559,7 +559,7 @@ class SubNodeForm extends AbstractReactComponent {
 
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
-            this.dispatch(partySelect(data.id, fund));
+            this.dispatch(partyDetailFetchIfNeeded(data.id, fund));
             this.dispatch(routerNavigate('party'));
         } else {    // nastavení focus zpět na prvek
             var formData = subNodeForm.formData
@@ -579,7 +579,7 @@ class SubNodeForm extends AbstractReactComponent {
     handleDetailParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyId) {
         const {fund, singleDescItemTypeEdit} = this.props;
         singleDescItemTypeEdit && this.dispatch(modalDialogHide())
-        this.dispatch(partySelect(partyId, fund));
+        this.dispatch(partyDetailFetchIfNeeded(partyId, fund));
         this.dispatch(routerNavigate('party'));
     }
 

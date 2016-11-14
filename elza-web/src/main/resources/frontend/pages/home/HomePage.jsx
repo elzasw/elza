@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components/index.jsx';
-import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components/index.jsx';
+import {Splitter, Autocomplete, FundForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent, PartyList} from 'components/index.jsx';
 import {NodeTabs} from 'components/index.jsx';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages/index.jsx';
@@ -207,7 +207,7 @@ const HomePage = class HomePage extends AbstractReactComponent {
         let glyph;
         switch (type) {
             case 'PARTY_REGION':
-                glyph = 'fa-users';
+                glyph = PartyList.partyIconByPartyTypeCode(data.partyDetail.data.partyType.code);
                 break;
             case 'REGISTRY_REGION':
                 glyph = 'fa-th-list';
@@ -258,33 +258,33 @@ const HomePage = class HomePage extends AbstractReactComponent {
 
     renderHistory() {
         const {stateRegion} = this.props;
-        var partyItems = stateRegion.partyRegionFront.map((x, index) => {
-            if (x._info) {
-                const name = x._info.name;
-                const desc = x._info.desc
-                return this.renderHistoryItem(name, desc, 'PARTY_REGION', x, index)
+        const partyItems = stateRegion.partyDetailFront.map((x, index) => {
+            if (x.data) {
+                const name = x.data.name;
+                const desc = x.data.partyType.name;
+                return this.renderHistoryItem(name, desc, 'PARTY_REGION', {partyDetail:x}, index)
             }
-        })
-        var registryItems = stateRegion.registryRegionFront.map((x, index) => {
+        });
+        const registryItems = stateRegion.registryRegionFront.map((x, index) => {
             if (x.registryRegionData._info) {
                 const name = x.registryRegionData._info.name;
-                const desc = x.registryRegionData._info.desc
+                const desc = x.registryRegionData._info.desc;
                 return this.renderHistoryItem(name, desc, 'REGISTRY_REGION', x, index)
             }
-        })
-        var arrItems = stateRegion.arrRegionFront.map((x, index) => {
+        });
+        const arrItems = stateRegion.arrRegionFront.map((x, index) => {
             const name = x.name + (x.lockDate ? ' ' + dateToString(new Date(x.lockDate)) : '');
             const desc = this.getFundDesc(x)
             return this.renderHistoryItem(name, desc, 'ARR_REGION_FUND', x, index)
-        })
+        });
 
-        if(arrItems.length === 0){
+        if (arrItems.length === 0) {
             arrItems.push(this.renderMessage(i18n('home.recent.fund.emptyList.title'), i18n('home.recent.fund.emptyList.message')));
         }
-        if(registryItems.length === 1){ //registryItems vzdy obsahuje 1 objekt
+        if (registryItems.length === 1) { //registryItems vzdy obsahuje 1 objekt
             registryItems.push(this.renderMessage(i18n('home.recent.registry.emptyList.title'), i18n('home.recent.registry.emptyList.message')));
         }
-        if(partyItems.length === 1){ //partyItems vzdy obsahuje 1 objekt
+        if (partyItems.length === 0) {
             partyItems.push(this.renderMessage(i18n('home.recent.party.emptyList.title'), i18n('home.recent.party.emptyList.message')));
         }
 

@@ -8,7 +8,7 @@ import {connect} from 'react-redux'
 import {MenuItem, DropdownButton, Button} from 'react-bootstrap';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-import {partySelect, partyAdd} from 'actions/party/party.jsx'
+import {partyDetailFetchIfNeeded, partyAdd} from 'actions/party/party.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {indexById} from 'stores/app/utils.jsx'
@@ -90,7 +90,7 @@ class PartyField extends AbstractReactComponent {
             this.props.onDetail(partyId);
         } else {
             this.dispatch(modalDialogHide());
-            this.dispatch(partySelect(partyId, null));
+            this.dispatch(partyDetailFetchIfNeeded(partyId, null));
             this.dispatch(routerNavigate('party'));
         }
     };

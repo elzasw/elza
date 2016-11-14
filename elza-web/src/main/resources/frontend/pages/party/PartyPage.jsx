@@ -67,9 +67,9 @@ class PartyPage extends AbstractReactComponent {
             case 'addParty':
                 this.refs.addParty.setOpen(true);
                 break;
-            case 'addRelation':
-                this.refs.addRelation.setOpen(true);
-                break;
+            // case 'addRelation':
+            //     this.refs.addRelation.setOpen(true);
+            //     break;
             case 'area1':
                 this.dispatch(setFocus('party', 1));
                 break;
@@ -106,75 +106,6 @@ class PartyPage extends AbstractReactComponent {
         this.dispatch(partyAdd(partyTypeId, null, this.addParty, false));
     };
 
-    /**
-     * ADD RELATION
-     * *********************************************
-     * Uložení nového vztahu
-     * @param data - data vztahu z formuláře
-     */ 
-    addRelation = (data) => {
-        var entities = [];                                                          // seznam entit vztahu
-        console.log(data.entities);
-        for(var i = 0; i<data.entities.length; i++){                                // projdeme data entit z formuláře
-            entities[entities.length] = {                                           // a přidáme je do seznamu nových entit
-                source: data.entities[i].sources,                                   // poznámka ke vztahu o zdrojích dat
-                record: {
-                    "@class": ".RegRecordVO",
-                    id: data.entities[i].record.id
-                },
-                roleType: {roleTypeId: data.entities[i].roleTypeId}                 // typ vztahu osoby a rejstříkové položky
-            }
-        }  
-        var relation = {
-            partyId: this.props.partyRegion.selectedPartyData.partyId,              // identifikátor osoby, které patří vkládaný vztah
-            dateNote: data.dateNote,                                                // poznámka k dataci
-            note: data.note,                                                        // poznámka
-            from: data.from,                                                        // datace od
-            to: data.to,                                                            // datace do
-            relationEntities: entities,                                             // entity ve vztahu
-            source: data.source,
-            complementType:{relationTypeId:data.relationTypeId}                     // typ vztahu
-        };   
-        if(relation.from.textDate == "" || relation.from.textDate == null || relation.from.textDate == undefined){  
-            relation.from = null;                                                   // pokud není zadaný textová část data, celý datum se ruší
-        }
-        if(relation.to.textDate == "" || relation.to.textDate == null || relation.to.textDate == undefined){  
-            relation.to = null;                                                   // pokud není zadaný textová část data, celý datum se ruší
-        }
-        console.log(relation);
-        this.dispatch(insertRelation(relation, this.props.partyRegion.selectedPartyID));  //uložení vztahu a znovunačtení osoby             
-    };
-
-    /**
-     * HANDLE ADD RELATION
-     * *********************************************
-     * Kliknutí na volnu přidání nového vztahu
-     */     
-    handleAddRelation = (classType) => {
-        var data = {                    
-            partyTypeId: this.props.partyRegion.selectedPartyData.partyType.partyTypeId,
-            partyId: this.props.partyRegion.selectedPartyID,
-            note: "",
-            dateNote:"",
-            source: "",
-            classType: classType,
-            from: {
-                textDate: "",    
-                calendarTypeId: this.props.partyRegion.gregorianCalendarId            
-            },
-            to: {
-                textDate: "",    
-                calendarTypeId: this.props.partyRegion.gregorianCalendarId            
-            },
-            entities: [{
-                record: null,
-                roleTypeId : null,
-                sources: '',
-            }]
-        };
-        this.dispatch(modalDialogShow(this, this.props.partyRegion.selectedPartyData.record.record , <RelationForm initData={data} refTables={this.props.refTables} onSave={this.addRelation} />));
-    };
-
 
     handleImport = () => {
         this.dispatch(
@@ -200,14 +131,14 @@ class PartyPage extends AbstractReactComponent {
      * Sestavení Ribbon Menu - přidání položek pro osoby
      */ 
     buildRibbon = () => {
-        const {userDetail, partyDetail, refTables} = this.props;
+        const {userDetail, partyDetail, refTables: {partyTypes}} = this.props;
 
         const isSelected = partyDetail.id !== null;
         const altActions = [];
         if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
             altActions.push(
                 <ControllableDropdownButton key='add-party' ref='add-party' id='add-party' title={<span className="dropContent"><Icon glyph='fa-download fa-fw' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
-                    {refTables.partyTypes.items.map(type => <MenuItem key={type.id} eventKey={type.id} onClick={this.handleAddParty.bind(this, type.id)}>{type.name}</MenuItem>)}
+                    {partyTypes.items.map(type => <MenuItem key={type.id} eventKey={type.id} onClick={this.handleAddParty.bind(this, type.id)}>{type.name}</MenuItem>)}
                 </ControllableDropdownButton>
             );
             altActions.push(<Button key='export-party' onClick={this.handleImport}>
@@ -220,19 +151,7 @@ class PartyPage extends AbstractReactComponent {
         if (isSelected && partyDetail.fetched && !partyDetail.isFetching) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyDetail.data.record.scopeId})) {
                 itemActions.push(
-                    <ControllableDropdownButton key='add-relation' ref='addRelation' id='addRelation'
-                                                title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.relation.add')}</span></div></span>}>
-                        {["B", "E", "R"].map(i => {
-                            const name = i18n('party.relation.classType.' + i).toUpperCase();
-                            return <MenuItem key={"classType"+i}
-                                             onClick={this.handleAddRelation.bind(this,i)}>{name}</MenuItem>
-                        })}
-                    </ControllableDropdownButton>
-
-                    //<Button onClick={this.handleAddRelation}><Icon glyph="fa-link" /><div><span className="btnText">{i18n('party.relation.add')}</span></div></Button>
-                );
-                itemActions.push(
-                    <Button key='delete-relation' onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
+                    <Button key='delete-party' onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('party.delete.button')}</span></div>
                     </Button>
                 );
@@ -257,7 +176,7 @@ class PartyPage extends AbstractReactComponent {
      * Vykreslení stránky pro osoby
      */ 
     render() {
-        const {splitter, userDetail, partyDetail, refTables} = this.props;
+        const {splitter, userDetail, partyDetail} = this.props;
         const canEdit = partyDetail.fetched &&
             !partyDetail.isFetching &&
             partyDetail.data &&
@@ -265,9 +184,7 @@ class PartyPage extends AbstractReactComponent {
 
         const leftPanel = <PartyList />;
 
-        const centerPanel = <PartyDetail
-            refTables={refTables}
-        />;
+        const centerPanel = <PartyDetail />;
 
         return <Shortcuts name='Party' handler={this.handleShortcuts}>
             <PageLayout

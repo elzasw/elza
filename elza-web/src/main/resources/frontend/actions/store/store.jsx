@@ -22,7 +22,7 @@ export function storeRestoreFromStorage() {
                     if (stateRegion.fundRegion) {
                         dispatch(storeLoadData('FUND_REGION', stateRegion.fundRegion, false));
                     }
-                    if (stateRegion.app && stateRegion.app.length > 0) {
+                    if (stateRegion.app) {
                         dispatch(storeLoadData('APP', stateRegion.app, false));
                     }
                     if (stateRegion.registryRegionFront && stateRegion.registryRegionFront.length > 0) {
@@ -55,7 +55,14 @@ export function storeLoadData(type, data, switchView = true) {
     return (dispatch, getState) => {
         switch (type) {
             case 'APP':
+            case 'PARTY_REGION':
                 dispatch(storeLoad({store:'app', ...data}));
+                if (switchView) {
+                    if (data.partyDetail) {
+                        dispatch(routerNavigate('/party'));
+                        dispatch(setFocus('party', 1, 'list'))
+                    }
+                }
                 break;
             case 'REGISTRY_REGION':
                 dispatch(storeLoad({registryRegion: data}));

@@ -189,13 +189,7 @@ export const CHANGE_FILES = 'CHANGE_FILES'
 /**
  * Party.
  */
-export const PARTY_FIND_PARTY_REQUEST = 'PARTY_FIND_PARTY_REQUEST'  // volaní hledání osob
-export const PARTY_FIND_PARTY_RECEIVE = 'PARTY_FIND_PARTY_RECEIVE'  // dokončení hledání osob
-export const PARTY_SELECT_PARTY = 'PARTY_SELECT_PARTY'              // dokončení hledání osob
-export const PARTY_DETAIL_REQUEST = 'PARTY_DETAIL_REQUEST'          // pořadavek na načtení detailu osoby
-export const PARTY_DETAIL_RECEIVE = 'PARTY_DETAIL_RECIVE'           // dokončení požadavku na hledání osoby
-export const PARTY_DETAIL_CLEAR = 'PARTY_DETAIL_CLEAR'              // zrusi zobrazeni detailu osoby
-
+// TODO @compel - implementace websocketu to list a detail reduceru - shared
 export const PARTY_UPDATED = 'PARTY_UPDATED'                     // provedena aktualizace osoby
 export const PARTY_CREATED = 'PARTY_CREATED'
 export const PARTY_SELECT = 'PARTY_SELECT'

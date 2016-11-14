@@ -58,11 +58,12 @@ export default function detail(state = initialState, action = {}) {
         case types.STORE_SAVE: {
             return {
                 id: state.id,
+                data: !state.isFetching && state.fetched ? state.data : null,
             }
         }
         case types.STORE_LOAD: {
             return {
-                ...initialState,
+                ...state,
                 id: action.id,
             }
         }

@@ -23,10 +23,16 @@ export default function app(state = initialState, action) {
     }
 
     if (action.type == types.STORE_LOAD && action.store == "app") {
-        return {
-            partyList: SimpleListReducer(state.partyList, action.partyList),
-            partyDetail: DetailReducer(state.partyDetail, action.partyDetail)
+        const newState = {...state};
+        if (action.partyDetail) {
+            newState.partyDetail = DetailReducer(state.partyDetail, {...action.partyDetail, type: types.STORE_LOAD, store: "app"})
         }
+
+        if (action.partyList) {
+            newState.partyList = SimpleListReducer(state.partyList, {...action.partyList, type: types.STORE_LOAD, store: "app"});
+        }
+
+        return newState;
     }
 
     return state;

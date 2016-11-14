@@ -102,7 +102,7 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        this.trySetFocus();
+        //this.trySetFocus(); // TODO @compel focus
         this.fetchIfNeeded();
         this.updateStateFromProps();
         this.props.initForm(this.handlePartyUpdate);
@@ -110,7 +110,7 @@ class PartyDetail extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
-        this.trySetFocus(nextProps);
+        //this.trySetFocus(nextProps); // TODO @compel focus
         this.updateStateFromProps(nextProps);
     }
 
@@ -201,11 +201,8 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     render() {
-        const {userDetail, partyDetail, refTables: {calendarTypes},
-            fields: {sourceInformation, creators}
-        } = this.props;
+        const {userDetail, partyDetail, fields: {sourceInformation, creators}} = this.props;
         const fields = this.props.fields;
-        //const {fromCalendar, toCalendar} = this.state;
         const party = partyDetail.data;
         const {activeIndexes, visibilitySettingsValue} = this.state;
 

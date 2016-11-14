@@ -13,7 +13,7 @@ import {UrlFactory} from 'actions/index.jsx';
 import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions/registry/registryRegionList.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {routerNavigate} from 'actions/router.jsx'
-import {partySelect} from 'actions/party/party.jsx'
+import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 import {
     registryChangeDetail,
     registryRecordUpdate,
@@ -333,7 +333,7 @@ const RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
 
     handleGoToPartyPerson() {
-        this.dispatch(partySelect(this.props.registryRegionData.item.partyId));
+        this.dispatch(partyDetailFetchIfNeeded(this.props.registryRegionData.item.partyId));
         this.dispatch(routerNavigate('party'));
     }
 

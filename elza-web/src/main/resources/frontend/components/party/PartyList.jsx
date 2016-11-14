@@ -71,24 +71,27 @@ class PartyList extends AbstractReactComponent {
         //this.dispatch(partyArrReset());
     };
 
-    renderListItem = (item) => {
-        let icon;
-        switch(item.partyType.code) {
+    static partyIconByPartyTypeCode = (code) => {
+        switch(code) {
             case PARTY_TYPE_CODES.PERSON:
-                icon = 'fa-user';
+                return 'fa-user';
                 break;
             case PARTY_TYPE_CODES.GROUP_PARTY:
-                icon = 'fa-building';
+                return 'fa-building';
                 break;
             case PARTY_TYPE_CODES.EVENT:
-                icon = 'fa-hospital-o';
+                return 'fa-hospital-o';
                 break;
             case PARTY_TYPE_CODES.DYNASTY:
-                icon = 'fa-shield';
+                return 'fa-shield';
                 break;
             default:
-                icon = 'fa-times';
+                return 'fa-times';
         }
+    };
+
+    renderListItem = (item) => {
+        let icon = PartyList.partyIconByPartyTypeCode(item.partyType.code);
 
         return <div className='search-result-row' onClick={this.handlePartyDetail.bind(this, item)}>
             <div>
@@ -105,33 +108,7 @@ class PartyList extends AbstractReactComponent {
     };
 
     render() {
-        const {partyList, partyTypes} = this.props;
-        /*
-        if(partyList && partyList.length>0){
-            var description = '';
-            for(var i = 0; i<partyList.length; i++){                                                            // projdu vsechny polozky abych jim nastavil popisek
-                if(partyList[i].record && partyList[i].record.characteristics){                                 // pokud ma popisek zadany
-                    var lineEndPosition = partyList[i].record.characteristics.indexOf("\n")                     // zjistim kde konci první řádek
-                    if(lineEndPosition>=0){                                                                     // pokud vubec nekde konci (popisek muze mit jen 1 radek)
-                        description = partyList[i].record.characteristics.substring(0, lineEndPosition);        // oriznu ho do konce radku
-                    }else{
-                        description = partyList[i].record.characteristics;                                      // jinak ho necham cely                
-                    }   
-                    partyList[i].record.description = description;                                              // ulozim popisek k objektu                
-                }else{
-                    partyList[i].record.description = '';                                                       // ulozim popisek k objektu                                                                           // popisek nezadan, nastavim prazdny
-                }
-
-            }
-
-            var activeIndex = indexById(partyList, this.props.selectedPartyID, 'id')
-            partyListRows = (
-
-            )            
-        }else{
-            var label = ; ;
-            partyListRows =
-        }*/
+        const {partyDetail, partyList, partyTypes} = this.props;
 
         let arrPanel = null;
 
@@ -143,10 +120,15 @@ class PartyList extends AbstractReactComponent {
             return <Loading />;
         }
 
+        let activeIndex = null;
+        if (partyDetail.id !== null) {
+            activeIndex = indexById(partyList.filteredRows, partyDetail.id);
+        }
+
         return <div className="party-list">
             <div>
                 {arrPanel}
-                <FormInput componentClass="select" onChange={this.handleFilterType}>
+                <FormInput componentClass="select" onChange={this.handleFilterType} value={partyList.filter.type}>
                     <option value={-1}>{i18n('global.all')}</option>
                     {partyTypes.map(type => <option value={type.id} key={type.id}>{type.name}</option>)}
                 </FormInput>
@@ -166,7 +148,7 @@ class PartyList extends AbstractReactComponent {
                     className='party-listbox'
                     ref='partyList'
                     items={partyList.filteredRows}
-                    activeIndex={null}
+                    activeIndex={activeIndex}
                     renderItemContent={this.renderListItem}
                     onFocus={this.handlePartyDetail}
                     onSelect={this.handlePartyDetail}
@@ -177,9 +159,10 @@ class PartyList extends AbstractReactComponent {
 }
 
 export default connect((state) => {
-    const {app:{partyList}, refTables:{partyTypes}} = state;
+    const {app:{partyList, partyDetail}, refTables:{partyTypes}} = state;
     return {
         partyList,
+        partyDetail,
         partyTypes: partyTypes.fetched ? partyTypes.items : false,
     }
 })(PartyList);
