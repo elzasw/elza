@@ -458,8 +458,10 @@ var messages = {
     "arr.history.title.changesForDelete": "Změn k odstranění: {0}",
     "arr.history.title.globalChanges": "Globální",
     "arr.history.title.nodeChanges": "Jednotka popisu",
+    "arr.history.title.goToDate": "Dohledat změnu podle data",
     "arr.history.action.deleteFrom.show": "Přejít",
     "arr.history.action.deleteChanges": "Odstranit změny",
+    "arr.history.action.goToDate": "Zobrazit",
 
     "dms.file.title.add": "Přidání nového souboru",
     "dms.file.name": "Název souboru",

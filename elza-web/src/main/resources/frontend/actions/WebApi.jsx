@@ -122,6 +122,10 @@ class WebApi {
         return AjaxUtils.ajaxGet(WebApi.changesUrl + '/' + versionId, {nodeId, offset, maxSize, changeId});
     }
 
+    findChangesByDate(versionId, nodeId, changeId, fromDate) {
+        return AjaxUtils.ajaxGet(WebApi.changesUrl + '/' + versionId + "/date", {nodeId, maxSize: 1, changeId, fromDate});
+    }
+
     revertChanges(versionId, nodeId, fromChangeId, toChangeId){
         return AjaxUtils.ajaxGet(WebApi.changesUrl + '/' + versionId + '/revert', {nodeId, fromChangeId, toChangeId});
     }

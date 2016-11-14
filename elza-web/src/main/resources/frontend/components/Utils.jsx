@@ -594,9 +594,42 @@ calculateScrollbarWidth();
 
 function getScrollbarWidth() {
     return _scrollbarWidth;
-} 
+}
+
+/**
+ * Zarovnání čísla na dvě pozice přidáním 0, pokud je potřeba.
+ * @param number číslo
+ * @return {string} <číslo> nebo 0<číslo>
+ */
+function _dtpad(number) {
+    var r = String(number);
+    if ( r.length === 1 ) {
+        r = '0' + r;
+    }
+    return r;
+}
+
+/**
+ * Převede datum a čas na lokální datum a čas v UTC.
+ * @param date
+ * @return {*}
+ */
+function dateTimeToLocalUTC(date) {
+    if (!date) {
+        return date;
+    }
+
+    return date.getFullYear()
+        + '-' + _dtpad( date.getMonth() + 1)
+        + '-' + _dtpad( date.getDate())
+        + 'T' + _dtpad( date.getHours())
+        + ':' + _dtpad( date.getMinutes())
+        + ':' + _dtpad( date.getSeconds())
+        + '.' + _dtpad( date.getMilliseconds());
+}
 
 module.exports = {
+    dateTimeToLocalUTC,
     wktType,
     wktFromTypeAndData,
     objectFromWKT,

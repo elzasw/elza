@@ -8,6 +8,7 @@ import {LazyListBox} from 'components/index.jsx';
 import {WebApi} from 'actions/index.jsx';
 import {getScrollbarWidth, timeToString, dateToString} from 'components/Utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {dateTimeToLocalUTC} from "components/Utils"
 
 require("./ArrHistoryForm.less");
 
@@ -22,6 +23,8 @@ class ArrHistoryForm extends AbstractReactComponent {
 
         this.state = {
             node: typeof props.node !== 'undefined' ? props.node : null,
+            goToDate: "",
+            goToDateValue: null,
             changeId: null,
             selectedItem: null,
             selectedIndex: null,
@@ -43,13 +46,14 @@ class ArrHistoryForm extends AbstractReactComponent {
 
         const {selectedItem} = this.state;
         const canDelete = selectedItem && item.changeDate >= selectedItem.changeDate;
+        const typeText = i18n(`arr.history.change.title.${item.type ? item.type : "unknown"}`);
 
         return (
             <div className={`row-container ${item.revert ? " canRevert" : ""} ${canDelete ? " delete" : ""}`}>
                 <div className="col col1">{dateToString(new Date(item.changeDate))}</div>
                 <div className="col col2">{timeToString(new Date(item.changeDate))}</div>
-                <div className="col col3">{item.description}</div>
-                <div className="col col4">{i18n(`arr.history.change.title.${item.type ? item.type : "unknown"}`)}</div>
+                <div className="col col3" title={item.description}>{item.description}</div>
+                <div className="col col4" title={typeText}>{typeText}</div>
                 <div className="col col5">{item.username ? item.username : <i>System</i>}</div>
             </div>
         )
@@ -152,8 +156,49 @@ class ArrHistoryForm extends AbstractReactComponent {
         }
     }
 
+    handleGoToDateChange = (eventOrValue) => {
+        const isEvent = !!(eventOrValue && eventOrValue.stopPropagation && eventOrValue.preventDefault);
+        const value = isEvent ? eventOrValue.target.value : eventOrValue;
+
+        const dateArr = value.match(/^(\d{2})\.(\d{2})\.(\d{4})(.(\d{2}):(\d{2})(:(\d{2}))?)?$/);
+        let goToDateValue = null;
+        if (dateArr) {
+            const day = parseInt(dateArr[1]);
+            const month = parseInt(dateArr[2]);
+            const year = parseInt(dateArr[3]);
+            const hh = parseInt(dateArr[5] ? dateArr[5] : "0");
+            const mm = parseInt(dateArr[6] ? dateArr[6] : "0");
+            const ss = parseInt(dateArr[8] ? dateArr[8] : "0");
+            goToDateValue = new Date(year, month - 1, day, hh, mm, ss, 0);
+        }
+        // console.log(value, dateArr);
+        console.log(goToDateValue, dateTimeToLocalUTC(goToDateValue));
+
+        this.setState({
+            goToDate: value,
+            goToDateValue
+        })
+    }
+
+    handleGoToDate = () => {
+        const {versionId} = this.props;
+        const {goToDateValue, changeId, node, showHistoryForNode} = this.state;
+
+        const useNodeId = showHistoryForNode ? ( node ? node.id : null ) : null;
+
+        return WebApi.findChangesByDate(versionId, useNodeId, changeId, dateTimeToLocalUTC(goToDateValue))
+            .then(json => {
+                const offset = json.offset;
+                this.setState({
+                    activeIndex: offset,
+                }, () => {
+                    this.refs.listbox.ensureItemVisible(offset);
+                });
+            });
+    }
+
     render() {
-        const {selectedItem, node, showHistoryForNode, selectedIndex, activeIndex} = this.state;
+        const {goToDateValue, goToDate, selectedItem, node, showHistoryForNode, selectedIndex, activeIndex} = this.state;
         const {onClose} = this.props;
 
         return (
@@ -167,6 +212,10 @@ class ArrHistoryForm extends AbstractReactComponent {
                                 <input type="text" value={node ? node.name : ""} disabled />
                                 <Button disabled={!showHistoryForNode} onClick={this.handleChooseNode}>{i18n("global.action.choose")}</Button>
                             </FormInput>
+                        </div>
+                        <div className="go-to-date-container">
+                            <FormInput value={goToDate} placeholder="dd.mm.rrrr[ hh:mm[:ss]]" onChange={this.handleGoToDateChange} type="string" label={i18n("arr.history.title.goToDate")} />
+                            <Button disabled={!goToDateValue} onClick={this.handleGoToDate}>{i18n("arr.history.action.goToDate")}</Button>
                         </div>
                     </FormGroup>
                     <div className="changes-listbox-container">
