@@ -80,6 +80,24 @@ class PartyDetailNames extends AbstractReactComponent {
         this.props.onPartyUpdate(party);
     };
 
+    partyNameUpdate = (originalName, newName) => {
+        const partyNames = this.props.party.partyNames;
+        const index = indexById(partyNames, originalName.id);
+        const party = {
+            ...this.props.party,
+            partyNames: [
+                ...partyNames.slice(0, index),
+                {
+                    ...originalName,
+                    ...newName
+                },
+                ...partyNames.slice(index+1)
+            ]
+        };
+        this.props.onPartyUpdate(party);
+        this.dispatch(modalDialogHide());
+    };
+
     partyNameSetPreffered = (id) => {
         const party = {
             ...this.props.party,
@@ -98,7 +116,7 @@ class PartyDetailNames extends AbstractReactComponent {
 
     handlePartyNameUpdate = (partyName) => {
         const {partyType} = this.props;
-        this.dispatch(modalDialogShow(this, i18n('party.detail.name.update') , <PartyNameForm partyType={partyType} initData={partyName} onSubmitForm={this.partyNameAdd.bind(this, partyName)} />));
+        this.dispatch(modalDialogShow(this, i18n('party.detail.name.update') , <PartyNameForm partyType={partyType} initData={partyName} onSubmitForm={this.partyNameUpdate.bind(this, partyName)} />));
     };
 
     handleDelete = (id) => {
@@ -124,7 +142,7 @@ class PartyDetailNames extends AbstractReactComponent {
             {party.partyNames.map((partyName, index) => <div key={partyName.id} className="value-group">
                 <FormControl.Static>{this.getPartyName(partyName, partyType)}</FormControl.Static>
                 <div className="actions">
-                    <NoFocusButton><Icon glyph="fa-pencil" /></NoFocusButton>
+                    <NoFocusButton onClick={() => this.handlePartyNameUpdate(partyName)}><Icon glyph="fa-pencil" /></NoFocusButton>
                     {partyName.prefferedName ? i18n('party.detail.formNames.prefferedName') : <span>
                         <NoFocusButton onClick={() => this.handleDelete(partyName.id)}><Icon glyph="fa-times" /></NoFocusButton>
                         <NoFocusButton onClick={() => this.handleSelectPreffered(partyName.id)}><Icon glyph="fa-check" /></NoFocusButton>

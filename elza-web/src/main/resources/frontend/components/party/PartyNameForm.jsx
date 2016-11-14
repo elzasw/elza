@@ -19,13 +19,13 @@ const PARTY_TYPE_PERSON = 'PERSON';
 class PartyNameForm extends AbstractReactComponent {
 
     static fields = [
-        'nameFormTypeId',
+        'nameFormType.id',
         'degreeBefore',
         'degreeAfter',
         'mainPart',
         'otherPart',
-        'complements[].complementTypeId',
-        'complements[].complement',
+        'partyNameComplements[].complementTypeId',
+        'partyNameComplements[].complement',
     ];
 
     static requireFields = (...names) => data =>
@@ -43,10 +43,10 @@ class PartyNameForm extends AbstractReactComponent {
      * @return object errors - seznam chyb
      */
     static validate = function (values) {
-        let errors = PartyNameForm.requireFields('mainPart', 'nameFormTypeId')(values);
-        errors.complements = values.complements.map(PartyNameForm.requireFields('complementTypeId', 'complement'));
-        if (errors.complements.filter(i => Object.keys(i).length !== 0).length === 0) {
-            delete errors.complements;
+        let errors = PartyNameForm.requireFields('mainPart')(values);
+        errors.partyNameComplements = values.partyNameComplements.map(PartyNameForm.requireFields('complementTypeId', 'complement'));
+        if (errors.partyNameComplements.filter(i => Object.keys(i).length !== 0).length === 0) {
+            delete errors.partyNameComplements;
         }
         return errors;
     };
@@ -87,7 +87,15 @@ class PartyNameForm extends AbstractReactComponent {
         const nameFormTypeId = partyNameFormTypes.items[0].nameFormTypeId;
         if (!this.state.initialized) {
             this.setState({initialized: true, complementsTypes: partyType.complementTypes}, () => {
-                this.props.load({nameFormTypeId, ...initData});
+                let newLoad = null;
+                if (initData) {
+                    newLoad = {
+                        ...initData
+                    }
+                } else {
+                    newLoad = {nameFormType:{id: nameFormTypeId}}
+                }
+                this.props.load(newLoad);
             });
         }
     }
@@ -99,8 +107,8 @@ class PartyNameForm extends AbstractReactComponent {
 
         const {
             fields: {
-                complements,
-                nameFormTypeId,
+                partyNameComplements,
+                nameFormType,
                 degreeBefore,
                 degreeAfter,
                 mainPart,
@@ -119,11 +127,8 @@ class PartyNameForm extends AbstractReactComponent {
 
         return initialized ? <Form onSubmit={handleSubmit(submit)}>
             <Modal.Body>
-                <FormInput componentClass="select" label={i18n('party.nameFormType')} {...nameFormTypeId}>
-                    <option key="0"/>
-                    {partyNameFormTypes.items.map((i)=> {
-                        return <option value={i.nameFormTypeId} key={i.nameFormTypeId}>{i.name}</option>
-                    })}
+                <FormInput componentClass="select" label={i18n('party.nameFormType')} {...nameFormType.id}>
+                    {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
                 </FormInput>
 
                 <hr/>
@@ -137,18 +142,18 @@ class PartyNameForm extends AbstractReactComponent {
                 <hr/>
                 <div>
                     <label>{i18n('party.nameComplements')}</label>
-                    {complements.map((complement, index) => <div className="block complement" key={'complement' + index}>
+                    {partyNameComplements.map((complement, index) => <div className="block complement" key={'complement' + index}>
                             <div className="line">
                                 <FormInput type="text" {...complement.complement}/>
                                 <FormInput componentClass="select" {...complement.complementTypeId}>
                                     <option key='0'/>
                                     {complementsList}
                                 </FormInput>
-                                <Button className="btn-icon" onClick={() => {complements.removeField(index)}}><Icon glyph="fa-trash"/></Button>
+                                <Button className="btn-icon" onClick={() => {partyNameComplements.removeField(index)}}><Icon glyph="fa-trash"/></Button>
                             </div>
                         </div>
                     )}
-                    <Button className="btn-icon block" onClick={() => {complements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
+                    <Button className="btn-icon block" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
                 </div>
             </Modal.Body>
             <Modal.Footer>
