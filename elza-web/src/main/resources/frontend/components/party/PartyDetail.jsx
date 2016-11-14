@@ -44,10 +44,14 @@ const shortcutManager = new ShortcutsManager(keymap);
 
 import './PartyDetail.less';
 
-const PARTY_TYPE_IDENT = "ident";
-const PARTY_TYPE_CONCLUSION = "conclusion";
 
 const SETTINGS_PARTY_PIN = "PARTY_PIN";
+
+const UI_PARTY_GROUP_TYPE = {
+    GENERAL: 'GENERAL',
+    CONCLUSION: 'CONCLUSION',
+    IDENT: 'IDENT'
+}
 
 /**
  * Komponenta detailu osoby
@@ -55,7 +59,7 @@ const SETTINGS_PARTY_PIN = "PARTY_PIN";
 class PartyDetail extends AbstractReactComponent {
 
     state = {
-        activeIndexes: {[PARTY_TYPE_IDENT + '_FORM_NAMES']: true, 2: true, [PARTY_TYPE_CONCLUSION + '_CREATORS']: true}, // TODO @compel smazat - testovací nastavení
+        activeIndexes: {},
         visibilitySettings: {},
         visibilitySettingsValue: {}
     };
@@ -221,157 +225,7 @@ class PartyDetail extends AbstractReactComponent {
 
         const partyType = this.getPartyType();
 
-        let parts = [
-            {
-                type:PARTY_TYPE_IDENT
-            },
-        ];
-        const defGeneral = {
-            type:"GENERAL",
-            name:"Stručná charakteristika",
-            contentDefinition: {
-
-                history: {
-                    "name": "Historie",
-                    "desc": "Zadejte historii osoby...",
-                    "type": "text",
-                    "definition": "history",
-                    "width": 2
-                },
-                characteristics: {
-                    "name": "Charakteristika",
-                    "desc": "Zadejte charakteristiku osoby...",
-                    "type": "text",
-                    "definition": "characteristics",
-                    "width": 2
-                }
-            }
-        };
-        switch (partyType.code) {
-            case PARTY_TYPE_CODES.GROUP_PARTY: {
-                parts.push(
-                    {
-                        type:"GENERAL",
-                        name:"Stručná charakteristika",
-                        contentDefinition: {
-
-                            history: {
-                                "name": "Historie",
-                                "desc": "Zadejte historii osoby...",
-                                "type": "text",
-                                "definition": "history",
-                                "width": 2
-                            },
-                            characteristics: {
-                                "name": "Charakteristika",
-                                "desc": "Zadejte charakteristiku osoby...",
-                                "type": "text",
-                                "definition": "characteristics",
-                                "width": 2
-                            },
-                            scope: {
-                                "name": "scope",
-                                "desc": "Zadejte scope rodu...",
-                                "type": "text",
-                                "definition": "scope",
-                                "width": 2
-                            },
-                            foundingNorm: {
-                                "name": "foundingNorm",
-                                "desc": "Zadejte foundingNorm rodu...",
-                                "type": "text",
-                                "definition": "foundingNorm",
-                                "width": 2
-                            },
-                            scopeNorm: {
-                                "name": "scopeNorm",
-                                "desc": "Zadejte scopeNorm rodu...",
-                                "type": "text",
-                                "definition": "scopeNorm",
-                                "width": 2
-                            },
-                            organization: {
-                                "name": "organization",
-                                "desc": "Zadejte organization rodu...",
-                                "type": "text",
-                                "definition": "organization",
-                                "width": 2
-                            }
-                        }
-                    }
-                );
-                break;
-            }
-            case PARTY_TYPE_CODES.DYNASTY: {
-                parts.push(
-                    {
-                        type:"GENERAL",
-                        name:"Stručná charakteristika",
-                        contentDefinition: {
-
-                            history: {
-                                "name": "Historie",
-                                "desc": "Zadejte historii osoby...",
-                                "type": "text",
-                                "definition": "history",
-                                "width": 2
-                            },
-                            characteristics: {
-                                "name": "Charakteristika",
-                                "desc": "Zadejte charakteristiku osoby...",
-                                "type": "textarea",
-                                "definition": "characteristics",
-                                "width": 0
-                            },
-                            genealogy: {
-                                "name": "Genealogy",
-                                "desc": "Zadejte genealogy rodu...",
-                                "type": "textarea",
-                                "definition": "genealogy",
-                                "width": 0
-                            }
-                        }
-                    }
-                );
-                break;
-            }
-            case PARTY_TYPE_CODES.PERSON: {
-                parts.push(defGeneral);
-                parts.push({
-                    type:"GENERAL",
-                    name:"Vztahy",
-                    contentDefinition: {
-                        birth: {
-                            "name": "Narození",
-                            "desc": "Zadejte Narození osoby...",
-                            "type": "relation",
-                            "definition": "2",
-                            "width": 0
-                        },
-                        family: {
-                            "name": "Rodinné vztahy osoby",
-                            "desc": "Rodinné vztahy",
-                            "type": "relation",
-                            "definition": "15",
-                            "width": 0
-                        }
-                    }
-                });
-                break;
-            }
-            default:
-                parts.push(defGeneral)
-        }
-
-        parts.push({
-            type:"GENERAL",
-            name:"Poznámka",
-            contentDefinition:{}
-        });
-        parts.push({
-            type:PARTY_TYPE_CONCLUSION,
-            name:"Zdroje informací, autoři"
-        });
+        let parts = partyType ? partyType.partyGroups : [];
 
         const events = {onPin:this.handlePinToggle, onSelect: this.handleToggleActive};
 
@@ -391,9 +245,11 @@ class PartyDetail extends AbstractReactComponent {
                 </div>
                 <Form className="party-body">
                     {parts.map((i, index) => {
-                        if (i.type == PARTY_TYPE_IDENT) {
-                            const key = PARTY_TYPE_IDENT + '_FORM_NAMES';
-                            const corpKey = PARTY_TYPE_IDENT + '_CORP_IDENT';
+                        const TYPE = i.type.toUpperCase();
+
+                        if (TYPE == UI_PARTY_GROUP_TYPE.IDENT) {
+                            const key = UI_PARTY_GROUP_TYPE.IDENT + '_FORM_NAMES';
+                            const corpKey = UI_PARTY_GROUP_TYPE.IDENT + '_CORP_IDENT';
                             return <div key={index}>
                                 <CollapsablePanel isOpen={activeIndexes[key]} pinned={visibilitySettingsValue[key]} header={i18n("party.detail.formNames")} eventKey={key} {...events}>
                                     <PartyDetailNames party={party} partyType={partyType} onPartyUpdate={this.handlePartyUpdate} />
@@ -402,9 +258,9 @@ class PartyDetail extends AbstractReactComponent {
                                     <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} />
                                 </CollapsablePanel>}
                             </div>;
-                        } else if (i.type == PARTY_TYPE_CONCLUSION) {
-                            const sourcesKey = PARTY_TYPE_CONCLUSION + '_SOURCES';
-                            const creatorsKey = PARTY_TYPE_CONCLUSION + '_CREATORS';
+                        } else if (TYPE == UI_PARTY_GROUP_TYPE.CONCLUSION) {
+                            const sourcesKey = UI_PARTY_GROUP_TYPE.CONCLUSION + '_SOURCES';
+                            const creatorsKey = UI_PARTY_GROUP_TYPE.CONCLUSION + '_CREATORS';
                             return <div key={index}>
                                 <CollapsablePanel isOpen={activeIndexes[sourcesKey]} pinned={visibilitySettingsValue[sourcesKey]} header={i18n("party.detail.sources")} eventKey={sourcesKey} {...events}>
                                     <FormInput componentClass="textarea" {...sourceInformation} />
@@ -421,46 +277,63 @@ class PartyDetail extends AbstractReactComponent {
                                     <NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton>
                                 </CollapsablePanel>
                             </div>;
-                        }
-                        const items = [];
+                        } else if (TYPE === UI_PARTY_GROUP_TYPE.GENERAL) {
+                            const items = [];
 
-                        if (i.contentDefinition) {
-                            for (let key in i.contentDefinition) {
-                                if (i.contentDefinition.hasOwnProperty(key)) {
-                                    const item = i.contentDefinition[key];
-                                    const inputProps = {
-                                        ...fields[item.definition],
-                                        label: item.name,
-                                        title: item.desc
-                                    };
+                            if (i.contentDefinition) {
+                                let contentDefinition;
+                                try {
+                                    contentDefinition = JSON.parse(i.contentDefinition);
+                                } catch (e) {
+                                    console.error(e);
+                                    contentDefinition = null
+                                }
+                                if (contentDefinition) {
+                                    for (let key in contentDefinition) {
+                                        if (contentDefinition.hasOwnProperty(key)) {
+                                            const item = contentDefinition[key];
+                                            const inputProps = {
+                                                ...fields[item.definition],
+                                                label: item.name,
+                                                title: item.desc
+                                            };
 
-                                    let element = null;
+                                            let element = null;
 
-                                    if (item.type === "text") {
-                                        element = <FormInput {...inputProps} type={item.type} />
-                                    } else if (item.type === "textarea") {
-                                        element = <FormInput {...inputProps} componentClass={item.type} />
-                                    } else if (item.type === "relation") {
-                                        const type = objectById(partyType.relationTypes, item.definition, 'code');
-                                        if (type) {
-                                            element = <PartyDetailRelations party={party} relationType={type} label={item.name} />
-                                        } else {
-                                            element = "Neznámý typ relace"
+                                            if (item.type === "text") {
+                                                element = <FormInput {...inputProps} type={item.type}/>
+                                            } else if (item.type === "textarea") {
+                                                element = <FormInput {...inputProps} componentClass={item.type}/>
+                                            } else if (item.type === "relation") {
+                                                const type = objectById(partyType.relationTypes, item.definition, 'code');
+                                                if (type) {
+                                                    element = <PartyDetailRelations party={party} relationType={type}
+                                                                                    label={item.name}/>
+                                                } else {
+                                                    element = "Neznámý typ relace"
+                                                }
+                                            }
+
+                                            items.push(<div key={key} className={"el-" + (item.width ? item.width : 0)}>
+                                                {element}
+                                            </div>);
                                         }
                                     }
-
-                                    items.push(<div key={key} className={"el-" + (item.width ? item.width : 0)}>
-                                        {element}
-                                    </div>);
+                                } else {
+                                    items.push(<span>{i18n('party.detail.uiDefinitionError')}</span>)
                                 }
                             }
-                        }
 
-                        return <CollapsablePanel key={index} isOpen={activeIndexes[index]} pinned={visibilitySettingsValue[index]} header={i.name} eventKey={index} {...events}>
-                            <div className="elements-container">
-                                {items}
-                            </div>
-                        </CollapsablePanel>
+                            return <CollapsablePanel key={index} isOpen={activeIndexes[index]}
+                                                     pinned={visibilitySettingsValue[index]} header={i.name}
+                                                     eventKey={index} {...events}>
+                                <div className="elements-container">
+                                    {items}
+                                </div>
+                            </CollapsablePanel>
+                        } else {
+                            return <span>{i18n('party.detail.ui.unknownType', i.type)}</span>
+                        }
                     })}
                 </Form>
             </div>

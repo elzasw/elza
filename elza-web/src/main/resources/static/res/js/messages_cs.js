@@ -563,6 +563,8 @@ var messages = {
 
     "party.noSelection.title": "Není vybrána osoba",
     "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",
+    "party.detail.uiDefinitionError" : "Nepodařilo se renderovat UI kvůli chybné definici v nastavení UI Party Group.",
+    "party.detail.ui.unknownType" : "Neznámý typ \"{0}\" v nastavení UI Party Group.",
     "party.detail.characteristics": "Charakteristika",
     "party.detail.type": "Typ",
     "party.detail.number": "Pořadové číslo",
