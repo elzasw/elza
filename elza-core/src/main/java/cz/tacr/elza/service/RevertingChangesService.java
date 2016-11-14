@@ -89,6 +89,7 @@ public class RevertingChangesService {
         Integer fundId = fundVersion.getFund().getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
         Integer fromChangeId = fromChange == null ? null : fromChange.getChangeId();
+        boolean isNodeContext = node != null;
 
         // dotaz pro vyhledání
         Query query = createFindQuery(fundId, nodeId, maxSize, offset, fromChangeId);
@@ -108,8 +109,24 @@ public class RevertingChangesService {
         // typ oprávnění, podle kterého se určuje, zda-li je možné provést rozsáhlejší revert, nebo pouze své změny
         boolean fullRevertPermission = hasFullRevertPermission(fundVersion.getFund());
 
-                                                                                                  // TODO: vyhodnocení předchozí stránek pro uživatele a pro jiné omezení
-        List<Change> changes = convertChangeResults(sqlResult, fundVersion, fullRevertPermission, true, true);
+        // kontrola, že neexistuje předchozí změna od jiného uživatele (true - neexistuje a můžu provést revert)
+        boolean canRevertByUserBefore = true;
+
+        // pokud nemám vyšší oprávnění a načítám starší změny, kontroluji, že neexistuje předchozí změna jiného uživatele
+        if (!fullRevertPermission && offset > 0) {
+            Query findUserChangeQuery = createFindUserChangeQuery(fundId, nodeId, offset, fromChangeId);
+            Integer otherUserChangeCount = ((BigInteger) findUserChangeQuery.getSingleResult()).intValue();
+            canRevertByUserBefore = otherUserChangeCount == 0;
+        }
+
+        // kontrola, že neexistuje změna, který by uživateli bez oprávnění znemožnila provést revert (true - neexistuje a můžu provést revert)
+        boolean canReverBefore = true;
+
+        if (offset > 0 && isNodeContext) {
+            // TODO
+        }
+
+        List<Change> changes = convertChangeResults(sqlResult, fundVersion, fullRevertPermission, canReverBefore, canRevertByUserBefore, isNodeContext);
 
         // sestavení odpovědi
         ChangesResult changesResult = new ChangesResult();
@@ -233,12 +250,12 @@ public class RevertingChangesService {
         Query deleteNotUseNodesQuery = createDeleteNotUseNodesQuery();
         deleteNotUseNodesQuery.executeUpdate();
 
-        if (node != null) {
+        if (node == null) {
+            // TODO: dopsat aktualizaci celého stromu AS
+        } else {
             if (openFundVersion != null) {
                 eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, openFundVersion.getFundVersionId(), node.getNodeId()));
             }
-        } else {
-            // TODO: dopsat aktualizaci celého stromu AS
         }
 
         levelTreeCacheService.invalidateFundVersion(fund);
@@ -522,16 +539,17 @@ public class RevertingChangesService {
 
     /**
      * Převedení změn z databázového dotazu na změny pro odpověď.
-     *
-     * @param sqlResult            změny z dotazu
+     *  @param sqlResult            změny z dotazu
      * @param fundVersion          verze AS
      * @param fullRevertPermission má úplné oprávnění?  @return seznam změn pro odpověď
+     * @param isNodeContext        změny jsou v kontextu JP
      */
     private List<Change> convertChangeResults(final List<ChangeResult> sqlResult,
                                               final ArrFundVersion fundVersion,
                                               final boolean fullRevertPermission,
                                               final boolean canReverBefore,
-                                              final boolean canRevertByUserBefore) {
+                                              final boolean canRevertByUserBefore,
+                                              final boolean isNodeContext) {
         UsrUser loggedUser = userService.getLoggedUser();
 
         boolean canRevert = canReverBefore;
@@ -575,6 +593,17 @@ public class RevertingChangesService {
                 canRevert = false;
             }
 
+            if (isNodeContext) {
+                if ((change.getType() != null &&
+                        !Arrays.asList(ArrChange.Type.ADD_RECORD_NODE,
+                                ArrChange.Type.DELETE_RECORD_NODE,
+                                ArrChange.Type.UPDATE_DESC_ITEM,
+                                ArrChange.Type.ADD_DESC_ITEM,
+                                ArrChange.Type.DELETE_DESC_ITEM).contains(change.getType())) || change.getNodeChanges() > 1) {
+                    canRevert = false;
+                }
+            }
+
             UsrUser usrUser = null;
             if (changeResult.userId != null) {
                 usrUser = users.get(changeResult.userId);
@@ -602,53 +631,7 @@ public class RevertingChangesService {
                     description += ", changeDate: " + changeResult.changeDate;
 
                 } else {
-
-                    switch (change.getType()) {
-
-                        case BULK_ACTION: {
-                            description = "Funkce (Ovlivněno JP: " + change.getNodeChanges() + ")";
-                            break;
-                        }
-
-                        case ADD_NODES_OUTPUT: {
-                            description = "Připojení JP (" + change.getNodeChanges() + ") k výstupu";
-                            break;
-                        }
-
-                        case REMOVE_NODES_OUTPUT: {
-                            description = "Odpojení JP (" + change.getNodeChanges() + ") od výstupu";
-                            break;
-                        }
-
-                        case CREATE_AS: {
-                            description = "Vytvoření archivního souboru";
-                            break;
-                        }
-
-                        case BATCH_CHANGE_DESC_ITEM: {
-                            description = "Hromadná úprava hodnot atributů";
-                            break;
-                        }
-
-                        case BATCH_DELETE_DESC_ITEM: {
-                            description = "Hromadný výmaz hodnot atributů";
-                            break;
-                        }
-
-                        case IMPORT: {
-                            description = "Import do AS";
-                            break;
-                        }
-
-                        default: {
-                            description = StringUtils.isEmpty(changeResult.type) ? "neznámý typ" : ArrChange.Type.valueOf(changeResult.type).getDescription();
-                            description += ", primaryNodeId: " + (changeResult.primaryNodeId == null ? "?" : changeResult.primaryNodeId);
-                            description += ", changeId: " + changeResult.changeId;
-                            description += ", changeDate: " + changeResult.changeDate;
-                        }
-
-                    }
-
+                    description = createDescriptionNode(changeResult, change);
                 }
             }
 
@@ -656,6 +639,63 @@ public class RevertingChangesService {
             changes.add(change);
         }
         return changes;
+    }
+
+    /**
+     * Sestaví popis změny/JP.
+     *
+     * @param changeResult změna z DB
+     * @param change       změna pro klienta
+     * @return výsledný popis změny
+     */
+    private String createDescriptionNode(final ChangeResult changeResult, final Change change) {
+        String description;
+        switch (change.getType()) {
+
+            case BULK_ACTION: {
+                description = "Funkce (Ovlivněno JP: " + change.getNodeChanges() + ")";
+                break;
+            }
+
+            case ADD_NODES_OUTPUT: {
+                description = "Připojení JP (" + change.getNodeChanges() + ") k výstupu";
+                break;
+            }
+
+            case REMOVE_NODES_OUTPUT: {
+                description = "Odpojení JP (" + change.getNodeChanges() + ") od výstupu";
+                break;
+            }
+
+            case CREATE_AS: {
+                description = "Vytvoření archivního souboru";
+                break;
+            }
+
+            case BATCH_CHANGE_DESC_ITEM: {
+                description = "Hromadná úprava hodnot atributů";
+                break;
+            }
+
+            case BATCH_DELETE_DESC_ITEM: {
+                description = "Hromadný výmaz hodnot atributů";
+                break;
+            }
+
+            case IMPORT: {
+                description = "Import do AS";
+                break;
+            }
+
+            default: {
+                description = StringUtils.isEmpty(changeResult.type) ? "neznámý typ" : ArrChange.Type.valueOf(changeResult.type).getDescription();
+                description += ", primaryNodeId: " + (changeResult.primaryNodeId == null ? "?" : changeResult.primaryNodeId);
+                description += ", changeId: " + changeResult.changeId;
+                description += ", changeDate: " + changeResult.changeDate;
+            }
+
+        }
+        return description;
     }
 
     /**
@@ -804,6 +844,58 @@ public class RevertingChangesService {
         }
         query.setMaxResults(maxSize);
         query.setFirstResult(offset);
+
+        return query;
+    }
+
+    /**
+     * Vyhledá počet změn, které nevytvořil přihlášený uživatel.
+     *
+     * @param fundId       identifikátor AS
+     * @param nodeId       identifikátor JP
+     * @param fromChangeId identifikátor změny, vůči které provádíme vyhledávání
+     * @return query objekt
+     */
+    private Query createFindUserChangeQuery(final Integer fundId,
+                                            final Integer nodeId,
+                                            final int maxSize,
+                                            final Integer fromChangeId) {
+        String querySkeleton = createFindQuerySkeleton();
+
+        UsrUser loggedUser = userService.getLoggedUser();
+
+        // doplňující parametry dotazu
+        String selectParams = "COUNT(ch.change_id)";
+        String querySpecification = "GROUP BY ch.change_id";
+        List<String> wheres = new ArrayList<>();
+        if (fromChangeId != null) {
+            wheres.add("ch.change_id <= :fromChangeId");
+        }
+
+        if (loggedUser.getUserId() != null) {
+            wheres.add("ch.user_id <> :userId");
+        }
+
+        if (wheres.size() > 0) {
+            querySpecification = "WHERE " + String.join(" AND ", wheres) + " " + querySpecification;
+        }
+
+        // vnoření parametrů a vytvoření query objektu
+        String queryString = String.format(querySkeleton, selectParams, createSubNodeQuery(fundId, nodeId), querySpecification);
+        Query query = entityManager.createNativeQuery(queryString);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fundId", fundId);
+        if (nodeId != null) {
+            query.setParameter("nodeId", nodeId);
+        }
+        if (fromChangeId != null) {
+            query.setParameter("fromChangeId", fromChangeId);
+        }
+        if (loggedUser.getUserId() != null) {
+            query.setParameter("userId", loggedUser.getUserId());
+        }
+        query.setMaxResults(maxSize);
 
         return query;
     }
