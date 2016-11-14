@@ -520,6 +520,7 @@ if (_logStoreSize) {
 /**
  * reducery pro save
  */
+import app from './app/app.jsx';
 import arrRegion from './app/arr/arrRegion.jsx';
 import registryRegion from './app/registry/registryRegion.jsx';
 import fundRegion from './app/fund/fundRegion.jsx';
@@ -538,7 +539,7 @@ const save = function(store) {
     // result.registryRegion.selectedId = result.registryRegion.registryRegionData.selectedId
 
     const result = {
-        //partyRegion: partyRegion(store.partyRegion, action), TODO @compel
+        app: app(store.app, action),
         registryRegion: registryRegion(store.registryRegion, action),
         arrRegion: arrRegion(store.arrRegion, action),
         fundRegion: fundRegion(store.fundRegion, action),

@@ -96,6 +96,11 @@ class PartyDetailNames extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('party.detail.name.new') , <PartyNameForm partyType={partyType} onSubmitForm={this.partyNameAdd} />));
     };
 
+    handlePartyNameUpdate = (partyName) => {
+        const {partyType} = this.props;
+        this.dispatch(modalDialogShow(this, i18n('party.detail.name.update') , <PartyNameForm partyType={partyType} initData={partyName} onSubmitForm={this.partyNameAdd.bind(this, partyName)} />));
+    };
+
     handleDelete = (id) => {
         if (confirm(i18n('party.detail.name.delete'))) {
             this.partyNameDelete(id);

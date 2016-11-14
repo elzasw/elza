@@ -11,7 +11,7 @@ export function storeRestoreFromStorage() {
                 localStorageData = JSON.parse(localStorageData);
             }
             if (localStorageData) {
-                //console.log('Local storage data', localStorageData);
+                console.log('Local storage data', localStorageData);
                 dispatch(storeStateDataInit(localStorageData));
 
                 var stateRegion = localStorageData.stateRegion;
@@ -22,8 +22,8 @@ export function storeRestoreFromStorage() {
                     if (stateRegion.fundRegion) {
                         dispatch(storeLoadData('FUND_REGION', stateRegion.fundRegion, false));
                     }
-                    if (stateRegion.partyRegionFront && stateRegion.partyRegionFront.length > 0) {
-                        dispatch(storeLoadData('PARTY_REGION', stateRegion.partyRegionFront[0], false));
+                    if (stateRegion.app && stateRegion.app.length > 0) {
+                        dispatch(storeLoadData('APP', stateRegion.app, false));
                     }
                     if (stateRegion.registryRegionFront && stateRegion.registryRegionFront.length > 0) {
                         dispatch(storeLoadData('REGISTRY_REGION', stateRegion.registryRegionFront[0], false));
@@ -54,13 +54,8 @@ export function storeStateData(data) {
 export function storeLoadData(type, data, switchView = true) {
     return (dispatch, getState) => {
         switch (type) {
-            case 'PARTY_REGION':
-                dispatch(storeLoad({partyRegion: data}));
-                if (switchView) {
-                    dispatch(routerNavigate('/party'));
-                    dispatch(setFocus('party', 1, 'list'))
-
-                }
+            case 'APP':
+                dispatch(storeLoad({store:'app', ...data}));
                 break;
             case 'REGISTRY_REGION':
                 dispatch(storeLoad({registryRegion: data}));

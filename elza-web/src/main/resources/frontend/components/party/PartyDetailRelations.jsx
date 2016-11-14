@@ -5,7 +5,7 @@ import {FormControl} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {i18n, AbstractReactComponent, NoFocusButton, Icon, RelationForm} from 'components/index.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {relationCreate, relationDelete} from 'actions/party/party.jsx'
+import {relationCreate, relationUpdate, relationDelete} from 'actions/party/party.jsx'
 
 const RELATION_CLASS_TYPE_REPEATABILITY = {
     UNIQUE: "UNIQUE",
@@ -20,13 +20,28 @@ const USE_UNITDATE_ENUM = {
 
 const RELATION_CLASS_RELATION_CODE = "R";
 
+
+const removeUndefined = (obj) => {
+    for (let key in obj ) {
+        if (obj.hasOwnProperty(key)) {
+            if (obj[key] === undefined || obj[key] === null) {
+                delete obj[key];
+            }
+        }
+    }
+    return obj;
+};
+const isNotBlankObject = (obj) => {
+    const newObj = removeUndefined(obj);
+    return Object.keys(newObj).length > 0
+};
+
 class PartyDetailRelations extends AbstractReactComponent {
 
     static PropTypes = {
         label: React.PropTypes.element.isRequired,
         party: React.PropTypes.object.isRequired,
         relationType: React.PropTypes.object.isRequired,
-        onPartyUpdate: React.PropTypes.func.isRequired, // todo @compel možná
     };
 
     addIdentifier = (relation) => {
@@ -34,7 +49,23 @@ class PartyDetailRelations extends AbstractReactComponent {
         this.dispatch(relationCreate({
             ...relation,
             relationTypeId: relationType.id,
-            partyId: party.id
+            partyId: party.id,
+            from: isNotBlankObject(relation.from) ? relation.from : null,
+            to: isNotBlankObject(relation.to) ? relation.to : null,
+        }));
+        this.dispatch(modalDialogHide());
+    };
+
+    update = (origRelation, newRelation) => {
+        const {relationType, party} = this.props;
+        console.log(newRelation);
+        this.dispatch(relationUpdate({
+            ...origRelation,
+            ...newRelation,
+            relationTypeId: relationType.id,
+            partyId: party.id,
+            from: isNotBlankObject(newRelation.from) ? newRelation.from : null,
+            to: isNotBlankObject(newRelation.to) ? newRelation.to : null,
         }));
         this.dispatch(modalDialogHide());
     };
@@ -42,6 +73,11 @@ class PartyDetailRelations extends AbstractReactComponent {
     handleRelationAdd = () => {
         const {label, party, relationType} = this.props;
         this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} relationType={relationType} onSubmitForm={this.addIdentifier} />));
+    };
+
+    handleRelationUpdate = (relation) => {
+        const {label, party, relationType} = this.props;
+        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} relationType={relationType} initialValues={relation} onSubmitForm={this.update.bind(this, relation)} />));
     };
 
     handleRelationDelete = (id) => {
@@ -78,7 +114,7 @@ class PartyDetailRelations extends AbstractReactComponent {
                     <FormControl.Static>{relation.note}</FormControl.Static>
                 </FormControl.Static>
                 <div className="actions">
-                    <NoFocusButton><Icon glyph="fa-pencil" /></NoFocusButton>
+                    <NoFocusButton onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></NoFocusButton>
                     <NoFocusButton onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-times" /></NoFocusButton>
                 </div>
             </div>)}

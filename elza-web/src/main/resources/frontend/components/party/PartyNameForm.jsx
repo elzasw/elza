@@ -83,11 +83,11 @@ class PartyNameForm extends AbstractReactComponent {
      * Pokud nejsou nastaveny hodnoty - nastavíme hodnotu do pole nameFormTypeId a scopeId
      */
     loadData(props) {
-        const {refTables: {partyNameFormTypes}, partyType} = props;
+        const {refTables: {partyNameFormTypes}, partyType, initData} = props;
         const nameFormTypeId = partyNameFormTypes.items[0].nameFormTypeId;
         if (!this.state.initialized) {
             this.setState({initialized: true, complementsTypes: partyType.complementTypes}, () => {
-                this.props.load({nameFormTypeId});
+                this.props.load({nameFormTypeId, ...initData});
             });
         }
     }

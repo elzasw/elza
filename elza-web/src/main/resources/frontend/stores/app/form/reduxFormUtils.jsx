@@ -63,17 +63,19 @@ const mergeStateForField = (field, localState, serverState) => {
         const serverArray = serverState[key];
 
         // Necháme z lokálního pole jen ty, které nemají id
-        localArray.forEach(item => {
-            if (!item._merged) {
-                if (item.id.value) {    // existující položka v local, zatím ignorujeme, v budoucnu můžeme její aktuální změny promítnout do server
-                } else {    // nová položka v local
-                    if (!item.sendToServer) {
-                        item._merged = true;
-                        serverArray.push(item);
+        if (key !== "creators") { /// Hotfix - TODO @stanekpa - ignorace merge
+            localArray.forEach(item => {
+                if (!item._merged) {
+                    if (item.id.value) {    // existující položka v local, zatím ignorujeme, v budoucnu můžeme její aktuální změny promítnout do server
+                    } else {    // nová položka v local
+                        if (!item.sendToServer) {
+                            item._merged = true;
+                            serverArray.push(item);
+                        }
                     }
                 }
-            }
-        })
+            })
+        }
 
         // const array = state && state[key] || [];
         // if (rest) {

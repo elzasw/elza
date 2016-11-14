@@ -3,9 +3,23 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {FormControl} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {i18n, AbstractReactComponent, NoFocusButton, Icon} from 'components/index.jsx'
+import {i18n, AbstractReactComponent, NoFocusButton, Icon, PartyIdentifierForm} from 'components/index.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 
+const removeUndefined = (obj) => {
+    for (let key in obj ) {
+        if (obj.hasOwnProperty(key)) {
+            if (obj[key] === undefined || obj[key] === null) {
+                delete obj[key];
+            }
+        }
+    }
+    return obj;
+};
+const isNotBlankObject = (obj) => {
+    const newObj = removeUndefined(obj);
+    return Object.keys(newObj).length > 0
+};
 
 /**
  * Identifikátory zadané osoby - pouze u korporací
@@ -30,33 +44,50 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
         this.props.onPartyUpdate(party);
     };
 
-    addIdentifier = (data) => {
+    addIdentifier = (identifier) => {
+        console.log(isNotBlankObject(identifier.from), identifier.from)
         const party = {
             ...this.props.party,
             partyGroupIdentifiers: [
                 ...this.props.party.partyGroupIdentifiers,
                 {
-                    note: data.note,
-                    identifier: data.identifier,
-                    source: data.source,
-                    from: {
-                        textDate: data.fromText,
-                        calendarTypeId: data.fromCalendar
-                    },
-                    to: {
-                        textDate: data.toText,
-                        calendarTypeId: data.toCalendar
-                    }
-                }
+                    ...identifier,
+                    from: isNotBlankObject(identifier.from) ? identifier.from : null,
+                    to: isNotBlankObject(identifier.to) ? identifier.to : null,
+                },
             ]
         };
         this.props.onPartyUpdate(party);
         this.dispatch(modalDialogHide())
     };
 
+    update = (origIdentifier, newIdentifier) => {
+        const index = indexById(this.props.party.partyGroupIdentifiers, origIdentifier.id);
+        const party = {
+            ...this.props.party,
+            partyGroupIdentifiers: [
+                ...this.props.party.partyGroupIdentifiers.slice(0, index),
+                {
+                    ...origIdentifier,
+                    ...newIdentifier,
+                    from: isNotBlankObject(newIdentifier.from) ? newIdentifier.from : null,
+                    to: isNotBlankObject(newIdentifier.to) ? newIdentifier.to : null,
+                },
+                ...this.props.party.partyGroupIdentifiers.slice(index+1)
+            ]
+        };
+        this.dispatch(modalDialogHide());
+    };
+
     handlePartyGroupIdentifierAdd = () => {
         this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.new') , <PartyIdentifierForm onSubmitForm={this.addIdentifier} />));
     };
+
+
+    handlePartyGroupIdentifierUpdate = (partyGroupIdentifier) => {
+        this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.update'), <PartyIdentifierForm initialValues={partyGroupIdentifier} onSubmitForm={this.update.bind(this, partyGroupIdentifier)} />));
+    };
+
 
     handleDelete = (id) => {
         if (confirm(i18n('party.detail.identifier.delete'))) {
@@ -74,7 +105,7 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
             {party.partyGroupIdentifiers.map((partyGroupIdentifier, index) => <div key={partyGroupIdentifier.id} className="value-group">
                 <FormControl.Static>{partyGroupIdentifier.identifier}</FormControl.Static>
                 <div className="actions">
-                    <NoFocusButton><Icon glyph="fa-pencil" /></NoFocusButton>
+                    <NoFocusButton onClick={() => this.handlePartyGroupIdentifierUpdate(partyGroupIdentifier)}><Icon glyph="fa-pencil" /></NoFocusButton>
                     <NoFocusButton onClick={() => this.partyGroupIdentifierDelete(partyGroupIdentifier.id)}><Icon glyph="fa-times" /></NoFocusButton>
                 </div>
             </div>)}

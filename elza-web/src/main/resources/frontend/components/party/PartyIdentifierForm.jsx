@@ -25,10 +25,11 @@ class PartyIdentifierForm extends AbstractReactComponent {
         'source',
         'note',
         'identifier',
-        'fromText',
         'toText',
-        'fromCalendar',
-        'toCalendar',
+        'from.calendarTypeId',
+        'from.textDate',
+        'to.calendarTypeId',
+        'to.textDate',
     ];
 
     static validate = (values) => {
@@ -50,10 +51,8 @@ class PartyIdentifierForm extends AbstractReactComponent {
                 source,
                 note,
                 identifier,
-                fromText,
-                toText,
-                fromCalendar,
-                toCalendar,
+                from,
+                to,
             }
         } = this.props;
 
@@ -71,19 +70,19 @@ class PartyIdentifierForm extends AbstractReactComponent {
                         <div>
                             <label>{i18n('party.identifier.from')}</label>
                             <div className="line">
-                                <FormInput componentClass="select" {...fromCalendar}>
+                                <FormInput componentClass="select" {...from.calendarTypeId}>
                                     {calendarsList}
                                 </FormInput>
-                                <FormInput type="text" {...fromText} />
+                                <FormInput type="text" {...from.textDate} />
                             </div>
                         </div>
                         <div>
                             <label>{i18n('party.identifier.to')}</label>
                             <div className="line">
-                                <FormInput componentClass="select" {...toCalendar}>
+                                <FormInput componentClass="select" {...to.calendarTypeId}>
                                     {calendarsList}
                                 </FormInput>
-                                <FormInput type="text" {...toText} />
+                                <FormInput type="text" {...to.textDate} />
                             </div>
                         </div>
                     </div>

@@ -98,8 +98,7 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        //this.trySetFocus();
-        //this.initCalendarTypes(this.props, this.props);
+        this.trySetFocus();
         this.fetchIfNeeded();
         this.updateStateFromProps();
         this.props.initForm(this.handlePartyUpdate);
@@ -107,8 +106,7 @@ class PartyDetail extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
-        //this.trySetFocus(nextProps);
-        ///this.initCalendarTypes(this.props, nextProps);
+        this.trySetFocus(nextProps);
         this.updateStateFromProps(nextProps);
     }
 
@@ -141,50 +139,18 @@ class PartyDetail extends AbstractReactComponent {
         }
     };
 
-    /**
-     * TODO Revert Petr
-     */
-    /*trySetFocus = (props = this.props) => {
+    trySetFocus = (props = this.props) => {
         const {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, 'party', 2)) {
                 this.setState({}, () => {
-                    var el = ReactDOM.findDOMNode(this.refs.partyDetail)
-                    setInputFocus(el, false)
+                    const el = ReactDOM.findDOMNode(this.refs.partyDetail);
+                    setInputFocus(el, false);
                     focusWasSet()
                 })
             }
         }
-    };*/
-
-    /**
-     * Inicializace typů kalendáře (z důvodu možnosti výběru typu kalendáře, když není zadaná hodnota datumu. Nedochází k ukládání osoby)
-     */
-    initCalendarTypes = (props, nextProps)  => {
-        const party = nextProps.partyDetail.data;
-        let {fromCalendar, toCalendar} = this.state;
-
-        var partyChanged = props.partyDetail.id != nextProps.partyDetail.id;
-        if (partyChanged) {
-            fromCalendar = null;
-            toCalendar = null;
-        }
-
-
-        if (party) {
-            if (party.from != undefined && party.from.calendarTypeId != undefined) {
-                fromCalendar = party.from.calendarTypeId;
-            }
-            fromCalendar = fromCalendar == undefined ? "A" : fromCalendar;
-
-            if (party.to != undefined && party.to.calendarTypeId != undefined) {
-                toCalendar = party.to.calendarTypeId;
-            }
-            toCalendar = toCalendar == undefined ? "A" : toCalendar;
-        }
-
-        this.setState({toCalendar, fromCalendar});
     };
 
     getChildContext() {
@@ -446,9 +412,13 @@ class PartyDetail extends AbstractReactComponent {
                                 <CollapsablePanel isOpen={activeIndexes[creatorsKey]} pinned={visibilitySettingsValue[creatorsKey]} header={i18n("party.detail.creators")} eventKey={creatorsKey} {...events}>
                                     <div>{creators.map((creator, index) => <div key={index +"-"+creator.id} className="value-group">
                                         <PartyField {...creator} />
-                                        <NoFocusButton bsStyle="default" onClick={() => creators.removeIndex(index)}><Icon glyph="fa-plus" /></NoFocusButton>
+                                        <NoFocusButton bsStyle="default" onClick={() => {
+                                            if (confirm(i18n('party.detail.creator.delete'))) {
+                                                creators.removeField(index)
+                                            }
+                                        }}><Icon glyph="fa-trash" /></NoFocusButton>
                                     </div>)}</div>
-                                    <NoFocusButton bsStyle="default" onClick={() => creators.addField()}><Icon glyph="fa-plus" /></NoFocusButton>
+                                    <NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton>
                                 </CollapsablePanel>
                             </div>;
                         }

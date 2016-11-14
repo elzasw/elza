@@ -1,3 +1,4 @@
+import * as types from 'actions/constants/ActionTypes.js';
 import {REQUEST, RESPONSE, SELECT, INVALIDATE, UPDATE_VALUE} from './DetailActions'
 
 /**
@@ -52,6 +53,17 @@ export default function detail(state = initialState, action = {}) {
             return {
                 ...state,
                 data: action.data
+            }
+        }
+        case types.STORE_SAVE: {
+            return {
+                id: state.id,
+            }
+        }
+        case types.STORE_LOAD: {
+            return {
+                ...initialState,
+                id: action.id,
             }
         }
         default:
