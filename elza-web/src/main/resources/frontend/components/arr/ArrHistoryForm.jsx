@@ -49,7 +49,7 @@ class ArrHistoryForm extends AbstractReactComponent {
                 <div className="col col1">{dateToString(new Date(item.changeDate))}</div>
                 <div className="col col2">{timeToString(new Date(item.changeDate))}</div>
                 <div className="col col3">{item.description}</div>
-                <div className="col col4">{item.type}</div>
+                <div className="col col4">{i18n(`arr.history.change.title.${item.type ? item.type : "unknown"}`)}</div>
                 <div className="col col5">{item.username ? item.username : <i>System</i>}</div>
             </div>
         )
@@ -87,7 +87,6 @@ class ArrHistoryForm extends AbstractReactComponent {
             })
         } else {
             this.setState({
-                selectedIndex: null,
                 activeIndex: index,
             })
         }
@@ -146,9 +145,11 @@ class ArrHistoryForm extends AbstractReactComponent {
 
     handleDeleteChanges = () => {
         const {onDeleteChanges} = this.props;
-        const {node, changeId, selectedItem} = this.state;
+        const {node, changeId, selectedIndex, selectedItem} = this.state;
 
-        onDeleteChanges(node ? node.id : null, changeId, selectedItem.changeId);
+        if (confirm(i18n('arr.history.deleteQuestion', selectedIndex + 1))) {
+            onDeleteChanges(node ? node.id : null, changeId, selectedItem.changeId);
+        }
     }
 
     render() {

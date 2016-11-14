@@ -45,7 +45,8 @@ var VirtualList = React.createClass({
         var viewHeight = typeof container.innerHeight !== 'undefined' ? container.innerHeight : container.clientHeight;
 
         // Při změně položek ve virtuallistu je problém, že se nepřekreslí, pokud si virtual list "myslí", že je oblast pro kreslení velká, začne vše fungovat
-        viewHeight = 100000;
+        // console.log(container)   // doresime pozdeji
+        // viewHeight = 100000;
         
         // no space to render
         if (viewHeight <= 0) return state;

@@ -429,8 +429,26 @@ var messages = {
     "arr.node.noSelection.title": "Není vybrána jednotka popisu",
     "arr.node.noSelection.message": "Prosím vyberte jednotku popisu.",
 
-    "arr.history.title.fund": "Historie změn",
-    "arr.history.title.node": "Historie změn JP",
+    "arr.history.change.title.unknown": "neznámý",
+    "arr.history.change.title.CREATE_AS": "vytvoření AS",
+    "arr.history.change.title.ADD_NODES_OUTPUT": "připojení JP k výstupu",
+    "arr.history.change.title.REMOVE_NODES_OUTPUT": "odpojení JP od výstupu",
+    "arr.history.change.title.ADD_LEVEL": "založení JP",
+    "arr.history.change.title.MOVE_LEVEL": "přesun JP",
+    "arr.history.change.title.DELETE_LEVEL": "zrušení JP",
+    "arr.history.change.title.ADD_RECORD_NODE": "založení rejstříkového hesla k JP",
+    "arr.history.change.title.DELETE_RECORD_NODE": "zrušení rejstříkového hesla k JP",
+    "arr.history.change.title.UPDATE_RECORD_NODE": "změna rejstříkového hesla k JP",
+    "arr.history.change.title.UPDATE_DESC_ITEM": "změna atributu",
+    "arr.history.change.title.ADD_DESC_ITEM": "založení atributu",
+    "arr.history.change.title.DELETE_DESC_ITEM": "zrušení atributu",
+    "arr.history.change.title.BATCH_CHANGE_DESC_ITEM": "hromadná změna atributů",
+    "arr.history.change.title.BATCH_DELETE_DESC_ITEM": "hromadné vymazání atributů",
+    "arr.history.change.title.BULK_ACTION": "hromadná funkce",
+    "arr.history.change.title.IMPORT": "import AS",
+
+    "arr.history.deleteQuestion": "Opravdu chcete provést nenávratné odstranění změn? (počet změn, které budou odstraněny: {0})",
+    "arr.history.title": "Historie změn",
     "arr.history.title.change.date": "Datum",
     "arr.history.title.change.time": "Čas",
     "arr.history.title.change.description": "Změna",
@@ -445,7 +463,6 @@ var messages = {
 
     "dms.file.title.add": "Přidání nového souboru",
     "dms.file.name": "Název souboru",
-
 
     "arr.packet.title.add": "Přidání nového obalu",
     "arr.packet.packetType": "Typ",

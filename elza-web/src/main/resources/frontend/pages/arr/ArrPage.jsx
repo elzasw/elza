@@ -334,7 +334,7 @@ class ArrPage extends ArrParentPage {
             versionId={versionId}
             onDeleteChanges={this.handleDeleteChanges}
         />
-        this.dispatch(modalDialogShow(this, i18n('arr.history.title.fund'), form));
+        this.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, "dialog-lg"));
     }
 
     handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
@@ -353,7 +353,7 @@ class ArrPage extends ArrParentPage {
      */
     handleShowNodeHistory = (versionId, node) => {
         const form = <ArrHistoryForm versionId={versionId} node={node} onDeleteChanges={this.handleDeleteChanges} />
-        this.dispatch(modalDialogShow(this, i18n('arr.history.title.node'), form));
+        this.dispatch(modalDialogShow(this, i18n('arr.history.title'), form));
     }
 
     /**
