@@ -55,12 +55,7 @@ class PartyDetailNames extends AbstractReactComponent {
             ...this.props.party,
             partyNames: [
                 ...partyNames,
-                {
-                    ...data,
-                    nameFormType: {
-                        id: data.nameFormTypeId
-                    }
-                }
+                data
             ]
         };
         this.props.onPartyUpdate(party);
