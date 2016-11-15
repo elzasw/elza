@@ -121,11 +121,18 @@ public class RevertingChangesService {
             canRevertByUserBefore = otherUserChangeCount == 0;
         }
 
-        // kontrola, že neexistuje změna, který by uživateli bez oprávnění znemožnila provést revert (true - neexistuje a můžu provést revert)
+        // kontrola, že neexistuje změna, který by uživateli znemožnila provést revert (true - neexistuje a můžu provést revert)
         boolean canReverBefore = true;
 
         if (offset > 0 && isNodeContext) {
-            // TODO
+            Query findQueryToChange = createFindQuery(fundId, nodeId, 1, offset, fromChangeId);
+            ChangeResult toChangeResult = convertResult((Object[]) findQueryToChange.getSingleResult());
+            Query findQueryCountBefore = createFindQueryCountBefore(fundId, nodeId, fromChangeId, toChangeResult.getChangeId());
+            Integer countBefore = ((BigInteger) findQueryCountBefore.getSingleResult()).intValue();
+
+            if (countBefore > 0) {
+                canReverBefore = false;
+            }
         }
 
         List<Change> changes = convertChangeResults(sqlResult, fundVersion, fullRevertPermission, canReverBefore, canRevertByUserBefore, isNodeContext);
@@ -191,9 +198,6 @@ public class RevertingChangesService {
         Integer fundId = fund.getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
 
-        // zastavení probíhajících výpočtů pro validaci uzlů u verzí
-        stopConformityInfFundVersions(fund);
-
         ArrFundVersion openFundVersion = null;
         for (ArrFundVersion fundVersion : fund.getVersions()) {
             if (fundVersion.getLockChange() == null) {
@@ -203,7 +207,10 @@ public class RevertingChangesService {
         }
 
         // provede validaci prováděného revertování
-        revertChangesValidateAction(fromChange, fundId, nodeId);
+        revertChangesValidateAction(fromChange, toChange, fundId, nodeId);
+
+        // zastavení probíhajících výpočtů pro validaci uzlů u verzí
+        stopConformityInfFundVersions(fund);
 
         Query updateEntityQuery;
         Query deleteEntityQuery;
@@ -269,22 +276,92 @@ public class RevertingChangesService {
     }
 
     /**
+     * Vytvoří dotaz pro zjištění počtu položek, po kterých nelze provést revert v rámci JP.
+     *
+     * @param fundId       identifikátor AS
+     * @param nodeId       identifikátor JP
+     * @param fromChangeId identifikátor změny, vůči které provádíme vyhledávání
+     * @param toChangeId   identifikátor změny, vůči které provádíme vyhledávání
+     * @return query objekt
+     */
+    private Query createFindQueryCountBefore(@NotNull final Integer fundId,
+                                             @Nullable final Integer nodeId,
+                                             @Nullable final Integer fromChangeId,
+                                             @NotNull final Integer toChangeId) {
+        String querySkeleton = createFindQuerySkeleton();
+
+        String selectParams = "COUNT(*)";
+        String querySpecification = "";
+
+        List<String> wheres = new ArrayList<>();
+
+        if (fromChangeId != null) {
+            wheres.add("ch.change_id <= :fromChangeId");
+        }
+
+        wheres.add("ch.change_id >= :toChangeId");
+
+        wheres.add("ch.type NOT IN (:types)");
+
+        if (wheres.size() > 0) {
+            querySpecification = "WHERE " + String.join(" AND ", wheres) + " " + querySpecification;
+        }
+
+        String queryString = String.format(querySkeleton, selectParams, createSubNodeQuery(fundId, nodeId), querySpecification);
+
+        Query query = entityManager.createNativeQuery(queryString);
+
+        query.setParameter("types", Arrays.asList(ArrChange.Type.ADD_RECORD_NODE.name(),
+                ArrChange.Type.DELETE_RECORD_NODE.name(),
+                ArrChange.Type.UPDATE_DESC_ITEM.name(),
+                ArrChange.Type.ADD_DESC_ITEM.name(),
+                ArrChange.Type.DELETE_DESC_ITEM.name()));
+
+        query.setParameter("fundId", fundId);
+
+        if (nodeId != null) {
+            query.setParameter("nodeId", nodeId);
+        }
+
+        query.setParameter("toChangeId", toChangeId);
+
+        if (fromChangeId != null) {
+            query.setParameter("fromChangeId", fromChangeId);
+        }
+        return query;
+    }
+
+    /**
      * Provádí validaci akce pro revertování změn.
      *
      * @param fromChange změna od které se provádí revert (pouze pro kontrolu, že se jedná o poslední)
+     * @param toChange   změna ke které se provádí revert
      * @param fundId     identifikátor AS
      * @param nodeId     identifikátor JP
      */
     private void revertChangesValidateAction(final @NotNull ArrChange fromChange,
+                                             final @NotNull ArrChange toChange,
                                              final @NotNull Integer fundId,
                                              final @Nullable Integer nodeId) {
-        // dotaz pro zjištění poslední změny (pro nastavení parametru outdated)
+        // dotaz pro zjištění poslední změny
         Query queryLastChange = createQueryLastChange(fundId, nodeId);
 
         ChangeResult lastChange = convertResult((Object[]) queryLastChange.getSingleResult());
 
         if (!fromChange.getChangeId().equals(lastChange.getChangeId())) {
             throw new BusinessException(ArrangementCode.EXISTS_NEWER_CHANGE);
+        }
+
+        if (toChange.getType() != null && toChange.getType().equals(ArrChange.Type.CREATE_AS)) {
+            throw new BusinessException(ArrangementCode.EXISTS_BLOCKING_CHANGE);
+        }
+
+        if (nodeId != null) {
+            Query findQueryCountBefore = createFindQueryCountBefore(fundId, nodeId, fromChange.getChangeId(), toChange.getChangeId());
+            Integer countBefore = ((BigInteger) findQueryCountBefore.getSingleResult()).intValue();
+            if (countBefore > 0) {
+                throw new BusinessException(ArrangementCode.EXISTS_BLOCKING_CHANGE);
+            }
         }
     }
 
@@ -565,10 +642,14 @@ public class RevertingChangesService {
 
     /**
      * Převedení změn z databázového dotazu na změny pro odpověď.
-     *  @param sqlResult            změny z dotazu
-     * @param fundVersion          verze AS
-     * @param fullRevertPermission má úplné oprávnění?  @return seznam změn pro odpověď
-     * @param isNodeContext        změny jsou v kontextu JP
+     *
+     * @param sqlResult             změny z dotazu
+     * @param fundVersion           verze AS
+     * @param fullRevertPermission  má úplné oprávnění?
+     * @param isNodeContext         změny jsou v kontextu JP
+     * @param canReverBefore        může se revertovat změna? (true - předchozí můžou)
+     * @param canRevertByUserBefore může se revertovat změna - uživatel? (true - předchozí provedl stejný uživatel)
+     * @return seznam změn pro odpověď
      */
     private List<Change> convertChangeResults(final List<ChangeResult> sqlResult,
                                               final ArrFundVersion fundVersion,

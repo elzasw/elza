@@ -50,6 +50,7 @@ var messages = {
     "arr.exception.node.not.found": "Jednotka popisu nebyla nalezena, pravděpodobně byla odstraněna.",
     "arr.exception.fund.version.not.found": "Verze archivního fondu neexistuje.",
     "arr.exception.exists.newer.change": "Existuje novější změna, je potřeba přenačíst seznam",
+    "arr.exception.exists.blocking.change": "Nelze provést revert, protože existuje blokující změna v JP",
 
     "search.input.search": "Vyhledat...",
     "search.not.found": "nenalezeno",

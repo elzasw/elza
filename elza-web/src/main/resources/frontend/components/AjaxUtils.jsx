@@ -95,6 +95,10 @@ function createMessage(result) {
         toaster = addToastrWarning(i18n('arr.exception.exists.newer.change'), messages);
     }
 
+    if (result.type == 'ArrangementCode' && result.code == 'EXISTS_BLOCKING_CHANGE') {
+        toaster = addToastrWarning(i18n('arr.exception.exists.blocking.change'), messages);
+    }
+
     if (toaster == null) {
         if (result.message) {
             messages.push(<p><LongText text={result.message}/></p>);
