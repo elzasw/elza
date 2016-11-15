@@ -7,6 +7,7 @@ import {
     PartyDetailIdentifiers,
     PartyDetailNames,
     PartyDetailRelations,
+    PartyDetailRelationClass,
     PartyNameForm,
     PartyField,
     AbstractReactComponent,
@@ -34,6 +35,8 @@ import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {initForm} from "actions/form/inlineForm.jsx"
+import {getMapFromList} from 'stores/app/utils.jsx'
+
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -236,6 +239,8 @@ class PartyDetail extends AbstractReactComponent {
 
         let parts = partyType && partyType.partyGroups ? partyType.partyGroups : [];
 
+        let relationClassTypes = partyType && partyType.relationTypes ? getMapFromList(partyType.relationTypes.map(i => i.relationClassType), "code") : [];
+
         const events = {onPin:this.handlePinToggle, onSelect: this.handleToggleActive};
 
         return <Shortcuts name='PartyDetail' handler={this.handleShortcuts}>
@@ -308,7 +313,6 @@ class PartyDetail extends AbstractReactComponent {
                                                     FIELDS_BY_PARTY_TYPE_CODE[partyType.code].indexOf(item.definition) === -1
                                                 )
                                             ) {
-
                                                 let element = null;
 
                                                 if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXT) {
@@ -319,6 +323,12 @@ class PartyDetail extends AbstractReactComponent {
                                                     const type = objectById(partyType.relationTypes, item.definition, 'code');
                                                     if (type) {
                                                         element = <PartyDetailRelations party={party} relationType={type} label={item.name} />
+                                                    } else {
+                                                        element = i18n('party.detail.ui.unknownRelation')
+                                                    }
+                                                } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION_CLASS) {
+                                                    if (relationClassTypes[item.definition]) {
+                                                        element = <PartyDetailRelationClass party={party} partyType={partyType} relationClassType={relationClassTypes[item.definition]} label={item.name} />
                                                     } else {
                                                         element = i18n('party.detail.ui.unknownRelation')
                                                     }

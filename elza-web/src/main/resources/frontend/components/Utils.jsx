@@ -332,6 +332,11 @@ function init() {
         }
         return result;
     };
+    if (typeof Object.values != 'function') {
+        Object.values = x =>
+            Object.keys(x).reduce((y, z) =>
+            y.push(x[z]) && y, []);
+    }
     if (typeof Object.assign != 'function') {
       (function () {
         Object.assign = function (target) {

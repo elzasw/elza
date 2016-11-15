@@ -979,6 +979,7 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(ParRelationClassType.class, ParRelationClassTypeVO.class)
                 .byDefault()
+                .field("relationClassTypeId", "id")
                 .register();
 
         mapperFactory.classMap(UIPartyGroup.class, UIPartyGroupVO.class)
