@@ -6,6 +6,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {i18n, AbstractReactComponent, NoFocusButton, Icon, PartyNameForm} from 'components/index.jsx'
 import {indexById, objectById} from 'stores/app/utils.jsx'
 
+import './PartyDetailNames.less'
 
 class PartyDetailNames extends AbstractReactComponent {
 
@@ -129,7 +130,7 @@ class PartyDetailNames extends AbstractReactComponent {
     render() {
         const {party, partyType} = this.props;
 
-        return <div>
+        return <div className="party-detail-names">
             <div>
                 <label>{i18n("party.detail.formNames")}</label>
                 <NoFocusButton bsStyle="default" onClick={this.handlePartyNameAdd}><Icon glyph="fa-plus" /></NoFocusButton>
