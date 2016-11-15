@@ -373,10 +373,8 @@ public class PartyController {
 
 
             ParRelationType relationType = partyTypeRelation.getRelationType();
-            ParRelationTypeVO relationTypeVO = factoryVo
-                    .getOrCreateVo(relationType.getRelationTypeId(), relationType, relationTypeVoMap,
-                            ParRelationTypeVO.class);
-
+            ParRelationTypeVO relationTypeVO = factoryVo.createParRelationType(relationType, partyTypeRelation,
+                    relationTypeVoMap);
             partyTypeVO.addRelationType(relationTypeVO);
         }
 
