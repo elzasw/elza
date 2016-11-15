@@ -35,6 +35,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,6 +45,8 @@ import java.util.Set;
 
 /**
  * Servisní třída pro práci s obnovou změn v archivní souboru - "UNDO".
+ *
+ * TODO: invalidace výstupů, funkcí, ... na klientu
  *
  * @author Martin Šlapa
  * @since 03.11.2016
@@ -215,13 +218,13 @@ public class RevertingChangesService {
         Query updateEntityQuery;
         Query deleteEntityQuery;
 
-        deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, toChange, "arr_node_conformity_error");
+        deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, /*toChange,*/ "arr_node_conformity_error");
         deleteEntityQuery.executeUpdate();
 
-        deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, toChange, "arr_node_conformity_missing");
+        deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, /*toChange,*/ "arr_node_conformity_missing");
         deleteEntityQuery.executeUpdate();
 
-        deleteEntityQuery = createConformityDeleteEntityQuery(fund, node, toChange);
+        deleteEntityQuery = createConformityDeleteEntityQuery(fund, node/*, toChange*/);
         deleteEntityQuery.executeUpdate();
 
         updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
@@ -240,7 +243,7 @@ public class RevertingChangesService {
         deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_data", toChange);
         deleteEntityQuery.executeUpdate();
 
-        deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_item", toChange);
+        deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", /*"item",*/ "arr_item", toChange);
         deleteEntityQuery.executeUpdate();
 
         updateEntityQuery = createUpdateOutputQuery(fund, node, toChange);
@@ -374,7 +377,7 @@ public class RevertingChangesService {
         query.setParameter("fund", fund);
         query.setParameter("change", toChange);
         query.setParameter("stateNew", ArrOutputDefinition.OutputState.OUTDATED);
-        query.setParameter("stateOld", Arrays.asList(ArrOutputDefinition.OutputState.FINISHED));
+        query.setParameter("stateOld", Collections.singletonList(ArrOutputDefinition.OutputState.FINISHED));
         if (node != null) {
             query.setParameter("node", node);
         }
@@ -422,7 +425,7 @@ public class RevertingChangesService {
         }
     }
 
-    private Query createConformityDeleteEntityQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
+    private Query createConformityDeleteEntityQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node/*, final @NotNull ArrChange toChange*/) {
         //String nodesHql = createHQLFindChanges("createChange", "arr_level", );
         //String hqlSubSelect = String.format("SELECT i.node FROM %1$s i WHERE %2$s IN (%3$s)", "arr_level", "createChange", nodesHql);
         String hql = String.format("DELETE FROM arr_node_conformity WHERE node IN (%1$s)", createHqlSubNodeQuery(fund, node));
@@ -437,7 +440,7 @@ public class RevertingChangesService {
         return query;
     }
 
-    private Query createConformityDeleteForeignEntityQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange, final @NotNull String table) {
+    private Query createConformityDeleteForeignEntityQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, /*final @NotNull ArrChange toChange,*/ final @NotNull String table) {
         //String nodesHql = createHQLFindChanges("createChange", "arr_level", createHqlSubNodeQuery(fund, node));
         //String hqlSubSelect = String.format("SELECT i.node FROM %1$s i WHERE %2$s IN (%3$s)", "arr_level", "createChange", nodesHql);
         String hql = String.format("DELETE FROM %1$s ncx WHERE ncx.nodeConformity IN (SELECT nc FROM arr_node_conformity nc WHERE node IN (%2$s))", table, createHqlSubNodeQuery(fund, node));
@@ -560,7 +563,7 @@ public class RevertingChangesService {
                                                 @Nullable final ArrNode node,
                                                 @NotNull final String changeNameColumn,
                                                 @NotNull final String table,
-                                                @NotNull final String joinNameColumn,
+                                                /*@NotNull final String joinNameColumn,*/
                                                 @NotNull final String subTable,
                                                 @NotNull final ArrChange change) {
         String nodesHql = createHQLFindChanges(changeNameColumn, table, createHqlSubNodeQuery(fund, node));
