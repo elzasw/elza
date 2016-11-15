@@ -75,7 +75,6 @@ class RelationClassForm extends AbstractReactComponent {
             relationType = objectById(relationTypes, relationTypeId.value);
         }
 
-        console.log(relationType)
         const roleTypesList = relationType ? relationType.relationRoleTypes.map(i => <option value={i.id} key={i.id}>{i.name}</option>) : null;
 
         const submit = submitReduxForm.bind(this, RelationClassForm.validate);

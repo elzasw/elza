@@ -90,7 +90,6 @@ class PartyDetailRelations extends AbstractReactComponent {
 
     update = (origRelation, newRelation) => {
         const {party} = this.props;
-        console.log(newRelation);
         this.dispatch(relationUpdate({
             ...origRelation,
             ...newRelation,
