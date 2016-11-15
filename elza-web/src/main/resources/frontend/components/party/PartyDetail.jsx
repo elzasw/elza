@@ -239,35 +239,28 @@ class PartyDetail extends AbstractReactComponent {
                 <Form className="party-body">
                     {parts.map((i, index) => {
                         const TYPE = i.type.toUpperCase();
-
                         if (TYPE == UI_PARTY_GROUP_TYPE.IDENT) {
-                            const key = UI_PARTY_GROUP_TYPE.IDENT + '_FORM_NAMES';
-                            const corpKey = UI_PARTY_GROUP_TYPE.IDENT + '_CORP_IDENT';
+                            const key = UI_PARTY_GROUP_TYPE.IDENT;
                             return <div key={index}>
-                                <CollapsablePanel isOpen={activeIndexes[key]} pinned={visibilitySettingsValue[key]} header={i18n("party.detail.formNames")} eventKey={key} {...events}>
+                                <CollapsablePanel isOpen={activeIndexes[key]} pinned={visibilitySettingsValue[key]} header={i.name} eventKey={key} {...events}>
                                     <PartyDetailNames party={party} partyType={partyType} onPartyUpdate={this.handlePartyUpdate} />
+                                    {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} />}
                                 </CollapsablePanel>
-                                {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <CollapsablePanel isOpen={activeIndexes[corpKey]} pinned={visibilitySettingsValue[corpKey]} header={i18n("party.detail.partyGroupIdentifiers")} eventKey={corpKey} {...events}>
-                                    <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} />
-                                </CollapsablePanel>}
                             </div>;
                         } else if (TYPE == UI_PARTY_GROUP_TYPE.CONCLUSION) {
-                            const sourcesKey = UI_PARTY_GROUP_TYPE.CONCLUSION + '_SOURCES';
-                            const creatorsKey = UI_PARTY_GROUP_TYPE.CONCLUSION + '_CREATORS';
+                            const key = UI_PARTY_GROUP_TYPE.CONCLUSION;
                             return <div key={index}>
-                                <CollapsablePanel isOpen={activeIndexes[sourcesKey]} pinned={visibilitySettingsValue[sourcesKey]} header={i18n("party.detail.sources")} eventKey={sourcesKey} {...events}>
-                                    <FormInput componentClass="textarea" {...sourceInformation} />
-                                </CollapsablePanel>
-                                <CollapsablePanel isOpen={activeIndexes[creatorsKey]} pinned={visibilitySettingsValue[creatorsKey]} header={i18n("party.detail.creators")} eventKey={creatorsKey} {...events}>
-                                    <div>{creators.map((creator, index) => <div key={index +"-"+creator.id} className="value-group">
+                                <CollapsablePanel isOpen={activeIndexes[key]} pinned={visibilitySettingsValue[key]} header={i.name} eventKey={key} {...events}>
+                                    <FormInput componentClass="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
+                                    <label>{i18n("party.detail.creators")}<NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton></label>
+                                    {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
                                         <PartyField {...creator} />
                                         <NoFocusButton bsStyle="default" onClick={() => {
                                             if (confirm(i18n('party.detail.creator.delete'))) {
                                                 creators.removeField(index)
                                             }
                                         }}><Icon glyph="fa-trash" /></NoFocusButton>
-                                    </div>)}</div>
-                                    <NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton>
+                                    </div>)}
                                 </CollapsablePanel>
                             </div>;
                         } else if (TYPE === UI_PARTY_GROUP_TYPE.GENERAL) {
@@ -300,10 +293,9 @@ class PartyDetail extends AbstractReactComponent {
                                             } else if (item.type === "relation") {
                                                 const type = objectById(partyType.relationTypes, item.definition, 'code');
                                                 if (type) {
-                                                    element = <PartyDetailRelations party={party} relationType={type}
-                                                                                    label={item.name}/>
+                                                    element = <PartyDetailRelations party={party} relationType={type} label={item.name} />
                                                 } else {
-                                                    element = "Neznámý typ relace"
+                                                    element = i18n('party.detail.ui.unknownRelation')
                                                 }
                                             }
 
@@ -313,7 +305,7 @@ class PartyDetail extends AbstractReactComponent {
                                         }
                                     }
                                 } else {
-                                    items.push(<span>{i18n('party.detail.uiDefinitionError')}</span>)
+                                    items.push(<span>{i18n('party.detail.ui.definitionError')}</span>)
                                 }
                             }
 
