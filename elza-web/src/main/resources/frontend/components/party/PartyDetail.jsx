@@ -51,7 +51,23 @@ const UI_PARTY_GROUP_TYPE = {
     GENERAL: 'GENERAL',
     CONCLUSION: 'CONCLUSION',
     IDENT: 'IDENT'
+};
+
+const UI_PARTY_GROUP_DEFINITION_TYPE = {
+    TEXT: 'TEXT',
+    TEXTAREA: 'TEXTAREA',
+    RELATION: 'REALATION',
+    RELATION_CLASS: 'RELATION-CLASS'
 }
+
+const PARTY_GENERAL_FIELDS = ['history', 'sourceInformation', 'characteristics'];
+const FIELDS_BY_PARTY_TYPE_CODE = {
+    [PARTY_TYPE_CODES.PERSON]: [...PARTY_GENERAL_FIELDS, ],
+    [PARTY_TYPE_CODES.GROUP_PARTY]: [...PARTY_GENERAL_FIELDS, 'scope', 'foundingNorm', 'scopeNorm', 'organization'],
+    [PARTY_TYPE_CODES.EVENT]: [...PARTY_GENERAL_FIELDS, ],
+    [PARTY_TYPE_CODES.DYNASTY]: [...PARTY_GENERAL_FIELDS, 'genealogy'],
+}
+
 
 /**
  * Komponenta detailu osoby
@@ -284,24 +300,34 @@ class PartyDetail extends AbstractReactComponent {
                                                 title: item.desc
                                             };
 
-                                            let element = null;
+                                            const DEFINITION_TYPE = item.type.toUpperCase();
 
-                                            if (item.type === "text") {
-                                                element = <FormInput {...inputProps} type={item.type}/>
-                                            } else if (item.type === "textarea") {
-                                                element = <FormInput {...inputProps} componentClass={item.type}/>
-                                            } else if (item.type === "relation") {
-                                                const type = objectById(partyType.relationTypes, item.definition, 'code');
-                                                if (type) {
-                                                    element = <PartyDetailRelations party={party} relationType={type} label={item.name} />
-                                                } else {
-                                                    element = i18n('party.detail.ui.unknownRelation')
+                                            if (
+                                                !(
+                                                    (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXT || DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXTAREA) &&
+                                                    FIELDS_BY_PARTY_TYPE_CODE[partyType.code].indexOf(item.definition) === -1
+                                                )
+                                            ) {
+
+                                                let element = null;
+
+                                                if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXT) {
+                                                    element = <FormInput {...inputProps} type="text" />
+                                                } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXTAREA) {
+                                                    element = <FormInput {...inputProps} componentClass="textarea" />
+                                                } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION) {
+                                                    const type = objectById(partyType.relationTypes, item.definition, 'code');
+                                                    if (type) {
+                                                        element = <PartyDetailRelations party={party} relationType={type} label={item.name} />
+                                                    } else {
+                                                        element = i18n('party.detail.ui.unknownRelation')
+                                                    }
                                                 }
-                                            }
 
-                                            items.push(<div key={key} className={"el-" + (item.width ? item.width : 0)}>
-                                                {element}
-                                            </div>);
+                                                items.push(<div key={key} className={"el-" + (item.width ? item.width : 0)}>
+                                                    {element}
+                                                </div>);
+                                            }
                                         }
                                     }
                                 } else {
