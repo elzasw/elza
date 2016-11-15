@@ -24,6 +24,7 @@ class AddPartyForm extends AbstractReactComponent {
     static fields = [
         'partyType', // skrýté pole updated při loadu
         'scope', // Pole pouze pro korporace
+        'genealogy', // Pole pouze pro rod
         'record.registerTypeId',
         'record.scopeId',
         'prefferedName.nameFormType.id',
@@ -43,24 +44,51 @@ class AddPartyForm extends AbstractReactComponent {
             return errors
         }, {});
 
-    static validate = function (values) {
-        let errors = {
-            prefferedName: {}
-        };
+    validate = (values) => {
+        const {partyType} = this.props;
+        let errors = {};
         if (!values.prefferedName.nameFormType.id) {
-            errors['prefferedName.nameFormType.id'] = i18n('global.validation.required');
+            if (!errors.prefferedName) {
+                errors.prefferedName = {}
+            }
+            if (!errors.prefferedName.nameFormType) {
+                errors.prefferedName.nameFormType = {}
+            }
+            errors.prefferedName.nameFormType.id = i18n('global.validation.required');
         }
         if (!values.prefferedName.mainPart) {
-            errors['prefferedName.mainPart'] = i18n('global.validation.required');
+            if (!errors.prefferedName) {
+                errors.prefferedName = {}
+            }
+            errors.prefferedName.mainPart = i18n('global.validation.required');
         }
         if (!values.record.registerTypeId) {
-            errors['record.registerTypeId'] = i18n('global.validation.required');
+            if (!errors.record) {
+                errors.record = {}
+            }
+            errors.record.registerTypeId = i18n('global.validation.required');
         }
-        errors.prefferedName.complements = values.prefferedName.complements.map(AddPartyForm.requireFields('complementTypeId', 'complement'));
-        if (errors.prefferedName.complements.filter(i => Object.keys(i).length !== 0).length === 0) {
-            delete errors.prefferedName.complements;
+
+        if (partyType.code == PARTY_TYPE_CODES.DYNASTY && !values.genealogy) {
+            errors.genealogy = i18n('global.validation.required');
         }
-        Object.keys(errors.prefferedName).length === 0 && delete errors.prefferedName;
+
+        if (partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && !values.scope) {
+            errors.scope = i18n('global.validation.required');
+        }
+
+        console.log(values.prefferedName.complements)
+        console.log(values.prefferedName.complements.length)
+        if (values.prefferedName.complements.length > 0) {
+            if (!errors.prefferedName) {
+                errors.prefferedName = {}
+            }
+            errors.prefferedName.complements = values.prefferedName.complements.map(AddPartyForm.requireFields('complementTypeId', 'complement'));
+            if (errors.prefferedName.complements.filter(i => Object.keys(i).length !== 0).length === 0) {
+                delete errors.prefferedName.complements;
+            }
+        }
+        errors.prefferedName && Object.keys(errors.prefferedName).length === 0 && delete errors.prefferedName;
         return errors;
     };
 
@@ -195,12 +223,13 @@ class AddPartyForm extends AbstractReactComponent {
     render() {
         const {complementsTypes} = this.state;
 
-        const submit = this.customSubmitReduxForm.bind(this, AddPartyForm.validate);
+        const submit = this.customSubmitReduxForm.bind(this, this.validate);
 
         const {
             submitFailed,
             fields: {
                 scope,
+                genealogy,
                 record: {
                     registerTypeId,
                     scopeId
@@ -262,6 +291,9 @@ class AddPartyForm extends AbstractReactComponent {
                 </div>}
                 {partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <div className="line">
                     <FormInput componentClass="textarea" label={i18n('party.scope')} {...scope}/>
+                </div>}
+                {partyType.code == PARTY_TYPE_CODES.DYNASTY && <div className="line">
+                    <FormInput componentClass="textarea" label={i18n('party.genealogy')} {...genealogy}/>
                 </div>}
 
                 <FormInput type="text" label={i18n('party.nameMain')} {...mainPart} />

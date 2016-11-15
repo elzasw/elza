@@ -624,6 +624,7 @@ var messages = {
     "party.create.title.PARTY_GROUP": "Nový korporace",
     "party.create.title.EVENT": "Nová dočasná korporace/událost",
 
+    "party.genealogy": "Genealogie",
     "party.nameMain": "Hlavní část jména",
     "party.nameOther": "Vedlejší část jména",
     "party.nameComplements": "Doplňky jména",
