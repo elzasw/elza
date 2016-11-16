@@ -226,7 +226,7 @@ class PartyDetail extends AbstractReactComponent {
         const fields = this.props.fields;
         const party = partyDetail.data;
         const {activeIndexes, visibilitySettingsValue} = this.state;
-
+        console.log('@@ partyVisibility @@', activeIndexes, visibilitySettingsValue);
         if (!party) {
 
             if (partyDetail.isFetching) {
