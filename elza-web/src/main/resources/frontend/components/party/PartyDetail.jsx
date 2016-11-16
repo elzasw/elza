@@ -123,27 +123,33 @@ class PartyDetail extends AbstractReactComponent {
         this.props.initForm(this.handlePartyUpdate);
     }
 
-    componentWillReceiveProps(nextProps) {
+    componentWillReceiveProps(nextProps, nextState) {
         this.fetchIfNeeded(nextProps);
         this.trySetFocus(nextProps); // TODO @compel focus
-        this.updateStateFromProps(nextProps);
+        this.updateStateFromProps(nextProps, nextState);
     }
 
-    updateStateFromProps(props = this.props) {
+    updateStateFromProps(props = this.props, state = this.state) {
         if (props.userDetail && props.userDetail.settings) {
             const {settings} = props.userDetail;
             const visibilitySettings = getOneSettings(settings, SETTINGS_PARTY_PIN);
 
             let activeIndexes, visibilitySettingsValue = {};
             if (visibilitySettings.value) {
-                visibilitySettingsValue = JSON.parse(visibilitySettings.value);
+                try {
+                    visibilitySettingsValue = JSON.parse(visibilitySettings.value);
+                } catch(e) {
+                    visibilitySettingsValue = {};
+                }
                 activeIndexes = {
-                    ...this.state.activeIndexes,
+                    ...state.activeIndexes,
                     ...visibilitySettingsValue
                 };
             } else {
                 console.warn("No settings for visibility - fallback to default - closed");
-                activeIndexes = {};
+                activeIndexes = {
+                    ...state.activeIndexes,
+                };
             }
             this.setState({visibilitySettings, activeIndexes, visibilitySettingsValue})
         }
