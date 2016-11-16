@@ -40,30 +40,6 @@ public class WebSocketMessageBrokerConfiguration extends DelegatingWebSocketMess
         return new StompExtensionMessageHandler(clientInboundChannel(), clientOutboundChannel(), brokerChannel());
     }
 
-    @Bean
-    public SessionRepository inMemorySessionRepository() {
-        return new MapSessionRepository();
-    }
-
-    @Bean
-    public FilterRegistrationBean sessionRepositoryFilterRegistration() {
-        FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
-        filterRegistrationBean.setFilter(new DelegatingFilterProxy(new SessionRepositoryFilter<>(inMemorySessionRepository())));
-        filterRegistrationBean.setUrlPatterns(Arrays.asList("/*"));
-        return filterRegistrationBean;
-    }
-
-    @Override
-    protected void configureClientInboundChannel(final ChannelRegistration registration) {
-        super.configureClientInboundChannel(registration);
-        registration.setInterceptors(sessionKeepAliveChannelInterceptor());
-    }
-
-    @Bean
-    public SessionKeepAliveChannelInterceptor sessionKeepAliveChannelInterceptor() {
-        return new SessionKeepAliveChannelInterceptor();
-    }
-
     @Override
     protected void configureWebSocketTransport(WebSocketTransportRegistration registration) {
         registration.addDecoratorFactory(

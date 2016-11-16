@@ -85,15 +85,8 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
 
     @Override
     public void configureWebSocketTransport(final WebSocketTransportRegistration registration) {
-        registration.addDecoratorFactory(delegate -> new ExecutorWebSocketHandlerDecorator(delegate, clientInboundChannelExecutor));
-
-        registration.addDecoratorFactory(new WebSocketHandlerDecoratorFactory() {
-            @Override
-            public WebSocketHandler decorate(WebSocketHandler webSocketHandler) {
-                return new WebSocketSessionCapturingHandlerDecorator(webSocketHandler);
-            }
-        });
-
+        registration.addDecoratorFactory(
+                delegate -> new ExecutorWebSocketHandlerDecorator(delegate, clientInboundChannelExecutor));
         super.configureWebSocketTransport(registration);
     }
 
