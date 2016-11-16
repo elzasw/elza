@@ -280,14 +280,14 @@ class AddPartyForm extends AbstractReactComponent {
                     <Scope versionId={versionId} label={i18n('party.recordScope')} {...scopeId} />
                 </div>
 
-                <FormInput componentClass="select" label={i18n('party.nameFormType')} {...nameFormType.id}>
+                <FormInput componentClass="select" label={i18n('party.name.nameFormType')} {...nameFormType.id}>
                     {partyNameFormTypes.items.map(i => <option value={i.nameFormTypeId} key={i.nameFormTypeId}>{i.name}</option>)}
                 </FormInput>
 
                 <hr/>
                 {partyType.code == PARTY_TYPE_CODES.PERSON && <div className="line">
-                    <FormInput type="text" label={i18n('party.degreeBefore')} {...degreeBefore}/>
-                    <FormInput type="text" label={i18n('party.degreeAfter')} {...degreeAfter}/>
+                    <FormInput type="text" label={i18n('party.name.degreeBefore')} {...degreeBefore}/>
+                    <FormInput type="text" label={i18n('party.name.degreeAfter')} {...degreeAfter}/>
                 </div>}
                 {partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <div className="line">
                     <FormInput componentClass="textarea" label={i18n('party.scope')} {...scope}/>
@@ -296,11 +296,11 @@ class AddPartyForm extends AbstractReactComponent {
                     <FormInput componentClass="textarea" label={i18n('party.genealogy')} {...genealogy}/>
                 </div>}
 
-                <FormInput type="text" label={i18n('party.nameMain')} {...mainPart} />
-                <FormInput type="text" label={i18n('party.nameOther')} {...otherPart} />
+                <FormInput type="text" label={i18n('party.name.mainPart')} {...mainPart} />
+                <FormInput type="text" label={i18n('party.name.otherPart')} {...otherPart} />
                 <hr/>
                 <div>
-                    <label>{i18n('party.nameComplements')}</label>
+                    <label>{i18n('party.name.complements')}</label>
                     {complements.map((complement, index) => <div className="block complement" key={'complement' + index}>
                             <div className="line">
                                 <FormInput type="text" {...complement.complement} />

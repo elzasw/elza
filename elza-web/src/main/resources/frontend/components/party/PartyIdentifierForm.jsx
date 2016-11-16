@@ -2,11 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
-import {Form, Modal, Button} from 'react-bootstrap';
+import {Form, Modal, Button, Row, Col} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+
+import './PartyIdentifierForm.less'
 
 /**
  * Formulář přidání nového / úpravu identifikátoru osobě
@@ -61,32 +63,30 @@ class PartyIdentifierForm extends AbstractReactComponent {
         const calendarsList = calendarTypes ? calendarTypes.items.map(i=> <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>) : null;
 
         return <Form onSubmit={handleSubmit(submit)}>
-            <Modal.Body>
+            <Modal.Body className="party-identifier-form">
                 <FormInput type="text" label={i18n('party.identifier.source')} {...source} />
                 <FormInput type="text" label={i18n('party.identifier.identifierText')} {...identifier} />
                 <hr/>
-                <div className="line datation">
-                    <div className="date line">
-                        <div>
-                            <label>{i18n('party.identifier.from')}</label>
-                            <div className="line">
-                                <FormInput componentClass="select" {...from.calendarTypeId}>
-                                    {calendarsList}
-                                </FormInput>
-                                <FormInput type="text" {...from.textDate} />
-                            </div>
+                <Row className="datations">
+                    <Col xs={12} md={6}>
+                        <label>{i18n('party.identifier.from')}</label>
+                        <div className="datation">
+                            <FormInput componentClass="select" {...from.calendarTypeId}>
+                                {calendarsList}
+                            </FormInput>
+                            <FormInput type="text" {...from.textDate} />
                         </div>
-                        <div>
-                            <label>{i18n('party.identifier.to')}</label>
-                            <div className="line">
-                                <FormInput componentClass="select" {...to.calendarTypeId}>
-                                    {calendarsList}
-                                </FormInput>
-                                <FormInput type="text" {...to.textDate} />
-                            </div>
+                    </Col>
+                    <Col xs={12} md={6}>
+                        <label>{i18n('party.identifier.to')}</label>
+                        <div className="datation">
+                            <FormInput componentClass="select" {...to.calendarTypeId}>
+                                {calendarsList}
+                            </FormInput>
+                            <FormInput type="text" {...to.textDate} />
                         </div>
-                    </div>
-                </div>
+                    </Col>
+                </Row>
                 <hr/>
                 <FormInput type="text" label={i18n('party.identifier.note')} {...note} />
             </Modal.Body>

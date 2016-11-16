@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {DropDownTree, AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading} from 'components/index.jsx';
-import {Modal, Button, HelpBlock, FormGroup, Form} from 'react-bootstrap';
+import {DropDownTree, AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading, DatationField} from 'components/index.jsx';
+import {Modal, Button, Row, Col, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
@@ -12,6 +12,8 @@ import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 import {submitReduxForm} from 'components/form/FormUtils.jsx'
 
 const PARTY_TYPE_PERSON = 'PERSON';
+
+import './PartyNameForm.less'
 
 /**
  * Formulář formy jména osoby
@@ -24,6 +26,15 @@ class PartyNameForm extends AbstractReactComponent {
         'degreeAfter',
         'mainPart',
         'otherPart',
+        'note',
+        'validFrom.calendarTypeId',
+        'validFrom.valueFrom',
+        'validFrom.textDate',
+        'validFrom.note',
+        'validTo.calendarTypeId',
+        'validTo.valueFrom',
+        'validTo.textDate',
+        'validTo.note',
         'partyNameComplements[].complementTypeId',
         'partyNameComplements[].complement',
     ];
@@ -112,7 +123,10 @@ class PartyNameForm extends AbstractReactComponent {
                 degreeBefore,
                 degreeAfter,
                 mainPart,
-                otherPart
+                otherPart,
+                note,
+                validFrom,
+                validTo
             },
             refTables:{partyNameFormTypes},
             handleSubmit,
@@ -126,35 +140,55 @@ class PartyNameForm extends AbstractReactComponent {
         const complementsList = complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>);
 
         return initialized ? <Form onSubmit={handleSubmit(submit)}>
-            <Modal.Body>
-                <FormInput componentClass="select" label={i18n('party.nameFormType')} {...nameFormType.id}>
-                    {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
-                </FormInput>
+            <Modal.Body className="party-name-form">
+                <Row>
+                    <Col xs={12} md={6}>
+                        <FormInput type="text" label={i18n('party.name.mainPart')} {...mainPart} />
+                    </Col>
+                    <Col xs={12} md={6}>
+                        <FormInput type="text" label={i18n('party.name.otherPart')} {...otherPart} />
+                    </Col>
+                    {partyType.code == PARTY_TYPE_PERSON && <Col xs={12}>
+                        <Row>
+                            <Col xs={12} md={6}>
+                                <FormInput type="text" label={i18n('party.name.degreeBefore')} {...degreeBefore} />
+                            </Col>
+                            <Col xs={12} md={6}>
+                                <FormInput type="text" label={i18n('party.name.degreeAfter')} {...degreeAfter} />
+                            </Col>
+                        </Row>
+                    </Col>}
 
-                <hr/>
-                {partyType.code == PARTY_TYPE_PERSON && <div className="line">
-                    <FormInput type="text" label={i18n('party.degreeBefore')} {...degreeBefore}/>
-                    <FormInput type="text" label={i18n('party.degreeAfter')} {...degreeAfter}/>
-                </div>}
-
-                <FormInput type="text" label={i18n('party.nameMain')} {...mainPart} />
-                <FormInput type="text" label={i18n('party.nameOther')} {...otherPart} />
-                <hr/>
-                <div>
-                    <label>{i18n('party.nameComplements')}</label>
-                    {partyNameComplements.map((complement, index) => <div className="block complement" key={'complement' + index}>
-                            <div className="line">
-                                <FormInput type="text" {...complement.complement}/>
-                                <FormInput componentClass="select" {...complement.complementTypeId}>
-                                    <option key='0'/>
-                                    {complementsList}
-                                </FormInput>
-                                <Button className="btn-icon" onClick={() => {partyNameComplements.removeField(index)}}><Icon glyph="fa-trash"/></Button>
-                            </div>
-                        </div>
-                    )}
-                    <Button className="btn-icon block" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
-                </div>
+                    <Col xs={12}>
+                        <label>{i18n('party.name.complements')}</label> <Button bsStyle="action" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
+                        {partyNameComplements.map((complement, index) => <div className="complement" key={'complement' + index}>
+                            <FormInput componentClass="select" {...complement.complementTypeId}>
+                                <option key='0'/>
+                                {complementsList}
+                            </FormInput>
+                            <FormInput type="text" {...complement.complement}/>
+                            <Button className="btn-icon" onClick={() => {partyNameComplements.removeField(index)}}><Icon glyph="fa-times"/></Button>
+                        </div>)}
+                    </Col>
+                    <Col xs={12}>
+                        <FormInput componentClass="select" label={i18n('party.name.nameFormType')} {...nameFormType.id}>
+                            {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
+                        </FormInput>
+                    </Col>
+                    <Col xs={12}>
+                        <Row>
+                            <Col xs={12} md={6}>
+                                <DatationField fields={validFrom} label={i18n('party.name.validFrom')} labelTextual={i18n('party.name.validFrom.textDate')} labelNote={i18n('party.name.validFrom.note')} />
+                            </Col>
+                            <Col xs={12} md={6}>
+                                <DatationField fields={validTo} label={i18n('party.name.validTo')} labelTextual={i18n('party.name.validTo.textual')} labelNote={i18n('party.name.validTo.note')} />
+                            </Col>
+                        </Row>
+                    </Col>
+                    <Col xs={12}>
+                        <FormInput componentClass="textarea" label={i18n('party.name.note')} {...note} />
+                    </Col>
+                </Row>
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
