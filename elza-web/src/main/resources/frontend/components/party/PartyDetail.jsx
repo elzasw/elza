@@ -123,10 +123,10 @@ class PartyDetail extends AbstractReactComponent {
         this.props.initForm(this.handlePartyUpdate);
     }
 
-    componentWillReceiveProps(nextProps, nextState) {
+    componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
         this.trySetFocus(nextProps); // TODO @compel focus
-        this.updateStateFromProps(nextProps, nextState);
+        this.updateStateFromProps(nextProps);
     }
 
     updateStateFromProps(props = this.props, state = this.state) {
@@ -134,21 +134,26 @@ class PartyDetail extends AbstractReactComponent {
             const {settings} = props.userDetail;
             const visibilitySettings = getOneSettings(settings, SETTINGS_PARTY_PIN);
 
-            let activeIndexes, visibilitySettingsValue = {};
+            let activeIndexes, visibilitySettingsValue, mergeIndex = {};
             if (visibilitySettings.value) {
                 try {
                     visibilitySettingsValue = JSON.parse(visibilitySettings.value);
                     for (let key in visibilitySettingsValue) {
-                        if (visibilitySettingsValue.hasOwnProperty(key) && !visibilitySettingsValue[key]) {
+                        if (visibilitySettingsValue.hasOwnProperty(key) && visibilitySettingsValue[key] === false) {
+                            if (this.state.visibilitySettingsValue[key] === true) {
+                                mergeIndex[key] = false;
+                            }
                             delete visibilitySettingsValue[key];
                         }
                     }
+                    console.log(state.activeIndexes, visibilitySettingsValue, mergeIndex);
                 } catch(e) {
                     visibilitySettingsValue = {};
                 }
                 activeIndexes = {
                     ...state.activeIndexes,
-                    ...visibilitySettingsValue
+                    ...visibilitySettingsValue,
+                    ...mergeIndex
                 };
             } else {
                 console.warn("No settings for visibility - fallback to default - closed");
@@ -204,6 +209,7 @@ class PartyDetail extends AbstractReactComponent {
 
 
     handlePinToggle = (identificator) => {
+        console.log('unpin')
         const oldSettings = getOneSettings(this.props.userDetail.settings, SETTINGS_PARTY_PIN);
         const value = oldSettings.value ? JSON.parse(oldSettings.value) : {};
         const newVisibilitySettings = {
@@ -275,7 +281,7 @@ class PartyDetail extends AbstractReactComponent {
                         if (TYPE == UI_PARTY_GROUP_TYPE.IDENT) {
                             const key = UI_PARTY_GROUP_TYPE.IDENT;
                             return <div key={index}>
-                                <CollapsablePanel isOpen={activeIndexes[key]} pinned={visibilitySettingsValue[key]} header={i.name} eventKey={key} {...events}>
+                                <CollapsablePanel isOpen={activeIndexes[key] === true} pinned={visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
                                     <PartyDetailNames party={party} partyType={partyType} onPartyUpdate={this.handlePartyUpdate} />
                                     {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} />}
                                 </CollapsablePanel>
@@ -283,7 +289,7 @@ class PartyDetail extends AbstractReactComponent {
                         } else if (TYPE == UI_PARTY_GROUP_TYPE.CONCLUSION) {
                             const key = UI_PARTY_GROUP_TYPE.CONCLUSION;
                             return <div key={index}>
-                                <CollapsablePanel isOpen={activeIndexes[key]} pinned={visibilitySettingsValue[key]} header={i.name} eventKey={key} {...events}>
+                                <CollapsablePanel isOpen={activeIndexes[key] === true} pinned={visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
                                     <FormInput componentClass="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
                                     <label>{i18n("party.detail.creators")}<NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton></label>
                                     {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
@@ -357,8 +363,8 @@ class PartyDetail extends AbstractReactComponent {
                                 }
                             }
 
-                            return <CollapsablePanel key={index} isOpen={activeIndexes[index]}
-                                                     pinned={visibilitySettingsValue[index]} header={i.name}
+                            return <CollapsablePanel key={index} isOpen={activeIndexes[index] === true}
+                                                     pinned={visibilitySettingsValue[index] === true} header={i.name}
                                                      eventKey={index} {...events}>
                                 <div className="elements-container">
                                     {items}
