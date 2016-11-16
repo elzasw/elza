@@ -174,6 +174,14 @@ export function fundOutputChanges(versionId, outputIds) {
     }
 }
 
+export function fundInvalidChanges(fundIds, fundVersionIds) {
+    return {
+        type: types.FUND_INVALID,
+        fundIds,
+        fundVersionIds
+    }
+}
+
 export function fundOutputChangesDetail(versionId, outputIds) {
     return {
         type: types.OUTPUT_CHANGES_DETAIL,

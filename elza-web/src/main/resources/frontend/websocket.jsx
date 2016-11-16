@@ -35,6 +35,7 @@ import {
     userChange,
     groupChange,
     groupDelete,
+    fundInvalidChanges
 } from 'actions/global/change.jsx';
 
 
@@ -214,7 +215,11 @@ function processEvents(values) {
             case 'OUTPUT_CHANGES':
                 outputChanges(value);
                 break;
-            
+
+            case 'FUND_INVALID':
+                fundInvalid(value);
+                break;
+
             case 'OUTPUT_CHANGES_DETAIL':
                 outputChangesDetail(value);
                 break;
@@ -302,6 +307,10 @@ function outputStateChange(value) {
 
 function outputChanges(value) {
     store.dispatch(fundOutputChanges(value.versionId, value.entityIds));
+}
+
+function fundInvalid(value) {
+    store.dispatch(fundInvalidChanges(value.fundIds, value.fundVersionIds));
 }
 
 function outputChangesDetail(value) {

@@ -11,6 +11,7 @@ public enum EventType {
     FUND_CREATE(EventId.class),
     FUND_UPDATE(EventId.class),
     FUND_DELETE(EventId.class),
+    FUND_INVALID(EventFunds.class),
 
     APPROVE_VERSION(EventFund.class),
 

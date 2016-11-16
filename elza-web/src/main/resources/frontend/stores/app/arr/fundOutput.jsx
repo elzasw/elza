@@ -141,6 +141,14 @@ export default function fundOutput(state = initialState, action = {}) {
                 fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action)
             }
         }
+
+        case types.FUND_INVALID: {
+            return {
+                ...state,
+                currentDataKey: ''
+            }
+        }
+
         default:
             return state
     }

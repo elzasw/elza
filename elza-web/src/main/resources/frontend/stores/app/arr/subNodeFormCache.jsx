@@ -44,6 +44,10 @@ export default function subNodeFormCache(state = subNodeFormCacheInitialState, a
                 isFetching: false,
                 dataCache: dataCache,
             }
+
+        case types.FUND_INVALID:
+            return subNodeFormCacheInitialState;
+
         default:
             return state
     }

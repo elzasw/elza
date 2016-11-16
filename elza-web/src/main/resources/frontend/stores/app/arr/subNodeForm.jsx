@@ -260,6 +260,7 @@ export default function subNodeForm(state = initialState, action = {}) {
         case types.OUTPUT_CHANGES_DETAIL:
         case types.OUTPUT_CHANGES:
         case types.CHANGE_OUTPUTS:
+        case types.FUND_INVALID:
             return {...state, dirty: true}
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
             state.data.parent = action.copySiblingResult.parent;

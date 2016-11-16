@@ -12,6 +12,7 @@ import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
@@ -42,11 +43,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro práci s obnovou změn v archivní souboru - "UNDO".
- *
- * TODO: invalidace výstupů, funkcí, ... na klientu
  *
  * @author Martin Šlapa
  * @since 03.11.2016
@@ -267,7 +267,8 @@ public class RevertingChangesService {
         deleteNotUseNodesQuery.executeUpdate();
 
         if (node == null) {
-            // TODO: dopsat aktualizaci celého stromu AS
+            Set<Integer> fundVersionIds = fund.getVersions().stream().map(ArrFundVersion::getFundVersionId).collect(Collectors.toSet());
+            eventNotificationService.publishEvent(new EventFunds(EventType.FUND_INVALID, Collections.singleton(fundId), fundVersionIds));
         } else {
             if (openFundVersion != null) {
                 eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, openFundVersion.getFundVersionId(), node.getNodeId()));

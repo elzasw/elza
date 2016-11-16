@@ -263,6 +263,14 @@ export default function nodes(state = nodesInitialState, action) {
                 return {...state, nodes};
             }
             return state;
+
+        case types.FUND_INVALID:
+            let result = {...state,
+                nodes: state.nodes.map(nodeObj => {
+                    return node(nodeObj, action);
+                })};
+            return consolidateState(state, result);
+
         default:
             return state
     }
