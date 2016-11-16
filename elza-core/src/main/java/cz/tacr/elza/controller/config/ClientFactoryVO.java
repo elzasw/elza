@@ -334,8 +334,8 @@ public class ClientFactoryVO {
 
             StringBuilder nameBuilder = new StringBuilder();
             nameBuilderHelper(nameBuilder, prefferedName.getDegreeBefore());
-            nameBuilderHelper(nameBuilder, prefferedName.getMainPart());
             nameBuilderHelper(nameBuilder, prefferedName.getOtherPart());
+            nameBuilderHelper(nameBuilder, prefferedName.getMainPart());
 
             String roman = null, geoAddon = null, addon = null;
 

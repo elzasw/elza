@@ -101,17 +101,17 @@ class PartyDetailRelations extends AbstractReactComponent {
                 {addButton}
             </div>
             {relations.map((relation, index) => <div key={relation.id} className="value-group relation-group">
-                <FormControl.Static componentClass="div">
-                    {(relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from && <div>
-                        <FormControl.Static>{relationType.relationClassType.code !== RELATION_CLASS_RELATION_CODE && relationType.relationClassType.name + ": "}{relation.from.textDate}</FormControl.Static>
+                <div className="value">
+                    {(relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from && relation.from.textDate && <div>
+                        <div>{relationType.relationClassType.code !== RELATION_CLASS_RELATION_CODE && relationType.relationClassType.name + ": "}{relation.from.textDate}</div>
                         <div>{relation.dateNote}</div>
                     </div>}
-                    {relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL && relation.to && <FormControl.Static>{relation.to.textDate}</FormControl.Static>}
+                    {relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL && relation.to && relation.to.textDate && <div>{relation.to.textDate}</div>}
                     {relation.relationEntities && relation.relationEntities.map(entity => <div>
                         <label>{entity.roleType.name}:</label> {entity.record.record}<small>{entity.record.note}</small>
                     </div>)}
-                    <FormControl.Static>{relation.note}</FormControl.Static>
-                </FormControl.Static>
+                    {relation.note && <div>{relation.note}</div>}
+                </div>
                 <div className="actions">
                     <NoFocusButton onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></NoFocusButton>
                     <NoFocusButton onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-times" /></NoFocusButton>

@@ -25,8 +25,8 @@ class PartyDetailNames extends AbstractReactComponent {
         };
 
         nameHelper(partyName.degreeBefore, nameBuilder);
-        nameHelper(partyName.mainPart, nameBuilder);
         nameHelper(partyName.otherPart, nameBuilder);
+        nameHelper(partyName.mainPart, nameBuilder);
         let roman = null, geoAddon = null, addon = null;
         partyName.partyNameComplements.forEach((e) => {
             const type = objectById(partyType.complementTypes, e.complementTypeId);
@@ -136,7 +136,7 @@ class PartyDetailNames extends AbstractReactComponent {
                 <NoFocusButton bsStyle="default" onClick={this.handlePartyNameAdd}><Icon glyph="fa-plus" /></NoFocusButton>
             </div>
             {party.partyNames.map((partyName, index) => <div key={partyName.id} className="value-group">
-                <FormControl.Static>{this.getPartyName(partyName, partyType)}</FormControl.Static>
+                <div className="value">{this.getPartyName(partyName, partyType)}</div>
                 <div className="actions">
                     <NoFocusButton onClick={() => this.handlePartyNameUpdate(partyName)}><Icon glyph="fa-pencil" /></NoFocusButton>
                     {partyName.prefferedName ? i18n('party.detail.formNames.prefferedName') : <span>

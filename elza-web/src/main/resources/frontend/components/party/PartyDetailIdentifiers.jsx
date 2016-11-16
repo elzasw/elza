@@ -105,7 +105,7 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
                 <NoFocusButton bsStyle="default" onClick={this.handlePartyGroupIdentifierAdd}><Icon glyph="fa-plus" /></NoFocusButton>
             </div>
             {party.partyGroupIdentifiers.map((partyGroupIdentifier, index) => <div key={partyGroupIdentifier.id} className="value-group">
-                <FormControl.Static>{partyGroupIdentifier.identifier}</FormControl.Static>
+                <div className="value">{partyGroupIdentifier.identifier}</div>
                 <div className="actions">
                     <NoFocusButton onClick={() => this.handlePartyGroupIdentifierUpdate(partyGroupIdentifier)}><Icon glyph="fa-pencil" /></NoFocusButton>
                     <NoFocusButton onClick={() => this.partyGroupIdentifierDelete(partyGroupIdentifier.id)}><Icon glyph="fa-times" /></NoFocusButton>
