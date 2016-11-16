@@ -138,6 +138,11 @@ class PartyDetail extends AbstractReactComponent {
             if (visibilitySettings.value) {
                 try {
                     visibilitySettingsValue = JSON.parse(visibilitySettings.value);
+                    for (let key in visibilitySettingsValue) {
+                        if (visibilitySettingsValue.hasOwnProperty(key) && !visibilitySettingsValue[key]) {
+                            delete visibilitySettingsValue[key];
+                        }
+                    }
                 } catch(e) {
                     visibilitySettingsValue = {};
                 }
@@ -187,6 +192,7 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     handleToggleActive = (index) => {
+        console.log('@@ party visible group toggle @@', index);
         if (!this.state.visibilitySettingsValue[index]) {
             this.setState({activeIndexes:{...this.state.activeIndexes, [index]: !this.state.activeIndexes[index]}})
         }
