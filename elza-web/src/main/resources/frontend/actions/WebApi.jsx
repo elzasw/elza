@@ -12,7 +12,7 @@ function callWS(url, data, needResponse=true) {
     return new Promise((resolve, reject) => {
         if (needResponse) {
             window.ws.send(serverContextPath + '/app' + url, {}, JSON.stringify(data), (response) => {
-                console.log(111111111111, response);
+                console.log("%%%%%%%%%%%%% WS CALLBACK!!!!!!!!!!!!!!!!!", response);
                 resolve(response);
             });
         } else {

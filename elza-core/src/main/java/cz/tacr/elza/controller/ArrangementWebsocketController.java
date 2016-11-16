@@ -79,6 +79,10 @@ public class ArrangementWebsocketController {
         descItemResult.setItem(factoryVo.createDescItem(descItemUpdated));
         descItemResult.setParent(factoryVo.createArrNode(descItemUpdated.getNode()));
 
+        if (true) {
+            throw new RuntimeException("xxxxx");
+        }
+
         // Odeslání dat zpět
         Map sendHeader = new HashMap();
         sendHeader.put("receipt-id", receiptId);

@@ -74,7 +74,20 @@ class ws {
     }
 
     processCallback(body, headers) {
+        console.log("#####processCallback", body, headers)
+        const receiptIdStr = headers["receipt-id"];
+        if ((typeof receiptIdStr === "string" && receiptIdStr.length > 0) || (typeof receiptIdStr === "number")) {
+            const receiptId = typeof receiptIdStr === "number" ? receiptIdStr : parseInt(receiptIdStr);
+            if (this.receiptCallbacks[receiptId]) {
+                var data = JSON.parse(body);
 
+                this.receiptCallbacks[receiptId](data);
+                delete this.receiptCallbacks[receiptId];
+            }
+            return true;
+        }
+
+        return false;
     }
     processErrorCallback(receiptId) {
 
@@ -124,21 +137,22 @@ function stompSuccessCallback(frame) {
         location.reload(true);
     }
     stompClient.subscribe('/topic/api/changes', function({body, headers}) {
-        console.info("DDDDDDDDD", body, headers);
-        window.ws.processCallback(body, headers);
-
-        var change = JSON.parse(body);
-        console.info("WebSocket", change);
-        switch (change.area) {
-            case 'EVENT':
-                processEvents(change.value);
-                break;
-            case 'VALIDATION':
-                processValidations(change.value);
-                break;
-            default:
-                console.warn("Nedefinovaný datový typ ze serveru: " + change.area);
-                break;
+        if (window.ws.processCallback(body, headers)) { // zpracováno jako callback
+            // již zpracováno a není třeba nic dělat
+        } else {    // standardní informace o změnách
+            var change = JSON.parse(body);
+            console.info("WebSocket", change);
+            switch (change.area) {
+                case 'EVENT':
+                    processEvents(change.value);
+                    break;
+                case 'VALIDATION':
+                    processValidations(change.value);
+                    break;
+                default:
+                    console.warn("Nedefinovaný datový typ ze serveru: " + change.area);
+                    break;
+            }
         }
     });
 }
@@ -149,10 +163,8 @@ function stompSuccessCallback(frame) {
  * @param error {string} text chyby
  */
 function stompFundilureCallback(error) {
-    console.log("::::stompFundilureCallback", error);
     store.dispatch(webSocketDisconnect());
     console.error('WebSocket: ' + error);
-    stompClient = null;
     setTimeout(stompConnect, 5000);
     console.info('WebSocket: Obnovení spojení za 5 sekund...');
 }

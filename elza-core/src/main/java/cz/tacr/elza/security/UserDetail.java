@@ -3,6 +3,7 @@ package cz.tacr.elza.security;
 import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -39,7 +40,7 @@ public class UserDetail {
         this.id = user.getUserId();
         this.username = user.getUsername();
         this.active = user.getActive();
-        this.userPermission = userPermission;
+        this.userPermission = new ArrayList<>(userPermission);
     }
 
     public UserDetail(final String systemUser) {

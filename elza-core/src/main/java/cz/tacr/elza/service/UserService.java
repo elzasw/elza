@@ -502,15 +502,13 @@ public class UserService {
         if (auth == null) {
             return null;
         }
-        String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
-
         UserDetail details = (UserDetail) auth.getDetails();
-        if (reCalcSessionIds.contains(sessionId)) {
-            reCalcSessionIds.remove(sessionId);
+//        if (reCalcSessionIds.contains(sessionId)) {
+//            reCalcSessionIds.remove(sessionId);
             UsrUser user = userRepository.findByUsername(details.getUsername());
             details.getUserPermission().clear();
             details.getUserPermission().addAll(calcUserPermission(user));
-        }
+//        }
         return details;
     }
 

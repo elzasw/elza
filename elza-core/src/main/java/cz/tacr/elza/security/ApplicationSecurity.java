@@ -36,6 +36,7 @@ import org.springframework.stereotype.Component;
 @Component
 //@EnableWebMvcSecurity
 //@EnableGlobalMethodSecurity(securedEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 

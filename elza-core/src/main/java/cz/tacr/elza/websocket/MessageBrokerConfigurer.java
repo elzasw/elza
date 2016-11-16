@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.security.config.annotation.web.messaging.MessageSecurityMetadataSourceRegistry;
+import org.springframework.security.config.annotation.web.socket.AbstractSecurityWebSocketMessageBrokerConfigurer;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.filter.DelegatingFilterProxy;
@@ -21,6 +23,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
+import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
 import java.util.Arrays;
 
@@ -32,37 +35,14 @@ import java.util.Arrays;
  */
 @Configuration
 @EnableWebSocketMessageBroker
-public class MessageBrokerConfigurer extends AbstractWebSocketMessageBrokerConfigurer {
-    @Autowired
-    private SessionRegistry sessionRegistry;
-
+public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+//        registry.setErrorHandler(new StompSubProtocolErrorHandler());
         // TODO - přidat error handler
-        registry.addEndpoint("/stomp");
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public RequestContextFilter requestContextFilter() {
-        RequestContextFilter rcf = new RequestContextFilter();
-        rcf.setThreadContextInheritable(true);
-        return rcf;
-    }
-    @Bean
-    @ConditionalOnMissingBean
-    public RequestContextListener RequestContextListener() {
-        return new RequestContextListener();
-    }
-
-    @Bean
-    public HttpSessionIdHandshakeInterceptor httpSessionIdHandshakeInterceptor() {
-        return new HttpSessionIdHandshakeInterceptor();
-    }
-
-    @Bean
-    public SessionKeepAliveChannelInterceptor sessionKeepAliveChannelInterceptor() {
-        return new SessionKeepAliveChannelInterceptor();
+        registry.addEndpoint("/stomp")
+                // copy HTTP session attributes to simpSessionAttributes
+                .addInterceptors(new HttpSessionHandshakeInterceptor());
     }
 
     @Autowired
@@ -77,6 +57,18 @@ public class MessageBrokerConfigurer extends AbstractWebSocketMessageBrokerConfi
 //        filterRegistrationBean.setUrlPatterns(Arrays.asList("/*"));
 //        return filterRegistrationBean;
 //    }
+
+    @Override
+    protected void configureInbound(MessageSecurityMetadataSourceRegistry messages) {
+        messages
+                .nullDestMatcher().authenticated()
+                .simpDestMatchers("/app/**").authenticated();
+    }
+
+    @Override
+    protected boolean sameOriginDisabled() {
+        return true;
+    }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
