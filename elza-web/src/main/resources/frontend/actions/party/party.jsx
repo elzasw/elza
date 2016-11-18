@@ -154,6 +154,7 @@ export const PARTY_CLASS_BY_TYPE = {
 
 function partyAddSubmit(callback, dispatch, submitType, data) {
     const {prefferedName, ...other} = data;
+    const newName = normalizeNameObject(prefferedName);
     const party = {
         '@type': PARTY_CLASS_BY_TYPE[data.partyType.code],
         ...other,
@@ -163,7 +164,7 @@ function partyAddSubmit(callback, dispatch, submitType, data) {
         },
         partyNames : [
             {
-                ...prefferedName,
+                ...newName,
                 prefferedName: true,
             }
         ]
@@ -174,3 +175,42 @@ function partyAddSubmit(callback, dispatch, submitType, data) {
         callback && callback(json, submitType);
     });
 }
+
+
+const removeUndefined = (obj) => {
+    for (let key in obj ) {
+        if (obj.hasOwnProperty(key)) {
+            if (obj[key] === undefined || obj[key] === null) {
+                delete obj[key];
+            }
+        }
+    }
+    return obj;
+};
+
+export const normalizeNameObject = (obj) => {
+    if (obj.validFrom) {
+        obj.validFrom = removeUndefined(obj.validFrom);
+        if (Object.keys(obj.validFrom).length < 2) {
+            obj.validFrom = null;
+        }
+    }
+    if (obj.validTo) {
+        obj.validTo = removeUndefined(obj.validTo);
+        if (Object.keys(obj.validTo).length < 2) {
+            obj.validTo = null;
+        }
+    }
+
+    ['mainPart','otherPart', 'degreeBefore', 'degreeAfter'].each(i => {
+        if (obj[i]) {
+            obj[i] = obj[i].trim();
+            if (obj[i].length == 0) {
+                obj[i] = null;
+            }
+        }
+    });
+
+    return obj;
+};
+

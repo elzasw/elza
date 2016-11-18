@@ -268,7 +268,7 @@ class PartyDetail extends AbstractReactComponent {
                         <h3>{party.name}</h3>
                         {party.record.externalId && party.record.externalSource && party.record.externalSource.name && <span className="description">{party.record.externalSource.name + ':' + party.record.externalId}</span>}
                         {party.record.externalId && (!party.record.externalSource || party.record.externalSource.name) && <span className="description">{'UNKNOWN:' + party.record.externalId}</span>}
-                        {!party.record.externalId && <span className="description">{party.partyType.description + ':' + party.id}</span>}
+                        {!party.record.externalId && <span className="description">{party.id}</span>}
                     </div>
                     <div>
                         <h3>{party.partyType.description}</h3>

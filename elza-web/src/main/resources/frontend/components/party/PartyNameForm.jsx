@@ -15,6 +15,8 @@ const PARTY_TYPE_PERSON = 'PERSON';
 
 import './PartyNameForm.less'
 
+const stringNormalize = val => val && val.trim().length > 0 ? val.trim() : null;
+
 /**
  * Formulář formy jména osoby
  */

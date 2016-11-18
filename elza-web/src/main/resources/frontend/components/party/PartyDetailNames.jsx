@@ -5,6 +5,7 @@ import {FormControl} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {i18n, AbstractReactComponent, NoFocusButton, Icon, PartyNameForm} from 'components/index.jsx'
 import {indexById, objectById} from 'stores/app/utils.jsx'
+import {normalizeNameObject} from 'actions/party/party.jsx'
 
 import './PartyDetailNames.less'
 
@@ -52,6 +53,7 @@ class PartyDetailNames extends AbstractReactComponent {
 
     partyNameAdd = (data) => {
         const partyNames = this.props.party.partyNames;
+        data = normalizeNameObject(data);
         const party = {
             ...this.props.party,
             partyNames: [
@@ -79,14 +81,15 @@ class PartyDetailNames extends AbstractReactComponent {
     partyNameUpdate = (originalName, newName) => {
         const partyNames = this.props.party.partyNames;
         const index = indexById(partyNames, originalName.id);
+        newName = normalizeNameObject({
+            ...originalName,
+            ...newName
+        });
         const party = {
             ...this.props.party,
             partyNames: [
                 ...partyNames.slice(0, index),
-                {
-                    ...originalName,
-                    ...newName
-                },
+                newName,
                 ...partyNames.slice(index+1)
             ]
         };
