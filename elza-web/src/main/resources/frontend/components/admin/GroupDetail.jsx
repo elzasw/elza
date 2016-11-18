@@ -98,7 +98,7 @@ const GroupDetail = class GroupDetail extends AbstractReactComponent {
 
 GroupDetail.propTypes = {
     groupDetail: React.PropTypes.object.isRequired,
-    groupCount: React.PropTypes.object.isRequired
+    groupCount: React.PropTypes.number.isRequired
 };
 
 function mapStateToProps(state) {
@@ -107,4 +107,3 @@ function mapStateToProps(state) {
 }
 
 module.exports = connect(mapStateToProps)(GroupDetail);
-

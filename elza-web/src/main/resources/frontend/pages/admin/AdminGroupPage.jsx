@@ -145,7 +145,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
         const centerPanel = (
             <GroupDetail
                 groupDetail={group.groupDetail}
-                groupCount={group.groups.length}
+                groupCount={group.groups ? group.groups.length : 0}
             />
         )
 
