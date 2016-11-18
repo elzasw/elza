@@ -144,7 +144,7 @@ class PartyDetailNames extends AbstractReactComponent {
                 <div className="actions">
                     <NoFocusButton onClick={() => this.handlePartyNameUpdate(partyName)}><Icon glyph="fa-pencil" /></NoFocusButton>
                     {partyName.prefferedName && i18n('party.detail.formNames.prefferedName')}
-                    {canEdit && <span>
+                    {canEdit && !partyName.prefferedName && <span>
                         <NoFocusButton onClick={() => this.handleDelete(partyName.id)}><Icon glyph="fa-times" /></NoFocusButton>
                         <NoFocusButton onClick={() => this.handleSelectPreffered(partyName.id)}><Icon glyph="fa-check" /></NoFocusButton>
                     </span>}
