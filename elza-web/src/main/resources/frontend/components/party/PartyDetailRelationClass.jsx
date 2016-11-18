@@ -43,6 +43,7 @@ class PartyDetailRelations extends AbstractReactComponent {
     state = {};
 
     static PropTypes = {
+        canEdit: React.PropTypes.bool.isRequired,
         label: React.PropTypes.element.isRequired,
         party: React.PropTypes.object.isRequired,
         partyType: React.PropTypes.object.isRequired,

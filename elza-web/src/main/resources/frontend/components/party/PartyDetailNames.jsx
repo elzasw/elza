@@ -12,6 +12,7 @@ import './PartyDetailNames.less'
 class PartyDetailNames extends AbstractReactComponent {
 
     static PropTypes = {
+        canEdit: React.PropTypes.bool.isRequired,
         party: React.PropTypes.object.isRequired,
         partyType: React.PropTypes.object.isRequired,
         onPartyUpdate: React.PropTypes.func.isRequired,
@@ -131,18 +132,19 @@ class PartyDetailNames extends AbstractReactComponent {
     };
 
     render() {
-        const {party, partyType} = this.props;
+        const {party, partyType, canEdit} = this.props;
 
         return <div className="party-detail-names">
             <div>
                 <label>{i18n("party.detail.formNames")}</label>
-                <NoFocusButton bsStyle="default" onClick={this.handlePartyNameAdd}><Icon glyph="fa-plus" /></NoFocusButton>
+                {canEdit && <NoFocusButton bsStyle="default" onClick={this.handlePartyNameAdd}><Icon glyph="fa-plus" /></NoFocusButton>}
             </div>
             {party.partyNames.map((partyName, index) => <div key={partyName.id} className="value-group">
                 <div className="value">{this.getPartyName(partyName, partyType)}</div>
                 <div className="actions">
                     <NoFocusButton onClick={() => this.handlePartyNameUpdate(partyName)}><Icon glyph="fa-pencil" /></NoFocusButton>
-                    {partyName.prefferedName ? i18n('party.detail.formNames.prefferedName') : <span>
+                    {partyName.prefferedName && i18n('party.detail.formNames.prefferedName')}
+                    {canEdit && <span>
                         <NoFocusButton onClick={() => this.handleDelete(partyName.id)}><Icon glyph="fa-times" /></NoFocusButton>
                         <NoFocusButton onClick={() => this.handleSelectPreffered(partyName.id)}><Icon glyph="fa-check" /></NoFocusButton>
                     </span>}

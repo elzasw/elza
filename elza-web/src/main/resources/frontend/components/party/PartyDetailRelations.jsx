@@ -39,6 +39,7 @@ const isNotBlankObject = (obj) => {
 class PartyDetailRelations extends AbstractReactComponent {
 
     static PropTypes = {
+        canEdit: React.PropTypes.bool.isRequired,
         label: React.PropTypes.element.isRequired,
         party: React.PropTypes.object.isRequired,
         relationType: React.PropTypes.object.isRequired,

@@ -1,11 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput} from 'components/index.jsx';
+import {AbstractReactComponent, i18n, FormInput, DatationField} from 'components/index.jsx';
 import {Form, Modal, Button, Row, Col} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 
 import './PartyIdentifierForm.less'
@@ -15,23 +14,19 @@ import './PartyIdentifierForm.less'
  */
 class PartyIdentifierForm extends AbstractReactComponent {
 
-    componentDidMount() {
-        this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
-    }
-
-    componentWillReceiveProps() {
-        this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
-    }
-
     static fields = [
         'source',
         'note',
         'identifier',
         'toText',
+        'from.valueFrom',
         'from.calendarTypeId',
         'from.textDate',
+        'from.note',
+        'to.valueFrom',
         'to.calendarTypeId',
         'to.textDate',
+        'to.note',
     ];
 
     static validate = (values) => {
@@ -45,22 +40,9 @@ class PartyIdentifierForm extends AbstractReactComponent {
     };
 
     render() {
-        const {
-            refTables: {calendarTypes},
-            onClose,
-            handleSubmit,
-            fields:{
-                source,
-                note,
-                identifier,
-                from,
-                to,
-            }
-        } = this.props;
+        const {onClose, handleSubmit, fields:{source, note, identifier, from, to,}} = this.props;
 
         const submit = submitReduxForm.bind(this, PartyIdentifierForm.validate);
-
-        const calendarsList = calendarTypes ? calendarTypes.items.map(i=> <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>) : null;
 
         return <Form onSubmit={handleSubmit(submit)}>
             <Modal.Body className="party-identifier-form">
@@ -69,22 +51,10 @@ class PartyIdentifierForm extends AbstractReactComponent {
                 <hr/>
                 <Row className="datations">
                     <Col xs={12} md={6}>
-                        <label>{i18n('party.identifier.from')}</label>
-                        <div className="datation">
-                            <FormInput componentClass="select" {...from.calendarTypeId}>
-                                {calendarsList}
-                            </FormInput>
-                            <FormInput type="text" {...from.textDate} />
-                        </div>
+                        <DatationField fields={from} label={i18n('party.identifier.from')} labelTextual={i18n('party.identifier.from.textDate')} labelNote={i18n('party.identifier.from.note')} />
                     </Col>
                     <Col xs={12} md={6}>
-                        <label>{i18n('party.identifier.to')}</label>
-                        <div className="datation">
-                            <FormInput componentClass="select" {...to.calendarTypeId}>
-                                {calendarsList}
-                            </FormInput>
-                            <FormInput type="text" {...to.textDate} />
-                        </div>
+                        <DatationField fields={to} label={i18n('party.identifier.to')} labelTextual={i18n('party.identifier.to.textDate')} labelNote={i18n('party.identifier.to.note')} />
                     </Col>
                 </Row>
                 <hr/>
@@ -101,10 +71,7 @@ class PartyIdentifierForm extends AbstractReactComponent {
 export default reduxForm({
     form: 'partyIdentifierForm',
     fields: PartyIdentifierForm.fields,
-}, state => ({
-    refTables: state.refTables
-})
-)(PartyIdentifierForm)
+})(PartyIdentifierForm)
 
 
 

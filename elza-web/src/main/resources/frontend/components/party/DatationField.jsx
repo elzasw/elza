@@ -16,8 +16,8 @@ class DatationField extends AbstractReactComponent {
     };
 
     state = {
-        allowedText: false,
-        allowedNote: false,
+        allowedText: this.props.fields.textDate && this.props.fields.textDate.value != null && this.props.fields.textDate.value != "",
+        allowedNote: this.props.fields.textDate && this.props.fields.note.value != null && this.props.fields.note.value != "",
     };
 
     componentDidMount() {

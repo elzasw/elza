@@ -5,8 +5,6 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, Autocomplete, i18n, Icon, FormInput, RegistryField, DatationField} from 'components/index.jsx';
 import {Modal, Button, Form, Radio} from 'react-bootstrap'
 import {indexById} from 'stores/app/utils.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {submitReduxForm} from 'components/form/FormUtils.jsx'
 import {objectById} from 'stores/app/utils.jsx'
 
@@ -59,18 +57,8 @@ class RelationClassForm extends AbstractReactComponent {
         return errors;
     };
 
-    componentDidMount() {
-        this.dispatch(calendarTypesFetchIfNeeded());
-    }
-
-    componentWillReceiveProps(nextProps) {
-        this.dispatch(calendarTypesFetchIfNeeded());
-    }
-
     render() {
-        const {relationTypes, refTables: {calendarTypes}, onClose, handleSubmit, fields: {from, to, relationEntities, dateNote, note, source, relationTypeId}, partyId} = this.props;
-        //const {relationRoleTypes} = relationType;
-        const calendars = calendarTypes ? calendarTypes.items.map(i => <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>) : null;
+        const {relationTypes, onClose, handleSubmit, fields: {from, to, relationEntities, dateNote, note, source, relationTypeId}, partyId, submitting} = this.props;
 
         let relationType = null;
         if (relationTypeId.value !== null) {
@@ -120,8 +108,8 @@ class RelationClassForm extends AbstractReactComponent {
                     </div>}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit">{i18n('global.action.store')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
+                    <Button bsStyle="link" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>
         </div>;
@@ -131,10 +119,7 @@ class RelationClassForm extends AbstractReactComponent {
 export default reduxForm({
     form: 'relationClassForm',
     fields: RelationClassForm.fields,
-},state => ({
-    refTables: state.refTables
-})
-)(RelationClassForm)
+})(RelationClassForm)
 
 
 

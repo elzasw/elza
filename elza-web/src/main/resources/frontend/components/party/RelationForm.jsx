@@ -5,8 +5,6 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, Autocomplete, i18n, Icon, FormInput, RegistryField, DatationField} from 'components/index.jsx';
 import {Modal, Button, Form} from 'react-bootstrap'
 import {indexById} from 'stores/app/utils.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {submitReduxForm} from 'components/form/FormUtils.jsx'
 
 import './RelationForm.less'
@@ -59,18 +57,9 @@ class RelationForm extends AbstractReactComponent {
         return errors;
     };
 
-    componentDidMount() {
-        this.dispatch(calendarTypesFetchIfNeeded());
-    }
-
-    componentWillReceiveProps(nextProps) {
-        this.dispatch(calendarTypesFetchIfNeeded());
-    }
-
     render() {
-        const {relationType, refTables: {calendarTypes}, onClose, handleSubmit, fields: {from, to, relationEntities, dateNote, note, source}, partyId} = this.props;
+        const {relationType, onClose, handleSubmit, fields: {from, to, relationEntities, dateNote, note, source}, partyId} = this.props;
         const {relationRoleTypes} = relationType;
-        const calendars = calendarTypes ? calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>}) : null;
         const roleTypesList = relationRoleTypes ? relationRoleTypes.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>}) : null;
 
         const submit = submitReduxForm.bind(this, RelationForm.validate);
@@ -119,7 +108,4 @@ class RelationForm extends AbstractReactComponent {
 export default reduxForm({
     form: 'relationForm',
     fields: RelationForm.fields,
-},state => ({
-    refTables: state.refTables
-})
-)(RelationForm)
+})(RelationForm)
