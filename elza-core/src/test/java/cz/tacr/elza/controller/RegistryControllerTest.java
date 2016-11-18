@@ -151,20 +151,20 @@ public class RegistryControllerTest extends AbstractControllerTest {
         RegVariantRecordVO variant1 = new RegVariantRecordVO();
         RegVariantRecordVO variant2 = new RegVariantRecordVO();
 
-        variant1.setRegRecordId(recordA.getRecordId());
-        variant2.setRegRecordId(recordA.getRecordId());
+        variant1.setRegRecordId(recordA.getId());
+        variant2.setRegRecordId(recordA.getId());
 
         variant1 = createVariantRecord(variant1);
         variant2 = createVariantRecord(variant2);
 
         RegCoordinatesVO coordinates = new RegCoordinatesVO();
-        coordinates.setRegRecordId(recordA.getRecordId());
+        coordinates.setRegRecordId(recordA.getId());
         coordinates.setValue("POINT(11 10)");
         coordinates.setDescription("Karlův most");
 
         coordinates = createRegCoordinates(coordinates);
 
-        recordA = getRecord(recordA.getRecordId());
+        recordA = getRecord(recordA.getId());
         Assert.assertTrue("Ocekavame 2 variantni hesla pro heslo A", recordA.getVariantRecords().size() == 2);
         Assert.assertTrue("Ocekavame 1 souradnici", recordA.getCoordinates().size() == 1);
 
@@ -185,19 +185,19 @@ public class RegistryControllerTest extends AbstractControllerTest {
         coordinates = updateRegCoordinates(coordinates);
         Assert.assertTrue("Ocekavame upravene souradnice", coordinates.getValue().equals(cordNewPoint) && coordinates.getDescription().equals(cordDesc));
 
-        deleteVariantRecord(variant2.getVariantRecordId());
-        recordA = getRecord(recordA.getRecordId());
+        deleteVariantRecord(variant2.getId());
+        recordA = getRecord(recordA.getId());
         Assert.assertTrue("Ocekavame 1 variantni heslo pro heslo A", recordA.getVariantRecords().size() == 1);
         Assert.assertTrue("Ocekavame charakteristiku \"" + changedCharacter + "\"", recordA.getCharacteristics().equals(changedCharacter));
 
-        deleteRegCoordinates(coordinates.getCoordinatesId());
-        recordA = getRecord(recordA.getRecordId());
+        deleteRegCoordinates(coordinates.getId());
+        recordA = getRecord(recordA.getId());
         Assert.assertTrue("Ocekavame 0 souradnic pro heslo A", recordA.getCoordinates().isEmpty());
 
         RegRecordVO recordC = new RegRecordVO();
         RegRecordVO recordD = new RegRecordVO();
-        recordC.setParentRecordId(recordA.getRecordId());
-        recordD.setParentRecordId(recordA.getRecordId());
+        recordC.setParentRecordId(recordA.getId());
+        recordD.setParentRecordId(recordA.getId());
 
         recordC.setRegisterTypeId(hierarchal.getId());
         recordD.setRegisterTypeId(hierarchal.getId());
@@ -214,7 +214,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
         recordC = createRecord(recordC);
         recordD = createRecord(recordD);
 
-        recordA = getRecord(recordA.getRecordId());
+        recordA = getRecord(recordA.getId());
         Assert.assertTrue("Ocekavame 2 potomky recordu A", recordA.getChilds().size() == 2);
 
         /** změna parent record type id */
@@ -222,7 +222,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
         recordA.setRegisterTypeId(newHierarchicalType.getId());
         recordA = updateRecord(recordA);
 
-        deleteRecord(recordD.getRecordId());
+        deleteRecord(recordD.getId());
 
         list = findRecord(null, 0, 10, null, null, null);
         Assert.assertTrue(list.size() == 3);

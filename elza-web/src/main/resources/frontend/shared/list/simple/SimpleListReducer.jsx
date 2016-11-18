@@ -1,3 +1,4 @@
+import * as types from 'actions/constants/ActionTypes.js';
 import {REQUEST, RESPONSE, FILTER, SELECT_PARENT, INVALIDATE} from './SimpleListActions'
 
 const simpleFilter = (rows, filter) => rows;
@@ -79,6 +80,17 @@ export default function list(state = initialState, action = {}, config = null) {
                 filter: action.filter,
                 filteredRows,
                 rows,
+            }
+        }
+        case types.STORE_SAVE: {
+            return {
+                filter: state.filter,
+            }
+        }
+        case types.STORE_LOAD: {
+            return {
+                ...state,
+                filter: action.filter
             }
         }
         default:

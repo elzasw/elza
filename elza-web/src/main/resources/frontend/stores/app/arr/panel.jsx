@@ -9,7 +9,6 @@ const panelInitialState = {
 
 export function panel(state = panelInitialState, action = {}) {
     switch (action.type) {
-        case types.PARTY_SELECT:
         case types.REGISTRY_SELECT:{
             const fund = action.fa;
             if (fund) {
@@ -23,8 +22,7 @@ export function panel(state = panelInitialState, action = {}) {
             }
             return state;
         }
-        case types.REGISTRY_ARR_RESET:
-        case types.PARTY_ARR_RESET: {
+        case types.REGISTRY_ARR_RESET: {
             const result = {
                 ...state,
                 id: null,

@@ -10,7 +10,7 @@ import cz.tacr.elza.api.UIPartyGroupTypeEnum;
  */
 public class UIPartyGroupVO {
 
-    private Integer partyGroupId;
+    private Integer id;
 
     private ParPartyTypeVO partyType;
 
@@ -24,12 +24,12 @@ public class UIPartyGroupVO {
 
     private String contentDefinition;
 
-    public Integer getPartyGroupId() {
-        return partyGroupId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setPartyGroupId(final Integer partyGroupId) {
-        this.partyGroupId = partyGroupId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public ParPartyTypeVO getPartyType() {

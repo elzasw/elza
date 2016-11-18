@@ -11,7 +11,7 @@ public class ParRelationRoleTypeVO {
     /**
      * Id.
      */
-    private Integer roleTypeId;
+    private Integer id;
 
     /**
      * Kod.
@@ -22,12 +22,12 @@ public class ParRelationRoleTypeVO {
      */
     private String name;
 
-    public Integer getRoleTypeId() {
-        return roleTypeId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setRoleTypeId(final Integer roleTypeId) {
-        this.roleTypeId = roleTypeId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public String getCode() {

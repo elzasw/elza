@@ -1,8 +1,10 @@
 package cz.tacr.elza.service.vo;
 
 import cz.tacr.elza.domain.ArrChange;
+import org.exolab.castor.types.DateTime;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * Value objekt konkrétní změny.
@@ -20,12 +22,17 @@ public class Change {
     /**
      * Datum změny.
      */
-    private LocalDateTime changeDate;
+    private Date changeDate;
 
     /**
      * Identifikátor uživatele, který změnu provedl.
      */
     private Integer userId;
+
+    /**
+     * Uživatelské jméno osoby, která změnu proveda.
+     */
+    private String username;
 
     /**
      * Typ změny.
@@ -60,11 +67,11 @@ public class Change {
         this.changeId = changeId;
     }
 
-    public LocalDateTime getChangeDate() {
+    public Date getChangeDate() {
         return changeDate;
     }
 
-    public void setChangeDate(final LocalDateTime changeDate) {
+    public void setChangeDate(final Date changeDate) {
         this.changeDate = changeDate;
     }
 
@@ -114,5 +121,13 @@ public class Change {
 
     public void setRevert(final Boolean revert) {
         this.revert = revert;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(final String username) {
+        this.username = username;
     }
 }

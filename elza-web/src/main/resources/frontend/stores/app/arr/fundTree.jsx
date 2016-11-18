@@ -72,6 +72,46 @@ export default function fundTree(state = initialState, action = {}) {
                 nodes: [],
             }
 
+        case types.FUND_FUND_TREE_CONFIGURE: {
+            let selectedIds = state.selectedIds;
+            let selectedId = state.selectedId;
+
+            if (state.multipleSelection && !action.multipleSelection) { // pokud je označeno více položek, musíme je odznačit
+                selectedId = null;
+                selectedIds = {};
+            } else if (!state.multipleSelection && action.multipleSelection) {
+                if (state.selectedId !== null) {
+                    selectedIds = { [selectedId]: true };
+                    selectedId = null;
+                }
+            } else if (state.multipleSelection && action.multipleSelection) {
+                if (Object.keys(selectedIds).length > 1) {
+                    if (!state.multipleSelectionOneLevel && action.multipleSelectionOneLevel) { // pokud aktuální označení nevyhovuje, zrušíme ho
+                        const keys = Object.keys(state.selectedIds);
+                        let sameLevel = true;
+                        const testLevel = state.nodes[indexById(state.nodes, keys[0])].depth;
+                        for (let a=1; a<keys.length; a++) {
+                            const currLevel = state.nodes[indexById(state.nodes, keys[a])].depth;
+                            if (currLevel !== testLevel) {
+                                sameLevel = false;
+                                break;
+                            }
+                        }
+                        if (!sameLevel) {
+                            selectedIds = {};
+                        }
+                    }
+                }
+            }
+
+            return {
+                ...state,
+                selectedIds,
+                selectedId,
+                multipleSelection: action.multipleSelection,
+                multipleSelectionOneLevel: action.multipleSelectionOneLevel,
+            }
+        }
         case types.CHANGE_ADD_LEVEL:
             return {...state, dirty: true}
 

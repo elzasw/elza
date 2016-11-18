@@ -9,18 +9,18 @@ package cz.tacr.elza.controller.vo;
  */
 public class ParPartyNameComplementVO {
 
-    private Integer partyNameComplementId;
+    private Integer id;
 
     private Integer complementTypeId;
 
     private String complement;
 
-    public Integer getPartyNameComplementId() {
-        return partyNameComplementId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setPartyNameComplementId(final Integer partyNameComplementId) {
-        this.partyNameComplementId = partyNameComplementId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public Integer getComplementTypeId() {

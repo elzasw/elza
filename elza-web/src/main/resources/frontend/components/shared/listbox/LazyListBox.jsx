@@ -127,7 +127,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
             itemsToIndex: 0,    // do jakého indexu máme položky
             items: [],  // načtené položky
             view: {from: 0, to: 0},
-            scrollToIndex: 0,
+            scrollToIndex: {index: 0},
             selectedItem: props.selectedItem,
         }
     }
@@ -194,7 +194,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
             const onCallback = this.props[onCallbackName]
             if (onCallback) {
                 const item = items[index - itemsFromIndex]
-                onCallback(item)
+                onCallback(item, index)
                 this.callbackInfo[onCallbackName] = null
             }
         } else {    // musíme počkat, až se data načtou a pak danou akci zavolat
@@ -270,7 +270,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
 
     ensureItemVisible(index) {
         this.setState({
-            scrollToIndex: index,
+            scrollToIndex: {index},
         })
     }
 
@@ -390,19 +390,30 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
         this.callCallbackAction(index, 'onDoubleClick')
     }
 
-    fetchNow() {
-            // activeIndex: this.getActiveIndexForUse(this.props, this.state),
-        // this.setState({
-        //     activeIndex: 3,
-        //     selectedIndex: 3,
-        //     items: [],
-        // })
+    /**
+     * Provede kompletní reload dat, nezachovává pozice atp.
+     */
+    reload = () => {
+        this.setState({
+            activeIndex: this.getActiveIndexForUse(this.props, {}),
+            selectedIndex: this.getSelectedIndexForUse(this.props, {}),
+            lastFocus: null,
+            itemsCount: typeof this.props.itemsCount !== 'undefined' ? this.props.itemsCount : 0, // zatím počet položek neznáme
+            itemsFromIndex: 0,  // od jakého indexu máme položky
+            itemsToIndex: 0,    // do jakého indexu máme položky
+            items: [],  // načtené položky
+            view: {from: 0, to: 0},
+            scrollToIndex: {index: 0},
+            selectedItem: this.props.selectedItem,
+        }, this.fetchNow);
+    }
 
-        this.callFetch(this.state.itemsFromIndex, this.state.itemsToIndex, true)
+    fetchNow() {
+        this.callFetch(0, 1, true)
     }
 
     handleRenderItem(index) {
-        const {items, itemsFromIndex, itemsToIndex, activeIndex, selectedIndex} = this.state
+        const {className, items, itemsFromIndex, itemsToIndex, activeIndex, selectedIndex} = this.state
         const {renderItemContent} = this.props;
 
         var data = null
@@ -413,11 +424,17 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
         const active = (index === selectedIndex)
         const focus = (index === activeIndex)
 
-        var cls = classNames({
+        const clsObj = {
             'listbox-item': true,
             'active': active,
             'focus': focus,
-        })
+        };
+
+        if (className) {
+            clsObj[className] = true;
+        }
+
+        var cls = classNames(clsObj);
 
         return (
             <div
@@ -438,7 +455,7 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
     
     render() {
         const {className, items, renderItemContent} = this.props;
-        const {activeIndex, activeIndexes} = this.state;
+        const {scrollToIndex, activeIndex, activeIndexes} = this.state;
 
         var cls = "lazy-listbox-container listbox-container";
         if (className) {
@@ -448,13 +465,14 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
         return (
             <div className={cls} ref="mainContainer" onKeyDown={this.handleKeyDown} tabIndex={0}>
                 <VirtualList
+                    ref="virtualList"
                     tagName='div'
                     container={this.state.mainContainer}
                     lazyItemsCount={this.state.itemsCount}
                     renderItem={this.handleRenderItem}
                     itemHeight={this.props.itemHeight}
                     onViewChange={this.handleViewChange}
-                    scrollToIndex={this.state.scrollToIndex}
+                    scrollToIndex={scrollToIndex}
                     />
             </div>
         )

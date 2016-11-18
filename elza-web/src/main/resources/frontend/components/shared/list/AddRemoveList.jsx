@@ -12,7 +12,7 @@ import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {usersUserDetailFetchIfNeeded} from 'actions/admin/user.jsx'
 
-require('./AddRemoveList.less');
+import './AddRemoveList.less';
 
 export default class AddRemoveList extends AbstractReactComponent {
 
@@ -30,7 +30,7 @@ export default class AddRemoveList extends AbstractReactComponent {
         addTitle: "global.action.add",
         removeTitle: "global.action.remove",
         readOnly: false,
-        renderItem: (item) => <div>{item.name}</div>
+        renderItem: (item, index) => <div key={"rendered-item-" + index}>{item.name}</div>
     };
 
     handleRemove = (item, index) => {

@@ -38,6 +38,7 @@ exports.DataGrid = require('components/shared/datagrid/DataGrid.jsx');
 exports.DataGridPagination = require('components/shared/datagrid/DataGridPagination.jsx');
 exports.DataGridColumnsSettings = require('components/shared/datagrid/DataGridColumnsSettings.jsx');
 exports.Resizer = require('components/shared/resizer/Resizer.jsx');
+exports.CollapsablePanel = require('components/shared/collapsable-panel/CollapsablePanel.jsx');
 
 exports.FormUtils = require('components/form/FormUtils.jsx');
 exports.ImportForm = require('components/form/ImportForm.jsx');
@@ -51,13 +52,14 @@ exports.AddRegistryForm = require('components/registry/AddRegistryForm.jsx');
 exports.EditRegistryForm = require('components/registry/EditRegistryForm.jsx');
 exports.RegistryLabel = require('components/registry/RegistryLabel.jsx');
 exports.RegistryCoordinates = require('components/registry/RegistryCoordinates.jsx');
+exports.RegistryField = require('components/registry/RegistryField.jsx');
 
 exports.FundDetail = require('components/fund/FundDetail.jsx');
 exports.FundDetailExt = require('components/fund/FundDetailExt.jsx');
 exports.FundDetailTree = require('components/fund/FundDetailTree.jsx');
 
 exports.FundNodesList = require('components/arr/FundNodesList.jsx');
-exports.FundNodesAddForm = require('components/arr/FundNodesAddForm.jsx');
+exports.FundNodesSelectForm = require('components/arr/FundNodesSelectForm.jsx');
 exports.AddOutputForm = require('components/arr/AddOutputForm.jsx');
 exports.ArrOutputDetail = require('components/arr/ArrOutputDetail.jsx');
 exports.FundDataGridCellForm = require('components/arr/FundDataGridCellForm.jsx');
@@ -97,15 +99,14 @@ exports.PartyList = require('components/party/PartyList.jsx');
 exports.PartyDetail = require('components/party/PartyDetail.jsx');
 exports.PartyDetailNames = require('components/party/PartyDetailNames.jsx');
 exports.PartyDetailIdentifiers = require('components/party/PartyDetailIdentifiers.jsx');
-exports.PartyDetailCreators = require('components/party/PartyDetailCreators.jsx');
-exports.PartyEntities = require('components/party/PartyEntities.jsx');
 exports.AddPartyForm = require('components/party/AddPartyForm.jsx');
-exports.AddPartyNameForm = require('components/party/AddPartyNameForm.jsx');
 exports.PartyNameForm = require('components/party/PartyNameForm.jsx');
 exports.PartyIdentifierForm = require('components/party/PartyIdentifierForm.jsx');
-exports.PartyCreatorForm = require('components/party/PartyCreatorForm.jsx');
 exports.RelationForm = require('components/party/RelationForm.jsx');
+exports.RelationClassForm = require('components/party/RelationClassForm.jsx');
 exports.PartyField = require('components/party/PartyField.jsx');
+exports.PartyDetailRelations = require('components/party/PartyDetailRelations.jsx');
+exports.PartyDetailRelationClass = require('components/party/PartyDetailRelationClass.jsx');
 
 exports.AdminPackagesList = require('components/admin/AdminPackagesList.jsx');
 exports.AdminPackagesUpload = require('components/admin/AdminPackagesUpload.jsx');

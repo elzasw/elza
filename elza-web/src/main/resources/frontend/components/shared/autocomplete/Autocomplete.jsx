@@ -173,7 +173,7 @@ var keyDownHandlers = {
                     isOpen: false,
                     highlightedIndex: null
                 }, () => {
-                    this.props.onChange(id, item)
+                    this.props.onChange(item)
                 })
             }
         } else {
@@ -187,7 +187,7 @@ var keyDownHandlers = {
                     value: null,
                 }, () => {
                     ReactDOM.findDOMNode(this.refs.input).select()
-                    this.props.onChange(null, {id: null, name: ''})
+                    this.props.onChange(null)
                 })
             } else {
                 event.stopPropagation();
@@ -208,7 +208,7 @@ var keyDownHandlers = {
                             this.state.inputStrValue.length,
                             this.state.inputStrValue.length
                         )
-                        this.props.onChange(id, item)
+                        this.props.onChange(item)
                     })
                 }
             }
@@ -812,7 +812,7 @@ export default class Autocomplete extends AbstractReactComponent {
                     isOpen: false,
                     highlightedIndex: null
                 }, () => {
-                    this.props.onChange(this.props.getItemId(item), item);
+                    this.props.onChange(item);
                 })
             } else {
                 this.changeState({
@@ -821,7 +821,7 @@ export default class Autocomplete extends AbstractReactComponent {
                     isOpen: false,
                     highlightedIndex: null
                 }, () => {
-                    this.props.onChange(this.props.getItemId(item), item)
+                    this.props.onChange(item)
                     ReactDOM.findDOMNode(this.refs.input).focus()
                     this.setIgnoreBlur(false)
                 })
@@ -902,7 +902,6 @@ export default class Autocomplete extends AbstractReactComponent {
         if (!this._ignoreBlur) {
             this.changeState({hasFocus: false})
             this.closeMenu(true);
-            //this.props.onBlur && this.props.onBlur();
         } else {
             this._ignoreBlur = false;
         }
@@ -947,10 +946,9 @@ export default class Autocomplete extends AbstractReactComponent {
         if (!this.state.isOpen && this.state.highlightedIndex === null && this.state.inputStrValue === this.props.getItemName(this.state.value)) {
             // Není třeba nastavovat state
             if (callBlurAfterSetState) {
-                const {onBlur, getItemId} = this.props;
+                const {onBlur} = this.props;
                 const {value} = this.state;
-                const id = value ? getItemId(value) : null;
-                onBlur && onBlur(id, value);
+                onBlur && onBlur(value);
             }
             return;
         }
@@ -964,10 +962,9 @@ export default class Autocomplete extends AbstractReactComponent {
         this.changeState(addState, () => {
             //ReactDOM.findDOMNode(this.refs.input).select()
             if (callBlurAfterSetState) {
-                const {onBlur, getItemId} = this.props;
+                const {onBlur} = this.props;
                 const {value} = this.state;
-                const id = value ? getItemId(value) : null;
-                onBlur && onBlur(id, value);
+                onBlur && onBlur(value);
             }
         })
     }

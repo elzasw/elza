@@ -16,9 +16,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.repository.ComplementTypeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
@@ -48,10 +45,12 @@ import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.controller.vo.ItemSpecsCategory;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
+import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
+import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegCoordinatesVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
@@ -96,14 +95,17 @@ import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.DmsFile;
+import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPartyTypeRelation;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.RegCoordinates;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -124,8 +126,11 @@ import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
+import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
@@ -284,7 +289,7 @@ public class ClientFactoryVO {
         return mapper.map(template, RulTemplateVO.class);
     }
 
-    private void nameBuilderHelper(StringBuilder a, String b) {
+    private void nameBuilderHelper(final StringBuilder a, final String b) {
         if (b != null) {
             a.append(b);
             a.append(" ");
@@ -313,16 +318,15 @@ public class ClientFactoryVO {
         }
 
         result.getPartyNames().sort((a, b) -> {
-                    if (a.isPrefferedName()) {
-                        return Integer.MIN_VALUE;
-                    }
-                    if (b.isPrefferedName()) {
-                        return Integer.MAX_VALUE;
-                    }
+            if (a.isPrefferedName()) {
+                return Integer.MIN_VALUE;
+            }
+            if (b.isPrefferedName()) {
+                return Integer.MAX_VALUE;
+            }
 
-                    return a.getPartyNameId().compareTo(b.getPartyNameId());
-                }
-        );
+            return a.getId().compareTo(b.getId());
+        });
 
         if (prefferedName != null) {
             List<ParComplementType> all = complementTypeRepository.findAll();
@@ -395,7 +399,7 @@ public class ClientFactoryVO {
         for (final ParParty party : parties) {
             ParPartyVO partyVO = mapper.map(party, ParPartyVO.class);
 
-            partyMap.put(partyVO.getPartyId(), partyVO);
+            partyMap.put(partyVO.getId(), partyVO);
 
 
             List<ParPartyName> partyNames = partyNameMap.get(party.getPartyId());
@@ -501,12 +505,12 @@ public class ClientFactoryVO {
      * @return seznam rejstříkových hesel
      */
     public List<RegRecordVO> createRegRecords(final List<RegRecord> records,
-                                              final Map<Integer, Integer> recordIdPartyIdMap, final boolean fillParents,
-                                              @Nullable final RegRecord fillToParent) {
+                                              final Map<Integer, Integer> recordIdPartyIdMap,
+                                              final boolean fillParents) {
         List<RegRecordVO> result = new ArrayList<>(records.size());
         for (final RegRecord record : records) {
             Integer partyId = recordIdPartyIdMap.get(record.getRecordId());
-            result.add(createRegRecord(record, partyId, fillParents, fillToParent));
+            result.add(createRegRecord(record, partyId, fillParents));
         }
 
         return result;
@@ -518,12 +522,9 @@ public class ClientFactoryVO {
      * @param regRecord   rejstříkové heslo
      * @param partyId     id osoby
      * @param fillParents příznak zda se mají načíst rodiče rejstříku
-     * @param fillToParent
      * @return rejstříkové heslo
      */
-    public RegRecordVO createRegRecord(final RegRecord regRecord,
-                                       @Nullable final Integer partyId,
-                                       final boolean fillParents, final RegRecord fillToParent) {
+    public RegRecordVO createRegRecord(final RegRecord regRecord, @Nullable final Integer partyId, final boolean fillParents) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RegRecordVO result = mapper.map(regRecord, RegRecordVO.class);
         result.setPartyId(partyId);
@@ -1293,7 +1294,9 @@ public class ClientFactoryVO {
      * @return VO uzlu AP
      */
     public ArrNodeVO createArrNode(final ArrNode node) {
-        Assert.notNull(node);
+        if (node == null) {
+            throw new ObjectNotFoundException(ArrangementCode.NODE_NOT_FOUND);
+        }
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrNodeVO result = mapper.map(node, ArrNodeVO.class);
         return result;
@@ -1732,5 +1735,22 @@ public class ClientFactoryVO {
         descItemVO.setDescItemSpecId(specId);
         return descItemVO;
 
+    }
+
+    /**
+     * Vytvoří {@link ParRelationTypeVO}. Pokud je předán {@link ParPartyTypeRelation} a obsahuje jméno,
+     * tak bude nastaveno do výsledného objektu.
+     *
+     * @return VO
+     */
+    public ParRelationTypeVO createParRelationType(final ParRelationType relationType, final ParPartyTypeRelation partyTypeRelation,
+            final Map<Integer, ParRelationTypeVO> relationTypeVoMap) {
+        ParRelationTypeVO parRelationTypeVO = getOrCreateVo(relationType.getRelationTypeId(), relationType, relationTypeVoMap,
+                ParRelationTypeVO.class);
+
+        if (partyTypeRelation != null && StringUtils.isNotBlank(partyTypeRelation.getName())) {
+            parRelationTypeVO.setName(partyTypeRelation.getName());
+        }
+        return parRelationTypeVO;
     }
 }

@@ -13,7 +13,7 @@ import React from 'react';
 import {i18n, Toastr, LongText} from 'components/index.jsx';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
 import {store} from '../stores/AppStore.jsx';
-import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
+import {addToastrDanger, addToastrWarning, addToastrInfo} from 'components/shared/toastr/ToastrActions.jsx'
 
 
 // Nastavení úrovně logování
@@ -36,6 +36,117 @@ function requestCounter(method, url, data) {
         callStr = "(" + indexStr + ") " + method + " " + url;
     }
     return callStr;
+}
+
+/**
+ * Sestavení toastru.
+ *
+ * @param result data pro zobrazení toastru.
+ */
+function createMessage(result) {
+    const messages = [];
+
+    let toaster;
+
+    if (result.type == 'BaseCode' && result.code == 'INSUFFICIENT_PERMISSIONS') {
+        messages.push(<small><b>{i18n('global.exception.permission.need')}:</b> {result.properties && result.properties.permission && result.properties.permission.map((item)=>item).join(", ")}</small>);
+        toaster = addToastrDanger(i18n('global.exception.permission.denied'), messages);
+    }
+
+    if (result.type == 'BaseCode' && result.code == 'OPTIMISTIC_LOCKING_ERROR') {
+        if (result.properties && result.properties.message) {
+            messages.push(<p><LongText text={result.properties.message}/></p>);
+        }
+        toaster = addToastrDanger(i18n('global.exception.optimistic.locking'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'PACKET_DELETE_ERROR') {
+        if (result.properties && result.properties.packets) {
+            messages.push(<p><LongText text={i18n('arr.exception.delete.packets', result.properties.packets.map((item)=>item).join(", "))}/></p>);
+        }
+        toaster = addToastrWarning(i18n('arr.fund.packets.action.delete.problem'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'VERSION_ALREADY_CLOSED') {
+        toaster = addToastrWarning(i18n('arr.exception.version.already.closed'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'FUND_NOT_FOUND') {
+        toaster = addToastrDanger(i18n('arr.exception.fund.not.found'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'FUND_VERSION_NOT_FOUND') {
+        toaster = addToastrDanger(i18n('arr.exception.fund.version.not.found'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'NODE_NOT_FOUND') {
+        toaster = addToastrWarning(i18n('arr.exception.node.not.found'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'VERSION_CANNOT_CLOSE_ACTION') {
+        toaster = addToastrInfo(i18n('arr.exception.version.cannot.close.action'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'VERSION_CANNOT_CLOSE_VALIDATION') {
+        toaster = addToastrInfo(i18n('arr.exception.version.cannot.close.validation'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'EXISTS_NEWER_CHANGE') {
+        toaster = addToastrWarning(i18n('arr.exception.exists.newer.change'), messages);
+    }
+
+    if (result.type == 'ArrangementCode' && result.code == 'EXISTS_BLOCKING_CHANGE') {
+        toaster = addToastrWarning(i18n('arr.exception.exists.blocking.change'), messages);
+    }
+
+    if (toaster == null) {
+        if (result.message) {
+            messages.push(<p><LongText text={result.message}/></p>);
+        }
+        toaster = addToastrDanger(i18n('global.exception.undefined'), messages);
+    }
+    store.dispatch(toaster);
+}
+
+/**
+ * Vyřešení výjimky.
+ *
+ * @param status     stav
+ * @param statusText textový zápis stavu
+ * @param data       data výjimky
+ */
+function resolveException(status, statusText, data) {
+    let result;
+    if (status == 422) { // pro validaci
+        result = {
+            type: 'validation',
+            validation: true,
+            data: data
+        };
+    } else if (status == 401) {
+        result = {
+            type: 'unauthorized',
+            unauthorized: true,
+            data: data
+        };
+    } else { // ostatni
+        result = {
+            createToaster: true,
+            type: data.type,
+            code: data.code,
+            properties: data.properties,
+            message: data.message,
+            devMessage: data.devMessage,
+            status: status,
+            statusText: statusText
+        };
+    }
+
+    if (result.createToaster) {
+        createMessage(result);
+    }
+
+    return result;
 }
 
 /**
@@ -96,56 +207,7 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
                     }
                 }
 
-                let message;
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    message = xhr.responseJSON.message;
-                } else if (xhr.responseText) {
-                    message = xhr.responseText;
-                } else {
-                    message = null;
-                }
-
-                let result;
-
-                if (xhr.status == 422) { // pro validaci
-                    result = {
-                        type: 'validation',
-                        validation: true,
-                        data: xhr.responseJSON
-                    };
-                } else if (xhr.status == 405) {
-                    result = {
-                        type: 'controller',
-                        controller: true,
-                        data: xhr.responseJSON
-                    };
-                } else if (xhr.status == 401) {
-                    result = {
-                        type: 'unauthorized',
-                        unauthorized: true,
-                        data: xhr.responseJSON
-                    };
-                } else { // ostatni
-                    result = {
-                        type: 'error',
-                        error: true,
-                        title: i18n('global.error.ajax'),
-                        message: message,
-                        status: xhr.status,
-                        statusText: xhr.statusText
-                    };
-                }
-
-                if (!ignoreError && result.error) {
-
-                    const messages = [];
-                    if (result.message) {
-                        messages.push(<p><LongText text={result.message}/></p>);
-                    }
-                    messages.push(<small>{result.statusText} [{result.status}]</small>);
-                    store.dispatch(addToastrDanger(result.title, messages));
-                }
-
+                let result = resolveException(xhr.status, xhr.statusText, xhr.responseJSON);
                 reject(result);
 
             }
@@ -213,55 +275,7 @@ function ajaxCall(url, params, method, data) {
                     console.error("<-", callStr, "[" + xhr.status + "-" + status + "]", xhr);
                 }
 
-                let message;
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    message = xhr.responseJSON.message;
-                } else if (xhr.responseText) {
-                    message = xhr.responseText;
-                } else {
-                    message = null;
-                }
-
-                let result;
-
-                if (xhr.status == 422) { // pro validaci
-                    result = {
-                        type: 'validation',
-                        validation: true,
-                        data: xhr.responseJSON
-                    };
-                } else if (xhr.status == 405) {
-                    result = {
-                        type: 'controller',
-                        controller: true,
-                        data: xhr.responseJSON
-                    };
-                }  else if (xhr.status == 401) {
-                    result = {
-                        type: 'unauthorized',
-                        unauthorized: true,
-                        data: xhr.responseJSON
-                    };
-                } else { // ostatni
-                    result = {
-                        type: 'error',
-                        error: true,
-                        title: i18n('global.error.ajax'),
-                        message: message,
-                        status: xhr.status,
-                        statusText: xhr.statusText
-                    };
-                }
-
-                if (result.error) {
-                    const messages = [];
-                    if (result.message) {
-                        messages.push(<p><LongText text={result.message}/></p>);
-                    }
-                    messages.push(<small>{result.statusText} [{result.status}]</small>);
-                    store.dispatch(addToastrDanger(result.title, messages));
-                }
-
+                let result = resolveException(xhr.status, xhr.statusText, xhr.responseJSON);
                 reject(result);
             }
         });

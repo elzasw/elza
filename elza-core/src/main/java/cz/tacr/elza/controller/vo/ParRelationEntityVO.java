@@ -8,7 +8,7 @@ package cz.tacr.elza.controller.vo;
  */
 public class ParRelationEntityVO {
 
-    private Integer relationEntityId;
+    private Integer id;
 
     private Integer relationId;
 
@@ -24,12 +24,12 @@ public class ParRelationEntityVO {
 
     private String note;
 
-    public Integer getRelationEntityId() {
-        return relationEntityId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setRelationEntityId(final Integer relationEntityId) {
-        this.relationEntityId = relationEntityId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public Integer getRelationId() {

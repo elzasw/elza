@@ -9,7 +9,7 @@ import cz.tacr.elza.print.NodeId;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class ItemCoordinates extends AbstractItem<Geometry> {
+public class ItemCoordinates extends AbstractItem {
 
     public ItemCoordinates(final NodeId nodeId, final Geometry value) {
         super(nodeId, value);
@@ -17,6 +17,6 @@ public class ItemCoordinates extends AbstractItem<Geometry> {
 
     @Override
     public String serializeValue() {
-        return new WKTWriter().writeFormatted(getValue());
+        return new WKTWriter().writeFormatted(getValue(Geometry.class));
     }
 }

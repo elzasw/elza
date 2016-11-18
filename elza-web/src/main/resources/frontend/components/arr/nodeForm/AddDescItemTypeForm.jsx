@@ -86,7 +86,6 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                             items={descItemTypes}
                             renderItem={this.renderItem}
                             onBlurValidation={false}
-                            onChange={(id, object) => descItemTypeId.onChange(object)}
                         />
                     </div>
                     {false && <FormInput componentClass="select" label={i18n('subNodeForm.descItemType')} {...descItemTypeId} {...decorateFormField(descItemTypeId)}>

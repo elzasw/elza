@@ -471,7 +471,7 @@ public class OutputService {
     public void removeNodesNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                        final ArrOutput output,
                                        final List<Integer> nodeIds) {
-        ArrChange change = arrangementService.createChange(null);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.REMOVE_NODES_OUTPUT);
         removeNodesNamedOutput(fundVersion, output, nodeIds, change);
     }
 
@@ -617,7 +617,7 @@ public class OutputService {
     public void addNodesNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                     final ArrOutput output,
                                     final List<Integer> nodeIds) {
-        ArrChange change = arrangementService.createChange(null);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_NODES_OUTPUT);
         addNodesNamedOutput(fundVersion, output, nodeIds, change);
     }
 

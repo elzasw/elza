@@ -133,7 +133,7 @@ public class RuleService {
         ArrLevel level = levelRepository.findOne(faLevelId);
         Integer nodeId = level.getNode().getNodeId();
 
-        ArrNode nodeBeforeValidation = nodeRepository.getOne(nodeId);
+        ArrNode nodeBeforeValidation = nodeRepository.getOneCheckExist(nodeId);
         Integer nodeVersionBeforeValidation = nodeBeforeValidation.getVersion();
 
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
@@ -159,7 +159,7 @@ public class RuleService {
         ArrNodeConformityExt result = updateNodeConformityInfo(level, version, validationResults);
 
         entityManager.detach(nodeBeforeValidation);
-        ArrNode nodeAfterValidation = nodeRepository.getOne(nodeId);
+        ArrNode nodeAfterValidation = nodeRepository.getOneCheckExist(nodeId);
         Integer nodeVersionAfterValidation = nodeAfterValidation.getVersion();
 
         if (!nodeVersionBeforeValidation.equals(nodeVersionAfterValidation)) {

@@ -1,4 +1,5 @@
 @import "~variables.less";
+@import "~elements-grid.less";
 
 @valueActionWidth: 22px;
 @descItemDraggerSize: 6px;
@@ -43,52 +44,7 @@
             }
 
             .desc-item-types {
-                display: flex;
-                flex-direction: row;
-                flex-wrap: wrap;
-
-                .el-0 {
-                    width: 100%;
-                }
-                .el-1 {
-                     width: @node-form-item-type-element-width;
-                }
-
-                .el-2 {
-                    width: @node-form-item-type-element-width * 2;
-                }
-
-                .el-3 {
-                    width: @node-form-item-type-element-width * 3;
-                }
-
-                .el-4 {
-                    width: @node-form-item-type-element-width * 4;
-                }
-
-                .el-5 {
-                    width: @node-form-item-type-element-width * 5;
-                }
-
-                .el-6 {
-                    width: @node-form-item-type-element-width * 6;
-                }
-
-                .el-7 {
-                    width: @node-form-item-type-element-width * 7;
-                }
-
-                .el-8 {
-                    width: @node-form-item-type-element-width * 8;
-                }
-
-                .el-9 {
-                    width: @node-form-item-type-element-width * 9;
-                }
-
-                .el-10 {
-                    width: @node-form-item-type-element-width * 10;
-                }
+                &:extend(.elements-container);
 
                 .desc-item-type {
                     background: @node-form-item-type-bg;

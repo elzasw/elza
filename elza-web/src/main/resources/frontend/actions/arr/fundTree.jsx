@@ -13,6 +13,7 @@ import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 export function isFundTreeAction(action) {
     switch (action.type) {
         case types.FUND_FUND_TREE_FULLTEXT_CHANGE:
+        case types.FUND_FUND_TREE_CONFIGURE:
         case types.FUND_FUND_TREE_FOCUS_NODE:
         case types.FUND_FUND_TREE_EXPAND_NODE:
         case types.FUND_FUND_TREE_COLLAPSE:
@@ -55,6 +56,23 @@ export function _fundTreeNodeExpand(area, versionId, node, addWaitingNode=false)
         node,
         versionId,
         addWaitingNode,
+    }
+}
+
+/**
+ * Konfigurace stromu - např. multiple selection atp.
+ * @param {String} area oblast stromu
+ * @param {int} versionId verze AS
+ * @param {boolean} multipleSelection má podporovat multiple selection?
+ * @param {boolean} multipleSelectionOneLevel má podporovat multiple selection jen na jedné úrovni?
+ */
+export function fundTreeConfigure(area, versionId, multipleSelection, multipleSelectionOneLevel) {
+    return {
+        type: types.FUND_FUND_TREE_CONFIGURE,
+        area,
+        versionId,
+        multipleSelection,
+        multipleSelectionOneLevel
     }
 }
 

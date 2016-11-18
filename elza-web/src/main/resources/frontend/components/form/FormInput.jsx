@@ -1,10 +1,10 @@
 import React from 'react';
-import {FormControl, FormGroup, ControlLabel, HelpBlock} from 'react-bootstrap'
+import {Radio, FormControl, FormGroup, ControlLabel, HelpBlock} from 'react-bootstrap'
 import {AbstractReactComponent} from 'components/index.jsx'
 
 const FormInput = class FormInput extends AbstractReactComponent {
     render() {
-        const {label, error, touched, value, inline, ...otherProps} = this.props;
+        const {children, type, label, error, touched, value, inline, ...otherProps} = this.props;
 
         const hasError = touched && error;
         let inlineProps = {};
@@ -12,17 +12,47 @@ const FormInput = class FormInput extends AbstractReactComponent {
             error && (inlineProps.title = error);
         }
 
-        return <FormGroup validationState={hasError ? 'error' : null}>
-            {label && <ControlLabel>{label}</ControlLabel>}
-            <FormControl
-                ref='input'
-                value={value}
-                onChange={this.handleChange}
-                {...otherProps}
-                {...inlineProps}
-            />
-            {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
-        </FormGroup>
+        switch (type) {
+            case "static":
+                return <FormGroup validationState={hasError ? 'error' : null}>
+                    {label && <ControlLabel>{label}</ControlLabel>}
+                    <FormControl.Static
+                        ref='input'
+                        value={value}
+                        onChange={this.handleChange}
+                        {...otherProps}
+                        {...inlineProps}
+                    >{children}</FormControl.Static>
+                    {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
+                </FormGroup>
+            case "radio":
+                return <div>
+                    <Radio
+                        ref='input'
+                        value={value}
+                        onChange={this.handleChange}
+                        {...otherProps}
+                        {...inlineProps}
+                    >
+                        {label}
+                    </Radio>
+                    {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
+                </div>
+            default:
+                return <FormGroup validationState={hasError ? 'error' : null}>
+                    {label && <ControlLabel>{label}</ControlLabel>}
+                    <FormControl
+                        ref='input'
+                        value={value}
+                        onChange={this.handleChange}
+                        children={children}
+                        type={type}
+                        {...otherProps}
+                        {...inlineProps}
+                    />
+                    {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
+                </FormGroup>
+        }
     }
 
     static defaultProps = {
@@ -36,6 +66,7 @@ const FormInput = class FormInput extends AbstractReactComponent {
         touched: React.PropTypes.bool.isRequired,
         feedback: React.PropTypes.bool,
         placeholder: React.PropTypes.bool,
+        staticInput: React.PropTypes.bool,  // má se renderovat jako FormControl.Static?
     }
 };
 

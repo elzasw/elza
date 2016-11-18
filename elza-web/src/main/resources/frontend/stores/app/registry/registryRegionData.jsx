@@ -95,7 +95,7 @@ export default function registryRegionData(state = initialState, action = {}) {
             }
         }
         case types.REGISTRY_RECORD_DETAIL_RECEIVE: {
-            if (action.item.recordId !== state.currentDataKey) {
+            if (action.item.id !== state.currentDataKey) {
                 return state;
             }
             const newState = {
@@ -109,7 +109,7 @@ export default function registryRegionData(state = initialState, action = {}) {
             if (state.item) {
                 if (state.item.variantRecords) {
                     state.item.variantRecords.map((variant) => {
-                        if (!variant.variantRecordId) {
+                        if (!variant.id) {
                             newState.item.variantRecords.push(variant);
                         }
                     });
@@ -118,8 +118,8 @@ export default function registryRegionData(state = initialState, action = {}) {
                     state.item.coordinates.map((cord) => {
                         /*
                         Kod pro částečnou změnu přes přenačtení
-                        if (cord.coordinatesId) {
-                            const index = indexById(newState.item.coordinates, cord.coordinatesId, 'coordinatesId');
+                        if (cord.id) {
+                            const index = indexById(newState.item.coordinates, cord.id);
                             if (index && cord.oldValue) {
                                 const newCord = newState.item.coordinates[index];
                                 if (cord.oldValue.description === cord.description && cord.oldValue.value !== cord.value && cord.description !== newCord.description) {
@@ -130,7 +130,7 @@ export default function registryRegionData(state = initialState, action = {}) {
                             }
                         } else {
                         */
-                        if (!cord.coordinatesId) {
+                        if (!cord.id) {
                             newState.item.coordinates.push(cord);
                         }
                     });
@@ -156,7 +156,7 @@ export default function registryRegionData(state = initialState, action = {}) {
         case types.REGISTRY_VARIANT_RECORD_RECEIVED: {
             const record = {...state.item};
             record.variantRecords.map((variant, key) => {
-                if (variant.variantRecordId == action.item.variantRecordId && action.item.version>variant.version){
+                if (variant.id == action.item.id && action.item.version>variant.version){
                     record.variantRecords[key] = action.item;
                 }
             });
@@ -168,8 +168,8 @@ export default function registryRegionData(state = initialState, action = {}) {
         case types.REGISTRY_VARIANT_RECORD_CREATE: {
             const record = {...state.item};
             record.variantRecords.push({
-                variantRecordId: null,
-                regRecordId: record.recordId,
+                id: null,
+                regRecordId: record.id,
                 version:0,
                 record:"",
                 variantRecordInternalId:state.variantRecordInternalId
@@ -184,7 +184,7 @@ export default function registryRegionData(state = initialState, action = {}) {
             const record = {...state.item};
             
             record.variantRecords.map((variant, key) => {
-                if (variant.variantRecordInternalId == action.variantRecordInternalId && !variant.variantRecordId) {
+                if (variant.variantRecordInternalId == action.variantRecordInternalId && !variant.id) {
                     record.variantRecords[key] = {
                         ...record.variantRecords[key],
                         ...action.json,
@@ -198,7 +198,7 @@ export default function registryRegionData(state = initialState, action = {}) {
             }
         }
         case types.REGISTRY_VARIANT_RECORD_DELETED: {
-            const indexForDelete = indexById(state.item.variantRecords, action.variantRecordId, 'variantRecordId');
+            const indexForDelete = indexById(state.item.variantRecords, action.variantRecordId);
             if (indexForDelete === null) {
                 return state;
             }
@@ -228,7 +228,7 @@ export default function registryRegionData(state = initialState, action = {}) {
         case types.REGISTRY_RECORD_COORDINATES_RECEIVED: {
             const record = {...state.item};
             record.coordinates.map((variant, key) => {
-                if (variant.coordinatesId == action.item.coordinatesId && action.item.version>variant.version){
+                if (variant.id == action.item.id && action.item.version>variant.version){
                     record.coordinates[key] = action.item;
                 }
             });
@@ -238,8 +238,8 @@ export default function registryRegionData(state = initialState, action = {}) {
             }
         }
         case types.REGISTRY_RECORD_COORDINATES_CHANGE: {
-            const index = action.item.coordinatesId ?
-                indexById(state.item.coordinates, action.item.coordinatesId, 'coordinatesId') :
+            const index = action.item.id ?
+                indexById(state.item.coordinates, action.item.id) :
                 indexById(state.item.coordinates, action.item.coordinatesInternalId, 'coordinatesInternalId');
             if (index === null) {
                 return state;
@@ -266,12 +266,12 @@ export default function registryRegionData(state = initialState, action = {}) {
         case types.REGISTRY_RECORD_COORDINATES_CREATE: {
             const record = {...state.item};
             record.coordinates.push({
-                coordinatesId: null,
+                id: null,
                 description: null,
                 value: null,
                 error: {},
                 hasError: false,
-                regRecordId: record.recordId,
+                regRecordId: record.id,
                 coordinatesInternalId:state.coordinatesInternalId
             });
             return {
@@ -284,7 +284,7 @@ export default function registryRegionData(state = initialState, action = {}) {
             const record = {...state.item};
 
             record.coordinates.map((variant, key) => {
-                if (variant.coordinatesInternalId == action.coordinatesInternalId && !variant.coordinatesId) {
+                if (variant.coordinatesInternalId == action.coordinatesInternalId && !variant.id) {
                     record.coordinates[key] = {
                         ...record.coordinates[key],
                         ...action.json,
@@ -298,7 +298,7 @@ export default function registryRegionData(state = initialState, action = {}) {
             }
         }
         case types.REGISTRY_RECORD_COORDINATES_DELETED: {
-            const indexForDelete = indexById(state.item.coordinates, action.coordinatesId, 'coordinatesId');
+            const indexForDelete = indexById(state.item.coordinates, action.coordinatesId);
             if (indexForDelete === null) {
                 return state;
             }

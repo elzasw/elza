@@ -16,6 +16,21 @@ public interface ArrChange<U extends UsrUser, N extends ArrNode> extends Seriali
     enum Type {
 
         /**
+         * Vytvoření AS.
+         */
+        CREATE_AS("vytvoření AS"),
+
+        /**
+         * Připojení JP k výstupu.
+         */
+        ADD_NODES_OUTPUT("připojení JP k výstupu"),
+
+        /**
+         * Odpojení JP od výstupu.
+         */
+        REMOVE_NODES_OUTPUT("odpojení JP od výstupu"),
+
+        /**
          * Založení JP.
          */
         ADD_LEVEL("založení JP"),

@@ -11,7 +11,7 @@ public class ParPartyNameFormTypeVO {
     /**
      * Id;
      */
-    private Integer nameFormTypeId;
+    private Integer id;
 
     /**
      * Kod.
@@ -23,12 +23,12 @@ public class ParPartyNameFormTypeVO {
      */
     private String name;
 
-    public Integer getNameFormTypeId() {
-        return nameFormTypeId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setNameFormTypeId(final Integer nameFormTypeId) {
-        this.nameFormTypeId = nameFormTypeId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public String getCode() {

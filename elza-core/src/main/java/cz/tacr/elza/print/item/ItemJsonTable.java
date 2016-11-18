@@ -7,7 +7,7 @@ import cz.tacr.elza.print.NodeId;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class ItemJsonTable extends AbstractItem<ElzaTable> {
+public class ItemJsonTable extends AbstractItem {
 
     public ItemJsonTable(final NodeId nodeId, final ElzaTable value) {
         super(nodeId, value);
@@ -15,6 +15,6 @@ public class ItemJsonTable extends AbstractItem<ElzaTable> {
 
     @Override
     public String serializeValue() {
-        return getValue().toString();
+        return getValue(ElzaTable.class).toString();
     }
 }

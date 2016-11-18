@@ -1,16 +1,5 @@
 package cz.tacr.elza.print;
 
-import cz.tacr.elza.print.item.Item;
-import cz.tacr.elza.print.item.ItemRecordRef;
-import cz.tacr.elza.service.output.OutputFactoryService;
-import cz.tacr.elza.utils.AppContext;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.CompareToBuilder;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.util.Assert;
-
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,6 +7,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+
+import javax.validation.constraints.NotNull;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.CompareToBuilder;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.item.ItemRecordRef;
+import cz.tacr.elza.service.output.OutputFactoryService;
+import cz.tacr.elza.utils.AppContext;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -150,8 +152,7 @@ public class Node implements RecordProvider, Comparable<Node>, NodesOrder {
         // recordy z itemů
         for (Item item : getItems()) {
             if (item instanceof ItemRecordRef) {
-                ItemRecordRef itemRecordRef = (ItemRecordRef) item;
-                recordList.add(itemRecordRef.getValue());
+                recordList.add(item.getValue(Record.class));
             }
         }
 

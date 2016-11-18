@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface VariantRecordRepository extends JpaRepository<RegVariantRecord, Integer> {
+public interface VariantRecordRepository extends ElzaJpaRepository<RegVariantRecord, Integer> {
 
     /**
      * @param recordId  id záznamu rejtříku

@@ -840,7 +840,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         ArrNodeRegisterVO nodeRegister = new ArrNodeRegisterVO();
 
-        nodeRegister.setValue(record.getRecordId());
+        nodeRegister.setValue(record.getId());
         nodeRegister.setNodeId(rootNode.getId());
         nodeRegister.setNode(rootNode);
 

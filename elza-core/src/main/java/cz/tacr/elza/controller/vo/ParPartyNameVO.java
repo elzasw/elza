@@ -14,7 +14,7 @@ public class ParPartyNameVO {
     /**
      * Vlastní ID.
      */
-    private Integer partyNameId;
+    private Integer id;
 
     /**
      * Platnost jména od.
@@ -69,12 +69,12 @@ public class ParPartyNameVO {
 
     private boolean prefferedName;
 
-    public Integer getPartyNameId() {
-        return partyNameId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setPartyNameId(final Integer partyNameId) {
-        this.partyNameId = partyNameId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public ParUnitdateVO getValidFrom() {

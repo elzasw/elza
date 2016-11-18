@@ -19,6 +19,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
@@ -40,7 +43,7 @@ import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.api.ArrNodeConformity.State;
 import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
@@ -327,7 +330,7 @@ public class ArrangementService {
                                           final String internalCode,
                                           final ParInstitution institution,
                                           final String dateRange) {
-        ArrChange change = createChange(null);
+        ArrChange change = createChange(ArrChange.Type.CREATE_AS);
 
         ArrFund fund = createFund(name, ruleSet, change, null, internalCode, institution, dateRange);
 
@@ -588,20 +591,19 @@ public class ArrangementService {
         ArrFund fund = version.getFund();
 
         if (!fundRepository.exists(fund.getFundId())) {
-            throw new ConcurrentUpdateException(
-                    "Archivní soubor s identifikátorem " + fund.getFundId() + " již neexistuje.");
+            throw new ObjectNotFoundException(ArrangementCode.FUND_NOT_FOUND).set("id", fund.getFundId());
         }
 
         if (version.getLockChange() != null) {
-            throw new ConcurrentUpdateException("Verze byla již uzavřena");
+            throw new BusinessException(ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
         if (bulkActionService.isRunning(version)) {
-            throw new IllegalStateException("Nelze uzavřít verzi, protože běží hromadná akce");
+            throw new BusinessException(ArrangementCode.VERSION_CANNOT_CLOSE_ACTION);
         }
 
         if (updateConformityInfoService.isRunning(version)) {
-            throw new IllegalStateException("Nelze uzavřít verzi, protože běží validace");
+            throw new BusinessException(ArrangementCode.VERSION_CANNOT_CLOSE_VALIDATION);
         }
 
         ArrChange change = createChange(null);

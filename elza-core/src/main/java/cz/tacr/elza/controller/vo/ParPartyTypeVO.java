@@ -17,7 +17,7 @@ public class ParPartyTypeVO {
     /**
      * Id.
      */
-    private Integer partyTypeId;
+    private Integer id;
 
     /**
      * Kod typu osoby.
@@ -36,13 +36,14 @@ public class ParPartyTypeVO {
     private List<ParRelationTypeVO> relationTypes;
     private List<ParComplementTypeVO> complementTypes;
     private List<RegRegisterTypeVO> registerTypes;
+    private List<UIPartyGroupVO> partyGroups;
 
-    public Integer getPartyTypeId() {
-        return partyTypeId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setPartyTypeId(final Integer partyTypeId) {
-        this.partyTypeId = partyTypeId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public String getCode() {
@@ -114,6 +115,11 @@ public class ParPartyTypeVO {
         registerTypes.add(registerTypeVO);
     }
 
+    public List<UIPartyGroupVO> getPartyGroups() {
+        return partyGroups;
+    }
 
-
+    public void setPartyGroups(final List<UIPartyGroupVO> partyGroups) {
+        this.partyGroups = partyGroups;
+    }
 }

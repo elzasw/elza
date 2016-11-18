@@ -28,10 +28,6 @@ export default class NodeRegister extends AbstractReactComponent {
         recordList: []
     };
 
-    handleChange = (id, record) => {
-        this.props.onChange(record);
-    };
-
     handleSearchChange = (text) => {
         WebApi.findRegistry(text == "" ? null : text, null, null, this.props.versionId)
                 .then(json => {
@@ -56,7 +52,7 @@ export default class NodeRegister extends AbstractReactComponent {
             cls += ' active'
         }
 
-        return <div className={cls} key={item.recordId} >
+        return <div className={cls} key={item.id} >
             <div className="name" title={item.record}>{item.record}</div>
             <div className="characteristics" title={item.characteristics}>{item.characteristics}</div>
         </div>
@@ -69,11 +65,11 @@ export default class NodeRegister extends AbstractReactComponent {
     };
 
     render() {
-        const {item, closed} = this.props;
+        const {item, closed, onChange, onBlur} = this.props;
         const footer = this.renderFooter();
         const record = item.record ? item.record : null;
 
-        const actions = record ? [<div onClick={this.handleDetail.bind(this, record.recordId)} className='btn btn-default detail'><Icon glyph='fa-user'/></div>] : [];
+        const actions = record ? [<div onClick={this.handleDetail.bind(this, record.id)} className='btn btn-default detail'><Icon glyph='fa-user'/></div>] : [];
 
         return <div className='link-value'>
             <Autocomplete
@@ -84,10 +80,11 @@ export default class NodeRegister extends AbstractReactComponent {
                 footer={footer}
                 value={record}
                 items={this.state.recordList}
-                getItemId={(item) => item ? item.recordId : null}
+                getItemId={(item) => item ? item.id : null}
                 getItemName={(item) => item ? item.record : ''}
                 onSearchChange={this.handleSearchChange}
-                onChange={this.handleChange}
+                onChange={onChange}
+                onBlur={onBlur}
                 renderItem={this.renderRecord}
                 actions={actions}
             />

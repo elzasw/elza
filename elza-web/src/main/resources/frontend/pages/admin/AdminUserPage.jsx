@@ -79,7 +79,7 @@ const AdminUserPage = class AdminUserPage extends AbstractReactComponent{
     }
 
     handleCreateUser(data) {
-        this.dispatch(userCreate(data.username, data.password, data.party.partyId));
+        this.dispatch(userCreate(data.username, data.password, data.party.id));
     }
 
     handleChangeUserPasswordForm() {

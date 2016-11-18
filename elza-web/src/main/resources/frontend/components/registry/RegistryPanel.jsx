@@ -13,7 +13,7 @@ import {UrlFactory} from 'actions/index.jsx';
 import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions/registry/registryRegionList.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {routerNavigate} from 'actions/router.jsx'
-import {partySelect} from 'actions/party/party.jsx'
+import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 import {
     registryChangeDetail,
     registryRecordUpdate,
@@ -191,8 +191,8 @@ const RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             }
 
             // Smazání
-            if (item.variantRecordId) {
-                this.dispatch(registryVariantDelete(item.variantRecordId))
+            if (item.id) {
+                this.dispatch(registryVariantDelete(item.id))
             } else {
                 this.dispatch(registryVariantInternalDelete(item.variantRecordInternalId))
             }
@@ -220,8 +220,8 @@ const RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             }
 
             // Smazání
-            if (item.coordinatesId) {
-                this.dispatch(registryRecordCoordinatesDelete(item.coordinatesId))
+            if (item.id) {
+                this.dispatch(registryRecordCoordinatesDelete(item.id))
             } else {
                 this.dispatch(registryRecordCoordinatesInternalDelete(item.coordinatesInternalId))
             }
@@ -257,7 +257,7 @@ const RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         if (!element.target.value) {
             return false;
         }
-        const data = {record: element.target.value, regRecordId: this.props.registryRegionData.item.recordId};
+        const data = {record: element.target.value, regRecordId: this.props.registryRegionData.item.id};
         this.dispatch(registryVariantCreate(data, item.variantRecordInternalId));
     }
 
@@ -291,8 +291,8 @@ const RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         }
 
         this.dispatch(registryVariantUpdate({
-            variantRecordId: item.variantRecordId,
-            regRecordId: this.props.registryRegionData.item.recordId,
+            id: item.id,
+            regRecordId: this.props.registryRegionData.item.id,
             record: element.target.value,
             version: item.version
         }));
@@ -327,13 +327,13 @@ const RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             return;
         }
 
-        this.dispatch(registryRecordCoordinatesUpload(fileList[0], this.props.registryRegionData.item.recordId));
+        this.dispatch(registryRecordCoordinatesUpload(fileList[0], this.props.registryRegionData.item.id));
 
         ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).value = null;
     }
 
     handleGoToPartyPerson() {
-        this.dispatch(partySelect(this.props.registryRegionData.item.partyId));
+        this.dispatch(partyDetailFetchIfNeeded(this.props.registryRegionData.item.partyId));
         this.dispatch(routerNavigate('party'));
     }
 
@@ -412,11 +412,11 @@ const RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                                         let blurField = this.handleVariantBlur.bind(this, item);
                                         const clickDelete = this.handleVariantDelete.bind(this, item, index);
 
-                                        if (!item.variantRecordId) {
+                                        if (!item.id) {
                                             variantKey = 'internalId' + item.variantRecordInternalId;
                                             blurField = this.handleVariantCreateCall.bind(this, item);
                                         } else {
-                                            variantKey = item.variantRecordId;
+                                            variantKey = item.id;
                                         }
 
                                         return (
@@ -447,11 +447,11 @@ const RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                                         let variantKey;
                                         let blurField = this.handleCoordinatesBlur.bind(this, item);
 
-                                        if (!item.coordinatesId) {
+                                        if (!item.id) {
                                             variantKey = 'internalId' + item.coordinatesInternalId;
                                             blurField = this.handleCoordinatesCreate.bind(this, item);
                                         } else {
-                                            variantKey = item.coordinatesId;
+                                            variantKey = item.id;
                                         }
                                         return <RegistryCoordinates
                                             ref={'coordinates-' + index}
@@ -462,7 +462,7 @@ const RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                                             onBlur={blurField}
                                             onEnterKey={blurField}
                                             onDelete={this.handleCoordinatesDelete.bind(this, item, index)}
-                                            onDownload={this.handleCoordinatesDownload.bind(this, item.coordinatesId)}
+                                            onDownload={this.handleCoordinatesDownload.bind(this, item.id)}
                                         />
                                     })
                                 }

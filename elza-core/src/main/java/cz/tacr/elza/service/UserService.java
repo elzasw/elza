@@ -200,6 +200,7 @@ public class UserService {
                                      @NotNull final List<UsrPermission> permissions) {
         List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
         changePermission(user, null, permissions, permissionsDB);
+        recalcUserPermission(user);
         changeUserEvent(user);
     }
 
@@ -791,5 +792,16 @@ public class UserService {
      */
     public void deleteByFund(final ArrFund fund) {
         permissionRepository.deleteByFund(fund);
+    }
+
+    /**
+     * Vyhledá uživatele na základě id a vytvoří mapu.
+     *
+     * @param userIds hledaní uživatelé
+     * @return mapa uživatelů
+     */
+    public Map<Integer, UsrUser> findUserMap(final Collection<Integer> userIds) {
+        List<UsrUser> users = userRepository.findAll(userIds);
+        return users.stream().collect(Collectors.toMap(UsrUser::getUserId, Function.identity()));
     }
 }

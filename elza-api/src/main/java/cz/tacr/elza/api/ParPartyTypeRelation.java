@@ -25,4 +25,15 @@ public interface ParPartyTypeRelation<PPT extends ParPartyType, PRT extends ParR
 
     void setPartyType(PPT partyType);
 
+    boolean isRepeatable();
+
+    void setRepeatable(boolean repeatable);
+
+    Integer getViewOrder();
+
+    void setViewOrder(Integer viewOrder);
+
+    String getName();
+
+    void setName(String name);
 }

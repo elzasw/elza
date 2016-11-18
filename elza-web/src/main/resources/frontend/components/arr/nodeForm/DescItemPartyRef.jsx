@@ -1,8 +1,5 @@
-require('./DescItemPartyRef.less')
-
 import React from 'react';
 import ReactDOM from 'react-dom';
-
 import {WebApi} from 'actions/index.jsx';
 import {Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/index.jsx';
 import {connect} from 'react-redux'
@@ -12,42 +9,46 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import DescItemLabel from './DescItemLabel.jsx'
 
-const DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-        this.bindMethods('handleChange', 'renderParty', 'handleSearchChange', 'renderFooter', 'handleDetail', 'focus');
+import './DescItemPartyRef.less'
 
-        this.state = {partyList: []};
-    }
+/**
+ * Asi by bylo možné spojit s PartyField
+ */
+class DescItemPartyRef extends AbstractReactComponent {
 
-    focus() {
+    static PropTypes = {
+        onChange: React.PropTypes.func.isRequired,
+        onCreateParty: React.PropTypes.func.isRequired,
+        onDetail: React.PropTypes.func.isRequired,
+        versionId: React.PropTypes.number
+    };
+
+    state = {partyList: []};
+
+    focus = () => {
         this.refs.autocomplete.focus()
-    }
+    };
 
     componentDidMount() {
         this.dispatch(refPartyTypesFetchIfNeeded());
     }
 
-    handleChange(id, valueObj) {
-        this.props.onChange(valueObj);
-    }
-
-    handleSearchChange(text) {
+    handleSearchChange = (text) => {
         text = text == '' ? null : text;
 
-        WebApi.findParty(text, this.props.versionId).then(json => {
+        WebApi.findParty(text, this.props.versionId).then(response => {
             this.setState({
-                partyList: json.rows
+                partyList: response.rows
             })
         })
-    }
+    };
 
-    handleCreateParty(partyTypeId) {
+    handleCreateParty = (partyTypeId) => {
         this.refs.autocomplete.closeMenu();
         this.props.onCreateParty(partyTypeId);
-    }
+    };
 
-    renderParty(item, isHighlighted, isSelected) {
+    renderParty = (item, isHighlighted, isSelected) => {
         var cls = 'item';
         if (isHighlighted) {
             cls += ' focus'
@@ -56,43 +57,35 @@ const DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
             cls += ' active'
         }
 
-        return (
-                <div className={cls} key={item.partyId} >
-                    <div className="name" title={item.record.record}>{item.record.record}</div>
-                    <div className="type">{item.partyType.name}</div>
-                    <div className="characteristics" title={item.record.characteristics}>{item.record.characteristics}</div>
-                </div>
-        )
-    }
+        return <div className={cls} key={item.id} >
+            <div className="name" title={item.record.record}>{item.record.record}</div>
+            <div className="type">{item.partyType.name}</div>
+            <div className="characteristics" title={item.record.characteristics}>{item.record.characteristics}</div>
+        </div>;
+    };
 
-    renderFooter() {
+    renderFooter = () => {
         const {refTables} = this.props;
-        return (
-            <div className="create-party">
-                <DropdownButton noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>}>
-                    {refTables.partyTypes.items.map(i=> {return <MenuItem key={'party' + i.partyTypeId} onClick={this.handleCreateParty.bind(this, i.partyTypeId)} eventKey={i.partyTypeId}>{i.name}</MenuItem>})}
-                </DropdownButton>
-            </div>
-        )
-    }
+        return <div className="create-party">
+            <DropdownButton noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>}>
+                {refTables.partyTypes.items.map(type=> <MenuItem key={'party' + type.id} onClick={this.handleCreateParty.bind(this, type.id)} eventKey={type.id}>{type.name}</MenuItem>)}
+            </DropdownButton>
+        </div>;
+    };
 
-    handleDetail(partyId) {
+    handleDetail = (partyId) => {
         this.props.onDetail(partyId);
-    }
+    };
 
     render() {
-        const {userDetail, descItem, locked, singleDescItemTypeEdit, readMode, cal} = this.props;
+        const {userDetail, onChange, onBlur, descItem, locked, singleDescItemTypeEdit, readMode, cal} = this.props;
         const value = descItem.party ? descItem.party : null;
 
         if (readMode) {
             if (value) {
-                return (
-                    <DescItemLabel onClick={this.handleDetail.bind(this, descItem.party.partyId)} value={value.record.record} />
-                )
+                return <DescItemLabel onClick={this.handleDetail.bind(this, descItem.party.id)} value={value.record.record} />;
             } else {
-                return (
-                    <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} />
-                )
+                return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} />
             }
         }
 
@@ -103,10 +96,10 @@ const DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
             }
         }
 
-        const actions = new Array;
+        const actions = [];
         if (descItem.party) {
             if (userDetail.hasOne(perms.REG_SCOPE_RD_ALL, {type: perms.REG_SCOPE_RD, scopeId: descItem.party.record.scopeId})) {
-                actions.push(<div onClick={this.handleDetail.bind(this, descItem.party.partyId)}
+                actions.push(<div onClick={this.handleDetail.bind(this, descItem.party.id)}
                                   className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
             }
         }
@@ -120,10 +113,11 @@ const DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
                         footer={footer}
                         value={value}
                         items={this.state.partyList}
-                        getItemId={(item) => item ? item.partyId : null}
+                        getItemId={(item) => item ? item.id : null}
                         getItemName={(item) => item && item.record ? item.record.record : ''}
                         onSearchChange={this.handleSearchChange}
-                        onChange={this.handleChange}
+                        onChange={onChange}
+                        onBlur={onBlur}
                         renderItem={this.renderParty}
                         actions={[actions]}
                 />
@@ -139,4 +133,5 @@ function mapStateToProps(state) {
         userDetail,
     }
 }
-module.exports = connect(mapStateToProps, null, null, { withRef: true })(DescItemPartyRef);
+
+export default connect(mapStateToProps, null, null, { withRef: true })(DescItemPartyRef);

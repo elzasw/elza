@@ -193,7 +193,7 @@ class RegistryPage extends AbstractReactComponent {
         this.dispatch(fetchRegistry(filterText, registryParentId, registryTypesId, versionId));
         this.dispatch(registryRegionDataSelectRecord({
             ...data,
-            selectedId: data.recordId
+            selectedId: data.id
         }));
     }
 
@@ -335,7 +335,7 @@ class RegistryPage extends AbstractReactComponent {
     }
 
     handleSelect(record, event) {
-        this.dispatch(registryRegionDataSelectRecord({...record, selectedId: record.recordId}));
+        this.dispatch(registryRegionDataSelectRecord({...record, selectedId: record.id}));
     }
 
     handleDoubleClick(item, event) {
@@ -344,15 +344,15 @@ class RegistryPage extends AbstractReactComponent {
         }
         const {recordForMove} = this.props.registryRegion;
 
-        if (recordForMove && recordForMove.selectedId === item.recordId) {
+        if (recordForMove && recordForMove.selectedId === item.id) {
             this.dispatch(addToastrWarning(i18n('registry.disallowedMoveAction.title'), i18n('registry.disallowedMoveAction.text')));
             return false;
         }
         const parents = item.parents.slice();
-        parents.push({id: item.recordId, name:item.record});
+        parents.push({id: item.id, name:item.record});
         this.dispatch(registryClearSearch());
         this.dispatch(registryChangeParent({
-            registryParentId: item.recordId,
+            registryParentId: item.id,
             parents,
             typesToRoot: item.typesToRoot,
             filterText: '',
@@ -408,7 +408,7 @@ class RegistryPage extends AbstractReactComponent {
             });
         }
         const cls = classNames({
-            active: selectedId === item.recordId,
+            active: selectedId === item.id,
             'search-result-row': 'search-result-row'
         });
 
@@ -443,7 +443,7 @@ class RegistryPage extends AbstractReactComponent {
             }
 
             return (
-                <div key={'record-id-' + item.recordId} title={path} className={cls} onDoubleClick={doubleClick}>
+                <div key={'record-id-' + item.id} title={path} className={cls} onDoubleClick={doubleClick}>
                     <div><Icon glyph={iconName} /></div>
                     <div title={item.record} className={clsItem}>{item.record}</div>
                     <div className="path" >{path.join(' | ')}</div>
@@ -452,9 +452,9 @@ class RegistryPage extends AbstractReactComponent {
         }  else {
             // jednořádkový výsledek
             return (
-                <div key={'record-id-' + item.recordId} className={cls} onDoubleClick={doubleClick}>
-                    <div><Icon glyph={iconName} key={item.recordId} /></div>
-                    <div key={'record-' + item.recordId + '-name'} title={item.record} className={clsItem}>{item.record}</div>
+                <div key={'record-id-' + item.id} className={cls} onDoubleClick={doubleClick}>
+                    <div><Icon glyph={iconName} key={item.id} /></div>
+                    <div key={'record-' + item.id + '-name'} title={item.record} className={clsItem}>{item.record}</div>
                 </div>
             )
         }
@@ -467,7 +467,7 @@ class RegistryPage extends AbstractReactComponent {
 
         let regListBox = <div className='search-norecord'>{i18n('registry.listNoRecord')}</div>
         if (records.length) {
-            const activeIndex = indexById(records, selectedId, 'recordId')
+            const activeIndex = indexById(records, selectedId)
             regListBox = <ListBox
                 className='registry-listbox'
                 ref='registryList'
@@ -523,7 +523,7 @@ class RegistryPage extends AbstractReactComponent {
                 tree
                 allowSelectItem={(id, item) => item.addRecord}
                 value={value}
-                onChange={(id, item) => this.handleRegistryTypesSelect.bind(this)(id)}
+                onChange={item => this.handleRegistryTypesSelect.bind(this)(item ? item.id : null)}
                 />
         )
 

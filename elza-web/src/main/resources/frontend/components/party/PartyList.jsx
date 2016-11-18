@@ -4,7 +4,7 @@ import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel, Loading
 import FormInput from 'components/form/FormInput.jsx';
 import {AppActions} from 'stores/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
-import {partyListFetchIfNeeded, partyListFilter, partyDetailFetchIfNeeded, partyArrReset} from 'actions/party/party.jsx'
+import {partyListFetchIfNeeded, partyListFilter, partyDetailFetchIfNeeded, partyArrReset, PARTY_TYPE_CODES} from 'actions/party/party.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {WebApi} from 'actions/index.jsx';
 
@@ -33,7 +33,7 @@ class PartyList extends AbstractReactComponent {
     trySetFocus = (props = this.props) => {
         const {focus} = props;
 
-        if (canSetFocus()) {
+        if (canSetFocus() && focus) {
             if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
                 if (this.refs.partyList) {   // ještě nemusí existovat
                     this.setState({}, () => {
@@ -64,31 +64,30 @@ class PartyList extends AbstractReactComponent {
     };
 
     handlePartyDetail = (item, e) => {
-        this.dispatch(partyDetailFetchIfNeeded(item.partyId));
+        this.dispatch(partyDetailFetchIfNeeded(item.id));
     };
 
-    handleArrReset = () => {
-        //this.dispatch(partyArrReset());
+    static partyIconByPartyTypeCode = (code) => {
+        switch(code) {
+            case PARTY_TYPE_CODES.PERSON:
+                return 'fa-user';
+                break;
+            case PARTY_TYPE_CODES.GROUP_PARTY:
+                return 'fa-building';
+                break;
+            case PARTY_TYPE_CODES.EVENT:
+                return 'fa-hospital-o';
+                break;
+            case PARTY_TYPE_CODES.DYNASTY:
+                return 'fa-shield';
+                break;
+            default:
+                return 'fa-times';
+        }
     };
 
     renderListItem = (item) => {
-        let icon;
-        switch(item.partyType.description) {
-            case 'OSOBA':
-                icon = 'fa-user';
-                break;
-            case 'KORPORACE':
-                icon = 'fa-building';
-                break;
-            case 'DOČASNÁ KORPORACE':
-                icon = 'fa-hospital-o';
-                break;
-            case 'ROD':
-                icon = 'fa-shield';
-                break;
-            default:
-                icon = 'fa-times';
-        }
+        let icon = PartyList.partyIconByPartyTypeCode(item.partyType.code);
 
         return <div className='search-result-row' onClick={this.handlePartyDetail.bind(this, item)}>
             <div>
@@ -97,58 +96,30 @@ class PartyList extends AbstractReactComponent {
             </div>
             <div>
                 <span className="date">{/** TODO Dodat datum **/}</span>
-                {item.record.external_id && item.record.externalSource && <span className="description">{item.partyType.description + ':' + item.partyId}</span>}
+                {item.record.external_id && item.record.externalSource && <span className="description">{item.partyType.description + ':' + item.id}</span>}
                 {item.record.external_id && !item.record.externalSource && <span className="description">{'UNKNOWN:' + item.record.external_id}</span>}
-                {!item.record.external_id && <span className="description">{item.partyType.description + ':' + item.partyId}</span>}
+                {!item.record.external_id && <span className="description">{item.partyType.description + ':' + item.id}</span>}
             </div>
         </div>
     };
 
     render() {
-        const {partyList, partyTypes} = this.props;
-        /*
-        if(partyList && partyList.length>0){
-            var description = '';
-            for(var i = 0; i<partyList.length; i++){                                                            // projdu vsechny polozky abych jim nastavil popisek
-                if(partyList[i].record && partyList[i].record.characteristics){                                 // pokud ma popisek zadany
-                    var lineEndPosition = partyList[i].record.characteristics.indexOf("\n")                     // zjistim kde konci první řádek
-                    if(lineEndPosition>=0){                                                                     // pokud vubec nekde konci (popisek muze mit jen 1 radek)
-                        description = partyList[i].record.characteristics.substring(0, lineEndPosition);        // oriznu ho do konce radku
-                    }else{
-                        description = partyList[i].record.characteristics;                                      // jinak ho necham cely                
-                    }   
-                    partyList[i].record.description = description;                                              // ulozim popisek k objektu                
-                }else{
-                    partyList[i].record.description = '';                                                       // ulozim popisek k objektu                                                                           // popisek nezadan, nastavim prazdny
-                }
-
-            }
-
-            var activeIndex = indexById(partyList, this.props.selectedPartyID, 'partyId')
-            partyListRows = (
-
-            )            
-        }else{
-            var label = ; ;
-            partyListRows =
-        }*/
-
-        let arrPanel = null;
-
-        if (false) {
-            arrPanel = <ArrPanel onReset={this.handleArrReset} name={partyRegion.panel.name} />
-        }
+        const {partyDetail, partyList, partyTypes} = this.props;
 
         if (!partyTypes || !partyList.fetched) {
             return <Loading />;
         }
 
+        let activeIndex = null;
+        if (partyDetail.id !== null) {
+            activeIndex = indexById(partyList.filteredRows, partyDetail.id);
+        }
+
         return <div className="party-list">
-            <div>
-                {arrPanel}
-                <FormInput componentClass="select" onChange={this.handleFilterType}>
+            <div className="filter">
+                <FormInput componentClass="select" className="type" onChange={this.handleFilterType} value={partyList.filter.type}>
                     <option value={-1}>{i18n('global.all')}</option>
-                    {partyTypes.map(i => <option value={i.partyTypeId} key={i.partyTypeId}>{i.name}</option>)}
+                    {partyTypes.map(type => <option value={type.id} key={type.id}>{type.name}</option>)}
                 </FormInput>
                 <SearchWithGoto
                     onFulltextSearch={this.handleFilterText}
@@ -161,12 +132,11 @@ class PartyList extends AbstractReactComponent {
                     allItemsCount={partyList.count}
                 />
             </div>
-            <div className="party-listbox-container">
+            <div className="list">
                 {partyList.rows.length > 0 ? <ListBox
-                    className='party-listbox'
                     ref='partyList'
                     items={partyList.filteredRows}
-                    activeIndex={null}
+                    activeIndex={activeIndex}
                     renderItemContent={this.renderListItem}
                     onFocus={this.handlePartyDetail}
                     onSelect={this.handlePartyDetail}
@@ -177,9 +147,11 @@ class PartyList extends AbstractReactComponent {
 }
 
 export default connect((state) => {
-    const {app:{partyList}, refTables:{partyTypes}} = state;
+    const {app:{partyList, partyDetail}, focus, refTables:{partyTypes}} = state;
     return {
+        focus,
         partyList,
+        partyDetail,
         partyTypes: partyTypes.fetched ? partyTypes.items : false,
     }
 })(PartyList);

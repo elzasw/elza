@@ -146,10 +146,7 @@ public class RegistryService {
 
         RegRecord parentRecord = null;
         if (parentRecordId != null) {
-            parentRecord = regRecordRepository.getOne(parentRecordId);
-            if (parentRecord == null) {
-                throw new IllegalArgumentException("Rejstřík s identifikátorem " + parentRecordId + " neexistuje.");
-            }
+            parentRecord = regRecordRepository.getOneCheckExist(parentRecordId);
         }
 
         UsrUser user = userService.getLoggedUser();
@@ -175,18 +172,13 @@ public class RegistryService {
 
         RegRecord parentRecord = null;
         if (parentRecordId != null) {
-            parentRecord = regRecordRepository.getOne(parentRecordId);
-            if (parentRecord == null) {
-                throw new IllegalArgumentException("Rejstřík s identifikátorem " + parentRecordId + " neexistuje.");
-            }
+            parentRecord = regRecordRepository.getOneCheckExist(parentRecordId);
         }
 
         UsrUser user = userService.getLoggedUser();
         boolean readAllScopes = userService.hasPermission(cz.tacr.elza.api.UsrPermission.Permission.REG_SCOPE_RD_ALL);
 
-        return regRecordRepository
-                .findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, parentRecord, scopeIdsForRecord,
-                        readAllScopes, user);
+        return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, parentRecord, scopeIdsForRecord, readAllScopes, user);
     }
 
     /**
@@ -311,8 +303,7 @@ public class RegistryService {
      * @param record heslo
      */
     @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
-    public void deleteRecord(@AuthParam(type = AuthParam.Type.SCOPE) final RegRecord record,
-                             final boolean checkUsage) {
+    public void deleteRecord(@AuthParam(type = AuthParam.Type.SCOPE) final RegRecord record, final boolean checkUsage) {
         if(checkUsage){
             checkRecordUsage(record);
         }
@@ -537,7 +528,7 @@ public class RegistryService {
                 throw new IllegalArgumentException("Kod třídy rejstříku se již nachází v databázi.");
             }
 
-            RegScope dbScope = scopeRepository.getOne(scope.getScopeId());
+            RegScope dbScope = scopeRepository.getOneCheckExist(scope.getScopeId());
             if (!dbScope.getCode().equals(scope.getCode())) {
                 throw new IllegalArgumentException("Třídě rejstříku nelze změnít kód, pouze název.");
             }

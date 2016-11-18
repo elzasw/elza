@@ -1,35 +1,111 @@
 @import "~variables.less";
+
 .party-detail {
-    .party-header {
-        display: flex;
-        padding: 5px;
-        border-bottom: 1px #eee solid;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  .party-header {
+    display: flex;
+    padding: 5px;
+    border-bottom: 1px #eee solid;
 
-        > div {
-            flex: 1;
+    > div {
 
-            &:last-of-type {
-                text-align: right;
-            }
+      &:first-of-type {
+        flex: 1;
+      }
+      &:last-of-type {
+        text-align: right;
+      }
 
-            h3 {
-                margin-top: 0;
-                margin-bottom: 5px;
-            }
-        }
+      h3 {
+        margin-top: 0;
+        margin-bottom: 5px;
+      }
     }
+  }
 
-    .party-body {
-        .panel-group {
-            margin-bottom: 0;
+  .party-body {
+    flex: 1;
+    overflow: auto;
+    .panel-group {
+      margin-bottom: 0;
+      &.open {
+        .panel {
+          .panel-heading {
+            background: #C0C0C0;
+            .panel-title {
+              font-weight: bold;
+            }
+          }
+        }
+      }
+      .panel {
+        border: none;
+        border-bottom: 1px solid #ffffff;
+        .panel-heading {
+          border: none;
+          padding: 0;
+          .panel-title {
+            font-size: 12px;
+            a, a:hover, a:visited, a:focus {
+              padding: 8px 7px;
+              display: block;
+              width: 100%;
+              text-decoration: none;
+              border-color: transparent !important;
+              outline-color: transparent !important;
+              -webkit-box-shadow: none;
+              box-shadow: none;
+            }
             &:hover {
-                .hover-button {
-                    visibility: visible;
-                }
+              text-decoration: none;
+              .hover-button {
+                visibility: visible;
+              }
             }
             .hover-button {
-                visibility: hidden;
+              visibility: hidden;
             }
+          }
         }
+        .panel-body {
+          .relation-group {
+            border: 2px solid #eee;
+            padding: 5px 5px 7px 5px;
+          }
+          label, .form-group label {
+            font-weight: normal;
+          }
+          .value-group {
+            display: flex;
+            .form-control-static {
+              flex: 1
+            }
+          }
+          .elements-container {
+            [class*="el-"] {
+              padding: 5px 5px 7px 5px;
+            }
+          }
+        }
+
+        .btn {
+          padding: 2px;
+          border: none;
+          margin: 0;
+          background: transparent;
+          height: 2em;
+          font-size: 0.9em;
+          .icon {
+            color: @node-form-actions-color;
+            height: 1.35em;
+            line-height: 1.35em;
+            width: 1.35em;
+            vertical-align: middle;
+          }
+        }
+      }
     }
+  }
 }

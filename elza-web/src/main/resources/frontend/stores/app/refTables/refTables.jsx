@@ -8,7 +8,6 @@ import recordTypes from './recordTypes.jsx'
 import rulDataTypes from './rulDataTypes.jsx';
 import calendarTypes from './calendarTypes.jsx';
 import packetTypes from './packetTypes.jsx';
-import registryRegionList from './registryRegionList.jsx';
 import partyList from './partyList.jsx';
 import scopesData from './scopesData.jsx';
 import descItemTypes from './descItemTypes.jsx';
@@ -25,7 +24,6 @@ const initialState = {
     rulDataTypes: rulDataTypes(),
     calendarTypes: calendarTypes(),
     packetTypes: packetTypes(),
-    registryRegionList: registryRegionList(),
     partyList: partyList(),
     scopesData: scopesData(),
     descItemTypes: descItemTypes(),
@@ -36,25 +34,11 @@ const initialState = {
 
 export default function refTables(state = initialState, action = {}) {
     switch (action.type) {
-        case types.REF_PARTY_LIST_REQUEST:
-        case types.REF_PARTY_LIST_RECEIVE:{
-            return {
-                ...state,
-                partyList: partyList(state.partyList, action)
-            }
-        }
         case types.REF_TEMPLATES_REQUEST:
         case types.REF_TEMPLATES_RECEIVE:{
             return {
                 ...state,
                 templates: templates(state.templates, action)
-            }
-        }
-        case types.REF_REGISTRY_LIST_REQUEST:
-        case types.REF_REGISTRY_LIST_RECEIVE:{
-            return {
-                ...state,
-                registryRegionList: registryRegionList(state.registryRegionList, action)
             }
         }
         case types.REF_RULE_SET_REQUEST:

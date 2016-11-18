@@ -8,7 +8,7 @@ import cz.tacr.elza.print.NodeId;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class ItemDecimal extends AbstractItem<BigDecimal> {
+public class ItemDecimal extends AbstractItem {
 
     public ItemDecimal(final NodeId nodeId, final BigDecimal value) {
         super(nodeId, value);
@@ -16,6 +16,6 @@ public class ItemDecimal extends AbstractItem<BigDecimal> {
 
     @Override
     public String serializeValue() {
-        return getValue().toString();
+        return getValue(BigDecimal.class).toString();
     }
 }

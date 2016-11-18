@@ -1,7 +1,11 @@
 package cz.tacr.elza.controller;
 
+import java.util.HashMap;
 import java.util.List;
 
+import cz.tacr.elza.api.UseUnitdateEnum;
+import cz.tacr.elza.domain.ParPartyType.PartyTypeEnum;
+import cz.tacr.elza.domain.ParRelationType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,27 +17,15 @@ import cz.tacr.elza.controller.vo.ParPartyGroupVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParPersonVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.ParUnitdateVO;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.RelationEntityRepository;
-import cz.tacr.elza.repository.RelationRepository;
-import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
-
 
 /**
  * Třída pro validaci vstupních VO objektů (zkontroluje, že objekty mají vyplněny povinné hodnoty a že mají nastaveny
@@ -46,8 +38,6 @@ import cz.tacr.elza.repository.RelationTypeRepository;
 public class ValidationVOService {
 
     @Autowired
-    private RelationRepository relationRepository;
-    @Autowired
     private PartyTypeRepository partyTypeRepository;
     @Autowired
     private RegisterTypeRepository registerTypeRepository;
@@ -56,71 +46,67 @@ public class ValidationVOService {
     @Autowired
     private RelationTypeRepository relationTypeRepository;
 
+    /**
+     * Mapa Typů osob na třídy
+     */
+    private final static HashMap<PartyTypeEnum, Class> partyTypeToClass = new HashMap<>(4);
 
+
+    static {
+        // Plnění statických map
+        partyTypeToClass.put(PartyTypeEnum.DYNASTY, ParDynastyVO.class);
+        partyTypeToClass.put(PartyTypeEnum.PERSON, ParPersonVO.class);
+        partyTypeToClass.put(PartyTypeEnum.EVENT, ParEventVO.class);
+        partyTypeToClass.put(PartyTypeEnum.GROUP_PARTY, ParPartyGroupVO.class);
+    }
+
+    /**
+     * Zkontroluje zda party je instancí objektu a pokud ano zkontroluje zda odpovídá jeho party type enum
+     * @param party osoba
+     * @param partyType typ osoby
+     * @param checkedClass třída
+     * @param checkedEnum typ enum.3
+     */
+    private void partyCheckerHelper(final ParPartyVO party, final ParPartyType partyType, final Class checkedClass, final PartyTypeEnum checkedEnum) {
+        if (checkedClass.isInstance(party) && !checkedEnum.equals(partyType.getPartyTypeEnum())) {
+            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
+        }
+    }
+
+    /**
+     *
+     * @param partyVO
+     */
     public void checkParty(final ParPartyVO partyVO) {
-        ParPartyType partyType;
-        if (partyVO.getPartyType() != null && partyVO.getPartyType().getPartyTypeId() != null) {
-            partyType = partyTypeRepository.getOne(partyVO.getPartyType().getPartyTypeId());
-        } else {
-            throw new IllegalArgumentException("Nenalezen typ osoby");
-        }
+        final ParPartyType partyType = partyTypeRepository.getOneCheckExist(partyVO.getPartyType().getId());
 
-        // object type dle party type ?
-        if (partyVO instanceof ParDynastyVO
-                && !ParPartyType.PartyTypeEnum.DYNASTY.equals(partyType.getPartyTypeEnum())) {
-
-            throw new IllegalArgumentException(
-                    "Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
-        }
-        if (partyVO instanceof ParPersonVO
-                && !ParPartyType.PartyTypeEnum.PERSON.equals(partyType.getPartyTypeEnum())) {
-
-            throw new IllegalArgumentException(
-                    "Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
-        }
-        if (partyVO instanceof ParEventVO
-                && !ParPartyType.PartyTypeEnum.EVENT.equals(partyType.getPartyTypeEnum())) {
-
-            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
-        }
-        if (partyVO instanceof ParPartyGroupVO
-                && !ParPartyType.PartyTypeEnum.GROUP_PARTY.equals(partyType.getPartyTypeEnum())) {
-
-            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
-        }
+        // Definice TypeEnum na Class
+        partyTypeToClass.forEach((type, clazz) -> partyCheckerHelper(partyVO, partyType, clazz, type));
 
         List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(partyType);
         if (CollectionUtils.isEmpty(regRegisterTypes)) {
-            throw new IllegalArgumentException(
-                    "Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
+            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
         }
 
         checkPreferredNameExist(partyVO.getPartyNames());
-        // end CHECK
     }
 
 
     public void checkPartyUpdate(final ParPartyVO partyVO) {
-        ParPartyType partyType;
-        if (partyVO.getPartyType().getPartyTypeId() != null) {
-            partyType = partyTypeRepository.getOne(partyVO.getPartyType().getPartyTypeId());
-        } else {
-            throw new IllegalArgumentException("Nenalezen typ osoby s id: " + partyVO.getPartyId());
-        }
+        ParPartyType partyType = partyTypeRepository.getOneCheckExist(partyVO.getPartyType().getId());
 
-        if (partyVO.getPartyId() == null) {
+        if (partyVO.getId() == null) {
             throw new IllegalArgumentException("Není vyplněno id existující entity pro update.");
         }
 
-        ParParty parParty = partyRepository.getOne(partyVO.getPartyId());
-        if (!parParty.getPartyType().getPartyTypeId().equals(partyVO.getPartyType().getPartyTypeId())) {
+        ParParty parParty = partyRepository.getOneCheckExist(partyVO.getId());
+        if (!parParty.getPartyType().getPartyTypeId().equals(partyVO.getPartyType().getId())) {
             throw new IllegalArgumentException("Nelze měnit typ osoby.");
         }
 
         List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(partyType);
         if (CollectionUtils.isEmpty(regRegisterTypes)) {
-            throw new IllegalArgumentException(
-                    "Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
+            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
         }
 
         if (partyVO.getPartyNames() != null) {
@@ -132,21 +118,19 @@ public class ValidationVOService {
     public void checkRelation(final ParRelationVO relation) {
         Assert.notNull(relation);
 
-        Assert.notNull(relation.getComplementType(), "Není nastaven typ vztahu.");
-        Assert.notNull(relation.getComplementType().getRelationTypeId(), "Není nastaven typ vztahu.");
+        Assert.notNull(relation.getRelationTypeId(), "Není nastaven typ vztahu.");
 
         Assert.notNull(relation.getPartyId());
-        ParParty party = partyRepository.findOne(relation.getPartyId());
-        Assert.notNull(party, "Nebyla nalezena osoba s id " + relation.getPartyId());
+        partyRepository.getOneCheckExist(relation.getPartyId());
 
-        Integer relationTypeId = relation.getComplementType().getRelationTypeId();
-        ParRelationType relationType = relationTypeRepository.findOne(relationTypeId);
-        Assert.notNull(relationType, "Není nalezen typ vztahu s id " + relationTypeId);
+        Integer relationTypeId = relation.getRelationTypeId();
+        ParRelationType relationType = relationTypeRepository.getOneCheckExist(relationTypeId);
 
-        if (relation.getFrom() != null) {
+        boolean isInterval = UseUnitdateEnum.INTERVAL.equals(relationType.getUseUnitdate());
+        if ((UseUnitdateEnum.ONE.equals(relationType.getUseUnitdate()) || isInterval) && relation.getFrom() != null) {
             checkUnitDate(relation.getFrom());
         }
-        if (relation.getTo() != null) {
+        if (isInterval && relation.getTo() != null) {
             checkUnitDate(relation.getTo());
         }
     }

@@ -1,9 +1,39 @@
 package cz.tacr.elza.controller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.exception.DeleteException;
-import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.ParComplementTypeVO;
+import cz.tacr.elza.controller.vo.ParInstitutionVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.UIPartyGroupVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ParComplementType;
@@ -18,20 +48,27 @@ import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.exception.DeleteException;
+import cz.tacr.elza.exception.codes.UserCode;
+import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
+import cz.tacr.elza.repository.PartyTypeRelationRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
+import cz.tacr.elza.repository.UIPartyGroupRepository;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.UserService;
-import cz.tacr.elza.service.exception.DeleteFailedException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.util.*;
 
 
 /**
@@ -41,7 +78,7 @@ import java.util.*;
  * @since 21.12.2015
  */
 @RestController
-@RequestMapping("/api/party")
+@RequestMapping(value = "/api/party", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class PartyController {
 
     @Autowired
@@ -98,6 +135,9 @@ public class PartyController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UIPartyGroupRepository uiPartyGroupRepository;
+
     /**
      * Uložení nové osoby
      * @param partyVO data osoby
@@ -108,7 +148,7 @@ public class PartyController {
     public ParPartyVO createParty(@RequestBody final ParPartyVO partyVO) {
         Assert.notNull(partyVO);
 
-        if(partyVO.getPartyId() != null){
+        if(partyVO.getId() != null){
             throw new IllegalArgumentException("Nová osoba nesmí mít nastaveno ID");
         }
 
@@ -147,8 +187,8 @@ public class PartyController {
         Assert.notNull(partyVO);
 
         Assert.isTrue(
-            partyVO.getPartyId().equals(partyId),
-            "V url požadavku je odkazováno na jiné ID (" + partyId + ") než ve VO (" + partyVO.getPartyId() + ")."
+                partyId.equals(partyVO.getId()),
+            "V url požadavku je odkazováno na jiné ID (" + partyId + ") než ve VO (" + partyVO.getId() + ")."
         );
         validationVOService.checkPartyUpdate(partyVO);
 
@@ -171,7 +211,7 @@ public class PartyController {
         ParParty party = partyRepository.getOneCheckExist(partyId);
 
         if (!userService.findUsersByParty(party).isEmpty()) {
-            throw new DeleteException("Osobu nelze smazat, kvůli navázaným uživatelům.");
+            throw new DeleteException(UserCode.USER_DELETE_ERROR);
         }
 
         partyService.deleteParty(party);
@@ -229,8 +269,7 @@ public class PartyController {
             @Nullable @RequestParam(required = false) final Integer partyTypeId,
             @RequestParam final Integer partyId) {
 
-        ParParty party = partyRepository.getOne(partyId);
-        Assert.notNull(party, "Nebyla nalezena osoba s id " + partyId);
+        ParParty party = partyRepository.getOneCheckExist(partyId);
         Set<Integer> scopeIds = new HashSet<>();
         scopeIds.add(party.getRecord().getScope().getScopeId());
 
@@ -252,11 +291,10 @@ public class PartyController {
      * @return vložený objekt
      */
     @Transactional
-    @RequestMapping(value = "/relations", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ParRelationVO insertRelation(@RequestBody final ParRelationVO relationVO) {
+    @RequestMapping(value = "/relation", method = RequestMethod.POST)
+    public ParRelationVO createRelation(@RequestBody final ParRelationVO relationVO) {
 
-        Assert.isNull(relationVO.getRelationId());
+        Assert.isNull(relationVO.getId());
 
         validationVOService.checkRelation(relationVO);
 
@@ -277,15 +315,13 @@ public class PartyController {
      * @return aktualizovaný objekt vztahu
      */
     @Transactional
-    @RequestMapping(value = "/relations/{relationId}", method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/relation/{relationId}", method = RequestMethod.PUT)
     public ParRelationVO updateRelation(
             @PathVariable(value = "relationId") final Integer relationId,
             @RequestBody final ParRelationVO relationVO) {
 
 
-        relationVO.setRelationId(relationId);
+        relationVO.setId(relationId);
         validationVOService.checkRelation(relationVO);
 
 
@@ -302,7 +338,7 @@ public class PartyController {
      * @param relationId id vztahu
      */
     @Transactional
-    @RequestMapping(value = "/relations/{relationId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/relation/{relationId}", method = RequestMethod.DELETE)
     public void deleteRelation(@PathVariable(value = "relationId") final Integer relationId) {
 
         ParRelation relation = relationRepository.findOne(relationId);
@@ -337,10 +373,8 @@ public class PartyController {
 
 
             ParRelationType relationType = partyTypeRelation.getRelationType();
-            ParRelationTypeVO relationTypeVO = factoryVo
-                    .getOrCreateVo(relationType.getRelationTypeId(), relationType, relationTypeVoMap,
-                            ParRelationTypeVO.class);
-
+            ParRelationTypeVO relationTypeVO = factoryVo.createParRelationType(relationType, partyTypeRelation,
+                    relationTypeVoMap);
             partyTypeVO.addRelationType(relationTypeVO);
         }
 
@@ -390,13 +424,54 @@ public class PartyController {
             partyTypeVO.addRegisterType(regRegisterTypeVO);
         }
 
+        // načtení UIPartyGroup
+        List<UIPartyGroup> uiPartyGroups = uiPartyGroupRepository.findAll();
+        Map<Integer, UIPartyGroupVO> uiPartyGroupVOMap = new HashMap<>();
+        Map<String, List<UIPartyGroupVO>> partyTypeCodeToUIPartyGroupsVOMap = new HashMap<>();
+        for (UIPartyGroup uiPartyGroup : uiPartyGroups) {
+            UIPartyGroupVO uiPartyGroupVO = factoryVo.getOrCreateVo(uiPartyGroup.getPartyGroupId(), uiPartyGroup,
+                    uiPartyGroupVOMap, UIPartyGroupVO.class);
+
+            ParPartyTypeVO partyTypeVO = uiPartyGroupVO.getPartyType();
+            String partyTypeCode = null;
+            if (partyTypeVO != null) {
+                partyTypeCode = partyTypeVO.getCode();
+            }
+
+            List<UIPartyGroupVO> uiPartyGroupVOList = partyTypeCodeToUIPartyGroupsVOMap.get(partyTypeCode);
+            if (uiPartyGroupVOList == null) {
+                uiPartyGroupVOList = new LinkedList<>();
+                partyTypeCodeToUIPartyGroupsVOMap.put(partyTypeCode, uiPartyGroupVOList);
+            }
+            uiPartyGroupVOList.add(uiPartyGroupVO);
+        }
 
         for (ParPartyTypeVO partyTypeVO : partyTypeVoMap.values()) {
-            ParPartyType partyType = partyTypeRepository.findOne(partyTypeVO.getPartyTypeId());
+            ParPartyType partyType = partyTypeRepository.findOne(partyTypeVO.getId());
             List<RegRegisterType> partyRegisterTypes = registerTypeRepository
                     .findByPartyTypeEnableAdding(partyType);
 
             partyTypeVO.setRegisterTypes(factoryVo.createRegisterTypesTree(partyRegisterTypes, true, partyType));
+
+            List<UIPartyGroupVO> uiGroups = new LinkedList<>();
+            List<UIPartyGroupVO> commonUIGroups = partyTypeCodeToUIPartyGroupsVOMap.get(null);
+            List<UIPartyGroupVO> typeUIGroups = partyTypeCodeToUIPartyGroupsVOMap.get(partyTypeVO.getCode());
+            if (commonUIGroups != null) {
+                uiGroups.addAll(commonUIGroups);
+            }
+            if (typeUIGroups != null) {
+                uiGroups.addAll(typeUIGroups);
+            }
+            if (!uiGroups.isEmpty()) {
+                uiGroups.sort((g1, g2) -> {
+                    if (g1.getViewOrder().equals(g2.getViewOrder())) {
+                        return g1.getId().compareTo(g2.getId());
+                    } else {
+                        return g1.getViewOrder().compareTo(g2.getViewOrder());
+                    }
+                });
+                partyTypeVO.setPartyGroups(uiGroups);
+            }
         }
 
 

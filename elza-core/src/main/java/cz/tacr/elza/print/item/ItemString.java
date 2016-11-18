@@ -8,7 +8,7 @@ import cz.tacr.elza.print.NodeId;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class ItemString extends AbstractItem<String> {
+public class ItemString extends AbstractItem {
 
     public ItemString(final NodeId nodeId, final String value) {
         super(nodeId, value);
@@ -16,6 +16,6 @@ public class ItemString extends AbstractItem<String> {
 
     @Override
     public String serializeValue() {
-        return StringUtils.trim(getValue());
+        return StringUtils.trim(getValue(String.class));
     }
 }

@@ -45,7 +45,7 @@ class UrlFactory {
 /**
  * Web api pro komunikaci se serverem.
  */
-class WebApi{
+class WebApi {
     constructor() {
     }
 
@@ -55,7 +55,7 @@ class WebApi{
             nodeId: nodeId,
             searchValue: searchText,
             depth: type,
-        }
+        };
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/fulltext', null,  data);
     }
 
@@ -67,23 +67,23 @@ class WebApi{
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/nodes', null, {versionId: versionId, ids: nodeIds});
     }
 
-    insertRelation(relation) {
-        return AjaxUtils.ajaxPost(WebApi.partyUrl + '/relations', null,  relation);
+    createRelation(relation) {
+        return AjaxUtils.ajaxPost(WebApi.partyUrl + '/relation', null,  relation);
     }
 
     updateRelation(relation) {
-        return AjaxUtils.ajaxPut(WebApi.partyUrl + '/relations/' + relation.relationId, null,  relation);
+        return AjaxUtils.ajaxPut(WebApi.partyUrl + '/relation/' + relation.id, null,  relation);
     }
 
     deleteRelation(relationId) {
-        return AjaxUtils.ajaxDelete(WebApi.partyUrl + '/relations/' + relationId);
+        return AjaxUtils.ajaxDelete(WebApi.partyUrl + '/relation/' + relationId);
     }
 
     copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId) {
         return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/copyOlderSiblingAttribute/', {versionId, descItemTypeId},  {id: nodeId, version: nodeVersionId});
     }
 
-    insertParty(party) {
+    createParty(party) {
         return AjaxUtils.ajaxPost(WebApi.partyUrl + '/', null, party);
     }
 
@@ -111,11 +111,23 @@ class WebApi{
     }
 
     updateParty(party) {
-        return AjaxUtils.ajaxPut(WebApi.partyUrl + '/' + party.partyId, null, party);
+        return AjaxUtils.ajaxPut(WebApi.partyUrl + '/' + party.id, null, party);
     }
 
     deleteParty(partyId) {
         return AjaxUtils.ajaxDelete(WebApi.partyUrl + '/' + partyId);
+    }
+
+    findChanges(versionId, nodeId, offset, maxSize, changeId){
+        return AjaxUtils.ajaxGet(WebApi.changesUrl + '/' + versionId, {nodeId, offset, maxSize, changeId});
+    }
+
+    findChangesByDate(versionId, nodeId, changeId, fromDate) {
+        return AjaxUtils.ajaxGet(WebApi.changesUrl + '/' + versionId + "/date", {nodeId, maxSize: 1, changeId, fromDate});
+    }
+
+    revertChanges(versionId, nodeId, fromChangeId, toChangeId){
+        return AjaxUtils.ajaxGet(WebApi.changesUrl + '/' + versionId + '/revert', {nodeId, fromChangeId, toChangeId});
     }
 
     validateUnitdate(value) {
@@ -129,7 +141,7 @@ class WebApi{
             transportNodeParent: nodesParent,
             staticNode: dest,
             staticNodeParent: destParent
-        }
+        };
         return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/moveLevelUnder', null, data)
     }
 
@@ -140,18 +152,18 @@ class WebApi{
             transportNodeParent: nodesParent,
             staticNode: dest,
             staticNodeParent: destParent
-        }
+        };
         return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/moveLevelBefore', null, data)
     }
 
     moveNodesAfter(versionId, nodes, nodesParent, dest, destParent) {
         const data = {
-            versionId: versionId,
+            versionId,
             transportNodes: nodes,
             transportNodeParent: nodesParent,
             staticNode: dest,
             staticNodeParent: destParent
-        }
+        };
         return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/moveLevelAfter', null, data)
     }
 
@@ -222,28 +234,6 @@ class WebApi{
         });
     }
 
-    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null){
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/findRecord', {
-            search: search,
-            from: 0,
-            count: 200,
-            parentRecordId: registryParent,
-            registerTypeId: registerTypeId,
-            versionId: versionId
-        });;
-    }
-
-    findRecordForRelation(search = null, roleTypeId = null, partyId = null) {
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/findRecordForRelation',{
-            search: search,
-            from: 0,
-            count: 200,
-            roleTypeId: roleTypeId,
-            partyId: partyId
-        });
-
-    }
-
     getBulkActions(versionId) {
         return AjaxUtils.ajaxGet(WebApi.actionUrl + '/' + versionId, null);
     }
@@ -276,11 +266,6 @@ class WebApi{
         return AjaxUtils.ajaxPost(WebApi.actionUrl + '/queue/' + versionId + '/' + code, null, nodeIds);
     }
 
-
-    getRegistry(registryId){
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/getRecord', {recordId: registryId});
-    }
-
     versionValidate(versionId, showAll = false) {
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/validateVersion/' + versionId + '/' + showAll, null)
     }
@@ -289,8 +274,14 @@ class WebApi{
         return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/validateVersionCount/' + versionId, null)
     }
 
+
+    getFundPolicy(fundVersionId) {
+        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/fund/policy/' + fundVersionId, {});
+    }
+
+    /// Registry
     createRecord(record, characteristics, registerTypeId, parentId, scopeId) {
-        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/createRecord', null, {
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/', null, {
             '@class': 'cz.tacr.elza.controller.vo.RegRecordVO',
             record,
             characteristics,
@@ -301,52 +292,83 @@ class WebApi{
         });
     }
 
-    getFundPolicy(fundVersionId) {
-        return AjaxUtils.ajaxGet(WebApi.arrangementUrl + '/fund/policy/' + fundVersionId, {});
+    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null){
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/', {
+            search: search,
+            from: 0,
+            count: 200,
+            parentRecordId: registryParent,
+            registerTypeId: registerTypeId,
+            versionId: versionId
+        });
+    }
+
+    findRecordForRelation(search = null, roleTypeId = null, partyId = null) {
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/findRecordForRelation',{
+            search: search,
+            from: 0,
+            count: 200,
+            roleTypeId: roleTypeId,
+            partyId: partyId
+        });
+    }
+
+    getRegistry(registryId) {
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/' + registryId);
+    }
+
+    updateRegistry(record) {
+        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/' + record.id, null, record);
+    }
+
+    deleteRegistry(recordId) {
+        return AjaxUtils.ajaxDelete(WebApi.registryUrl + '/' + recordId);
     }
 
     getScopes(versionId = null) {
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/fundScopes', {versionId: versionId});
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/fundScopes', {versionId});
     }
 
     getAllScopes() {
         return AjaxUtils.ajaxGet(WebApi.registryUrl + '/scopes', null);
     }
 
-    deleteRegistry(recordId) {
-        return AjaxUtils.ajaxDelete(WebApi.registryUrl + '/deleteRecord', {recordId}, null);
-    }
     getRecordTypesForAdd(partyTypeId = null){
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/recordTypesForPartyType', {partyTypeId: partyTypeId});
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/recordTypesForPartyType', {partyTypeId});
     }
 
-    updateRegistry(data) {
-        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/updateRecord', null, data);
+    addRegistryVariant(data) {
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/variantRecord/', null, data);
+    }
+
+    editRegistryVariant(variantRecord) {
+        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/variantRecord/' + variantRecord.id, null, variantRecord);
     }
 
     deleteVariantRecord(variantRecordId) {
-        return AjaxUtils.ajaxDelete(WebApi.registryUrl + '/deleteVariantRecord', {variantRecordId}, null);
-    }
-
-    addRegistryVariant(data){
-        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/createVariantRecord', null, data);
-    }
-
-    editRegistryVariant(data){
-        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/updateVariantRecord', null, data);
-    }
-
-    deleteRegCoordinates(coordinatesId) {
-        return AjaxUtils.ajaxDelete(WebApi.registryUrl + '/deleteRegCoordinates', {coordinatesId}, null);
+        return AjaxUtils.ajaxDelete(WebApi.registryUrl + '/variantRecord/' + variantRecordId);
     }
 
     createRegCoordinates(data){
-        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/createRegCoordinates', null, data);
+        return AjaxUtils.ajaxPost(WebApi.registryUrl + '/regCoordinates', null, data);
     }
 
-    updateRegCoordinates(data){
-        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/updateRegCoordinates', null, data);
+    updateRegCoordinates(coordinates) {
+        return AjaxUtils.ajaxPut(WebApi.registryUrl + '/regCoordinates/' + coordinates.id, null, coordinates);
     }
+
+    deleteRegCoordinates(coordinatesId) {
+        return AjaxUtils.ajaxDelete(WebApi.registryUrl + '/regCoordinates/' + coordinatesId);
+    }
+
+    getRecordTypes() {
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/recordTypes');
+    }
+
+    getDefaultScopes() {
+        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/defaultScopes');
+    }
+    // End registry
 
     getNodeForm(nodeId, versionId) {
         const node = findNodeById(_faRootNode, nodeId);
@@ -362,7 +384,7 @@ class WebApi{
             parents: parents,
             children: node.children,
             siblings: siblings,
-        }
+        };
         return getData(data, 1);
     }
 
@@ -412,10 +434,6 @@ class WebApi{
 
     getTemplates(code = null) {
         return AjaxUtils.ajaxGet(WebApi.ruleUrl + '/templates', code ? {code} : null);
-    }
-
-    getRegisterTypes(partyTypeId) {
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/recordTypes', {partyTypeId: partyTypeId});
     }
 
     getPacketTypes() {
@@ -489,7 +507,7 @@ class WebApi{
             includeIds,
             expandedIds: []
         };
-        for (let prop in expandedIds) {
+        for (let prop in expandedIds) { // Použít Object.keys()
             if (expandedIds[prop]) {
                 data.expandedIds.push(prop);
             }
@@ -498,19 +516,14 @@ class WebApi{
     }
 
     getFundTreeNodes(versionId, nodeIds) {
-        const data = {
+        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/fundTree/nodes', null, {
             versionId,
             nodeIds
-        };
-        return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/fundTree/nodes', null, data);
+        });
     }
 
     getPartyNameFormTypes() {
         return AjaxUtils.ajaxGet(WebApi.partyUrl + '/partyNameFormTypes');
-    }
-
-    getRecordTypes() {
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/recordTypes');
     }
 
     getPartyTypes() {
@@ -521,16 +534,14 @@ class WebApi{
         return AjaxUtils.ajaxGet(WebApi.ruleUrl + '/getRuleSets');
     }
 
-
-
     createFund(name, ruleSetId, institutionId, internalCode, dateRange) {
         return AjaxUtils.ajaxPost(WebApi.arrangementUrl + '/funds', {
-                name: name,
-                institutionId: institutionId,
-                ruleSetId: ruleSetId,
-                internalCode: internalCode,
-                dateRange: dateRange
-            });
+            name: name,
+            institutionId: institutionId,
+            ruleSetId: ruleSetId,
+            internalCode: internalCode,
+            dateRange: dateRange
+        });
     }
 
     updateFund(data) {
@@ -542,7 +553,6 @@ class WebApi{
     }
 
     filterNodes(versionId, filter) {
-        // console.log(1111111, filter)
         return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/filterNodes/' + versionId, {}, {filters: filter})
     }
 
@@ -584,10 +594,6 @@ class WebApi{
 
     getIndexingState() {
         return AjaxUtils.ajaxGet(WebApi.adminUrl + '/reindexStatus');
-    }
-
-    getDefaultScopes() {
-        return AjaxUtils.ajaxGet(WebApi.registryUrl + '/defaultScopes');
     }
 
     getTransformations() {
@@ -651,10 +657,12 @@ class WebApi{
     getInstitutions() {
         return AjaxUtils.ajaxGet(WebApi.partyUrl + '/institutions');
     }
-    // Hledá všechny unikátní hodnoty atributu pro daný AS
-    getDescItemTypeValues(versionId, descItemTypeId, filterText, descItemSpecIds, max) {
-        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/filterUniqueValues/' + versionId,
-            { descItemTypeId, fulltext: filterText, max }, descItemSpecIds)
+
+    /**
+     * Hledá všechny unikátní hodnoty atributu pro daný AS
+     */
+    getDescItemTypeValues(versionId, descItemTypeId, fulltext, descItemSpecIds, max) {
+        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/filterUniqueValues/' + versionId, {descItemTypeId, fulltext, max}, descItemSpecIds)
     }
 
     getVisiblePolicy(nodeId, fundVersionId, includeParents = true) {
@@ -666,11 +674,7 @@ class WebApi{
     }
 
     setVisiblePolicy(nodeId, fundVersionId, policyTypeIdsMap, includeSubtree = false) {
-        const data = {
-            includeSubtree,
-            policyTypeIdsMap
-        }
-        return AjaxUtils.ajaxPut(WebApi.ruleUrl + '/policy/' + nodeId + '/' + fundVersionId, null, data);
+        return AjaxUtils.ajaxPut(WebApi.ruleUrl + '/policy/' + nodeId + '/' + fundVersionId, null, {includeSubtree, policyTypeIdsMap});
     }
 
     getUserDetail() {
@@ -721,24 +725,12 @@ class WebApi{
             name: name,
             code: code,
             description
-        }
+        };
         return AjaxUtils.ajaxPost(WebApi.userUrl + '/group', null, params);
     }
 
     updateGroup(groupId, name, description) {
-        const data = {
-            name,
-            description,
-        }
-        return AjaxUtils.ajaxPut(WebApi.userUrl + '/group/' + groupId, null, data);
-    }
-
-    changeGroup(groupId, name, descriptiom) {
-        const params = {
-            name: name,
-            descriptiom: descriptiom
-        }
-        return AjaxUtils.ajaxPut(WebApi.userUrl + '/group/' + groupId, null, params);
+        return AjaxUtils.ajaxPut(WebApi.userUrl + '/group/' + groupId, null, {name, description});
     }
 
     deleteGroup(groupId) {
@@ -767,26 +759,15 @@ class WebApi{
     }
 
     updateUser(id, username, password) {
-        const params = {
-            username: username,
-            password: password,
-        }
-        return AjaxUtils.ajaxPut(WebApi.userUrl + '/' + id, null, params);
+        return AjaxUtils.ajaxPut(WebApi.userUrl + '/' + id, null, {username, password});
     }
 
     changePasswordUser(oldPassword, newPassword) {
-        const params = {
-            oldPassword: oldPassword,
-            newPassword: newPassword
-        }
-        return AjaxUtils.ajaxPut(WebApi.userUrl + '/password', null, params);
+        return AjaxUtils.ajaxPut(WebApi.userUrl + '/password', null, {oldPassword, newPassword});
     }
 
     changePassword(userId, newPassword) {
-        const params = {
-            newPassword: newPassword
-        }
-        return AjaxUtils.ajaxPut(WebApi.userUrl + '/' + userId + '/password', null, params);
+        return AjaxUtils.ajaxPut(WebApi.userUrl + '/' + userId + '/password', null, {newPassword});
     }
 
     changeActive(userId, active) {
@@ -902,6 +883,7 @@ WebApi.exportUrl = WebApi.baseUrl + '/export';
 WebApi.actionUrl = WebApi.baseUrl + '/action';
 WebApi.kmlUrl = WebApi.baseUrl + '/kml';
 WebApi.ruleUrl = WebApi.baseUrl + '/rule';
+WebApi.changesUrl = WebApi.arrangementUrl + '/changes';
 WebApi.dmsUrl = WebApi.baseUrl + '/dms';
 WebApi.userUrl = WebApi.baseUrl + '/user';
 WebApi.adminUrl = WebApi.baseUrl + '/admin';
@@ -909,7 +891,7 @@ WebApi.validateUrl = WebApi.baseUrl + '/validate';
 
 
 
-module.exports = {
+export default {
     WebApi: new WebApi(),
     WebApiCls: WebApi,
     UrlFactory: UrlFactory,

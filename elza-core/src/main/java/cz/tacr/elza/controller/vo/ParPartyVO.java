@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller.vo;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -18,7 +17,7 @@ public class ParPartyVO {
     /**
      * Id osoby.
      */
-    private Integer partyId;
+    private Integer id;
 
     /**
      * Složený název osoby
@@ -50,7 +49,7 @@ public class ParPartyVO {
     /**
      * Seznam tvůrců osoby.
      */
-    @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@type")
+    @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
     private List<ParPartyVO> creators;
 
     /**
@@ -69,12 +68,12 @@ public class ParPartyVO {
     private Integer version;
 
 
-    public Integer getPartyId() {
-        return partyId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setPartyId(final Integer partyId) {
-        this.partyId = partyId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -155,13 +154,6 @@ public class ParPartyVO {
 
     public void setCharacteristics(final String characteristics) {
         this.characteristics = characteristics;
-    }
-
-    public void addPartyName(final ParPartyNameVO partyName) {
-        if (partyNames == null) {
-            partyNames = new LinkedList<>();
-        }
-        partyNames.add(partyName);
     }
 }
 

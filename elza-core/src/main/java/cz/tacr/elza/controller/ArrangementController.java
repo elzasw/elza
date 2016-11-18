@@ -2,7 +2,7 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.api.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.api.UsrPermission;
-import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.*;
@@ -37,6 +37,8 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.FilterExpiredException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
@@ -907,8 +909,13 @@ public class ArrangementController {
         ArrFundVersion version = fundVersionRepository.findOne(versionId);
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        Assert.notNull(version, "Verze AP neexistuje");
-        Assert.notNull(node, "Uzel neexistuje");
+        if (version == null) {
+            throw new ObjectNotFoundException(ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", versionId);
+        }
+
+        if (node == null) {
+            throw new ObjectNotFoundException(ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
+        }
 
         List<ArrDescItem> descItems = arrangementService.getDescItems(version, node);
         List<RulItemTypeExt> itemTypes;
@@ -1268,7 +1275,7 @@ public class ArrangementController {
         Assert.notNull(input);
         Assert.notNull(input.getVersionId());
 
-        ArrFundVersion version = fundVersionRepository.getOne(input.getVersionId());
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(input.getVersionId());
 
         Set<Integer> nodeIds = arrangementService.findNodeIdsByFulltext(version, input.getNodeId(),
                 input.getSearchValue(), input.getDepth());
@@ -1798,7 +1805,7 @@ public class ArrangementController {
      * @param maxSize       maximální počet záznamů
      * @param offset        počet přeskočených záznamů
      * @param changeId      identifikátor změny, vůči které chceme počítat offset (pokud není vyplněn, bere se vždy poslední)
-     * @param nodeId        identifikátor JP u které vyhledáváme změny (pokud není vyplně, vyhledává se přes celý AS)
+     * @param nodeId        identifikátor JP u které vyhledáváme změny (pokud není vyplněn, vyhledává se přes celý AS)
      * @return výsledek hledání
      */
     @RequestMapping(value = "/changes/{fundVersionId}", method = RequestMethod.GET)
@@ -1819,7 +1826,7 @@ public class ArrangementController {
         if (nodeId != null) {
             node = nodeRepository.getOneCheckExist(nodeId);
         }
-        return revertingChangesService.findChanges(fundVersion.getFund(), node, maxSize, offset, change);
+        return revertingChangesService.findChanges(fundVersion, node, maxSize, offset, change);
     }
 
     /**
@@ -1847,7 +1854,34 @@ public class ArrangementController {
         if (nodeId != null) {
             node = nodeRepository.getOneCheckExist(nodeId);
         }
-        return revertingChangesService.findChangesByDate(fundVersion.getFund(), node, maxSize, fromDate, change);
+        return revertingChangesService.findChangesByDate(fundVersion, node, maxSize, fromDate, change);
+    }
+
+    /**
+     * Provede revertování AS / JP k požadovanému stavu.
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param fromChangeId  identifikátor změny, vůči které provádíme revertování (od)
+     * @param toChangeId    identifikátor změny, ke které provádíme revertování (do)
+     * @param nodeId        identifikátor JP u které provádíme změny (pokud není vyplněn, revertuje se přes celý AS)
+     */
+    @RequestMapping(value = "/changes/{fundVersionId}/revert", method = RequestMethod.GET)
+    @Transactional
+    public void revertChanges(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                              @RequestParam(value = "fromChangeId") final Integer fromChangeId,
+                              @RequestParam(value = "toChangeId") final Integer toChangeId,
+                              @RequestParam(value = "nodeId", required = false) final Integer nodeId) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        if (fundVersion.getLockChange() != null) {
+            throw new IllegalStateException("Nelze prováděn změny v uzavřené verzi");
+        }
+        ArrChange fromChange = changeRepository.getOneCheckExist(fromChangeId);
+        ArrChange toChange = changeRepository.getOneCheckExist(toChangeId);
+        ArrNode node = null;
+        if (nodeId != null) {
+            node = nodeRepository.getOneCheckExist(nodeId);
+        }
+        revertingChangesService.revertChanges(fundVersion.getFund(), node, fromChange, toChange);
     }
 
     /**

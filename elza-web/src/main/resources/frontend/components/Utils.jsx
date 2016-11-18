@@ -332,6 +332,11 @@ function init() {
         }
         return result;
     };
+    if (typeof Object.values != 'function') {
+        Object.values = x =>
+            Object.keys(x).reduce((y, z) =>
+            y.push(x[z]) && y, []);
+    }
     if (typeof Object.assign != 'function') {
       (function () {
         Object.assign = function (target) {
@@ -413,6 +418,20 @@ function dateToString(date) {
     var mm = (date.getMonth() + 1).toString();
     var yyyy = date.getFullYear().toString();
     return (dd[1] ? dd : "0" + dd[0]) + "." + (mm[1] ? mm : "0" + mm[0]) + "." + yyyy;
+}
+
+/**
+ * Převod času do řetězce - v budoucnu při více locale nahradit metodou pracující s locale.
+ * @param date {Date} datum
+ * @return {String} datum
+ */
+function timeToString(date) {
+    var hh = date.getHours().toString();
+    var ii = date.getMinutes().toString();
+    var ss = date.getSeconds().toString();
+    /** Formátování - místo 01 = 1 **/
+    var f = (col) => (col[1] ? col : "0" + col[0]);
+    return f(hh) + ":" + f(ii) + ":" + f(ss);
 }
 
 /**
@@ -580,15 +599,49 @@ calculateScrollbarWidth();
 
 function getScrollbarWidth() {
     return _scrollbarWidth;
-} 
+}
+
+/**
+ * Zarovnání čísla na dvě pozice přidáním 0, pokud je potřeba.
+ * @param number číslo
+ * @return {string} <číslo> nebo 0<číslo>
+ */
+function _dtpad(number) {
+    var r = String(number);
+    if ( r.length === 1 ) {
+        r = '0' + r;
+    }
+    return r;
+}
+
+/**
+ * Převede datum a čas na lokální datum a čas v UTC.
+ * @param date
+ * @return {*}
+ */
+function dateTimeToLocalUTC(date) {
+    if (!date) {
+        return date;
+    }
+
+    return date.getFullYear()
+        + '-' + _dtpad( date.getMonth() + 1)
+        + '-' + _dtpad( date.getDate())
+        + 'T' + _dtpad( date.getHours())
+        + ':' + _dtpad( date.getMinutes())
+        + ':' + _dtpad( date.getSeconds())
+        + '.' + _dtpad( date.getMilliseconds());
+}
 
 module.exports = {
+    dateTimeToLocalUTC,
     wktType,
     wktFromTypeAndData,
     objectFromWKT,
     getScrollbarWidth: getScrollbarWidth,
     valuesEquals: valuesEquals,
     dateToString: dateToString,
+    timeToString: timeToString,
     dateTimeToString: dateTimeToString,
     StringSet: StringSet,
     StringMap: StringMap,

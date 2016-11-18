@@ -41,7 +41,7 @@ import cz.tacr.elza.service.RegistryService;
  * @since 21.12.2015
  */
 @RestController
-@RequestMapping("/api/registry")
+@RequestMapping(value = "/api/registry", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class RegistryController {
 
     @Autowired
@@ -98,10 +98,11 @@ public class RegistryController {
      * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
-    @RequestMapping(value = "/findRecord", method = RequestMethod.GET)
+    @RequestMapping(value = "/", method = RequestMethod.GET)
     public RegRecordWithCount findRecord(@RequestParam(required = false) @Nullable final String search,
-                                         @RequestParam final Integer from, @RequestParam final Integer count,
-                                         @RequestParam(value = "registerTypeId", required = false) @Nullable final Integer registerTypeId,
+                                         @RequestParam final Integer from,
+                                         @RequestParam final Integer count,
+                                         @RequestParam(required = false) @Nullable final Integer registerTypeId,
                                          @RequestParam(required = false) @Nullable final Integer parentRecordId,
                                          @RequestParam(required = false) @Nullable final Integer versionId) {
 
@@ -114,17 +115,17 @@ public class RegistryController {
         }
 
         ArrFund fund;
-        if(versionId == null){
+        if (versionId == null) {
             fund = null;
-        }else{
+        } else {
             ArrFundVersion version = fundVersionRepository.findOne(versionId);
-            Assert.notNull(version, "Nebyla nalezena verze archivní pomůcky s id "+versionId);
+            Assert.notNull(version, "Nebyla nalezena verze archivní pomůcky s id " + versionId);
             fund = version.getFund();
         }
 
 
 
-        RegRecord parentRecord = null;
+        RegRecord parentRecord;
         if(parentRecordId != null) {
             parentRecord = regRecordRepository.findOne(parentRecordId);
             Assert.notNull(parentRecord, "Nebylo nalezeno rejstříkové heslo s id " + parentRecordId);
@@ -139,14 +140,13 @@ public class RegistryController {
 
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords);
 
-        List<RegRecordVO> foundRecordVOList = factoryVo
-                .createRegRecords(foundRecords, recordIdPartyIdMap, true, parentRecord);
+        List<RegRecordVO> foundRecordVOList = factoryVo.createRegRecords(foundRecords, recordIdPartyIdMap, true);
 
         Map<Integer, RegRecordVO> parentRecordVOMap = new HashMap<>();
         Map<RegRecord, List<RegRecord>> parentChildrenMap = registryService.findChildren(foundRecords);
 
         for (RegRecordVO regRecordVO : foundRecordVOList) {
-            parentRecordVOMap.put(regRecordVO.getRecordId(), regRecordVO);
+            parentRecordVOMap.put(regRecordVO.getId(), regRecordVO);
             factoryVo.fillRegisterTypeNamesToParents(regRecordVO);
         }
 
@@ -155,7 +155,7 @@ public class RegistryController {
         // děti
         foundRecords.forEach(record -> {
             List<RegRecord> children = parentChildrenMap.get(record);
-            parentRecordVOMap.get(record.getRecordId()).setHasChildren(children == null ? false : !children.isEmpty());
+            parentRecordVOMap.get(record.getRecordId()).setHasChildren(children != null && !children.isEmpty());
         });
 
 
@@ -163,10 +163,10 @@ public class RegistryController {
 //            List<RegRecord> children = parentChildrenMap.get(record);
 //
 //            List<RegRecordVO> childrenVO = new ArrayList<RegRecordVO>(children.size());
-//            RegRecordVO parentVO = parentRecordVOMap.get(record.getRecordId());
+//            RegRecordVO parentVO = parentRecordVOMap.get(record.getId());
 //            parentVO.setChilds(childrenVO);
 //            for (RegRecord child : children) {
-//                Integer partyId = recordIdPartyIdMap.get(child.getRecordId());
+//                Integer partyId = recordIdPartyIdMap.get(child.getId());
 //                RegRecordVO regRecordVO = factoryVo.createRegRecord(child, partyId, true);
 //                childrenVO.add(regRecordVO);
 //
@@ -193,9 +193,10 @@ public class RegistryController {
      */
     @RequestMapping(value = "/findRecordForRelation", method = RequestMethod.GET)
     public RegRecordWithCount findRecordForRelation(@RequestParam(required = false) @Nullable final String search,
-                                                    @RequestParam final Integer from, @RequestParam final Integer count,
-                                                    @RequestParam(required = true) @Nullable final Integer roleTypeId,
-                                                    @RequestParam(required = true) @Nullable final Integer partyId) {
+                                                    @RequestParam final Integer from,
+                                                    @RequestParam final Integer count,
+                                                    @RequestParam final Integer roleTypeId,
+                                                    @RequestParam final Integer partyId) {
 
         ParParty party = partyRepository.findOne(partyId);
         Assert.notNull(party, "Nebyla nalezena osoba s id " + partyId);
@@ -204,7 +205,7 @@ public class RegistryController {
         Assert.notNull(roleTypeId, "Nebyl nalezen typ vztahu s id " + roleTypeId);
 
         Set<Integer> registerTypeIds = registerTypeRepository.findByRelationRoleType(relationRoleType)
-                .stream().map(t -> t.getRegisterTypeId()).collect(Collectors.toSet());
+                .stream().map(RegRegisterType::getRegisterTypeId).collect(Collectors.toSet());
         registerTypeIds = registerTypeRepository.findSubtreeIds(registerTypeIds);
 
         Set<Integer> scopeIds = new HashSet<>();
@@ -223,15 +224,31 @@ public class RegistryController {
         return new RegRecordWithCount(foundRecordsVO, foundRecordsCount);
     }
 
+    /**
+     * Vytvoření rejstříkového hesla.
+     *
+     * @param record VO rejstříkové heslo
+     * @return vytvořený záznam
+     */
+    @Transactional
+    @RequestMapping(value = "/", method = RequestMethod.POST)
+    public RegRecordVO createRecord(@RequestBody final RegRecordVO record) {
+        Assert.isNull(record.getId(), "Při vytváření záznamu nesmí být vyplněno ID (recordId).");
+
+        RegRecord recordDO = factoryDO.createRegRecord(record);
+        RegRecord newRecordDO = registryService.saveRecord(recordDO, false);
+
+        ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
+        return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false);
+    }
 
     /**
      * Vrátí jedno heslo (s variantními hesly) dle id.
      * @param recordId      id požadovaného hesla
      * @return              heslo s vazbou na var. hesla
      */
-    @RequestMapping(value = "/getRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
-            params = {"recordId"})
-    public RegRecordVO getRecord(@RequestParam(value = "recordId") final Integer recordId) {
+    @RequestMapping(value = "/{recordId}", method = RequestMethod.GET)
+    public RegRecordVO getRecord(@PathVariable final Integer recordId) {
         Assert.notNull(recordId);
 
         RegRecord record = registryService.getRecord(recordId);
@@ -248,9 +265,9 @@ public class RegistryController {
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(records);
 
         Integer partyId = recordIdPartyIdMap.get(recordId);
-        RegRecordVO result = factoryVo.createRegRecord(record, partyId, true, null);
+        RegRecordVO result = factoryVo.createRegRecord(record, partyId, true);
         factoryVo.fillRegisterTypeNamesToParents(result);
-        result.setChilds(factoryVo.createRegRecords(childs, recordIdPartyIdMap, false, null));
+        result.setChilds(factoryVo.createRegRecords(childs, recordIdPartyIdMap, false));
 
         result.setVariantRecords(factoryVo.createRegVariantRecords(variantRecordRepository.findByRegRecordId(recordId)));
 
@@ -260,15 +277,54 @@ public class RegistryController {
     }
 
     /**
+     * Aktualizace rejstříkového hesla.
+     *
+     * @param recordId ID rejstříkového hesla
+     * @param record VO rejstříkové heslo
+     * @return aktualizovaný záznam
+     */
+    @Transactional
+    @RequestMapping(value = "/{recordId}", method = RequestMethod.PUT)
+    public RegRecordVO updateRecord(@PathVariable final Integer recordId, @RequestBody final RegRecordVO record) {
+        Assert.notNull(recordId);
+        Assert.notNull(record);
+
+        Assert.isTrue(
+                recordId.equals(record.getId()),
+                "V url požadavku je odkazováno na jiné ID (" + recordId + ") než ve VO (" + record.getId() + ")."
+        );
+        RegRecord recordTest = regRecordRepository.findOne(record.getId());
+        Assert.notNull(recordTest, "Nebyl nalezen záznam pro update s id " + record.getId());
+
+        RegRecord recordDO = factoryDO.createRegRecord(record);
+        RegRecord newRecordDO = registryService.saveRecord(recordDO, false);
+        return getRecord(record.getId());
+    }
+
+    /**
+     * Smazání rejstříkového hesla.
+     *
+     * @param recordId id rejstříkového hesla
+     */
+    @Transactional
+    @RequestMapping(value = "/{recordId}", method = RequestMethod.DELETE)
+    public void deleteRecord(@PathVariable final Integer recordId) {
+        Assert.notNull(recordId);
+        RegRecord record = regRecordRepository.getOneCheckExist(recordId);
+
+        registryService.deleteRecord(record, true);
+    }
+
+    /**
      * Vrátí seznam typů rejstříku (typů hesel).
      *
      * @return  seznam typů rejstříku (typů hesel)
      */
-    @RequestMapping(value = "/recordTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public List<RegRegisterTypeVO> getRecordTypes(){
+    @RequestMapping(value = "/recordTypes", method = RequestMethod.GET)
+    public List<RegRegisterTypeVO> getRecordTypes() {
         List<RegRegisterType> allTypes = registerTypeRepository.findAllOrderByNameAsc();
 
-          return factoryVo.createRegisterTypesTree(allTypes, false, null);
+        return factoryVo.createRegisterTypesTree(allTypes, false, null);
     }
 
 
@@ -295,92 +351,43 @@ public class RegistryController {
     }
 
     /**
-     * Vytvoření rejstříkového hesla.
-     *
-     * @param record VO rejstříkové heslo
-     * @return vytvořený záznam
-     */
-    @Transactional
-    @RequestMapping(value = "/createRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public RegRecordVO createRecord(@RequestBody final RegRecordVO record) {
-        Assert.isNull(record.getRecordId(), "Při vytváření záznamu nesmí být vyplněno ID (recordId).");
-
-        RegRecord recordDO = factoryDO.createRegRecord(record);
-        RegRecord newRecordDO = registryService.saveRecord(recordDO, false);
-
-        ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
-        return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false,
-                null);
-    }
-
-    /**
-     * Aktualizace rejstříkového hesla.
-     *
-     * @param record VO rejstříkové heslo
-     * @return aktualizovaný záznam
-     */
-    @Transactional
-    @RequestMapping(value = "/updateRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public RegRecordVO updateRecord(@RequestBody final RegRecordVO record) {
-        Assert.notNull(record.getRecordId(), "Očekáváno ID (recordId) pro update.");
-        RegRecord recordTest = regRecordRepository.findOne(record.getRecordId());
-        Assert.notNull(recordTest, "Nebyl nalezen záznam pro update s id " + record.getRecordId());
-
-        RegRecord recordDO = factoryDO.createRegRecord(record);
-        RegRecord newRecordDO = registryService.saveRecord(recordDO, false);
-        return getRecord(record.getRecordId());
-    }
-
-
-
-    /**
-     * Smazání rejstříkového hesla.
-     *
-     * @param recordId id rejstříkového hesla
-     */
-    @Transactional
-    @RequestMapping(value = "/deleteRecord", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE,
-            params = {"recordId"})
-    public void deleteRecord(@RequestParam(value = "recordId") final Integer recordId) {
-        Assert.notNull(recordId);
-        RegRecord record = regRecordRepository.findOne(recordId);
-        if (record == null) {
-            return;
-        }
-
-        registryService.deleteRecord(record, true);
-    }
-
-    /**
      * Vytvoření variantního rejstříkového hesla.
      *
      * @param variantRecord VO rejstříkové heslo
      * @return vytvořený záznam
      */
     @Transactional
-    @RequestMapping(value = "/createVariantRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/variantRecord", method = RequestMethod.POST)
     public RegVariantRecordVO createVariantRecord(@RequestBody final RegVariantRecordVO variantRecord) {
-        Assert.isNull(variantRecord.getVariantRecordId(),
-                "Při vytváření záznamu nesmí být vyplněno ID (variantRecordId).");
+        Assert.isNull(variantRecord.getId(), "Při vytváření záznamu nesmí být vyplněno ID (variantRecordId).");
 
         RegVariantRecord variantRecordDO = factoryDO.createRegVariantRecord(variantRecord);
 
         RegVariantRecord newVariantRecord = registryService.saveVariantRecord(variantRecordDO);
+
         return factoryVo.createRegVariantRecord(newVariantRecord);
     }
 
     /**
      * Aktualizace variantního rejstříkového hesla.
      *
+     * @param variantRecordId ID rejstříkové hesla
      * @param variantRecord VO rejstříkové heslo
      * @return aktualizovaný záznam
      */
     @Transactional
-    @RequestMapping(value = "/updateVariantRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public RegVariantRecordVO updateVariantRecord(@RequestBody final RegVariantRecordVO variantRecord) {
-        Assert.notNull(variantRecord.getVariantRecordId(), "Očekáváno ID pro update.");
-        RegVariantRecord variantRecordTest = variantRecordRepository.findOne(variantRecord.getVariantRecordId());
-        Assert.notNull(variantRecordTest, "Nebyl nalezen záznam pro update s id " + variantRecord.getVariantRecordId());
+    @RequestMapping(value = "/variantRecord/{variantRecordId}", method = RequestMethod.PUT)
+    public RegVariantRecordVO updateVariantRecord(@PathVariable final Integer variantRecordId, @RequestBody final RegVariantRecordVO variantRecord) {
+        Assert.notNull(variantRecordId);
+        Assert.notNull(variantRecord);
+
+        Assert.isTrue(
+                variantRecordId.equals(variantRecord.getId()),
+                "V url požadavku je odkazováno na jiné ID (" + variantRecordId + ") než ve VO (" + variantRecord.getId() + ")."
+        );
+
+        RegVariantRecord variantRecordTest = variantRecordRepository.findOne(variantRecord.getId());
+        Assert.notNull(variantRecordTest, "Nebyl nalezen záznam pro update s id " + variantRecord.getId());
         RegVariantRecord variantRecordDO = factoryDO.createRegVariantRecord(variantRecord);
         RegVariantRecord updatedVarRec = registryService.saveVariantRecord(variantRecordDO);
         regRecordRepository.flush();
@@ -391,18 +398,16 @@ public class RegistryController {
      * Smazání variantního rejstříkového hesla.
      *
      * @param variantRecordId id variantního rejstříkového hesla
+     *
+     * TODO @compel kontrola smazání
      */
     @Transactional
-    @RequestMapping(value = "/deleteVariantRecord", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE,
-            params = {"variantRecordId"})
-    public void deleteVariantRecord(@RequestParam(value = "variantRecordId") final Integer variantRecordId) {
+    @RequestMapping(value = "/variantRecord/{variantRecordId}", method = RequestMethod.DELETE)
+    public void deleteVariantRecord(@PathVariable final Integer variantRecordId) {
         Assert.notNull(variantRecordId);
-        RegVariantRecord variantRecord = variantRecordRepository.findOne(variantRecordId);
-        if (variantRecord == null) {
-            return;
-        }
+        RegVariantRecord variantRecord = variantRecordRepository.getOneCheckExist(variantRecordId);
 
-        variantRecordRepository.delete(variantRecordId);
+        variantRecordRepository.delete(variantRecord);
     }
 
     /**
@@ -467,11 +472,14 @@ public class RegistryController {
      */
     @Transactional
     @RequestMapping(value = "/scopes/{scopeId}", method = RequestMethod.PUT)
-    public RegScopeVO updateScope(
-            @PathVariable(value = "scopeId") final Integer scopeId,
-            @RequestBody final RegScopeVO scopeVO) {
+    public RegScopeVO updateScope(@PathVariable final Integer scopeId, @RequestBody final RegScopeVO scopeVO) {
+        Assert.notNull(scopeId);
         Assert.notNull(scopeVO);
-        scopeVO.setId(scopeId);
+
+        Assert.isTrue(
+                scopeId.equals(scopeVO.getId()),
+                "V url požadavku je odkazováno na jiné ID (" + scopeId + ") než ve VO (" + scopeVO.getId() + ")."
+        );
 
         RegScope regScope = factoryDO.createScope(scopeVO);
         return factoryVo.createScope(registryService.saveScope(regScope));
@@ -483,8 +491,8 @@ public class RegistryController {
      * @param scopeId id třídy.
      */
     @Transactional
-    @RequestMapping(value = "/scopes", method = RequestMethod.DELETE)
-    public void deleteScope(@RequestParam final Integer scopeId) {
+    @RequestMapping(value = "/scopes/{scopeId}", method = RequestMethod.DELETE)
+    public void deleteScope(@PathVariable final Integer scopeId) {
         RegScope scope = scopeRepository.findOne(scopeId);
         registryService.deleteScope(scope);
     }
@@ -502,9 +510,9 @@ public class RegistryController {
      * Vytvoří nové souřadnice k rejsříkovému heslu
      */
     @Transactional
-    @RequestMapping(value = "/createRegCoordinates", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/regCoordinates", method = RequestMethod.POST)
     public RegCoordinatesVO createRegCoordinates(@RequestBody final RegCoordinatesVO coordinatesVO) {
-        Assert.isNull(coordinatesVO.getCoordinatesId(),
+        Assert.isNull(coordinatesVO.getId(),
                 "Při vytváření záznamu nesmí být vyplněno ID (coordinatesId).");
         Assert.isTrue(StringUtils.isNotEmpty(coordinatesVO.getValue()), "Nutno vyplnit hodnotu!");
         RegCoordinates coordinates = factoryDO.createRegCoordinates(coordinatesVO);
@@ -519,13 +527,21 @@ public class RegistryController {
      * @return aktualizovaný záznam
      */
     @Transactional
-    @RequestMapping(value = "/updateRegCoordinates", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public RegCoordinatesVO updateRegCoordinates(@RequestBody final RegCoordinatesVO coordinatesVO) {
-        Assert.notNull(coordinatesVO.getCoordinatesId(), "Očekáváno ID pro update.");
-        RegCoordinates coordinates = regCoordinatesRepository.findOne(coordinatesVO.getCoordinatesId());
-        Assert.notNull(coordinates, "Nebyl nalezen záznam pro update s id " + coordinatesVO.getCoordinatesId());
+    @RequestMapping(value = "/regCoordinates/{coordinatesId}", method = RequestMethod.PUT)
+    public RegCoordinatesVO updateRegCoordinates(@PathVariable final Integer coordinatesId, @RequestBody final RegCoordinatesVO coordinatesVO) {
+        Assert.notNull(coordinatesId);
+        Assert.notNull(coordinatesVO);
+
+        Assert.isTrue(
+                coordinatesId.equals(coordinatesVO.getId()),
+                "V url požadavku je odkazováno na jiné ID (" + coordinatesId + ") než ve VO (" + coordinatesVO.getId() + ")."
+        );
+
+        RegCoordinates coordinates = regCoordinatesRepository.findOne(coordinatesVO.getId());
+        Assert.notNull(coordinates, "Nebyl nalezen záznam pro update s id " + coordinatesVO.getId());
         Assert.isTrue(StringUtils.isNotEmpty(coordinatesVO.getValue()), "Nutno vyplnit hodnotu!");
         RegCoordinates coordinatesDO = factoryDO.createRegCoordinates(coordinatesVO);
+
         if (!"Point".equals(coordinates.getValue().getGeometryType())) {
             coordinatesDO.setValue(coordinates.getValue());
         }
@@ -539,16 +555,14 @@ public class RegistryController {
      * Smazání souřadnic rejstříkového hesla.
      *
      * @param coordinatesId id souřadnic rejstříkového hesla
+     * TODO @compel kontrola oprávnění
      */
     @Transactional
-    @RequestMapping(value = "/deleteRegCoordinates", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"coordinatesId"})
-    public void deleteRegCoordinates(@RequestParam(value = "coordinatesId") final Integer coordinatesId) {
+    @RequestMapping(value = "/regCoordinates/{coordinatesId}", method = RequestMethod.DELETE)
+    public void deleteRegCoordinates(@PathVariable final Integer coordinatesId) {
         Assert.notNull(coordinatesId);
-        RegCoordinates coordinates = regCoordinatesRepository.findOne(coordinatesId);
-        if (coordinates == null) {
-            return;
-        }
+        RegCoordinates coordinates = regCoordinatesRepository.getOneCheckExist(coordinatesId);
 
-        regCoordinatesRepository.delete(coordinatesId);
+        regCoordinatesRepository.delete(coordinates);
     }
 }

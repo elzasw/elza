@@ -509,11 +509,11 @@ public class XmlExportService {
 
         Relation relation = new Relation();
 
-        relation.setClassTypeCode(parRelation.getComplementType().getRelationClassType().getCode());
+        relation.setClassTypeCode(parRelation.getRelationType().getRelationClassType().getCode());
         relation.setDateNote(parRelation.getDateNote());
         relation.setFromDate(XmlImportUtils.createComplexDate(parRelation.getFrom()));
         relation.setNote(parRelation.getNote());
-        relation.setRelationTypeCode(parRelation.getComplementType().getCode());
+        relation.setRelationTypeCode(parRelation.getRelationType().getCode());
 
 
         List<ParRelationEntity> parRelationEntities = relationEntityRepository.findByParty(parRelation.getParty());

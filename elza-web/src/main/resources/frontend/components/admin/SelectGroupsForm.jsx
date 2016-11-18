@@ -45,13 +45,15 @@ var SelectGroupsForm = class SelectGroupsForm extends AbstractReactComponent {
     }
 
     handleChange(group) {
-        const {groups} = this.state;
+        if (group) {
+            const {groups} = this.state;
 
-        const index = indexById(groups, group.id);
-        if (index === null) {
-            this.setState({
-                groups: [...groups, group],
-            });
+            const index = indexById(groups, group.id);
+            if (index === null) {
+                this.setState({
+                    groups: [...groups, group],
+                });
+            }
         }
     }
 
@@ -64,7 +66,6 @@ var SelectGroupsForm = class SelectGroupsForm extends AbstractReactComponent {
                 <Modal.Body>
                     <div>
                         <GroupField
-                            tags
                             onChange={this.handleChange}
                             />
                         <Tags

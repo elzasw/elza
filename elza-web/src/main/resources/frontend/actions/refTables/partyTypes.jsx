@@ -11,24 +11,9 @@ import * as types from 'actions/constants/ActionTypes.js';
  */
 export function refPartyTypesFetchIfNeeded() {
     return (dispatch, getState) => {
-        var state = getState();
-        if ((!state.refTables.partyTypes.fetched || state.refTables.partyTypes.dirty) && !state.refTables.partyTypes.isFetching) {
+        const {refTables:{partyTypes}} = getState();
+        if ((!partyTypes.fetched || partyTypes.dirty) && !partyTypes.isFetching) {
             return dispatch(refPartyTypesFetch());
-        }
-    }
-}
-
-/**
- * Projde seznam typů osob a najde typ s daným id.
- * @param partyTypeId id typu
- * @param partyTypes seznam typů osob
- * @returns typ osoby
- */
-export function getPartyTypeById(partyTypeId, partyTypes){
-    var index;
-    for(index = 0; index < partyTypes.length; ++index){
-        if(partyTypes[index].partyTypeId === partyTypeId){
-            return partyTypes[index];
         }
     }
 }

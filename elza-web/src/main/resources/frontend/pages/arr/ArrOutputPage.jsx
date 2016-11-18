@@ -16,7 +16,7 @@ import {
     Ribbon,
     Loading,
     RibbonGroup,
-    FundNodesAddForm,
+    FundNodesSelectForm,
     Icon,
     FundNodesList,
     i18n,

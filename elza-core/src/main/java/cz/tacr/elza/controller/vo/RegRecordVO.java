@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 
@@ -16,7 +16,7 @@ public class RegRecordVO extends AbstractRegRecord {
     /**
      * Id hesla.
      */
-    private Integer recordId;
+    private Integer id;
     /**
      * Typ rejstříku.
      */
@@ -98,14 +98,14 @@ public class RegRecordVO extends AbstractRegRecord {
 
     private String uuid;
 
-    private LocalDateTime lastUpdate;
+    private Date lastUpdate;
 
-    public Integer getRecordId() {
-        return recordId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setRecordId(final Integer recordId) {
-        this.recordId = recordId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public Integer getRegisterTypeId() {
@@ -260,11 +260,11 @@ public class RegRecordVO extends AbstractRegRecord {
         this.uuid = uuid;
     }
 
-    public LocalDateTime getLastUpdate() {
+    public Date getLastUpdate() {
         return lastUpdate;
     }
 
-    public void setLastUpdate(final LocalDateTime lastUpdate) {
+    public void setLastUpdate(final Date lastUpdate) {
         this.lastUpdate = lastUpdate;
     }
 
