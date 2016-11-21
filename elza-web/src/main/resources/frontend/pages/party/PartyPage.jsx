@@ -7,7 +7,7 @@ require('./PartyPage.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap'; 
+import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {ControllableDropdownButton, Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, PartyEntities, i18n, ImportForm} from 'components/index.jsx';
 import {RelationForm, AddPartyForm} from 'components/index.jsx';
@@ -42,7 +42,7 @@ const shortcutManager = new ShortcutsManager(keymap)
  * PARTY PAGE
  * *********************************************
  * Stránka osob
- */ 
+ */
 const PartyPage = class PartyPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -100,7 +100,7 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
      * ADD PARTY
      * *********************************************
      * Uložení nové osoby
-     */ 
+     */
     addParty(data) {
         this.dispatch(partyDetailFetch(data.partyId));
         this.dispatch(findPartyFetch(this.props.partyRegion.filterText));
@@ -111,7 +111,7 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
      * *********************************************
      * Kliknutí na tlačítko pro založení nové osoby
      * @param partyTypeId - identifikátor typu osoby (osoba, rod, korporace, ..)
-     */ 
+     */
     handleAddParty(partyTypeId) {
         const {partyRegion} = this.props;
         this.dispatch(partyAdd(partyTypeId, partyRegion.panel.versionId, this.addParty, false));
@@ -122,7 +122,7 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
      * *********************************************
      * Uložení nového vztahu
      * @param data - data vztahu z formuláře
-     */ 
+     */
     addRelation(data) {
         var entities = [];                                                          // seznam entit vztahu
         console.log(data.entities);
@@ -135,7 +135,7 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
                 },
                 roleType: {roleTypeId: data.entities[i].roleTypeId}                 // typ vztahu osoby a rejstříkové položky
             }
-        }  
+        }
         var relation = {
             partyId: this.props.partyRegion.selectedPartyData.partyId,              // identifikátor osoby, které patří vkládaný vztah
             dateNote: data.dateNote,                                                // poznámka k dataci
@@ -145,24 +145,24 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
             relationEntities: entities,                                             // entity ve vztahu
             source: data.source,
             complementType:{relationTypeId:data.relationTypeId}                     // typ vztahu
-        };   
-        if(relation.from.textDate == "" || relation.from.textDate == null || relation.from.textDate == undefined){  
+        };
+        if(relation.from.textDate == "" || relation.from.textDate == null || relation.from.textDate == undefined){
             relation.from = null;                                                   // pokud není zadaný textová část data, celý datum se ruší
         }
-        if(relation.to.textDate == "" || relation.to.textDate == null || relation.to.textDate == undefined){  
+        if(relation.to.textDate == "" || relation.to.textDate == null || relation.to.textDate == undefined){
             relation.to = null;                                                   // pokud není zadaný textová část data, celý datum se ruší
         }
         console.log(relation);
-        this.dispatch(insertRelation(relation, this.props.partyRegion.selectedPartyID));  //uložení vztahu a znovunačtení osoby             
+        this.dispatch(insertRelation(relation, this.props.partyRegion.selectedPartyID));  //uložení vztahu a znovunačtení osoby
     }
 
     /**
      * HANDLE ADD RELATION
      * *********************************************
      * Kliknutí na volnu přidání nového vztahu
-     */     
+     */
     handleAddRelation(classType){
-        var data = {                    
+        var data = {
             partyTypeId: this.props.partyRegion.selectedPartyData.partyType.partyTypeId,
             partyId: this.props.partyRegion.selectedPartyID,
             note: "",
@@ -170,12 +170,12 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
             source: "",
             classType: classType,
             from: {
-                textDate: "",    
-                calendarTypeId: this.props.partyRegion.gregorianCalendarId            
+                textDate: "",
+                calendarTypeId: this.props.partyRegion.gregorianCalendarId
             },
             to: {
-                textDate: "",    
-                calendarTypeId: this.props.partyRegion.gregorianCalendarId            
+                textDate: "",
+                calendarTypeId: this.props.partyRegion.gregorianCalendarId
             },
             entities: [{
                 record: null,
@@ -200,7 +200,7 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
      * HANDLE DELETE PARTY
      * *********************************************
      * Kliknutí na tlačítko pro smazání osoby
-     */ 
+     */
     handleDeleteParty(){
         var result = confirm(i18n('party.delete.confirm')); // potvrzení smazání
         if (result) {                                       // pokud uživatel potvrdil smazání
@@ -212,23 +212,26 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
      * DELETE PARTY
      * *********************************************
      * Smazání osoby
-     */ 
+     */
     deleteParty() {
         var partyId = this.props.partyRegion.selectedPartyData.partyId;                         // bude smazána aktuální osoba, uložená v partyRegionu
         return deleteParty(partyId, this.props.partyRegion.filterText);                 // smazání osoby, znovunačtení osoby i hledaných osob
-    }    
+    }
 
     /**
      * BUILD RIBBON
      * *********************************************
      * Sestavení Ribbon Menu - přidání položek pro osoby
-     */ 
+     */
     buildRibbon() {
         const {userDetail, partyRegion, refTables} = this.props
 
         const isSelected = partyRegion.selectedPartyID ? true : false;
         const altActions = [];
-        if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
+
+// zakomentováno pro test, nutno opravit pri refaktorizaci scope a permissions
+// uzivatel nemusi mit pravo pro zapis vsech scope, aby mohl vytvaret hesla a osoby
+//        if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
             altActions.push(
                 <ControllableDropdownButton key='addParty' ref='addParty' id='addParty'
                                             title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
@@ -243,11 +246,12 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
                     <div><span className="btnText">{i18n('ribbon.action.party.import')}</span></div>
                 </Button>
             );
-        }
+//        }
 
         const itemActions = [];
         if (isSelected && partyRegion.fetchedDetail && !partyRegion.isFetchingDetail) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyRegion.selectedPartyData.record.scopeId})) {
+/* zakomentováno pro test, aby uzivatele nemohli vytvaret vztahy osob z duvodu jejich refaktorizace
                 itemActions.push(
                     <ControllableDropdownButton key='add-relation' ref='addRelation' id='addRelation'
                                                 title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.relation.add')}</span></div></span>}>
@@ -260,6 +264,7 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
 
                     //<Button onClick={this.handleAddRelation}><Icon glyph="fa-link" /><div><span className="btnText">{i18n('party.relation.add')}</span></div></Button>
                 );
+*/
                 itemActions.push(
                     <Button key='delete-relation' onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('party.delete.button')}</span></div>
@@ -286,7 +291,7 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
      * RENDER
      * *********************************************
      * Vykreslení stránky pro osoby
-     */ 
+     */
     render() {
         const {splitter, userDetail, partyRegion} = this.props;
         var canEdit = false
@@ -298,8 +303,8 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
         }
 
         var leftPanel = (
-            <PartySearch 
-                items={this.props.partyRegion.items} 
+            <PartySearch
+                items={this.props.partyRegion.items}
                 selectedPartyID={this.props.partyRegion.selectedPartyID}
                 filterText={this.props.partyRegion.filterText}
                 panel={this.props.partyRegion.panel}
@@ -307,13 +312,13 @@ const PartyPage = class PartyPage extends AbstractReactComponent {
         )
 
         var centerPanel = (
-            <PartyDetail 
-                refTables={this.props.refTables} 
+            <PartyDetail
+                refTables={this.props.refTables}
             />
         )
 
         var rightPanel = (
-            <PartyEntities 
+            <PartyEntities
                 partyRegion={this.props.partyRegion}
                 canEdit={canEdit}
             />
@@ -358,4 +363,3 @@ PartyPage.childContextTypes = {
 };
 
 module.exports = connect(mapStateToProps)(PartyPage);
-
