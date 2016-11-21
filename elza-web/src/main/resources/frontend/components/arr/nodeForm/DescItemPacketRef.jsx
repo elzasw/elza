@@ -9,14 +9,19 @@ import {WebApi} from 'actions/index.jsx';
 import {indexById} from 'stores/app/utils.jsx';
 import {Button} from 'react-bootstrap';
 import DescItemLabel from './DescItemLabel.jsx'
+import PacketFormatter from 'components/arr/packets/PacketFormatter.jsx';
 
 var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('packetName',
+        this.bindMethods(
+            'formatPacketName',
             'findType',
             'focus',
+            'handleFocus',
+            'handleBlur',
+            'getPacketName',
             'handleSearchChange',
             'handleChange',
             'renderPacket',
@@ -24,35 +29,47 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
             'handleFundPackets',
             'handleCreatePacket');
 
-        this.state = {packetTypes: []};
+        this.state = {packets: [], active: false};
+    }
+
+    componentWillMount() {
+        const {packetTypes} = this.props;
+        this.pf = new PacketFormatter(packetTypes);
+    }
+    handleFocus(){
+        this.setState({active:true});
+        this.props.onFocus && this.props.onFocus();
+    }
+    handleBlur(){
+        this.setState({active:false});
+        this.props.onBlur && this.props.onBlur();
     }
 
     handleSearchChange(text) {
-        const {fundId} = this.props
-
+        const {fundId} = this.props;
         WebApi.getPackets(fundId, text, 200)
             .then(json => {
                 this.setState({
-                    packetTypes: json
+                    packets: json
                 })
             })
     }
 
     focus() {
-        this.refs.focusEl.focus()
+        this.refs.focusEl.focus();
     }
 
 
     handleKeyUp(e){
-        if (e.keyCode == 13 && this.state.packetTypes.length == 1){
-            this.props.onChange(this.state.packetTypes[0]);
+        if (e.keyCode == 13 && this.state.packets.length == 1){
+            this.props.onChange(this.state.packets[0]);
         }
     }
 
     renderPacket(item, isHighlighted, isSelected) {
         var cls = 'item';
         if (isHighlighted) {
-            cls += ' focus'
+            cls += ' focus';
         }
         if (isSelected) {
             cls += ' active'
@@ -61,9 +78,26 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                 // {false && this.packetName(item)}
         return (
             <div className={cls} key={item.id}>
-                {item.storageNumber}
+                {this.formatPacketName(item)}
             </div>
         )
+    }
+    /**
+     * Vrácení názvu obalu
+     * Pokud má komponenta focus tak se v názvu nezobrazí typ obalu.
+     * Pokud
+     */
+    getPacketName(packet){
+        var name;
+        if(this.state.active && packet)
+        {
+            name = packet.storageNumber;
+        } else if(!this.state.active && packet) {
+            name = this.formatPacketName(packet);
+        } else {
+            name = "";
+        }
+        return name;
     }
 
     findType(packetTypeId) {
@@ -79,15 +113,11 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
         }
         return null;
     }
-
-    packetName(packet) {
-        var type = this.findType(packet.packetTypeId);
-
-        if (type == null) {
-            return packet.storageNumber;
-        } else {
-            return packet.storageNumber + " [" + type.name + "]";
-        }
+    /**
+     * Vrací název obalu formátovaný PacketFormatterem
+     */
+    formatPacketName(packet) {
+        return this.pf.format(packet);
     }
 
     handleFundPackets() {
@@ -120,12 +150,11 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
 
     render() {
         const {descItem, onChange, onBlur, locked, packetTypes, packets, singleDescItemTypeEdit, readMode, cal} = this.props;
-        var value = descItem.packet ? descItem.packet : null;
-
+        var packet = descItem.packet ? descItem.packet : null;
         if (readMode) {
-            let calValue = cal && value == null ? i18n("subNodeForm.descItemType.calculable") : "";
+            let calValue = cal && packet == null ? i18n("subNodeForm.descItemType.calculable") : "";
             return (
-                <DescItemLabel value={value ? value.storageNumber : calValue} cal={cal} />
+                <DescItemLabel value={packet ? this.pf.format(packet) : calValue} cal={cal} />
             )
         }
 
@@ -133,7 +162,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
 
         return (
             <div className='desc-item-value desc-item-value-parts'>
-                {false && <select
+                {/**<select
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
                         ref='focusEl'
                         value={descItem.value}
@@ -141,9 +170,9 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                         onChange={(e) => this.props.onChange(e.target.value)} >
                     <option key="novalue" />
                     {packets.map(packet => (
-                            <option key={packet.id} value={packet.id}>{this.packetName(packet)}</option>
+                            <option key={packet.id} value={packet.id}>{this.formatPacketName(packet)}</option>
                     ))}
-                </select>}
+                </select>*/}
 
 
                 <Autocomplete
@@ -151,14 +180,16 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                     ref='focusEl'
                     customFilter
                     onKeyUp={this.handleKeyUp}
-                    value={value}
+                    onFocus={this.handleFocus}
+                    onBlur={this.handleBlur}
+                    value={packet}
                     disabled={locked}
-                    items={this.state.packetTypes}
+                    items={this.state.packets}
                     onSearchChange={this.handleSearchChange}
                     onChange={onChange}
                     onBlur={onBlur}
                     renderItem={this.renderPacket}
-                    getItemName={(item) => item ? item.storageNumber : ''}
+                    getItemName={(item) => this.getPacketName(item)}
                     footer={footer}
                 />
 
