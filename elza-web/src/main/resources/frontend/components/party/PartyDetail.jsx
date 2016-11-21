@@ -61,7 +61,7 @@ const UI_PARTY_GROUP_DEFINITION_TYPE = {
     TEXTAREA: 'TEXTAREA',
     RELATION: 'RELATION',
     RELATION_CLASS: 'RELATION-CLASS'
-}
+};
 
 const PARTY_GENERAL_FIELDS = ['history', 'sourceInformation', 'characteristics'];
 const FIELDS_BY_PARTY_TYPE_CODE = {
@@ -69,7 +69,7 @@ const FIELDS_BY_PARTY_TYPE_CODE = {
     [PARTY_TYPE_CODES.GROUP_PARTY]: [...PARTY_GENERAL_FIELDS, 'scope', 'foundingNorm', 'scopeNorm', 'organization'],
     [PARTY_TYPE_CODES.EVENT]: [...PARTY_GENERAL_FIELDS, ],
     [PARTY_TYPE_CODES.DYNASTY]: [...PARTY_GENERAL_FIELDS, 'genealogy'],
-}
+};
 
 
 /**
@@ -197,7 +197,6 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     handleToggleActive = (index) => {
-        console.log('@@ party visible group toggle @@', index);
         if (!this.state.visibilitySettingsValue[index]) {
             this.setState({activeIndexes:{...this.state.activeIndexes, [index]: !this.state.activeIndexes[index]}})
         }

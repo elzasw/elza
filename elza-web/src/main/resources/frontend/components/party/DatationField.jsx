@@ -59,7 +59,7 @@ class DatationField extends AbstractReactComponent {
                     {calendars}
                 </FormInput>
                 <OverlayTrigger overlay={tooltip} placement="bottom">
-                    <FormInput type="text" {...fields.valueFrom} />
+                    <FormInput type="text" {...fields.value} />
                 </OverlayTrigger>
             </div>
             {allowedText && <FormInput type="text" {...fields.textDate} label={labelTextual} />}

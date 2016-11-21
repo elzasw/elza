@@ -30,11 +30,11 @@ class PartyNameForm extends AbstractReactComponent {
         'otherPart',
         'note',
         'validFrom.calendarTypeId',
-        'validFrom.valueFrom',
+        'validFrom.value',
         'validFrom.textDate',
         'validFrom.note',
         'validTo.calendarTypeId',
-        'validTo.valueFrom',
+        'validTo.value',
         'validTo.textDate',
         'validTo.note',
         'partyNameComplements[].complementTypeId',
@@ -145,50 +145,62 @@ class PartyNameForm extends AbstractReactComponent {
             <Modal.Body className="party-name-form">
                 <Row>
                     <Col xs={12} md={6}>
-                        <FormInput type="text" label={i18n('party.name.mainPart')} {...mainPart} />
-                    </Col>
-                    <Col xs={12} md={6}>
-                        <FormInput type="text" label={i18n('party.name.otherPart')} {...otherPart} />
-                    </Col>
-                    {partyType.code == PARTY_TYPE_PERSON && <Col xs={12}>
                         <Row>
                             <Col xs={12} md={6}>
-                                <FormInput type="text" label={i18n('party.name.degreeBefore')} {...degreeBefore} />
+                                <FormInput type="text" label={i18n('party.name.mainPart')} {...mainPart} />
                             </Col>
                             <Col xs={12} md={6}>
-                                <FormInput type="text" label={i18n('party.name.degreeAfter')} {...degreeAfter} />
+                                <FormInput type="text" label={i18n('party.name.otherPart')} {...otherPart} />
                             </Col>
-                        </Row>
-                    </Col>}
+                            {partyType.code == PARTY_TYPE_PERSON && <Col xs={12}>
+                                <Row>
+                                    <Col xs={12} md={6}>
+                                        <FormInput type="text" label={i18n('party.name.degreeBefore')} {...degreeBefore} />
+                                    </Col>
+                                    <Col xs={12} md={6}>
+                                        <FormInput type="text" label={i18n('party.name.degreeAfter')} {...degreeAfter} />
+                                    </Col>
+                                </Row>
+                            </Col>}
 
-                    <Col xs={12}>
-                        <label>{i18n('party.name.complements')}</label> <Button bsStyle="action" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
-                        {partyNameComplements.map((complement, index) => <div className="complement" key={'complement' + index}>
-                            <FormInput componentClass="select" {...complement.complementTypeId}>
-                                <option key='0'/>
-                                {complementsList}
-                            </FormInput>
-                            <FormInput type="text" {...complement.complement}/>
-                            <Button className="btn-icon" onClick={() => {partyNameComplements.removeField(index)}}><Icon glyph="fa-times"/></Button>
-                        </div>)}
-                    </Col>
-                    <Col xs={12}>
-                        <FormInput componentClass="select" label={i18n('party.name.nameFormType')} {...nameFormType.id}>
-                            {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
-                        </FormInput>
-                    </Col>
-                    <Col xs={12}>
-                        <Row>
-                            <Col xs={12} md={6}>
-                                <DatationField fields={validFrom} label={i18n('party.name.validFrom')} labelTextual={i18n('party.name.validFrom.textDate')} labelNote={i18n('party.name.validFrom.note')} />
+                            <Col xs={12}>
+                                <label>{i18n('party.name.complements')}</label> <Button bsStyle="action" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
+                                {partyNameComplements.map((complement, index) => <div className="complement" key={'complement' + index}>
+                                    <FormInput componentClass="select" {...complement.complementTypeId}>
+                                        <option key='0'/>
+                                        {complementsList}
+                                    </FormInput>
+                                    <FormInput type="text" {...complement.complement}/>
+                                    <Button className="btn-icon" onClick={() => {partyNameComplements.removeField(index)}}><Icon glyph="fa-times"/></Button>
+                                </div>)}
                             </Col>
-                            <Col xs={12} md={6}>
-                                <DatationField fields={validTo} label={i18n('party.name.validTo')} labelTextual={i18n('party.name.validTo.textual')} labelNote={i18n('party.name.validTo.note')} />
+                            <Col xs={12}>
+                                <FormInput componentClass="select" label={i18n('party.name.nameFormType')} {...nameFormType.id}>
+                                    {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
+                                </FormInput>
                             </Col>
                         </Row>
                     </Col>
-                    <Col xs={12}>
-                        <FormInput componentClass="textarea" label={i18n('party.name.note')} {...note} />
+                    <Col xs={12} md={3}>
+                        <Row>
+                            <Col xs={12}>
+                                <Row>
+                                    <Col xs={6} md={12}>
+                                        <DatationField fields={validFrom} label={i18n('party.name.validFrom')} labelTextual={i18n('party.name.validFrom.textDate')} labelNote={i18n('party.name.validFrom.note')} />
+                                    </Col>
+                                    <Col xs={6} md={12}>
+                                        <DatationField fields={validTo} label={i18n('party.name.validTo')} labelTextual={i18n('party.name.validTo.textual')} labelNote={i18n('party.name.validTo.note')} />
+                                    </Col>
+                                </Row>
+                            </Col>
+                        </Row>
+                    </Col>
+                    <Col xs={12} md={3}>
+                        <Row>
+                            <Col xs={12}>
+                                <FormInput componentClass="textarea" label={i18n('party.name.note')} {...note} />
+                            </Col>
+                        </Row>
                     </Col>
                 </Row>
             </Modal.Body>

@@ -24,11 +24,11 @@ class RelationForm extends AbstractReactComponent {
 
     static fields = [
         'from.calendarTypeId',
-        'from.valueFrom',
+        'from.value',
         'from.textDate',
         'from.note',
         'to.calendarTypeId',
-        'to.valueFrom',
+        'to.value',
         'to.textDate',
         'to.note',
         'dateNote',

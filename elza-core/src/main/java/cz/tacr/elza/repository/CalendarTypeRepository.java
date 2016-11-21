@@ -11,7 +11,7 @@ import cz.tacr.elza.domain.ArrCalendarType;
  * @since 20.10.2015
  */
 @Repository
-public interface CalendarTypeRepository extends JpaRepository<ArrCalendarType, Integer> {
+public interface CalendarTypeRepository extends ElzaJpaRepository<ArrCalendarType, Integer> {
 
     ArrCalendarType findByCode(String calendarTypeCode);
 

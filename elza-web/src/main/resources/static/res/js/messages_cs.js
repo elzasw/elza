@@ -626,6 +626,8 @@ var messages = {
     "party.name.validTo.textDate": "Datum do - textově",
     "party.name.validTo.note": "Datum do - poznámka",
     "party.name.complements": "Doplňky jména",
+    "party.name.nameFormType": "Typ formy jména",
+    "party.name.note": "Poznámka",
 
     "party.delete.error": "Odstranění osoby se nezdařilo",
     "party.delete.confirm": "Opravdu chcete smazat tuto osobu?",
@@ -644,7 +646,7 @@ var messages = {
     "party.relation.delete.confirm": "Opravdu chcete smazat tento vztah?",
     "party.relation.sources": "Zdroj informací",
     "party.relation.record": "Záznam",
-    "party.relation.relationEntities": "Vztah k entitám",
+    "party.relation.entityInRelation": "Entita ve vztahu",
     "party.relation.entity": "Entita",
     "party.relation.roleType": "Typ role",
     "party.relation.add": "Nový vztah",

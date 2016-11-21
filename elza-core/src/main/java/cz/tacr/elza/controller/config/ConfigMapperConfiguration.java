@@ -289,7 +289,7 @@ public class ConfigMapperConfiguration {
                 }).byDefault().register();
 
 
-       mapperFactory.classMap(ArrItemCoordinates.class, ArrItemCoordinatesVO.class)
+        mapperFactory.classMap(ArrItemCoordinates.class, ArrItemCoordinatesVO.class)
                .customize(new CustomMapper<ArrItemCoordinates, ArrItemCoordinatesVO>() {
             @Override
             public void mapAtoB(final ArrItemCoordinates coordinates,
@@ -314,15 +314,15 @@ public class ConfigMapperConfiguration {
                     e.printStackTrace();
                 }
             }
-        }).exclude("value").byDefault().register();
-        mapperFactory.classMap(ArrItemEnum.class, ArrItemEnumVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemFormattedText.class, ArrItemFormattedTextVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemInt.class, ArrItemIntVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemJsonTable.class, ArrItemJsonTableVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemText.class, ArrItemTextVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemDecimal.class, ArrItemDecimalVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemUnitid.class, ArrItemUnitidVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemUnitdate.class, ArrItemUnitdateVO.class).customize(
+         }).exclude("value").byDefault().register();
+         mapperFactory.classMap(ArrItemEnum.class, ArrItemEnumVO.class).byDefault().register();
+         mapperFactory.classMap(ArrItemFormattedText.class, ArrItemFormattedTextVO.class).byDefault().register();
+         mapperFactory.classMap(ArrItemInt.class, ArrItemIntVO.class).byDefault().register();
+         mapperFactory.classMap(ArrItemJsonTable.class, ArrItemJsonTableVO.class).byDefault().register();
+         mapperFactory.classMap(ArrItemText.class, ArrItemTextVO.class).byDefault().register();
+         mapperFactory.classMap(ArrItemDecimal.class, ArrItemDecimalVO.class).byDefault().register();
+         mapperFactory.classMap(ArrItemUnitid.class, ArrItemUnitidVO.class).byDefault().register();
+         mapperFactory.classMap(ArrItemUnitdate.class, ArrItemUnitdateVO.class).customize(
                 new CustomMapper<ArrItemUnitdate, ArrItemUnitdateVO>() {
                     @Override
                     public void mapAtoB(final ArrItemUnitdate unitdate,
@@ -656,40 +656,27 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(ParRelationRoleType.class, ParRelationRoleTypeVO.class).field("roleTypeId", "id").byDefault().register();
         mapperFactory.classMap(ParRelationType.class, ParRelationTypeVO.class).field("relationTypeId", "id").byDefault().register();
-        mapperFactory.classMap(ParUnitdate.class, ParUnitdateVO.class)
-                .exclude("valueFrom").exclude("valueFromEstimated")
-                .exclude("valueTo").exclude("valueToEstimated")
-                .customize(
-                        new CustomMapper<ParUnitdate, ParUnitdateVO>() {
-                            @Override
-                            public void mapAtoB(final ParUnitdate parUnitdate,
-                                                final ParUnitdateVO unitdateVO,
-                                                final MappingContext context) {
-                                if (parUnitdate.getCalendarType() != null) {
-                                    unitdateVO.setCalendarTypeId(parUnitdate.getCalendarType().getCalendarTypeId());
-                                }
-                                unitdateVO.setUnitdateId(parUnitdate.getUnitdateId());
-                                String textDate = UnitDateConvertor.convertParUnitDateToString(parUnitdate);
-                                unitdateVO.setTextDate(textDate);
-                            }
+        mapperFactory.classMap(ParUnitdate.class, ParUnitdateVO.class).field("unitdateId", "id").customize(
+            new CustomMapper<ParUnitdate, ParUnitdateVO>() {
+                @Override
+                public void mapAtoB(final ParUnitdate parUnitdate,
+                                    final ParUnitdateVO unitdateVO,
+                                    final MappingContext context) {
+                    if (parUnitdate.getCalendarType() != null) {
+                        unitdateVO.setCalendarTypeId(parUnitdate.getCalendarType().getCalendarTypeId());
+                    }
+                    unitdateVO.setValue(UnitDateConvertor.convertToString(parUnitdate));
+                }
 
-                            @Override
-                            public void mapBtoA(final ParUnitdateVO unitdateVO,
-                                                final ParUnitdate parUnitdate,
-                                                final MappingContext context) {
-                                parUnitdate.setUnitdateId(unitdateVO.getUnitdateId());
-                                try {
-                                    UnitDateConvertor.convertToUnitDate(unitdateVO.getTextDate(), parUnitdate);
-                                    parUnitdate.setTextDate(null);
-                                } catch (Exception e) {
-                                    parUnitdate.setTextDate(unitdateVO.getTextDate());
-                                }
-                                ArrCalendarType calendarType = new ArrCalendarType();
-                                calendarType.setCalendarTypeId(unitdateVO.getCalendarTypeId());
-                                parUnitdate.setCalendarType(calendarType);
+                @Override
+                public void mapBtoA(final ParUnitdateVO unitdateVO,
+                                    final ParUnitdate parUnitdate,
+                                    final MappingContext context) {
+                    UnitDateConvertor.convertToUnitDate(unitdateVO.getValue(), parUnitdate);
+                    parUnitdate.setCalendarType(calendarTypeRepository.getOneCheckExist(unitdateVO.getCalendarTypeId()));
 
-                            }
-                        }).byDefault().register();
+                }
+            }).byDefault().register();
 
         mapperFactory.classMap(RegRecord.class, RegRecordVO.class)
                 .exclude("registerType")
