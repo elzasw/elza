@@ -665,14 +665,18 @@ public class ConfigMapperConfiguration {
                     if (parUnitdate.getCalendarType() != null) {
                         unitdateVO.setCalendarTypeId(parUnitdate.getCalendarType().getCalendarTypeId());
                     }
-                    unitdateVO.setValue(UnitDateConvertor.convertToString(parUnitdate));
+                    if (parUnitdate.getFormat() != null) {
+                        unitdateVO.setValue(UnitDateConvertor.convertToString(parUnitdate));
+                    }
                 }
 
                 @Override
                 public void mapBtoA(final ParUnitdateVO unitdateVO,
                                     final ParUnitdate parUnitdate,
                                     final MappingContext context) {
-                    UnitDateConvertor.convertToUnitDate(unitdateVO.getValue(), parUnitdate);
+                    if (unitdateVO.getValue() != null) {
+                        UnitDateConvertor.convertToUnitDate(unitdateVO.getValue(), parUnitdate);
+                    }
                     parUnitdate.setCalendarType(calendarTypeRepository.getOneCheckExist(unitdateVO.getCalendarTypeId()));
 
                 }
