@@ -65,36 +65,40 @@ class RelationForm extends AbstractReactComponent {
         const submit = submitReduxForm.bind(this, RelationForm.validate);
         return <Form onSubmit={handleSubmit(submit)}>
             <Modal.Body className="relation-form">
-                <div className="block entity relations">
-                    <div className="relation-entities">
-                        <label className="type">{i18n('party.relation.entityInRelation')}</label><Button bsStyle="action" onClick={() => relationEntities.addField({record:null, roleType: {id: null}})}><Icon glyph="fa-plus" /></Button>
-                        {/* TODO @compel unikátnost vazby entity */}
-                        {relationEntities.map((i,index) => <div className="relation-row" key={index}>
-                            <div className="type">
-                                <FormInput componentClass="select" {...i.roleType.id}>
-                                    <option key={0}/>
-                                    {roleTypesList}
-                                </FormInput>
+                <div className="flex">
+                    <div className="flex-2">
+                        <div className="block entity relations">
+                            <div className="relation-entities">
+                                <label className="type">{i18n('party.relation.entityInRelation')}</label><Button bsStyle="action" onClick={() => relationEntities.addField({record:null, roleType: {id: null}})}><Icon glyph="fa-plus" /></Button>
+                                {/* TODO @compel unikátnost vazby entity */}
+                                {relationEntities.map((i,index) => <div className="relation-row" key={index}>
+                                    <div className="type">
+                                        <FormInput componentClass="select" {...i.roleType.id}>
+                                            <option key={0}/>
+                                            {roleTypesList}
+                                        </FormInput>
+                                    </div>
+                                    <div className="record">
+                                        <RegistryField disabled={!i.roleType.id.value} partyId={partyId} {...i.record} roleTypeId={i.roleType.id.value} />
+                                    </div>
+                                    <Button bsStyle="action" onClick={() => relationEntities.removeField(index)}><Icon glyph="fa-times" /></Button>
+                                 </div>)}
                             </div>
-                            <div className="record">
-                                <RegistryField disabled={!i.roleType.id.value} partyId={partyId} {...i.record} roleTypeId={i.roleType.id.value} />
-                            </div>
-                            <Button bsStyle="action" onClick={() => relationEntities.removeField(index)}><Icon glyph="fa-times" /></Button>
-                         </div>)}
+                        </div>
                     </div>
-                </div>
-                {!relationType.useUnitdate !== USE_UNITDATE_ENUM.NONE && <div className="datations">
-                    {(relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && <div>
-                        <DatationField fields={from} label={i18n('party.relation.from')} labelTextual={i18n('party.relation.from.textDate')} labelNote={i18n('party.relation.from.note')} />
+                    {!relationType.useUnitdate !== USE_UNITDATE_ENUM.NONE && <div className="datation-group flex-1">
+                        {(relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && <div>
+                            <DatationField fields={from} label={i18n('party.relation.from')} labelTextual={i18n('party.relation.from.textDate')} labelNote={i18n('party.relation.from.note')} />
+                        </div>}
+                        {relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL && <div>
+                            <DatationField fields={to} label={i18n('party.relation.to')} labelTextual={i18n('party.relation.to.textDate')} labelNote={i18n('party.relation.to.note')} />
+                        </div>}
                     </div>}
-                    {relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL && <div>
-                        <DatationField fields={to} label={i18n('party.relation.to')} labelTextual={i18n('party.relation.to.textDate')} labelNote={i18n('party.relation.to.note')} />
-                    </div>}
-                </div>}
-                <div className="footer">
-                    <FormInput type="text" label={i18n('party.relation.dateNote')}  {...dateNote} />
-                    <FormInput type="text" label={i18n('party.relation.note')} {...note} />
-                    <FormInput componentClass="textarea" label={i18n('party.relation.sources')} {...source} />
+                    <div className="flex-1 footer">
+                        <FormInput type="text" label={i18n('party.relation.dateNote')}  {...dateNote} />
+                        <FormInput type="text" label={i18n('party.relation.note')} {...note} />
+                        <FormInput componentClass="textarea" label={i18n('party.relation.sources')} {...source} />
+                    </div>
                 </div>
             </Modal.Body>
             <Modal.Footer>

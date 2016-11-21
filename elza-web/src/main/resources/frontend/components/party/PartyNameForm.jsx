@@ -143,8 +143,8 @@ class PartyNameForm extends AbstractReactComponent {
 
         return initialized ? <Form onSubmit={handleSubmit(submit)}>
             <Modal.Body className="party-name-form">
-                <Row>
-                    <Col xs={12} md={6}>
+                <div className="flex">
+                    <div className="flex-2">
                         <Row>
                             <Col xs={12} md={6}>
                                 <FormInput type="text" label={i18n('party.name.mainPart')} {...mainPart} />
@@ -180,8 +180,8 @@ class PartyNameForm extends AbstractReactComponent {
                                 </FormInput>
                             </Col>
                         </Row>
-                    </Col>
-                    <Col xs={12} md={3}>
+                    </div>
+                    <div className="datation-group flex-1">
                         <Row>
                             <Col xs={12}>
                                 <Row>
@@ -194,15 +194,15 @@ class PartyNameForm extends AbstractReactComponent {
                                 </Row>
                             </Col>
                         </Row>
-                    </Col>
-                    <Col xs={12} md={3}>
+                    </div>
+                    <div className="flex-1">
                         <Row>
                             <Col xs={12}>
                                 <FormInput componentClass="textarea" label={i18n('party.name.note')} {...note} />
                             </Col>
                         </Row>
-                    </Col>
-                </Row>
+                    </div>
+                </div>
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>

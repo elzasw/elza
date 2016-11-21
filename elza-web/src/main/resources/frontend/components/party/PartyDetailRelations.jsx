@@ -72,12 +72,12 @@ class PartyDetailRelations extends AbstractReactComponent {
 
     handleRelationAdd = () => {
         const {label, party, relationType} = this.props;
-        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} relationType={relationType} onSubmitForm={this.addIdentifier} />));
+        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} relationType={relationType} onSubmitForm={this.addIdentifier} />, "dialog-lg"));
     };
 
     handleRelationUpdate = (relation) => {
         const {label, party, relationType} = this.props;
-        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} relationType={relationType} initialValues={relation} onSubmitForm={this.update.bind(this, relation)} />));
+        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} relationType={relationType} initialValues={relation} onSubmitForm={this.update.bind(this, relation)} />, "dialog-lg"));
     };
 
     handleRelationDelete = (id) => {
