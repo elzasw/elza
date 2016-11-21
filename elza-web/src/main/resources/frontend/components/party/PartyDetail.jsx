@@ -33,7 +33,7 @@ var shortcutManager = new ShortcutsManager(keymap)
  * PARTY DETAIL
  * *********************************************
  * Detail osoby
- */ 
+ */
 var PartyDetail = class PartyDetail extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -128,12 +128,12 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
      * *********************************************
      * Zpracování změny nějaké hodnoty ve formuláři
      * @param event - událost změny
-     */ 
+     */
     changeValue(needUpdate, event){
-        var value = event.target.value;                             // hodnota změna         
+        var value = event.target.value;                             // hodnota změna
         var variable = event.target.name;                           // políčko (název hodnoty) změny
         var p = this.props.partyRegion.selectedPartyData;           // původní osoba
-        var party = this.mergePartyChanges(p, variable, value);     // osoba po změne 
+        var party = this.mergePartyChanges(p, variable, value);     // osoba po změne
         this.setState({
             toCalendar: p.to ? p.to.calendarTypeId : this.state.toCalendar,
             fromCalendar: p.from ? p.from.calendarTypeId : this.state.fromCalendar,
@@ -147,7 +147,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
      * *********************************************
      * Uložení změny nekteré hodnoty
      * @param event - událost, která změnu vyvolala
-     */ 
+     */
     updateValue(event){
         if(this.state.needUpdate){
             var value = event.target.value;                             // hodnota změna
@@ -183,9 +183,9 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
      * *********************************************
      * Sloučí změnu v jednom políčku s původním objektem osoby
      * @param party - původní osoba
-     * @param variable - název měné hodnoty 
+     * @param variable - název měné hodnoty
      * @param value - nová hoddnota měnené položky
-     */ 
+     */
     mergePartyChanges(party, variable, value){
         if((variable=="fromText" || variable=="fromCalendar") && !party.from){  // pokud neni definovane datumove pole a je aktualizováno
             party.from={
@@ -221,7 +221,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
      * RENDER
      * *********************************************
      * Vykreslení detailu osoby
-     */ 
+     */
     render() {
         const {userDetail} = this.props
 
@@ -235,7 +235,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
             return(
                     <div className="unselected-msg">
                         <div className="title">{i18n('party.noSelection.title')}</div>
-                        <div className="msg-text">{i18n('party.noSelection.message')}</div>                                                
+                        <div className="msg-text">{i18n('party.noSelection.message')}</div>
                     </div>
                     );
         }
@@ -258,6 +258,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                             {this.props.refTables.partyTypes.items.map(i=> {return <option key={i.partyTypeId} value={i.partyTypeId}>{i.name}</option>})}
                         </FormInput>
                     </div>
+                    {/* Zakomentovano z duvodu testovaci verze, aby uzivatele nemohli zadavat pusobnost
                     <div className="line datation">
                         <div className="date-group">
                             <div>
@@ -279,8 +280,8 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                                 </div>
                             </div>
                         </div>
-                    </div>                       
-
+                    </div>
+                    */}
                     <div className="line party-names">
                         <label>{i18n('party.detail.names')}</label>
                         <PartyDetailNames canEdit={canEdit} partyRegion={this.props.partyRegion} />

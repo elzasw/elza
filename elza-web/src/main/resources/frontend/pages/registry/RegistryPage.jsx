@@ -186,7 +186,7 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
         }
 
     }
-    
+
     handleDeleteRegistry() {
         this.dispatch(registryDelete(this.props.registryRegion.selectedId));
     }
@@ -227,7 +227,6 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
             registryRegionData.item.hierarchical &&
             selectedId != registryParentId
     }
-    
 
     canDeleteRegistry() {
         const {registryRegion: {selectedId, registryRegionData, registryParentId}} = this.props;
@@ -243,7 +242,7 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
         const {registryRegion: {selectedId, registryRegionData, recordForMove}} = this.props;
 
         return selectedId &&
-            registryRegionData.item && 
+            registryRegionData.item &&
             recordForMove &&
             !registryRegionData.item.partyId
     }
@@ -253,7 +252,9 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         const altActions = [];
 
-        if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
+// zakomentováno pro test, nutno opravit pri refaktorizaci scope a permissions
+// uzivatel nemusi mit pravo pro zapis vsech scope, aby mohl vytvaret hesla a osoby
+//        if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
             altActions.push(
                 <Button key='addRegistry' onClick={this.handleAddRegistry}><Icon glyph="fa-download"/>
                     <div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div>
@@ -264,7 +265,7 @@ const RegistryPage = class RegistryPage extends AbstractReactComponent {
                     <div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div>
                 </Button>
             );
-        }
+//        }
 
         const itemActions = [];
         if (this.canDeleteRegistry()) {
