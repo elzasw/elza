@@ -14,7 +14,7 @@
     <version>0.9-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>ELZA</name>
-    <url>http://www.marbes.cz</url>
+    <url>http://elza.tacr.cz</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,11 +24,11 @@
     </properties>
 
     <modules>
+        <module>distrib</module>
         <module>elza-api</module>
         <module>elza-ws-api</module>
         <module>elza-core</module>
         <module>elza-web</module>
-        <module>elza-war</module>
         <module>elza-doc</module>
         <module>package-cz-base</module>
         <module>rules-cz-zp2015</module>
