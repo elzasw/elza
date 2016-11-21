@@ -56,10 +56,6 @@ export function partyDetailInvalidate() {
     return DetailActions.invalidate(AREA_PARTY_DETAIL, null)
 }
 
-export function partyDetail() {
-    return DetailActions.invalidate(AREA_PARTY_DETAIL, null)
-}
-
 export function partyDetailClear() {
     return partyDetailFetchIfNeeded(null);
 }

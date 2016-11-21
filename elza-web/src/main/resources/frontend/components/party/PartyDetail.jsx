@@ -109,15 +109,33 @@ class PartyDetail extends AbstractReactComponent {
         }, {});
 
     static validate = (values) => {
-        const errors = {};
+        const required = [];
 
-        // TODO @compel validation
+        console.log(typeof values.genealogy !== "undefined", values.genealogy);
+        if (typeof values.genealogy !== "undefined") {
+            required.push("genealogy")
+        }
+        if (typeof values.scope !== "undefined") {
+            console.log(typeof values.scope !== "undefined", values.scope);
+            required.push("scope")
+        }
+        const errors = PartyDetail.requireFields(...required)(values);
+        errors.creators = [];
+
+        values.creators.forEach((i,index) => {
+            if (!(i && i !== "" && typeof i == "object")) {
+                errors.creators[index] = i18n('global.validation.required');
+            }
+        });
+        if (errors.creators.length === 0) {
+            delete errors.creators;
+        }
 
         return errors;
     };
 
     componentDidMount() {
-        this.trySetFocus(); // TODO @compel focus
+        this.trySetFocus();
         this.fetchIfNeeded();
         this.updateStateFromProps();
         this.props.initForm(this.handlePartyUpdate);
@@ -125,7 +143,7 @@ class PartyDetail extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
-        this.trySetFocus(nextProps); // TODO @compel focus
+        this.trySetFocus(nextProps);
         this.updateStateFromProps(nextProps);
     }
 

@@ -1,22 +1,17 @@
-var React = require('react');
+import React from 'react';
 
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n} from 'components/index.jsx';
 
-require('./WebSocket.less');
+import './WebSocket.less';
 
-var WebSocket = class extends AbstractReactComponent {
-
-    constructor(props) {
-        super(props);
-    }
+class WebSocket extends AbstractReactComponent {
 
     render() {
+        const {loading} = this.props.webSocket;
 
-        var loading = this.props.webSocket.loading;
-
-        var content;
+        let content;
 
         if (loading) {
             content = <div className="dialog">
@@ -30,18 +25,9 @@ var WebSocket = class extends AbstractReactComponent {
                       </div>
         }
 
-        var dialog = !this.props.webSocket.connected ?
-                     <div className="disconnect">
-                         {content}
-                     </div>
+        const dialog = !this.props.webSocket.connected ? <div className="disconnect">{content}</div> : null;
 
-         : "";
-
-        return (
-                <div className="web-socket">
-                    {dialog}
-                </div>
-        );
+        return <div className="web-socket">{dialog}</div>
     }
 }
 
@@ -52,4 +38,4 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(WebSocket);
+export default connect(mapStateToProps)(WebSocket);

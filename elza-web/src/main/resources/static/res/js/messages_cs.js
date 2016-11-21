@@ -608,11 +608,12 @@ var messages = {
     "party.identifier.to.note": "Datum do - poznámka",
     "party.recordType": "Typ rejstříku",
     "party.recordScope": "Třída rejstříku",
+    "party.scope": "Funkce korporace",
 
     "party.addParty": "Nová osoba",
     "party.create.title.PERSON": "Nová osoba",
     "party.create.title.DYNASTY": "Nový rod",
-    "party.create.title.PARTY_GROUP": "Nový korporace",
+    "party.create.title.GROUP_PARTY": "Nová korporace",
     "party.create.title.EVENT": "Nová dočasná korporace/událost",
     "party.genealogy": "Genealogie",
     "party.name.mainPart": "Hlavní část jména",

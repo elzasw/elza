@@ -103,11 +103,11 @@ class PartyDetailRelations extends AbstractReactComponent {
             </div>
             {relations.map((relation, index) => <div key={relation.id} className="value-group relation-group">
                 <div className="value">
-                    {(relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from && relation.from.textDate && <div>
-                        <div>{relationType.relationClassType.code !== RELATION_CLASS_RELATION_CODE && relationType.relationClassType.name + ": "}{relation.from.textDate}</div>
+                    {(relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from && relation.from.value && <div>
+                        <div>{relationType.relationClassType.code !== RELATION_CLASS_RELATION_CODE && relationType.relationClassType.name + ": "}{relation.from.value}</div>
                         <div>{relation.dateNote}</div>
                     </div>}
-                    {relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL && relation.to && relation.to.textDate && <div>{relation.to.textDate}</div>}
+                    {relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL && relation.to && relation.to.value && <div>{relation.to.value}</div>}
                     {relation.relationEntities && relation.relationEntities.map(entity => <div>
                         <label>{entity.roleType.name}:</label> {entity.record.record}<small>{entity.record.note}</small>
                     </div>)}

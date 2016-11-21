@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {Autocomplete, AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading} from 'components/index.jsx';
-import {Modal, Button, HelpBlock, FormGroup, Form} from 'react-bootstrap';
+import {Autocomplete, AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading, DatationField} from 'components/index.jsx';
+import {Modal, Button, HelpBlock, FormGroup, Form, Row, Col} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
@@ -32,6 +32,8 @@ class AddPartyForm extends AbstractReactComponent {
         'prefferedName.degreeAfter',
         'prefferedName.mainPart',
         'prefferedName.otherPart',
+        'prefferedName.validFrom',
+        'prefferedName.validTo',
         'prefferedName.complements[].complementTypeId',
         'prefferedName.complements[].complement',
     ];
@@ -241,6 +243,9 @@ class AddPartyForm extends AbstractReactComponent {
                     mainPart,
                     otherPart,
                     complements,
+                    note,
+                    validFrom,
+                    validTo
                 },
             },
             refTables:{partyNameFormTypes},
@@ -285,19 +290,32 @@ class AddPartyForm extends AbstractReactComponent {
                 </FormInput>
 
                 <hr/>
+
+                {partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <div className="line">
+                    <FormInput componentClass="textarea" label={i18n('party.scope')} {...scope}/>
+                    <hr/>
+                </div>}
+                {partyType.code == PARTY_TYPE_CODES.DYNASTY && <div className="line">
+                    <FormInput componentClass="textarea" label={i18n('party.genealogy')} {...genealogy}/>
+                    <hr/>
+                </div>}
+
                 {partyType.code == PARTY_TYPE_CODES.PERSON && <div className="line">
                     <FormInput type="text" label={i18n('party.name.degreeBefore')} {...degreeBefore}/>
                     <FormInput type="text" label={i18n('party.name.degreeAfter')} {...degreeAfter}/>
                 </div>}
-                {partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <div className="line">
-                    <FormInput componentClass="textarea" label={i18n('party.scope')} {...scope}/>
-                </div>}
-                {partyType.code == PARTY_TYPE_CODES.DYNASTY && <div className="line">
-                    <FormInput componentClass="textarea" label={i18n('party.genealogy')} {...genealogy}/>
-                </div>}
 
                 <FormInput type="text" label={i18n('party.name.mainPart')} {...mainPart} />
                 <FormInput type="text" label={i18n('party.name.otherPart')} {...otherPart} />
+                <Row>
+                    <Col xs={12} md={6}>
+                        <DatationField fields={validFrom} label={i18n('party.name.validFrom')} labelTextual={i18n('party.name.validFrom.textDate')} labelNote={i18n('party.name.validFrom.note')} />
+                    </Col>
+                    <Col xs={12} md={6}>
+                        <DatationField fields={validTo} label={i18n('party.name.validTo')} labelTextual={i18n('party.name.validTo.textual')} labelNote={i18n('party.name.validTo.note')} />
+                    </Col>
+                </Row>
+                <FormInput componentClass="textarea" label={i18n('party.name.note')} {...note} />
                 <hr/>
                 <div>
                     <label>{i18n('party.name.complements')}</label>

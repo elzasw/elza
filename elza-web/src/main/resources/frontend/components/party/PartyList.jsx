@@ -106,21 +106,17 @@ class PartyList extends AbstractReactComponent {
     render() {
         const {partyDetail, partyList, partyTypes} = this.props;
 
-        if (!partyTypes || !partyList.fetched) {
-            return <Loading />;
-        }
-
         let activeIndex = null;
-        if (partyDetail.id !== null) {
+        if (partyList.fetched && partyDetail.id !== null) {
             activeIndex = indexById(partyList.filteredRows, partyDetail.id);
         }
 
         return <div className="party-list">
             <div className="filter">
-                <FormInput componentClass="select" className="type" onChange={this.handleFilterType} value={partyList.filter.type}>
+                {partyTypes ? <FormInput componentClass="select" className="type" onChange={this.handleFilterType} value={partyList.filter.type}>
                     <option value={-1}>{i18n('global.all')}</option>
                     {partyTypes.map(type => <option value={type.id} key={type.id}>{type.name}</option>)}
-                </FormInput>
+                </FormInput> : <Loading />}
                 <SearchWithGoto
                     onFulltextSearch={this.handleFilterText}
                     onClear={this.handleFilterTextClear}
@@ -132,7 +128,7 @@ class PartyList extends AbstractReactComponent {
                     allItemsCount={partyList.count}
                 />
             </div>
-            <div className="list">
+            {!partyList.isFetching && partyList.fetched ? <div className="list">
                 {partyList.rows.length > 0 ? <ListBox
                     ref='partyList'
                     items={partyList.filteredRows}
@@ -141,7 +137,7 @@ class PartyList extends AbstractReactComponent {
                     onFocus={this.handlePartyDetail}
                     onSelect={this.handlePartyDetail}
                 /> :<ul><li className="noResult">{i18n('search.action.noResult')}</li></ul>}
-            </div>
+            </div> : <div className="list"><div className="listbox-container"><Loading /></div></div>}
         </div>
     }
 }

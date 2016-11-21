@@ -191,11 +191,7 @@ export const CHANGE_FILES = 'CHANGE_FILES'
 /**
  * Party.
  */
-// TODO @compel - implementace websocketu to list a detail reduceru - shared
-export const PARTY_UPDATED = 'PARTY_UPDATED'                     // provedena aktualizace osoby
 export const PARTY_CREATED = 'PARTY_CREATED'
-export const PARTY_SELECT = 'PARTY_SELECT'
-export const PARTY_ARR_RESET = 'PARTY_ARR_RESET'
 
 /**
  * Toastr
