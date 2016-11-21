@@ -21,11 +21,16 @@ public class DataPacketRefRepositoryImpl implements DataPacketRefRepositoryCusto
 
     @Override
     public List<ArrDataPacketRef> findByDataIdsAndVersionFetchPacket(Set<Integer> dataIds, final Set<RulItemType> itemTypes, ArrFundVersion version) {
+        return findByDataIdsAndVersionFetchPacket(dataIds, itemTypes, version.getLockChange() == null ? null : version.getLockChange().getChangeId());
+    }
+
+    @Override
+    public List<ArrDataPacketRef> findByDataIdsAndVersionFetchPacket(final Set<Integer> dataIds, final Set<RulItemType> itemTypes, final Integer changeId) {
         String hql = "SELECT d FROM arr_data_packet_ref d JOIN FETCH d.item di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH d.packet p JOIN FETCH p.packetType pt  WHERE ";
-        if (version.getLockChange() == null) {
+        if (changeId == null) {
             hql += "di.deleteChange IS NULL ";
         } else {
-            hql += "di.createChange < :lockChange AND (di.deleteChange IS NULL OR di.deleteChange > :lockChange) ";
+            hql += "di.createChange.changeId < :changeId AND (di.deleteChange IS NULL OR di.deleteChange.changeId > :changeId) ";
         }
 
         hql += "AND di.itemType IN (:itemTypes) AND d.dataId IN (:dataIds)";
@@ -33,8 +38,8 @@ public class DataPacketRefRepositoryImpl implements DataPacketRefRepositoryCusto
 
         Query query = entityManager.createQuery(hql);
 
-        if (version.getLockChange() != null) {
-            query.setParameter("lockChange", version.getLockChange());
+        if (changeId != null) {
+            query.setParameter("changeId", changeId);
         }
 
         query.setParameter("itemTypes", itemTypes);

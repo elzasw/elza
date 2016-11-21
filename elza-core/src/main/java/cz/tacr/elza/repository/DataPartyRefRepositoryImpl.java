@@ -19,11 +19,16 @@ public class DataPartyRefRepositoryImpl implements DataPartyRefRepositoryCustom 
 
     @Override
     public List<ArrDataPartyRef> findByDataIdsAndVersionFetchPartyRecord(Set<Integer> dataIds, final Set<RulItemType> itemTypes, ArrFundVersion version) {
+        return findByDataIdsAndVersionFetchPartyRecord(dataIds, itemTypes, version.getLockChange() == null ? null : version.getLockChange().getChangeId());
+    }
+
+    @Override
+    public List<ArrDataPartyRef> findByDataIdsAndVersionFetchPartyRecord(final Set<Integer> dataIds, final Set<RulItemType> itemTypes, final Integer changeId) {
         String hql = "SELECT d FROM arr_data_party_ref d JOIN FETCH d.item di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH d.party party JOIN FETCH party.record r WHERE ";
-        if (version.getLockChange() == null) {
+        if (changeId == null) {
             hql += "di.deleteChange IS NULL ";
         } else {
-            hql += "di.createChange < :lockChange AND (di.deleteChange IS NULL OR di.deleteChange > :lockChange) ";
+            hql += "di.createChange.changeId < :changeId AND (di.deleteChange IS NULL OR di.deleteChange.changeId > :changeId) ";
         }
 
         hql += "AND di.itemType IN (:itemTypes) AND d.dataId IN (:dataIds)";
@@ -31,8 +36,8 @@ public class DataPartyRefRepositoryImpl implements DataPartyRefRepositoryCustom 
 
         Query query = entityManager.createQuery(hql);
 
-        if (version.getLockChange() != null) {
-            query.setParameter("lockChange", version.getLockChange());
+        if (changeId != null) {
+            query.setParameter("changeId", changeId);
         }
 
         query.setParameter("itemTypes", itemTypes);

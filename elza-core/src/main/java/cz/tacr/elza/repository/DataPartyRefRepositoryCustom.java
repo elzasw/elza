@@ -10,4 +10,6 @@ import cz.tacr.elza.domain.RulItemType;
 public interface DataPartyRefRepositoryCustom {
 
     List<ArrDataPartyRef> findByDataIdsAndVersionFetchPartyRecord(Set<Integer> dataIds, final Set<RulItemType> descItemTypes, ArrFundVersion version);
+
+    List<ArrDataPartyRef> findByDataIdsAndVersionFetchPartyRecord(Set<Integer> dataIds, final Set<RulItemType> itemTypes, Integer changeId);
 }
