@@ -46,6 +46,10 @@ public class ParRelationType implements cz.tacr.elza.api.ParRelationType<ParRela
     @JoinColumn(name = "relationClassTypeId", nullable = false)
     private ParRelationClassType relationClassType;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
+
     @Override
     public Integer getRelationTypeId() {
         return relationTypeId;
@@ -118,5 +122,13 @@ public class ParRelationType implements cz.tacr.elza.api.ParRelationType<ParRela
     @Override
     public String toString() {
         return "ParRelationType pk=" + relationTypeId;
+    }
+
+    public RulPackage getRulPackage() {
+        return rulPackage;
+    }
+
+    public void setRulPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 }

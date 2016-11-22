@@ -60,6 +60,10 @@ public class RegRegisterType implements  cz.tacr.elza.api.RegRegisterType<RegReg
     @JoinColumn(name = "partyTypeId", nullable = true)
     private ParPartyType partyType;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
+
     @Override
     public Integer getRegisterTypeId() {
         return registerTypeId;
@@ -152,5 +156,13 @@ public class RegRegisterType implements  cz.tacr.elza.api.RegRegisterType<RegReg
     @Override
     public String toString() {
         return "RegRegisterType pk=" + registerTypeId;
+    }
+
+    public RulPackage getRulPackage() {
+        return rulPackage;
+    }
+
+    public void setRulPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 }

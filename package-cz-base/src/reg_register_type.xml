@@ -1,0 +1,262 @@
+<register-types>
+    <register-type code="PARTY_GROUP">
+        <name>Rejstřík korporativní</name>
+        <hierarchical>false</hierarchical>
+        <add-record>false</add-record>
+    </register-type>
+    <register-type code="REGION" party-type="GROUP_PARTY" parent-register-type="PARTY_GROUP">
+        <name>administrativně vymezená území s vlastní správou</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="PUBLIC_ADMINISTRATION" party-type="GROUP_PARTY" parent-register-type="PARTY_GROUP">
+        <name>orgány, organizační složky a příspěvkové organizace veřejné správy</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="ORGANIZATION" party-type="GROUP_PARTY" parent-register-type="PARTY_GROUP">
+        <name>sdružení organizací</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="ARMY" party-type="GROUP_PARTY" parent-register-type="PARTY_GROUP">
+        <name>vojenské a bezpečnostní jednotky</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="COMPANY" party-type="GROUP_PARTY" parent-register-type="PARTY_GROUP">
+        <name>organizace založené za účelem podnikání</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="POLITICAL_PARTY" party-type="GROUP_PARTY" parent-register-type="PARTY_GROUP">
+        <name>politické organizace</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="CHURCH" party-type="GROUP_PARTY" parent-register-type="PARTY_GROUP">
+        <name>náboženské organizace a instituce</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="HEALTH_AND_EDU" party-type="GROUP_PARTY" parent-register-type="PARTY_GROUP">
+        <name>kulturní, výchovné, výzkumné a zdravotnické organizace a instituce</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="CHARITY" party-type="GROUP_PARTY" parent-register-type="PARTY_GROUP">
+        <name>nadace a nadační fondy</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="GUILD" party-type="GROUP_PARTY" parent-register-type="PARTY_GROUP">
+        <name>profesní a zájmové organizace</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="CLUB" party-type="GROUP_PARTY" parent-register-type="PARTY_GROUP">
+        <name>spolky, společenské organizace</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="BRANCH" party-type="GROUP_PARTY" parent-register-type="PARTY_GROUP">
+        <name>pojmenované části korporací</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="PERSON">
+        <name>Rejstřík osobní</name>
+        <hierarchical>false</hierarchical>
+        <add-record>false</add-record>
+    </register-type>
+    <register-type code="PERSON_INDIVIDUAL" party-type="PERSON" parent-register-type="PERSON">
+        <name>fyzická osoba</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="FICTIVE_INDIVIDUAL" parent-register-type="PERSON">
+        <name>fiktivní fyzická osoba</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="PERSON_BEING" parent-register-type="PERSON">
+        <name>bytost</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="PERSON_ANIMAL" parent-register-type="PERSON">
+        <name>zvíře</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="FAMILY" party-type="DYNASTY" parent-register-type="PERSON">
+        <name>rodina, rod</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="FAMILY_BRANCH" party-type="DYNASTY" parent-register-type="PERSON">
+        <name>větev rodu</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="FICTIVE_DYNASTY" parent-register-type="PERSON">
+        <name>fiktivní rod</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="GEO">
+        <name>Rejstřík zeměpisný</name>
+        <hierarchical>false</hierarchical>
+        <add-record>false</add-record>
+    </register-type>
+    <register-type code="GEO_NATURE_RES" parent-register-type="GEO">
+        <name>administrativně vymezené části přírody</name>
+        <hierarchical>true</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="GEO_ADMIN_UNIT" parent-register-type="GEO">
+        <name>vymezené obvody a správní celky</name>
+        <hierarchical>true</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="GEO_SEA_FORMATION" parent-register-type="GEO">
+        <name>geomorfologické útvary na dně moře</name>
+        <hierarchical>true</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="GEO_FORMATION" parent-register-type="GEO">
+        <name>geomorfologické útvary na zemském povrchu</name>
+        <hierarchical>true</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="GEO_WATERS" parent-register-type="GEO">
+        <name>vodstvo a vodní plocha, vodní tok</name>
+        <hierarchical>true</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="GEO_SHAPES" parent-register-type="GEO">
+        <name>pojmenované útvary</name>
+        <hierarchical>true</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="GEO_CLIMATIC_PHEN" parent-register-type="GEO">
+        <name>pojmenované trvalé klimatické jevy</name>
+        <hierarchical>true</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="GEO_SPACE" parent-register-type="GEO">
+        <name>Vesmír a jeho části</name>
+        <hierarchical>true</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="EVENT">
+        <name>Rejstřík událostí</name>
+        <hierarchical>false</hierarchical>
+        <add-record>false</add-record>
+    </register-type>
+    <register-type code="EVENT_EVENT" party-type="EVENT" parent-register-type="EVENT">
+        <name>organizované akce a události</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="EVENT_MILITARY" parent-register-type="EVENT">
+        <name>ozbrojené střety (bitvy, války, obléhání…)</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="EVENT_TRADITION" parent-register-type="EVENT">
+        <name>lidové zvyky, významné dny a svátky</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="EVENT_NATURE" parent-register-type="EVENT">
+        <name>dočasné přírodní jevy</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="ARTWORK">
+        <name>Rejstřík děl</name>
+        <hierarchical>false</hierarchical>
+        <add-record>false</add-record>
+    </register-type>
+    <register-type code="ARTWORK_ARTWORK" parent-register-type="ARTWORK">
+        <name>autorská a umělecká díla</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="GEO_UNIT" parent-register-type="GEO">
+        <name>administrativně či jinak lidmi vymezená území</name>
+        <hierarchical>true</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="ARTWORK_CHARTER" parent-register-type="ARTWORK">
+        <name>všeobecně známé dokumenty, smlouvy, zákony, předpisy, normy</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="ARTWORK_AWARD" parent-register-type="ARTWORK">
+        <name>vyznamenání, ceny, soutěžní trofeje</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="ARTWORK_PROD" parent-register-type="ARTWORK">
+        <name>výrobky a jejich typová označení, obchodní značky, odrůdy, plemena vytvořená člověkem</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="ARTWORK_" parent-register-type="ARTWORK">
+        <name>názvy společenských, dětských her</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="ARTWORK_PROJ" parent-register-type="ARTWORK">
+        <name>programy, projekty, granty</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="ARTWORK_CONSTR" parent-register-type="ARTWORK">
+        <name>stavby, trasy, zásahy do přírodních útvarů s vlastním jménem nebo jinou identifikací</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="TERM">
+        <name>Rejstřík věcný</name>
+        <hierarchical>false</hierarchical>
+        <add-record>false</add-record>
+    </register-type>
+    <register-type code="TERM_GENERAL" parent-register-type="TERM">
+        <name>nepojmenované objekty a jejich fyzické části</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="TERM_PERSON" parent-register-type="TERM">
+        <name>kategorie a skupiny nepojmenovaných osob</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="TERM_CORP" parent-register-type="TERM">
+        <name>kategorie a skupiny nepojmenovaných korporací</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="TERM_MATER" parent-register-type="TERM">
+        <name>materiály a techniky</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="TERM_GENRE" parent-register-type="TERM">
+        <name>formy a žánry</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="TERM_NOMENC" parent-register-type="TERM">
+        <name>systematická nomenklatura</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+    <register-type code="TERM_ABSTRACT" parent-register-type="TERM">
+        <name>abstraktní entity</name>
+        <hierarchical>false</hierarchical>
+        <add-record>true</add-record>
+    </register-type>
+</register-types>

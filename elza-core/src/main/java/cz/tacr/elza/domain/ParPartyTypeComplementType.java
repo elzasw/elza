@@ -47,6 +47,10 @@ public class ParPartyTypeComplementType implements cz.tacr.elza.api.ParPartyType
     @Column(nullable = false)
     private boolean repeatable;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
+
     @Override
     public Integer getPartyTypeComplementTypeId() {
         return partyTypeComplementTypeId;
@@ -109,5 +113,13 @@ public class ParPartyTypeComplementType implements cz.tacr.elza.api.ParPartyType
     @Override
     public String toString() {
         return "ParPartyTypeComplementType pk=" + partyTypeComplementTypeId;
+    }
+
+    public RulPackage getRulPackage() {
+        return rulPackage;
+    }
+
+    public void setRulPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 }

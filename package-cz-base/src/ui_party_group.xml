@@ -1,0 +1,80 @@
+<party-groups>
+    <party-group code="RELATION-01" party-type="PERSON">
+        <name>Vztahy</name>
+        <view-order>5</view-order>
+        <type>GENERAL</type>
+        <content-definition>{"rel15":{"name":"Rodinné vztahy","desc":"Rodinné
+            vztahy","type":"relation","definition":"15","width":0},"rel16":{"name":"Studia","desc":"...","type":"relation","definition":"16","width":0},"rel17":{"name":"Zaměstnání","desc":"..","type":"relation","definition":"17","width":0},"rel18":{"name":"Aktivity","desc":"..","type":"relation","definition":"18","width":0},"rel24":{"name":"Ocenění","desc":"..","type":"relation","definition":"24","width":0},"rel25":{"name":"Ostatní","desc":"..","type":"relation","definition":"25","width":0}}
+        </content-definition>
+    </party-group>
+    <party-group code="RELATION-02" party-type="DYNASTY">
+        <name>Vztahy</name>
+        <view-order>5</view-order>
+        <type>GENERAL</type>
+        <content-definition>{"rel20": {"name": "Rodinné vztahy","desc": "Rodinné vztahy","type":
+            "relation","definition": "20","width": 0},"rel24": {"name": "Ocenění","desc": "..","type":
+            "relation","definition": "24","width": 0},"rel25": {"name": "Ostatní","desc": "..","type":
+            "relation","definition": "25","width": 0}}
+        </content-definition>
+    </party-group>
+    <party-group code="FOOTER">
+        <name>Zdroje informací, autoři</name>
+        <view-order>6</view-order>
+        <type>CONCLUSION</type>
+        <content-definition></content-definition>
+    </party-group>
+    <party-group code="HEADER">
+        <name>Formy jména</name>
+        <view-order>1</view-order>
+        <type>IDENT</type>
+        <content-definition></content-definition>
+    </party-group>
+    <party-group code="GENERAL">
+        <name>Charakteristika</name>
+        <view-order>2</view-order>
+        <type>GENERAL</type>
+        <content-definition>{"characteristics":{"name":"Charakteristika","desc":"Zadejte charakteristiku
+            osoby...","type":"text","definition":"characteristics","width":0},"scope":{"name":"Funkce","desc":"Zadejte
+            funkce korporace","type":"text","definition":"scope","width":0}}
+        </content-definition>
+    </party-group>
+    <party-group code="GROUP_PARTY_GENERAL" party-type="GROUP_PARTY">
+        <name>Normy</name>
+        <view-order>3</view-order>
+        <type>GENERAL</type>
+        <content-definition>{"foundingNorm":{"name":"Konstituční norma","desc":"Zadejte
+            ","type":"text","definition":"foundingNorm","width":2},"scopeNorm":{"name":"Normy
+            působnosti","desc":"Zadejte
+            ","type":"text","definition":"scopeNorm","width":2},"organization":{"name":"Vnitřní
+            struktury","desc":"Zadejte ","type":"text","definition":"organization","width":0}}
+        </content-definition>
+    </party-group>
+    <party-group code="DYNASTY_GENERAL">
+        <name>Životopisné údaje / Historie</name>
+        <view-order>4</view-order>
+        <type>GENERAL</type>
+        <content-definition>{"birth":{"name":"Vznik","desc":"Vyplňte
+            vznik","type":"relation","definition":"1","width":0},"death":{"name":"Zánik","desc":"Vyplňte
+            zánik","type":"relation","definition":"5","width":0},"history":{"name":"Historie","desc":"Zadejte historii
+            osoby","type":"textarea","definition":"history","width":2},"genealogy":{"name":"Genealogie ","desc":"Zadejte
+            historii rodu","type":"textarea","definition":"genealogy","width":0}}
+        </content-definition>
+    </party-group>
+    <party-group code="RELATION-03" party-type="GROUP_PARTY">
+        <name>Vztahy</name>
+        <view-order>5</view-order>
+        <type>GENERAL</type>
+        <content-definition>
+            {"rel10":{"name":"Nadřízenost","desc":"..","type":"relation","definition":"10","width":0},"rel11":{"name":"Podřízenost","desc":"..","type":"relation","definition":"11","width":0},"rel12":{"name":"Sídlo","desc":"..","type":"relation","definition":"12","width":0},"rel24":{"name":"Ocenění","desc":"..","type":"relation","definition":"24","width":0},"rel25":{"name":"Ostatní","desc":"..","type":"relation","definition":"25","width":0}}
+        </content-definition>
+    </party-group>
+    <party-group code="RELATION-04" party-type="EVENT">
+        <name>Vztahy</name>
+        <view-order>5</view-order>
+        <type>GENERAL</type>
+        <content-definition>
+            {"rel22":{"name":"Místo
+            konání","desc":"..","type":"relation","definition":"22","width":0},"rel23":{"name":"Pojmenování","desc":"..","type":"relation","definition":"23","width":0},"rel24":{"name":"Ocenění","desc":"..","type":"relation","definition":"24","width":0},"rel25":{"name":"Ostatní","desc":"..","type":"relation","definition":"25","width":0}}
+        </content-definition>
+    </party-group>
+</party-groups>

@@ -8,8 +8,11 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
 
@@ -30,6 +33,10 @@ public class ParRelationRoleType implements cz.tacr.elza.api.ParRelationRoleType
 
     @Column(length = 50, nullable = false, unique = true)
     private String code;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
 
     @Override
     public Integer getRoleTypeId() {
@@ -86,4 +93,11 @@ public class ParRelationRoleType implements cz.tacr.elza.api.ParRelationRoleType
         return "ParRelationRoleType pk=" + roleTypeId;
     }
 
+    public RulPackage getRulPackage() {
+        return rulPackage;
+    }
+
+    public void setRulPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
+    }
 }

@@ -101,6 +101,8 @@ import static com.jayway.restassured.RestAssured.given;
 
 public abstract class AbstractControllerTest extends AbstractTest {
 
+    protected static boolean loadInstitutions = true;
+
     private static final RestAssuredConfig UTF8_ENCODER_CONFIG = RestAssuredConfig.newConfig().encoderConfig(
             EncoderConfig.encoderConfig().defaultContentCharset("UTF-8"));
 
@@ -306,7 +308,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
         RestAssured.port = port;                        // nastavi default port pro REST-assured
         RestAssured.baseURI = RestAssured.DEFAULT_URI;  // nastavi default URI pro REST-assured. Nejcasteni localhost
         login();
-        importXmlFile(null, null, XmlImportType.PARTY, IMPORT_SCOPE, 1, XmlImportControllerTest.getResourceFile(XML_INSTITUTION), null);
+        if (loadInstitutions) {
+            importXmlFile(null, null, XmlImportType.PARTY, IMPORT_SCOPE, 1, XmlImportControllerTest.getResourceFile(XML_INSTITUTION), null);
+        }
     }
 
     protected void login() {
