@@ -28,6 +28,24 @@ class DatationField extends AbstractReactComponent {
         return a;
     };
 
+    static reduxValidate = (val) => {
+        let errors = null;
+        if (val && val.value) {
+            let datation, err;
+            try {
+                datation = DatationField.validate(val.value);
+            } catch (e) {
+                err = e;
+            }
+            if (!datation) {
+                errors = {
+                    value: err && err.message ? err.message : ' '
+                };
+            }
+        }
+        return errors;
+    };
+
     componentDidMount() {
         this.dispatch(calendarTypesFetchIfNeeded());
         this.loadCalendarsAndPokeData();
@@ -228,7 +246,7 @@ class UnitDateConvertor {
     /**
      *
      * @param input
-     * @returns {string}
+     * @returns {Date}
      */
     static PARSER_YEAR_MONTH = (input) => {
         const data = input.split('.');
@@ -307,7 +325,7 @@ class UnitDateConvertor {
     /**
      *
      * @param input
-     * @return {string}
+     * @return {Date}
      */
     static PARSER_DATE_TIME = (input) => {
         const data = input.split(' ');
@@ -399,7 +417,7 @@ class UnitDateConvertor {
     /**
      *
      * @param input
-     * @return {string}
+     * @return {Date}
      */
     static PARSER_DATE_TIME2 = (input) => {
         const data = input.split(' ');
@@ -475,7 +493,7 @@ class UnitDateConvertor {
     /**
      *
      * @param input
-     * @return {string}
+     * @return {Date}
      */
     static PARSER_DATE = (input) => {
         const date = input.split('.');
@@ -499,9 +517,24 @@ class UnitDateConvertor {
         if(isNaN(Date.parse(sYear + '-' + sMonth + '-' + sDay + 'T00:00:00'))) {
             throw new Exception('Invalid input.');
         }
-
-        return new Date(sYear + '-' + sMonth + '-' + sDay + 'T00:00:00Z');
+        const ret = new Date(sYear + '-' + sMonth + '-' + sDay + 'T00:00:00Z');
+        UnitDateConvertor.validateDate(ret, [year, month, day]);
+        return ret;
     };
+
+    static getDateArray = (i) => [i.getFullYear(), i.getMonth()+1, i.getDate(), i.getHours(), i.getMinutes(), i.getSeconds(), i.getMilliseconds()];
+
+    static validateDate = (date, arr) => {
+        const dateArr = UnitDateConvertor.getDateArray(date);
+        const assertTrue = (arg) => {
+            if (!arg) {
+                throw new Exception('Invalid input.')
+            }
+        };
+
+        arr.map((i, index) => assertTrue(i === dateArr[index]));
+    };
+
 
     /**
      * Provede konverzi textového vstupu a doplní intervaly do objektu.

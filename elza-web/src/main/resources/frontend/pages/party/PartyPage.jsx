@@ -67,9 +67,6 @@ class PartyPage extends AbstractReactComponent {
             case 'addParty':
                 this.refs.addParty.setOpen(true);
                 break;
-            // case 'addRelation':
-            //     this.refs.addRelation.setOpen(true);
-            //     break;
             case 'area1':
                 this.dispatch(setFocus('party', 1));
                 break;

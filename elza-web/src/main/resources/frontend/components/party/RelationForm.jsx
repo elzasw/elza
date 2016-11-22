@@ -39,7 +39,7 @@ class RelationForm extends AbstractReactComponent {
     ];
 
     static validate = (values) => {
-        const errors = {};
+        const errors = RelationForm.validateInline(values);
 
 
         for (let i=0; i<values.relationEntities.length; i++) {
@@ -54,67 +54,14 @@ class RelationForm extends AbstractReactComponent {
             }
         }
 
-
-        if (values.from.value) {
-            let datation, err;
-            try {
-                datation = DatationField.validate(values.from.value);
-            } catch (e) {
-                err = e;
-            }
-            if (!datation) {
-                errors.from = {
-                    value: err && err.message ? err.message : ' '
-                };
-            }
-        }
-        if (values.to.value) {
-            let datation, err;
-            try {
-                datation = DatationField.validate(values.to.value);
-            } catch (e) {
-                err = e;
-            }
-            if (!datation) {
-                errors.to = {
-                    value: err && err.message ? err.message : ' '
-                };
-            }
-        }
-
         return errors;
     };
 
     static validateInline = (values) => {
         const errors = {};
 
-
-        if (values.from.value) {
-            let datation, err;
-            try {
-                datation = DatationField.validate(values.from.value);
-            } catch (e) {
-                err = e;
-            }
-            if (!datation) {
-                errors.from = {
-                    value: err && err.message ? err.message : ' '
-                };
-            }
-        }
-        if (values.to.value) {
-            let datation, err;
-            try {
-                datation = DatationField.validate(values.to.value);
-            } catch (e) {
-                err = e;
-            }
-            if (!datation) {
-                errors.to = {
-                    value: err && err.message ? err.message : ' '
-                };
-            }
-        }
+        errors.from = DatationField.reduxValidate(values.from);
+        errors.to = DatationField.reduxValidate(values.to);
         return errors;
 
     };
@@ -122,7 +69,9 @@ class RelationForm extends AbstractReactComponent {
     render() {
         const {relationType, onClose, handleSubmit, fields: {from, to, relationEntities, dateNote, note, source}, partyId} = this.props;
         const {relationRoleTypes} = relationType;
-        const roleTypesList = relationRoleTypes ? relationRoleTypes.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>}) : null;
+        const roleTypesList = relationRoleTypes ? relationRoleTypes : null;
+        const usedRoles = relationEntities.map(i => parseInt(i.roleType.id.value));
+
 
         const submit = submitReduxForm.bind(this, RelationForm.validate);
         return <Form onSubmit={handleSubmit(submit)}>
@@ -137,7 +86,7 @@ class RelationForm extends AbstractReactComponent {
                                     <div className="type">
                                         <FormInput componentClass="select" {...i.roleType.id}>
                                             <option key={0}/>
-                                            {roleTypesList}
+                                            {roleTypesList && roleTypesList.filter(t => t.id == i.roleType.id.value || t.repeatable || usedRoles.indexOf(t.id) === -1).map(i => <option value={i.id} key={i.id}>{i.name}</option>)}
                                         </FormInput>
                                     </div>
                                     <div className="record">

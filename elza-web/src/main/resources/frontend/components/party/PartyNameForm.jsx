@@ -11,9 +11,8 @@ import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionLis
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 import {submitReduxForm} from 'components/form/FormUtils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
+import {PARTY_TYPE_CODES} from 'actions/party/party.jsx'
 
-
-const PARTY_TYPE_PERSON = 'PERSON';
 
 import './PartyNameForm.less'
 
@@ -58,36 +57,13 @@ class PartyNameForm extends AbstractReactComponent {
      * @return object errors - seznam chyb
      */
     static validate = function (values) {
-        let errors = PartyNameForm.requireFields('mainPart')(values);
+        let errors = {
+            ...PartyNameForm.requireFields('mainPart')(values),
+            ...PartyNameForm.validateInline(values)
+        };
         errors.partyNameComplements = values.partyNameComplements.map(PartyNameForm.requireFields('complementTypeId', 'complement'));
         if (errors.partyNameComplements.filter(i => Object.keys(i).length !== 0).length === 0) {
             delete errors.partyNameComplements;
-        }
-        if (values.validFrom.value) {
-            let datation, err;
-            try {
-                datation = DatationField.validate(values.validFrom.value);
-            } catch (e) {
-                err = e;
-            }
-            if (!datation) {
-                errors.validFrom = {
-                    value: err && err.message ? err.message : ' '
-                };
-            }
-        }
-        if (values.validTo.value) {
-            let datation, err;
-            try {
-                datation = DatationField.validate(values.validTo.value);
-            } catch (e) {
-                err = e;
-            }
-            if (!datation) {
-                errors.validTo = {
-                    value: err && err.message ? err.message : ' '
-                };
-            }
         }
 
         return errors;
@@ -98,35 +74,9 @@ class PartyNameForm extends AbstractReactComponent {
     static validateInline = (values) => {
         const errors = {};
 
-
-        if (values.validFrom.value) {
-            let datation, err;
-            try {
-                datation = DatationField.validate(values.validFrom.value);
-            } catch (e) {
-                err = e;
-            }
-            if (!datation) {
-                errors.validFrom = {
-                    value: err && err.message ? err.message : ' '
-                };
-            }
-        }
-        if (values.validTo.value) {
-            let datation, err;
-            try {
-                datation = DatationField.validate(values.validTo.value);
-            } catch (e) {
-                err = e;
-            }
-            if (!datation) {
-                errors.validTo = {
-                    value: err && err.message ? err.message : ' '
-                };
-            }
-        }
+        errors.validFrom = DatationField.reduxValidate(values.validFrom);
+        errors.validTo = DatationField.reduxValidate(values.validTo);
         return errors;
-
     };
 
     static PropTypes = {
@@ -222,7 +172,7 @@ class PartyNameForm extends AbstractReactComponent {
                             <Col xs={12} md={6}>
                                 <FormInput type="text" label={i18n('party.name.otherPart')} {...otherPart} />
                             </Col>
-                            {partyType.code == PARTY_TYPE_PERSON && <Col xs={12}>
+                            {partyType.code == PARTY_TYPE_CODES.PERSON && <Col xs={12}>
                                 <Row>
                                     <Col xs={12} md={6}>
                                         <FormInput type="text" label={i18n('party.name.degreeBefore')} {...degreeBefore} />

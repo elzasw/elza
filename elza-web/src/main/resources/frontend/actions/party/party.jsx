@@ -137,7 +137,7 @@ export function partyAdd(partyTypeId, versionId, callback, showSubmitTypes = fal
             label = i18n('party.addParty');
         }
 
-        dispatch(modalDialogShow(this, label, <AddPartyForm partyType={partyType} showSubmitTypes={showSubmitTypes} versionId={versionId} onSubmitForm={partyAddSubmit.bind(null, callback, dispatch)} />));
+        dispatch(modalDialogShow(this, label, <AddPartyForm partyType={partyType} showSubmitTypes={showSubmitTypes} versionId={versionId} onSubmitForm={partyAddSubmit.bind(null, callback, dispatch)} />, 'dialog-lg'));
     }
 }
 
@@ -192,7 +192,7 @@ export const normalizeNameObject = (obj) => {
         obj.validTo = obj.validTo.value !== null && obj.validTo.value !== undefined ? obj.validTo : null;
     }
 
-    ['mainPart','otherPart', 'degreeBefore', 'degreeAfter'].each(i => {
+    ['mainPart', 'otherPart', 'degreeBefore', 'degreeAfter'].each(i => {
         if (obj[i]) {
             obj[i] = obj[i].trim();
             if (obj[i].length == 0) {

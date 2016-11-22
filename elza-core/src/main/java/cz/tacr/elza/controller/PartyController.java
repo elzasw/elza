@@ -394,6 +394,7 @@ public class PartyController {
             ParRelationRoleTypeVO relationRoleTypeVO = factoryVo
                     .getOrCreateVo(relationRoleType.getRoleTypeId(), relationRoleType, relationRoleTypeVoMap,
                             ParRelationRoleTypeVO.class);
+            relationRoleTypeVO.setRepeatable(parRelationTypeRoleType.getRepeatable());
             relationTypeVO.addRelationRoleType(relationRoleTypeVO);
         }
 

@@ -41,7 +41,7 @@ class RelationClassForm extends AbstractReactComponent {
     ];
 
     static validate = (values) => {
-        const errors = {};
+        const errors = RelationClassForm.validateInline(values);
         if (!values.relationTypeId) {
             errors.relationTypeId = i18n('global.validation.required');
         }
@@ -58,32 +58,8 @@ class RelationClassForm extends AbstractReactComponent {
             }
         }
 
-        if (values.from.value) {
-            let datation, err;
-            try {
-                datation = DatationField.validate(values.from.value);
-            } catch (e) {
-                err = e;
-            }
-            if (!datation) {
-                errors.from = {
-                    value: err && err.message ? err.message : ' '
-                };
-            }
-        }
-        if (values.to.value) {
-            let datation, err;
-            try {
-                datation = DatationField.validate(values.to.value);
-            } catch (e) {
-                err = e;
-            }
-            if (!datation) {
-                errors.to = {
-                    value: err && err.message ? err.message : ' '
-                };
-            }
-        }
+        errors.from = DatationField.reduxValidate(values.from);
+        errors.to = DatationField.reduxValidate(values.to);
 
         return errors;
     };
@@ -93,32 +69,8 @@ class RelationClassForm extends AbstractReactComponent {
         const errors = {};
 
 
-        if (values.from.value) {
-            let datation, err;
-            try {
-                datation = DatationField.validate(values.from.value);
-            } catch (e) {
-                err = e;
-            }
-            if (!datation) {
-                errors.from = {
-                    value: err && err.message ? err.message : ' '
-                };
-            }
-        }
-        if (values.to.value) {
-            let datation, err;
-            try {
-                datation = DatationField.validate(values.to.value);
-            } catch (e) {
-                err = e;
-            }
-            if (!datation) {
-                errors.to = {
-                    value: err && err.message ? err.message : ' '
-                };
-            }
-        }
+        errors.from = DatationField.reduxValidate(values.from);
+        errors.to = DatationField.reduxValidate(values.to);
         return errors;
 
     };
@@ -131,7 +83,8 @@ class RelationClassForm extends AbstractReactComponent {
             relationType = objectById(relationTypes, relationTypeId.value);
         }
 
-        const roleTypesList = relationType ? relationType.relationRoleTypes.map(i => <option value={i.id} key={i.id}>{i.name}</option>) : null;
+        const roleTypesList = relationType ? relationType.relationRoleTypes : null;
+        const usedRoles = relationEntities.map(i => parseInt(i.roleType.id.value));
 
         const submit = submitReduxForm.bind(this, RelationClassForm.validate);
         return <Form onSubmit={handleSubmit(submit)}>
@@ -141,12 +94,11 @@ class RelationClassForm extends AbstractReactComponent {
                         {relationTypes.map(i => <Radio inline {...relationTypeId} value={i.id}>{i.name}</Radio>)}
                         {relationType && <div className="relation-entities">
                             <label className="type">{i18n('party.relation.entityInRelation')}</label><Button bsStyle="action" onClick={() => relationEntities.addField({record:null, roleType: {id: null}})}><Icon glyph="fa-plus" /></Button>
-                            {/* TODO @compel unikátnost vazby entity */}
                             {relationEntities.map((i,index) => <div className="relation-row" key={index}>
                                 <div className="type">
                                     <FormInput componentClass="select" {...i.roleType.id}>
                                         <option key={0}/>
-                                        {roleTypesList}
+                                        {roleTypesList && roleTypesList.filter(t => t.id == i.roleType.id.value || t.repeatable || usedRoles.indexOf(t.id) === -1).map(i => <option value={i.id} key={i.id}>{i.name}</option>)}
                                     </FormInput>
                                 </div>
                                 <div className="record">

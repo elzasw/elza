@@ -148,7 +148,7 @@ class PartyDetailRelations extends AbstractReactComponent {
                         <div>{relation.dateNote}</div>
                     </div>}
                     {allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.INTERVAL && relation.to && relation.to.value && <div>{relation.to.value}</div>}
-                    {relation.relationEntities && relation.relationEntities.map(entity => <div>
+                    {relation.relationEntities && relation.relationEntities.map(entity => <div key={entity.id}>
                         <label>{entity.roleType.name}:</label> {entity.record.record}<small>{entity.record.note}</small>
                     </div>)}
                     {relation.note && <div>{relation.note}</div>}

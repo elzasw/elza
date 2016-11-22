@@ -111,12 +111,10 @@ class PartyDetail extends AbstractReactComponent {
     static validate = (values) => {
         const required = [];
 
-        console.log(typeof values.genealogy !== "undefined", values.genealogy);
         if (typeof values.genealogy !== "undefined") {
             required.push("genealogy")
         }
         if (typeof values.scope !== "undefined") {
-            console.log(typeof values.scope !== "undefined", values.scope);
             required.push("scope")
         }
         const errors = PartyDetail.requireFields(...required)(values);
@@ -152,7 +150,7 @@ class PartyDetail extends AbstractReactComponent {
             const {settings} = props.userDetail;
             const visibilitySettings = getOneSettings(settings, SETTINGS_PARTY_PIN);
 
-            let activeIndexes, visibilitySettingsValue, mergeIndex = {};
+            let activeIndexes, visibilitySettingsValue = {}, mergeIndex = {};
             if (visibilitySettings.value) {
                 try {
                     visibilitySettingsValue = JSON.parse(visibilitySettings.value);
@@ -296,7 +294,7 @@ class PartyDetail extends AbstractReactComponent {
                         if (TYPE == UI_PARTY_GROUP_TYPE.IDENT) {
                             const key = UI_PARTY_GROUP_TYPE.IDENT;
                             return <div key={index}>
-                                <CollapsablePanel isOpen={activeIndexes[key] === true} pinned={visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
+                                <CollapsablePanel isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
                                     <PartyDetailNames party={party} partyType={partyType} onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit} />
                                     {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit} />}
                                 </CollapsablePanel>
@@ -304,7 +302,7 @@ class PartyDetail extends AbstractReactComponent {
                         } else if (TYPE == UI_PARTY_GROUP_TYPE.CONCLUSION) {
                             const key = UI_PARTY_GROUP_TYPE.CONCLUSION;
                             return <div key={index}>
-                                <CollapsablePanel isOpen={activeIndexes[key] === true} pinned={visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
+                                <CollapsablePanel isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
                                     <FormInput componentClass="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
                                     <label>{i18n("party.detail.creators")}{canEdit && <NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton>}</label>
                                     {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
@@ -378,8 +376,8 @@ class PartyDetail extends AbstractReactComponent {
                                 }
                             }
 
-                            return <CollapsablePanel key={index} isOpen={activeIndexes[index] === true}
-                                                     pinned={visibilitySettingsValue[index] === true} header={i.name}
+                            return <CollapsablePanel key={index} isOpen={activeIndexes && activeIndexes[index] === true}
+                                                     pinned={visibilitySettingsValue && visibilitySettingsValue[index] === true} header={i.name}
                                                      eventKey={index} {...events}>
                                 <div className="elements-container">
                                     {items}
