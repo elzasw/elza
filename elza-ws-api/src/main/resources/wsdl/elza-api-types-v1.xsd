@@ -11,11 +11,18 @@
 			<xs:element name="description" type="eat:description" minOccurs="0" maxOccurs="1"/>
 			<xs:element name="materials" type="eat:materials" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
-		<xs:attribute name="identifier" use="required" type="eat:identifier"/>
+		<xs:attribute name="identifier" use="required" type="eat:identifier">
+			<xs:annotation>
+				<xs:documentation>identifier of the request in the source system where the request was created</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 		<xs:attribute name="systemIdentifier" use="optional" type="eat:systemIdentifier"/>
 	</xs:complexType>
 	<xs:simpleType name="requestId">
-		<xs:restriction base="xs:string"/>
+		<xs:annotation>
+			<xs:documentation>Request ID in the system which will process given request.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:token"/>
 	</xs:simpleType>
 	<xs:complexType name="errorDescription">
 		<xs:annotation>
@@ -102,9 +109,9 @@ Source: EAD3</xs:documentation>
 		</xs:annotation>
 		<xs:sequence/>
 		<xs:attribute name="localtype" use="optional" type="eat:localtype"/>
+		<xs:attribute name="standarddate" use="optional" type="eat:standarddate"/>
 		<xs:attribute name="notafter" use="optional" type="eat:standarddate"/>
 		<xs:attribute name="notbefore" use="optional" type="eat:standarddate"/>
-		<xs:attribute name="standarddate" use="optional" type="eat:standarddate"/>
 	</xs:complexType>
 	<xs:simpleType name="localtype">
 		<xs:annotation>
@@ -198,7 +205,6 @@ Note: Some types of DAO does not have to have link to any file.</xs:documentatio
 			<xs:documentation>An element for binding together identifiers of digital archival objects.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="dao" type="eat:dao" minOccurs="1" maxOccurs="unbounded"/>
 			<xs:element name="identifier" type="eat:identifier" minOccurs="1" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
@@ -262,7 +268,11 @@ Note: Some types of DAO does not have to have link to any file.</xs:documentatio
 		</xs:annotation>
 		<xs:sequence/>
 		<xs:attribute name="description" use="optional" type="eat:description"/>
-		<xs:attribute name="identifier" use="required" type="eat:identifier"/>
+		<xs:attribute name="identifier" use="required" type="eat:identifier">
+			<xs:annotation>
+				<xs:documentation>identifier of the revoked request in the system where request was created</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 	</xs:complexType>
 	<xs:complexType name="daoImport">
 		<xs:annotation>
@@ -275,12 +285,17 @@ Note: Some types of DAO does not have to have link to any file.</xs:documentatio
 	</xs:complexType>
 	<xs:complexType name="daoPackage">
 		<xs:annotation>
-			<xs:documentation>Package of one or more digital archival objects.</xs:documentation>
+			<xs:documentation>Package of one or more digital archival objects. One package have to contain DAOs exactly for one fund.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element name="daoBatchInfo" type="eat:daoBatchInfo" minOccurs="0" maxOccurs="1"/>
 			<xs:element name="daoset" type="eat:daoset" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
+		<xs:attribute name="fundIdentifier" use="optional" type="eat:identifier">
+			<xs:annotation>
+				<xs:documentation>Fund identifier. This is optional attribute which have to be filled only in some cases. </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 		<xs:attribute name="identifier" use="optional" type="eat:identifier">
 			<xs:annotation>
 				<xs:documentation>Package identifier</xs:documentation>
@@ -293,11 +308,17 @@ Note: Some types of DAO does not have to have link to any file.</xs:documentatio
 		</xs:attribute>
 	</xs:complexType>
 	<xs:complexType name="digitizationRequestResult">
+		<xs:annotation>
+			<xs:documentation>Result of digitization. Attribute identifier is used to pair result with the request.</xs:documentation>
+		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="requestId" type="eat:requestId" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="daoImport" type="eat:daoImport" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
-		<xs:attribute name="identifier" use="required" type="eat:identifier"/>
+		<xs:attribute name="identifier" use="required" type="eat:identifier">
+			<xs:annotation>
+				<xs:documentation>Identifier of the request in the source system where the request was created.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 	</xs:complexType>
 	<xs:complexType name="daoLinks">
 		<xs:annotation>
@@ -375,11 +396,6 @@ Note: Some types of DAO does not have to have link to any file.</xs:documentatio
 			<xs:documentation>Core attributes for file, structure is similar to FILECORE defined in METS standard.
 Source: METS, version 3.0</xs:documentation>
 		</xs:annotation>
-		<xs:attribute name="created" use="optional" type="xs:dateTime">
-			<xs:annotation>
-				<xs:documentation>CREATED (dateTime/O): Specifies the date and time of creation for the associated file or wrapped content.</xs:documentation>
-			</xs:annotation>
-		</xs:attribute>
 		<xs:attribute name="checksum" use="optional" type="xs:string">
 			<xs:annotation>
 				<xs:documentation>CHECKSUM (string/O): Provides a checksum value for the associated file or wrapped content.</xs:documentation>
@@ -388,6 +404,11 @@ Source: METS, version 3.0</xs:documentation>
 		<xs:attribute name="checksumType" use="optional" type="eat:checksumType">
 			<xs:annotation>
 				<xs:documentation>CHECKSUMTYPE (enumerated string/O): Specifies the checksum algorithm used to produce the value contained in the CHECKSUM attribute. CHECKSUMTYPE must contain one of the following values: MD5 SHA-1 SHA-256 SHA-384 SHA-512 </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="created" use="optional" type="xs:dateTime">
+			<xs:annotation>
+				<xs:documentation>CREATED (dateTime/O): Specifies the date and time of creation for the associated file or wrapped content.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 		<xs:attribute name="mimetype" use="optional" type="xs:string">
