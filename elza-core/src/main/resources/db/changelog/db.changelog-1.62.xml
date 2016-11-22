@@ -13,6 +13,6 @@
         <update tableName="par_relation_type_role_type">
             <column name="repeatable" value="true" />
         </update>
-        <addNotNullConstraint tableName="par_relation_type_role_type" columnName="repeatable" />
+        <addNotNullConstraint tableName="par_relation_type_role_type" columnName="repeatable" columnDataType="boolean" />
     </changeSet>
 </databaseChangeLog>
