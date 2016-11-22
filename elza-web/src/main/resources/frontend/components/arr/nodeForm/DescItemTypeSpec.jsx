@@ -213,6 +213,30 @@ const DescItemTypeSpec = class DescItemTypeSpec extends AbstractReactComponent {
         } else {    // list
             autocompleteAdditionalProps = {};
         }
+
+        // Pomocný kód pro testování rychlých změn na klientovi
+        /*return (
+            <div>
+                <select onChange={(e) => {
+                    const value = e.target.value;
+                    onChange(value);
+                }}>
+                    {items.map(i => {
+                        return <option value={i.id}>{i.name}</option>
+                    })}
+                </select>
+                <Autocomplete
+                    key="spec"
+                    {...descItemSpecProps}
+                    className={cls}
+                    value={value}
+                    title={descItem.error.spec}
+                    items={items}
+                    {...autocompleteAdditionalProps}
+                />
+            </div>
+        )*/
+
         return (
             <Autocomplete
                 key="spec"

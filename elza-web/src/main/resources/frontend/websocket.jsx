@@ -4,7 +4,8 @@ import {EmailSettingsActions, ApplicationActions} from 'actions/index.jsx';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
 import {buklActionStateChange} from 'actions/arr/bulkActions.jsx';
 import {store} from 'stores/AppStore.jsx';
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
+import {i18n} from 'components'
 
 import {
     changeConformityInfo,
@@ -46,51 +47,75 @@ console.log("Websocekt URL", wsUrl)
 var refresh = false;
 var stompClient;
 
+/** Odpojení od websocketů. */
+export function stompDisconnect() {
+    if (stompClient != null) {
+        stompClient.disconnect();
+        stompClient = null;
+    }
+    console.log('Websocket disconnected');
+}
+
 /** Připojení websocketů. */
-function stompConnect() {
+export function stompConnect() {
     stompClient = Stomp.client(wsUrl);
     stompClient = stompClient;
     stompClient.heartbeat.outgoing = 20000;
     stompClient.heartbeat.incoming = 20000;
+    stompClient.onreceipt = receiptCallback;
     console.info("Websocket connecting to " + wsUrl);
-    stompClient.connect({}, stompSuccessCallback, stompFundilureCallback);
+    stompClient.connect({}, stompSuccessCallback, stompFailureCallback);
 }
 stompConnect();
 
 class ws {
     constructor() {
         this.nextReceiptId = 0;
-        this.receiptCallbacks = {}; // mapa id receipt na callback funkci
+        this.receiptSuccessCallbacks = {}; // mapa id receipt na callback funkci
+        this.receiptErrorCallbacks = {}; // mapa id receipt na error callback funkci
     }
 
-    send = (url, headers, data, callback) => {
+    send = (url, headers, data, successCallback, errorCallback) => {
         const useHeaders = headers ? headers : {};
-        if (callback) {
+        if (successCallback || errorCallback) {
             useHeaders.receipt = this.nextReceiptId;
-            this.receiptCallbacks[this.nextReceiptId] = callback;
+            this.receiptSuccessCallbacks[this.nextReceiptId] = successCallback;
+            this.receiptErrorCallbacks[this.nextReceiptId] = errorCallback;
             this.nextReceiptId++;
         }
         stompClient.send(url, headers, data);
     }
 
     processCallback(body, headers) {
-        console.log("#####processCallback", body, headers)
+        if (!body || !headers) {
+            return false;
+        }
+
+        // console.log("#####processCallback", "body: ", body, "headers: ", headers)
         const receiptIdStr = headers["receipt-id"];
         if ((typeof receiptIdStr === "string" && receiptIdStr.length > 0) || (typeof receiptIdStr === "number")) {
             const receiptId = typeof receiptIdStr === "number" ? receiptIdStr : parseInt(receiptIdStr);
-            if (this.receiptCallbacks[receiptId]) {
-                var data = JSON.parse(body);
 
-                this.receiptCallbacks[receiptId](data);
-                delete this.receiptCallbacks[receiptId];
+            const bodyObj = JSON.parse(body);
+            console.log("__WESOCKET", bodyObj)
+            if (bodyObj && bodyObj.errorMessage) {  // error
+                if (this.receiptErrorCallbacks[receiptId]) {
+                    this.receiptErrorCallbacks[receiptId](bodyObj);
+                }
+            } else {    // succes
+                if (this.receiptSuccessCallbacks[receiptId]) {
+                    this.receiptSuccessCallbacks[receiptId](bodyObj);
+                }
             }
+
+            // Smazání callback z pole
+            this.receiptSuccessCallbacks[receiptId] && delete this.receiptSuccessCallbacks[receiptId];
+            this.receiptErrorCallbacks[receiptId] && delete this.receiptErrorCallbacks[receiptId];
+
             return true;
         }
 
         return false;
-    }
-    processErrorCallback(receiptId) {
-
     }
 }
 if (!window.ws) {
@@ -121,15 +146,21 @@ if (!window.ws) {
 //
 //     client.heartbeat.outgoing = 5000;
 //     client.heartbeat.incoming = 0;
-//     client.connect('guest', 'guest', stompSuccessCallback, stompFundilureCallback);
+//     client.connect('guest', 'guest', stompSuccessCallback, stompFailureCallback);
 // }
 //
+
+function receiptCallback(frame) {
+    // console.log("@@@@@@@@@@@@@@@@@@receiptCallback", frame)
+}
+
 /**
  * Callback příchozích dat z websocketů.
  * @param frame {object}
  */
 function stompSuccessCallback(frame) {
-    console.log("::::stompSuccessCallback", frame);
+    // console.log("############################## stompSuccessCallback");
+    // console.log("::::stompSuccessCallback", frame);
     store.dispatch(webSocketConnect());
     if (!refresh) {
         refresh = true;
@@ -137,6 +168,7 @@ function stompSuccessCallback(frame) {
         location.reload(true);
     }
     stompClient.subscribe('/topic/api/changes', function({body, headers}) {
+        // console.log("############### stompClient.subscribe('/topic/api/changes'", "body: ", body, "headers: ", headers)
         if (window.ws.processCallback(body, headers)) { // zpracováno jako callback
             // již zpracováno a není třeba nic dělat
         } else {    // standardní informace o změnách
@@ -162,11 +194,19 @@ function stompSuccessCallback(frame) {
  *
  * @param error {string} text chyby
  */
-function stompFundilureCallback(error) {
-    store.dispatch(webSocketDisconnect());
-    console.error('WebSocket: ' + error);
-    setTimeout(stompConnect, 5000);
-    console.info('WebSocket: Obnovení spojení za 5 sekund...');
+function stompFailureCallback(error, a, b, c) {
+    const {body, headers} = error;
+    if (error.command === "ERROR" && body && headers) {
+        stompDisconnect();
+
+        const bodyObj = JSON.parse(body);
+        store.dispatch(addToastrDanger(i18n('global.error.ws'), bodyObj.message));
+        store.dispatch(webSocketDisconnect(true, bodyObj.message));
+    } else {
+        store.dispatch(webSocketDisconnect(false));
+        setTimeout(stompConnect, 5000);
+        console.info('WebSocket: Obnovení spojení za 5 sekund...');
+    }
 }
 
 

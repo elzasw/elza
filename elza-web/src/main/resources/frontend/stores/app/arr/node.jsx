@@ -213,6 +213,12 @@ export function node(state = nodeInitialState, action) {
             } else {
                 return state
             }        
+        case types.FUND_NODE_INCREASE_VERSION:
+            var result = {
+                ...state,
+                subNodeForm: subNodeForm(state.subNodeForm, action),
+            }
+            return consolidateState(state, result);
         case types.CHANGE_NODES:
         case types.CHANGE_FUND_RECORD:
             var result = {

@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.config.annotation.web.messaging.MessageSecurityMetadataSourceRegistry;
 import org.springframework.security.config.annotation.web.socket.AbstractSecurityWebSocketMessageBrokerConfigurer;
@@ -23,6 +24,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
+import org.springframework.web.socket.messaging.StompSubProtocolErrorHandler;
 import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
 import java.util.Arrays;
@@ -36,32 +38,36 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSocketMessageBroker
 public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBrokerConfigurer {
+    @Bean
+    public TaskScheduler heartbeatTaskScheduler() {
+        return new ThreadPoolTaskScheduler();
+    }
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        registry.setApplicationDestinationPrefixes("/app");
+        registry.setUserDestinationPrefix("/user"); // direct message for current user (@SentToUser) or session (broadcast=false)
+        registry
+                .enableSimpleBroker("/topic")
+                .setHeartbeatValue(new long[] { 10000, 10000 })
+                .setTaskScheduler(heartbeatTaskScheduler());
+    }
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-//        registry.setErrorHandler(new StompSubProtocolErrorHandler());
-        // TODO - přidat error handler
+        registry.setErrorHandler(new StompSubProtocolErrorHandler());
         registry.addEndpoint("/stomp")
                 // copy HTTP session attributes to simpSessionAttributes
                 .addInterceptors(new HttpSessionHandshakeInterceptor());
     }
 
-    @Autowired
-    private WebSocketHandler subProtocolWebSocketHandler;
-
-
-
-//    @Bean
-//    public FilterRegistrationBean sessionRepositoryFilterRegistration() {
-//        FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
-//        filterRegistrationBean.setFilter(new DelegatingFilterProxy(new SessionRepositoryFilter<>(inMemorySessionRepository())));
-//        filterRegistrationBean.setUrlPatterns(Arrays.asList("/*"));
-//        return filterRegistrationBean;
-//    }
+//    @Autowired
+//    private WebSocketHandler subProtocolWebSocketHandler;
 
     @Override
     protected void configureInbound(MessageSecurityMetadataSourceRegistry messages) {
         messages
-                .nullDestMatcher().authenticated()
+//                .nullDestMatcher().authenticated()
                 .simpDestMatchers("/app/**").authenticated();
     }
 
@@ -70,15 +76,6 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
         return true;
     }
 
-    @Override
-    public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry
-                .enableSimpleBroker("/topic");
-        // TODO doplnit!!!
-//                .setHeartbeatValue(new long[] { 10000, 10000 })
-//                .setTaskScheduler(new ThreadPoolTaskScheduler());
-        registry.setApplicationDestinationPrefixes("/app");
-    }
 
     @Autowired
     private WebSocketThreadPoolTaskExecutor clientInboundChannelExecutor;

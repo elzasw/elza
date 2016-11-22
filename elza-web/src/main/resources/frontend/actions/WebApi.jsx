@@ -8,12 +8,20 @@ function getData(data, timeout = 1000) {
     });
 }
 
-function callWS(url, data, needResponse=true) {
+/**
+ * Zavolání webscoket operace na serveru.
+ * @param url url
+ * @param data data pro poslání
+ * @param needResponse true, pokud se má čekat na návratové hodnoty ze serveru (včetně chybových stavů), v tuto chvíli chceme vždy
+ * @return {Promise}
+ */
+function callWS(url, data, needResponse = true) {
     return new Promise((resolve, reject) => {
-        if (needResponse) {
-            window.ws.send(serverContextPath + '/app' + url, {}, JSON.stringify(data), (response) => {
-                console.log("%%%%%%%%%%%%% WS CALLBACK!!!!!!!!!!!!!!!!!", response);
-                resolve(response);
+        if (needResponse) { // chceme skoro vždy
+            window.ws.send(serverContextPath + '/app' + url, {}, JSON.stringify(data), (successResponse) => {
+                resolve(successResponse);
+            }, (errorResponse) => { // příprava pro budoucí možnost odchytávání klientských výjimek - zavolá se error calbback
+                reject(errorResponse);
             });
         } else {
             window.ws.send(serverContextPath + '/app' + url, {}, JSON.stringify(data));
@@ -195,6 +203,7 @@ class WebApi {
 
     updateDescItem(versionId, nodeVersionId, descItem) {
         return callWS('/arrangement/descItems/' + versionId + '/' + nodeVersionId + '/update/true', descItem);
+        // Původní volání kontroleru - zatím necháno pro testovací účely
         // return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/descItems/' + versionId + '/' + nodeVersionId + '/update/true', null,  descItem);
     }
 

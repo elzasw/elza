@@ -13,6 +13,7 @@ import org.hibernate.MappingException;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.enhanced.TableGenerator;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
 
 
@@ -28,12 +29,12 @@ import org.hibernate.type.Type;
 public class TableIdGenerator extends TableGenerator {
 
     @Override
-    public void configure(Type type, Properties params, Dialect dialect) throws MappingException {
+    public void configure(Type type, Properties params, ServiceRegistry serviceRegistry) throws MappingException {
         params.setProperty(TABLE_PARAM, "db_hibernate_sequences");
         params.setProperty(SEGMENT_VALUE_PARAM, params.getProperty("target_table") + "|" + params.getProperty("target_column"));
         params.setProperty(INCREMENT_PARAM, "1");
         //params.setProperty(OPT_PARAM, "pooled");
-        super.configure(type, params, dialect);
+        super.configure(type, params, serviceRegistry);
     }
 
     @Override

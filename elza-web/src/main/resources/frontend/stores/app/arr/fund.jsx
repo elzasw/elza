@@ -295,6 +295,7 @@ export function fund(state, action) {
             };
             return consolidateState(state, result);
         }
+        case types.FUND_NODE_INCREASE_VERSION:
         case types.CHANGE_FUND_RECORD:
         case types.CHANGE_NODES:
         case types.CHANGE_ADD_LEVEL:

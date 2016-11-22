@@ -18,13 +18,13 @@ public class StompExtensionMessageHandler extends AbstractBrokerMessageHandler {
 	private static final byte[] EMPTY_PAYLOAD = new byte[0];
 
 	public StompExtensionMessageHandler(SubscribableChannel inboundChannel, MessageChannel outboundChannel,
-                                        SubscribableChannel brokerChannel) {
+										SubscribableChannel brokerChannel) {
 		super(inboundChannel, outboundChannel, brokerChannel);
 	}
 
 	@Override
 	protected void handleMessageInternal(Message<?> message) {
-		System.out.println("$$$$$$$$$ handleMessageInternal");
+//		System.out.println("$$$$$$$$$ handleMessageInternal");
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 		if (accessor.getCommand() != null) {
 			handleStompMessage(accessor);
@@ -47,7 +47,7 @@ public class StompExtensionMessageHandler extends AbstractBrokerMessageHandler {
 
 		// Send message
 //		getClientOutboundChannel().send(new GenericMessage<>(EMPTY_PAYLOAD, accessor.getMessageHeaders()));
-		getClientOutboundChannel().send(new GenericMessage<>("ahoj".getBytes(), accessor.getMessageHeaders()));
-		System.out.println("----------------------------------");
+//		getClientOutboundChannel().send(new GenericMessage<>("ahoj".getBytes(), accessor.getMessageHeaders()));
+//		System.out.println("----------------------------------");
 	}
 }

@@ -228,6 +228,15 @@ class ItemFormActions {
 
         if (this.descItemNeedStore(loc.descItem, refType)) {
             dispatch(statusSaving());
+
+            // Umělé navýšení verze  o 1 - aby mohla pozitivně projít případná další update operace
+            dispatch({
+                type: types.FUND_NODE_INCREASE_VERSION,
+                versionId,
+                nodeId: subNodeForm.data.parent.id,
+                nodeVersionId: subNodeForm.data.parent.version,
+            })
+
             if (typeof loc.descItem.id !== 'undefined') {
                 this._callUpdateDescItem(versionId, subNodeForm.data.parent.version, loc.descItem)
                     .then(json => {

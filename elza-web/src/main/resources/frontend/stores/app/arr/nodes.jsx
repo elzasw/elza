@@ -71,6 +71,7 @@ export default function nodes(state = nodesInitialState, action) {
                 return {...state, nodes}
             }
             return state;
+        case types.FUND_NODE_INCREASE_VERSION:
         case types.FUND_FUND_CHANGE_READ_MODE:
             var nodes = [...state.nodes];
             for (var i = 0; i < nodes.length; i++) {

@@ -21,6 +21,7 @@ var messages = {
     "global.title.processAction": "Opravdu chcete provést vybranou akci?",
 
     "global.error.ajax": "Při komunikaci nastala chyba",
+    "global.error.ws": "Při komunikaci nastala chyba",
     "global.action.create": "Vytvořit",
     "global.action.update": "Upravit",
     "global.action.add": "Přidat",
@@ -60,6 +61,8 @@ var messages = {
 
     "global.websocket.title": "Odpojení od severu",
     "global.websocket.message": "Vyčkejte na automatické obnovení spojení",
+    "global.websocket.disconnectedOnError.title": "Při komunikaci nastala chyba",
+    "global.websocket.disconnectedOnError.action.refresh": "Aktualizovat aplikaci",
 
     "global.websocket.title.loading": "Načítání aplikace",
     "global.websocket.message.loading": "Probíhá načítání aplikace, chvilku strpení",

@@ -6,6 +6,8 @@ package cz.tacr.elza.websocket;
  */
 public class ErrorDescription {
 
+	private boolean errorMessage = true;
+
 	private final String message;
 
 	private final StackTraceElement[] stackTrace;
@@ -32,5 +34,13 @@ public class ErrorDescription {
 
 	public Object getDetail() {
 		return detail;
+	}
+
+	public boolean isErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(boolean errorMessage) {
+		this.errorMessage = errorMessage;
 	}
 }

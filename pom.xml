@@ -62,8 +62,9 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-parent</artifactId>
-                <version>1.2.3.RELEASE</version>
-                <!--<version>1.4.0.RELEASE</version>-->
+                <!--<version>1.2.3.RELEASE</version>-->
+                <!--<version>1.4.2.RELEASE</version>-->
+                <version>1.4.0.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -79,12 +80,12 @@
                 <version>4.0.3.RELEASE</version>
                 <!--<version>4.1.1.RELEASE</version>-->
             </dependency>
-            <dependency>
+<!--            <dependency>
                 <groupId>org.springframework.session</groupId>
                 <artifactId>spring-session</artifactId>
                 <version>1.0.0.RELEASE</version>
-                <!--<version>4.1.1.RELEASE</version>-->
-            </dependency>
+                <version>4.1.1.RELEASE</version>
+            </dependency>-->
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-core</artifactId>
@@ -97,16 +98,34 @@
                 <version>4.0.3.RELEASE</version>
                 <!--<version>4.1.1.RELEASE</version>-->
             </dependency>
+            <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>1.17</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>3.0.1</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>20.0</version>
+            </dependency>
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>9.3-1102-jdbc4</version>
             </dependency>
-            <dependency>
+<!--            <dependency>
                 <groupId>org.jadira.usertype</groupId>
-                <artifactId>usertype.extended</artifactId>
+                <artifactId>usertype.core</artifactId>
                 <version>3.2.0.GA</version>
-            </dependency>
+                <version>6.0.0.GA</version>
+            </dependency>-->
             <dependency>
                 <groupId>com.fasterxml.jackson.datatype</groupId>
                 <artifactId>jackson-datatype-jsr310</artifactId>
@@ -140,19 +159,34 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-orm</artifactId>
-                <version>5.3.0.Final</version>
+                <!--<version>5.2.1.Final</version>-->
+                <version>5.5.5.Final</version>
+            </dependency>
+<!--            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>5.2.4.Final</version>
+                <version>5.5.5.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-java8</artifactId>
+                <version>5.2.4.Final</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-entitymanager</artifactId>
                 <version>4.3.10.Final</version>
-            </dependency>
+                <version>5.2.4.Final</version>
+            </dependency>-->
 
             <!-- Hibernate Spatial -->
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-spatial</artifactId>
-                <version>4.3</version>
+<!--                <version>4.3</version>
+                <version>5.2.4.Final</version>-->
+                <version>5.0.9.Final</version>
             </dependency>
             <dependency>
                 <groupId>com.vividsolutions</groupId>
@@ -173,7 +207,8 @@
             <dependency>
             	<groupId>org.apache.lucene</groupId>
             	<artifactId>lucene-queryparser</artifactId>
-            	<version>4.10.4</version>
+            	<!--<version>4.10.4</version>-->
+            	<version>5.3.1</version>
             </dependency>
 
             <dependency>
@@ -343,10 +378,10 @@
             <id>OSGEO GeoTools repo</id>
             <url>http://download.osgeo.org/webdav/geotools</url>
         </repository>
-        <repository>
+<!--        <repository>
             <id>Hibernate Spatial repo</id>
             <url>http://www.hibernatespatial.org/repository</url>
-        </repository>
+        </repository>-->
         <repository>
             <id>Geo solutions</id>
             <url>http://maven.geo-solutions.it</url>

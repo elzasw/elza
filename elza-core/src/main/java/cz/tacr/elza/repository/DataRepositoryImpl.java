@@ -24,7 +24,6 @@ import javax.persistence.criteria.Selection;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.jpa.criteria.OrderImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.domain.ArrData;
@@ -371,7 +370,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         query.multiselect(selections);
         query.where(andPredicates.toArray(new Predicate[andPredicates.size()]));
 
-        query.orderBy(new OrderImpl(substringValue));
+        query.orderBy(builder.asc(substringValue));
         query.distinct(true);
 
         List<Tuple> resultList = entityManager.createQuery(query).setMaxResults(max).getResultList();

@@ -23,7 +23,6 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 	private final Map<String, WebSocketTaskProcessor> webSocketTaskProcessors = new HashMap<>();
 
 	public WebSocketThreadPoolTaskExecutor() {
-		setThreadNamePrefix("clientInboundChannel-");
 		setMaxPoolSize(Integer.MAX_VALUE); // maximum possible threads
 		setKeepAliveSeconds(60); // keep alive thread for 60 seconds
 		setQueueCapacity(0); // create always new thread
