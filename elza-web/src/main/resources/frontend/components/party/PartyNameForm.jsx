@@ -84,7 +84,7 @@ class PartyNameForm extends AbstractReactComponent {
      */
     loadData(props) {
         const {refTables: {partyNameFormTypes}, partyType, initData} = props;
-        const nameFormTypeId = partyNameFormTypes.items[0].nameFormTypeId;
+        const nameFormTypeId = partyNameFormTypes.items[0].id;
         if (!this.state.initialized) {
             this.setState({initialized: true, complementsTypes: partyType.complementTypes}, () => {
                 let newLoad = null;

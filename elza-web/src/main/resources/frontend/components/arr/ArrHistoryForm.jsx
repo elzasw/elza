@@ -105,7 +105,15 @@ class ArrHistoryForm extends AbstractReactComponent {
     renderSelectedItemInfo = () => {
         const {selectedItem} = this.state;
 
-        const infoText = selectedItem ? `${dateToString(new Date(selectedItem.changeDate))};${timeToString(new Date(selectedItem.changeDate))};${selectedItem.description};${selectedItem.type};${selectedItem.userId}` : null;
+
+        let infoText;
+        if (selectedItem) {
+            let typeText = i18n(`arr.history.change.title.${selectedItem.type ? selectedItem.type : "unknown"}`);
+            let username = selectedItem.username ? selectedItem.username : <i>System</i>;
+            infoText = `${dateToString(new Date(selectedItem.changeDate))}; ${timeToString(new Date(selectedItem.changeDate))}; ${selectedItem.description}; ${typeText}; ${username}`;
+        } else {
+            infoText = null;
+        }
 
         return (
             <FormInput className="selected-item-info-container" type="static" label={i18n('arr.history.title.deleteFrom')}>

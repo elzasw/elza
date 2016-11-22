@@ -46,6 +46,12 @@ public enum ArrangementCode implements ErrorCode {
     /**
      * Existuje novější změna v AS/JP.
      */
-    EXISTS_NEWER_CHANGE
+    EXISTS_NEWER_CHANGE,
+
+
+    /**
+     * Existuje blokující změna v JP - obecně např. hromadná změna, import AS, atd.
+     */
+    EXISTS_BLOCKING_CHANGE
 
 }

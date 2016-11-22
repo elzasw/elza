@@ -10,7 +10,7 @@ import cz.tacr.elza.api.ParRelationClassTypeRepeatabilityEnum;
  */
 public class ParRelationClassTypeVO {
 
-    private Integer relationClassTypeId;
+    private Integer id;
 
     private String name;
 
@@ -18,12 +18,12 @@ public class ParRelationClassTypeVO {
 
     private ParRelationClassTypeRepeatabilityEnum repeatability;
 
-    public Integer getRelationClassTypeId() {
-        return relationClassTypeId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setRelationClassTypeId(final Integer relationClassTypeId) {
-        this.relationClassTypeId = relationClassTypeId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public String getName() {

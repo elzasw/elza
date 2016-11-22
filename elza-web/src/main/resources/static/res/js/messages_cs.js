@@ -51,6 +51,7 @@ var messages = {
     "arr.exception.node.not.found": "Jednotka popisu nebyla nalezena, pravděpodobně byla odstraněna.",
     "arr.exception.fund.version.not.found": "Verze archivního fondu neexistuje.",
     "arr.exception.exists.newer.change": "Existuje novější změna, je potřeba přenačíst seznam",
+    "arr.exception.exists.blocking.change": "Nelze provést revert, protože existuje blokující změna v JP",
 
     "search.input.search": "Vyhledat...",
     "search.not.found": "nenalezeno",
@@ -569,7 +570,8 @@ var messages = {
 
     "party.noSelection.title": "Není vybrána osoba",
     "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",
-    "party.detail.uiDefinitionError" : "Nepodařilo se renderovat UI kvůli chybné definici v nastavení UI Party Group.",
+    "party.detail.ui.unknownRelation" : "Neznámý typ relace",
+    "party.detail.ui.definitionError" : "Nepodařilo se renderovat UI kvůli chybné definici v nastavení UI Party Group.",
     "party.detail.ui.unknownType" : "Neznámý typ \"{0}\" v nastavení UI Party Group.",
     "party.detail.characteristics": "Charakteristika",
     "party.detail.type": "Typ",
@@ -625,6 +627,7 @@ var messages = {
     "party.create.title.PARTY_GROUP": "Nový korporace",
     "party.create.title.EVENT": "Nová dočasná korporace/událost",
 
+    "party.genealogy": "Genealogie",
     "party.nameMain": "Hlavní část jména",
     "party.nameOther": "Vedlejší část jména",
     "party.nameComplements": "Doplňky jména",

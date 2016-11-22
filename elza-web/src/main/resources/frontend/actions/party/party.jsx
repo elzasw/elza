@@ -7,7 +7,7 @@ import {i18n, AddPartyForm} from 'components/index.jsx';
 import {getPartyTypeById} from 'actions/refTables/partyTypes.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
-import {objectById} from 'stores/app/utils.jsx'
+import {objectById, indexById} from 'stores/app/utils.jsx'
 
 import {SimpleListActions} from 'shared/list'
 import {DetailActions} from 'shared/detail'
@@ -65,9 +65,13 @@ export function partyDetailClear() {
 }
 
 export function partyUpdate(party) {
-    return dispatch => {
+    return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.updateParty(party)).then(() => {
             dispatch(partyDetailInvalidate());
+            const {app:{partyList}} = getState();
+            if (partyList.filteredRows && indexById(partyList.filteredRows, party.id) !== null) {
+                dispatch(partyListInvalidate())
+            }
         });
     }
 }
@@ -84,10 +88,13 @@ export function partyCreate(party) {
 }
 
 export function partyDelete(partyId) {
-    return dispatch => {
+    return (dispatch, getState) => {
         WebApi.deleteParty(partyId).then(() => {
             dispatch(partyDetailClear());
-            dispatch(partyListInvalidate());
+            const {app:{partyList}} = getState();
+            if (partyList.filteredRows && indexById(partyList.filteredRows, partyId) !== null) {
+                dispatch(partyListInvalidate())
+            }
         })
     }
 }

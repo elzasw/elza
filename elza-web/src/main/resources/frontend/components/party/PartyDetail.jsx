@@ -7,6 +7,7 @@ import {
     PartyDetailIdentifiers,
     PartyDetailNames,
     PartyDetailRelations,
+    PartyDetailRelationClass,
     PartyNameForm,
     PartyField,
     AbstractReactComponent,
@@ -34,6 +35,8 @@ import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {initForm} from "actions/form/inlineForm.jsx"
+import {getMapFromList} from 'stores/app/utils.jsx'
+
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -51,7 +54,23 @@ const UI_PARTY_GROUP_TYPE = {
     GENERAL: 'GENERAL',
     CONCLUSION: 'CONCLUSION',
     IDENT: 'IDENT'
+};
+
+const UI_PARTY_GROUP_DEFINITION_TYPE = {
+    TEXT: 'TEXT',
+    TEXTAREA: 'TEXTAREA',
+    RELATION: 'RELATION',
+    RELATION_CLASS: 'RELATION-CLASS'
 }
+
+const PARTY_GENERAL_FIELDS = ['history', 'sourceInformation', 'characteristics'];
+const FIELDS_BY_PARTY_TYPE_CODE = {
+    [PARTY_TYPE_CODES.PERSON]: [...PARTY_GENERAL_FIELDS, ],
+    [PARTY_TYPE_CODES.GROUP_PARTY]: [...PARTY_GENERAL_FIELDS, 'scope', 'foundingNorm', 'scopeNorm', 'organization'],
+    [PARTY_TYPE_CODES.EVENT]: [...PARTY_GENERAL_FIELDS, ],
+    [PARTY_TYPE_CODES.DYNASTY]: [...PARTY_GENERAL_FIELDS, 'genealogy'],
+}
+
 
 /**
  * Komponenta detailu osoby
@@ -104,27 +123,38 @@ class PartyDetail extends AbstractReactComponent {
         this.props.initForm(this.handlePartyUpdate);
     }
 
-    componentWillReceiveProps(nextProps) {
+    componentWillReceiveProps(nextProps, nextState) {
         this.fetchIfNeeded(nextProps);
         this.trySetFocus(nextProps); // TODO @compel focus
-        this.updateStateFromProps(nextProps);
+        this.updateStateFromProps(nextProps, nextState);
     }
 
-    updateStateFromProps(props = this.props) {
+    updateStateFromProps(props = this.props, state = this.state) {
         if (props.userDetail && props.userDetail.settings) {
             const {settings} = props.userDetail;
             const visibilitySettings = getOneSettings(settings, SETTINGS_PARTY_PIN);
 
             let activeIndexes, visibilitySettingsValue = {};
             if (visibilitySettings.value) {
-                visibilitySettingsValue = JSON.parse(visibilitySettings.value);
+                try {
+                    visibilitySettingsValue = JSON.parse(visibilitySettings.value);
+                    for (let key in visibilitySettingsValue) {
+                        if (visibilitySettingsValue.hasOwnProperty(key) && !visibilitySettingsValue[key]) {
+                            delete visibilitySettingsValue[key];
+                        }
+                    }
+                } catch(e) {
+                    visibilitySettingsValue = {};
+                }
                 activeIndexes = {
-                    ...this.state.activeIndexes,
+                    ...state.activeIndexes,
                     ...visibilitySettingsValue
                 };
             } else {
                 console.warn("No settings for visibility - fallback to default - closed");
-                activeIndexes = {};
+                activeIndexes = {
+                    ...state.activeIndexes,
+                };
             }
             this.setState({visibilitySettings, activeIndexes, visibilitySettingsValue})
         }
@@ -162,6 +192,7 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     handleToggleActive = (index) => {
+        console.log('@@ party visible group toggle @@', index);
         if (!this.state.visibilitySettingsValue[index]) {
             this.setState({activeIndexes:{...this.state.activeIndexes, [index]: !this.state.activeIndexes[index]}})
         }
@@ -201,7 +232,7 @@ class PartyDetail extends AbstractReactComponent {
         const fields = this.props.fields;
         const party = partyDetail.data;
         const {activeIndexes, visibilitySettingsValue} = this.state;
-
+        console.log('@@ partyVisibility @@', activeIndexes, visibilitySettingsValue);
         if (!party) {
 
             if (partyDetail.isFetching) {
@@ -219,6 +250,8 @@ class PartyDetail extends AbstractReactComponent {
         const partyType = this.getPartyType();
 
         let parts = partyType && partyType.partyGroups ? partyType.partyGroups : [];
+
+        let relationClassTypes = partyType && partyType.relationTypes ? getMapFromList(partyType.relationTypes.map(i => i.relationClassType), "code") : [];
 
         const events = {onPin:this.handlePinToggle, onSelect: this.handleToggleActive};
 
@@ -239,35 +272,28 @@ class PartyDetail extends AbstractReactComponent {
                 <Form className="party-body">
                     {parts.map((i, index) => {
                         const TYPE = i.type.toUpperCase();
-
                         if (TYPE == UI_PARTY_GROUP_TYPE.IDENT) {
-                            const key = UI_PARTY_GROUP_TYPE.IDENT + '_FORM_NAMES';
-                            const corpKey = UI_PARTY_GROUP_TYPE.IDENT + '_CORP_IDENT';
+                            const key = UI_PARTY_GROUP_TYPE.IDENT;
                             return <div key={index}>
-                                <CollapsablePanel isOpen={activeIndexes[key]} pinned={visibilitySettingsValue[key]} header={i18n("party.detail.formNames")} eventKey={key} {...events}>
+                                <CollapsablePanel isOpen={activeIndexes[key]} pinned={visibilitySettingsValue[key]} header={i.name} eventKey={key} {...events}>
                                     <PartyDetailNames party={party} partyType={partyType} onPartyUpdate={this.handlePartyUpdate} />
+                                    {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} />}
                                 </CollapsablePanel>
-                                {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <CollapsablePanel isOpen={activeIndexes[corpKey]} pinned={visibilitySettingsValue[corpKey]} header={i18n("party.detail.partyGroupIdentifiers")} eventKey={corpKey} {...events}>
-                                    <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} />
-                                </CollapsablePanel>}
                             </div>;
                         } else if (TYPE == UI_PARTY_GROUP_TYPE.CONCLUSION) {
-                            const sourcesKey = UI_PARTY_GROUP_TYPE.CONCLUSION + '_SOURCES';
-                            const creatorsKey = UI_PARTY_GROUP_TYPE.CONCLUSION + '_CREATORS';
+                            const key = UI_PARTY_GROUP_TYPE.CONCLUSION;
                             return <div key={index}>
-                                <CollapsablePanel isOpen={activeIndexes[sourcesKey]} pinned={visibilitySettingsValue[sourcesKey]} header={i18n("party.detail.sources")} eventKey={sourcesKey} {...events}>
-                                    <FormInput componentClass="textarea" {...sourceInformation} />
-                                </CollapsablePanel>
-                                <CollapsablePanel isOpen={activeIndexes[creatorsKey]} pinned={visibilitySettingsValue[creatorsKey]} header={i18n("party.detail.creators")} eventKey={creatorsKey} {...events}>
-                                    <div>{creators.map((creator, index) => <div key={index +"-"+creator.id} className="value-group">
+                                <CollapsablePanel isOpen={activeIndexes[key]} pinned={visibilitySettingsValue[key]} header={i.name} eventKey={key} {...events}>
+                                    <FormInput componentClass="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
+                                    <label>{i18n("party.detail.creators")}<NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton></label>
+                                    {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
                                         <PartyField {...creator} />
                                         <NoFocusButton bsStyle="default" onClick={() => {
                                             if (confirm(i18n('party.detail.creator.delete'))) {
                                                 creators.removeField(index)
                                             }
                                         }}><Icon glyph="fa-trash" /></NoFocusButton>
-                                    </div>)}</div>
-                                    <NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton>
+                                    </div>)}
                                 </CollapsablePanel>
                             </div>;
                         } else if (TYPE === UI_PARTY_GROUP_TYPE.GENERAL) {
@@ -291,29 +317,43 @@ class PartyDetail extends AbstractReactComponent {
                                                 title: item.desc
                                             };
 
-                                            let element = null;
+                                            const DEFINITION_TYPE = item.type.toUpperCase();
 
-                                            if (item.type === "text") {
-                                                element = <FormInput {...inputProps} type={item.type}/>
-                                            } else if (item.type === "textarea") {
-                                                element = <FormInput {...inputProps} componentClass={item.type}/>
-                                            } else if (item.type === "relation") {
-                                                const type = objectById(partyType.relationTypes, item.definition, 'code');
-                                                if (type) {
-                                                    element = <PartyDetailRelations party={party} relationType={type}
-                                                                                    label={item.name}/>
-                                                } else {
-                                                    element = "Neznámý typ relace"
+                                            if (
+                                                !(
+                                                    (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXT || DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXTAREA) &&
+                                                    FIELDS_BY_PARTY_TYPE_CODE[partyType.code].indexOf(item.definition) === -1
+                                                )
+                                            ) {
+                                                let element = null;
+
+                                                if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXT) {
+                                                    element = <FormInput {...inputProps} type="text" />
+                                                } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXTAREA) {
+                                                    element = <FormInput {...inputProps} componentClass="textarea" />
+                                                } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION) {
+                                                    const type = objectById(partyType.relationTypes, item.definition, 'code');
+                                                    if (type) {
+                                                        element = <PartyDetailRelations party={party} relationType={type} label={item.name} />
+                                                    } else {
+                                                        element = i18n('party.detail.ui.unknownRelation')
+                                                    }
+                                                } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION_CLASS) {
+                                                    if (relationClassTypes[item.definition]) {
+                                                        element = <PartyDetailRelationClass party={party} partyType={partyType} relationClassType={relationClassTypes[item.definition]} label={item.name} />
+                                                    } else {
+                                                        element = i18n('party.detail.ui.unknownRelation')
+                                                    }
                                                 }
-                                            }
 
-                                            items.push(<div key={key} className={"el-" + (item.width ? item.width : 0)}>
-                                                {element}
-                                            </div>);
+                                                items.push(<div key={key} className={"el-" + (item.width ? item.width : 0)}>
+                                                    {element}
+                                                </div>);
+                                            }
                                         }
                                     }
                                 } else {
-                                    items.push(<span>{i18n('party.detail.uiDefinitionError')}</span>)
+                                    items.push(<span>{i18n('party.detail.ui.definitionError')}</span>)
                                 }
                             }
 

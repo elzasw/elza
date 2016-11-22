@@ -67,10 +67,6 @@ class PartyList extends AbstractReactComponent {
         this.dispatch(partyDetailFetchIfNeeded(item.id));
     };
 
-    handleArrReset = () => {
-        //this.dispatch(partyArrReset());
-    };
-
     static partyIconByPartyTypeCode = (code) => {
         switch(code) {
             case PARTY_TYPE_CODES.PERSON:
@@ -110,12 +106,6 @@ class PartyList extends AbstractReactComponent {
     render() {
         const {partyDetail, partyList, partyTypes} = this.props;
 
-        let arrPanel = null;
-
-        if (false) {
-            arrPanel = <ArrPanel onReset={this.handleArrReset} name={partyRegion.panel.name} />
-        }
-
         if (!partyTypes || !partyList.fetched) {
             return <Loading />;
         }
@@ -126,9 +116,8 @@ class PartyList extends AbstractReactComponent {
         }
 
         return <div className="party-list">
-            <div>
-                {arrPanel}
-                <FormInput componentClass="select" onChange={this.handleFilterType} value={partyList.filter.type}>
+            <div className="filter">
+                <FormInput componentClass="select" className="type" onChange={this.handleFilterType} value={partyList.filter.type}>
                     <option value={-1}>{i18n('global.all')}</option>
                     {partyTypes.map(type => <option value={type.id} key={type.id}>{type.name}</option>)}
                 </FormInput>
@@ -143,9 +132,8 @@ class PartyList extends AbstractReactComponent {
                     allItemsCount={partyList.count}
                 />
             </div>
-            <div className="party-listbox-container">
+            <div className="list">
                 {partyList.rows.length > 0 ? <ListBox
-                    className='party-listbox'
                     ref='partyList'
                     items={partyList.filteredRows}
                     activeIndex={activeIndex}

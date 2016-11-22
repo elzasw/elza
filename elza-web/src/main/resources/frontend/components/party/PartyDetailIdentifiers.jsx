@@ -6,6 +6,8 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {i18n, AbstractReactComponent, NoFocusButton, Icon, PartyIdentifierForm} from 'components/index.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 
+import './PartyDetailIdentifiers.less'
+
 const removeUndefined = (obj) => {
     for (let key in obj ) {
         if (obj.hasOwnProperty(key)) {
@@ -97,7 +99,7 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
 
     render() {
         const {party} = this.props;
-        return <div>
+        return <div className="party-detail-identifiers">
             <div>
                 <label>{i18n("party.detail.partyGroupIdentifiers")}</label>
                 <NoFocusButton bsStyle="default" onClick={this.handlePartyGroupIdentifierAdd}><Icon glyph="fa-plus" /></NoFocusButton>
