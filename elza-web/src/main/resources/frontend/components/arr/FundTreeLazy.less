@@ -2,7 +2,7 @@
 
 @rowHeight: 16px;
 
-@TREE_TOP_PADDING: 21px;    // nutné definovat i v komponentě!
+@TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
 
 .fa-tree-lazy-main-container {
     height: 100%;
@@ -18,6 +18,11 @@
         margin-top: @TREE_TOP_PADDING;
         width: 100%;
         padding-top: 5px;
+        border-top:none;
+
+        .virtual-list{ // položka ve stromě na celou šířku
+            display:table;
+        }
 
         div {
             width: 100%;
@@ -86,7 +91,7 @@
 
         .level.small {
             font-size: 0.5em;
-        }    
+        }
 
         .active {
             background: @tree-node-active-bg;
@@ -125,14 +130,11 @@
     }
 
     .fa-tree-lazy-actions {
-        position: absolute;
-        top: 30px;
-        left: 4px;
         display: flex;
         justify-content: flex-end;
-        width: calc(~"100% - 8px");
         background: white;
         border: 1px solid #DDDDDD;
+        border-bottom:none;
         margin: 0;
         .btn {
             border: none;

@@ -85,10 +85,9 @@ const ArrPage = class ArrPage extends ArrParentPage {
 
         this.state = {
             developerExpandedSpecsIds: {},
-            fundNodesError: null,
+            fundNodesError: null
         };
     }
-
     componentDidMount() {
         super.componentDidMount();
         this.trySetFocus(this.props)
@@ -96,7 +95,7 @@ const ArrPage = class ArrPage extends ArrParentPage {
 
     componentWillReceiveProps(nextProps) {
         super.componentWillReceiveProps(nextProps);
-        const {tab} = this.props;
+        const {tab, userDetail, arrRegion} = this.props;
         let selected = tab.values['arr-as'];
         var activeFund = this.getActiveFund(nextProps);
         if (activeFund !== null) {
@@ -271,16 +270,17 @@ const ArrPage = class ArrPage extends ArrParentPage {
         var init = {
             rightPanel: {
                 tabs: [
-                    {name: i18n('arr.panel.title.errors'), key: 0, checked: dataRight && dataRight[0] !== undefined ? dataRight[0] : true},
-                    {name: i18n('arr.panel.title.visiblePolicies'), key: 1, checked: dataRight && dataRight[1] !== undefined ? dataRight[1] : true},
-                    {name: i18n('arr.panel.title.packets'), key: 2, checked: dataRight && dataRight[2] !== undefined ? dataRight[2] : true},
-                    {name: i18n('arr.panel.title.files'), key: 3, checked: dataRight && dataRight[3] !== undefined ? dataRight[3] : true},
+                    {name: i18n('arr.panel.title.packets'), key: "packets", checked: dataRight && dataRight.packets !== undefined ? dataRight.packets : true},
+                    {name: i18n('arr.panel.title.files'), key: "files", checked: dataRight && dataRight.files !== undefined ? dataRight.files : true},
+                    {name: i18n('arr.panel.title.discrepancies'), key: "discrepancies", checked: dataRight && dataRight.discrepancies !== undefined ? dataRight.discrepancies : true},
+                    {name: i18n('arr.panel.title.visiblePolicies'), key: "visiblePolicies", checked: dataRight && dataRight.visiblePolicies !== undefined ? dataRight.visiblePolicies : true},
                 ]
             },
             centerPanel: {
                 panels: [
-                    {name: i18n('arr.fund.settings.panel.center.parents'), key: 'parents', checked: dataCenter && dataCenter['parents'] !== undefined ? dataCenter['parents'] : true},
-                    {name: i18n('arr.fund.settings.panel.center.children'), key: 'children', checked: dataCenter && dataCenter['children'] !== undefined ? dataCenter['children'] : true},
+                    {name: i18n('arr.fund.settings.panel.center.parents'), key: 'parents', checked: dataCenter && dataCenter.parents !== undefined ? dataCenter.parents : true},
+                    {name: i18n('arr.fund.settings.panel.center.children'), key: 'children', checked: dataCenter && dataCenter.children !== undefined ? dataCenter.children : true},
+                    {name: i18n('arr.fund.settings.panel.rightPanel'), key: 'rightPanel', checked: dataCenter && dataCenter.rightPanel !== undefined ? dataCenter.rightPanel : true},
                 ]
             }
         }
@@ -337,9 +337,7 @@ const ArrPage = class ArrPage extends ArrParentPage {
         altActions.push(
             <Button active={show} onClick={this.handleRegisterJp} key="toggle-record-jp">
                 <Icon glyph="fa-th-list"/>
-                <div>
-                    <span className="btnText">{i18n('ribbon.action.arr.show-register-jp')}</span>
-                </div>
+                <span className="btnText">{i18n('ribbon.action.arr.show-register-jp')}</span>
             </Button>
         )
 
@@ -348,8 +346,9 @@ const ArrPage = class ArrPage extends ArrParentPage {
             var activeFund = arrRegion.funds[indexFund];
 
             altActions.push(
-                <Button key="fund-settings" onClick={this.handleChangeFundSettings.bind(this)} ><Icon glyph="fa-wrench"/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.settings.ui')}</span></div>
+                <Button key="fund-settings" onClick={this.handleChangeFundSettings.bind(this)}>
+                    <Icon glyph="fa-wrench"/>
+                    <span className="btnText">{i18n('ribbon.action.arr.fund.settings.ui')}</span>
                 </Button>)
 
             var nodeIndex = activeFund.nodes.activeIndex;
@@ -358,24 +357,26 @@ const ArrPage = class ArrPage extends ArrParentPage {
 
                 if (activeNode.selectedSubNodeId !== null) {
                     itemActions.push(
-                        <Button key="next-error" onClick={this.handleErrorPrevious.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}><Icon glyph="fa-arrow-left"/>
-                            <div><span className="btnText">{i18n('ribbon.action.arr.validation.error.previous')}</span></div>
+                        <Button key="next-error" onClick={this.handleErrorPrevious.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}>
+                            <Icon glyph="fa-arrow-left"/>
+                            <span className="btnText">{i18n('ribbon.action.arr.validation.error.previous')}</span>
                         </Button>,
-                        <Button key="previous-error" onClick={this.handleErrorNext.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}><Icon glyph="fa-arrow-right"/>
-                            <div><span className="btnText">{i18n('ribbon.action.arr.validation.error.next')}</span></div>
+                        <Button key="previous-error" onClick={this.handleErrorNext.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}>
+                            <Icon glyph="fa-arrow-right"/>
+                            <span className="btnText">{i18n('ribbon.action.arr.validation.error.next')}</span>
                         </Button>
                     );
                     if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: activeFund.id}) && !readMode) {
                         itemActions.push(
-                            <Button key="prepareFundAction" onClick={this.handleOpenFundActionForm.bind(this, activeFund.versionId, activeInfo.activeSubNode)}><Icon glyph="fa-calculator"/>
-                                <div><span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span></div>
+                            <Button key="prepareFundAction" onClick={this.handleOpenFundActionForm.bind(this, activeFund.versionId, activeInfo.activeSubNode)}>
+                                <Icon glyph="fa-calculator"/>
+                                <span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span>
                             </Button>
                         );
                     }
                 }
             }
         }
-
         var altSection;
         if (altActions.length > 0) {
             altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
@@ -650,33 +651,40 @@ const ArrPage = class ArrPage extends ArrParentPage {
         var tabIndex = 0
 
         var settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', activeFund.id);
+        var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
         var settingsValues = settings.value ? JSON.parse(settings.value) : null;
-
-        if (settingsValues == null || settingsValues[tabIndex]) {
-            items.push({id: tabIndex, title: i18n('arr.panel.title.errors')});
-            if (selected === tabIndex) tabContent = this.renderFundErrors(activeFund)
+        var centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
+        if(settings.value && (settings.value.indexOf("true")<0 || !centerSettingsValues.rightPanel))
+        {
+            return false;
         }
-        tabIndex++;
-
-        if (settingsValues == null || settingsValues[tabIndex]) {
-            items.push({id: tabIndex, title: i18n('arr.panel.title.visiblePolicies')});
-            if (selected === tabIndex) tabContent = this.renderFundVisiblePolicies(activeFund)
-        }
-        tabIndex++;
 
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
-            if (settingsValues == null || settingsValues[tabIndex]) {
+            if (settingsValues == null || settingsValues.packets) {
                 items.push({id: tabIndex, title: i18n('arr.panel.title.packets')});
-                if (selected === tabIndex) tabContent = this.renderFundPackets(activeFund)
+                if (selected === tabIndex) tabContent = this.renderFundPackets(activeFund);
+                tabIndex++;
             }
-            tabIndex++;
         }
-
-        if (settingsValues == null || settingsValues[tabIndex]) {
+        if (settingsValues == null || settingsValues.files) {
             items.push({id: tabIndex, title: i18n('arr.panel.title.files')});
             if (selected === tabIndex) tabContent = this.renderFundFiles(activeFund)
             tabIndex++;
         }
+
+        if (settingsValues == null || settingsValues.discrepancies) {
+            items.push({id: tabIndex, title: i18n('arr.panel.title.discrepancies')});
+            if (selected === tabIndex) tabContent = this.renderFundErrors(activeFund)
+            tabIndex++;
+        }
+
+        if (settingsValues == null || settingsValues.visiblePolicies) {
+            items.push({id: tabIndex, title: i18n('arr.panel.title.visiblePolicies')});
+            if (selected === tabIndex) tabContent = this.renderFundVisiblePolicies(activeFund)
+            tabIndex++;
+        }
+
+
 
         // pouze v developer modu
         if (developer.enabled && node) {
@@ -754,6 +762,15 @@ const ArrPage = class ArrPage extends ArrParentPage {
                     actionAddons={<Button onClick={() => {this.handleSetExtendedView(false)}} className='extended-view-toggle'><Icon glyph='fa-compress'/></Button>}
                 />
             )
+        } else if(activeFund.nodes.activeIndex === null){
+            return (
+                <div className='arr-output-detail-container'>
+                   <div className="unselected-msg">
+                        <div className="title">{i18n('arr.node.noSelection.title')}</div>
+                        <div className="msg-text">{i18n('arr.node.noSelection.message')}</div>
+                    </div>
+                </div>
+            );
         } else {    // standardní zobrazení pořádání - záložky node
             var packets = [];
             var fundId = activeFund.id;
@@ -803,7 +820,7 @@ const ArrPage = class ArrPage extends ArrParentPage {
     }
 
     hasPageShowRights(userDetail, activeFund) {
-        return userDetail.hasArrPage(activeFund ? activeFund.id : null);
+        return userDetail.hasRdPage(activeFund ? activeFund.id : null);
     }
 
     renderRightPanel() {

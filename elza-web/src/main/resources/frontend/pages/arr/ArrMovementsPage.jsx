@@ -214,6 +214,7 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
         return (
             <div className="movements-content-container">
                 <div key={1} className='tree-left-container'>
+
                     <FundTreeMovementsLeft
                         fund={fund}
                         versionId={fund.versionId}
@@ -221,11 +222,14 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
                     />
                 </div>
                 <div key={2} className='tree-actions-container'>
-                    <Button onClick={this.handleMoveUnder} disabled={!moveUnder}>Přesunout do<Icon glyph="fa-arrow-circle-o-right"/></Button>
-                    <Button onClick={this.handleMoveBefore} disabled={!moveBeforeAfter}>Přesunout před<Icon glyph="fa-arrow-circle-o-right"/></Button>
-                    <Button onClick={this.handleMoveAfter} disabled={!moveBeforeAfter}>Přesunout za<Icon glyph="fa-arrow-circle-o-right"/></Button>
+
+                    <Button onClick={this.handleMoveBefore} disabled={!moveBeforeAfter}><Icon glyph="ez-move-before2"/><div>{i18n('arr.movements.move.before')}</div></Button>
+                    <Button onClick={this.handleMoveUnder} disabled={!moveUnder}><Icon glyph="ez-move-under"/><div>{i18n('arr.movements.move.under')}</div></Button>
+                    <Button onClick={this.handleMoveAfter} disabled={!moveBeforeAfter}><Icon glyph="ez-move-after2"/><div>{i18n('arr.movements.move.after')}</div></Button>
+
                 </div>
                 <div key={3} className='tree-right-container'>
+
                     <FundTreeMovementsRight
                         fund={fund}
                         versionId={fund.versionId}

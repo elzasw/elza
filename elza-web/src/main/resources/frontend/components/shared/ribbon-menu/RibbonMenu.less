@@ -18,7 +18,7 @@
         flex-direction: row;
 
         .ribbonSmallGroupsContainer {
-            display: flex;
+            display: flex;           
         }
 
         .ribbonGroup {
@@ -136,7 +136,7 @@
                 span.caret{
                     position: absolute;
                     right: @ribbon-btn-padding;
-                    top: @ribbon-small-btn-height / 2 - @ribbon-btn-padding;
+                    top: @ribbon-small-btn-height / 2 - @ribbon-btn-padding;                
                 }
             }
         }
@@ -145,6 +145,74 @@
             padding: 2px;
             height: @ribbon-large-btn-height;
             border-left: solid 1px @btn-default-border;
+        }
+        .right {    //Styly pro pravou část ribbonu            
+            margin-left: auto;
+            .ribbonGroup{
+                display:flex;                                                
+                .btn, .dropdown{   
+                    text-align: right;
+                    width: auto;                   
+                    max-width: none;
+                    margin: 0;
+                    margin-left:auto;
+                    position: absolute;
+                    right: 0;
+                    top: 0;
+                    font-size:12px;
+                    right:0;
+                    
+                    box-sizing: content-box;
+                    
+                    .dropdown-toggle{
+                        display:inline-block;                        
+                        padding:5px 10px;
+                        //margin-top: -6px;
+                        //margin-right: -8px;
+                        margin-left:auto;
+                        color: #ddd;
+                        background-color: #444;
+                        &:hover{
+                            background-color: #666;
+                        }
+                    }
+                    .icon{
+                        margin-left:5px;
+                        margin-top:2px;                        
+                    }
+                
+                    span{
+                        margin-top:-5px;
+                    }
+                               
+                }
+                .dropdown span{
+                    //margin-top: -10px;
+                }
+                .dropdown-menu{
+                    right:0;
+                    left:auto;                    
+                    min-width: 100%;  
+                    margin-top:100%;  
+
+                    .icon{
+                        margin-left: 0;
+                        margin-right: 5px; 
+                    }                
+                }
+                .save-msg{
+                    color:#888;
+                    margin-top:auto;
+                    margin-right:20px;
+                    text-align: right;
+                    font-size: 1em;
+                    font-style: italic;
+                    .icon{                        
+                        margin-right: 5px; 
+                        font-size: 1em;
+                    }           
+                }
+            }
         }
     }
 }

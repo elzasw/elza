@@ -105,7 +105,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
     }
 
     hasPageShowRights(userDetail, activeFund) {
-        return userDetail.hasArrPage(activeFund ? activeFund.id : null);
+        return userDetail.hasRdPage(activeFund ? activeFund.id : null);
     }
 
     getChildContext() {
