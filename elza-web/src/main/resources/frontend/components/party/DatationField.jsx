@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
-import {AbstractReactComponent, Icon, FormInput} from 'components';
+import {AbstractReactComponent, Icon, FormInput, i18n} from 'components';
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 
 import './DatationField.less'
@@ -106,26 +106,239 @@ class DatationField extends AbstractReactComponent {
         </div>
     }
 }
-class LocalDateTime {
 
-    date;
 
-    constructor(date) {
-        this.date = date;
-    }
-
-    static parse(string) {
-        /*const date = Date.parse(string);
-        if (isNaN(date)) {
-            throw new Exception("Invalid format");
-        }*/
-        return new LocalDateTime(new Date(string));
-    }
-}
 class Exception {
     message = null;
-    constructor(string) {
+    hasUserMessage = false;
+    constructor(string, hasUserMessage = false) {
         this.message = string;
+        this.hasUserMessage = hasUserMessage;
+    }
+}
+
+const makeString = (object) => object == null ? '' : '' + object;
+
+const makeXChar = (s, width, char) => (s.length >= width) ? s : (new Array(width).join(char) + s).slice(-width);
+
+const make2Digit = (input) => makeXChar(input, 2, '0');
+
+const make4Digit = (input) => makeXChar(input, 4, '0');
+
+
+class DT {
+
+    static FORMATS = {
+        _DT: '_DT', // CLASS format - input is this class
+        DATE: "d.M.u",
+        DATE_TIME: "d.M.u H:mm:ss",
+        DATE_TIME2: "d.M.u H:mm",
+        YEAR_MONTH: "M.u",
+        YEAR: "u"
+    };
+
+    jsDate;
+
+    constructor(input = null, format = DT.FORMATS._DT) {
+        let dateString;
+        let validationArray = [];
+
+        if (input === null && format == DT.FORMATS._DT) {
+            this.jsDate = new Date();
+            return;
+        }
+
+        switch (format) {
+            case DT.FORMATS._DT: {
+                this.jsDate = new Date(input.jsDate);
+                return;
+            }
+            case DT.FORMATS.YEAR:
+            case DT.FORMATS.YEAR_MONTH: {
+                const hasMonth = format == DT.FORMATS.YEAR_MONTH;
+
+                let data, month, year;
+                if (hasMonth) {
+                    data = input.split('.');
+                    if (data.length != 2) {
+                        throw new Exception('Invalid input.');
+                    }
+                    month = parseInt(data[0]);
+                } else {
+                    data = [null, input];
+                    month = 1;
+                }
+
+                year = parseInt(data[1]);
+                validationArray.push(year);
+                hasMonth && validationArray.push(month);
+
+                if ((hasMonth && (isNaN(month) || month > 12 || month < 1)) || isNaN(year)) {
+                    throw new Exception('Invalid input.');
+                }
+
+                let sMonth = make2Digit(makeString(month));
+                let sYear = make4Digit(makeString(year));
+
+                if(isNaN(Date.parse(sYear + '-' + sMonth + '-01T00:00:00Z'))) {
+                    throw new Exception('Invalid input.');
+                }
+
+                dateString = sYear + '-' + sMonth + '-01T00:00:00Z';
+                break;
+            }
+            case DT.FORMATS.DATE:
+            case DT.FORMATS.DATE_TIME:
+            case DT.FORMATS.DATE_TIME2: {
+                const hasSeconds = format == DT.FORMATS.DATE_TIME;
+                const hasTime = hasSeconds || format == DT.FORMATS.DATE_TIME2;
+                let data, date, time;
+                if (hasTime) {
+                    data = input.split(' ');
+                    if (data.length != 2) {
+                        throw new Exception('Invalid input.');
+                    }
+
+                    time = data[1].split(':');
+                } else {
+                    data = [input];
+                }
+
+                date = data[0].split('.');
+
+                if (date.length != 3 || (hasTime && time.length != 3)) {
+                    throw new Exception('Invalid input.');
+                }
+
+                let day = parseInt(date[0]);
+                let month = parseInt(date[1]);
+                let year = parseInt(date[2]);
+
+                if (isNaN(day) || isNaN(month) || isNaN(year) || month > 12 || month < 1 || day > 31 || day < 1) {
+                    throw new Exception('Invalid input.');
+                }
+                validationArray.push(year, month, day);
+
+                let hours, minutes, secs;
+                if (hasTime) {
+                    hours = parseInt(time[0]);
+                    minutes = parseInt(time[1]);
+                    secs = parseInt(time[2]);
+
+                    if (isNaN(hours) || isNaN(minutes) || isNaN(secs) || hours > 23 || hours < 0 || minutes > 59 || minutes < 0 || secs > 59 || secs < 0) {
+                        throw new Exception('Invalid input.');
+                    }
+                    validationArray.push(hours, minutes, secs)
+                } else {
+                    hours = 0;
+                    minutes = 0;
+                    secs = 0;
+                }
+
+                let sDay = make2Digit(makeString(day));
+                let sMonth = make2Digit(makeString(month));
+                let sYear = make4Digit(makeString(year));
+                let sHours = make2Digit(makeString(hours));
+                let sMinutes = make2Digit(makeString(minutes));
+                let sSecs = make2Digit(makeString(secs));
+
+                dateString = sYear + '-' + sMonth + '-' + sDay + 'T' + sHours + ':' + sMinutes + ':' + sSecs;
+                break;
+            }
+            default:{
+                throw new Exception(i18n('global.validation.datation.invalidFormat', format), true);
+            }
+        }
+        if(isNaN(Date.parse(dateString))) {
+            throw new Exception('Invalid input.');
+        }
+        this.jsDate = new Date(dateString);
+        DT.validateDate(this.jsDate, validationArray);
+    }
+
+    static getDateArray = (i) => [i.getFullYear(), i.getMonth()+1, i.getDate(), i.getHours(), i.getMinutes(), i.getSeconds(), i.getMilliseconds()];
+
+    static validateDate = (date, arr) => {
+        const dateArr = DT.getDateArray(date);
+        const assertTrue = (arg) => {
+            if (!arg) {
+                throw new Exception('Invalid input.')
+            }
+        };
+
+        let index = 0;
+        for (let a of arr) {
+            assertTrue(a === dateArr[index++])
+        }
+    };
+
+    static parse = (string) => {
+        return new DT(makeString(string).replace('T', ' '), DT.FORMATS.DATE_TIME);
+    };
+
+    format = (format) => {
+        switch (format) {
+            case DT.FORMATS.YEAR:
+                return this.getYear();
+            case DT.FORMATS.YEAR_MONTH:
+                return this.getMonth() + '.' + this.getYear();
+            case DT.FORMATS.DATE:
+                return this.getDay()  + '.' + this.getMonth() + '.' + this.getYear();
+            case DT.FORMATS.DATE_TIME2:
+                return this.getDay()  + '.' + this.getMonth() + '.' + this.getYear() + ' ' + this.getHours() + ':' + this.getMinutes();
+            case DT.FORMATS.DATE_TIME:
+                return this.getDay()  + '.' + this.getMonth() + '.' + this.getYear() + ' ' + this.getHours() + ':' + this.getMinutes() + ':' + this.getSeconds();
+        }
+    };
+
+    isEqual = (anotherMyTime) => this.jsDate.getTime() === anotherMyTime.jsDate.getTime();
+    isBefore = (anotherMyTime) => this.jsDate < anotherMyTime.jsDate;
+    isAfter = (anotherMyTime) => this.jsDate > anotherMyTime.jsDate;
+
+    plusMilliseconds = (i) => this.jsDate.setMilliseconds(this.jsDate.getMilliseconds() + i);
+    plusSeconds = (i) => this.jsDate.setSeconds(this.jsDate.getSeconds() + i);
+    plusMinutes = (i) => this.jsDate.setMinutes(this.jsDate.getMinutes() + i);
+    plusHours = (i) => this.jsDate.setHours(this.jsDate.getHours() + i);
+    plusDays = (i) => this.jsDate.setDate(this.jsDate.getDate() + i);
+    plusMonths = (i) => this.jsDate.setMonth(this.jsDate.getMonth() + i);
+    plusYears = (i) => this.jsDate.setFullYear(this.jsDate.getFullYear() + i);
+
+    minusMilliseconds = (i) => this.jsDate.setMilliseconds(this.jsDate.getMilliseconds() - i);
+    minusSeconds = (i) => this.jsDate.setSeconds(this.jsDate.getSeconds() - i);
+    minusMinutes = (i) => this.jsDate.setMinutes(this.jsDate.getMinutes() - i);
+    minusHours = (i) => this.jsDate.setHours(this.jsDate.getHours() - i);
+    minusDays = (i) => this.jsDate.setDate(this.jsDate.getDate() - i);
+    minusMonths = (i) => this.jsDate.setMonth(this.jsDate.getMonth() - i);
+    minusYears = (i) => this.jsDate.setFullYear(this.jsDate.getFullYear() - i);
+
+    setMilliseconds = (i) => this.jsDate.setMilliseconds(i);
+    setSeconds = (i) => this.jsDate.setSeconds(i);
+    setMinutes = (i) => this.jsDate.setMinutes(i);
+    setHours = (i) => this.jsDate.setHours(i);
+    setDay = (i) => this.jsDate.setDate(i);
+    setMonth = (i) => this.jsDate.setMonth(i-1);
+    setYear = (i) => this.jsDate.setFullYear(i);
+
+    getMilliseconds = () => this.jsDate.getMilliseconds();
+    getSeconds = () => this.jsDate.getSeconds();
+    getMinutes = () => this.jsDate.getMinutes();
+    getHours = () => this.jsDate.getHours();
+    getDay = () => this.jsDate.getDate();
+    getMonth = () => this.jsDate.getMonth()+1;
+    getYear = () => this.jsDate.getFullYear();
+
+    toISO8601 = () => this.jsDate.toISOString().substr(0, 19);
+
+    setDateArray = (arr) => {
+        if (!arr || !arr.length || arr.length < 1) {
+            throw new Exception("Invalid array input.")
+        }
+        this.jsDate = new Date(...arr);
+        this.setYear(arr[0]);
+        if (arr.length > 1) {
+            this.setMonth(arr[1]);
+        }
+        DT.validateDate(this.jsDate, arr);
     }
 }
 
@@ -144,11 +357,6 @@ class UnitDate {
         }
         this.format += format;
     };
-
-    toISO8601 = (date) => {
-        const isoString = date.toISOString();
-        return isoString.substr(0, 19);
-    }
 }
 
 class UnitDateConvertor {
@@ -174,34 +382,14 @@ class UnitDateConvertor {
     static YEAR = "Y";
 
     /**
-     * Formát datumu
-     */
-    static FORMAT_DATE = "d.M.u";
-
-    /**
      * Zkratka datumu
      */
     static DATE = "D";
 
     /**
-     * Formát datumu s časem
-     */
-    static FORMAT_DATE_TIME = "d.M.u H:mm:ss";
-
-    /**
-     * Formát datumu s časem
-     */
-    static FORMAT_DATE_TIME2 = "d.M.u H:mm";
-
-    /**
      * Zkratka datumu s časem
      */
     static DATE_TIME = "DT";
-
-    /**
-     * Formát roku s měsícem
-     */
-    static FORMAT_YEAR_MONTH = "";///"M.u";
 
     /**
      * Zkratka roku s měsícem
@@ -218,330 +406,6 @@ class UnitDateConvertor {
      */
     static ESTIMATE_INTERVAL_DELIMITER = "/";
 
-    /**
-     *
-     * @param input
-     * @returns {string}
-     */
-    static FORMATTER_YEAR_MONTH = (input) => {
-        const data = input.split('.');
-        if (data.length != 2) {
-            throw new Exception('Invalid input.');
-        }
-        let month = parseInt(data[0]);
-        let year = parseInt(data[1]);
-
-        if (isNaN(month) || isNaN(year) || month > 12 || month < 1) {
-            throw new Exception('Invalid input.');
-        }
-        let sMonth = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(month));
-        let sYear = UnitDateConvertor.make4Digit(UnitDateConvertor.makeString(year));
-
-        if(isNaN(Date.parse(sYear + '-' + sMonth + '-01T00:00:00'))) {
-            throw new Exception('Invalid input.');
-        }
-
-        return month + '.' + year;
-    };
-    /**
-     *
-     * @param input
-     * @returns {Date}
-     */
-    static PARSER_YEAR_MONTH = (input) => {
-        const data = input.split('.');
-        if (data.length != 2) {
-            throw new Exception('Invalid input.');
-        }
-        let month = parseInt(data[0]);
-        let year = parseInt(data[1]);
-
-        if (isNaN(month) || isNaN(year) || month > 12 || month < 1) {
-            throw new Exception('Invalid input.');
-        }
-        let sMonth = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(month));
-        let sYear = UnitDateConvertor.make4Digit(UnitDateConvertor.makeString(year));
-
-        if(isNaN(Date.parse(sYear + '-' + sMonth + '-01T00:00:00Z'))) {
-            throw new Exception('Invalid input.');
-        }
-
-        return new Date(sYear + '-' + sMonth + '-01T00:00:00Z');
-    };
-
-    static make2Digit = (input) => UnitDateConvertor.makeXChar(input, 2, '0');
-
-    static make4Digit = (input) => UnitDateConvertor.makeXChar(input, 4, '0');
-
-    static makeXChar = (s, width, char) => (s.length >= width) ? s : (new Array(width).join(char) + s).slice(-width);
-
-    /**
-     *
-     * @param input
-     * @return {string}
-     */
-    static FORMATTER_DATE_TIME = (input) => {
-        const data = input.split(' ');
-        if (data.length != 2) {
-            throw new Exception('Invalid input.');
-        }
-
-        const date = data[0].split('.');
-        const time = data[1].split(':');
-        if (date.length != 3 || time.length != 3) {
-            throw new Exception('Invalid input.');
-        }
-
-        let day = parseInt(date[0]);
-        let month = parseInt(date[1]);
-        let year = parseInt(date[2]);
-
-        if (isNaN(day) || isNaN(month) || isNaN(year) || month > 12 || month < 1 || day > 31 || day < 1) {
-            throw new Exception('Invalid input.');
-        }
-
-        let hours = parseInt(time[0]);
-        let minutes = parseInt(time[1]);
-        let secs = parseInt(time[2]);
-
-        if (isNaN(hours) || isNaN(minutes) || isNaN(secs) || hours > 23 || hours < 0 || minutes > 59 || minutes < 0 || secs > 59 || secs < 0) {
-            throw new Exception('Invalid input.');
-        }
-
-        let sDay = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(day));
-        let sMonth = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(month));
-        let sYear = UnitDateConvertor.make4Digit(UnitDateConvertor.makeString(year));
-        let sHours = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(hours));
-        let sMinutes = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(minutes));
-        let sSecs = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(secs));
-
-        if(isNaN(Date.parse(sYear + '-' + sMonth + '-' + sDay + 'T' + sHours + ':' + sMinutes + ':' + sSecs))) {
-            throw new Exception('Invalid input.');
-        }
-
-        return day + '.' + month + '.' + year + ' ' + hours + ':' + minutes + ':' + secs;
-    };
-
-    /**
-     *
-     * @param input
-     * @return {Date}
-     */
-    static PARSER_DATE_TIME = (input) => {
-        const data = input.split(' ');
-        if (data.length != 2) {
-            throw new Exception('Invalid input.');
-        }
-
-        const date = data[0].split('.');
-        const time = data[1].split(':');
-        if (date.length != 3 || time.length != 3) {
-            throw new Exception('Invalid input.');
-        }
-
-        let day = parseInt(date[0]);
-        let month = parseInt(date[1]);
-        let year = parseInt(date[2]);
-
-        if (isNaN(day) || isNaN(month) || isNaN(year) || month > 12 || month < 1 || day > 31 || day < 1) {
-            throw new Exception('Invalid input.');
-        }
-
-        let hours = parseInt(time[0]);
-        let minutes = parseInt(time[1]);
-        let secs = parseInt(time[2]);
-
-        if (isNaN(hours) || isNaN(minutes) || isNaN(secs) || hours > 23 || hours < 0 || minutes > 59 || minutes < 0 || secs > 59 || secs < 0) {
-            throw new Exception('Invalid input.');
-        }
-
-        let sDay = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(day));
-        let sMonth = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(month));
-        let sYear = UnitDateConvertor.make4Digit(UnitDateConvertor.makeString(year));
-        let sHours = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(hours));
-        let sMinutes = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(minutes));
-        let sSecs = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(secs));
-
-        if(isNaN(Date.parse(sYear + '-' + sMonth + '-' + sDay + 'T' + sHours + ':' + sMinutes + ':' + sSecs))) {
-            throw new Exception('Invalid input.');
-        }
-
-        return new Date(sYear + '-' + sMonth + '-' + sDay + 'T' + sHours + ':' + sMinutes + ':' + sSecs + 'Z')
-    };
-
-    /**
-     *
-     * @param input
-     * @return {string}
-     */
-    static FORMATTER_DATE_TIME2 = (input) => {
-        const data = input.split(' ');
-        if (data.length != 2) {
-            throw new Exception('Invalid input.');
-        }
-
-        const date = data[0].split('.');
-        const time = data[1].split(':');
-        if (date.length != 3 || time.length != 2) {
-            throw new Exception('Invalid input.');
-        }
-
-        let day = parseInt(date[0]);
-        let month = parseInt(date[1]);
-        let year = parseInt(date[2]);
-
-        if (isNaN(day) || isNaN(month) || isNaN(year) || month > 12 || month < 1 || day > 31 || day < 1) {
-            throw new Exception('Invalid input.');
-        }
-
-        let hours = parseInt(time[0]);
-        let minutes = parseInt(time[1]);
-
-        if (isNaN(hours) || isNaN(minutes) || hours > 23 || hours < 0 || minutes > 59 || minutes < 0) {
-            throw new Exception('Invalid input.');
-        }
-
-        let sDay = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(day));
-        let sMonth = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(month));
-        let sYear = UnitDateConvertor.make4Digit(UnitDateConvertor.makeString(year));
-        let sHours = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(hours));
-        let sMinutes = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(minutes));
-
-        if(isNaN(Date.parse(sYear + '-' + sMonth + '-' + sDay + 'T' + sHours + ':' + sMinutes + ':00'))) {
-            throw new Exception('Invalid input.');
-        }
-
-        return day + '.' + month + '.' + year + ' ' + hours + ':' + minutes;
-    };
-
-    /**
-     *
-     * @param input
-     * @return {Date}
-     */
-    static PARSER_DATE_TIME2 = (input) => {
-        const data = input.split(' ');
-        if (data.length != 2) {
-            throw new Exception('Invalid input.');
-        }
-
-        const date = data[0].split('.');
-        const time = data[1].split(':');
-        if (date.length != 3 || time.length != 2) {
-            throw new Exception('Invalid input.');
-        }
-
-        let day = parseInt(date[0]);
-        let month = parseInt(date[1]);
-        let year = parseInt(date[2]);
-
-        if (isNaN(day) || isNaN(month) || isNaN(year) || month > 12 || month < 1 || day > 31 || day < 1) {
-            throw new Exception('Invalid input.');
-        }
-
-        let hours = parseInt(time[0]);
-        let minutes = parseInt(time[1]);
-
-        if (isNaN(hours) || isNaN(minutes) || hours > 23 || hours < 0 || minutes > 59 || minutes < 0) {
-            throw new Exception('Invalid input.');
-        }
-
-        let sDay = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(day));
-        let sMonth = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(month));
-        let sYear = UnitDateConvertor.make4Digit(UnitDateConvertor.makeString(year));
-        let sHours = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(hours));
-        let sMinutes = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(minutes));
-
-        if(isNaN(Date.parse(sYear + '-' + sMonth + '-' + sDay + 'T' + sHours + ':' + sMinutes + ':00'))) {
-            throw new Exception('Invalid input.');
-        }
-
-        return new Date(sYear + '-' + sMonth + '-' + sDay + 'T' + sHours + ':' + sMinutes + ':00Z');
-    };
-
-    /**
-     *
-     * @param input
-     * @return {string}
-     */
-    static FORMATTER_DATE = (input) => {
-        const date = input.split('.');
-        if (date.length != 3) {
-            throw new Exception('Invalid input.');
-        }
-
-        let day = parseInt(date[0]);
-        let month = parseInt(date[1]);
-        let year = parseInt(date[2]);
-
-        if (isNaN(day) || isNaN(month) || isNaN(year) || month > 12 || month < 1 || day > 31 || day < 1) {
-            throw new Exception('Invalid input.');
-        }
-
-        let sDay = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(day));
-        let sMonth = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(month));
-        let sYear = UnitDateConvertor.make4Digit(UnitDateConvertor.makeString(year));
-
-
-        if(isNaN(Date.parse(sYear + '-' + sMonth + '-' + sDay + 'T00:00:00'))) {
-            throw new Exception('Invalid input.');
-        }
-
-        return day + '.' + month + '.' + year;
-    };
-
-    /**
-     *
-     * @param input
-     * @return {Date}
-     */
-    static PARSER_DATE = (input) => {
-        const date = input.split('.');
-        if (date.length != 3) {
-            throw new Exception('Invalid input.');
-        }
-
-        let day = parseInt(date[0]);
-        let month = parseInt(date[1]);
-        let year = parseInt(date[2]);
-
-        if (isNaN(day) || isNaN(month) || isNaN(year) || month > 12 || month < 1 || day > 31 || day < 1) {
-            throw new Exception('Invalid input.');
-        }
-
-        let sDay = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(day));
-        let sMonth = UnitDateConvertor.make2Digit(UnitDateConvertor.makeString(month));
-        let sYear = UnitDateConvertor.make4Digit(UnitDateConvertor.makeString(year));
-
-
-        if(isNaN(Date.parse(sYear + '-' + sMonth + '-' + sDay + 'T00:00:00'))) {
-            throw new Exception('Invalid input.');
-        }
-        const ret = new Date(sYear + '-' + sMonth + '-' + sDay + 'T00:00:00Z');
-        UnitDateConvertor.validateDate(ret, [year, month, day]);
-        return ret;
-    };
-
-    static getDateArray = (i) => [i.getFullYear(), i.getMonth()+1, i.getDate(), i.getHours(), i.getMinutes(), i.getSeconds(), i.getMilliseconds()];
-
-    static validateDate = (date, arr) => {
-        const dateArr = UnitDateConvertor.getDateArray(date);
-        const assertTrue = (arg) => {
-            if (!arg) {
-                throw new Exception('Invalid input.')
-            }
-        };
-
-        arr.map((i, index) => assertTrue(i === dateArr[index]));
-    };
-
-
-    /**
-     * Provede konverzi textového vstupu a doplní intervaly do objektu.
-     *
-     * @param input    textový vstup
-     * @return doplněný objekt
-     */
     static convertToUnitDate = (input) => {
 
         let unitdate = new UnitDate();
@@ -556,16 +420,16 @@ class UnitDateConvertor {
 
                 let from = null;
                 if (unitdate.valueFrom != null) {
-                    from = LocalDateTime.parse(unitdate.valueFrom);
+                    from = unitdate.valueFrom;
                 }
 
                 let to = null;
                 if (unitdate.valueTo != null) {
-                    to = LocalDateTime.parse(unitdate.valueTo);
+                    to = unitdate.valueTo;
                 }
 
-                if (from.date != null && to.date != null && from.date > to.date) {
-                    throw new Exception("Neplatný interval ISO datumů: od > do");
+                if (from != null && to != null && from.isAfter(to)) {
+                    throw new Exception(i18n('global.validation.datation.invalidInterval'));
                 }
 
             } else {
@@ -577,22 +441,23 @@ class UnitDateConvertor {
             }
 
             if (unitdate.valueFrom != null) {
-                const valueFrom = unitdate.toISO8601(unitdate.valueFrom);
+                const valueFrom = unitdate.valueFrom.toISO8601();
                 if (valueFrom.length != 19) {
-                    throw new Exception("Neplatná délka ISO datumů");
+                    throw new Exception(i18n('global.validation.datation.invalidISODateLength'));
                 }
             }
 
             if (unitdate.valueTo != null) {
-                const valueTo = unitdate.toISO8601(unitdate.valueTo);
+                const valueTo = unitdate.valueTo.toISO8601();
                 if (valueTo.length != 19) {
-                    throw new Exception("Neplatná délka ISO datumů");
+                    throw new Exception(i18n('global.validation.datation.invalidISODateLength'));
                 }
             }
 
         } catch (e) {
             unitdate.format = '';
-            throw new Exception("Vstupní řetězec není validní. " + (e && e.message ? e.message : ""));
+            console.log(e);
+            throw new Exception(e && e.message && e.hasUserMessage ? e.message : i18n('global.validation.datation.invalid'));
         }
 
         return unitdate;
@@ -602,7 +467,7 @@ class UnitDateConvertor {
      * Normalizace závorek (na hranaté) a odstranění bílých, přebytečných znaků.
      *
      * @param input text k normalizaci
-     * @return normalizovaný text
+     * @return {string} normalizovaný text
      */
     static normalizeInput(input) {
         return input.replace("(", "[").replace(")", "]").trim();
@@ -617,25 +482,6 @@ class UnitDateConvertor {
         return UnitDateConvertor.makeString(string).length === 0;
     }
 
-    /**
-     * Převede {@link ParUnitdate} na string.
-     *
-     * @param unitdate datum
-     * @return string
-     */
-    static convertParUnitDateToString(unitdate) {
-        let textDate;
-        if (UnitDateConvertor.isEmptyString(unitdate.textDate)) {
-            try {
-                textDate = UnitDateConvertor.convertToString(unitdate);
-            } catch (e) {
-                textDate = unitdate.textDate;
-            }
-        } else {
-            textDate = unitdate.textDate;
-        }
-        return textDate;
-    }
 
     /**
      * Provede konverzi formátu do textové podoby.
@@ -658,7 +504,7 @@ class UnitDateConvertor {
      *
      * @param format   vstupní formát
      * @param unitdate doplňovaný objekt
-     * @return výsledný řetězec
+     * @return {string} výsledný řetězec
      */
     static convertInterval(format, unitdate) {
 
@@ -690,7 +536,7 @@ class UnitDateConvertor {
      * @param unitdate doplňovaný objekt
      * @param first    zda-li se jedná o první datum
      * @param allow    povolit odhad?
-     * @return výsledný řetězec
+     * @return {string} výsledný řetězec
      */
     static addEstimate(format, unitdate, first, allow) {
         if (first) {
@@ -712,7 +558,7 @@ class UnitDateConvertor {
      * @param unitdate   doplňovaný objekt
      * @param first      zda-li se jedná o první datum
      * @param allow      povolit odhad?
-     * @return výsledný řetězec
+     * @return {string} výsledný řetězec
      */
     static convertToken(format, unitdate, first, allow) {
 
@@ -756,18 +602,18 @@ class UnitDateConvertor {
      * @param format   vstupní formát
      * @param unitdate doplňovaný objekt
      * @param first    zda-li se jedná o první datum
-     * @return výsledný řetězec
+     * @return {string} výsledný řetězec
      */
     static convertDateTime(format, unitdate, first) {
         if (first) {
             if (unitdate.valueFrom != null) {
-                const date = LocalDateTime.parse(unitdate.valueFrom);
-                return format.replace(UnitDateConvertor.DATE_TIME, "" + UnitDateConvertor.FORMATTER_DATE_TIME.format(date));
+                const date = DT.parse(unitdate.valueFrom);
+                return format.replace(UnitDateConvertor.DATE_TIME, "" + date.format(DT.FORMATS.DATE_TIME));
             }
         } else {
             if (unitdate.valueTo != null) {
-                const date = LocalDateTime.parse(unitdate.valueTo);
-                return format.replace(UnitDateConvertor.DATE_TIME, "" + UnitDateConvertor.FORMATTER_DATE_TIME.format(date));
+                const date = DT.parse(unitdate.valueTo);
+                return format.replace(UnitDateConvertor.DATE_TIME, "" + date.format(DT.FORMATS.DATE_TIME));
             }
         }
         return format;
@@ -779,18 +625,18 @@ class UnitDateConvertor {
      * @param format   vstupní formát
      * @param unitdate doplňovaný objekt
      * @param first    zda-li se jedná o první datum
-     * @return výsledný řetězec
+     * @return {string} výsledný řetězec
      */
     static convertDate(format, unitdate, first) {
         if (first) {
             if (unitdate.valueFrom != null) {
-                const date = LocalDateTime.parse(unitdate.valueFrom);
-                return format.replace(UnitDateConvertor.DATE, "" + UnitDateConvertor.FORMATTER_DATE(date));
+                const date = DT.parse(unitdate.valueFrom);
+                return format.replace(UnitDateConvertor.DATE, "" + date.format(DT.FORMATS.DATE));
             }
         } else {
             if (unitdate.valueTo != null) {
-                const date = LocalDateTime.parse(unitdate.valueTo);
-                return format.replace(UnitDateConvertor.DATE, "" + UnitDateConvertor.FORMATTER_DATE(date));
+                const date = DT.parse(unitdate.valueTo);
+                return format.replace(UnitDateConvertor.DATE, "" + date.format(DT.FORMATS.DATE));
             }
         }
         return format;
@@ -802,18 +648,18 @@ class UnitDateConvertor {
      * @param format   vstupní formát
      * @param unitdate doplňovaný objekt
      * @param first    zda-li se jedná o první datum
-     * @return výsledný řetězec
+     * @return {string} výsledný řetězec
      */
     static convertYearMonth(format, unitdate, first) {
         if (first) {
             if (unitdate.valueFrom != null) {
-                const date = LocalDateTime.parse(unitdate.valueFrom);
-                return format.replace(UnitDateConvertor.YEAR_MONTH, "" + UnitDateConvertor.FORMATTER_YEAR_MONTH(date));
+                const date = DT.parse(unitdate.valueFrom);
+                return format.replace(UnitDateConvertor.YEAR_MONTH, "" + date.format(DT.FORMATS.YEAR_MONTH));
             }
         } else {
             if (unitdate.valueTo != null) {
-                const date = LocalDateTime.parse(unitdate.valueTo);
-                return format.replace(UnitDateConvertor.YEAR_MONTH, "" + UnitDateConvertor.FORMATTER_YEAR_MONTH(date));
+                const date = DT.parse(unitdate.valueTo);
+                return format.replace(UnitDateConvertor.YEAR_MONTH, "" + date.format(DT.FORMATS.YEAR_MONTH));
             }
         }
         return format;
@@ -825,18 +671,18 @@ class UnitDateConvertor {
      * @param format   vstupní formát
      * @param unitdate doplňovaný objekt
      * @param first    zda-li se jedná o první datum
-     * @return výsledný řetězec
+     * @return {string} výsledný řetězec
      */
     static convertYear(format, unitdate, first) {
         if (first) {
             if (unitdate.valueFrom != null) {
-                const date = LocalDateTime.parse(unitdate.valueFrom);
-                return format.replace(UnitDateConvertor.YEAR, "" + date.getFullYear());
+                const date = DT.parse(unitdate.valueFrom);
+                return format.replace(UnitDateConvertor.YEAR, "" + date.getYear());
             }
         } else {
             if (unitdate.valueTo != null) {
-                const date = LocalDateTime.parse(unitdate.valueTo);
-                return format.replace(UnitDateConvertor.YEAR, "" + date.getFullYear());
+                const date = DT.parse(unitdate.valueTo);
+                return format.replace(UnitDateConvertor.YEAR, "" + date.getYear());
             }
         }
         return format;
@@ -848,18 +694,18 @@ class UnitDateConvertor {
      * @param format   vstupní formát
      * @param unitdate doplňovaný objekt
      * @param first    zda-li se jedná o první datum
-     * @return výsledný řetězec
+     * @return {string} výsledný řetězec
      */
     static convertCentury(format, unitdate, first) {
         if (first) {
             if (unitdate.valueFrom != null) {
-                const date = LocalDateTime.parse(unitdate.valueFrom);
-                return format.replace(UnitDateConvertor.CENTURY, (date.getFullYear() / 100 + 1) + ". st.");
+                const date = DT.parse(unitdate.valueFrom);
+                return format.replace(UnitDateConvertor.CENTURY, (date.getYear() / 100 + 1) + ". st.");
             }
         } else {
             if (unitdate.valueTo != null) {
-                const date = LocalDateTime.parse(unitdate.valueTo);
-                return format.replace(UnitDateConvertor.CENTURY, (date.getFullYear() / 100) + ". st.");
+                const date = DT.parse(unitdate.valueTo);
+                return format.replace(UnitDateConvertor.CENTURY, (date.getYear() / 100) + ". st.");
             }
         }
         return format;
@@ -897,7 +743,6 @@ class UnitDateConvertor {
         token = UnitDateConvertor.parseToken(data[1], unitdate);
         unitdate.valueTo = token.dateTo;
         unitdate.valueToEstimated = token.estimate || estimateBoth;
-
         return unitdate;
     }
 
@@ -906,7 +751,7 @@ class UnitDateConvertor {
      *
      * @param tokenString výraz
      * @param unitdate    doplňovaný objekt
-     * @return výsledný token
+     * @return {Token} výsledný token
      */
     static parseToken(tokenString, unitdate) {
         if (UnitDateConvertor.isEmptyString(tokenString)) {
@@ -931,26 +776,23 @@ class UnitDateConvertor {
      *
      * @param expression výraz
      * @param unitdate   doplňovaný objekt
-     * @return výsledný token
+     * @return {Token} výsledný token
      */
     static parseExpression(expression, unitdate) {
-
-        // console.log('pars', expression, expression.match(UnitDateConvertor.EXP_CENTURY), expression.match(UnitDateConvertor.EXP_YEAR), UnitDateConvertor.tryParseDate(UnitDateConvertor.FORMATTER_YEAR_MONTH, expression), UnitDateConvertor.tryParseDate(UnitDateConvertor.FORMATTER_DATE_TIME, expression) || UnitDateConvertor.tryParseDate(UnitDateConvertor.FORMATTER_DATE_TIME2, expression), UnitDateConvertor.tryParseDate(UnitDateConvertor.FORMATTER_DATE, expression))
 
         if (expression.match(UnitDateConvertor.EXP_CENTURY)) {
             return UnitDateConvertor.parseCentury(expression, unitdate);
         } else if (expression.match(UnitDateConvertor.EXP_YEAR)) {
             return UnitDateConvertor.parseYear(expression, unitdate);
-        } else if (UnitDateConvertor.tryParseDate(UnitDateConvertor.FORMATTER_YEAR_MONTH, expression)) {
+        } else if (UnitDateConvertor.tryParseDate(DT.FORMATS.YEAR_MONTH, expression)) {
             return UnitDateConvertor.parseYearMonth(expression, unitdate);
-        } else if (UnitDateConvertor.tryParseDate(UnitDateConvertor.FORMATTER_DATE_TIME, expression) || UnitDateConvertor.tryParseDate(UnitDateConvertor.FORMATTER_DATE_TIME2, expression)) {
+        } else if (UnitDateConvertor.tryParseDate(DT.FORMATS.DATE_TIME, expression) || UnitDateConvertor.tryParseDate(DT.FORMATS.DATE_TIME2, expression)) {
             return UnitDateConvertor.parseDateTime(expression, unitdate);
-        } else if (UnitDateConvertor.tryParseDate(UnitDateConvertor.FORMATTER_DATE, expression)) {
+        } else if (UnitDateConvertor.tryParseDate(DT.FORMATS.DATE, expression)) {
             return UnitDateConvertor.parseDate(expression, unitdate);
         } else {
-            throw new Exception();
+            throw new Exception('Unknown format in parseException');
         }
-
     }
 
     /**
@@ -958,18 +800,18 @@ class UnitDateConvertor {
      *
      * @param yearMonthString rok s měsícem
      * @param unitdate        doplňovaný objekt
-     * @return výsledný token
+     * @return {Token} výsledný token
      */
     static parseYearMonth(yearMonthString, unitdate) {
         unitdate.formatAppend(UnitDateConvertor.YEAR_MONTH);
 
         const token = new Token();
         try {
-            let date = UnitDateConvertor.PARSER_YEAR_MONTH(yearMonthString);
+            let date = new DT(yearMonthString, DT.FORMATS.YEAR_MONTH);
             token.dateFrom = date;
-            let secDate = new Date(date);
-            secDate.setMonth(secDate.getMonth()+1);
-            secDate.setSeconds(secDate.getSeconds()-1);
+            let secDate = new DT(date);
+            secDate.plusMonths(1);
+            secDate.minusSeconds(1);
             token.dateTo = secDate;
         } catch (e) {
             console.error(e);
@@ -984,21 +826,21 @@ class UnitDateConvertor {
      *
      * @param dateString datum s časem
      * @param unitdate   doplňovaný objekt
-     * @return výsledný token
+     * @return {Token} výsledný token
      */
     static parseDateTime(dateString, unitdate) {
         unitdate.formatAppend(UnitDateConvertor.DATE_TIME);
 
         const token = new Token();
         try {
-            const date = UnitDateConvertor.PARSER_DATE_TIME(dateString);
+            const date = new DT(dateString, DT.FORMATS.DATE_TIME);
             token.dateFrom = date;
             token.dateTo = date;
         } catch (e) {
-            const date = UnitDateConvertor.PARSER_DATE_TIME2(dateString);
+            const date = new DT(dateString, DT.FORMATS.DATE_TIME2);
             token.dateFrom = date;
-            let secDate = new Date(date);
-            secDate.setSeconds(secDate.getSeconds()+59);
+            let secDate = new DT(date);
+            secDate.plusSeconds(59);
             token.dateTo = secDate;
         }
 
@@ -1010,18 +852,18 @@ class UnitDateConvertor {
      *
      * @param dateString datum
      * @param unitdate   doplňovaný objekt
-     * @return výsledný token
+     * @return {Token} výsledný token
      */
     static parseDate(dateString, unitdate) {
         unitdate.formatAppend(UnitDateConvertor.DATE);
 
         const token = new Token();
         try {
-            let date = UnitDateConvertor.PARSER_DATE(dateString);
+            let date = new DT(dateString, DT.FORMATS.DATE);
             token.dateFrom = date;
-            let secDate = new Date(date);
-            secDate.setDate(secDate.getDate() + 1);
-            secDate.setSeconds(secDate.getSeconds()-1);
+            let secDate = new DT(date);
+            secDate.plusDays(1);
+            secDate.minusSeconds(1);
             token.dateTo = secDate;
         } catch (e) {
             console.error(e);
@@ -1036,15 +878,19 @@ class UnitDateConvertor {
      *
      * @param yearString rok
      * @param unitdate   doplňovaný objekt
-     * @return výsledný token
+     * @return {Token} výsledný token
      */
     static parseYear(yearString, unitdate) {
         unitdate.formatAppend(UnitDateConvertor.YEAR);
         const token = new Token();
         try {
             const year = parseInt(yearString);
-            token.dateFrom = new Date(year, 0, 1, 0, 0);
-            token.dateTo = new Date(year, 11, 31, 23, 59, 59); // 11 z důvodu dokumentace 11 = december = 12
+            const yearDate = new DT();
+            yearDate.setDateArray([year, 1, 1, 0, 0]);
+            token.dateFrom = new DT(yearDate);
+            yearDate.plusYears(1);
+            yearDate.minusSeconds(1);
+            token.dateTo = yearDate;
         } catch (e) {
             console.error(e);
             throw e;
@@ -1057,7 +903,7 @@ class UnitDateConvertor {
      *
      * @param centuryString stolení
      * @param unitdate      doplňovaný objekt
-     * @return výsledný token
+     * @return {Token} výsledný token
      */
     static parseCentury(centuryString, unitdate) {
         unitdate.formatAppend(UnitDateConvertor.CENTURY);
@@ -1071,14 +917,15 @@ class UnitDateConvertor {
             if (matcher.length > 0) {
                 c = parseInt(matcher[0]);
             } else {
-                throw new Exception();
+                throw new Exception('Cannot parse century');
             }
-
-            token.dateFrom = new Date((c - 1) * 100 + 1, 1, 1, 0, 0);
-            token.dateTo = new Date(c * 100, 12, 31, 23, 59, 59);
+            token.dateFrom = new DT();
+            token.dateFrom.setDateArray([(c - 1) * 100 + 1, 1, 1, 0, 0]);
+            token.dateTo = new DT();
+            token.dateTo.setDateArray([c * 100, 12, 31, 23, 59, 59]);
             token.estimate = true;
 
-        } catch ( e) {
+        } catch (e) {
             console.error(e);
             throw e;
         }
@@ -1088,13 +935,13 @@ class UnitDateConvertor {
     /**
      * Testování, zda-li odpovídá řetězec formátu
      *
-     * @param formatter formát
+     * @param format formát
      * @param s         řetězec
-     * @return true - lze parsovat
+     * @return {boolean} - lze parsovat
      */
-    static tryParseDate(formatter, s) {
+    static tryParseDate(format, s) {
         try {
-            formatter(s);
+            new DT(s, format);
             return true;
         } catch (e) {
             return false;
@@ -1105,15 +952,13 @@ class UnitDateConvertor {
      * Detekce, zda-li se jedná o interval
      *
      * @param input vstupní řetězec
-     * @return true - jedná se o interval
+     * @return {boolean} - jedná se o interval
      */
     static isInterval(input) {
         return input.indexOf(UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER) !== -1 || input.indexOf(UnitDateConvertor.ESTIMATE_INTERVAL_DELIMITER) !== -1;
     }
 
 }
-
-window.q =  UnitDateConvertor;
 
 /**
  * Pomocná třída pro reprezentaci jednoho výrazu.
@@ -1124,6 +969,9 @@ class Token {
     estimate = false;
 }
 
+// window.q = DT;
+
+// console.log('1', new DT('27.2.2015', DT.FORMATS.DATE))
 
 export default connect(state => ({
     calendarTypes: state.refTables.calendarTypes

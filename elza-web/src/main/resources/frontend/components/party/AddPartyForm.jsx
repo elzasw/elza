@@ -85,7 +85,7 @@ class AddPartyForm extends AbstractReactComponent {
             errors.scope = i18n('global.validation.required');
         }
 
-        if (values.prefferedName.complements.length > 0) {
+        if (values.prefferedName.complements && values.prefferedName.complements.length > 0) {
             if (!errors.prefferedName) {
                 errors.prefferedName = {}
             }
@@ -94,7 +94,7 @@ class AddPartyForm extends AbstractReactComponent {
                 delete errors.prefferedName.complements;
             }
         }
-        errors.prefferedName && Object.keys(errors.prefferedName).length === 0 && delete errors.prefferedName;
+        errors.prefferedName !== undefined && Object.keys(errors.prefferedName).length === 0 && delete errors.prefferedName;
 
         return errors;
     };
@@ -102,10 +102,13 @@ class AddPartyForm extends AbstractReactComponent {
 
 
     static validateInline = (values) => {
-        const errors = {};
+        const errors = {prefferedName:{}};
 
-        errors.validFrom = DatationField.reduxValidate(values.validFrom);
-        errors.validTo = DatationField.reduxValidate(values.validTo);
+        errors.prefferedName.validFrom = DatationField.reduxValidate(values.prefferedName.validFrom);
+        errors.prefferedName.validTo = DatationField.reduxValidate(values.validTo);
+        if (errors.prefferedName.validFrom == null && errors.prefferedName.validTo == null) {
+            delete errors.prefferedName;
+        }
         return errors;
 
     };

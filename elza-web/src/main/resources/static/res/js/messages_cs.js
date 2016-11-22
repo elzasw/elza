@@ -58,6 +58,10 @@ var messages = {
     "search.found.more": "({0}/{1})",
 
     "global.validation.required": "Pole je povinné",
+    "global.validation.datation.invalid": "Vstupní řetězec není validní.",
+    "global.validation.datation.invalidFormat": "Neplatný formát {0}",
+    "global.validation.datation.invalidInterval": "Neplatný interval ISO datumů: od > do",
+    "global.validation.datation.invalidISODateLength": "Neplatná délka ISO datumů",
 
     "global.websocket.title": "Odpojení od severu",
     "global.websocket.message": "Vyčkejte na automatické obnovení spojení",
