@@ -186,16 +186,10 @@ const removeUndefined = (obj) => {
 
 export const normalizeNameObject = (obj) => {
     if (obj.validFrom) {
-        obj.validFrom = removeUndefined(obj.validFrom);
-        if (Object.keys(obj.validFrom).length < 2) {
-            obj.validFrom = null;
-        }
+        obj.validFrom = obj.validFrom.value !== null && obj.validFrom.value !== undefined ? obj.validFrom : null;
     }
     if (obj.validTo) {
-        obj.validTo = removeUndefined(obj.validTo);
-        if (Object.keys(obj.validTo).length < 2) {
-            obj.validTo = null;
-        }
+        obj.validTo = obj.validTo.value !== null && obj.validTo.value !== undefined ? obj.validTo : null;
     }
 
     ['mainPart','otherPart', 'degreeBefore', 'degreeAfter'].each(i => {

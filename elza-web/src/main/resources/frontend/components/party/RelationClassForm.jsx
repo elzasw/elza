@@ -58,7 +58,69 @@ class RelationClassForm extends AbstractReactComponent {
             }
         }
 
+        if (values.from.value) {
+            let datation, err;
+            try {
+                datation = DatationField.validate(values.from.value);
+            } catch (e) {
+                err = e;
+            }
+            if (!datation) {
+                errors.from = {
+                    value: err && err.message ? err.message : ' '
+                };
+            }
+        }
+        if (values.to.value) {
+            let datation, err;
+            try {
+                datation = DatationField.validate(values.to.value);
+            } catch (e) {
+                err = e;
+            }
+            if (!datation) {
+                errors.to = {
+                    value: err && err.message ? err.message : ' '
+                };
+            }
+        }
+
         return errors;
+    };
+
+
+    static validateInline = (values) => {
+        const errors = {};
+
+
+        if (values.from.value) {
+            let datation, err;
+            try {
+                datation = DatationField.validate(values.from.value);
+            } catch (e) {
+                err = e;
+            }
+            if (!datation) {
+                errors.from = {
+                    value: err && err.message ? err.message : ' '
+                };
+            }
+        }
+        if (values.to.value) {
+            let datation, err;
+            try {
+                datation = DatationField.validate(values.to.value);
+            } catch (e) {
+                err = e;
+            }
+            if (!datation) {
+                errors.to = {
+                    value: err && err.message ? err.message : ' '
+                };
+            }
+        }
+        return errors;
+
     };
 
     render() {
@@ -120,6 +182,7 @@ class RelationClassForm extends AbstractReactComponent {
 export default reduxForm({
     form: 'relationClassForm',
     fields: RelationClassForm.fields,
+    validate: RelationClassForm.validateInline
 })(RelationClassForm)
 
 

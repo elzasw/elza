@@ -10,6 +10,8 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList.jsx'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 import {submitReduxForm} from 'components/form/FormUtils.jsx'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
+
 
 const PARTY_TYPE_PERSON = 'PERSON';
 
@@ -61,7 +63,70 @@ class PartyNameForm extends AbstractReactComponent {
         if (errors.partyNameComplements.filter(i => Object.keys(i).length !== 0).length === 0) {
             delete errors.partyNameComplements;
         }
+        if (values.validFrom.value) {
+            let datation, err;
+            try {
+                datation = DatationField.validate(values.validFrom.value);
+            } catch (e) {
+                err = e;
+            }
+            if (!datation) {
+                errors.validFrom = {
+                    value: err && err.message ? err.message : ' '
+                };
+            }
+        }
+        if (values.validTo.value) {
+            let datation, err;
+            try {
+                datation = DatationField.validate(values.validTo.value);
+            } catch (e) {
+                err = e;
+            }
+            if (!datation) {
+                errors.validTo = {
+                    value: err && err.message ? err.message : ' '
+                };
+            }
+        }
+
         return errors;
+    };
+
+
+
+    static validateInline = (values) => {
+        const errors = {};
+
+
+        if (values.validFrom.value) {
+            let datation, err;
+            try {
+                datation = DatationField.validate(values.validFrom.value);
+            } catch (e) {
+                err = e;
+            }
+            if (!datation) {
+                errors.validFrom = {
+                    value: err && err.message ? err.message : ' '
+                };
+            }
+        }
+        if (values.validTo.value) {
+            let datation, err;
+            try {
+                datation = DatationField.validate(values.validTo.value);
+            } catch (e) {
+                err = e;
+            }
+            if (!datation) {
+                errors.validTo = {
+                    value: err && err.message ? err.message : ' '
+                };
+            }
+        }
+        return errors;
+
     };
 
     static PropTypes = {
@@ -82,13 +147,17 @@ class PartyNameForm extends AbstractReactComponent {
     }
 
     dataRefresh = (props = this.props) => {
-        const {refTables:{partyNameFormTypes}, partyTypeId} = props;
+        const {refTables:{partyNameFormTypes, calendarTypes}, partyTypeId} = props;
         this.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
         this.dispatch(refPartyTypesFetchIfNeeded());        // načtení seznamu typů jmen
         this.dispatch(getRegistryRecordTypesIfNeeded(partyTypeId));
+        this.dispatch(calendarTypesFetchIfNeeded());
+
 
         partyNameFormTypes.fetched &&
         !partyNameFormTypes.isFetching &&
+        calendarTypes.fetched &&
+        !calendarTypes.isFetching &&
         this.loadData(props);
     };
 
@@ -96,8 +165,9 @@ class PartyNameForm extends AbstractReactComponent {
      * Pokud nejsou nastaveny hodnoty - nastavíme hodnotu do pole nameFormTypeId a scopeId
      */
     loadData(props) {
-        const {refTables: {partyNameFormTypes}, partyType, initData} = props;
+        const {refTables: {partyNameFormTypes, calendarTypes}, partyType, initData} = props;
         const nameFormTypeId = partyNameFormTypes.items[0].id;
+        const firstCalId = calendarTypes.items[0].id;
         if (!this.state.initialized) {
             this.setState({initialized: true, complementsTypes: partyType.complementTypes}, () => {
                 let newLoad = null;
@@ -106,7 +176,7 @@ class PartyNameForm extends AbstractReactComponent {
                         ...initData
                     }
                 } else {
-                    newLoad = {nameFormType:{id: nameFormTypeId}}
+                    newLoad = {nameFormType:{id: nameFormTypeId}, validFrom:{calendarTypeId:firstCalId}, validTo:{calendarTypeId:firstCalId}}
                 }
                 this.props.load(newLoad);
             });
@@ -215,6 +285,7 @@ class PartyNameForm extends AbstractReactComponent {
 export default reduxForm({
         form: 'partyNameForm',
         fields: PartyNameForm.fields,
+        validate: PartyNameForm.validateInline
     }, state => ({
         initialValues: state.form.partyNameForm.initialValues,
         refTables: state.refTables,

@@ -54,7 +54,69 @@ class RelationForm extends AbstractReactComponent {
             }
         }
 
+
+        if (values.from.value) {
+            let datation, err;
+            try {
+                datation = DatationField.validate(values.from.value);
+            } catch (e) {
+                err = e;
+            }
+            if (!datation) {
+                errors.from = {
+                    value: err && err.message ? err.message : ' '
+                };
+            }
+        }
+        if (values.to.value) {
+            let datation, err;
+            try {
+                datation = DatationField.validate(values.to.value);
+            } catch (e) {
+                err = e;
+            }
+            if (!datation) {
+                errors.to = {
+                    value: err && err.message ? err.message : ' '
+                };
+            }
+        }
+
         return errors;
+    };
+
+    static validateInline = (values) => {
+        const errors = {};
+
+
+        if (values.from.value) {
+            let datation, err;
+            try {
+                datation = DatationField.validate(values.from.value);
+            } catch (e) {
+                err = e;
+            }
+            if (!datation) {
+                errors.from = {
+                    value: err && err.message ? err.message : ' '
+                };
+            }
+        }
+        if (values.to.value) {
+            let datation, err;
+            try {
+                datation = DatationField.validate(values.to.value);
+            } catch (e) {
+                err = e;
+            }
+            if (!datation) {
+                errors.to = {
+                    value: err && err.message ? err.message : ' '
+                };
+            }
+        }
+        return errors;
+
     };
 
     render() {
@@ -112,4 +174,5 @@ class RelationForm extends AbstractReactComponent {
 export default reduxForm({
     form: 'relationForm',
     fields: RelationForm.fields,
+    validate: RelationForm.validateInline
 })(RelationForm)
