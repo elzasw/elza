@@ -71,6 +71,14 @@ class RelationClassForm extends AbstractReactComponent {
 
         errors.from = DatationField.reduxValidate(values.from);
         errors.to = DatationField.reduxValidate(values.to);
+
+        if (!errors.from) {
+            delete errors.from
+        }
+        if (!errors.to) {
+            delete errors.to
+        }
+
         return errors;
 
     };
