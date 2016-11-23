@@ -19,7 +19,7 @@ class Login extends AbstractReactComponent {
     defaultState = {
         username: '',
         password: '',
-        //...defaultLogin, // TODO: Smazat až bude potřeba
+        ...defaultLogin, // TODO: Smazat až bude potřeba
         error: null
     };
 
