@@ -29,6 +29,7 @@
             <action-item-type item-type="ZP2015_ARRANGE_RULES" />
             <action-item-type item-type="ZP2015_SIGNATURE_DATE" />
             <action-item-type item-type="ZP2015_DATE_RANGE" />
+            <action-item-type item-type="ZP2015_ARRANGER" />
             <action-item-type item-type="ZP2015_ORIGINATOR" />
             <action-item-type item-type="ZP2015_LANGUAGE" />
         </action-item-types>
@@ -48,8 +49,10 @@
             <action-item-type item-type="ZP2015_ARRANGE_RULES" />
             <action-item-type item-type="ZP2015_SIGNATURE_DATE" />
             <action-item-type item-type="ZP2015_DATE_RANGE" />
+            <action-item-type item-type="ZP2015_ARRANGER" />
             <action-item-type item-type="ZP2015_ORIGINATOR" />
             <action-item-type item-type="ZP2015_LANGUAGE" />
+            <action-item-type item-type="ZP2015_UNIT_COUNT_SUM" />
         </action-item-types>
         <action-recommendeds>
             <action-recommended output-type="ZP2015_INVENTAR" />

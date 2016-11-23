@@ -178,7 +178,7 @@ when
 	$activeLevel : ActiveLevel( parent!=null  )
 	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
 	$level : Level( this!=$activeLevel )
-	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode=="ZP2015_FOLDER_SINGLE_TYPE" || specCode=="ZP2015_FOLDER_UNITS" ) ) from $level.descItems
+	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_SINGLE_TYPE", "ZP2015_FOLDER_UNITS") ) ) from $level.descItems
 	$itemType : RulItemTypeExt(code == "ZP2015_FOLDER_TYPE")
 	$itemSpec : RulItemSpecExt(code == "ZP2015_FOLDER_LOGICAL" ) from $itemType.rulItemSpecList
 then
@@ -197,6 +197,12 @@ when
 	     DescItem(type=="ZP2015_FOLDER_TYPE" && specCode!="ZP2015_FOLDER_LOGICAL" ) from $level.descItems )
 	$itemType : RulItemTypeExt(code == "ZP2015_FOLDER_TYPE")
 	$itemSpec : RulItemSpecExt(code != "ZP2015_FOLDER_LOGICAL" ) from $itemType.rulItemSpecList
+	// v katalogu nelze zadat slozku s vice stejnymi EJ
+	// TODO: prepsat podminku pozitivne 
+	not ( 
+		DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode=="ZP2015_ARRANGEMENT_KAT") from $activeLevel.descItems and
+		RulItemSpecExt($itemSpec==this && code == "ZP2015_FOLDER_SINGLE_TYPE" ) from $itemType.rulItemSpecList
+		)
 then
 	$itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
@@ -319,12 +325,44 @@ rule "Druh archiválie - lze vybrat libovolný typ"
 no-loop
 when
 	$activeLevel: ActiveLevel( )
-	$descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
+	$descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
 	$itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
 	$itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
 then
 	$itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
+
+// U logické složky man. seznamu lze vybrat libovolny typ jendotlivosti
+rule "Druh archiválie - slozka jina nez INV a KAT"
+no-loop
+when
+	$activeLevel: ActiveLevel( )
+	$descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode not in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
+	$itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+// 3.4.2 Inventar
+// U logické složky inventare nesmi byt uvedene typy
+rule "Druh archiválie - slozka v INV"
+no-loop
+when
+	$activeLevel: ActiveLevel( )
+	$descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode == "ZP2015_ARRANGEMENT_INV" ) from $activeLevel.descItems
+	$itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
+	$itemSpec : RulItemSpecExt(code not in ("ZP2015_UNIT_TYPE_LIO", "ZP2015_UNIT_TYPE_LIP", "ZP2015_UNIT_TYPE_UKN",
+	   "ZP2015_UNIT_TYPE_PPR", "ZP2015_UNIT_TYPE_IND", "ZP2015_UNIT_TYP_ELE", "ZP2015_UNIT_TYPE_REP", "ZP2015_UNIT_TYPE_KTT",
+	   "ZP2015_UNIT_TYPE_PEC", "ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL", "ZP2015_UNIT_TYPE_FAL",
+	   "ZP2015_UNIT_TYPE_TIO") ) from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+// Poznamka 3.4.3 Katalog - nelze evidovat jednotlivosti u slozky
 
 // Obsah/Regest
 rule "Obsah/regest - doporučený pro složku a níže"
