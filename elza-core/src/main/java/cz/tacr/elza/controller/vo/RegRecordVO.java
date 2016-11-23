@@ -39,7 +39,7 @@ public class RegRecordVO extends AbstractRegRecord {
     /**
      * Externí zdroj hesel.
      */
-    private RegExternalSourceVO externalSource;
+    private RegExternalSystemVO externalSystem;
 
     /**
      * Rejstříkové heslo.
@@ -124,12 +124,12 @@ public class RegRecordVO extends AbstractRegRecord {
         this.parentRecordId = parentRecordId;
     }
 
-    public RegExternalSourceVO getExternalSource() {
-        return externalSource;
+    public RegExternalSystemVO getExternalSystem() {
+        return externalSystem;
     }
 
-    public void setExternalSource(final RegExternalSourceVO externalSource) {
-        this.externalSource = externalSource;
+    public void setExternalSystem(final RegExternalSystemVO externalSystem) {
+        this.externalSystem = externalSystem;
     }
 
     public String getRecord() {

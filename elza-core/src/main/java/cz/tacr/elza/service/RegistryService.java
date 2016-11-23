@@ -35,7 +35,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegCoordinates;
-import cz.tacr.elza.domain.RegExternalSource;
+import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
@@ -43,12 +43,12 @@ import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RegCoordinatesRepository;
+import cz.tacr.elza.repository.RegExternalSystemRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
@@ -78,7 +78,7 @@ public class RegistryService {
     private RegisterTypeRepository registerTypeRepository;
 
     @Autowired
-    private ExternalSourceRepository externalSourceRepository;
+    private RegExternalSystemRepository regExternalSystemRepository;
 
     @Autowired
     private PartyService partyService;
@@ -236,13 +236,13 @@ public class RegistryService {
         RegScope scope = scopeRepository.findOne(record.getScope().getScopeId());
         record.setScope(scope);
 
-        RegExternalSource externalSource = record.getExternalSource();
-        if (externalSource != null) {
-            Integer externalSourceId = externalSource.getExternalSourceId();
-            Assert.notNull(externalSourceId, "ExternalSource nemá vyplněné ID.");
-            externalSource = externalSourceRepository.findOne(externalSourceId);
-            Assert.notNull(externalSource, "ExternalSource nebylo nalezeno podle id " + externalSourceId);
-            record.setExternalSource(externalSource);
+        RegExternalSystem externalSystem = record.getExternalSystem();
+        if (externalSystem != null) {
+            Integer externalSystemId = externalSystem.getExternalSystemId();
+            Assert.notNull(externalSystemId, "RegExternalSystem nemá vyplněné ID.");
+            externalSystem = regExternalSystemRepository.findOne(externalSystemId);
+            Assert.notNull(externalSystem, "RegExternalSystem nebylo nalezeno podle id " + externalSystemId);
+            record.setExternalSystem(externalSystem);
         }
 
         RegRecord parentRecord = null;
@@ -412,8 +412,8 @@ public class RegistryService {
                             "Nelze editovat externí id rejstříkového hesla napojeného na osobu.");
                     ElzaTools.checkEquals(record.getRecord(), dbRecord.getRecord(),
                             "Nelze editovat hodnotu rejstříkového hesla napojeného na osobu.");
-                    ElzaTools.checkEquals(record.getExternalSource(), record.getExternalSource(),
-                            "Nelze editovat externí zdroj rejstříkového hesla, které je napojené na osobu.");
+                    ElzaTools.checkEquals(record.getExternalSystem(), dbRecord.getExternalSystem(),
+                            "Nelze editovat externí systém rejstříkového hesla, které je napojené na osobu.");
                 }
 
             }
@@ -815,7 +815,7 @@ public class RegistryService {
      * @param coordinatesId coordinate Id
      * @return coordinate
      */
-    public RegCoordinates getRegCoordinate(Integer coordinatesId) {
+    public RegCoordinates getRegCoordinate(final Integer coordinatesId) {
         RegCoordinates coordinates = regCoordinatesRepository.getOneCheckExist(coordinatesId);
         beanFactory.getBean(RegistryService.class).getRecord(coordinates.getRegRecord().getRecordId());
         return coordinates;
@@ -839,7 +839,7 @@ public class RegistryService {
      * @param variantRecordId variant record id
      * @return variant record
      */
-    public RegVariantRecord getVariantRecord(Integer variantRecordId) {
+    public RegVariantRecord getVariantRecord(final Integer variantRecordId) {
         RegVariantRecord variantRecord = variantRecordRepository.getOneCheckExist(variantRecordId);
         beanFactory.getBean(RegistryService.class).getRecord(variantRecord.getRegRecord().getRecordId());
         return variantRecord;

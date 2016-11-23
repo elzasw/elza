@@ -238,7 +238,7 @@
     </xs:sequence>
     <xs:attribute name="record-id" type="xs:string" use="required"/>
     <xs:attribute name="register-type-code" type="xs:string" use="required"/>
-    <xs:attribute name="external-source-code" type="xs:string"/>
+    <xs:attribute name="external-system-code" type="xs:string"/>
     <xs:attribute name="external-id" type="xs:string" use="required"/>
     <xs:attribute name="local" type="xs:boolean" use="required"/>
     <xs:attribute name="uuid" type="xs:string"/>
@@ -441,8 +441,8 @@
 
   <xs:simpleType name="packet-type">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="CLOSED"/>
       <xs:enumeration value="OPEN"/>
+      <xs:enumeration value="CLOSED"/>
       <xs:enumeration value="CANCELED"/>
     </xs:restriction>
   </xs:simpleType>

@@ -37,7 +37,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RegRecord extends AbstractVersionableEntity
-        implements cz.tacr.elza.api.RegRecord<RegRegisterType, RegExternalSource, RegVariantRecord, RegRecord,
+        implements cz.tacr.elza.api.RegRecord<RegRegisterType, RegExternalSystem, RegVariantRecord, RegRecord,
         RegScope> {
 
     @Id
@@ -57,10 +57,10 @@ public class RegRecord extends AbstractVersionableEntity
     private RegRecord parentRecord;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegExternalSource.class)
-    @JoinColumn(name = "externalSourceId")
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegExternalSystem.class)
+    @JoinColumn(name = "externalSystemId")
     @JsonIgnore
-    private RegExternalSource externalSource;
+    private RegExternalSystem externalSystem;
 
     @RestResource(exported = false)
     @OneToMany(mappedBy = "regRecord")
@@ -144,13 +144,13 @@ public class RegRecord extends AbstractVersionableEntity
     }
 
     @Override
-    public RegExternalSource getExternalSource() {
-        return externalSource;
+    public RegExternalSystem getExternalSystem() {
+        return externalSystem;
     }
 
     @Override
-    public void setExternalSource(final RegExternalSource externalSource) {
-        this.externalSource = externalSource;
+    public void setExternalSystem(final RegExternalSystem externalSystem) {
+        this.externalSystem = externalSystem;
     }
 
     @Override

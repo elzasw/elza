@@ -6,8 +6,8 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -75,7 +75,7 @@ import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegExternalSource;
+import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
@@ -95,7 +95,6 @@ import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
@@ -110,6 +109,7 @@ import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RegExternalSystemRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
@@ -184,7 +184,7 @@ public class XmlImportService {
     private RegistryService registryServiceService;
 
     @Autowired
-    private ExternalSourceRepository externalSourceRepository;
+    private RegExternalSystemRepository regExternalSystemRepository;
 
     @Autowired
     private RegRecordRepository recordRepository;
@@ -1294,20 +1294,20 @@ public class XmlImportService {
             final Map<String, RegRecord> xmlIdIntIdRecordMap, final RegScope regScope) throws RecordImportException, InvalidDataException {
         String uuid = record.getUuid();
         String externalId = record.getExternalId();
-        String externalSourceCode = record.getExternalSourceCode();
+        String externalSystemCode = record.getExternalSystemCode();
         RegRecord regRecord = null;
         boolean isNew = false;
         boolean update = false;
 
         if (!record.isLocal()) {
-            regRecord = findExistingRecord(record.getRecordId(), uuid, externalId, externalSourceCode);
+            regRecord = findExistingRecord(record.getRecordId(), uuid, externalId, externalSystemCode);
         }
 
-        if (regRecord == null) { // je lokální nebo se páruje podle uuid nebo externalId a externalSourceCode a nenajde se
+        if (regRecord == null) { // je lokální nebo se páruje podle uuid nebo externalId a externalSystemCode a nenajde se
             if (stopOnError) {
                 checkRequiredAttributes(record);
             }
-            regRecord = createRecord(externalId, externalSourceCode, regScope, stopOnError, uuid);
+            regRecord = createRecord(externalId, externalSystemCode, regScope, stopOnError, uuid);
             isNew = true;
             update = true;
         } else {
@@ -1363,12 +1363,12 @@ public class XmlImportService {
         return isRecordInXmlNewer;
     }
 
-    private RegRecord findExistingRecord(final String recordId, final String uuid, final String externalId, final String externalSourceCode)
+    private RegRecord findExistingRecord(final String recordId, final String uuid, final String externalId, final String externalSystemCode)
         throws RecordImportException {
         if (uuid != null) {
             return recordRepository.findRegRecordByUuid(uuid);
-        } else if (externalId != null && externalSourceCode != null) {
-            return recordRepository.findRegRecordByExternalIdAndExternalSourceCode(externalId, externalSourceCode);
+        } else if (externalId != null && externalSystemCode != null) {
+            return recordRepository.findRegRecordByExternalIdAndExternalSystemCode(externalId, externalSystemCode);
         } else {
             throw new RecordImportException("Globální rejstřík s identifikátorem " + recordId
                     + " nemá vyplněné uuid nebo externí id a typ zdroje.");
@@ -1430,13 +1430,13 @@ public class XmlImportService {
         regRecord.setRegisterType(regType);
     }
 
-    private RegRecord createRecord(final String externalId, final String externalSourceCode, final RegScope regScope,
+    private RegRecord createRecord(final String externalId, final String externalSystemCode, final RegScope regScope,
             final boolean stopOnError, final String uuid) throws InvalidDataException {
         RegRecord regRecord = new RegRecord();
         regRecord.setExternalId(XmlImportUtils.trimStringValue(externalId, StringLength.LENGTH_250, stopOnError));
         regRecord.setScope(regScope);
-        RegExternalSource externalSource = externalSourceRepository.findExternalSourceByCode(externalSourceCode);
-        regRecord.setExternalSource(externalSource);
+        RegExternalSystem externalSystem = regExternalSystemRepository.findExternalSystemByCode(externalSystemCode);
+        regRecord.setExternalSystem(externalSystem);
         regRecord.setUuid(uuid);
 
         return regRecord;
