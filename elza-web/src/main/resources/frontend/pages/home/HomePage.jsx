@@ -144,14 +144,14 @@ const HomePage = class HomePage extends AbstractReactComponent {
 
     renderHistory() {
         const {stateRegion} = this.props;
-        const partyItems = stateRegion.partyDetailFront.map((x, index) => {
+        var partyItems = stateRegion.partyDetailFront.map((x, index) => {
             if (x.data) {
                 const name = x.data.name;
                 const desc = x.data.partyType.name;
                 return this.renderHistoryItem(name, desc, 'PARTY_REGION', {partyDetail:x}, index)
             }
         });
-        const registryItems = stateRegion.registryRegionFront.map((x, index) => {
+        var registryItems = stateRegion.registryRegionFront.map((x, index) => {
             if (x.registryRegionData._info) {
                 const name = x.registryRegionData._info.name;
                 const desc = x.registryRegionData._info.desc;
