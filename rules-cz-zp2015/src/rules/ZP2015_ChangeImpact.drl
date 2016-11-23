@@ -14,9 +14,9 @@ then
 end
 
 // ZP2015_STORAGE_ID - každá větev musí mít alespoň jeden obal
-rule "Dopad na všechny potomky při změně: ZP2015_LEVEL_TYPE, ZP2015_FOLDER_TYPE, ZP2015_STORAGE_ID"
+rule "Dopad na všechny potomky při změně: ZP2015_ARRANGEMENT_TYPE, ZP2015_LEVEL_TYPE, ZP2015_FOLDER_TYPE, ZP2015_STORAGE_ID"
 when
-    DescItem(type == "ZP2015_LEVEL_TYPE" || type=="ZP2015_FOLDER_TYPE" || type=="ZP2015_STORAGE_ID" )
+    DescItem(type in ("ZP2015_ARRANGEMENT_TYPE", "ZP2015_LEVEL_TYPE", "ZP2015_FOLDER_TYPE", "ZP2015_STORAGE_ID" ))
 	NodeTypeOperation(this==NodeTypeOperation.SAVE_DESC_ITEM)
 then
 	results.add(RelatedNodeDirection.DESCENDANTS);
