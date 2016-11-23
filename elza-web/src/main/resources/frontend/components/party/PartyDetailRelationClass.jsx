@@ -43,6 +43,7 @@ class PartyDetailRelations extends AbstractReactComponent {
     state = {};
 
     static PropTypes = {
+        canEdit: React.PropTypes.bool.isRequired,
         label: React.PropTypes.element.isRequired,
         party: React.PropTypes.object.isRequired,
         partyType: React.PropTypes.object.isRequired,
@@ -103,14 +104,14 @@ class PartyDetailRelations extends AbstractReactComponent {
     handleRelationAdd = () => {
         const {label, party} = this.props;
         const {allowedRelationTypes} = this.state;
-        this.dispatch(modalDialogShow(this, label, <RelationClassForm partyId={party.id} relationTypes={allowedRelationTypes} onSubmitForm={this.addIdentifier} />));
+        this.dispatch(modalDialogShow(this, label, <RelationClassForm partyId={party.id} relationTypes={allowedRelationTypes} onSubmitForm={this.addIdentifier} />, "dialog-lg"));
     };
 
     handleRelationUpdate = (relation) => {
         const {label, party} = this.props;
         const {allowedRelationTypesMap} = this.state;
         const relationType = allowedRelationTypesMap[relation.relationTypeId];
-        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} relationType={relationType} initialValues={relation} onSubmitForm={this.update.bind(this, relation)} />));
+        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} relationType={relationType} initialValues={relation} onSubmitForm={this.update.bind(this, relation)} />, "dialog-lg"));
     };
 
     handleRelationDelete = (id) => {
@@ -141,17 +142,17 @@ class PartyDetailRelations extends AbstractReactComponent {
                 {addButton}
             </div>
             {relations.map((relation, index) => <div key={relation.id} className="value-group relation-group">
-                <FormControl.Static componentClass="div">
-                    {(allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.INTERVAL || allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from && <div>
-                        <FormControl.Static>{relationClassType.code !== RELATION_CLASS_RELATION_CODE && allowedRelationTypesMap[relation.relationTypeId].name + ": "}{relation.from.textDate}</FormControl.Static>
+                <div className="value">
+                    {(allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.INTERVAL || allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from &&  relation.from.value && <div>
+                        <div>{relationClassType.code !== RELATION_CLASS_RELATION_CODE && allowedRelationTypesMap[relation.relationTypeId].name + ": "}{relation.from.value}</div>
                         <div>{relation.dateNote}</div>
                     </div>}
-                    {allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.INTERVAL && relation.to && <FormControl.Static>{relation.to.textDate}</FormControl.Static>}
-                    {relation.relationEntities && relation.relationEntities.map(entity => <div>
+                    {allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.INTERVAL && relation.to && relation.to.value && <div>{relation.to.value}</div>}
+                    {relation.relationEntities && relation.relationEntities.map(entity => <div key={entity.id}>
                         <label>{entity.roleType.name}:</label> {entity.record.record}<small>{entity.record.note}</small>
                     </div>)}
-                    <FormControl.Static>{relation.note}</FormControl.Static>
-                </FormControl.Static>
+                    {relation.note && <div>{relation.note}</div>}
+                </div>
                 <div className="actions">
                     <NoFocusButton onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></NoFocusButton>
                     <NoFocusButton onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-times" /></NoFocusButton>

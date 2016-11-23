@@ -1,17 +1,23 @@
 package cz.tacr.elza.service;
 
+import com.google.common.collect.Sets;
 import cz.tacr.elza.api.ArrBulkActionRun;
 import cz.tacr.elza.api.UsrPermission;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.vo.TitleValue;
+import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
@@ -19,6 +25,7 @@ import cz.tacr.elza.service.vo.ChangesResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -33,20 +40,22 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro práci s obnovou změn v archivní souboru - "UNDO".
- *
- * TODO: invalidace výstupů, funkcí, ... na klientu
  *
  * @author Martin Šlapa
  * @since 03.11.2016
@@ -73,6 +82,18 @@ public class RevertingChangesService {
 
     @Autowired
     private IEventNotificationService eventNotificationService;
+
+    @Autowired
+    private ConfigView configView;
+
+    @Autowired
+    private ItemTypeRepository itemTypeRepository;
+
+    @Autowired
+    private DescriptionItemService descriptionItemService;
+
+    @Value("${elza.treenode.defaultTitle}")
+    private String defaultNodeTitle = "";
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -267,7 +288,8 @@ public class RevertingChangesService {
         deleteNotUseNodesQuery.executeUpdate();
 
         if (node == null) {
-            // TODO: dopsat aktualizaci celého stromu AS
+            Set<Integer> fundVersionIds = fund.getVersions().stream().map(ArrFundVersion::getFundVersionId).collect(Collectors.toSet());
+            eventNotificationService.publishEvent(new EventFunds(EventType.FUND_INVALID, Collections.singleton(fundId), fundVersionIds));
         } else {
             if (openFundVersion != null) {
                 eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, openFundVersion.getFundVersionId(), node.getNodeId()));
@@ -667,13 +689,14 @@ public class RevertingChangesService {
 
         List<Change> changes = new ArrayList<>(sqlResult.size());
 
-        Set<Integer> nodeIds = new HashSet<>();
+        HashMap<Integer, Integer> changeIdNodeIdMap = new HashMap<>();
+
         Set<Integer> userIds = new HashSet<>();
 
         for (ChangeResult changeResult : sqlResult) {
             Integer primaryNodeId = changeResult.getPrimaryNodeId();
             if (primaryNodeId != null) {
-                nodeIds.add(primaryNodeId);
+                changeIdNodeIdMap.put(changeResult.changeId, changeResult.primaryNodeId);
             }
             Integer userId = changeResult.getUserId();
             if (userId != null) {
@@ -681,13 +704,26 @@ public class RevertingChangesService {
             }
         }
 
-        Map<Integer, UsrUser> users = userService.findUserMap(userIds);
-        List<TreeNodeClient> nodesByIds = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId());
+        ConfigView.ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSet().getCode(), fundVersion.getFund().getFundId());
+        Set<String> descItemTypeCodes = new LinkedHashSet<>(viewTitles.getTreeItem());
 
-        Map<Integer, TreeNodeClient> nodeMap = new HashMap<>();
-        for (TreeNodeClient nodesById : nodesByIds) {
-            nodeMap.put(nodesById.getId(), nodesById);
+        Set<RulItemType> descItemTypes = new HashSet<>();
+        if (!descItemTypeCodes.isEmpty()) {
+            descItemTypes = itemTypeRepository.findByCode(descItemTypeCodes);
+            if (descItemTypes.size() != descItemTypeCodes.size()) {
+                List<String> foundCodes = descItemTypes.stream().map(RulItemType::getCode).collect(Collectors.toList());
+                Collection<String> missingCodes = new HashSet<>(descItemTypeCodes);
+                missingCodes.removeAll(foundCodes);
+
+                logger.warn("Nepodařilo se nalézt typy atributů s kódy " + org.apache.commons.lang.StringUtils.join(missingCodes, ", ") + ". Změňte kódy v"
+                        + " konfiguraci.");
+            }
+
         }
+
+        HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap = createNodeLabels(changeIdNodeIdMap, descItemTypes);
+
+        Map<Integer, UsrUser> users = userService.findUserMap(userIds);
 
         for (ChangeResult changeResult : sqlResult) {
             Change change = new Change();
@@ -727,24 +763,7 @@ public class RevertingChangesService {
 
             change.setRevert(canRevert && canRevertByUser);
 
-            String description;
-            if (changeResult.primaryNodeId != null && nodeMap.get(changeResult.primaryNodeId) != null) {
-                TreeNodeClient treeNodeClient = nodeMap.get(changeResult.primaryNodeId);
-                description = treeNodeClient.getName();
-            } else {
-
-                if (change.getType() == null) {
-                    // TODO: dopsat popis
-                    description = StringUtils.isEmpty(changeResult.type) ? "neznámý typ" : ArrChange.Type.valueOf(changeResult.type).getDescription();
-                    description += ", primaryNodeId: " + (changeResult.primaryNodeId == null ? "?" : changeResult.primaryNodeId);
-                    description += ", changeId: " + changeResult.changeId;
-                    description += ", changeDate: " + changeResult.changeDate;
-
-                } else {
-                    description = createDescriptionNode(changeResult, change);
-                }
-            }
-
+            String description = createDescriptionNode(changeResult, change, changeNodeMap);
             change.setDescription(description);
             changes.add(change);
         }
@@ -752,13 +771,47 @@ public class RevertingChangesService {
     }
 
     /**
+     * Vytvoření mapy popisků JP podle identifikátoru změny/JP.
+     *
+     * @param changeIdNodeIdMap mapa změny/JP
+     * @param itemTypes         seznam typů atributů
+     * @return mapa popisků
+     */
+    private HashMap<Map.Entry<Integer, Integer>, String> createNodeLabels(final HashMap<Integer, Integer> changeIdNodeIdMap,
+                                                                          final Set<RulItemType> itemTypes) {
+        HashMap<Map.Entry<Integer, Integer>, String> result = new HashMap<>();
+
+        for (Map.Entry<Integer, Integer> entry : changeIdNodeIdMap.entrySet()) {
+            Map<Integer, Map<String, TitleValues>> nodeValuesMap = descriptionItemService.createNodeValuesMap(Sets.newHashSet(entry.getValue()), itemTypes, entry.getKey());
+            Map<String, TitleValues> valuesMap = nodeValuesMap.get(entry.getValue());
+            if (valuesMap != null) {
+                List<String> titles = new ArrayList<>();
+                for (RulItemType itemType : itemTypes) {
+                    TitleValues titleValues = valuesMap.get(itemType.getCode());
+                    if (titleValues != null) {
+                        for (TitleValue titleValue : titleValues.getValues()) {
+                            titles.add(titleValue.getValue());
+                        }
+                    }
+                }
+                result.put(entry, String.join(" ", titles));
+            } else {
+                result.put(entry, defaultNodeTitle);
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Sestaví popis změny/JP.
      *
      * @param changeResult změna z DB
      * @param change       změna pro klienta
+     * @param changeNodeMap mapa popisků JP podle identifikátorů change a JP
      * @return výsledný popis změny
      */
-    private String createDescriptionNode(final ChangeResult changeResult, final Change change) {
+    private String createDescriptionNode(final ChangeResult changeResult, final Change change, final HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap) {
         String description;
         switch (change.getType()) {
 
@@ -798,10 +851,15 @@ public class RevertingChangesService {
             }
 
             default: {
-                description = StringUtils.isEmpty(changeResult.type) ? "neznámý typ" : ArrChange.Type.valueOf(changeResult.type).getDescription();
-                description += ", primaryNodeId: " + (changeResult.primaryNodeId == null ? "?" : changeResult.primaryNodeId);
-                description += ", changeId: " + changeResult.changeId;
-                description += ", changeDate: " + changeResult.changeDate;
+                String label = changeNodeMap.get(new AbstractMap.SimpleImmutableEntry<>(changeResult.changeId, changeResult.primaryNodeId));
+                if (label == null) {
+                    description = StringUtils.isEmpty(changeResult.type) ? "neznámý typ" : ArrChange.Type.valueOf(changeResult.type).getDescription();
+                    description += ", primaryNodeId: " + (changeResult.primaryNodeId == null ? "?" : changeResult.primaryNodeId);
+                    description += ", changeId: " + changeResult.changeId;
+                    description += ", changeDate: " + changeResult.changeDate;
+                } else {
+                    description = label;
+                }
             }
 
         }

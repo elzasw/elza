@@ -8,8 +8,11 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 
 /**
@@ -30,6 +33,9 @@ public class ParPartyNameFormType implements cz.tacr.elza.api.ParPartyNameFormTy
     @Column(length = 250)
     private String name;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
 
     @Override
     public Integer getNameFormTypeId() {
@@ -59,6 +65,14 @@ public class ParPartyNameFormType implements cz.tacr.elza.api.ParPartyNameFormTy
     @Override
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public RulPackage getRulPackage() {
+        return rulPackage;
+    }
+
+    public void setRulPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 
     @Override

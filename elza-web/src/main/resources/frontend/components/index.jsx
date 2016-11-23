@@ -107,6 +107,7 @@ exports.RelationClassForm = require('components/party/RelationClassForm.jsx');
 exports.PartyField = require('components/party/PartyField.jsx');
 exports.PartyDetailRelations = require('components/party/PartyDetailRelations.jsx');
 exports.PartyDetailRelationClass = require('components/party/PartyDetailRelationClass.jsx');
+exports.DatationField = require('components/party/DatationField.jsx');
 
 exports.AdminPackagesList = require('components/admin/AdminPackagesList.jsx');
 exports.AdminPackagesUpload = require('components/admin/AdminPackagesUpload.jsx');

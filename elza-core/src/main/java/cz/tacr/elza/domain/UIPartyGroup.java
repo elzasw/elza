@@ -31,7 +31,7 @@ public class UIPartyGroup implements cz.tacr.elza.api.UIPartyGroup<ParPartyType>
     private Integer partyGroupId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyType.class)
-    @JoinColumn(name = "partyTypeId", nullable = false)
+    @JoinColumn(name = "partyTypeId")
     private ParPartyType partyType;
 
     @Column(length = StringLength.LENGTH_50, nullable = false, unique = true)
@@ -51,6 +51,10 @@ public class UIPartyGroup implements cz.tacr.elza.api.UIPartyGroup<ParPartyType>
     @Lob
     @org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
     private String contentDefinition;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
 
     @Override
 	public Integer getPartyGroupId() {
@@ -144,5 +148,13 @@ public class UIPartyGroup implements cz.tacr.elza.api.UIPartyGroup<ParPartyType>
     @Override
     public String toString() {
         return "UIPartyGroup pk=" + partyGroupId;
+    }
+
+    public RulPackage getRulPackage() {
+        return rulPackage;
+    }
+
+    public void setRulPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 }

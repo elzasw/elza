@@ -4,8 +4,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -53,6 +56,10 @@ public class ParRelationClassType implements cz.tacr.elza.api.ParRelationClassTy
     @Column(length = StringLength.LENGTH_10)
     private ParRelationClassTypeRepeatabilityEnum repeatability;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
+
     @Override
     public Integer getRelationClassTypeId() {
         return relationClassTypeId;
@@ -91,5 +98,13 @@ public class ParRelationClassType implements cz.tacr.elza.api.ParRelationClassTy
     @Override
     public void setRepeatability(final ParRelationClassTypeRepeatabilityEnum repeatability) {
         this.repeatability = repeatability;
+    }
+
+    public RulPackage getRulPackage() {
+        return rulPackage;
+    }
+
+    public void setRulPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 }

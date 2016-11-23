@@ -38,6 +38,10 @@ public class ParRegistryRole
     @JoinColumn(name = "roleTypeId", nullable = false)
     private ParRelationRoleType roleType;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
+
     @Override
     public Integer getRegistryRoleId() {
         return registryRoleId;
@@ -99,5 +103,13 @@ public class ParRegistryRole
                 ", registerType=" + registerType +
                 ", roleType=" + roleType +
                 '}';
+    }
+
+    public RulPackage getRulPackage() {
+        return rulPackage;
+    }
+
+    public void setRulPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 }

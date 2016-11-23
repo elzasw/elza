@@ -2,14 +2,12 @@ import React from 'react';
 import {WebApi} from 'actions/index.jsx';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, Autocomplete, i18n, Icon, FormInput, RegistryField} from 'components/index.jsx';
+import {AbstractReactComponent, Autocomplete, i18n, Icon, FormInput, RegistryField, DatationField} from 'components/index.jsx';
 import {Modal, Button, Form} from 'react-bootstrap'
 import {indexById} from 'stores/app/utils.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {submitReduxForm} from 'components/form/FormUtils.jsx'
 
-import './PartyFormStyles.less';
+import './RelationForm.less'
 
 const USE_UNITDATE_ENUM = {
     NONE: 'NONE',
@@ -26,9 +24,13 @@ class RelationForm extends AbstractReactComponent {
 
     static fields = [
         'from.calendarTypeId',
+        'from.value',
         'from.textDate',
+        'from.note',
         'to.calendarTypeId',
+        'to.value',
         'to.textDate',
+        'to.note',
         'dateNote',
         'note',
         'source',
@@ -37,7 +39,7 @@ class RelationForm extends AbstractReactComponent {
     ];
 
     static validate = (values) => {
-        const errors = {};
+        const errors = RelationForm.validateInline(values);
 
 
         for (let i=0; i<values.relationEntities.length; i++) {
@@ -55,93 +57,71 @@ class RelationForm extends AbstractReactComponent {
         return errors;
     };
 
-    componentDidMount() {
-        this.dispatch(calendarTypesFetchIfNeeded());
-    }
+    static validateInline = (values) => {
+        const errors = {};
 
-    componentWillReceiveProps(nextProps) {
-        this.dispatch(calendarTypesFetchIfNeeded());
-    }
+        errors.from = DatationField.reduxValidate(values.from);
+        errors.to = DatationField.reduxValidate(values.to);
+        return errors;
+
+    };
 
     render() {
-        const {relationType, refTables: {calendarTypes}, onClose, handleSubmit, fields: {from, to, relationEntities, dateNote, note, source}, partyId} = this.props;
+        const {relationType, onClose, handleSubmit, fields: {from, to, relationEntities, dateNote, note, source}, partyId} = this.props;
         const {relationRoleTypes} = relationType;
-        const calendars = calendarTypes ? calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>}) : null;
-        const roleTypesList = relationRoleTypes ? relationRoleTypes.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>}) : null;
+        const roleTypesList = relationRoleTypes ? relationRoleTypes : null;
+        const usedRoles = relationEntities.map(i => parseInt(i.roleType.id.value));
+
 
         const submit = submitReduxForm.bind(this, RelationForm.validate);
-        return <div className="relations-edit">
-            <Form onSubmit={handleSubmit(submit)}>
-                <Modal.Body>
-                    <div className="line datation">
-                        <div className="date line">
-                            {(relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && <div>
-                                <label>{i18n('party.relation.from')}</label>
-                                <div className="line">
-                                    <FormInput componentClass="select" {...from.calendarTypeId}>
-                                        {calendars}
-                                    </FormInput>
-                                    <FormInput type="text" {...from.textDate}/>
-                                </div>
-                            </div>}
-                            {relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL && <div>
-                                <label>{i18n('party.relation.to')}</label>
-                                <div className="line">
-                                    <FormInput componentClass="select" {...to.calendarTypeId}>
-                                        {calendars}
-                                    </FormInput>
-                                    <FormInput type="text" {...to.textDate}/>
-                                </div>
-                            </div>}
-                        </div>
-                    </div>
-                    <FormInput type="text" label={i18n('party.relation.dateNote')}  {...dateNote} />
-                    <FormInput type="text" label={i18n('party.relation.note')} {...note} />
-                    <FormInput componentClass="textarea" label={i18n('party.relation.sources')} {...source} />
-                    <hr/>
-                    <label>{i18n('party.relation.relationEntities')}</label>
-
-                    <div className="block entity relations">
-                        <div className="relation-entities">
-                            <div className="title">
-                                <label className="type">{i18n('party.relation.roleType')}</label>
-                                <label className="record">{i18n('party.relation.record')}</label>
+        return <Form onSubmit={handleSubmit(submit)}>
+            <Modal.Body className="relation-form">
+                <div className="flex">
+                    <div className="flex-2">
+                        <div className="block entity relations">
+                            <div className="relation-entities">
+                                <label className="type">{i18n('party.relation.entityInRelation')}</label><Button bsStyle="action" onClick={() => relationEntities.addField({record:null, roleType: {id: null}})}><Icon glyph="fa-plus" /></Button>
+                                {/* TODO @compel unikátnost vazby entity */}
+                                {relationEntities.map((i,index) => <div className="relation-row" key={index}>
+                                    <div className="type">
+                                        <FormInput componentClass="select" {...i.roleType.id}>
+                                            <option key={0}/>
+                                            {roleTypesList && roleTypesList.filter(t => t.id == i.roleType.id.value || t.repeatable || usedRoles.indexOf(t.id) === -1).map(i => <option value={i.id} key={i.id}>{i.name}</option>)}
+                                        </FormInput>
+                                    </div>
+                                    <div className="record">
+                                        <RegistryField disabled={!i.roleType.id.value} partyId={partyId} {...i.record} roleTypeId={i.roleType.id.value} />
+                                    </div>
+                                    <Button bsStyle="action" onClick={() => relationEntities.removeField(index)}><Icon glyph="fa-times" /></Button>
+                                 </div>)}
                             </div>
-                            {/* TODO @compel unikátnost vazby entity */}
-                            {relationEntities.map((i,index) => <div className="relation-row" key={index}>
-                                <div className="type">
-                                    <FormInput componentClass="select" {...i.roleType.id}>
-                                        <option key={0}/>
-                                        {roleTypesList}
-                                    </FormInput>
-                                </div>
-                                <div className="record">
-                                    <RegistryField disabled={!i.roleType.id.value} partyId={partyId} {...i.record} roleTypeId={i.roleType.id.value} />
-                                </div>
-                                <div className="icon">
-                                    <Button onClick={() => relationEntities.removeField(index)}><Icon glyph="fa-trash" /></Button>
-                                </div>
-                             </div>)}
                         </div>
-                    <Button className="relation-add" onClick={() => relationEntities.addField({record:null, roleType: {id: null}})}><Icon glyph="fa-plus" /></Button>
                     </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button type="submit">{i18n('global.action.store')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
-                </Modal.Footer>
-            </Form>
-        </div>;
+                    {!relationType.useUnitdate !== USE_UNITDATE_ENUM.NONE && <div className="datation-group flex-1">
+                        {(relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && <div>
+                            <DatationField fields={from} label={i18n('party.relation.from')} labelTextual={i18n('party.relation.from.textDate')} labelNote={i18n('party.relation.from.note')} />
+                        </div>}
+                        {relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL && <div>
+                            <DatationField fields={to} label={i18n('party.relation.to')} labelTextual={i18n('party.relation.to.textDate')} labelNote={i18n('party.relation.to.note')} />
+                        </div>}
+                    </div>}
+                    <div className="flex-1 footer">
+                        <FormInput type="text" label={i18n('party.relation.dateNote')}  {...dateNote} />
+                        <FormInput type="text" label={i18n('party.relation.note')} {...note} />
+                        <FormInput componentClass="textarea" label={i18n('party.relation.sources')} {...source} />
+                    </div>
+                </div>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button type="submit">{i18n('global.action.store')}</Button>
+                <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+            </Modal.Footer>
+        </Form>;
     }
 }
 
 export default reduxForm({
     form: 'relationForm',
     fields: RelationForm.fields,
-},state => ({
-    refTables: state.refTables
-})
-)(RelationForm)
-
-
-
+    validate: RelationForm.validateInline
+})(RelationForm)

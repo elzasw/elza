@@ -398,16 +398,14 @@ public class RegistryController {
      * Smazání variantního rejstříkového hesla.
      *
      * @param variantRecordId id variantního rejstříkového hesla
-     *
-     * TODO @compel kontrola smazání
      */
     @Transactional
     @RequestMapping(value = "/variantRecord/{variantRecordId}", method = RequestMethod.DELETE)
     public void deleteVariantRecord(@PathVariable final Integer variantRecordId) {
         Assert.notNull(variantRecordId);
-        RegVariantRecord variantRecord = variantRecordRepository.getOneCheckExist(variantRecordId);
 
-        variantRecordRepository.delete(variantRecord);
+        RegVariantRecord variantRecord = registryService.getVariantRecord(variantRecordId);
+        registryService.deleteVariantRecord(variantRecord, variantRecord.getRegRecord());
     }
 
     /**
@@ -555,14 +553,13 @@ public class RegistryController {
      * Smazání souřadnic rejstříkového hesla.
      *
      * @param coordinatesId id souřadnic rejstříkového hesla
-     * TODO @compel kontrola oprávnění
      */
     @Transactional
     @RequestMapping(value = "/regCoordinates/{coordinatesId}", method = RequestMethod.DELETE)
     public void deleteRegCoordinates(@PathVariable final Integer coordinatesId) {
         Assert.notNull(coordinatesId);
-        RegCoordinates coordinates = regCoordinatesRepository.getOneCheckExist(coordinatesId);
+        RegCoordinates regCoordinate = registryService.getRegCoordinate(coordinatesId);
 
-        regCoordinatesRepository.delete(coordinates);
+        registryService.deleteRegCoordinate(regCoordinate, regCoordinate.getRegRecord());
     }
 }

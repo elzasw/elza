@@ -149,13 +149,27 @@ public abstract class AbstractTest {
     public void setUp() throws Exception {
 
         List<RulPackage> packages = utilsTest.getPackages();
-        rulPackage = packages.size() > 0 ? packages.get(0) : null;
+        for (RulPackage packageItem : packages) {
+            if (!packageItem.getCode().equals("CZ_BASE")) {
+                rulPackage = packageItem;
+                break;
+            } else {
+                rulPackage = null;
+            }
+        }
         if (rulPackage == null) {
             logger.info("Loading package for tests...");
             File file = buildPackageFileZip();
             utilsTest.importPackage(file);
             file.delete();
-            rulPackage = utilsTest.getPackages().get(0);
+            for (RulPackage packageItem : utilsTest.getPackages()) {
+                if (!packageItem.getCode().equals("CZ_BASE")) {
+                    rulPackage = packageItem;
+                    break;
+                } else {
+                    rulPackage = null;
+                }
+            }
         }
 
         deleteTables();

@@ -63,13 +63,16 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
     public List<ArrData> findDescItemsByNodeIds(final Set<Integer> nodeIds,
                                                 final Set<RulItemType> itemTypes,
                                                 final ArrFundVersion version) {
+        return findDescItemsByNodeIds(nodeIds, itemTypes, version.getLockChange() == null ? null : version.getLockChange().getChangeId());
+    }
 
-
+    @Override
+    public List<ArrData> findDescItemsByNodeIds(final Set<Integer> nodeIds, final Set<RulItemType> itemTypes, final Integer changeId) {
         String hql = "SELECT d FROM arr_data d JOIN FETCH d.item di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis JOIN FETCH d.dataType dt WHERE ";
-        if (version.getLockChange() == null) {
+        if (changeId == null) {
             hql += "di.deleteChange IS NULL ";
         } else {
-            hql += "di.createChange < :lockChange AND (di.deleteChange IS NULL OR di.deleteChange > :lockChange) ";
+            hql += "di.createChange.changeId <= :changeId AND (di.deleteChange IS NULL OR di.deleteChange.changeId >= :changeId) ";
         }
 
         hql += "AND n.nodeId IN (:nodeIds)";
@@ -81,8 +84,8 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         Query query = entityManager.createQuery(hql);
 
-        if (version.getLockChange() != null) {
-            query.setParameter("lockChange", version.getLockChange());
+        if (changeId != null) {
+            query.setParameter("changeId", changeId);
         }
 
         if (CollectionUtils.isNotEmpty(itemTypes)) {
@@ -103,11 +106,16 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
     @Override
     public List<ArrData> findByDataIdsAndVersionFetchSpecification(final Set<Integer> dataIds, final Set<RulItemType> itemTypes, final ArrFundVersion version) {
+        return findByDataIdsAndVersionFetchSpecification(dataIds, itemTypes, version.getLockChange() == null ? null : version.getLockChange().getChangeId());
+    }
+
+    @Override
+    public List<ArrData> findByDataIdsAndVersionFetchSpecification(final Set<Integer> dataIds, final Set<RulItemType> itemTypes, final Integer changeId) {
         String hql = "SELECT d FROM arr_data d JOIN FETCH d.item di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH di.itemSpec dis JOIN FETCH d.dataType dt WHERE ";
-        if (version.getLockChange() == null) {
+        if (changeId == null) {
             hql += "di.deleteChange IS NULL ";
         } else {
-            hql += "di.createChange < :lockChange AND (di.deleteChange IS NULL OR di.deleteChange > :lockChange) ";
+            hql += "di.createChange.changeId <= :changeId AND (di.deleteChange IS NULL OR di.deleteChange.changeId >= :changeId) ";
         }
 
         hql += "AND di.itemType IN (:itemTypes) AND d.dataId IN (:dataIds)";
@@ -115,8 +123,8 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         Query query = entityManager.createQuery(hql);
 
-        if (version.getLockChange() != null) {
-            query.setParameter("lockChange", version.getLockChange());
+        if (changeId != null) {
+            query.setParameter("changeId", changeId);
         }
 
         query.setParameter("itemTypes", itemTypes);

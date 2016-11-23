@@ -56,6 +56,10 @@ public class ParPartyTypeRelation implements cz.tacr.elza.api.ParPartyTypeRelati
     @Column(length = StringLength.LENGTH_250, nullable = false)
     private String name;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
+
     @Override
     public Integer getPartyTypeRelationId() {
         return partyTypeRelationId;
@@ -138,5 +142,13 @@ public class ParPartyTypeRelation implements cz.tacr.elza.api.ParPartyTypeRelati
     @Override
     public String toString() {
         return "ParPartyTypeRelation pk=" + partyTypeRelationId;
+    }
+
+    public RulPackage getRulPackage() {
+        return rulPackage;
+    }
+
+    public void setRulPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 }

@@ -17,7 +17,7 @@ import cz.tacr.elza.domain.ParPartyType;
  * @since 22.12.2015
  */
 @Repository
-public interface ComplementTypeRepository extends JpaRepository<ParComplementType, Integer> {
+public interface ComplementTypeRepository extends JpaRepository<ParComplementType, Integer>, Packaging<ParComplementType> {
 
     /**
      * Najde všechy typy doplňků pro typ osoby.

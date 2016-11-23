@@ -1,9 +1,8 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ParRelationRoleType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import cz.tacr.elza.domain.ParRelationRoleType;
 
 
 /**
@@ -13,7 +12,7 @@ import cz.tacr.elza.domain.ParRelationRoleType;
  * @since 22.12.2015
  */
 @Repository
-public interface RelationRoleTypeRepository extends JpaRepository<ParRelationRoleType, Integer> {
+public interface RelationRoleTypeRepository extends JpaRepository<ParRelationRoleType, Integer>, Packaging<ParRelationRoleType> {
 
     ParRelationRoleType findByCode(String roleTypeCode);
 

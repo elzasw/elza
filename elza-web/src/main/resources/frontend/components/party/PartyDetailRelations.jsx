@@ -39,6 +39,7 @@ const isNotBlankObject = (obj) => {
 class PartyDetailRelations extends AbstractReactComponent {
 
     static PropTypes = {
+        canEdit: React.PropTypes.bool.isRequired,
         label: React.PropTypes.element.isRequired,
         party: React.PropTypes.object.isRequired,
         relationType: React.PropTypes.object.isRequired,
@@ -71,12 +72,12 @@ class PartyDetailRelations extends AbstractReactComponent {
 
     handleRelationAdd = () => {
         const {label, party, relationType} = this.props;
-        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} relationType={relationType} onSubmitForm={this.addIdentifier} />));
+        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} relationType={relationType} onSubmitForm={this.addIdentifier} />, "dialog-lg"));
     };
 
     handleRelationUpdate = (relation) => {
         const {label, party, relationType} = this.props;
-        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} relationType={relationType} initialValues={relation} onSubmitForm={this.update.bind(this, relation)} />));
+        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} relationType={relationType} initialValues={relation} onSubmitForm={this.update.bind(this, relation)} />, "dialog-lg"));
     };
 
     handleRelationDelete = (id) => {
@@ -101,17 +102,17 @@ class PartyDetailRelations extends AbstractReactComponent {
                 {addButton}
             </div>
             {relations.map((relation, index) => <div key={relation.id} className="value-group relation-group">
-                <FormControl.Static componentClass="div">
-                    {(relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from && <div>
-                        <FormControl.Static>{relationType.relationClassType.code !== RELATION_CLASS_RELATION_CODE && relationType.relationClassType.name + ": "}{relation.from.textDate}</FormControl.Static>
+                <div className="value">
+                    {(relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from && relation.from.value && <div>
+                        <div>{relationType.relationClassType.code !== RELATION_CLASS_RELATION_CODE && relationType.relationClassType.name + ": "}{relation.from.value}</div>
                         <div>{relation.dateNote}</div>
                     </div>}
-                    {relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL && relation.to && <FormControl.Static>{relation.to.textDate}</FormControl.Static>}
-                    {relation.relationEntities && relation.relationEntities.map(entity => <div>
+                    {relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL && relation.to && relation.to.value && <div>{relation.to.value}</div>}
+                    {relation.relationEntities && relation.relationEntities.map(entity => <div key={entity.id}>
                         <label>{entity.roleType.name}:</label> {entity.record.record}<small>{entity.record.note}</small>
                     </div>)}
-                    <FormControl.Static>{relation.note}</FormControl.Static>
-                </FormControl.Static>
+                    {relation.note && <div>{relation.note}</div>}
+                </div>
                 <div className="actions">
                     <NoFocusButton onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></NoFocusButton>
                     <NoFocusButton onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-times" /></NoFocusButton>

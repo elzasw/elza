@@ -1,0 +1,71 @@
+<party-name-form-types>
+    <party-name-form-type code="1">
+        <name>úřední / skutečné / světské jméno / jméno za svobodna</name>
+    </party-name-form-type>
+    <party-name-form-type code="2">
+        <name>akronym / zkratka</name>
+    </party-name-form-type>
+    <party-name-form-type code="3">
+        <name>autorská šifra</name>
+    </party-name-form-type>
+    <party-name-form-type code="4">
+        <name>pseudonym</name>
+    </party-name-form-type>
+    <party-name-form-type code="5">
+        <name>církevní jméno</name>
+    </party-name-form-type>
+    <party-name-form-type code="6">
+        <name>jméno získané sňatkem</name>
+    </party-name-form-type>
+    <party-name-form-type code="7">
+        <name>historická podoba jména</name>
+    </party-name-form-type>
+    <party-name-form-type code="8">
+        <name>přímé pořadí</name>
+    </party-name-form-type>
+    <party-name-form-type code="9">
+        <name>jméno úřední</name>
+    </party-name-form-type>
+    <party-name-form-type code="10">
+        <name>jméno preferované entitou</name>
+    </party-name-form-type>
+    <party-name-form-type code="11">
+        <name>historická / dřívější forma jména</name>
+    </party-name-form-type>
+    <party-name-form-type code="12">
+        <name>jediný známý tvar jména v daném období</name>
+    </party-name-form-type>
+    <party-name-form-type code="13">
+        <name>uměle vytvořené označení</name>
+    </party-name-form-type>
+    <party-name-form-type code="14">
+        <name>singulár</name>
+    </party-name-form-type>
+    <party-name-form-type code="15">
+        <name>plurál</name>
+    </party-name-form-type>
+    <party-name-form-type code="16">
+        <name>přejatý termín</name>
+    </party-name-form-type>
+    <party-name-form-type code="17">
+        <name>zastaralý, historický termín</name>
+    </party-name-form-type>
+    <party-name-form-type code="18">
+        <name>nevhodný termín</name>
+    </party-name-form-type>
+    <party-name-form-type code="19">
+        <name>užší termín</name>
+    </party-name-form-type>
+    <party-name-form-type code="20">
+        <name>odborný termín</name>
+    </party-name-form-type>
+    <party-name-form-type code="21">
+        <name>invertovaná podoba</name>
+    </party-name-form-type>
+    <party-name-form-type code="22">
+        <name>antonymum</name>
+    </party-name-form-type>
+    <party-name-form-type code="23">
+        <name>homonymum</name>
+    </party-name-form-type>
+</party-name-form-types>

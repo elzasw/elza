@@ -13,6 +13,6 @@ import cz.tacr.elza.domain.ParPartyTypeRelation;
  * @since 21.12.2015
  */
 @Repository
-public interface PartyTypeRelationRepository extends JpaRepository<ParPartyTypeRelation, Integer> {
+public interface PartyTypeRelationRepository extends JpaRepository<ParPartyTypeRelation, Integer>, Packaging<ParPartyTypeRelation> {
 
 }

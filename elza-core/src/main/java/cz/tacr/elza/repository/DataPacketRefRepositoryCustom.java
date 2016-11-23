@@ -12,6 +12,8 @@ public interface DataPacketRefRepositoryCustom {
 
     List<ArrDataPacketRef> findByDataIdsAndVersionFetchPacket(Set<Integer> dataIds, final Set<RulItemType> descItemTypes, ArrFundVersion version);
 
+    List<ArrDataPacketRef> findByDataIdsAndVersionFetchPacket(Set<Integer> dataIds, final Set<RulItemType> itemTypes, Integer changeId);
+
     int countInFundVersionByPacketIds(List<Integer> packetIds, ArrFundVersion version);
 
     List<ArrPacket> findUsePacketsByPacketIds(List<Integer> packetIds);

@@ -5,6 +5,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -42,6 +43,12 @@ public class ParRelationTypeRoleType implements cz.tacr.elza.api.ParRelationType
     @JoinColumn(name = "roleTypeId", nullable = false)
     private ParRelationRoleType roleType;
 
+    @Column(nullable = false)
+    private Boolean repeatable;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
 
     @Override
     public Integer getRelationTypeRoleTypeId() {
@@ -95,5 +102,23 @@ public class ParRelationTypeRoleType implements cz.tacr.elza.api.ParRelationType
     @Override
     public String toString() {
         return "ParRelationTypeRoleType pk=" + relationTypeRoleTypeId;
+    }
+
+    @Override
+    public Boolean getRepeatable() {
+        return repeatable;
+    }
+
+    @Override
+    public void setRepeatable(Boolean repeatable) {
+        this.repeatable = repeatable;
+    }
+
+    public RulPackage getRulPackage() {
+        return rulPackage;
+    }
+
+    public void setRulPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 }

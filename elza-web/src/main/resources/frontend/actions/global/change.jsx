@@ -6,6 +6,8 @@ import {Button} from 'react-bootstrap';
 import {addToastrSuccess, addToastrInfo, addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx'
 import {routerNavigate} from 'actions/router.jsx'
+import {indexById} from 'stores/app/utils.jsx'
+import {partyListInvalidate, partyDetailClear, partyDetailInvalidate} from 'actions/party/party.jsx'
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -108,9 +110,14 @@ export function changeFundAction(versionId, id) {
 }
 
 export function changeParty(partyId) {
-    return {
-        type: types.PARTY_UPDATED,
-        partyId: partyId
+    return (dispatch, getState) => {
+        const {app:{partyList, partyDetail}} = getState();
+        if (partyList.filteredRows && indexById(partyList.filteredRows, partyId) !== null) {
+            dispatch(partyListInvalidate())
+        }
+        if (partyDetail.id === partyId) {
+            dispatch(partyDetailInvalidate())
+        }
     }
 }
 
@@ -122,9 +129,14 @@ export function changePartyCreate(partyId) {
 }
 
 export function changePartyDelete(partyId) {
-    return {
-        type: types.CHANGE_PARTY_DELETED,
-        partyId: partyId
+    return (dispatch, getState) => {
+        const {app:{partyList, partyDetail}} = getState();
+        if (partyList.filteredRows && indexById(partyList.filteredRows, partyId) !== null) {
+            dispatch(partyListInvalidate())
+        }
+        if (partyDetail.id === partyId) {
+            dispatch(partyDetailClear())
+        }
     }
 }
 
@@ -171,6 +183,14 @@ export function fundOutputChanges(versionId, outputIds) {
         type: types.OUTPUT_CHANGES,
         versionId,
         outputIds,
+    }
+}
+
+export function fundInvalidChanges(fundIds, fundVersionIds) {
+    return {
+        type: types.FUND_INVALID,
+        fundIds,
+        fundVersionIds
     }
 }
 

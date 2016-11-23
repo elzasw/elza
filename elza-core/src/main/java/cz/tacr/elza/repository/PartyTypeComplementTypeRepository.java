@@ -11,6 +11,6 @@ import cz.tacr.elza.domain.ParPartyTypeComplementType;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 22.12.2015
  */
-public interface PartyTypeComplementTypeRepository extends JpaRepository<ParPartyTypeComplementType, Integer> {
+public interface PartyTypeComplementTypeRepository extends JpaRepository<ParPartyTypeComplementType, Integer>, Packaging<ParPartyTypeComplementType> {
 
 }
