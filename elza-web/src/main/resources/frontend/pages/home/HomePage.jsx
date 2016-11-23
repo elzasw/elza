@@ -170,7 +170,7 @@ const HomePage = class HomePage extends AbstractReactComponent {
         if(registryItems.length === 1){ //registryItems vzdy obsahuje 1 objekt
             registryItems.push(this.renderMessage(i18n('home.recent.registry.emptyList.title'), i18n('home.recent.registry.emptyList.message')));
         }
-        if(partyItems.length === 1){ //partyItems vzdy obsahuje 1 objekt
+        if(partyItems.length === 0){
             partyItems.push(this.renderMessage(i18n('home.recent.party.emptyList.title'), i18n('home.recent.party.emptyList.message')));
         }
 
@@ -254,4 +254,3 @@ function mapStateToProps(state) {
 }
 
 export default connect(mapStateToProps)(HomePage);
-
