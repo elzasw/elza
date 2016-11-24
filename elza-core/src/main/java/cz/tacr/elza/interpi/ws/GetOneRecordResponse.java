@@ -1,5 +1,5 @@
 
-package org.tempuri;
+package cz.tacr.elza.interpi.ws;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent&gt;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *       &lt;sequence&gt;
- *         &lt;element name="findDataResult" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+ *         &lt;element name="getOneRecordResult" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -29,36 +29,36 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "findDataResult"
+    "getOneRecordResult"
 })
-@XmlRootElement(name = "findDataResponse")
-public class FindDataResponse {
+@XmlRootElement(name = "getOneRecordResponse")
+public class GetOneRecordResponse {
 
     @XmlElement(required = true)
-    protected String findDataResult;
+    protected String getOneRecordResult;
 
     /**
-     * Gets the value of the findDataResult property.
+     * Gets the value of the getOneRecordResult property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getFindDataResult() {
-        return findDataResult;
+    public String getGetOneRecordResult() {
+        return getOneRecordResult;
     }
 
     /**
-     * Sets the value of the findDataResult property.
+     * Sets the value of the getOneRecordResult property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setFindDataResult(String value) {
-        this.findDataResult = value;
+    public void setGetOneRecordResult(String value) {
+        this.getOneRecordResult = value;
     }
 
 }

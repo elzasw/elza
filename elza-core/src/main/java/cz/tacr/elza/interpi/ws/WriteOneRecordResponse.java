@@ -1,5 +1,5 @@
 
-package org.tempuri;
+package cz.tacr.elza.interpi.ws;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

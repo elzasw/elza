@@ -214,6 +214,18 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
 
         <!-- CXF -->
         <dependency>
@@ -295,6 +307,26 @@
                 </executions>
             </plugin>
 <!--             <plugin> -->
+<!--                 <groupId>org.codehaus.mojo</groupId> -->
+<!--                 <artifactId>jaxb2-maven-plugin</artifactId> -->
+<!--                 <version>2.2</version> -->
+<!--                 <executions> -->
+<!--                     <execution> -->
+<!--                         <id>xjc</id> -->
+<!--                         <goals> -->
+<!--                             <goal>xjc</goal> -->
+<!--                         </goals> -->
+<!--                     </execution> -->
+<!--                 </executions> -->
+<!--                 <configuration> -->
+<!--                     <sources> -->
+<!--                         <source>src/main/resources/xsd/interpi/interpi_schema.xsd</source> -->
+<!--                     </sources> -->
+<!--                     <target>2.1</target> -->
+<!--                     <packageName>cz.tacr.elza.interpi.ws.wo</packageName> -->
+<!--                 </configuration> -->
+<!--             </plugin> -->
+<!--             <plugin> -->
 <!--               <groupId>org.apache.cxf</groupId> -->
 <!--               <artifactId>cxf-codegen-plugin</artifactId> -->
 <!--               <version>${cxf.version}</version> -->
@@ -314,6 +346,9 @@
 <!--                       <wsdlOptions> -->
 <!--                         <wsdlOption> -->
 <!--                           <wsdl>src/main/resources/wsdl/interpi/interpi.ws.soap.wsdl</wsdl> -->
+<!--                           <packagenames> -->
+<!--                               <packagename>cz.tacr.elza.interpi.ws</packagename> -->
+<!--                           </packagenames> -->
 <!--                         </wsdlOption> -->
 <!--                       </wsdlOptions> -->
 <!--                   </configuration> -->

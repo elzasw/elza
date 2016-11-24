@@ -1,25 +1,35 @@
 package cz.tacr.elza.other;
 
+import java.io.Reader;
+import java.io.StringReader;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.JAXBIntrospector;
+import javax.xml.bind.Unmarshaller;
 
-import org.apache.cxf.aegis.databinding.AegisDatabinding;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
-import org.apache.cxf.frontend.ClientProxyFactoryBean;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.junit.Test;
-import org.tempuri.WssoapSoap;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.interpi.ws.WssoapSoap;
+import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
+import cz.tacr.elza.interpi.ws.wo.SetTyp;
 
 /**
- * Testy na volání INITERPI.
+ * Testy na volání INTERPI.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 23. 11. 2016
@@ -46,11 +56,58 @@ public class InterpiTest {
         System.out.println(oneRecord);
     }
 
+    @Test
+    public void convertSearchResultToJava() throws JAXBException {
+        WssoapSoap client = createClient();
+        String oneRecord = client.getOneRecord("n000382567", username, password);
+
+        StringReader stringReader = new StringReader(oneRecord);
+        SetTyp set = unmarshallData(stringReader, SetTyp.class);
+        List<EntitaTyp> entita = set.getEntita();
+        for (EntitaTyp entitaTyp : entita) {
+            entitaTyp.getContent();
+        }
+        System.out.println(set);
+    }
+
+    /**
+     * Převede data z xml do objektu.
+     *
+     * @param inputStream stream
+     *
+     * @return objekt typu T
+     */
+    public static <T> T unmarshallData(final Reader reader, final Class<T> cls) throws JAXBException {
+        Assert.notNull(reader);
+
+        Unmarshaller unmarshaller = createUnmarshaller(cls);
+
+        JAXBContext jaxbContext = JAXBContext.newInstance(cls);
+        JAXBIntrospector jaxbIntrospector = jaxbContext.createJAXBIntrospector();
+
+        Object unmarshal = unmarshaller.unmarshal(reader);
+        System.out.println(unmarshal.getClass());
+        System.out.println(jaxbIntrospector.getValue(unmarshal).getClass());
+
+
+        return (T) jaxbIntrospector.getValue(unmarshal);
+    }
+
+    /**
+     * Vytvoří unmarshaller pro data.
+     *
+     * @return unmarshaller pro data
+     */
+    private static <C> Unmarshaller createUnmarshaller(final Class<C> cls) throws JAXBException {
+        JAXBContext jaxbContext = JAXBContext.newInstance(cls);
+
+        return jaxbContext.createUnmarshaller();
+    }
+
     private WssoapSoap createClient() {
-        ClientProxyFactoryBean factory = new ClientProxyFactoryBean();
+        JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
         factory.setServiceClass(WssoapSoap.class);
         factory.setAddress("https://195.113.132.114:443/csp/interpi/cust.interpi.ws.soap.cls");
-        factory.setDataBinding(new AegisDatabinding());
 
         LoggingInInterceptor loggingInInterceptor = new LoggingInInterceptor();
         loggingInInterceptor.setPrettyLogging(true);

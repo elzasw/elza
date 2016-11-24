@@ -231,12 +231,12 @@ public class XmlUtils {
      *
      * @return objekt typu T
      */
-    public static <T, C> T unmarshallData(final InputStream inputStream, final Class<C> cls) throws JAXBException {
+    public static <T> T unmarshallData(final InputStream inputStream, final Class<T> cls) throws JAXBException {
         Assert.notNull(inputStream);
 
         Unmarshaller unmarshaller = createUnmarshaller(cls);
 
-        return  (T) unmarshaller.unmarshal(inputStream);
+        return (T) unmarshaller.unmarshal(inputStream);
     }
 
     /**
@@ -246,9 +246,8 @@ public class XmlUtils {
      */
     private static <C> Unmarshaller createUnmarshaller(final Class<C> cls) throws JAXBException {
         JAXBContext jaxbContext = JAXBContext.newInstance(cls);
-        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
-        return unmarshaller;
+        return jaxbContext.createUnmarshaller();
     }
 
     /**

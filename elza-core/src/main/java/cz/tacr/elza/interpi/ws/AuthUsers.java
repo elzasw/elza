@@ -1,9 +1,8 @@
 
-package org.tempuri;
+package cz.tacr.elza.interpi.ws;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -18,7 +17,8 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent&gt;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *       &lt;sequence&gt;
- *         &lt;element name="sT001" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="sAuthUser" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="sAuthUserPwd" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
  *         &lt;element name="sUser" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
  *         &lt;element name="sPwd" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
@@ -31,40 +31,65 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "st001",
+    "sAuthUser",
+    "sAuthUserPwd",
     "sUser",
     "sPwd"
 })
-@XmlRootElement(name = "getOneRecord")
-public class GetOneRecord {
+@XmlRootElement(name = "authUsers")
+public class AuthUsers {
 
-    @XmlElement(name = "sT001")
-    protected String st001;
+    protected String sAuthUser;
+    protected String sAuthUserPwd;
     protected String sUser;
     protected String sPwd;
 
     /**
-     * Gets the value of the st001 property.
+     * Gets the value of the sAuthUser property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getST001() {
-        return st001;
+    public String getSAuthUser() {
+        return sAuthUser;
     }
 
     /**
-     * Sets the value of the st001 property.
+     * Sets the value of the sAuthUser property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setST001(String value) {
-        this.st001 = value;
+    public void setSAuthUser(String value) {
+        this.sAuthUser = value;
+    }
+
+    /**
+     * Gets the value of the sAuthUserPwd property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getSAuthUserPwd() {
+        return sAuthUserPwd;
+    }
+
+    /**
+     * Sets the value of the sAuthUserPwd property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setSAuthUserPwd(String value) {
+        this.sAuthUserPwd = value;
     }
 
     /**
