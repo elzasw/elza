@@ -343,6 +343,10 @@
             <id>central</id>
             <url>http://central.maven.org/maven2/</url>
         </repository>
+        <repository>
+            <id>hibernatespatial</id>
+            <url>http://www.hibernatespatial.org/repository</url>
+        </repository>
     </repositories>
 
     <scm>
