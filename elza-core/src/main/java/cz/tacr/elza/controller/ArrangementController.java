@@ -1229,7 +1229,6 @@ public class ArrangementController {
         return new NodeWithParent(factoryVo.createArrNode(deleteLevel.getNode()), nodeClients.iterator().next());
     }
 
-
     /**
      * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
      *

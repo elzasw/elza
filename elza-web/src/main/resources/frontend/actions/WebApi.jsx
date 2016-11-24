@@ -203,6 +203,7 @@ class WebApi {
 
     updateDescItem(versionId, nodeVersionId, descItem) {
         return callWS('/arrangement/descItems/' + versionId + '/' + nodeVersionId + '/update/true', descItem);
+
         // Původní volání kontroleru - zatím necháno pro testovací účely
         // return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/descItems/' + versionId + '/' + nodeVersionId + '/update/true', null,  descItem);
     }
@@ -232,22 +233,32 @@ class WebApi {
     }
 
     addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName) {
-        return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/levels', null, {
+        const data = {
             versionId,
             direction,
             staticNodeParent: parentNode,
             staticNode: node,
             descItemCopyTypes,
             scenarioName
-        });
+        };
+
+        return callWS('/arrangement/levels/add', data);
+
+        // Původní volání kontroleru - zatím necháno pro testovací účely
+        // return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/levels', null, data);
     }
 
     deleteNode(node, parentNode, version) {
-        return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/levels', null, {
+        const data = {
             versionId: version,
             staticNodeParent: parentNode,
             staticNode: node
-        });
+        };
+
+        return callWS('/arrangement/levels/delete', data);
+
+        // Původní volání kontroleru - zatím necháno pro testovací účely
+        // return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/levels', null, data);
     }
 
     getNodeAddScenarios(node, versionId, direction, withGroups = false) {

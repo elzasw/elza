@@ -30,7 +30,7 @@ var WebSocket = class extends AbstractReactComponent {
             if (webSocket.disconnectedOnError) {
                 content = <div className="dialog">
                     <div className="title">{i18n('global.websocket.disconnectedOnError.title')}</div>
-                    <div className="message">{webSocket.disconnectedErrorMessage}</div>
+                    <br/>
                     <Button onClick={() => { stompConnect() }}>{i18n("global.websocket.disconnectedOnError.action.refresh")}</Button>
                 </div>
             } else {

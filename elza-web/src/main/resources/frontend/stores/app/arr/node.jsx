@@ -216,8 +216,41 @@ export function node(state = nodeInitialState, action) {
         case types.FUND_NODE_INCREASE_VERSION:
             var result = {
                 ...state,
-                subNodeForm: subNodeForm(state.subNodeForm, action),
+                subNodeForm: subNodeForm(state.subNodeForm, action),    // změna pro formulář, pokud je potřeba
             }
+
+            if (result.id === action.nodeId && result.version === action.nodeVersionId) { // změníme aktuální node
+                result.version = result.version + 1;
+            }
+
+            // Změna pro child nodes, pokud je to pro ně
+            for (let a=0; a<result.allChildNodes.length; a++) {
+                if (result.allChildNodes[a].id === action.nodeId && result.allChildNodes[a].version === action.nodeVersionId) {   // změna tohoto node
+                    result.allChildNodes = [
+                        ...result.allChildNodes.slice(0, a),
+                        {
+                            ...result.allChildNodes[a],
+                            version: result.allChildNodes[a].version + 1
+                        },
+                        ...result.allChildNodes.slice(a + 1)
+                    ]
+                    break;
+                }
+            }
+            for (let a=0; a<result.allChildNodes.length; a++) {
+                if (result.childNodes[a].id === action.nodeId && result.childNodes[a].version === action.nodeVersionId) {   // změna tohoto node
+                    result.childNodes = [
+                        ...result.childNodes.slice(0, a),
+                        {
+                            ...result.childNodes[a],
+                            version: result.childNodes[a].version + 1
+                        },
+                        ...result.childNodes.slice(a + 1)
+                    ]
+                    break;
+                }
+            }
+
             return consolidateState(state, result);
         case types.CHANGE_NODES:
         case types.CHANGE_FUND_RECORD:

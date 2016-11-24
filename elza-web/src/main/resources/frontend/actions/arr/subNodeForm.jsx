@@ -11,6 +11,7 @@ import {getMapFromList, indexById, findByRoutingKeyInGlobalState} from 'stores/a
 import {getFocusDescItemLocation} from 'stores/app/arr/subNodeFormUtils.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
+import {increaseNodeVersion} from 'actions/arr/node.jsx'
 import {getRoutingKeyType} from 'stores/app/utils.jsx'
 import * as types from 'actions/constants/ActionTypes.js';
 import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
@@ -229,14 +230,10 @@ class ItemFormActions {
         if (this.descItemNeedStore(loc.descItem, refType)) {
             dispatch(statusSaving());
 
-            // Umělé navýšení verze  o 1 - aby mohla pozitivně projít případná další update operace
-            dispatch({
-                type: types.FUND_NODE_INCREASE_VERSION,
-                versionId,
-                nodeId: subNodeForm.data.parent.id,
-                nodeVersionId: subNodeForm.data.parent.version,
-            })
+            // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
+            dispatch(increaseNodeVersion(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version));
 
+            // Reálné provedení operace
             if (typeof loc.descItem.id !== 'undefined') {
                 this._callUpdateDescItem(versionId, subNodeForm.data.parent.version, loc.descItem)
                     .then(json => {
