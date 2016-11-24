@@ -15,7 +15,7 @@ import cz.tacr.elza.domain.ParRelationType;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
  */
-public interface RelationTypeRepository extends ElzaJpaRepository<ParRelationType, Integer> {
+public interface RelationTypeRepository extends ElzaJpaRepository<ParRelationType, Integer>, Packaging<ParRelationType> {
 
     @Query("SELECT rt FROM par_relation_type rt join rt.relationClassType cls WHERE rt.code = ?1 and cls.code = ?2")
     ParRelationType findByCodeAndClassTypeCode(String relationTypeCode, String classTypeCode);

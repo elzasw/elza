@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.packageimport.xml.Category;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -30,6 +32,9 @@ import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+
+import static cz.tacr.elza.packageimport.PackageService.ITEM_SPEC_XML;
+import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
 
 /**
  * Class to update item types in DB
@@ -112,7 +117,7 @@ public class ItemTypeUpdater {
         List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
         List<RulItemSpec> rulDescItemSpecsNew = new ArrayList<>();
 
-        if (!CollectionUtils.isEmpty(itemSpecs.getItemSpecs())) {
+        if (itemSpecs != null && !CollectionUtils.isEmpty(itemSpecs.getItemSpecs())) {
             for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
                 List<RulItemSpec> findItems = rulDescItemSpecs.stream()
                         .filter((r) -> r.getCode().equals(itemSpec.getCode())).collect(
@@ -154,19 +159,19 @@ public class ItemTypeUpdater {
 
 		prepareForUpdate();
 
-		// prepare list of updated/new items
-		List<ItemType> itemTypesList = itemTypes.getItemTypes();
-		List<RulItemType> rulItemTypesUpdated;
-		if(CollectionUtils.isEmpty(itemTypesList)) {
-			rulItemTypesUpdated = Collections.emptyList();
-		} else {
-			rulItemTypesUpdated = updateItemTypes(rulItemTypesOrig, itemTypesList);
-			// try to save updated items
-			rulItemTypesUpdated = itemTypeRepository.save(rulItemTypesUpdated);
-		}
+        List<RulItemType> rulItemTypesUpdated = Collections.emptyList();
+        if (itemTypes != null) {
+            // prepare list of updated/new items
+            List<ItemType> itemTypesList = itemTypes.getItemTypes();
+            if (!CollectionUtils.isEmpty(itemTypesList)) {
+                rulItemTypesUpdated = updateItemTypes(rulItemTypesOrig, itemTypesList);
+                // try to save updated items
+                rulItemTypesUpdated = itemTypeRepository.save(rulItemTypesUpdated);
+            }
 
-		// update specifications
-		processDescItemSpecs(itemSpecs, rulPackage, rulItemTypesUpdated);
+            // update specifications
+            processDescItemSpecs(itemSpecs, rulPackage, rulItemTypesUpdated);
+        }
 
 		// delete unused item types
 		List<RulItemType> rulDescItemTypesDelete = new ArrayList<>(rulItemTypesOrig);
@@ -323,7 +328,6 @@ public class ItemTypeUpdater {
                                         final ItemSpec itemSpec,
                                         final RulItemSpec rulDescItemSpec,
                                         final List<RulItemType> rulDescItemTypes) {
-
         rulDescItemSpec.setName(itemSpec.getName());
         rulDescItemSpec.setCode(itemSpec.getCode());
         rulDescItemSpec.setViewOrder(itemSpec.getViewOrder());
@@ -340,7 +344,7 @@ public class ItemTypeUpdater {
         if (findItems.size() > 0) {
             item = findItems.get(0);
         } else {
-            throw new IllegalStateException("Kód " + itemSpec.getItemType() + " neexistuje v RulItemType");
+            throw new BusinessException(PackageCode.CODE_NOT_FOUND).set("code", itemSpec.getItemType() ).set("file", ITEM_TYPE_XML);
         }
 
         if (CollectionUtils.isNotEmpty(itemSpec.getCategories())) {

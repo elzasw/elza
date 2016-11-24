@@ -5,12 +5,14 @@ import {FormControl} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {i18n, AbstractReactComponent, NoFocusButton, Icon, PartyNameForm} from 'components/index.jsx'
 import {indexById, objectById} from 'stores/app/utils.jsx'
+import {normalizeNameObject} from 'actions/party/party.jsx'
 
 import './PartyDetailNames.less'
 
 class PartyDetailNames extends AbstractReactComponent {
 
     static PropTypes = {
+        canEdit: React.PropTypes.bool.isRequired,
         party: React.PropTypes.object.isRequired,
         partyType: React.PropTypes.object.isRequired,
         onPartyUpdate: React.PropTypes.func.isRequired,
@@ -25,8 +27,8 @@ class PartyDetailNames extends AbstractReactComponent {
         };
 
         nameHelper(partyName.degreeBefore, nameBuilder);
-        nameHelper(partyName.mainPart, nameBuilder);
         nameHelper(partyName.otherPart, nameBuilder);
+        nameHelper(partyName.mainPart, nameBuilder);
         let roman = null, geoAddon = null, addon = null;
         partyName.partyNameComplements.forEach((e) => {
             const type = objectById(partyType.complementTypes, e.complementTypeId);
@@ -52,6 +54,7 @@ class PartyDetailNames extends AbstractReactComponent {
 
     partyNameAdd = (data) => {
         const partyNames = this.props.party.partyNames;
+        data = normalizeNameObject(data);
         const party = {
             ...this.props.party,
             partyNames: [
@@ -79,14 +82,15 @@ class PartyDetailNames extends AbstractReactComponent {
     partyNameUpdate = (originalName, newName) => {
         const partyNames = this.props.party.partyNames;
         const index = indexById(partyNames, originalName.id);
+        newName = normalizeNameObject({
+            ...originalName,
+            ...newName
+        });
         const party = {
             ...this.props.party,
             partyNames: [
                 ...partyNames.slice(0, index),
-                {
-                    ...originalName,
-                    ...newName
-                },
+                newName,
                 ...partyNames.slice(index+1)
             ]
         };
@@ -107,12 +111,12 @@ class PartyDetailNames extends AbstractReactComponent {
 
     handlePartyNameAdd = () => {
         const {partyType} = this.props;
-        this.dispatch(modalDialogShow(this, i18n('party.detail.name.new') , <PartyNameForm partyType={partyType} onSubmitForm={this.partyNameAdd} />));
+        this.dispatch(modalDialogShow(this, i18n('party.detail.name.new'), <PartyNameForm partyType={partyType} onSubmitForm={this.partyNameAdd} />, "dialog-lg"));
     };
 
     handlePartyNameUpdate = (partyName) => {
         const {partyType} = this.props;
-        this.dispatch(modalDialogShow(this, i18n('party.detail.name.update') , <PartyNameForm partyType={partyType} initData={partyName} onSubmitForm={this.partyNameUpdate.bind(this, partyName)} />));
+        this.dispatch(modalDialogShow(this, i18n('party.detail.name.update'), <PartyNameForm partyType={partyType} initData={partyName} onSubmitForm={this.partyNameUpdate.bind(this, partyName)} />, "dialog-lg"));
     };
 
     handleDelete = (id) => {
@@ -128,18 +132,19 @@ class PartyDetailNames extends AbstractReactComponent {
     };
 
     render() {
-        const {party, partyType} = this.props;
+        const {party, partyType, canEdit} = this.props;
 
         return <div className="party-detail-names">
             <div>
                 <label>{i18n("party.detail.formNames")}</label>
-                <NoFocusButton bsStyle="default" onClick={this.handlePartyNameAdd}><Icon glyph="fa-plus" /></NoFocusButton>
+                {canEdit && <NoFocusButton bsStyle="default" onClick={this.handlePartyNameAdd}><Icon glyph="fa-plus" /></NoFocusButton>}
             </div>
             {party.partyNames.map((partyName, index) => <div key={partyName.id} className="value-group">
-                <FormControl.Static>{this.getPartyName(partyName, partyType)}</FormControl.Static>
+                <div className="value">{this.getPartyName(partyName, partyType)}</div>
                 <div className="actions">
                     <NoFocusButton onClick={() => this.handlePartyNameUpdate(partyName)}><Icon glyph="fa-pencil" /></NoFocusButton>
-                    {partyName.prefferedName ? i18n('party.detail.formNames.prefferedName') : <span>
+                    {partyName.prefferedName && i18n('party.detail.formNames.prefferedName')}
+                    {canEdit && !partyName.prefferedName && <span>
                         <NoFocusButton onClick={() => this.handleDelete(partyName.id)}><Icon glyph="fa-times" /></NoFocusButton>
                         <NoFocusButton onClick={() => this.handleSelectPreffered(partyName.id)}><Icon glyph="fa-check" /></NoFocusButton>
                     </span>}

@@ -341,6 +341,15 @@ export function fund(state, action) {
                 fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
             }
 
+        case types.FUND_INVALID:
+            const result = {
+                ...state,
+                fundAction: fundAction(state.fundAction, action),
+                fundOutput: fundOutput(state.fundOutput, action),
+                nodes: nodes(state.nodes, action)
+            }
+            return consolidateState(state, result);
+
         default:
             return state;
     }

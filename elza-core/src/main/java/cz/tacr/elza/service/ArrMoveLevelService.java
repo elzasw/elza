@@ -596,7 +596,7 @@ public class ArrMoveLevelService {
 
         arrangementService.isValidAndOpenVersion(version);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_LEVEL, staticNode);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_LEVEL, staticNodeParent);
 
         final ArrLevel staticLevelParent = arrangementService.lockNode(staticNodeParent, version, change);
         Assert.notNull(staticLevelParent);

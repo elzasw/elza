@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {Autocomplete, AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading} from 'components/index.jsx';
-import {Modal, Button, HelpBlock, FormGroup, Form} from 'react-bootstrap';
+import {Autocomplete, AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading, DatationField} from 'components/index.jsx';
+import {Modal, Button, HelpBlock, FormGroup, Form, Row, Col} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
@@ -14,10 +14,10 @@ import {submitReduxForm} from 'components/form/FormUtils.jsx'
 import {getTreeItemById} from "./../../components/registry/registryUtils";
 import {PARTY_TYPE_CODES} from 'actions/party/party.jsx'
 
+import './AddPartyForm.less'
+
 /**
- * ADD PARTY FORM
- * *********************************************
- * formulář nové osoby
+ * Formulář nové osoby
  */
 class AddPartyForm extends AbstractReactComponent {
 
@@ -32,8 +32,16 @@ class AddPartyForm extends AbstractReactComponent {
         'prefferedName.degreeAfter',
         'prefferedName.mainPart',
         'prefferedName.otherPart',
-        'prefferedName.complements[].complementTypeId',
-        'prefferedName.complements[].complement',
+        'prefferedName.validFrom.calendarTypeId',
+        'prefferedName.validFrom.value',
+        'prefferedName.validFrom.textDate',
+        'prefferedName.validFrom.note',
+        'prefferedName.validTo.calendarTypeId',
+        'prefferedName.validTo.value',
+        'prefferedName.validTo.textDate',
+        'prefferedName.validTo.note',
+        'prefferedName.partyNameComplements[].complementTypeId',
+        'prefferedName.partyNameComplements[].complement',
     ];
 
     static requireFields = (...names) => data =>
@@ -46,7 +54,7 @@ class AddPartyForm extends AbstractReactComponent {
 
     validate = (values) => {
         const {partyType} = this.props;
-        let errors = {};
+        let errors = AddPartyForm.validateInline(values);
         if (!values.prefferedName.nameFormType.id) {
             if (!errors.prefferedName) {
                 errors.prefferedName = {}
@@ -77,9 +85,7 @@ class AddPartyForm extends AbstractReactComponent {
             errors.scope = i18n('global.validation.required');
         }
 
-        console.log(values.prefferedName.complements)
-        console.log(values.prefferedName.complements.length)
-        if (values.prefferedName.complements.length > 0) {
+        if (values.prefferedName.complements && values.prefferedName.complements.length > 0) {
             if (!errors.prefferedName) {
                 errors.prefferedName = {}
             }
@@ -88,8 +94,23 @@ class AddPartyForm extends AbstractReactComponent {
                 delete errors.prefferedName.complements;
             }
         }
-        errors.prefferedName && Object.keys(errors.prefferedName).length === 0 && delete errors.prefferedName;
+        errors.prefferedName !== undefined && Object.keys(errors.prefferedName).length === 0 && delete errors.prefferedName;
+
         return errors;
+    };
+
+
+
+    static validateInline = (values) => {
+        const errors = {prefferedName:{}};
+
+        errors.prefferedName.validFrom = DatationField.reduxValidate(values.prefferedName.validFrom);
+        errors.prefferedName.validTo = DatationField.reduxValidate(values.validTo);
+        if (errors.prefferedName.validFrom == null && errors.prefferedName.validTo == null) {
+            delete errors.prefferedName;
+        }
+        return errors;
+
     };
 
     static PropTypes = {
@@ -202,7 +223,7 @@ class AddPartyForm extends AbstractReactComponent {
         this.dispatch(modalDialogHide());
     };
 
-    customSubmitReduxForm = (validate, store, values, dispatch) => {
+    customSubmitReduxForm = (validate, store, values) => {
         return new Promise((resolve, reject) => {
             const errors = validate(values, this.props);
             if (Object.keys(errors).length > 0) {
@@ -226,7 +247,6 @@ class AddPartyForm extends AbstractReactComponent {
         const submit = this.customSubmitReduxForm.bind(this, this.validate);
 
         const {
-            submitFailed,
             fields: {
                 scope,
                 genealogy,
@@ -240,7 +260,10 @@ class AddPartyForm extends AbstractReactComponent {
                     degreeAfter,
                     mainPart,
                     otherPart,
-                    complements,
+                    partyNameComplements,
+                    note,
+                    validFrom,
+                    validTo
                 },
             },
             refTables:{partyNameFormTypes},
@@ -260,59 +283,96 @@ class AddPartyForm extends AbstractReactComponent {
 
         const treeItems = recordTypes.fetched ? recordTypes.item : [];
         const value = registerTypeId.value === null ? null : getTreeItemById(registerTypeId.value, treeItems);
+        const complementsList = complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>);
 
         return <Form>
-            <Modal.Body>
-                <div className="line">
-                    <FormGroup validationState={registerTypeId.touched && registerTypeId.error ? 'error' : null}>
-                        <Autocomplete
-                            label={i18n('party.recordType')}
-                            items={treeItems}
-                            tree
-                            allowSelectItem={(id, item) => item.addRecord}
-                            {...registerTypeId}
-                            value={value}
-                            onChange={item => registerTypeId.onChange(item ? item.id : null)}
-                            onBlur={item => registerTypeId.onBlur(item ? item.id : null)}
-                        />
-                        {registerTypeId.touched && registerTypeId.error && <HelpBlock>{registerTypeId.error}</HelpBlock>}
-                    </FormGroup>
-                    <Scope versionId={versionId} label={i18n('party.recordScope')} {...scopeId} />
-                </div>
+            <Modal.Body className="add-party-form">
+                <div className="flex">
+                    <div className="flex-2">
+                        <Row>
+                            <Col xs={12}>
+                                <div className="line">
+                                    <FormGroup validationState={registerTypeId.touched && registerTypeId.error ? 'error' : null}>
+                                        <Autocomplete
+                                            label={i18n('party.recordType')}
+                                            items={treeItems}
+                                            tree
+                                            allowSelectItem={(id, item) => item.addRecord}
+                                            {...registerTypeId}
+                                            value={value}
+                                            onChange={item => registerTypeId.onChange(item ? item.id : null)}
+                                            onBlur={item => registerTypeId.onBlur(item ? item.id : null)}
+                                        />
+                                        {registerTypeId.touched && registerTypeId.error && <HelpBlock>{registerTypeId.error}</HelpBlock>}
+                                    </FormGroup>
+                                    <Scope versionId={versionId} label={i18n('party.recordScope')} {...scopeId} />
+                                </div>
+                                <hr />
+                                {partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <div>
+                                    <FormInput componentClass="textarea" label={i18n('party.scope')} {...scope}/>
+                                    <hr/>
+                                </div>}
+                                {partyType.code == PARTY_TYPE_CODES.DYNASTY && <div>
+                                    <FormInput componentClass="textarea" label={i18n('party.genealogy')} {...genealogy}/>
+                                    <hr/>
+                                </div>}
+                            </Col>
+                            <Col xs={12} md={6}>
+                                <FormInput type="text" label={i18n('party.name.mainPart')} {...mainPart} />
+                            </Col>
+                            <Col xs={12} md={6}>
+                                <FormInput type="text" label={i18n('party.name.otherPart')} {...otherPart} />
+                            </Col>
+                            {partyType.code == PARTY_TYPE_CODES.PERSON && <Col xs={12}>
+                                <Row>
+                                    <Col xs={12} md={6}>
+                                        <FormInput type="text" label={i18n('party.name.degreeBefore')} {...degreeBefore} />
+                                    </Col>
+                                    <Col xs={12} md={6}>
+                                        <FormInput type="text" label={i18n('party.name.degreeAfter')} {...degreeAfter} />
+                                    </Col>
+                                </Row>
+                            </Col>}
 
-                <FormInput componentClass="select" label={i18n('party.nameFormType')} {...nameFormType.id}>
-                    {partyNameFormTypes.items.map(i => <option value={i.nameFormTypeId} key={i.nameFormTypeId}>{i.name}</option>)}
-                </FormInput>
-
-                <hr/>
-                {partyType.code == PARTY_TYPE_CODES.PERSON && <div className="line">
-                    <FormInput type="text" label={i18n('party.degreeBefore')} {...degreeBefore}/>
-                    <FormInput type="text" label={i18n('party.degreeAfter')} {...degreeAfter}/>
-                </div>}
-                {partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <div className="line">
-                    <FormInput componentClass="textarea" label={i18n('party.scope')} {...scope}/>
-                </div>}
-                {partyType.code == PARTY_TYPE_CODES.DYNASTY && <div className="line">
-                    <FormInput componentClass="textarea" label={i18n('party.genealogy')} {...genealogy}/>
-                </div>}
-
-                <FormInput type="text" label={i18n('party.nameMain')} {...mainPart} />
-                <FormInput type="text" label={i18n('party.nameOther')} {...otherPart} />
-                <hr/>
-                <div>
-                    <label>{i18n('party.nameComplements')}</label>
-                    {complements.map((complement, index) => <div className="block complement" key={'complement' + index}>
-                            <div className="line">
-                                <FormInput type="text" {...complement.complement} />
-                                <FormInput componentClass="select" {...complement.complementTypeId}>
-                                    <option key='0'/>
-                                    {complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>)}
+                            <Col xs={12}>
+                                <label>{i18n('party.name.complements')}</label> <Button bsStyle="action" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
+                                {partyNameComplements.map((complement, index) => <div className="complement" key={'complement' + index}>
+                                    <FormInput componentClass="select" {...complement.complementTypeId}>
+                                        <option key='0'/>
+                                        {complementsList}
+                                    </FormInput>
+                                    <FormInput type="text" {...complement.complement}/>
+                                    <Button className="btn-icon" onClick={() => {partyNameComplements.removeField(index)}}><Icon glyph="fa-times"/></Button>
+                                </div>)}
+                            </Col>
+                            <Col xs={12}>
+                                <FormInput componentClass="select" label={i18n('party.name.nameFormType')} {...nameFormType.id}>
+                                    {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
                                 </FormInput>
-                                <Button className="btn-icon" onClick={() => {complements.removeField(index)}}><Icon glyph="fa-trash"/></Button>
-                            </div>
-                        </div>
-                    )}
-                    <Button className="btn-icon block" onClick={() => {complements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
+                            </Col>
+                        </Row>
+                    </div>
+                    <div className="datation-group flex-1">
+                        <Row>
+                            <Col xs={12}>
+                                <Row>
+                                    <Col xs={6} md={12}>
+                                        <DatationField fields={validFrom} label={i18n('party.name.validFrom')} labelTextual={i18n('party.name.validFrom.textDate')} labelNote={i18n('party.name.validFrom.note')} />
+                                    </Col>
+                                    <Col xs={6} md={12}>
+                                        <DatationField fields={validTo} label={i18n('party.name.validTo')} labelTextual={i18n('party.name.validTo.textual')} labelNote={i18n('party.name.validTo.note')} />
+                                    </Col>
+                                </Row>
+                            </Col>
+                        </Row>
+                    </div>
+                    <div className="flex-1">
+                        <Row>
+                            <Col xs={12}>
+                                <FormInput componentClass="textarea" label={i18n('party.name.note')} {...note} />
+                            </Col>
+                        </Row>
+                    </div>
                 </div>
             </Modal.Body>
             <Modal.Footer>
@@ -327,6 +387,7 @@ class AddPartyForm extends AbstractReactComponent {
 export default reduxForm({
         form: 'addPartyForm',
         fields: AddPartyForm.fields,
+        validate: AddPartyForm.validateInline
     }, state => ({
         initialValues: state.form.addPartyForm.initialValues,
         refTables: state.refTables,

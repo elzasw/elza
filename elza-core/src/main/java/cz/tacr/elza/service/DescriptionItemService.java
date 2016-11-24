@@ -1099,6 +1099,153 @@ public class DescriptionItemService {
         return valueMap;
     }
 
+    /**
+     * Vytvoření mapy popisků JP.
+     *
+     * @param subtreeNodeIds seznam identifikátorů JP
+     * @param descItemTypes  seznam typů atributů
+     * @param changeId       identifikátor změny, vůči které sestavujeme popisky
+     * @return mapa popisků
+     */
+    public Map<Integer, Map<String, TitleValues>> createNodeValuesMap(final Set<Integer> subtreeNodeIds,
+                                                                      final Set<RulItemType> descItemTypes,
+                                                                      final Integer changeId) {
+        Map<Integer, Map<String, TitleValues>> valueMap = new HashMap<>();
+
+        if (descItemTypes.isEmpty()) {
+            return valueMap;
+        }
+
+        //chceme nalézt atributy i pro rodiče podstromu
+        Set<Integer> nodeIds = new HashSet<>(subtreeNodeIds);
+
+        List<ArrData> dataList = dataRepository.findDescItemsByNodeIds(nodeIds, descItemTypes, changeId);
+        Set<Integer> partyRefDataIds = new HashSet<>();
+        Set<Integer> recordRefDataIds = new HashSet<>();
+        Set<Integer> packetRefDataIds = new HashSet<>();
+        Set<Integer> enumDataIds = new HashSet<>();
+
+        for (ArrData data : dataList) {
+
+            TitleValue value = null;
+            String code = data.getItem().getItemType().getCode();
+            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
+                    .getCode();
+            Integer nodeId = data.getItem().getNodeId();
+            Integer position = data.getItem().getPosition();
+
+            if (data.getDataType().getCode().equals("ENUM")) {
+                enumDataIds.add(data.getDataId());
+            } else if (data.getDataType().getCode().equals("PARTY_REF")) {
+                partyRefDataIds.add(data.getDataId());
+            } else if (data.getDataType().getCode().equals("RECORD_REF")) {
+                recordRefDataIds.add(data.getDataId());
+            } else if (data.getDataType().getCode().equals("PACKET_REF")) {
+                packetRefDataIds.add(data.getDataId());
+            } else if (data.getDataType().getCode().equals("UNITDATE")) {
+                ArrDataUnitdate unitDate = (ArrDataUnitdate) data;
+
+                ParUnitdate parUnitdate = new ParUnitdate();
+                parUnitdate.setCalendarType(unitDate.getCalendarType());
+                parUnitdate.setFormat(unitDate.getFormat());
+                parUnitdate.setValueFrom(unitDate.getValueFrom());
+                parUnitdate.setValueFromEstimated(unitDate.getValueFromEstimated());
+                parUnitdate.setValueTo(unitDate.getValueTo());
+                parUnitdate.setValueToEstimated(unitDate.getValueToEstimated());
+
+                value = new UnitdateTitleValue(UnitDateConvertor.convertToString(parUnitdate),
+                        unitDate.getCalendarType().getCalendarTypeId());
+            } else if (data.getDataType().getCode().equals("STRING")) {
+                ArrDataString stringtData = (ArrDataString) data;
+                value = new TitleValue(stringtData.getValue());
+            } else if (data.getDataType().getCode().equals("TEXT") || data.getDataType().getCode().equals("FORMATTED_TEXT")) {
+                ArrDataText textData = (ArrDataText) data;
+                value = new TitleValue(textData.getValue());
+            } else if (data.getDataType().getCode().equals("UNITID")) {
+                ArrDataUnitid unitId = (ArrDataUnitid) data;
+                value = new TitleValue(unitId.getValue());
+            } else if (data.getDataType().getCode().equals("INT")) {
+                ArrDataInteger intData = (ArrDataInteger) data;
+                value = new TitleValue(intData.getValue().toString());
+            } else if (data.getDataType().getCode().equals("DECIMAL")) {
+                ArrDataDecimal decimalData = (ArrDataDecimal) data;
+                value = new TitleValue(decimalData.getValue().toPlainString());
+            } else if (data.getDataType().getCode().equals("COORDINATES")) {
+                ArrDataCoordinates coordinates = (ArrDataCoordinates) data;
+                value = new CoordinatesTitleValue(coordinates.getValue());
+            } else if (data.getDataType().getCode().equals("JSON_TABLE")) {
+                ArrDataJsonTable table = (ArrDataJsonTable) data;
+                value = new JsonTableTitleValue(table.getFulltextValue(), table.getValue().getRows().size());
+            }
+
+            if (value != null) {
+                String iconValue = getIconValue(data);
+                addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
+            }
+        }
+
+        List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, changeId);
+        for (ArrData data : enumData) {
+            TitleValue value = new TitleValue(data.getItem().getItemSpec().getName());
+            String iconValue = getIconValue(data);
+            String code = data.getItem().getItemType().getCode();
+            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
+                    .getCode();
+            Integer nodeId = data.getItem().getNodeId();
+            Integer position = data.getItem().getPosition();
+
+            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
+        }
+
+        List<ArrDataPartyRef> partyData = dataPartyRefRepository.findByDataIdsAndVersionFetchPartyRecord(partyRefDataIds, descItemTypes, changeId);
+        for (ArrDataPartyRef data : partyData) {
+            TitleValue value = new TitleValue(data.getParty().getRecord().getRecord());
+            String iconValue = getIconValue(data);
+            String code = data.getItem().getItemType().getCode();
+            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
+                    .getCode();
+            Integer nodeId = data.getItem().getNodeId();
+            Integer position = data.getItem().getPosition();
+
+            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
+        }
+
+        List<ArrDataRecordRef> recordData = dataRecordRefRepository.findByDataIdsAndVersionFetchRecord(recordRefDataIds, descItemTypes, changeId);
+        for (ArrDataRecordRef data : recordData) {
+            TitleValue value = new TitleValue(data.getRecord().getRecord());
+            String iconValue = getIconValue(data);
+            String code = data.getItem().getItemType().getCode();
+            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
+                    .getCode();
+            Integer nodeId = data.getItem().getNodeId();
+            Integer position = data.getItem().getPosition();
+
+            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
+        }
+
+        List<ArrDataPacketRef> packetData = dataPacketRefRepository.findByDataIdsAndVersionFetchPacket(packetRefDataIds, descItemTypes, changeId);
+        for (ArrDataPacketRef data : packetData) {
+            ArrPacket packet = data.getPacket();
+            RulPacketType packetType = packet.getPacketType();
+            TitleValue value;
+            if (packetType == null) {
+                value = new TitleValue(packet.getStorageNumber());
+            } else {
+                value = new TitleValue(packetType.getName() + ": " + packet.getStorageNumber());
+            }
+            String iconValue = getIconValue(data);
+            String code = data.getItem().getItemType().getCode();
+            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
+                    .getCode();
+            Integer nodeId = data.getItem().getNodeId();
+            Integer position = data.getItem().getPosition();
+
+            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
+        }
+
+        return valueMap;
+    }
+
     private void addValuesToMap(Map<Integer, Map<String, TitleValues>> valueMap, final TitleValue titleValue, String code,
                                 String specCode, Integer nodeId, String iconValue, final Integer position) {
 

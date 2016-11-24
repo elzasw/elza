@@ -1,0 +1,146 @@
+<relation-role-types>
+    <relation-role-type code="1">
+        <name>člen korporace (která je popisována)</name>
+    </relation-role-type>
+    <relation-role-type code="2">
+        <name>člen/členka</name>
+    </relation-role-type>
+    <relation-role-type code="3">
+        <name>členská korporace (v níž byla popisovaná korporace členem)</name>
+    </relation-role-type>
+    <relation-role-type code="4">
+        <name>související entita</name>
+    </relation-role-type>
+    <relation-role-type code="5">
+        <name>jiná související entita</name>
+    </relation-role-type>
+    <relation-role-type code="6">
+        <name>nadřízená entita</name>
+    </relation-role-type>
+    <relation-role-type code="7">
+        <name>podřízená entita</name>
+    </relation-role-type>
+    <relation-role-type code="8">
+        <name>místo</name>
+    </relation-role-type>
+    <relation-role-type code="9">
+        <name>jiná identita</name>
+    </relation-role-type>
+    <relation-role-type code="10">
+        <name>bratr</name>
+    </relation-role-type>
+    <relation-role-type code="11">
+        <name>sestra</name>
+    </relation-role-type>
+    <relation-role-type code="12">
+        <name>otec</name>
+    </relation-role-type>
+    <relation-role-type code="13">
+        <name>matka</name>
+    </relation-role-type>
+    <relation-role-type code="14">
+        <name>jiný příbuzný</name>
+    </relation-role-type>
+    <relation-role-type code="15">
+        <name>syn</name>
+    </relation-role-type>
+    <relation-role-type code="16">
+        <name>dcera</name>
+    </relation-role-type>
+    <relation-role-type code="17">
+        <name>manžel/manželka, partner/partnerka</name>
+    </relation-role-type>
+    <relation-role-type code="18">
+        <name>známý/známá</name>
+    </relation-role-type>
+    <relation-role-type code="19">
+        <name>učitel/učitelka</name>
+    </relation-role-type>
+    <relation-role-type code="20">
+        <name>škola, vzdělávací korporace</name>
+    </relation-role-type>
+    <relation-role-type code="21">
+        <name>spolužák/spolužačka</name>
+    </relation-role-type>
+    <relation-role-type code="22">
+        <name>pracoviště</name>
+    </relation-role-type>
+    <relation-role-type code="23">
+        <name>nadřízený/nadřízená</name>
+    </relation-role-type>
+    <relation-role-type code="24">
+        <name>podřízený/nadřízená</name>
+    </relation-role-type>
+    <relation-role-type code="25">
+        <name>kolega/kolegyně v zaměstnání</name>
+    </relation-role-type>
+    <relation-role-type code="26">
+        <name>zaměstnanec, funkcionář korporace</name>
+    </relation-role-type>
+    <relation-role-type code="27">
+        <name>zaměstnavatel/zaměstnavatelka</name>
+    </relation-role-type>
+    <relation-role-type code="28">
+        <name>příjemce ocenění</name>
+    </relation-role-type>
+    <relation-role-type code="29">
+        <name>udělovatel ocenění</name>
+    </relation-role-type>
+    <relation-role-type code="30">
+        <name>udělené ocenění</name>
+    </relation-role-type>
+    <relation-role-type code="31">
+        <name>udělení ocenění (ceremoniál)</name>
+    </relation-role-type>
+    <relation-role-type code="32">
+        <name>sídlo</name>
+    </relation-role-type>
+    <relation-role-type code="33">
+        <name>rozhodnutí / dokument</name>
+    </relation-role-type>
+    <relation-role-type code="34">
+        <name>dílo/výtvor osoby</name>
+    </relation-role-type>
+    <relation-role-type code="35">
+        <name>vlastník/majitel</name>
+    </relation-role-type>
+    <relation-role-type code="36">
+        <name>pojmenováno podle …</name>
+    </relation-role-type>
+    <relation-role-type code="37">
+        <name>první člen rodu/rodiny</name>
+    </relation-role-type>
+    <relation-role-type code="38">
+        <name>poslední člen rodu/rodiny</name>
+    </relation-role-type>
+    <relation-role-type code="39">
+        <name>zakladatel</name>
+    </relation-role-type>
+    <relation-role-type code="40">
+        <name>větev rodu</name>
+    </relation-role-type>
+    <relation-role-type code="41">
+        <name>související rod</name>
+    </relation-role-type>
+    <relation-role-type code="42">
+        <name>organizátor</name>
+    </relation-role-type>
+    <relation-role-type code="43">
+        <name>součást souborné události</name>
+    </relation-role-type>
+    <relation-role-type code="44">
+        <name>svolavatel</name>
+    </relation-role-type>
+    <relation-role-type code="45">
+        <name>předchůdce</name>
+    </relation-role-type>
+    <relation-role-type code="46">
+        <name>likvidátor</name>
+    </relation-role-type>
+    <relation-role-type code="47">
+        <name>celek</name>
+    </relation-role-type>
+    <relation-role-type code="48">
+        <name>skupina</name>
+    </relation-role-type>
+</relation-role-types>

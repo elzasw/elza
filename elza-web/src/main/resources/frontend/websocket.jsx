@@ -36,6 +36,7 @@ import {
     userChange,
     groupChange,
     groupDelete,
+    fundInvalidChanges
 } from 'actions/global/change.jsx';
 
 import Stomp from 'stompjs';
@@ -194,7 +195,7 @@ function stompSuccessCallback(frame) {
  *
  * @param error {string} text chyby
  */
-function stompFailureCallback(error, a, b, c) {
+function stompFailureCallback(error) {
     const {body, headers} = error;
     if (error.command === "ERROR" && body && headers) {
         stompDisconnect();
@@ -324,6 +325,10 @@ function processEvents(values) {
                 outputChanges(value);
                 break;
 
+            case 'FUND_INVALID':
+                fundInvalid(value);
+                break;
+
             case 'OUTPUT_CHANGES_DETAIL':
                 outputChangesDetail(value);
                 break;
@@ -411,6 +416,10 @@ function outputStateChange(value) {
 
 function outputChanges(value) {
     store.dispatch(fundOutputChanges(value.versionId, value.entityIds));
+}
+
+function fundInvalid(value) {
+    store.dispatch(fundInvalidChanges(value.fundIds, value.fundVersionIds));
 }
 
 function outputChangesDetail(value) {
@@ -516,6 +525,3 @@ function processValidations(values) {
     });
 }
 
-// // připojení websocketů
-// stompConnect();
-//

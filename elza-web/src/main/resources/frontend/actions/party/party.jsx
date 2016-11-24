@@ -56,10 +56,6 @@ export function partyDetailInvalidate() {
     return DetailActions.invalidate(AREA_PARTY_DETAIL, null)
 }
 
-export function partyDetail() {
-    return DetailActions.invalidate(AREA_PARTY_DETAIL, null)
-}
-
 export function partyDetailClear() {
     return partyDetailFetchIfNeeded(null);
 }
@@ -141,7 +137,7 @@ export function partyAdd(partyTypeId, versionId, callback, showSubmitTypes = fal
             label = i18n('party.addParty');
         }
 
-        dispatch(modalDialogShow(this, label, <AddPartyForm partyType={partyType} showSubmitTypes={showSubmitTypes} versionId={versionId} onSubmitForm={partyAddSubmit.bind(null, callback, dispatch)} />));
+        dispatch(modalDialogShow(this, label, <AddPartyForm partyType={partyType} showSubmitTypes={showSubmitTypes} versionId={versionId} onSubmitForm={partyAddSubmit.bind(null, callback, dispatch)} />, 'dialog-lg'));
     }
 }
 
@@ -154,6 +150,7 @@ export const PARTY_CLASS_BY_TYPE = {
 
 function partyAddSubmit(callback, dispatch, submitType, data) {
     const {prefferedName, ...other} = data;
+    const newName = normalizeNameObject(prefferedName);
     const party = {
         '@type': PARTY_CLASS_BY_TYPE[data.partyType.code],
         ...other,
@@ -163,7 +160,7 @@ function partyAddSubmit(callback, dispatch, submitType, data) {
         },
         partyNames : [
             {
-                ...prefferedName,
+                ...newName,
                 prefferedName: true,
             }
         ]
@@ -174,3 +171,36 @@ function partyAddSubmit(callback, dispatch, submitType, data) {
         callback && callback(json, submitType);
     });
 }
+
+
+const removeUndefined = (obj) => {
+    for (let key in obj ) {
+        if (obj.hasOwnProperty(key)) {
+            if (obj[key] === undefined || obj[key] === null) {
+                delete obj[key];
+            }
+        }
+    }
+    return obj;
+};
+
+export const normalizeNameObject = (obj) => {
+    if (obj.validFrom) {
+        obj.validFrom = obj.validFrom.value !== null && obj.validFrom.value !== undefined ? obj.validFrom : null;
+    }
+    if (obj.validTo) {
+        obj.validTo = obj.validTo.value !== null && obj.validTo.value !== undefined ? obj.validTo : null;
+    }
+
+    ['mainPart', 'otherPart', 'degreeBefore', 'degreeAfter'].each(i => {
+        if (obj[i]) {
+            obj[i] = obj[i].trim();
+            if (obj[i].length == 0) {
+                obj[i] = null;
+            }
+        }
+    });
+
+    return obj;
+};
+

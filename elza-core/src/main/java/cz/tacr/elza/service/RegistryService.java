@@ -18,6 +18,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
@@ -111,6 +112,9 @@ public class RegistryService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private BeanFactory beanFactory;
 
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
@@ -802,5 +806,54 @@ public class RegistryService {
      */
     public Map<Integer, List<RegRecord>> findByNodes(final Collection<Integer> nodeIds) {
         return nodeRegisterRepository.findByNodes(nodeIds);
+    }
+
+    /**
+     * Získání coordinate
+     * včetně oprávnění
+     *
+     * @param coordinatesId coordinate Id
+     * @return coordinate
+     */
+    public RegCoordinates getRegCoordinate(Integer coordinatesId) {
+        RegCoordinates coordinates = regCoordinatesRepository.getOneCheckExist(coordinatesId);
+        beanFactory.getBean(RegistryService.class).getRecord(coordinates.getRegRecord().getRecordId());
+        return coordinates;
+    }
+
+    /**
+     * Smazání coordinate
+     *
+     * @param coordinate coordinate ke smazání
+     * @param record record z důvodu oprávnění
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
+    public void deleteRegCoordinate(final RegCoordinates coordinate, @AuthParam(type = AuthParam.Type.REGISTRY) final RegRecord record) {
+        regCoordinatesRepository.delete(coordinate);
+    }
+
+    /**
+     * Získání variant record
+     * včetně oprávnění
+     *
+     * @param variantRecordId variant record id
+     * @return variant record
+     */
+    public RegVariantRecord getVariantRecord(Integer variantRecordId) {
+        RegVariantRecord variantRecord = variantRecordRepository.getOneCheckExist(variantRecordId);
+        beanFactory.getBean(RegistryService.class).getRecord(variantRecord.getRegRecord().getRecordId());
+        return variantRecord;
+    }
+
+
+    /**
+     * Smazání variant record
+     *
+     * @param variantRecord variant record ke smazání
+     * @param record record z důvodu oprávnění
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
+    public void deleteVariantRecord(final RegVariantRecord variantRecord, @AuthParam(type = AuthParam.Type.REGISTRY) final RegRecord record) {
+        variantRecordRepository.delete(variantRecord);
     }
 }

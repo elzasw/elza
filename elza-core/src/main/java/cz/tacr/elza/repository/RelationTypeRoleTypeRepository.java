@@ -13,6 +13,6 @@ import cz.tacr.elza.domain.ParRelationTypeRoleType;
  * @since 22.12.2015
  */
 @Repository
-public interface RelationTypeRoleTypeRepository extends JpaRepository<ParRelationTypeRoleType, Integer> {
+public interface RelationTypeRoleTypeRepository extends JpaRepository<ParRelationTypeRoleType, Integer>, Packaging<ParRelationTypeRoleType> {
 
 }

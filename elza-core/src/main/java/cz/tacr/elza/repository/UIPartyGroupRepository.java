@@ -9,6 +9,6 @@ import cz.tacr.elza.domain.UIPartyGroup;
  * Repository pro {@link UIPartyGroup}.
  */
 @Repository
-public interface UIPartyGroupRepository extends JpaRepository<UIPartyGroup, Integer> {
+public interface UIPartyGroupRepository extends JpaRepository<UIPartyGroup, Integer>, Packaging<UIPartyGroup> {
 
 }

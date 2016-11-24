@@ -20,10 +20,17 @@ public interface DataRepositoryCustom {
                                          Set<RulItemType> descItemTypes,
                                          ArrFundVersion version);
 
+    List<ArrData> findDescItemsByNodeIds(Set<Integer> nodeIds,
+                                         Set<RulItemType> itemTypes,
+                                         Integer changeId);
+
     List<ArrData> findByDataIdsAndVersionFetchSpecification(Set<Integer> nodeIds,
             Set<RulItemType> descItemTypes,
             ArrFundVersion version);
 
+    List<ArrData> findByDataIdsAndVersionFetchSpecification(Set<Integer> nodeIds,
+                                                            Set<RulItemType> itemTypes,
+                                                            Integer changeId);
 
     /**
      * Najde seznam hodnot atributů obsahujících hledaný text.

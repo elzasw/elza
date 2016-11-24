@@ -1,3 +1,4 @@
+
 /**
  * Utility pro formuláře s inplace editací.
  */
@@ -33,6 +34,17 @@ export function submitReduxForm(validate, values, dispatch) {
         } else {
             this.props.onSubmitForm(values)
             resolve()
+        }
+    })
+}
+
+export function submitReduxFormWithRemote(validate, values) {
+    return new Promise((resolve, reject) => {
+        const errors = validate(values, this.props);
+        if (Object.keys(errors).length > 0) {
+            reject(errors)
+        } else {
+            this.props.onSubmit(values, resolve, reject)
         }
     })
 }

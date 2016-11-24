@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {DropDownTree, AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading} from 'components/index.jsx';
-import {Modal, Button, HelpBlock, FormGroup, Form} from 'react-bootstrap';
+import {DropDownTree, AbstractReactComponent, i18n, Scope, Icon, FormInput, Loading, DatationField} from 'components/index.jsx';
+import {Modal, Button, Row, Col, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
@@ -10,8 +10,13 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList.jsx'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 import {submitReduxForm} from 'components/form/FormUtils.jsx'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
+import {PARTY_TYPE_CODES} from 'actions/party/party.jsx'
 
-const PARTY_TYPE_PERSON = 'PERSON';
+
+import './PartyNameForm.less'
+
+const stringNormalize = val => val && val.trim().length > 0 ? val.trim() : null;
 
 /**
  * Formulář formy jména osoby
@@ -24,6 +29,15 @@ class PartyNameForm extends AbstractReactComponent {
         'degreeAfter',
         'mainPart',
         'otherPart',
+        'note',
+        'validFrom.calendarTypeId',
+        'validFrom.value',
+        'validFrom.textDate',
+        'validFrom.note',
+        'validTo.calendarTypeId',
+        'validTo.value',
+        'validTo.textDate',
+        'validTo.note',
         'partyNameComplements[].complementTypeId',
         'partyNameComplements[].complement',
     ];
@@ -43,11 +57,25 @@ class PartyNameForm extends AbstractReactComponent {
      * @return object errors - seznam chyb
      */
     static validate = function (values) {
-        let errors = PartyNameForm.requireFields('mainPart')(values);
+        let errors = {
+            ...PartyNameForm.requireFields('mainPart')(values),
+            ...PartyNameForm.validateInline(values)
+        };
         errors.partyNameComplements = values.partyNameComplements.map(PartyNameForm.requireFields('complementTypeId', 'complement'));
         if (errors.partyNameComplements.filter(i => Object.keys(i).length !== 0).length === 0) {
             delete errors.partyNameComplements;
         }
+
+        return errors;
+    };
+
+
+
+    static validateInline = (values) => {
+        const errors = {};
+
+        errors.validFrom = DatationField.reduxValidate(values.validFrom);
+        errors.validTo = DatationField.reduxValidate(values.validTo);
         return errors;
     };
 
@@ -69,13 +97,17 @@ class PartyNameForm extends AbstractReactComponent {
     }
 
     dataRefresh = (props = this.props) => {
-        const {refTables:{partyNameFormTypes}, partyTypeId} = props;
+        const {refTables:{partyNameFormTypes, calendarTypes}, partyTypeId} = props;
         this.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
         this.dispatch(refPartyTypesFetchIfNeeded());        // načtení seznamu typů jmen
         this.dispatch(getRegistryRecordTypesIfNeeded(partyTypeId));
+        this.dispatch(calendarTypesFetchIfNeeded());
+
 
         partyNameFormTypes.fetched &&
         !partyNameFormTypes.isFetching &&
+        calendarTypes.fetched &&
+        !calendarTypes.isFetching &&
         this.loadData(props);
     };
 
@@ -83,8 +115,9 @@ class PartyNameForm extends AbstractReactComponent {
      * Pokud nejsou nastaveny hodnoty - nastavíme hodnotu do pole nameFormTypeId a scopeId
      */
     loadData(props) {
-        const {refTables: {partyNameFormTypes}, partyType, initData} = props;
+        const {refTables: {partyNameFormTypes, calendarTypes}, partyType, initData} = props;
         const nameFormTypeId = partyNameFormTypes.items[0].id;
+        const firstCalId = calendarTypes.items[0].id;
         if (!this.state.initialized) {
             this.setState({initialized: true, complementsTypes: partyType.complementTypes}, () => {
                 let newLoad = null;
@@ -93,7 +126,7 @@ class PartyNameForm extends AbstractReactComponent {
                         ...initData
                     }
                 } else {
-                    newLoad = {nameFormType:{id: nameFormTypeId}}
+                    newLoad = {nameFormType:{id: nameFormTypeId}, validFrom:{calendarTypeId:firstCalId}, validTo:{calendarTypeId:firstCalId}}
                 }
                 this.props.load(newLoad);
             });
@@ -112,7 +145,10 @@ class PartyNameForm extends AbstractReactComponent {
                 degreeBefore,
                 degreeAfter,
                 mainPart,
-                otherPart
+                otherPart,
+                note,
+                validFrom,
+                validTo
             },
             refTables:{partyNameFormTypes},
             handleSubmit,
@@ -126,34 +162,66 @@ class PartyNameForm extends AbstractReactComponent {
         const complementsList = complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>);
 
         return initialized ? <Form onSubmit={handleSubmit(submit)}>
-            <Modal.Body>
-                <FormInput componentClass="select" label={i18n('party.nameFormType')} {...nameFormType.id}>
-                    {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
-                </FormInput>
+            <Modal.Body className="party-name-form">
+                <div className="flex">
+                    <div className="flex-2">
+                        <Row>
+                            <Col xs={12} md={6}>
+                                <FormInput type="text" label={i18n('party.name.mainPart')} {...mainPart} />
+                            </Col>
+                            <Col xs={12} md={6}>
+                                <FormInput type="text" label={i18n('party.name.otherPart')} {...otherPart} />
+                            </Col>
+                            {partyType.code == PARTY_TYPE_CODES.PERSON && <Col xs={12}>
+                                <Row>
+                                    <Col xs={12} md={6}>
+                                        <FormInput type="text" label={i18n('party.name.degreeBefore')} {...degreeBefore} />
+                                    </Col>
+                                    <Col xs={12} md={6}>
+                                        <FormInput type="text" label={i18n('party.name.degreeAfter')} {...degreeAfter} />
+                                    </Col>
+                                </Row>
+                            </Col>}
 
-                <hr/>
-                {partyType.code == PARTY_TYPE_PERSON && <div className="line">
-                    <FormInput type="text" label={i18n('party.degreeBefore')} {...degreeBefore}/>
-                    <FormInput type="text" label={i18n('party.degreeAfter')} {...degreeAfter}/>
-                </div>}
-
-                <FormInput type="text" label={i18n('party.nameMain')} {...mainPart} />
-                <FormInput type="text" label={i18n('party.nameOther')} {...otherPart} />
-                <hr/>
-                <div>
-                    <label>{i18n('party.nameComplements')}</label>
-                    {partyNameComplements.map((complement, index) => <div className="block complement" key={'complement' + index}>
-                            <div className="line">
-                                <FormInput type="text" {...complement.complement}/>
-                                <FormInput componentClass="select" {...complement.complementTypeId}>
-                                    <option key='0'/>
-                                    {complementsList}
+                            <Col xs={12}>
+                                <label>{i18n('party.name.complements')}</label> <Button bsStyle="action" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
+                                {partyNameComplements.map((complement, index) => <div className="complement" key={'complement' + index}>
+                                    <FormInput componentClass="select" {...complement.complementTypeId}>
+                                        <option key='0'/>
+                                        {complementsList}
+                                    </FormInput>
+                                    <FormInput type="text" {...complement.complement}/>
+                                    <Button className="btn-icon" onClick={() => {partyNameComplements.removeField(index)}}><Icon glyph="fa-times"/></Button>
+                                </div>)}
+                            </Col>
+                            <Col xs={12}>
+                                <FormInput componentClass="select" label={i18n('party.name.nameFormType')} {...nameFormType.id}>
+                                    {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
                                 </FormInput>
-                                <Button className="btn-icon" onClick={() => {partyNameComplements.removeField(index)}}><Icon glyph="fa-trash"/></Button>
-                            </div>
-                        </div>
-                    )}
-                    <Button className="btn-icon block" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
+                            </Col>
+                        </Row>
+                    </div>
+                    <div className="datation-group flex-1">
+                        <Row>
+                            <Col xs={12}>
+                                <Row>
+                                    <Col xs={6} md={12}>
+                                        <DatationField fields={validFrom} label={i18n('party.name.validFrom')} labelTextual={i18n('party.name.validFrom.textDate')} labelNote={i18n('party.name.validFrom.note')} />
+                                    </Col>
+                                    <Col xs={6} md={12}>
+                                        <DatationField fields={validTo} label={i18n('party.name.validTo')} labelTextual={i18n('party.name.validTo.textual')} labelNote={i18n('party.name.validTo.note')} />
+                                    </Col>
+                                </Row>
+                            </Col>
+                        </Row>
+                    </div>
+                    <div className="flex-1">
+                        <Row>
+                            <Col xs={12}>
+                                <FormInput componentClass="textarea" label={i18n('party.name.note')} {...note} />
+                            </Col>
+                        </Row>
+                    </div>
                 </div>
             </Modal.Body>
             <Modal.Footer>
@@ -167,6 +235,7 @@ class PartyNameForm extends AbstractReactComponent {
 export default reduxForm({
         form: 'partyNameForm',
         fields: PartyNameForm.fields,
+        validate: PartyNameForm.validateInline
     }, state => ({
         initialValues: state.form.partyNameForm.initialValues,
         refTables: state.refTables,

@@ -497,6 +497,14 @@ export function node(state = nodeInitialState, action) {
                     isFetching: true
                 }
             };
+
+        case types.FUND_INVALID:
+            return consolidateState(state,{
+                ...state,
+                subNodeForm: subNodeForm(state.subNodeForm, action),
+                subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action)
+            });
+
         default:
             return state;
     }

@@ -158,6 +158,21 @@ export default function fundAction(state = initialState, action = {}) {
                 form: initialState.form
             }
         }
+
+        case types.FUND_INVALID: {
+            return {
+                ...state,
+                list: {
+                    ...state.list,
+                    currentDataKey: null
+                },
+                detail: {
+                    ...state.detail,
+                    currentDataKey: null
+                }
+            }
+        }
+
         default:
             return state;
     }

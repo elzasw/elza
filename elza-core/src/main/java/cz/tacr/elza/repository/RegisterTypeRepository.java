@@ -2,8 +2,11 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.RulPackage;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ParPartyType;
@@ -17,7 +20,7 @@ import cz.tacr.elza.domain.RegRegisterType;
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 @Repository
-public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, Integer>, RegisterTypeRepositoryCustom {
+public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, Integer>, RegisterTypeRepositoryCustom, Packaging<RegRegisterType> {
 
     /**
      * Najde všechny typy rejstříkových hesel, které jsou napojeny na typy osob.
@@ -80,4 +83,8 @@ public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, I
      */
     @Query("SELECT rr.registerType FROM par_registry_role rr WHERE rr.roleType = ?1")
     List<RegRegisterType> findByRelationRoleType(ParRelationRoleType relationRoleType);
+
+    @Modifying
+    @Query("UPDATE reg_register_type rr SET rr.parentRegisterType = NULL WHERE rr.rulPackage = :rulPackage")
+    void preDeleteByRulPackage(@Param("rulPackage") RulPackage rulPackage);
 }

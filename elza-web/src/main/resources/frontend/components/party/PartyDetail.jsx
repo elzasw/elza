@@ -61,7 +61,7 @@ const UI_PARTY_GROUP_DEFINITION_TYPE = {
     TEXTAREA: 'TEXTAREA',
     RELATION: 'RELATION',
     RELATION_CLASS: 'RELATION-CLASS'
-}
+};
 
 const PARTY_GENERAL_FIELDS = ['history', 'sourceInformation', 'characteristics'];
 const FIELDS_BY_PARTY_TYPE_CODE = {
@@ -69,7 +69,7 @@ const FIELDS_BY_PARTY_TYPE_CODE = {
     [PARTY_TYPE_CODES.GROUP_PARTY]: [...PARTY_GENERAL_FIELDS, 'scope', 'foundingNorm', 'scopeNorm', 'organization'],
     [PARTY_TYPE_CODES.EVENT]: [...PARTY_GENERAL_FIELDS, ],
     [PARTY_TYPE_CODES.DYNASTY]: [...PARTY_GENERAL_FIELDS, 'genealogy'],
-}
+};
 
 
 /**
@@ -109,24 +109,40 @@ class PartyDetail extends AbstractReactComponent {
         }, {});
 
     static validate = (values) => {
-        const errors = {};
+        const required = [];
 
-        // TODO @compel validation
+        if (typeof values.genealogy !== "undefined") {
+            required.push("genealogy")
+        }
+        if (typeof values.scope !== "undefined") {
+            required.push("scope")
+        }
+        const errors = PartyDetail.requireFields(...required)(values);
+        errors.creators = [];
+
+        values.creators.forEach((i,index) => {
+            if (!(i && i !== "" && typeof i == "object")) {
+                errors.creators[index] = i18n('global.validation.required');
+            }
+        });
+        if (errors.creators.length === 0) {
+            delete errors.creators;
+        }
 
         return errors;
     };
 
     componentDidMount() {
-        this.trySetFocus(); // TODO @compel focus
+        this.trySetFocus();
         this.fetchIfNeeded();
         this.updateStateFromProps();
         this.props.initForm(this.handlePartyUpdate);
     }
 
-    componentWillReceiveProps(nextProps, nextState) {
+    componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
-        this.trySetFocus(nextProps); // TODO @compel focus
-        this.updateStateFromProps(nextProps, nextState);
+        this.trySetFocus(nextProps);
+        this.updateStateFromProps(nextProps);
     }
 
     updateStateFromProps(props = this.props, state = this.state) {
@@ -134,21 +150,26 @@ class PartyDetail extends AbstractReactComponent {
             const {settings} = props.userDetail;
             const visibilitySettings = getOneSettings(settings, SETTINGS_PARTY_PIN);
 
-            let activeIndexes, visibilitySettingsValue = {};
+            let activeIndexes, visibilitySettingsValue = {}, mergeIndex = {};
             if (visibilitySettings.value) {
                 try {
                     visibilitySettingsValue = JSON.parse(visibilitySettings.value);
                     for (let key in visibilitySettingsValue) {
-                        if (visibilitySettingsValue.hasOwnProperty(key) && !visibilitySettingsValue[key]) {
+                        if (visibilitySettingsValue.hasOwnProperty(key) && visibilitySettingsValue[key] === false) {
+                            if (this.state.visibilitySettingsValue[key] === true) {
+                                mergeIndex[key] = false;
+                            }
                             delete visibilitySettingsValue[key];
                         }
                     }
+                    console.log(state.activeIndexes, visibilitySettingsValue, mergeIndex);
                 } catch(e) {
                     visibilitySettingsValue = {};
                 }
                 activeIndexes = {
                     ...state.activeIndexes,
-                    ...visibilitySettingsValue
+                    ...visibilitySettingsValue,
+                    ...mergeIndex
                 };
             } else {
                 console.warn("No settings for visibility - fallback to default - closed");
@@ -192,7 +213,6 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     handleToggleActive = (index) => {
-        console.log('@@ party visible group toggle @@', index);
         if (!this.state.visibilitySettingsValue[index]) {
             this.setState({activeIndexes:{...this.state.activeIndexes, [index]: !this.state.activeIndexes[index]}})
         }
@@ -232,7 +252,6 @@ class PartyDetail extends AbstractReactComponent {
         const fields = this.props.fields;
         const party = partyDetail.data;
         const {activeIndexes, visibilitySettingsValue} = this.state;
-        console.log('@@ partyVisibility @@', activeIndexes, visibilitySettingsValue);
         if (!party) {
 
             if (partyDetail.isFetching) {
@@ -260,9 +279,9 @@ class PartyDetail extends AbstractReactComponent {
                 <div className="party-header">
                     <div>
                         <h3>{party.name}</h3>
-                        {party.record.external_id && party.record.externalSource && <span className="description">{party.partyType.description + ':' + party.id}</span>}
-                        {party.record.external_id && !party.record.externalSource && <span className="description">{'UNKNOWN:' + party.record.external_id}</span>}
-                        {!party.record.external_id && <span className="description">{party.partyType.description + ':' + party.id}</span>}
+                        {party.record.externalId && party.record.externalSource && party.record.externalSource.name && <span className="description">{party.record.externalSource.name + ':' + party.record.externalId}</span>}
+                        {party.record.externalId && (!party.record.externalSource || party.record.externalSource.name) && <span className="description">{'UNKNOWN:' + party.record.externalId}</span>}
+                        {!party.record.externalId && <span className="description">{party.id}</span>}
                     </div>
                     <div>
                         <h3>{party.partyType.description}</h3>
@@ -275,24 +294,24 @@ class PartyDetail extends AbstractReactComponent {
                         if (TYPE == UI_PARTY_GROUP_TYPE.IDENT) {
                             const key = UI_PARTY_GROUP_TYPE.IDENT;
                             return <div key={index}>
-                                <CollapsablePanel isOpen={activeIndexes[key]} pinned={visibilitySettingsValue[key]} header={i.name} eventKey={key} {...events}>
-                                    <PartyDetailNames party={party} partyType={partyType} onPartyUpdate={this.handlePartyUpdate} />
-                                    {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} />}
+                                <CollapsablePanel isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
+                                    <PartyDetailNames party={party} partyType={partyType} onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit} />
+                                    {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit} />}
                                 </CollapsablePanel>
                             </div>;
                         } else if (TYPE == UI_PARTY_GROUP_TYPE.CONCLUSION) {
                             const key = UI_PARTY_GROUP_TYPE.CONCLUSION;
                             return <div key={index}>
-                                <CollapsablePanel isOpen={activeIndexes[key]} pinned={visibilitySettingsValue[key]} header={i.name} eventKey={key} {...events}>
+                                <CollapsablePanel isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
                                     <FormInput componentClass="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
-                                    <label>{i18n("party.detail.creators")}<NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton></label>
+                                    <label>{i18n("party.detail.creators")}{canEdit && <NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton>}</label>
                                     {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
                                         <PartyField {...creator} />
-                                        <NoFocusButton bsStyle="default" onClick={() => {
+                                        {canEdit && <NoFocusButton bsStyle="default" onClick={() => {
                                             if (confirm(i18n('party.detail.creator.delete'))) {
                                                 creators.removeField(index)
                                             }
-                                        }}><Icon glyph="fa-trash" /></NoFocusButton>
+                                        }}><Icon glyph="fa-trash" /></NoFocusButton>}
                                     </div>)}
                                 </CollapsablePanel>
                             </div>;
@@ -328,19 +347,19 @@ class PartyDetail extends AbstractReactComponent {
                                                 let element = null;
 
                                                 if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXT) {
-                                                    element = <FormInput {...inputProps} type="text" />
+                                                    element = <FormInput {...inputProps} type="text" disabled={!canEdit} />
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXTAREA) {
-                                                    element = <FormInput {...inputProps} componentClass="textarea" />
+                                                    element = <FormInput {...inputProps} componentClass="textarea" disabled={!canEdit} />
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION) {
                                                     const type = objectById(partyType.relationTypes, item.definition, 'code');
                                                     if (type) {
-                                                        element = <PartyDetailRelations party={party} relationType={type} label={item.name} />
+                                                        element = <PartyDetailRelations party={party} relationType={type} label={item.name} canEdit={canEdit} />
                                                     } else {
                                                         element = i18n('party.detail.ui.unknownRelation')
                                                     }
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION_CLASS) {
                                                     if (relationClassTypes[item.definition]) {
-                                                        element = <PartyDetailRelationClass party={party} partyType={partyType} relationClassType={relationClassTypes[item.definition]} label={item.name} />
+                                                        element = <PartyDetailRelationClass party={party} partyType={partyType} relationClassType={relationClassTypes[item.definition]} label={item.name} canEdit={canEdit} />
                                                     } else {
                                                         element = i18n('party.detail.ui.unknownRelation')
                                                     }
@@ -357,8 +376,8 @@ class PartyDetail extends AbstractReactComponent {
                                 }
                             }
 
-                            return <CollapsablePanel key={index} isOpen={activeIndexes[index]}
-                                                     pinned={visibilitySettingsValue[index]} header={i.name}
+                            return <CollapsablePanel key={index} isOpen={activeIndexes && activeIndexes[index] === true}
+                                                     pinned={visibilitySettingsValue && visibilitySettingsValue[index] === true} header={i.name}
                                                      eventKey={index} {...events}>
                                 <div className="elements-container">
                                     {items}

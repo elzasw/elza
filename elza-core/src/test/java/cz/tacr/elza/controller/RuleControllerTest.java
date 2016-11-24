@@ -1,11 +1,16 @@
 package cz.tacr.elza.controller;
 
+import com.jayway.restassured.RestAssured;
+import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.Assert;
 
@@ -20,10 +25,6 @@ import java.util.Map;
  * @since 17.2.2016
  */
 public class RuleControllerTest extends AbstractControllerTest {
-
-    private static final String IMPORT_PACKAGE = RULE_CONTROLLER_URL + "/importPackage";
-    private static final String DELETE_PACKAGE = RULE_CONTROLLER_URL + "/deletePackage/{code}";
-    private static final String EXPORT_PACKAGE = RULE_CONTROLLER_URL + "/exportPackage/{code}";
 
     @Test
     public void getDataTypesTest() {
@@ -48,13 +49,6 @@ public class RuleControllerTest extends AbstractControllerTest {
     @Test
     public void getRuleSetsTest() {
         getRuleSets();
-    }
-
-    @Test
-    public void deleteImportExportPackageTest() throws Exception {
-        deletePackage(getPackages().get(0).getCode());
-        importPackage();
-        exportPackage(getPackages().get(0).getCode());
     }
 
     @Test
@@ -125,17 +119,4 @@ public class RuleControllerTest extends AbstractControllerTest {
         }
     }
 
-    private void importPackage() throws Exception {
-        File file = buildPackageFileZip();
-        multipart(spec -> spec.multiPart("file", file), IMPORT_PACKAGE);
-        file.delete();
-    }
-
-    private void deletePackage(final String code) {
-        get(spec -> spec.pathParam("code", code), DELETE_PACKAGE);
-    }
-
-    private void exportPackage(final String code) {
-        get(spec -> spec.pathParam("code", code), EXPORT_PACKAGE);
-    }
 }

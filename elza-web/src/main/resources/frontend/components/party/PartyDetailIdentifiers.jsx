@@ -29,6 +29,7 @@ const isNotBlankObject = (obj) => {
 class PartyDetailIdentifiers extends AbstractReactComponent {
 
     static PropTypes = {
+        canEdit: React.PropTypes.bool.isRequired,
         party: React.PropTypes.object.isRequired,
         onPartyUpdate: React.PropTypes.func.isRequired,
     };
@@ -47,7 +48,6 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
     };
 
     addIdentifier = (identifier) => {
-        console.log(isNotBlankObject(identifier.from), identifier.from)
         const party = {
             ...this.props.party,
             partyGroupIdentifiers: [
@@ -78,6 +78,7 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
                 ...this.props.party.partyGroupIdentifiers.slice(index+1)
             ]
         };
+        this.props.onPartyUpdate(party);
         this.dispatch(modalDialogHide());
     };
 
@@ -98,18 +99,18 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
     };
 
     render() {
-        const {party} = this.props;
+        const {party, canEdit} = this.props;
         return <div className="party-detail-identifiers">
             <div>
                 <label>{i18n("party.detail.partyGroupIdentifiers")}</label>
-                <NoFocusButton bsStyle="default" onClick={this.handlePartyGroupIdentifierAdd}><Icon glyph="fa-plus" /></NoFocusButton>
+                {canEdit && <NoFocusButton bsStyle="default" onClick={this.handlePartyGroupIdentifierAdd}><Icon glyph="fa-plus" /></NoFocusButton>}
             </div>
             {party.partyGroupIdentifiers.map((partyGroupIdentifier, index) => <div key={partyGroupIdentifier.id} className="value-group">
-                <FormControl.Static>{partyGroupIdentifier.identifier}</FormControl.Static>
-                <div className="actions">
+                <div className="value">{partyGroupIdentifier.identifier}</div>
+                {canEdit && <div className="actions">
                     <NoFocusButton onClick={() => this.handlePartyGroupIdentifierUpdate(partyGroupIdentifier)}><Icon glyph="fa-pencil" /></NoFocusButton>
                     <NoFocusButton onClick={() => this.partyGroupIdentifierDelete(partyGroupIdentifier.id)}><Icon glyph="fa-times" /></NoFocusButton>
-                </div>
+                </div>}
             </div>)}
         </div>
     }

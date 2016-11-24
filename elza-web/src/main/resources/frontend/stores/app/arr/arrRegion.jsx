@@ -390,6 +390,14 @@ export default function arrRegion(state = initialState, action) {
             var index = indexById(state.funds, action.versionId, "versionId");
             return processFund(state, action, index);
 
+        case types.FUND_INVALID:
+            let result = {...state};
+            action.fundVersionIds.forEach(fundVersionId => {
+                var index = indexById(state.funds, fundVersionId, "versionId");
+                result = processFund(result, action, index)
+            });
+            return consolidateState(state, result);
+
         default:
             return state
     }

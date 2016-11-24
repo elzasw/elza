@@ -25,4 +25,8 @@ public interface ParRelationTypeRoleType<PRT extends ParRelationType, PRRT exten
 
     void setRoleType(PRRT roleType);
 
+    Boolean getRepeatable();
+
+    void setRepeatable(Boolean repeatable);
+
 }

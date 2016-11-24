@@ -19,6 +19,8 @@ export const FUND_OUTPUT_FUNCTIONS_FILTER = 'FUND_OUTPUT_FUNCTIONS_FILTER'
 
 export const FUND_EXTENDED_VIEW = 'FUND_EXTENDED_VIEW'
 
+export const FUND_INVALID = 'FUND_INVALID'
+
 export const FUND_FUNDS_RECEIVE = 'FUND_FUNDS_RECEIVE'
 export const FUND_FUNDS_REQUEST = 'FUND_FUNDS_REQUEST'
 export const FUND_NODES_RECEIVE = 'FUND_NODES_RECEIVE'
@@ -189,11 +191,7 @@ export const CHANGE_FILES = 'CHANGE_FILES'
 /**
  * Party.
  */
-// TODO @compel - implementace websocketu to list a detail reduceru - shared
-export const PARTY_UPDATED = 'PARTY_UPDATED'                     // provedena aktualizace osoby
 export const PARTY_CREATED = 'PARTY_CREATED'
-export const PARTY_SELECT = 'PARTY_SELECT'
-export const PARTY_ARR_RESET = 'PARTY_ARR_RESET'
 
 /**
  * Toastr

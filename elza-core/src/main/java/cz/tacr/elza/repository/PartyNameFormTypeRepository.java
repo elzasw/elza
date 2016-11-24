@@ -10,7 +10,7 @@ import cz.tacr.elza.domain.ParPartyNameFormType;
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 
-public interface PartyNameFormTypeRepository extends JpaRepository<ParPartyNameFormType, Integer> {
+public interface PartyNameFormTypeRepository extends JpaRepository<ParPartyNameFormType, Integer>, Packaging<ParPartyNameFormType> {
 
     ParPartyNameFormType findByCode(String partyNameFormTypeCode);
 

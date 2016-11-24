@@ -1,6 +1,7 @@
 package cz.tacr.elza.exception;
 
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.ErrorCode;
 
 /**
  * Výjimka pro systémovou chybu.
@@ -12,6 +13,10 @@ public class SystemException extends AbstractException {
 
     public SystemException() {
         super(BaseCode.SYSTEM_ERROR);
+    }
+
+    public SystemException(final ErrorCode errorCode) {
+        super(errorCode);
     }
 
     public SystemException(final Throwable cause) {
