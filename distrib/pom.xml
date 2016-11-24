@@ -6,7 +6,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>0.8-SNAPSHOT</version>
+        <version>0.9-SNAPSHOT</version>
     </parent>
 
     <artifactId>distrib</artifactId>
@@ -19,3 +19,4 @@
     </modules>
 
 </project>
+
