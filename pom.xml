@@ -332,10 +332,6 @@
             <url>http://download.osgeo.org/webdav/geotools</url>
         </repository>
         <repository>
-            <id>Hibernate Spatial repo</id>
-            <url>http://www.hibernatespatial.org/repository</url>
-        </repository>
-        <repository>
             <id>Geo solutions</id>
             <url>http://maven.geo-solutions.it</url>
         </repository>
@@ -346,6 +342,10 @@
         <repository>
             <id>central</id>
             <url>http://central.maven.org/maven2/</url>
+        </repository>
+        <repository>
+            <id>Hibernate Spatial repo</id>
+            <url>http://www.hibernatespatial.org/repository</url>
         </repository>
     </repositories>
 
