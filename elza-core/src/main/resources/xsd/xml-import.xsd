@@ -441,8 +441,8 @@
 
   <xs:simpleType name="packet-type">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="OPEN"/>
       <xs:enumeration value="CANCELED"/>
+      <xs:enumeration value="OPEN"/>
       <xs:enumeration value="CLOSED"/>
     </xs:restriction>
   </xs:simpleType>
