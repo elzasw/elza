@@ -1,9 +1,13 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
+
+import java.util.List;
 
 
 /**
@@ -15,4 +19,7 @@ import cz.tacr.elza.domain.ParRelationTypeRoleType;
 @Repository
 public interface RelationTypeRoleTypeRepository extends JpaRepository<ParRelationTypeRoleType, Integer>, Packaging<ParRelationTypeRoleType> {
 
+    void deleteByRoleType(ParRelationRoleType parRelationRoleTypesDelete);
+
+    void deleteByRelationType(ParRelationType parRelationType);
 }
