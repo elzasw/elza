@@ -47,8 +47,14 @@ action:
         input_types:
             - ZP2015_RELATED_UNITS
         output_type: ZP2015_RELATED_UNITS
-	# 4.7.1 Původce
+        
+	# 4.7.1 Zpracovatel jednotky popisu
 	# ZP2015_ARRANGER - doposud neimplementovano
+    - COPY
+        input_types:
+            - ZP2015_ARRANGER
+        distinct: true
+        output_type: ZP2015_ARRANGER
 	
     # 4.7.2 Pravidla zpracování jednotky popisu
     - TEXT_AGGREGATION    
@@ -66,10 +72,12 @@ action:
     - COPY
         input_types:
             - ZP2015_ORIGINATOR
+        distinct: true
         output_type: ZP2015_ORIGINATOR
  
     # Agregace jazyků - zatim nefunkcni
     - COPY
         input_types:
             - ZP2015_LANGUAGE
+        distinct: true
         output_type: ZP2015_LANGUAGE

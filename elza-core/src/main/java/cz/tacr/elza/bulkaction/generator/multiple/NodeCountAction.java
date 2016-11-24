@@ -51,10 +51,7 @@ public class NodeCountAction extends Action {
 
     @Override
     public boolean canApply(final TypeLevel typeLevel) {
-        if (typeLevel.equals(TypeLevel.PARENT) && applyParents) {
-            return true;
-        }
-
+    	// we are counting only children
         if (typeLevel.equals(TypeLevel.CHILD) && applyChildren) {
             return true;
         }
