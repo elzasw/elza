@@ -22,6 +22,19 @@ export const PARTY_TYPE_CODES = {
     EVENT: 'EVENT',
 };
 
+export const RELATION_CLASS_TYPE_REPEATABILITY = {
+    UNIQUE: "UNIQUE",
+    MULTIPLE: "MULTIPLE",
+};
+
+export const USE_UNITDATE_ENUM = {
+    NONE: 'NONE',
+    ONE: 'ONE',
+    INTERVAL: 'INTERVAL',
+};
+
+export const RELATION_CLASS_RELATION_CODE = "R";
+
 /**
  * Načtení seznamu osob dle filtru
  *
@@ -186,10 +199,18 @@ const removeUndefined = (obj) => {
 
 export const normalizeNameObject = (obj) => {
     if (obj.validFrom) {
-        obj.validFrom = obj.validFrom.value !== null && obj.validFrom.value !== undefined ? obj.validFrom : null;
+        obj.validFrom =
+            (obj.validFrom.value !== null && obj.validFrom.value !== undefined) ||
+            (obj.validFrom.textDate !== null && obj.validFrom.textDate !== undefined) ||
+            (obj.validFrom.note !== null && obj.validFrom.note !== undefined)
+            ? obj.validFrom : null;
     }
     if (obj.validTo) {
-        obj.validTo = obj.validTo.value !== null && obj.validTo.value !== undefined ? obj.validTo : null;
+        obj.validTo =
+            (obj.validTo.value !== null && obj.validTo.value !== undefined) ||
+            (obj.validTo.textDate !== null && obj.validTo.textDate !== undefined) ||
+            (obj.validTo.note !== null && obj.validTo.note !== undefined)
+            ? obj.validTo : null;
     }
 
     ['mainPart', 'otherPart', 'degreeBefore', 'degreeAfter'].each(i => {

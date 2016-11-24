@@ -5,38 +5,11 @@ import {FormControl} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {i18n, AbstractReactComponent, NoFocusButton, Icon, RelationClassForm, RelationForm} from 'components/index.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {relationCreate, relationUpdate, relationDelete} from 'actions/party/party.jsx'
+import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, RELATION_CLASS_RELATION_CODE} from 'actions/party/party.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
+import {isNotBlankObject} from 'components/Utils.jsx'
 
-
-const RELATION_CLASS_TYPE_REPEATABILITY = {
-    UNIQUE: "UNIQUE",
-    MULTIPLE: "MULTIPLE",
-};
-
-const USE_UNITDATE_ENUM = {
-    NONE: 'NONE',
-    ONE: 'ONE',
-    INTERVAL: 'INTERVAL',
-};
-
-const RELATION_CLASS_RELATION_CODE = "R";
-
-
-const removeUndefined = (obj) => {
-    for (let key in obj ) {
-        if (obj.hasOwnProperty(key)) {
-            if (obj[key] === undefined || obj[key] === null) {
-                delete obj[key];
-            }
-        }
-    }
-    return obj;
-};
-const isNotBlankObject = (obj) => {
-    const newObj = removeUndefined(obj);
-    return Object.keys(newObj).length > 0
-};
+import './PartyDetailRelations.less'
 
 class PartyDetailRelations extends AbstractReactComponent {
 
@@ -60,7 +33,7 @@ class PartyDetailRelations extends AbstractReactComponent {
 
     loadState = (nextProps = this.props) => {
         const {partyType, party, relationClassType} = nextProps;
-        if (!partyType || !party || !party.relations || !relationClassType) {
+        if (!partyType || !party || !relationClassType) {
             return;
         }
         const allowedRelationTypes = partyType.relationTypes ? partyType.relationTypes.filter(i => i.relationClassType.id === relationClassType.id) : [];
@@ -133,18 +106,24 @@ class PartyDetailRelations extends AbstractReactComponent {
 
         const relationsArray = relations ? relations : [];
 
-        return <div>
+        return <div className="party-detail-relations">
             <div>
                 <label>{label}</label>
                 {addButton}
             </div>
-            {relationsArray.map((relation, index) => <div key={relation.id} className="value-group relation-group">
-                <div className="value">
-                    {(allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.INTERVAL || allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from &&  relation.from.value && <div>
-                        <div>{relationClassType.code !== RELATION_CLASS_RELATION_CODE && allowedRelationTypesMap[relation.relationTypeId].name + ": "}{relation.from.value}</div>
-                        <div>{relation.dateNote}</div>
+            {relationsArray.map((relation, index) => <div key={relation.id} className="value-group relation-group flex">
+                <div className="flex-1">
+                    {(allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.INTERVAL || allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from &&  relation.from.value && <div className="flex flex-1 no-wrap-group">
+                        <div className="item">{relationClassType.code !== RELATION_CLASS_RELATION_CODE && allowedRelationTypesMap[relation.relationTypeId].name + ": "}</div>
+                        {relation.from.value && <div className="item">{relation.from.value}</div>}
+                        {relation.from.textDate && <div className="item">{relation.from.textDate}</div>}
+                            {relation.from.note && <div className="note">{relation.from.note}</div>}
                     </div>}
-                    {allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.INTERVAL && relation.to && relation.to.value && <div>{relation.to.value}</div>}
+                    {allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.INTERVAL && relation.to && relation.to.value && <div className="flex flex-1 no-wrap-group">
+                        {relation.to.value && <div className="item">{relation.to.value}</div>}
+                        {relation.to.textDate && <div className="item">{relation.to.textDate}</div>}
+                        {relation.to.note && <div className="note">{relation.to.note}</div>}
+                    </div>}
                     {relation.relationEntities && relation.relationEntities.map(entity => <div key={entity.id}>
                         <label>{entity.roleType.name}:</label> {entity.record.record}<small>{entity.record.note}</small>
                     </div>)}

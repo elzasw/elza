@@ -212,9 +212,10 @@ class PartyDetail extends AbstractReactComponent {
         // Not defined shortcuts
     };
 
-    handleToggleActive = (index) => {
-        if (!this.state.visibilitySettingsValue[index]) {
-            this.setState({activeIndexes:{...this.state.activeIndexes, [index]: !this.state.activeIndexes[index]}})
+    handleToggleActive = (identificator) => {
+        this.setState({activeIndexes:{...this.state.activeIndexes, [identificator]: !this.state.activeIndexes[identificator]}});
+        if (this.state.visibilitySettingsValue[identificator]) {
+            this.handlePinToggle(identificator)
         }
     };
 
@@ -248,8 +249,8 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     render() {
-        const {userDetail, partyDetail, fields: {sourceInformation, creators}} = this.props;
-        const fields = this.props.fields;
+        const {userDetail, partyDetail, fields} = this.props;
+        const {sourceInformation, creators} = fields;
         const party = partyDetail.data;
         const {activeIndexes, visibilitySettingsValue} = this.state;
         if (!party) {

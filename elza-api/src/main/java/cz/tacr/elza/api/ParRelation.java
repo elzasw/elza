@@ -34,10 +34,6 @@ public interface ParRelation<PP extends ParParty, PRT extends ParRelationType, P
 
     void setTo(PU to);
 
-    String getDateNote();
-
-    void setDateNote(String dateNote);
-
     String getNote();
 
     void setNote(String note);

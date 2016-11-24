@@ -10,7 +10,7 @@ import {objectById} from 'stores/app/utils.jsx'
 
 import './RelationForm.less'
 
-const USE_UNITDATE_ENUM = {
+const USE_UNITDATE_ENUM = { // TODO @compel move to party.jsx
     NONE: 'NONE',
     ONE: 'ONE',
     INTERVAL: 'INTERVAL',
@@ -32,7 +32,6 @@ class RelationClassForm extends AbstractReactComponent {
         'to.value',
         'to.textDate',
         'to.note',
-        'dateNote',
         'note',
         'source',
         'relationTypeId',
