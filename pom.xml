@@ -343,10 +343,6 @@
             <id>central</id>
             <url>http://central.maven.org/maven2/</url>
         </repository>
-        <repository>
-            <id>Hibernate Spatial repo</id>
-            <url>http://www.hibernatespatial.org/repository</url>
-        </repository>
     </repositories>
 
     <scm>
