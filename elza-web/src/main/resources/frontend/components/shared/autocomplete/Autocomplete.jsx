@@ -201,7 +201,8 @@ var keyDownHandlers = {
                         inputStrValue: this.props.getItemName(item),
                         value: item,
                         isOpen: false,
-                        highlightedIndex: null
+                        highlightedIndex: null,
+                        changed:false
                     }, () => {
                         //ReactDOM.findDOMNode(this.refs.input).focus() // TODO: file issue
                         ReactDOM.findDOMNode(this.refs.input).setSelectionRange(
@@ -244,7 +245,8 @@ export default class Autocomplete extends AbstractReactComponent {
             ...this.getStateFromProps({}, props, {inputStrValue: ''}),
             isOpen: false,
             highlightedIndex: null,
-            hasFocus: false
+            hasFocus: false,
+            changed:false
         }
     }
 
@@ -387,6 +389,7 @@ export default class Autocomplete extends AbstractReactComponent {
 
     getStateFromProps(props, nextProps, state) {
         var shouldItemRender;
+        var changed = state.changed;
         if (nextProps.shouldItemRender) {
             shouldItemRender = nextProps.shouldItemRender;
         } else if (nextProps.customFilter) {
@@ -402,10 +405,16 @@ export default class Autocomplete extends AbstractReactComponent {
         var newId = nextProps.getItemId(nextProps.value)
         _debugStates && console.log("getStateFromProps", "prevId", prevId, "newId", newId, "state", state);
         if (prevId != newId) {
-            inputStrValue = nextProps.getItemName(nextProps.value)
+            // Změna stavu, při které byla vybrána jiná položka.
+            changed = false;
+            inputStrValue = nextProps.getItemName(nextProps.value);
             if (typeof inputStrValue === 'undefined') {
                 inputStrValue = ''
             }
+        } else if(prevId === newId && !state.changed) {
+            /* pokud došlo ke změně stavu, při které zůstala vybrána stejná položka
+               a nebyl změněn vyhledávaný text ručně.*/
+            inputStrValue = nextProps.getItemName(nextProps.value);
         } else {
             inputStrValue = state.inputStrValue;
         }
@@ -414,8 +423,8 @@ export default class Autocomplete extends AbstractReactComponent {
             shouldItemRender: shouldItemRender,
             value: nextProps.value,
             inputStrValue: inputStrValue,
+            changed: changed
         }
-
         // ---
         // Sesbírání vstupních expanded, provedení filtru položek, případně u stromu na flat a získání depth položek ve stromu
         if ((props.items !== nextProps.items) || (prevId !== newId) || (prevId === newId && result.inputStrValue !== state.inputStrValue)) {
@@ -567,7 +576,7 @@ export default class Autocomplete extends AbstractReactComponent {
     handleChange(event) {
         this._performAutoCompleteOnKeyUp = true
         this.changeState({
-            inputStrValue: event.target.value,
+            inputStrValue: event.target.value, changed:true
         }, () => {
             this.props.onSearchChange(this.state.inputStrValue)
         })
@@ -810,7 +819,8 @@ export default class Autocomplete extends AbstractReactComponent {
                     inputStrValue: '',
                     value: '',
                     isOpen: false,
-                    highlightedIndex: null
+                    highlightedIndex: null,
+                    changed:false
                 }, () => {
                     this.props.onChange(item);
                 })
@@ -819,7 +829,8 @@ export default class Autocomplete extends AbstractReactComponent {
                     inputStrValue: this.props.getItemName(item),
                     value: item,
                     isOpen: false,
-                    highlightedIndex: null
+                    highlightedIndex: null,
+                    changed:false
                 }, () => {
                     this.props.onChange(item)
                     ReactDOM.findDOMNode(this.refs.input).focus()
@@ -935,10 +946,9 @@ export default class Autocomplete extends AbstractReactComponent {
         if (this.state.isOpen) {
             return
         }
-
+        ReactDOM.findDOMNode(this.refs.input).select()
         this.changeState({isOpen: true}, () => {
-            this.props.onSearchChange(this.state.inputStrValue)
-            ReactDOM.findDOMNode(this.refs.input).select()
+            this.props.onSearchChange(this.state.inputStrValue);
         })
     }
 
@@ -956,7 +966,8 @@ export default class Autocomplete extends AbstractReactComponent {
         var addState = {
             isOpen: false,
             highlightedIndex: null,
-            inputStrValue: this.props.getItemName(this.state.value)
+            inputStrValue: this.props.getItemName(this.state.value),
+            changed: false
         }
         _debugStates && console.log("#### closeMenu", "prev state", this.state, "props", this.props, "state change", addState);
         this.changeState(addState, () => {

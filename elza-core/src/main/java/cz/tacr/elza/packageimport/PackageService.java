@@ -521,6 +521,14 @@ public class PackageService {
 
     }
 
+    /**
+     * Zpracování vztahů typu třídy.
+     *
+     * @param registryRoles        VO vztahy typu třídy
+     * @param rulPackage           balíček
+     * @param parRelationRoleTypes seznam rolí entit ve vztahu
+     * @param regRegisterTypes     seznam typů rejstříků
+     */
     private void processRegistryRoles(final RegistryRoles registryRoles,
                                       final RulPackage rulPackage,
                                       final List<ParRelationRoleType> parRelationRoleTypes,
@@ -548,6 +556,15 @@ public class PackageService {
         registryRoleRepository.delete(parRegistryRolesDelete);
     }
 
+    /**
+     * Konverze VO -> DO.
+     *
+     * @param rulPackage            balíček
+     * @param registryRole          typ vztahu - VO
+     * @param parRegistryRole       typ vztahu - DO
+     * @param regRegisterTypes      seznam typů rejstříků
+     * @param parRelationRoleTypes  seznam rolí entit ve vztahu
+     */
     private void convertParRegistryRoles(final RulPackage rulPackage,
                                          final RegistryRole registryRole,
                                          final ParRegistryRole parRegistryRole,
@@ -566,6 +583,14 @@ public class PackageService {
         parRegistryRole.setRegisterType(regRegisterType);
     }
 
+    /**
+     * Zpracování vztahy typu třídy.
+     *
+     * @param registerTypes vztahy typů tříd
+     * @param rulPackage    balíček
+     * @param parPartyTypes seznam typů osob
+     * @return seznam aktuálních záznamů
+     */
     private List<RegRegisterType> processRegisterTypes(@Nullable final RegisterTypes registerTypes,
                                                        @NotNull final RulPackage rulPackage,
                                                        @NotNull final List<ParPartyType> parPartyTypes) {
@@ -600,6 +625,14 @@ public class PackageService {
         return regRegisterTypesNew;
     }
 
+    /**
+     * Konverze VO -> DO.
+     *
+     * @param rulPackage       balíček
+     * @param registerType     vztah typů tříd - VO
+     * @param regRegisterType  vztah typů tříd - DO
+     * @param parPartyTypes    seznam typů osob
+     */
     private void convertRegRegisterTypes(final RulPackage rulPackage,
                                          final RegisterType registerType,
                                          final RegRegisterType regRegisterType,
@@ -618,6 +651,9 @@ public class PackageService {
         }
     }
 
+    /**
+     * Zpracování entity.
+     */
     private void processRelationTypeRoleTypes(@Nullable final RelationTypeRoleTypes relationTypeRoleTypes,
                                               @NotNull final RulPackage rulPackage,
                                               @NotNull final List<ParRelationRoleType> parRelationRoleTypes,
@@ -645,6 +681,9 @@ public class PackageService {
         relationTypeRoleTypeRepository.delete(parRelationTypeRoleTypesDelete);
     }
 
+    /**
+     * Konverze VO -> DO.
+     */
     private void convertParRelationTypeRoleTypes(final RulPackage rulPackage,
                                                  final RelationTypeRoleType relationTypeRoleType,
                                                  final ParRelationTypeRoleType parRelationTypeRoleType,
@@ -665,6 +704,9 @@ public class PackageService {
         parRelationTypeRoleType.setRoleType(parRelationRoleType);
     }
 
+    /**
+     * Zpracování typů vztahu osob.
+     */
     private void processPartyTypeRelations(@Nullable final PartyTypeRelations partyTypeRelations,
                                            @NotNull final RulPackage rulPackage,
                                            @NotNull final List<ParRelationType> parRelationTypes,
@@ -691,6 +733,9 @@ public class PackageService {
         partyTypeRelationRepository.delete(parPartyTypeRelationsDelete);
     }
 
+    /**
+     * Konverze VO -> DO.
+     */
     private void convertParPartyTypeRelations(final RulPackage rulPackage,
                                               final PartyTypeRelation partyTypeRelation,
                                               final ParPartyTypeRelation parPartyTypeRelation,
@@ -712,6 +757,9 @@ public class PackageService {
         parPartyTypeRelation.setPartyType(parPartyType);
     }
 
+    /**
+     * Zpracování typů vztahů.
+     */
     private List<ParRelationType> processRelationTypes(@Nullable final RelationTypes relationTypes,
                                                        @NotNull final RulPackage rulPackage,
                                                        @NotNull final List<ParRelationClassType> parRelationClassTypes) {
@@ -738,6 +786,9 @@ public class PackageService {
         return parRelationTypesNew;
     }
 
+    /**
+     * Konverze VO -> DO.
+     */
     private void convertParRelationTypes(final RulPackage rulPackage,
                                          final RelationType relationType,
                                          final ParRelationType parRelationType,
@@ -753,6 +804,9 @@ public class PackageService {
         parRelationType.setRelationClassType(parRelationClassType);
     }
 
+    /**
+     * Zpracování vazby M:N mezi typem osoby a typem doplňku jména.
+     */
     private void processPartyTypeComplementTypes(@Nullable final PartyTypeComplementTypes partyTypeComplementTypes,
                                                  @NotNull final RulPackage rulPackage,
                                                  @NotNull final List<ParComplementType> parComplementTypes,
@@ -780,6 +834,9 @@ public class PackageService {
         partyTypeComplementTypeRepository.delete(parPartyTypeComplementTypesDelete);
     }
 
+    /**
+     * Konverze VO -> DO.
+     */
     private void convertParPartyTypeComplementTypes(final RulPackage rulPackage,
                                                     final PartyTypeComplementType partyTypeComplementType,
                                                     final ParPartyTypeComplementType parPartyTypeComplementType,
@@ -799,6 +856,9 @@ public class PackageService {
         parPartyTypeComplementType.setRepeatable(partyTypeComplementType.getRepeatable());
     }
 
+    /**
+     * Zpracování nastavení zobrazení formuláře pro osoby.
+     */
     private void processPartyGroups(@Nullable final PartyGroups partyGroups,
                                     @NotNull final RulPackage rulPackage,
                                     @NotNull final List<ParPartyType> parPartyTypes) {
@@ -823,6 +883,9 @@ public class PackageService {
         uiPartyGroupRepository.delete(uiPartyGroupsDelete);
     }
 
+    /**
+     * Konverze VO -> DO.
+     */
     private void convertUIPartyGroups(final RulPackage rulPackage,
                                       final PartyGroup partyGroup,
                                       final UIPartyGroup parComplementType,
@@ -842,6 +905,9 @@ public class PackageService {
         }
     }
 
+    /**
+     * Zpracování typů doplňků jmen osob.
+     */
     private List<ParComplementType> processComplementTypes(@Nullable final ComplementTypes complementTypes,
                                                            @NotNull final RulPackage rulPackage) {
         List<ParComplementType> parComplementTypes = complementTypeRepository.findByRulPackage(rulPackage);
@@ -867,6 +933,9 @@ public class PackageService {
         return parComplementTypesNew;
     }
 
+    /**
+     * Konverze VO -> DO.
+     */
     private void convertParComplementTypes(final RulPackage rulPackage,
                                            final ComplementType complementType,
                                            final ParComplementType parComplementType) {
@@ -876,6 +945,9 @@ public class PackageService {
         parComplementType.setViewOrder(parComplementType.getViewOrder());
     }
 
+    /**
+     * Zpracování vztah typu třídy.
+     */
     private List<ParRelationClassType> processRelationClassTypes(@Nullable final RelationClassTypes relationClassTypes,
                                                                  @NotNull final RulPackage rulPackage) {
         List<ParRelationClassType> parRelationClassTypes = partyRelationClassTypeRepository.findByRulPackage(rulPackage);
@@ -900,6 +972,9 @@ public class PackageService {
         return parRelationClassTypesNew;
     }
 
+    /**
+     * Konverze VO -> DO.
+     */
     private void convertParRelationClassTypes(final RulPackage rulPackage,
                                               final RelationClassType relationRoleType,
                                               final ParRelationClassType parRelationRoleType) {
@@ -909,6 +984,9 @@ public class PackageService {
         parRelationRoleType.setRepeatability(ParRelationClassTypeRepeatabilityEnum.valueOf(relationRoleType.getRepeatability()));
     }
 
+    /**
+     * Zpracování TODO
+     */
     private void processPartyNameFormTypes(@Nullable final PartyNameFormTypes partyNameFormTypes,
                                            @NotNull final RulPackage rulPackage) {
         List<ParPartyNameFormType> parPartyNameFormTypes = partyNameFormTypeRepository.findByRulPackage(rulPackage);
@@ -932,6 +1010,9 @@ public class PackageService {
         partyNameFormTypeRepository.delete(parPartyNameFormTypesDelete);
     }
 
+    /**
+     * Konverze VO -> DO.
+     */
     private void convertParPartyNameFormTypes(final RulPackage rulPackage,
                                               final PartyNameFormType partyNameFormType,
                                               final ParPartyNameFormType parPartyNameFormType) {
@@ -940,6 +1021,9 @@ public class PackageService {
         parPartyNameFormType.setRulPackage(rulPackage);
     }
 
+    /**
+     * Zpracování vztah typu tříd.
+     */
     private List<ParRelationRoleType> processRelationRoleTypes(@Nullable final RelationRoleTypes relationRoleTypes,
                                                                @NotNull final RulPackage rulPackage) {
 
@@ -965,6 +1049,9 @@ public class PackageService {
         return parRelationRoleTypesNew;
     }
 
+    /**
+     * Konverze VO -> DO.
+     */
     private void convertParRelationRoleTypes(@NotNull final RulPackage rulPackage,
                                              @NotNull final RelationRoleType relationRoleType,
                                              @NotNull final ParRelationRoleType parRelationRoleType) {
@@ -974,14 +1061,14 @@ public class PackageService {
     }
 
     /**
-     * TODO
+     * Generická metoda pro vyhledání v seznamu entit podle definované metody.
      *
-     * @param list
-     * @param find
-     * @param function
+     * @param list      seznam prohledávaných entit
+     * @param find      co hledán v entitě
+     * @param function  metoda, jakou hledám v entitě
      * @param <T>
      * @param <S>
-     * @return
+     * @return nalezená entita
      */
     private <T, S> T findEntity(@NotNull final List<T> list,
                                 @NotNull final S find,
@@ -994,6 +1081,19 @@ public class PackageService {
         return null;
     }
 
+    /**
+     * Generická metoda pro vyhledání v seznamu entit podle definované metody.
+     *
+     * @param list      seznam prohledávaných entit
+     * @param findA     co hledán v entitě - první podmínka
+     * @param findB     co hledán v entitě - druhá podmínka
+     * @param functionA metoda, jakou hledám v entitě - první
+     * @param functionB metoda, jakou hledám v entitě - druhá
+     * @param <T>
+     * @param <S1>
+     * @param <S2>
+     * @return nalezená entita
+     */
     private <T, S1, S2> T findEntity(@NotNull final List<T> list,
                                 @NotNull final S1 findA,
                                 @NotNull final S2 findB,
@@ -2218,6 +2318,18 @@ public class PackageService {
         void apply(One one, Two two);
     }
 
+    /**
+     * Generická metoda pro export entity do balíčku.
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     * @param repository repozitory ukládané entity
+     * @param clazzs     třída seznamu VO
+     * @param clazz      třída VO
+     * @param setter     setter metoda pro naplnění VO
+     * @param convertor  metoda pro konverzi DO na VO
+     * @param fileName   název souboru
+     */
     private <R extends Packaging<E>, E, TS, T> void export(final RulPackage rulPackage,
                                                            final ZipOutputStream zos,
                                                            final R repository,

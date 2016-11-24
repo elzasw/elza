@@ -242,10 +242,10 @@ var messages = {
 
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",
     "arr.panel.reset": "Zrušit omezení",
-    "arr.panel.title.errors": "Chyby",
-    "arr.panel.title.visiblePolicies": "Způsob kontroly",
-    "arr.panel.title.packets": "Správa obalů",
-    "arr.panel.title.files": "Správa souborů",
+    "arr.panel.title.discrepancies": "Nesrovnalosti",
+    "arr.panel.title.visiblePolicies": "Kontroly",
+    "arr.panel.title.packets": "Obaly",
+    "arr.panel.title.files": "Přílohy",
     "arr.fund.packets.state": "Stav",
     "arr.fund.packets.state.open": "Otevřený",
     "arr.fund.packets.state.closed": "Uzavřený",
@@ -273,6 +273,7 @@ var messages = {
     "arr.fund.settings.panel.center.title": "Hlavní panel",
     "arr.fund.settings.panel.center.parents": "Seznam rodičů jednotky popisu",
     "arr.fund.settings.panel.center.children": "Seznam potomků jednotky popisu",
+    "arr.fund.settings.panel.rightPanel": "Pravý panel",
     "arr.fund.settings.panel.right.title": "Záložky v pravém panelu",
 
     "arr.fund.version": "Verze {0}",
@@ -472,7 +473,9 @@ var messages = {
     "dms.file.title.add": "Přidání nového souboru",
     "dms.file.name": "Název souboru",
 
-    "arr.packet.title.add": "Přidání nového obalu",
+    "arr.packet.title.addOne": "Přidání nového obalu",
+    "arr.packet.title.addMany": "Přidání nových obalů",
+    "arr.packet.title.changeNumbers": "Přečíslování obalů",
     "arr.packet.packetType": "Typ",
     "arr.packet.storageNumber": "Ukládací číslo",
     "arr.packet.invalidPacket": "Znevalidnění",

@@ -21,12 +21,12 @@ import * as perms from 'actions/user/Permission.jsx';
 import './UserDetail.less';
 
 /**
- * Detail uÅ¾ivatele s nastavenÃ­m skupin a oprÃ¡vnÄ›nÃ­
+ * Detail uivatele s nastavením skupin a oprávnìní
  */
 class UserDetail extends AbstractReactComponent {
     static PropTypes = {
         userDetail: React.PropTypes.object.isRequired,
-        userCount: React.PropTypes.object.isRequired,
+        userCount: React.PropTypes.number.isRequired,
     };
 
     componentDidMount() {

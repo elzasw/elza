@@ -1,0 +1,2978 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:xml-import xmlns:ns2="http://v1_0_0.import.elza.tacr.cz">
+    <record-list>
+        <record record-id="r-CZ000000010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Achivní správa Ministerstva vnitra České republiky</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>AS MV ČR</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ100000010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Národní archiv</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Národní archiv</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ211000010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní oblastní archiv v Praze</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOA v Praze</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ212000010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní oblastní archiv v Třeboni</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOA v Třeboni</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ213000010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní oblastní archiv v Plzni</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOA v Plzni</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ214000010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní oblastní archiv v Litoměřicích</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOA v Litoměřicích</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ215000010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní oblastní archiv v Zámrsku</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOA v Zámrsku</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ216000010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Moravský zemský archiv v Brně</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>MZA v Brně</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ217000010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Zemský archiv v Opavě</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>ZA v Opavě</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ321100010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv hlavního města Prahy</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>AHMP</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ323103010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv města Plzně</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>AM Plzně</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ324107010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv města Ústí nad Labem</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>AM Ústí nad Labem</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ326202010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv města Brna</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>AM Brna</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ327206010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv města Ostravy</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>AM Ostravy</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ221201010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Benešov</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Benešov</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ221202010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Beroun</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Beroun</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ221203010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Kladno</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Kladno</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ221204010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Kolín</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Kolín</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ221205010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Kutná Hora</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Kutná Hora</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ221206010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Mělník</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Mělník</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ221207010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Mladá Boleslav</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Mladá Boleslav</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ221208010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Nymburk se sídlem v Lysé nad Labem</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Nymburk</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ221209010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Praha-východ se sídlem v Přemyšlení</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Praha-východ</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ221210010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Praha-západ se sídlem v Dobřichovicích</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Praha-západ</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ221211010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Příbram</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Příbram</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ221212010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Rakovník</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Rakovník</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ222101010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv České Budějovice</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Čes. Budějovice</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ222102010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Český Krumlov</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Český Krumlov</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ222103010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Jindřichův Hradec</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Jindřichův Hradec</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ222104010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Písek</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Písek</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ222105010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Prachatice</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Prachatice</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ222106010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Strakonice</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Strakonice</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ222107010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Tábor</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Tábor</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ223101010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Domažlice se sídlem v Horšovském Týně</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Domažlice</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ223201010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Cheb</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Cheb</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ223202010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Karlovy Vary</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Karlovy Vary</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ223102010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Klatovy</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Klatovy</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ223104010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Plzeň-jih se sídlem v Blovicích</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Plzeň-jih</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ223105010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Plzeň-sever se sídlem v Plasích</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Plzeň-sever</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ223106010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Rokycany</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Rokycany</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ223203010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Sokolov se sídlem v Jindřichovicích</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Sokolov</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ223107010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Tachov</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Tachov</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ224201010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Česká Lípa</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Česká Lípa</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ224101010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Děčín</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Děčín</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ224102010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Chomutov se sídlem v Kadani</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Chomutov</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ224202010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Jablonec nad Nisou</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Jablonec nad N.</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ224203010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Liberec</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Liberec</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ224103010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Litoměřice se sídlem v Lovosicích</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Litoměřice</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ224104010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Louny</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Louny</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ224105010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Most</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Most</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ224106010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Teplice</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Teplice</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ225101010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Hradec Králové</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Hradec Králové</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ225201010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Chrudim</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Chrudim</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ225102010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Jičín</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Jičín</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ225103010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Náchod</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Náchod</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ225202010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Pardubice</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Pardubice</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ225104010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Rychnov nad Kněžnou</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Rychnov nad Kn.</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ225203010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Svitavy se sídlem v Litomyšli</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Svitavy</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ225105010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Trutnov</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Trutnov</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ225204010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Ústí nad Orlicí</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Ústí nad Orlicí</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226201010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Blansko</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Blansko</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226203010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Brno-venkov se sídlem v Rajhradě</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Brno-venkov</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226204010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Břeclav se sídlem v Mikulově</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Břeclav</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226304010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Zlín</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Zlín</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226205010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Hodonín</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Hodonín</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226102010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Jihlava</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Jihlava</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226301010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Kroměříž</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Kroměříž</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226104010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Třebíč</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Třebíč</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226302010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Uherské Hradiště</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Uherské Hradiště</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226206010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Vyškov se sídlem ve Slavkově u Brna</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Vyškov</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226207010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Znojmo</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Znojmo</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226105010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Žďár nad Sázavou</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Žďár nad Sázavou</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ227201010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Bruntál se sídlem v Krnově</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Bruntál</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ227202010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Frýdek-Místek</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Frýdek-Místek</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ227203010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Karviná</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Karviná</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ227204010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Nový Jičín</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Nový Jičín</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ227102010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Olomouc</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Olomouc</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ227205010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Opava</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Opava</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ227104010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Přerov</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Přerov</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ227105010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Šumperk</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Šumperk</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ227101010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Jeseník</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Jeseník</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ610000010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Kanceláře prezidenta republiky</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv KPR</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ610000020" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Pražského hradu</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv Pražského hradu</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ610000030" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Odbor administrativy a zpracování informací MZV - Archiv MZV</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv MZV Praha</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ610000040" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Vojenský historický archiv</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>VHA Praha</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ610000050" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Českého rozhlasu</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv ČRO</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ610000060" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv České televize</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv České televize</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ610000070" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Akademie věd České republiky</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv AV ČR</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ610000080" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Poslanecké sněmovny</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv PS</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ620000010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Ústav dějin Univerzity Karlovy – Archiv Univerzity Karlovy</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv UK Praha</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ620000020" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Českého vysokého učení technického v Praze</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv ČVUT Praha</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ630000010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Národního muzea</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>ANM</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ630000020" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Literární archiv Památníku národního písemnictví</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>LA PNP Praha</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ610000110" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Ústřední archiv zeměměřictví a katastru</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>ÚA ZAK Praha</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ610000130" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Národní filmový archiv</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>NFA Praha</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ620000030" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Masarykovy univerzity v Brně</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv AMU Brno</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ620000040" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Vysokého učení technického v Brně</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv VUT Brno</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ630000040" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Národní galerie</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv NG Praha</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ630000050" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Národní knihovny</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv NK Praha</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ640000010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv DIAMO</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv DIAMO</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ700000020" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Bezpečnostní informační služby</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv BIS</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ521100010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Všeodborový archiv Českomoravské konfederace odborových svazů</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Všeodborový archiv</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ630000060" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Národního technického muzea</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv NTM v Praze</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ521100030" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Židovského muzea v Praze</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv ŽM v Praze</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ610000100" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv České národní banky</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv ČNB</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226103010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Pelhřimov</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Pelhřimov</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226101010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Havlíčkův Brod</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Havlíčkův Brod</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ226303010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Vsetín</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Vsetín</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ224204010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Semily</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Semily</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ227103010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Státní okresní archiv Prostějov</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>SOkA Prostějov</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ610000090" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Senátu</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv Senátu</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ700000030" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Úřadu pro zahraniční styky a informace</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv ÚZI</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ521100020" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv České strany sociálně demokratické</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv ČSSD</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ700000040" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Národního bezpečnostního úřadu</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv NBÚ</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ620000050" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Univerzity Hradec Králové</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv UHK</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ513103010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv společnosti Plzeňský Prazdroj, a.s.</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Plzeňský Prazdroj</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ620000060" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Univerzity Palackého v Olomouci</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv UP Olomouc</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ517206010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv OKD a. s. , Ostrava</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv OKD</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ517206020" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Vítkovice, a.s.</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv Vítkovice</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ517206040" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv ArcelorMittal Ostrava a. s.</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv ArcelorMittal</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ620000070" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Akademie výtvarných umění v Praze</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv AVU Praha</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ630000070" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Moravské galerie v Brně</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv MG v Brně</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ511207010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv společnosti Škoda Auto</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv Škoda Auto</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ526101010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Centra hasičského hnutí Přibyslav</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv CHH Přibyslav</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ513203010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv společnosti Sokolovská uhelná a. s.</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Arch. Sokolovská uhel.</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ620000080" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Vysoké školy báňské - Technické univerzity Ostrava</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv VŠB Ostrava</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ620000090" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Slezské univerzity v Opavě</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv SU v Opavě</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ100000020" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv bezpečnostních složek</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>ABS</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ620000100" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Mendelovy univerzity v Brně</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv MENDELU</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ700000050" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Bezpečnostní archiv Vojenského zpravodajství</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>BA Vojen.zpravodajství</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ700000060" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Policie České republiky</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>BAP ČR</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ536000010" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Biskupství brněnského</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>ABB</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ700000070" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Ministerstva vnitra ČR</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>Archiv MV</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ610000140" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Národního bezpečnostního úřadu - specializovaný</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>ANBU-S</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+        <record record-id="r-CZ620000110" register-type-code="HEALTH_AND_EDU" external-source-code="" external-id="" local="false">
+            <preferred-name>Archiv Veterinární a farmaceutické univerzity Brno</preferred-name>
+            <variant-name-list>
+                <variant-name>
+                    <variant-name>AVFU Brno</variant-name>
+                </variant-name>
+            </variant-name-list>
+        </record>
+    </record-list>
+    <party-list>
+        <party-group party-id="CZ000000010" record-id="r-CZ000000010">
+            <institution internal-code="000000010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Achivní správa Ministerstva vnitra České republiky</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>AS MV ČR</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ100000010" record-id="r-CZ100000010">
+            <institution internal-code="100000010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Národní archiv</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Národní archiv</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ211000010" record-id="r-CZ211000010">
+            <institution internal-code="211000010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní oblastní archiv v Praze</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOA v Praze</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ212000010" record-id="r-CZ212000010">
+            <institution internal-code="212000010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní oblastní archiv v Třeboni</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOA v Třeboni</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ213000010" record-id="r-CZ213000010">
+            <institution internal-code="213000010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní oblastní archiv v Plzni</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOA v Plzni</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ214000010" record-id="r-CZ214000010">
+            <institution internal-code="214000010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní oblastní archiv v Litoměřicích</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOA v Litoměřicích</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ215000010" record-id="r-CZ215000010">
+            <institution internal-code="215000010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní oblastní archiv v Zámrsku</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOA v Zámrsku</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ216000010" record-id="r-CZ216000010">
+            <institution internal-code="216000010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Moravský zemský archiv v Brně</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>MZA v Brně</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ217000010" record-id="r-CZ217000010">
+            <institution internal-code="217000010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Zemský archiv v Opavě</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>ZA v Opavě</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ321100010" record-id="r-CZ321100010">
+            <institution internal-code="321100010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv hlavního města Prahy</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>AHMP</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ323103010" record-id="r-CZ323103010">
+            <institution internal-code="323103010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv města Plzně</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>AM Plzně</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ324107010" record-id="r-CZ324107010">
+            <institution internal-code="324107010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv města Ústí nad Labem</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>AM Ústí nad Labem</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ326202010" record-id="r-CZ326202010">
+            <institution internal-code="326202010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv města Brna</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>AM Brna</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ327206010" record-id="r-CZ327206010">
+            <institution internal-code="327206010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv města Ostravy</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>AM Ostravy</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ221201010" record-id="r-CZ221201010">
+            <institution internal-code="221201010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Benešov</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Benešov</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ221202010" record-id="r-CZ221202010">
+            <institution internal-code="221202010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Beroun</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Beroun</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ221203010" record-id="r-CZ221203010">
+            <institution internal-code="221203010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Kladno</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Kladno</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ221204010" record-id="r-CZ221204010">
+            <institution internal-code="221204010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Kolín</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Kolín</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ221205010" record-id="r-CZ221205010">
+            <institution internal-code="221205010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Kutná Hora</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Kutná Hora</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ221206010" record-id="r-CZ221206010">
+            <institution internal-code="221206010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Mělník</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Mělník</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ221207010" record-id="r-CZ221207010">
+            <institution internal-code="221207010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Mladá Boleslav</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Mladá Boleslav</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ221208010" record-id="r-CZ221208010">
+            <institution internal-code="221208010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Nymburk se sídlem v Lysé nad Labem</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Nymburk</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ221209010" record-id="r-CZ221209010">
+            <institution internal-code="221209010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Praha-východ se sídlem v Přemyšlení</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Praha-východ</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ221210010" record-id="r-CZ221210010">
+            <institution internal-code="221210010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Praha-západ se sídlem v Dobřichovicích</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Praha-západ</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ221211010" record-id="r-CZ221211010">
+            <institution internal-code="221211010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Příbram</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Příbram</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ221212010" record-id="r-CZ221212010">
+            <institution internal-code="221212010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Rakovník</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Rakovník</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ222101010" record-id="r-CZ222101010">
+            <institution internal-code="222101010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv České Budějovice</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Čes. Budějovice</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ222102010" record-id="r-CZ222102010">
+            <institution internal-code="222102010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Český Krumlov</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Český Krumlov</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ222103010" record-id="r-CZ222103010">
+            <institution internal-code="222103010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Jindřichův Hradec</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Jindřichův Hradec</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ222104010" record-id="r-CZ222104010">
+            <institution internal-code="222104010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Písek</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Písek</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ222105010" record-id="r-CZ222105010">
+            <institution internal-code="222105010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Prachatice</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Prachatice</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ222106010" record-id="r-CZ222106010">
+            <institution internal-code="222106010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Strakonice</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Strakonice</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ222107010" record-id="r-CZ222107010">
+            <institution internal-code="222107010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Tábor</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Tábor</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ223101010" record-id="r-CZ223101010">
+            <institution internal-code="223101010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Domažlice se sídlem v Horšovském Týně</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Domažlice</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ223201010" record-id="r-CZ223201010">
+            <institution internal-code="223201010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Cheb</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Cheb</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ223202010" record-id="r-CZ223202010">
+            <institution internal-code="223202010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Karlovy Vary</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Karlovy Vary</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ223102010" record-id="r-CZ223102010">
+            <institution internal-code="223102010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Klatovy</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Klatovy</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ223104010" record-id="r-CZ223104010">
+            <institution internal-code="223104010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Plzeň-jih se sídlem v Blovicích</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Plzeň-jih</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ223105010" record-id="r-CZ223105010">
+            <institution internal-code="223105010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Plzeň-sever se sídlem v Plasích</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Plzeň-sever</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ223106010" record-id="r-CZ223106010">
+            <institution internal-code="223106010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Rokycany</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Rokycany</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ223203010" record-id="r-CZ223203010">
+            <institution internal-code="223203010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Sokolov se sídlem v Jindřichovicích</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Sokolov</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ223107010" record-id="r-CZ223107010">
+            <institution internal-code="223107010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Tachov</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Tachov</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ224201010" record-id="r-CZ224201010">
+            <institution internal-code="224201010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Česká Lípa</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Česká Lípa</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ224101010" record-id="r-CZ224101010">
+            <institution internal-code="224101010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Děčín</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Děčín</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ224102010" record-id="r-CZ224102010">
+            <institution internal-code="224102010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Chomutov se sídlem v Kadani</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Chomutov</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ224202010" record-id="r-CZ224202010">
+            <institution internal-code="224202010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Jablonec nad Nisou</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Jablonec nad N.</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ224203010" record-id="r-CZ224203010">
+            <institution internal-code="224203010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Liberec</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Liberec</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ224103010" record-id="r-CZ224103010">
+            <institution internal-code="224103010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Litoměřice se sídlem v Lovosicích</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Litoměřice</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ224104010" record-id="r-CZ224104010">
+            <institution internal-code="224104010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Louny</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Louny</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ224105010" record-id="r-CZ224105010">
+            <institution internal-code="224105010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Most</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Most</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ224106010" record-id="r-CZ224106010">
+            <institution internal-code="224106010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Teplice</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Teplice</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ225101010" record-id="r-CZ225101010">
+            <institution internal-code="225101010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Hradec Králové</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Hradec Králové</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ225201010" record-id="r-CZ225201010">
+            <institution internal-code="225201010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Chrudim</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Chrudim</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ225102010" record-id="r-CZ225102010">
+            <institution internal-code="225102010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Jičín</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Jičín</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ225103010" record-id="r-CZ225103010">
+            <institution internal-code="225103010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Náchod</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Náchod</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ225202010" record-id="r-CZ225202010">
+            <institution internal-code="225202010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Pardubice</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Pardubice</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ225104010" record-id="r-CZ225104010">
+            <institution internal-code="225104010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Rychnov nad Kněžnou</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Rychnov nad Kn.</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ225203010" record-id="r-CZ225203010">
+            <institution internal-code="225203010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Svitavy se sídlem v Litomyšli</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Svitavy</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ225105010" record-id="r-CZ225105010">
+            <institution internal-code="225105010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Trutnov</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Trutnov</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ225204010" record-id="r-CZ225204010">
+            <institution internal-code="225204010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Ústí nad Orlicí</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Ústí nad Orlicí</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226201010" record-id="r-CZ226201010">
+            <institution internal-code="226201010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Blansko</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Blansko</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226203010" record-id="r-CZ226203010">
+            <institution internal-code="226203010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Brno-venkov se sídlem v Rajhradě</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Brno-venkov</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226204010" record-id="r-CZ226204010">
+            <institution internal-code="226204010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Břeclav se sídlem v Mikulově</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Břeclav</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226304010" record-id="r-CZ226304010">
+            <institution internal-code="226304010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Zlín</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Zlín</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226205010" record-id="r-CZ226205010">
+            <institution internal-code="226205010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Hodonín</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Hodonín</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226102010" record-id="r-CZ226102010">
+            <institution internal-code="226102010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Jihlava</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Jihlava</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226301010" record-id="r-CZ226301010">
+            <institution internal-code="226301010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Kroměříž</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Kroměříž</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226104010" record-id="r-CZ226104010">
+            <institution internal-code="226104010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Třebíč</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Třebíč</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226302010" record-id="r-CZ226302010">
+            <institution internal-code="226302010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Uherské Hradiště</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Uherské Hradiště</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226206010" record-id="r-CZ226206010">
+            <institution internal-code="226206010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Vyškov se sídlem ve Slavkově u Brna</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Vyškov</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226207010" record-id="r-CZ226207010">
+            <institution internal-code="226207010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Znojmo</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Znojmo</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226105010" record-id="r-CZ226105010">
+            <institution internal-code="226105010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Žďár nad Sázavou</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Žďár nad Sázavou</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ227201010" record-id="r-CZ227201010">
+            <institution internal-code="227201010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Bruntál se sídlem v Krnově</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Bruntál</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ227202010" record-id="r-CZ227202010">
+            <institution internal-code="227202010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Frýdek-Místek</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Frýdek-Místek</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ227203010" record-id="r-CZ227203010">
+            <institution internal-code="227203010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Karviná</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Karviná</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ227204010" record-id="r-CZ227204010">
+            <institution internal-code="227204010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Nový Jičín</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Nový Jičín</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ227102010" record-id="r-CZ227102010">
+            <institution internal-code="227102010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Olomouc</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Olomouc</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ227205010" record-id="r-CZ227205010">
+            <institution internal-code="227205010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Opava</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Opava</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ227104010" record-id="r-CZ227104010">
+            <institution internal-code="227104010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Přerov</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Přerov</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ227105010" record-id="r-CZ227105010">
+            <institution internal-code="227105010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Šumperk</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Šumperk</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ227101010" record-id="r-CZ227101010">
+            <institution internal-code="227101010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Jeseník</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Jeseník</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ610000010" record-id="r-CZ610000010">
+            <institution internal-code="610000010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Kanceláře prezidenta republiky</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv KPR</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ610000020" record-id="r-CZ610000020">
+            <institution internal-code="610000020" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Pražského hradu</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv Pražského hradu</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ610000030" record-id="r-CZ610000030">
+            <institution internal-code="610000030" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Odbor administrativy a zpracování informací MZV - Archiv MZV</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv MZV Praha</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ610000040" record-id="r-CZ610000040">
+            <institution internal-code="610000040" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Vojenský historický archiv</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>VHA Praha</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ610000050" record-id="r-CZ610000050">
+            <institution internal-code="610000050" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Českého rozhlasu</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv ČRO</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ610000060" record-id="r-CZ610000060">
+            <institution internal-code="610000060" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv České televize</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv České televize</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ610000070" record-id="r-CZ610000070">
+            <institution internal-code="610000070" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Akademie věd České republiky</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv AV ČR</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ610000080" record-id="r-CZ610000080">
+            <institution internal-code="610000080" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Poslanecké sněmovny</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv PS</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ620000010" record-id="r-CZ620000010">
+            <institution internal-code="620000010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Ústav dějin Univerzity Karlovy – Archiv Univerzity Karlovy</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv UK Praha</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ620000020" record-id="r-CZ620000020">
+            <institution internal-code="620000020" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Českého vysokého učení technického v Praze</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv ČVUT Praha</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ630000010" record-id="r-CZ630000010">
+            <institution internal-code="630000010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Národního muzea</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>ANM</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ630000020" record-id="r-CZ630000020">
+            <institution internal-code="630000020" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Literární archiv Památníku národního písemnictví</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>LA PNP Praha</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ610000110" record-id="r-CZ610000110">
+            <institution internal-code="610000110" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Ústřední archiv zeměměřictví a katastru</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>ÚA ZAK Praha</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ610000130" record-id="r-CZ610000130">
+            <institution internal-code="610000130" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Národní filmový archiv</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>NFA Praha</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ620000030" record-id="r-CZ620000030">
+            <institution internal-code="620000030" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Masarykovy univerzity v Brně</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv AMU Brno</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ620000040" record-id="r-CZ620000040">
+            <institution internal-code="620000040" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Vysokého učení technického v Brně</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv VUT Brno</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ630000040" record-id="r-CZ630000040">
+            <institution internal-code="630000040" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Národní galerie</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv NG Praha</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ630000050" record-id="r-CZ630000050">
+            <institution internal-code="630000050" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Národní knihovny</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv NK Praha</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ640000010" record-id="r-CZ640000010">
+            <institution internal-code="640000010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv DIAMO</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv DIAMO</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ700000020" record-id="r-CZ700000020">
+            <institution internal-code="700000020" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Bezpečnostní informační služby</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv BIS</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ521100010" record-id="r-CZ521100010">
+            <institution internal-code="521100010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Všeodborový archiv Českomoravské konfederace odborových svazů</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Všeodborový archiv</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ630000060" record-id="r-CZ630000060">
+            <institution internal-code="630000060" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Národního technického muzea</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv NTM v Praze</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ521100030" record-id="r-CZ521100030">
+            <institution internal-code="521100030" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Židovského muzea v Praze</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv ŽM v Praze</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ610000100" record-id="r-CZ610000100">
+            <institution internal-code="610000100" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv České národní banky</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv ČNB</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226103010" record-id="r-CZ226103010">
+            <institution internal-code="226103010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Pelhřimov</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Pelhřimov</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226101010" record-id="r-CZ226101010">
+            <institution internal-code="226101010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Havlíčkův Brod</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Havlíčkův Brod</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ226303010" record-id="r-CZ226303010">
+            <institution internal-code="226303010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Vsetín</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Vsetín</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ224204010" record-id="r-CZ224204010">
+            <institution internal-code="224204010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Semily</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Semily</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ227103010" record-id="r-CZ227103010">
+            <institution internal-code="227103010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Státní okresní archiv Prostějov</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>SOkA Prostějov</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ610000090" record-id="r-CZ610000090">
+            <institution internal-code="610000090" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Senátu</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv Senátu</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ700000030" record-id="r-CZ700000030">
+            <institution internal-code="700000030" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Úřadu pro zahraniční styky a informace</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv ÚZI</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ521100020" record-id="r-CZ521100020">
+            <institution internal-code="521100020" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv České strany sociálně demokratické</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv ČSSD</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ700000040" record-id="r-CZ700000040">
+            <institution internal-code="700000040" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Národního bezpečnostního úřadu</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv NBÚ</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ620000050" record-id="r-CZ620000050">
+            <institution internal-code="620000050" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Univerzity Hradec Králové</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv UHK</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ513103010" record-id="r-CZ513103010">
+            <institution internal-code="513103010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv společnosti Plzeňský Prazdroj, a.s.</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Plzeňský Prazdroj</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ620000060" record-id="r-CZ620000060">
+            <institution internal-code="620000060" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Univerzity Palackého v Olomouci</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv UP Olomouc</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ517206010" record-id="r-CZ517206010">
+            <institution internal-code="517206010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv OKD a. s. , Ostrava</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv OKD</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ517206020" record-id="r-CZ517206020">
+            <institution internal-code="517206020" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Vítkovice, a.s.</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv Vítkovice</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ517206040" record-id="r-CZ517206040">
+            <institution internal-code="517206040" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv ArcelorMittal Ostrava a. s.</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv ArcelorMittal</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ620000070" record-id="r-CZ620000070">
+            <institution internal-code="620000070" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Akademie výtvarných umění v Praze</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv AVU Praha</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ630000070" record-id="r-CZ630000070">
+            <institution internal-code="630000070" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Moravské galerie v Brně</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv MG v Brně</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ511207010" record-id="r-CZ511207010">
+            <institution internal-code="511207010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv společnosti Škoda Auto</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv Škoda Auto</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ526101010" record-id="r-CZ526101010">
+            <institution internal-code="526101010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Centra hasičského hnutí Přibyslav</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv CHH Přibyslav</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ513203010" record-id="r-CZ513203010">
+            <institution internal-code="513203010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv společnosti Sokolovská uhelná a. s.</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Arch. Sokolovská uhel.</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ620000080" record-id="r-CZ620000080">
+            <institution internal-code="620000080" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Vysoké školy báňské - Technické univerzity Ostrava</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv VŠB Ostrava</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ620000090" record-id="r-CZ620000090">
+            <institution internal-code="620000090" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Slezské univerzity v Opavě</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv SU v Opavě</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ100000020" record-id="r-CZ100000020">
+            <institution internal-code="100000020" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv bezpečnostních složek</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>ABS</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ620000100" record-id="r-CZ620000100">
+            <institution internal-code="620000100" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Mendelovy univerzity v Brně</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv MENDELU</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ700000050" record-id="r-CZ700000050">
+            <institution internal-code="700000050" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Bezpečnostní archiv Vojenského zpravodajství</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>BA Vojen.zpravodajství</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ700000060" record-id="r-CZ700000060">
+            <institution internal-code="700000060" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Policie České republiky</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>BAP ČR</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ536000010" record-id="r-CZ536000010">
+            <institution internal-code="536000010" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Biskupství brněnského</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>ABB</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ700000070" record-id="r-CZ700000070">
+            <institution internal-code="700000070" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Ministerstva vnitra ČR</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>Archiv MV</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ610000140" record-id="r-CZ610000140">
+            <institution internal-code="610000140" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Národního bezpečnostního úřadu - specializovaný</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>ANBU-S</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+        <party-group party-id="CZ620000110" record-id="r-CZ620000110">
+            <institution internal-code="620000110" type-code="DEFAULT"/>
+            <preferred-name party-name-form-type-code="3">
+                <main-part>Archiv Veterinární a farmaceutické univerzity Brno</main-part>
+                <other-part></other-part>
+                <note></note>
+            </preferred-name>
+            <variant-name-list>
+                <variant-name party-name-form-type-code="2">
+                    <main-part>AVFU Brno</main-part>
+                </variant-name>
+            </variant-name-list>
+            <scope></scope>
+        </party-group>
+    </party-list>
+    <packet-list/>
+</ns2:xml-import>

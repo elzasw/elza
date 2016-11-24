@@ -19,7 +19,7 @@ action:
         input_types:
             - ZP2015_UNIT_HIST
         output_type: ZP2015_UNIT_HIST
-        
+
     # ZP4.3.3 Způsob uspořádání jednotky popisu
     - TEXT_AGGREGATION    
         input_types:
@@ -31,7 +31,7 @@ action:
         input_types:
             - ZP2015_FUTURE_UNITS
         output_type: ZP2015_FUTURE_UNITS
-        
+
     # ZP4.4.4 Fyzický stav jednotky popisu a technické požadavky
     - TEXT_AGGREGATION
         input_types:
@@ -44,7 +44,15 @@ action:
         input_types:
             - ZP2015_RELATED_UNITS
         output_type: ZP2015_RELATED_UNITS
-
+        
+	# 4.7.1 Zpracovatel jednotky popisu
+	# ZP2015_ARRANGER - doposud neimplementovano
+    - COPY
+        input_types:
+            - ZP2015_ARRANGER
+        distinct: true
+        output_type: ZP2015_ARRANGER
+	
     # 4.7.2 Pravidla zpracování jednotky popisu
     - TEXT_AGGREGATION    
         input_types:
@@ -56,16 +64,21 @@ action:
         input_types:
             - ZP2015_SIGNATURE_DATE
         output_type: ZP2015_SIGNATURE_DATE
-
-    # Agregace původce
+ 
+   # Agregace původce
     - COPY
         input_types:
             - ZP2015_ORIGINATOR
+        distinct: true
         output_type: ZP2015_ORIGINATOR
-
-    # Agregace jazyků - zatim nefunkcni
-    #- COPY
-    #    input_types:
-    #        - ZP2015_LANGUAGE
-    #    output_type: ZP2015_LANGUAGE
  
+    # Agregace jazyků - zatim nefunkcni
+    - COPY
+        input_types:
+            - ZP2015_LANGUAGE
+        distinct: true
+        output_type: ZP2015_LANGUAGE
+
+    # Počet JP v pomůcce        
+    - NODE_COUNT
+        output_type: ZP2015_UNIT_COUNT_SUM

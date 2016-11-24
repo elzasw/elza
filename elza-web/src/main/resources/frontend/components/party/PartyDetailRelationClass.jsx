@@ -131,17 +131,14 @@ class PartyDetailRelations extends AbstractReactComponent {
             addButton = <NoFocusButton bsStyle="default" onClick={this.handleRelationAdd}><Icon glyph="fa-plus" /></NoFocusButton>;
         }
 
-        if (!relations) {
-
-            return <div>a</div>
-        }
+        const relationsArray = relations ? relations : [];
 
         return <div>
             <div>
                 <label>{label}</label>
                 {addButton}
             </div>
-            {relations.map((relation, index) => <div key={relation.id} className="value-group relation-group">
+            {relationsArray.map((relation, index) => <div key={relation.id} className="value-group relation-group">
                 <div className="value">
                     {(allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.INTERVAL || allowedRelationTypesMap[relation.relationTypeId].useUnitdate == USE_UNITDATE_ENUM.ONE) && relation.from &&  relation.from.value && <div>
                         <div>{relationClassType.code !== RELATION_CLASS_RELATION_CODE && allowedRelationTypesMap[relation.relationTypeId].name + ": "}{relation.from.value}</div>
