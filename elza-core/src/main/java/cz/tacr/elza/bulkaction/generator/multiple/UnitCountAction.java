@@ -1,5 +1,6 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
+import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitCountActionResult;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
  * Akce na počítání Evidenčních jednotek.
  *
  * @author Martin Šlapa
+ * @author Petr Pytelka
  * @since 01.07.2016
  */
 @Component
@@ -208,19 +210,19 @@ public class UnitCountAction extends Action {
     }
 
     @Override
-    public void apply(final ArrNode node, final List<ArrDescItem> items, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
+    public void apply(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems) {
 
         // Jednotlivost přímo pod Sérii
-        itemUnderType(node, items, (LinkedHashMap<ArrNode, List<ArrDescItem>>) parentNodeDescItems, "SERIES");
+        itemUnderType(node, items, parentLevelWithItems, "SERIES");
 
         // Jednotlivost přímo pod Logickou složkou
-        itemUnderType(node, items, (LinkedHashMap<ArrNode, List<ArrDescItem>>) parentNodeDescItems, "FOLDER_LOGICAL");
+        itemUnderType(node, items, parentLevelWithItems, "FOLDER_LOGICAL");
 
         // Množstevní EJ
-        isTypeEJ1(node, items, (LinkedHashMap<ArrNode, List<ArrDescItem>>) parentNodeDescItems);
+        isTypeEJ1(node, items, parentLevelWithItems);
 
         // S uvedením EJ
-        isTypeEJ2(node, items, (LinkedHashMap<ArrNode, List<ArrDescItem>>) parentNodeDescItems);
+        isTypeEJ2(node, items, parentLevelWithItems);
     }
 
     /**
@@ -228,16 +230,16 @@ public class UnitCountAction extends Action {
      *
      * @param node                procházený uzel
      * @param items               seznam hodnot uzlu
-     * @param parentNodeDescItems rodiče uzlu
+     * @param parentLevelWithItems rodiče uzlu
      */
-    private void isTypeEJ2(final ArrNode node, final List<ArrDescItem> items, final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
+    private void isTypeEJ2(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems) {
         boolean isFind = isItem(items, "FOLDER_SINGLE_TYPE");
 
         if (!isFind) {
             return;
         }
 
-        boolean count = !hasIgnoredParent(parentNodeDescItems);
+        boolean count = !hasIgnoredParent(parentLevelWithItems);
 
 
         if (count) {
@@ -253,16 +255,16 @@ public class UnitCountAction extends Action {
      *
      * @param node                procházený uzel
      * @param items               seznam hodnot uzlu
-     * @param parentNodeDescItems rodiče uzlu
+     * @param parentLevelWithItems rodiče uzlu
      */
-    private void isTypeEJ1(final ArrNode node, final List<ArrDescItem> items, final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
+    private void isTypeEJ1(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems) {
         boolean isFind = isItem(items, "FOLDER_UNITS");
 
         if (!isFind) {
             return;
         }
 
-        boolean count = !hasIgnoredParent(parentNodeDescItems);
+        boolean count = !hasIgnoredParent(parentLevelWithItems);
 
         if (count) {
             countItemValue(items);
@@ -340,16 +342,16 @@ public class UnitCountAction extends Action {
     }
 
     /**
-     * Detekce jednotlivosti pod sérií.
+     * Detekce jednotlivosti pod danou úrovní.
      *
      * @param node                procházený uzel
      * @param items               seznam hodnot uzlu
-     * @param parentNodeDescItems rodiče uzlu
+     * @param parentLevelWithItems rodiče uzlu
      * @param type                typ, pod kterým hledáme (z předpisu akce)
      */
-    public void itemUnderType(final ArrNode node, final List<ArrDescItem> items, final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems, final String type) {
+    public void itemUnderType(final ArrNode node, final List<ArrDescItem> items, final LevelWithItems parentLevelWithItems, final String type) {
 
-        // existuje typ?
+        // jedna se o jednotlivost?
         boolean found = isItem(items, "ITEM");
 
         if (!found) {
@@ -357,63 +359,79 @@ public class UnitCountAction extends Action {
             return;
         }
 
-        boolean onlyItemCount = hasIgnoredParent(parentNodeDescItems);
-        boolean isUnder = isUnder(parentNodeDescItems, type);
-
-        if (isUnder || onlyItemCount) {
-
-            if (isItem(items, "KTT")) {
-                countKkt(items);
-            }
-
-            RulItemSpec item = itemSpecs.get("ITEM");
-            addToCount(item.getShortcut(), 1);
-
-            if (isUnder) {
-                ignoredNodeId.add(node.getNodeId());
-            }
+        // Check if under given type
+        boolean isUnder = isDirectlyUnder(parentLevelWithItems, type);
+        if (!isUnder) {
+        	return;
+        }
+        
+        // Flag if item should be counted
+        boolean canCount = !hasIgnoredParent(parentLevelWithItems);
+        if(canCount) {
+            RulItemType unitType = itemTypes.get("UNIT_TYPE");
+            addItemWithTypeToCount(unitType, items);
         }
 
+        /*
+        if (isItem(items, "KTT")) {
+                countKkt(items);
+        }*/
     }
 
     /**
+     * Add all items with given type
+     * @param unitType
+     * @param items
+     */
+    private void addItemWithTypeToCount(RulItemType unitType, List<ArrDescItem> items) {
+    	for(ArrDescItem descItem: items)
+    	{
+    		if(descItem.getItemType().equals(unitType))
+    		{
+    			// TODO: ignore some types    			
+    			addToCount(descItem.getItemSpec().getShortcut(), 1);
+    		}
+    	}
+		
+	}
+
+	/**
      * Jsou mezi ignorovanými některý z rodičů?
      *
-     * @param parentNodeDescItems rodiče uzlu
+     * @param parentLevelWithItems rodiče uzlu
      * @return jsou?
      */
-    protected boolean hasIgnoredParent(final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
-        if (parentNodeDescItems != null && parentNodeDescItems.values().size() > 0) {
-            ArrayList<ArrNode> nodes = new ArrayList<>(parentNodeDescItems.keySet());
-            for (ArrNode arrNode : nodes) {
-                if (ignoredNodeId.contains(arrNode.getNodeId())) {
-                    return true;
-                }
-            }
-        }
+    protected boolean hasIgnoredParent(LevelWithItems parentLevelWithItems) {
+        while(parentLevelWithItems!=null) {
+        	ArrNode arrNode = parentLevelWithItems.getLevel().getNode();
+            if (ignoredNodeId.contains(arrNode.getNodeId())) {
+                return true;
+            }        	
+            parentLevelWithItems = parentLevelWithItems.getParent();
+    	}
         return false;
     }
 
     /**
-     * Je uzel pod typem?
+     * Je uzel primo pod typem?
      *
-     * @param parentNodeDescItems rodiče uzlu
+     * @param parentLevelWithItems rodiče uzlu
      * @param type typ, pod kterým hledáme (z předpisu akce)
      * @return je?
      */
-    protected boolean isUnder(final LinkedHashMap<ArrNode, List<ArrDescItem>> parentNodeDescItems, final String type) {
-        if (parentNodeDescItems != null && parentNodeDescItems.values().size() > 0) {
-            ArrayList<List<ArrDescItem>> lists = new ArrayList<>(parentNodeDescItems.values());
-            List<ArrDescItem> parentItems = lists.get(lists.size() - 1); // hodnoty posledního elementu (předchůdce)
-            RulItemType itemType = itemTypes.get(type);
-            RulItemSpec itemSpec = itemSpecs.get(type);
-            for (ArrDescItem parentItem : parentItems) {
+    protected boolean isDirectlyUnder(LevelWithItems parentLevelWithItems, final String type) {
+        RulItemType itemType = itemTypes.get(type);
+        RulItemSpec itemSpec = itemSpecs.get(type);
+
+        if(parentLevelWithItems!=null) {
+    		List<ArrDescItem> descItems = parentLevelWithItems.getDescItems();
+            for (ArrDescItem parentItem : descItems) {
                 if (parentItem.getItemType().equals(itemType) &&
                         parentItem.getItemSpec() != null && parentItem.getItemSpec().equals(itemSpec)) {
                     return true;
                 }
             }
-        }
+    	}
         return false;
     }
 
@@ -438,10 +456,7 @@ public class UnitCountAction extends Action {
 
     @Override
     public boolean canApply(final TypeLevel typeLevel) {
-        if (typeLevel.equals(TypeLevel.PARENT) && applyParents) {
-            return true;
-        }
-
+    	// Units are counted only on real nodes in finding aid
         if (typeLevel.equals(TypeLevel.CHILD) && applyChildren) {
             return true;
         }
