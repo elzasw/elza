@@ -6,12 +6,12 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>0.9-SNAPSHOT</version>
+        <version>0.8-SNAPSHOT</version>
     </parent>
 
-    <artifactId>distro-root</artifactId>
+    <artifactId>distrib</artifactId>
     <packaging>pom</packaging>
-    <name>distro</name>
+    <name>distrib</name>
 
     <modules>
         <module>elza-tomcat</module>
@@ -19,4 +19,3 @@
     </modules>
 
 </project>
-
