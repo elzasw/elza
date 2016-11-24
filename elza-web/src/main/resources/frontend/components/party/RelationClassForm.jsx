@@ -58,9 +58,6 @@ class RelationClassForm extends AbstractReactComponent {
             }
         }
 
-        errors.from = DatationField.reduxValidate(values.from);
-        errors.to = DatationField.reduxValidate(values.to);
-
         return errors;
     };
 
@@ -99,7 +96,7 @@ class RelationClassForm extends AbstractReactComponent {
             <Modal.Body className="relation-form">
                 <div className="flex">
                     <div className="flex-2">
-                        {relationTypes.map(i => <Radio inline {...relationTypeId} value={i.id}>{i.name}</Radio>)}
+                        <div className="relation-class-select">{relationTypes.map(i => <Radio inline {...relationTypeId} value={i.id}>{i.name}</Radio>)}</div>
                         {relationType && <div className="relation-entities">
                             <label className="type">{i18n('party.relation.entityInRelation')}</label><Button bsStyle="action" onClick={() => relationEntities.addField({record:null, roleType: {id: null}})}><Icon glyph="fa-plus" /></Button>
                             {relationEntities.map((i,index) => <div className="relation-row" key={index}>

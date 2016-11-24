@@ -27,6 +27,7 @@ class AbstractReactComponent extends React.Component {
 
     /**
      * Bind metod pro předné názvy metod v parametru.
+     * @deprecated nově používáme syntaxy () => {}
      */
     bindMethods(...methods) {
         methods.forEach( (method) => {
