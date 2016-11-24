@@ -7,7 +7,7 @@ import cz.tacr.elza.print.party.Party;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class ItemPartyRef extends AbstractItem<Party> {
+public class ItemPartyRef extends AbstractItem {
 
     public ItemPartyRef(final NodeId nodeId, final Party value) {
         super(nodeId, value);
@@ -15,6 +15,6 @@ public class ItemPartyRef extends AbstractItem<Party> {
 
     @Override
     public String serializeValue() {
-        return getValue().serialize();
+        return getValue(Party.class).serialize();
     }
 }

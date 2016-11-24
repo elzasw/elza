@@ -7,7 +7,7 @@ import cz.tacr.elza.print.Record;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class ItemRecordRef extends AbstractItem<Record> {
+public class ItemRecordRef extends AbstractItem {
 
     public ItemRecordRef(final NodeId nodeId, final Record value) {
         super(nodeId, value);
@@ -15,6 +15,6 @@ public class ItemRecordRef extends AbstractItem<Record> {
 
     @Override
     public String serializeValue() {
-        return getValue().serialize();
+        return getValue(Record.class).serialize();
     }
 }
