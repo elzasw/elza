@@ -10,6 +10,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -302,9 +303,12 @@ public class UnitCountAction extends Action {
                 ArrPacket packet = ((ArrItemPacketRef) item.getItem()).getPacket();
                 String storageNumber = packet.getStorageNumber();
                 if (!storageNumbers.contains(storageNumber)) {
-                    String shortcut = packet.getPacketType().getShortcut();
-                    addToCount(shortcut, 1);
-                    storageNumbers.add(storageNumber);
+                	RulPacketType packetType = packet.getPacketType();
+                	if(packetType!=null) {
+                		String shortcut = packetType.getShortcut();
+                		addToCount(shortcut, 1);
+                	}
+                	storageNumbers.add(storageNumber);
                 }
             }
         }
