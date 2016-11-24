@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
  * Vícenásobná hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
  *
  * @author Martin Šlapa
+ * @author Petr Pytelka
  * @since 29.06.2016
  */
 public class MultipleBulkAction extends BulkAction {
@@ -105,52 +107,54 @@ public class MultipleBulkAction extends BulkAction {
                     final ArrBulkActionRun bulkActionRun) {
         init(bulkAction, bulkActionRun);
 
-        List<ArrNode> nodes = nodeRepository.findAll(inputNodeIds);
+        List<ArrNode> startingNodes = nodeRepository.findAll(inputNodeIds);
 
-        Set<ArrNode> parentNodes = new TreeSet<>();
-
-        Map<ArrNode, List<LevelWithItems>> nodeParentLevels = new HashMap<>();
-        Map<ArrNode, LevelWithItems> nodeLevelWithItems = new HashMap<>();
-
-        for (ArrNode node : nodes) {
-            List<ArrLevel> levels = levelRepository.findAllParentsByNodeAndVersion(node, fundVersion);
-            Collections.reverse(levels);
-
-            List<LevelWithItems> levelWithItemsList = new ArrayList<>();
-
-            for (ArrLevel level : levels) {
-                LevelWithItems levelWithItems = new LevelWithItems(level);
-                nodeLevelWithItems.put(level.getNode(), levelWithItems);
-                levelWithItemsList.add(levelWithItems);
-            }
-
-            nodeParentLevels.put(node, levelWithItemsList);
-
-            parentNodes.addAll(levels.stream().filter(level -> !node.equals(level.getNode())).map(ArrLevel::getNode).collect(Collectors.toList()));
-        }
+        // map of root nodes for action
+        Map<ArrNode, LevelWithItems> nodeStartingLevels = new HashMap<>();
+        // map of all nodes, including all parents
+        Map<ArrNode, LevelWithItems> nodesWithItems = new HashMap<>();
 
         ArrNode rootNode = fundVersion.getRootNode();
+        // prepare parent nodes
+        for (ArrNode startingNode : startingNodes) {
+        	// read parents
+        	List<ArrLevel> levels = levelRepository.findAllParentsByNodeAndVersion(startingNode, fundVersion);
+        	Collections.reverse(levels);
+        	
+        	LevelWithItems parentLevel = null;        	
+        	for(ArrLevel level: levels) {
+        		LevelWithItems levelWithItems = prepareLevelWithItems(level, parentLevel); 
+        		
+        		nodesWithItems.put(level.getNode(), levelWithItems);
+        		parentLevel = levelWithItems;
+        	}
+        	// add starting node
+        	ArrLevel startingLevel = levelRepository.findNodeInRootTreeByNodeId(startingNode, rootNode, null);
+        	LevelWithItems startingLevelWithItems = prepareLevelWithItems(startingLevel, parentLevel);
+        	nodesWithItems.put(startingLevel.getNode(), startingLevelWithItems);
 
-        for (ArrNode node : parentNodes) {
-            ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
-            LevelWithItems levelWithItems = nodeLevelWithItems.get(node);
-            List<ArrDescItem> descItems = loadDescItems(level);
-            levelWithItems.descItems.addAll(descItems);
-            apply(node, descItems, TypeLevel.PARENT, null);
+        	nodeStartingLevels.put(startingNode, startingLevelWithItems);            
         }
 
-        for (ArrNode node : nodes) {
-            ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
-            Assert.notNull(level, "Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
+        // apply on all parentNodes
+        for (Entry<ArrNode, LevelWithItems> entry : nodesWithItems.entrySet()) {
+        	ArrNode node = entry.getKey();
+        	// check if it is pure parent (not starting node)
+        	if(nodeStartingLevels.containsKey(node))
+        		continue;
+        	
+            LevelWithItems levelWithItems = entry.getValue();
 
-            List<LevelWithItems> levelWithItemsList = nodeParentLevels.get(node);
+            apply(node, levelWithItems.descItems, TypeLevel.PARENT, levelWithItems.getParent());
+        }
 
-            Map<ArrNode, List<ArrDescItem>> nodeDescItems = new LinkedHashMap<>();
-            for (LevelWithItems levelWithItems : levelWithItemsList) {
-                nodeDescItems.put(levelWithItems.level.getNode(), levelWithItems.descItems);
-            }
+        // apply on all connected nodes
+        for (ArrNode node : startingNodes) {
+        	
+        	LevelWithItems levelWithItems = nodeStartingLevels.get(node);
+        	Assert.notNull(levelWithItems);
 
-            generate(node, level, nodeDescItems);
+            generate(levelWithItems);
         }
 
         // Collect results
@@ -163,40 +167,44 @@ public class MultipleBulkAction extends BulkAction {
     }
 
     /**
-     * Pomocná třída pro svázání levelu a hodnot atributů.
+     * Load all description items for level and prepare bounding object
+     * @param level Level to be loaded
+     * @param parentLevels Parent level to be set
+     * @return Return loaded level
      */
-    class LevelWithItems {
-        final ArrLevel level;
-        final List<ArrDescItem> descItems = new ArrayList<>();
+    private LevelWithItems prepareLevelWithItems(ArrLevel level, LevelWithItems parentLevels) {
+    	List<ArrDescItem> items = loadDescItems(level);
+    	return new LevelWithItems(level, parentLevels, items);
+	}
 
-        public LevelWithItems(final ArrLevel level) {
-            this.level = level;
-        }
-    }
 
-    /**
+	/**
      * Rekurzivní metody pro procházení JP ve stromu.
      *
      * @param node
      * @param level procházený uzel
      * @param parentNodeDescItems data předků
      */
-    private void generate(final ArrNode node, final ArrLevel level, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
+    private void generate(LevelWithItems levelWithItems) {
         if (bulkActionRun.isInterrupted()) {
             bulkActionRun.setState(cz.tacr.elza.api.ArrBulkActionRun.State.INTERRUPTED);
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
         }
 
-        List<ArrDescItem> descItems = loadDescItems(level);
-        apply(node, descItems, TypeLevel.CHILD, parentNodeDescItems);
+        // apply on current node
+        LevelWithItems parentLevel = levelWithItems.getParent();
+        ArrLevel level = levelWithItems.getLevel();
+        ArrNode node = level.getNode();
+        
+        apply(node, levelWithItems.descItems, TypeLevel.CHILD, parentLevel);
 
+        // apply on child nodes
         List<ArrLevel> childLevels = getChildren(level);
 
-        Map<ArrNode, List<ArrDescItem>> newNarentNodeDescItems = new LinkedHashMap<>(parentNodeDescItems);
-        newNarentNodeDescItems.put(level.getNode(), descItems);
-
         for (ArrLevel childLevel : childLevels) {
-            generate(childLevel.getNode(), childLevel, newNarentNodeDescItems);
+        	LevelWithItems childLevelWithItems = prepareLevelWithItems(childLevel, levelWithItems);
+
+            generate(childLevelWithItems);
         }
     }
 
@@ -208,9 +216,9 @@ public class MultipleBulkAction extends BulkAction {
      * @param typeLevel             typ uzlu
      * @param parentNodeDescItems   data předků
      */
-    private void apply(final ArrNode node, final List<ArrDescItem> items, final TypeLevel typeLevel, final Map<ArrNode, List<ArrDescItem>> parentNodeDescItems) {
+    private void apply(final ArrNode node, final List<ArrDescItem> items, final TypeLevel typeLevel, final LevelWithItems parentLevelWithItems) {
         actions.stream().filter(action -> action.canApply(typeLevel))
-                .forEach(action -> action.apply(node, items, parentNodeDescItems));
+                .forEach(action -> action.apply(node, items, parentLevelWithItems));
     }
 
     /**

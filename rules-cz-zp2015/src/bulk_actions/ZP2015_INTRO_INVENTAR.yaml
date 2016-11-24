@@ -59,11 +59,11 @@ action:
             - ZP2015_ARRANGE_RULES
         output_type: ZP2015_ARRANGE_RULES
 
-    # 4.7.3 Datum podpisu
+    # 4.7.3 Datum popisu
     - TEXT_AGGREGATION    
         input_types:
-            - ZP2015_SIGNATURE_DATE
-        output_type: ZP2015_SIGNATURE_DATE
+            - ZP2015_DESCRIPTION_DATE
+        output_type: ZP2015_DESCRIPTION_DATE
  
    # Agregace původce
     - COPY
@@ -82,3 +82,39 @@ action:
     # Počet JP v pomůcce        
     - NODE_COUNT
         output_type: ZP2015_UNIT_COUNT_SUM
+
+    - UNIT_COUNT
+        output_type: ZP2015_UNIT_COUNT_TABLE
+        output_table_column1: NAME
+        output_table_column1_type: TEXT
+        output_table_column2: COUNT
+        output_table_column2_type: INTEGER
+        # typ pro typ archiválie
+        UNIT_TYPE: ZP2015_UNIT_TYPE
+
+        # typ a specifikace jednotlivosti
+        ITEM: ZP2015_LEVEL_TYPE ZP2015_LEVEL_ITEM
+
+        # typ a specifikace série
+        SERIES: ZP2015_LEVEL_TYPE ZP2015_LEVEL_SERIES
+
+        # typ a specifikace kartotéky a typ počtu zásuvek
+        KTT: ZP2015_UNIT_TYPE ZP2015_UNIT_TYPE_KTT
+        KTT_count: ZP2015_UNIT_COUNT
+
+        # typ a specifikace logické složky
+        FOLDER_LOGICAL: ZP2015_FOLDER_TYPE ZP2015_FOLDER_LOGICAL
+
+        # typ a specifikace množstevní EJ
+        FOLDER_UNITS: ZP2015_FOLDER_TYPE ZP2015_FOLDER_UNITS
+
+        # typ a specifikace složky s typem EJ a typ počtu ej
+        FOLDER_SINGLE_TYPE: ZP2015_FOLDER_TYPE ZP2015_FOLDER_SINGLE_TYPE
+        FOLDER_SINGLE_TYPE_count: ZP2015_UNIT_COUNT
+
+        # typ a specifikace množstevní EJ a typ pro ukládací číslo
+        FOLDER_UNITS: ZP2015_FOLDER_TYPE ZP2015_FOLDER_UNITS
+        STORAGE: ZP2015_STORAGE_ID
+
+        # typ pro extra EJ
+        EXTRA_UNITS: ZP2015_EXTRA_UNITS
