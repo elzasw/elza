@@ -1,22 +1,5 @@
 package cz.tacr.elza.print;
 
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.print.item.Item;
-import cz.tacr.elza.print.item.ItemFile;
-import cz.tacr.elza.print.item.ItemPacketRef;
-import cz.tacr.elza.service.DmsService;
-import cz.tacr.elza.service.output.OutputFactoryService;
-import cz.tacr.elza.utils.AppContext;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.CompareToBuilder;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.springframework.util.Assert;
-
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,6 +9,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.validation.constraints.NotNull;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.CompareToBuilder;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.item.ItemFile;
+import cz.tacr.elza.print.item.ItemPacketRef;
+import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.output.OutputFactoryService;
+import cz.tacr.elza.utils.AppContext;
 
 /**
  * Základní objekt pro generování výstupu, při tisku se vytváří 1 instance.
@@ -233,41 +235,41 @@ public class Output implements RecordProvider, NodesOrder {
                 .sorted(Item::compareToItemViewOrderPosition)
                 .collect(Collectors.toList());
     }
-    
+
     /**
-     * Return single item 
+     * Return single item
      * @param itemTypeCode Code of item
      * @return Return single item if exists. Return null if item does not exists.
      * @throws Throw exception if there are multiple items with same type.
      */
-    public Item getSingleItem(String itemTypeCode) {
-    	Item found = null;
-    	for(Item item: items)
-    	{
-    		if(itemTypeCode.equals(item.getType().getCode())) {
-    			// Check if item already found
-    			if(found!=null) {
-    				throw new IllegalStateException("Multiple items with same code exists: "+itemTypeCode);
-    			}
-    			found = item;
-    		}
-    	}
-    	return found;
+    public Item getSingleItem(final String itemTypeCode) {
+        Item found = null;
+        for(Item item: items)
+        {
+            if(itemTypeCode.equals(item.getType().getCode())) {
+                // Check if item already found
+                if(found!=null) {
+                    throw new IllegalStateException("Multiple items with same code exists: "+itemTypeCode);
+                }
+                found = item;
+            }
+        }
+        return found;
     }
 
     /**
-     * Return value of single item 
+     * Return value of single item
      * @param itemTypeCode Code of item
      * @return Return value of single item. Return null if item does not exists.
      * @throws Throw exception if there are multiple items with same type.
      */
-    public String getSingleItemValue(String itemTypeCode) {
-    	Item found = getSingleItem(itemTypeCode);
-    	if(found!=null) {
-    		return found.getSerializedValue();
-    	} else {
-    		return null;
-    	}
+    public String getSingleItemValue(final String itemTypeCode) {
+        Item found = getSingleItem(itemTypeCode);
+        if(found!=null) {
+            return found.getSerializedValue();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -366,8 +368,7 @@ public class Output implements RecordProvider, NodesOrder {
             List<Item> items = node.getItems();
             for (Item item : items) {
                 if (item instanceof ItemPacketRef) {
-                    ItemPacketRef itemPacketRef = (ItemPacketRef) item;
-                    resultsSet.add(itemPacketRef.getValue());
+                    resultsSet.add(item.getValue(Packet.class));
                 }
             }
         }
@@ -392,8 +393,7 @@ public class Output implements RecordProvider, NodesOrder {
             List<Item> items = node.getItems();
             for (Item item : items) {
                 if (item instanceof ItemPacketRef) {
-                    ItemPacketRef itemPacketRef = (ItemPacketRef) item;
-                    if (itemPacketRef.getValue().equals(packet) && item.getNodeId() != null) {
+                    if (item.getValue(Packet.class).equals(packet) && item.getNodeId() != null) {
                         nodeIds.add(item.getNodeId());
                     }
                 }

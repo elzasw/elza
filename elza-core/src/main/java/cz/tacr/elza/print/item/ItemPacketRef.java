@@ -7,7 +7,7 @@ import cz.tacr.elza.print.Packet;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class ItemPacketRef extends AbstractItem<Packet> {
+public class ItemPacketRef extends AbstractItem {
 
     public ItemPacketRef(final NodeId nodeId, final Packet value) {
         super(nodeId, value);
@@ -15,6 +15,6 @@ public class ItemPacketRef extends AbstractItem<Packet> {
 
     @Override
     public String serializeValue() {
-        return getValue().serialize();
+        return getValue(Packet.class).serialize();
     }
 }

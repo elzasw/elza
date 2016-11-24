@@ -8,7 +8,7 @@ import cz.tacr.elza.print.NodeId;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public interface Item<T> {
+public interface Item {
 
     /**
      * @return node na který je item navázán, pokud je null, jde o navázání přímo na output
@@ -58,7 +58,7 @@ public interface Item<T> {
     /**
      * @return vrací původní hodnotu položky
      */
-    T getValue();
+    <T> T getValue(Class<T> type);
 
     /**
      * Metoda pro získání hodnoty do fieldu v Jasper.
@@ -66,5 +66,5 @@ public interface Item<T> {
      *
      * @return odkaz sám na sebe
      */
-    Item<T> getItem();
+    Item getItem();
 }
