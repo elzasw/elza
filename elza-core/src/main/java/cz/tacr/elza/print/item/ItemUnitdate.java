@@ -7,7 +7,7 @@ import cz.tacr.elza.print.UnitDate;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class ItemUnitdate extends AbstractItem<UnitDate> {
+public class ItemUnitdate extends AbstractItem {
 
     public ItemUnitdate(final NodeId nodeId, final UnitDate value) {
         super(nodeId, value);
@@ -15,6 +15,6 @@ public class ItemUnitdate extends AbstractItem<UnitDate> {
 
     @Override
     public String serializeValue() {
-        return getValue().serialize();
+        return getValue(UnitDate.class).serialize();
     }
 }

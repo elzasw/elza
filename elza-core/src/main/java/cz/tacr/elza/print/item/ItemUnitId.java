@@ -6,7 +6,7 @@ import cz.tacr.elza.print.NodeId;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public class ItemUnitId extends AbstractItem<String> {
+public class ItemUnitId extends AbstractItem {
 
     public ItemUnitId(final NodeId nodeId, final String value) {
         super(nodeId, value);
@@ -14,6 +14,6 @@ public class ItemUnitId extends AbstractItem<String> {
 
     @Override
     public String serializeValue() {
-        return getValue();
+        return getValue(String.class);
     }
 }

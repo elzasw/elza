@@ -14,21 +14,21 @@ import cz.tacr.elza.print.NodeId;
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
  *         Date: 22.6.16
  */
-public abstract class AbstractItem<T> implements Item<T> {
+public abstract class AbstractItem implements Item {
     private final NodeId nodeId; // vazba na node, může být null, v takovém případě patří přímo k output
 
     private ItemType type;
     private ItemSpec specification;
     private Integer position;
-    private T value;
+    private Object value;
 
-    protected AbstractItem(final NodeId nodeId, final T value) {
+    protected AbstractItem(final NodeId nodeId, final Object value) {
         this.nodeId = nodeId;
         this.value = value;
     }
 
     @Override
-    public Item<T> getItem() {
+    public Item getItem() {
         return this;
     }
 
@@ -73,12 +73,8 @@ public abstract class AbstractItem<T> implements Item<T> {
     }
 
     @Override
-    public T getValue() {
-        return value;
-    }
-
-    public void setValue(final T value) {
-        this.value = value;
+    public <T> T getValue(final Class<T> type) {
+        return type.cast(value);
     }
 
     @Override
