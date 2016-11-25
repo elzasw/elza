@@ -8,13 +8,25 @@ import cz.tacr.elza.print.Packet;
  *         Date: 22.6.16
  */
 public class ItemPacketRef extends AbstractItem {
+	
+	Packet packet;
 
-    public ItemPacketRef(final NodeId nodeId, final Packet value) {
-        super(nodeId, value);
+    public ItemPacketRef(final NodeId nodeId, final Packet packet) {
+        super(nodeId);
+        this.packet = packet;
     }
 
     @Override
     public String serializeValue() {
-        return getValue(Packet.class).serialize();
+        return packet.serialize();
+    }
+    
+    @Override
+    public Object getValue() {
+    	return packet;
+    }
+    
+    public Packet getPacket() {
+    	return packet;
     }
 }

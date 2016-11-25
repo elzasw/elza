@@ -4,17 +4,31 @@ import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.party.Party;
 
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
+ * @author Martin Lebeda
+ * @author Petr Pytelka
+ *         
  */
 public class ItemPartyRef extends AbstractItem {
+	
+	Party party;
 
-    public ItemPartyRef(final NodeId nodeId, final Party value) {
-        super(nodeId, value);
+    public ItemPartyRef(final NodeId nodeId, final Party party) {
+        super(nodeId);
+        
+        this.party = party;
     }
 
     @Override
     public String serializeValue() {
-        return getValue(Party.class).serialize();
+        return party.serialize();
     }
+    
+    public Party getParty() {
+    	return party;
+    }
+
+	@Override
+	public Object getValue() {
+		return party;
+	}
 }

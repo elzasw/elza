@@ -10,13 +10,22 @@ import cz.tacr.elza.print.NodeId;
  *         Date: 22.6.16
  */
 public class ItemCoordinates extends AbstractItem {
+	
+	Geometry value;
 
-    public ItemCoordinates(final NodeId nodeId, final Geometry value) {
-        super(nodeId, value);
+    public ItemCoordinates(final NodeId nodeId, final Geometry geometry) {
+        super(nodeId);
+        this.value = geometry;
     }
 
     @Override
     public String serializeValue() {
-        return new WKTWriter().writeFormatted(getValue(Geometry.class));
+        return new WKTWriter().writeFormatted(value);
     }
+
+    @Override
+    public Object getValue() {
+    	return value;
+    }
+
 }

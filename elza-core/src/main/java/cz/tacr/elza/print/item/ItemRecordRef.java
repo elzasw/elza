@@ -4,17 +4,31 @@ import cz.tacr.elza.print.NodeId;
 import cz.tacr.elza.print.Record;
 
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
+ * @author Martin Lebeda
+ * @author Petr Pytelka
+ * 
  */
 public class ItemRecordRef extends AbstractItem {
+	
+	Record record;
 
-    public ItemRecordRef(final NodeId nodeId, final Record value) {
-        super(nodeId, value);
+    public ItemRecordRef(final NodeId nodeId, final Record record) {
+        super(nodeId);
+        
+        this.record = record;
     }
 
     @Override
     public String serializeValue() {
-        return getValue(Record.class).serialize();
+        return record.serialize();
     }
+
+	@Override
+	public Object getValue() {
+		return record;
+	}
+	
+	Record getRecord() {
+		return record;
+	}
 }

@@ -20,11 +20,9 @@ public abstract class AbstractItem implements Item {
     private ItemType type;
     private ItemSpec specification;
     private Integer position;
-    private Object value;
 
-    protected AbstractItem(final NodeId nodeId, final Object value) {
+    protected AbstractItem(final NodeId nodeId) {
         this.nodeId = nodeId;
-        this.value = value;
     }
 
     @Override
@@ -71,10 +69,16 @@ public abstract class AbstractItem implements Item {
     public void setType(final ItemType type) {
         this.type = type;
     }
+    
+    /**
+     * Method to return real pure value object
+     * @return
+     */
+    abstract public Object getValue();
 
     @Override
     public <T> T getValue(final Class<T> type) {
-        return type.cast(value);
+        return type.cast(getValue());
     }
 
     @Override
