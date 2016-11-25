@@ -326,6 +326,10 @@
         </developer>
     </developers>
 
+    <scm>
+        <connection>scm:git:http://git.marbes.cz/r/INET/ELZA/elza.git</connection>
+    </scm>
+
     <repositories>
         <repository>
             <id>OSGEO GeoTools repo</id>
@@ -340,17 +344,14 @@
             <url>https://repository.jboss.org/nexus/content/groups/public/</url>
         </repository>
         <repository>
+            <!-- Dočasné nové repo hibernate spatial -->
+            <id>hibernatespatial</id>
+            <url>http://nexus.e-is.pro/nexus/content/groups/public/</url>
+        </repository>
+        <repository>
             <id>central</id>
             <url>http://central.maven.org/maven2/</url>
         </repository>
-        <repository>
-            <id>hibernatespatial</id>
-            <url>http://www.hibernatespatial.org/repository</url>
-        </repository>
     </repositories>
-
-    <scm>
-        <connection>scm:git:http://git.marbes.cz/r/INET/ELZA/elza.git</connection>
-    </scm>
 
 </project>

@@ -1036,7 +1036,6 @@ public class XmlImportService {
 
         parRelation.setRelationType(parRelationType);
 
-        parRelation.setDateNote(XmlImportUtils.trimStringValue(relation.getDateNote(), StringLength.LENGTH_1000, stopOnError));
         parRelation.setFrom(importComplexDate(relation.getFromDate()));
         parRelation.setNote(XmlImportUtils.trimStringValue(relation.getNote(), StringLength.LENGTH_1000, stopOnError));
         parRelation.setParty(parParty);

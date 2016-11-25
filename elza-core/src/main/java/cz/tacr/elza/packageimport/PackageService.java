@@ -424,6 +424,8 @@ public class PackageService {
             RelationRoleTypes relationRoleTypes = convertXmlStreamToObject(RelationRoleTypes.class, mapEntry.get(RELATION_ROLE_TYPE_XML));
             List<ParRelationRoleType> parRelationRoleTypes = processRelationRoleTypes(relationRoleTypes, rulPackage);
 
+            entityManager.flush();
+
             PartyNameFormTypes partyNameFormTypes = convertXmlStreamToObject(PartyNameFormTypes.class, mapEntry.get(PARTY_NAME_FORM_TYPE_XML));
             processPartyNameFormTypes(partyNameFormTypes, rulPackage);
 
@@ -620,6 +622,9 @@ public class PackageService {
 
         List<RegRegisterType> regRegisterTypesDelete = new ArrayList<>(regRegisterTypes);
         regRegisterTypesDelete.removeAll(regRegisterTypesNew);
+
+        regRegisterTypesDelete.forEach(registryRoleRepository::deleteByRegisterType);
+
         registerTypeRepository.delete(regRegisterTypesDelete);
 
         return regRegisterTypesNew;
@@ -781,6 +786,10 @@ public class PackageService {
 
         List<ParRelationType> parRelationTypesDelete = new ArrayList<>(parRelationTypes);
         parRelationTypesDelete.removeAll(parRelationTypesNew);
+
+        parRelationTypesDelete.forEach(partyTypeRelationRepository::deleteByRelationType);
+        parRelationTypesDelete.forEach(relationTypeRoleTypeRepository::deleteByRelationType);
+
         relationTypeRepository.delete(parRelationTypesDelete);
 
         return parRelationTypesNew;
@@ -928,6 +937,9 @@ public class PackageService {
 
         List<ParComplementType> parComplementTypesDelete = new ArrayList<>(parComplementTypes);
         parComplementTypesDelete.removeAll(parComplementTypesNew);
+
+        parComplementTypesDelete.forEach(partyTypeComplementTypeRepository::deleteByComplementType);
+
         complementTypeRepository.delete(parComplementTypesDelete);
 
         return parComplementTypesNew;
@@ -968,6 +980,9 @@ public class PackageService {
 
         List<ParRelationClassType> parRelationClassTypesDelete = new ArrayList<>(parRelationClassTypes);
         parRelationClassTypesDelete.removeAll(parRelationClassTypesNew);
+
+        parRelationClassTypesDelete.forEach(relationTypeRepository::deleteByRelationClassType);
+
         partyRelationClassTypeRepository.delete(parRelationClassTypesDelete);
         return parRelationClassTypesNew;
     }
@@ -1045,6 +1060,10 @@ public class PackageService {
 
         List<ParRelationRoleType> parRelationRoleTypesDelete = new ArrayList<>(parRelationRoleTypes);
         parRelationRoleTypesDelete.removeAll(parRelationRoleTypesNew);
+
+        parRelationRoleTypesDelete.forEach(relationTypeRoleTypeRepository::deleteByRoleType);
+        parRelationRoleTypesDelete.forEach(registryRoleRepository::deleteByRoleType);
+
         relationRoleTypeRepository.delete(parRelationRoleTypesDelete);
         return parRelationRoleTypesNew;
     }

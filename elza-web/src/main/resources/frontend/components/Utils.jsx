@@ -633,6 +633,21 @@ function dateTimeToLocalUTC(date) {
         + '.' + _dtpad( date.getMilliseconds());
 }
 
+const removeUndefined = (obj) => {
+    for (let key in obj ) {
+        if (obj.hasOwnProperty(key)) {
+            if (obj[key] === undefined || obj[key] === null) {
+                delete obj[key];
+            }
+        }
+    }
+    return obj;
+};
+const isNotBlankObject = (obj) => {
+    const newObj = removeUndefined(obj);
+    return Object.keys(newObj).length > 0
+};
+
 module.exports = {
     dateTimeToLocalUTC,
     wktType,
@@ -655,6 +670,8 @@ module.exports = {
     browser: browser,
     getKeyModifier: getKeyModifier,
     detectIE: detectIE,
+    removeUndefined,
+    isNotBlankObject,
     init: function() {
         init();
     }

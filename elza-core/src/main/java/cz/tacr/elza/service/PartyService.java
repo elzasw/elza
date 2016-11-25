@@ -667,7 +667,6 @@ public class PartyService {
 
         relation.setParty(party);
         relation.setRelationType(relationType);
-        relation.setDateNote(relationSource.getDateNote());
         relation.setNote(relationSource.getNote());
 
         ParRelation result = relationRepository.save(relation);

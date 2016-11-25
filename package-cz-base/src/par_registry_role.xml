@@ -7,6 +7,7 @@
     <registry-role register-type="PERSON" role-type="45"/>
     <registry-role register-type="PERSON" role-type="47"/>
     <registry-role register-type="PERSON" role-type="48"/>
+    <registry-role register-type="PERSON" role-type="49"/>
     <registry-role register-type="FAMILY" role-type="1"/>
     <registry-role register-type="FAMILY_BRANCH" role-type="1"/>
     <registry-role register-type="PERSON_INDIVIDUAL" role-type="1"/>
@@ -65,4 +66,52 @@
     <registry-role register-type="PERSON_INDIVIDUAL" role-type="46"/>
     <registry-role register-type="TERM" role-type="47"/>
     <registry-role register-type="TERM" role-type="48"/>
+    <registry-role register-type="GEO" role-type="4"/>
+    <registry-role register-type="GEO" role-type="5"/>
+    <registry-role register-type="GEO" role-type="6"/>
+    <registry-role register-type="GEO" role-type="7"/>
+    <registry-role register-type="GEO" role-type="8"/>
+    <registry-role register-type="GEO" role-type="32"/>
+    <registry-role register-type="GEO" role-type="36"/>
+    <registry-role register-type="GEO" role-type="47"/>
+    <registry-role register-type="GEO" role-type="48"/>
+    <registry-role register-type="ARTWORK" role-type="4"/>
+    <registry-role register-type="ARTWORK" role-type="5"/>
+    <registry-role register-type="ARTWORK" role-type="6"/>
+    <registry-role register-type="ARTWORK" role-type="7"/>
+    <registry-role register-type="ARTWORK" role-type="30"/>
+    <registry-role register-type="ARTWORK" role-type="33"/>
+    <registry-role register-type="ARTWORK" role-type="34"/>
+    <registry-role register-type="ARTWORK" role-type="36"/>
+    <registry-role register-type="ARTWORK" role-type="47"/>
+    <registry-role register-type="ARTWORK" role-type="48"/>
+    <registry-role register-type="EVENT" role-type="4"/>
+    <registry-role register-type="EVENT" role-type="5"/>
+    <registry-role register-type="EVENT" role-type="6"/>
+    <registry-role register-type="EVENT" role-type="7"/>
+    <registry-role register-type="EVENT" role-type="30"/>
+    <registry-role register-type="EVENT" role-type="33"/>
+    <registry-role register-type="EVENT" role-type="34"/>
+    <registry-role register-type="EVENT" role-type="47"/>
+    <registry-role register-type="EVENT" role-type="48"/>
+    <registry-role register-type="PARTY_GROUP" role-type="1"/>
+    <registry-role register-type="PARTY_GROUP" role-type="2"/>
+    <registry-role register-type="PARTY_GROUP" role-type="3"/>
+    <registry-role register-type="PARTY_GROUP" role-type="4"/>
+    <registry-role register-type="PARTY_GROUP" role-type="5"/>
+    <registry-role register-type="PARTY_GROUP" role-type="6"/>
+    <registry-role register-type="PARTY_GROUP" role-type="7"/>
+    <registry-role register-type="PARTY_GROUP" role-type="20"/>
+    <registry-role register-type="PARTY_GROUP" role-type="27"/>
+    <registry-role register-type="PARTY_GROUP" role-type="28"/>
+    <registry-role register-type="PARTY_GROUP" role-type="29"/>
+    <registry-role register-type="PARTY_GROUP" role-type="35"/>
+    <registry-role register-type="PARTY_GROUP" role-type="36"/>
+    <registry-role register-type="PARTY_GROUP" role-type="42"/>
+    <registry-role register-type="PARTY_GROUP" role-type="44"/>
+    <registry-role register-type="PARTY_GROUP" role-type="45"/>
+    <registry-role register-type="PARTY_GROUP" role-type="46"/>
+    <registry-role register-type="PARTY_GROUP" role-type="47"/>
+    <registry-role register-type="PARTY_GROUP" role-type="48"/>
+    <registry-role register-type="PARTY_GROUP" role-type="49"/>
 </registry-roles>

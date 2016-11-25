@@ -131,3 +131,5 @@ databaseChangeLog:
      file: db/changelog/db.changelog-1.64.xml
   - include:
      file: db/changelog/db.changelog-1.65.xml
+  - include:
+     file: db/changelog/db.elza-0.9.xml

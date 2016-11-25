@@ -76,6 +76,13 @@ class PartyNameForm extends AbstractReactComponent {
 
         errors.validFrom = DatationField.reduxValidate(values.validFrom);
         errors.validTo = DatationField.reduxValidate(values.validTo);
+
+        if (!errors.validFrom) {
+            delete errors.validFrom
+        }
+        if (!errors.validTo) {
+            delete errors.validTo
+        }
         return errors;
     };
 

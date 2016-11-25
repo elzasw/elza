@@ -143,4 +143,7 @@
     <relation-role-type code="48">
         <name>skupina</name>
     </relation-role-type>
+    <relation-role-type code="49">
+        <name>nástupce</name>
+    </relation-role-type>
 </relation-role-types>
