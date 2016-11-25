@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-09-29T11:53:06 -->
+<!-- 2016-11-25T23:02:13 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="contentPage" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="71cc9236-0f65-4a0a-bb66-bbfe841a66c1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="org.apache.commons.lang.StringUtils"/>
@@ -35,8 +35,8 @@
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
-		<field name="value" class="cz.tacr.elza.print.Packet">
-			<fieldDescription><![CDATA[value]]></fieldDescription>
+		<field name="packet" class="cz.tacr.elza.print.Packet">
+			<fieldDescription><![CDATA[packet]]></fieldDescription>
 		</field>
 	</subDataset>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
@@ -163,7 +163,7 @@
 					<jr:listContents height="18" width="84">
 						<textField isStretchWithOverflow="true">
 							<reportElement x="0" y="0" width="80" height="15" uuid="f7c83574-67f5-4fe3-af0a-16f5b14136a6"/>
-							<textFieldExpression><![CDATA[$F{value}.getStorageNumber() + " (" + $F{value}.getTypeShortcut() + ")"]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$F{packet}.getStorageNumber() + " (" + $F{packet}.getTypeShortcut() + ")"]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
