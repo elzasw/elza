@@ -9,9 +9,9 @@
         <version>0.10-SNAPSHOT</version>
     </parent>
 
-    <artifactId>distro-root</artifactId>
+    <artifactId>distrib</artifactId>
     <packaging>pom</packaging>
-    <name>distro</name>
+    <name>distrib</name>
 
     <modules>
         <module>elza-tomcat</module>

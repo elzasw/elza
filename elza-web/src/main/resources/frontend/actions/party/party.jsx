@@ -198,8 +198,12 @@ const removeUndefined = (obj) => {
 };
 
 export const normalizeNameObject = (obj) => {
+    if (!obj) {
+        return null;
+    }
+
     obj.validFrom = normalizeDatation(obj.validFrom);
-    obj.validTo = normalizeDatation(obj.validTo)
+    obj.validTo = normalizeDatation(obj.validTo);
 
 
     ['mainPart', 'otherPart', 'degreeBefore', 'degreeAfter'].each(i => {
