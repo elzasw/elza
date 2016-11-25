@@ -74,7 +74,7 @@
         <hierarchical>false</hierarchical>
         <add-record>true</add-record>
     </register-type>
-    <register-type code="FICTIVE_INDIVIDUAL" parent-register-type="PERSON">
+    <register-type code="FICTIVE_INDIVIDUAL" party-type="PERSON" parent-register-type="PERSON">
         <name>fiktivní fyzická osoba</name>
         <hierarchical>false</hierarchical>
         <add-record>true</add-record>
@@ -99,7 +99,7 @@
         <hierarchical>false</hierarchical>
         <add-record>true</add-record>
     </register-type>
-    <register-type code="FICTIVE_DYNASTY" parent-register-type="PERSON">
+    <register-type code="FICTIVE_DYNASTY" party-type="DYNASTY" parent-register-type="PERSON">
         <name>fiktivní rod</name>
         <hierarchical>false</hierarchical>
         <add-record>true</add-record>
@@ -159,17 +159,17 @@
         <hierarchical>false</hierarchical>
         <add-record>true</add-record>
     </register-type>
-    <register-type code="EVENT_MILITARY" parent-register-type="EVENT">
+    <register-type code="EVENT_MILITARY" party-type="EVENT" parent-register-type="EVENT">
         <name>ozbrojené střety (bitvy, války, obléhání…)</name>
         <hierarchical>false</hierarchical>
         <add-record>true</add-record>
     </register-type>
-    <register-type code="EVENT_TRADITION" parent-register-type="EVENT">
+    <register-type code="EVENT_TRADITION" party-type="EVENT" parent-register-type="EVENT">
         <name>lidové zvyky, významné dny a svátky</name>
         <hierarchical>false</hierarchical>
         <add-record>true</add-record>
     </register-type>
-    <register-type code="EVENT_NATURE" parent-register-type="EVENT">
+    <register-type code="EVENT_NATURE" party-type="EVENT" parent-register-type="EVENT">
         <name>dočasné přírodní jevy</name>
         <hierarchical>false</hierarchical>
         <add-record>true</add-record>

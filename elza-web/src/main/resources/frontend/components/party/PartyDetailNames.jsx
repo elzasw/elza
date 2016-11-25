@@ -126,7 +126,7 @@ class PartyDetailNames extends AbstractReactComponent {
     };
 
     handleSelectPreffered = (id) => {
-        if (confirm(i18n('party.detail.name.prefferedName'))) {
+        if (confirm(i18n('party.detail.name.setPrefferedNameAlert'))) {
             this.partyNameSetPreffered(id);
         }
     };

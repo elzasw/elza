@@ -167,7 +167,7 @@ class AddPartyForm extends AbstractReactComponent {
     };
 
     dataRefresh = (props = this.props) => {
-        const {recordTypes, refTables:{partyNameFormTypes, scopesData:{scopes}}, partyType} = props;
+        const {recordTypes, refTables:{partyNameFormTypes, scopesData:{scopes}, calendarTypes}, partyType} = props;
         this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
         this.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
         this.dispatch(getRegistryRecordTypesIfNeeded(partyType.id));
@@ -185,6 +185,8 @@ class AddPartyForm extends AbstractReactComponent {
             scopes.length > 0 &&
             scope.length > 0 &&
             !scope[0].isFetching &&
+            calendarTypes.fetched &&
+            !calendarTypes.isFetching &&
             this.loadData(props);
     };
 
@@ -192,12 +194,14 @@ class AddPartyForm extends AbstractReactComponent {
      * Pokud nejsou nastaveny hodnoty - nastavíme hodnotu do pole nameFormTypeId a scopeId
      */
     loadData(props) {
-        const {recordTypes, refTables: {partyNameFormTypes, scopesData:{scopes}}, partyType} = props;
+        const {recordTypes, refTables: {partyNameFormTypes, scopesData:{scopes}, calendarTypes}, partyType} = props;
 
         const registerTypeId = this.getPreselectRecordTypeId(recordTypes);
         const nameFormTypeId = partyNameFormTypes.items[0].id;
         const scopeId = scopes.filter(i => i.versionId === null)[0].scopes[0].id;
         const complementsTypes = partyType.complementTypes;
+        const firstCalId = calendarTypes.items[0].id;
+
 
         this.setState({initialized: true, complementsTypes});
         this.props.load({
@@ -208,8 +212,10 @@ class AddPartyForm extends AbstractReactComponent {
             },
             prefferedName:{
                 nameFormType: {
-                    id: nameFormTypeId
+                    id: nameFormTypeId,
                 },
+                validFrom: {calendarTypeId: firstCalId},
+                validTo: {calendarTypeId: firstCalId}
             }
         });
     }
@@ -336,7 +342,7 @@ class AddPartyForm extends AbstractReactComponent {
 
                             <Col xs={12}>
                                 <label>{i18n('party.name.complements')}</label> <Button bsStyle="action" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
-                                {partyNameComplements.map((complement, index) => <div className="complement" key={'complement' + index}>
+                                {partyNameComplements.map((complement, index) => <div key={'complement' + index}>
                                     <FormInput componentClass="select" {...complement.complementTypeId}>
                                         <option key='0'/>
                                         {complementsList}

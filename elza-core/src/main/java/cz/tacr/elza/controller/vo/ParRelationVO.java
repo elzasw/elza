@@ -20,8 +20,6 @@ public class ParRelationVO {
 
     private ParUnitdateVO to;
 
-    private String dateNote;
-
     private String note;
 
     private Integer partyId;
@@ -65,14 +63,6 @@ public class ParRelationVO {
 
     public void setTo(final ParUnitdateVO to) {
         this.to = to;
-    }
-
-    public String getDateNote() {
-        return dateNote;
-    }
-
-    public void setDateNote(final String dateNote) {
-        this.dateNote = dateNote;
     }
 
     public String getNote() {

@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.ParRelationClassType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -28,4 +29,6 @@ public interface RelationTypeRepository extends ElzaJpaRepository<ParRelationTyp
      */
     @Query("SELECT rr.relationType FROM par_relation_type_role_type rr WHERE rr.roleType = ?1")
     List<ParRelationType> findByRelationRoleType(ParRelationRoleType relationRoleType);
+
+    void deleteByRelationClassType(ParRelationClassType parRelationClassType);
 }

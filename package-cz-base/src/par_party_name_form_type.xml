@@ -68,4 +68,7 @@
     <party-name-form-type code="23">
         <name>homonymum</name>
     </party-name-form-type>
+    <party-name-form-type code="24">
+        <name>jméno, pod nímž je entita nejvíce známá</name>
+    </party-name-form-type>
 </party-name-form-types>

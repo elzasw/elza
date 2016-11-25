@@ -22,6 +22,19 @@ export const PARTY_TYPE_CODES = {
     EVENT: 'EVENT',
 };
 
+export const RELATION_CLASS_TYPE_REPEATABILITY = {
+    UNIQUE: "UNIQUE",
+    MULTIPLE: "MULTIPLE",
+};
+
+export const USE_UNITDATE_ENUM = {
+    NONE: 'NONE',
+    ONE: 'ONE',
+    INTERVAL: 'INTERVAL',
+};
+
+export const RELATION_CLASS_RELATION_CODE = "R";
+
 /**
  * Načtení seznamu osob dle filtru
  *
@@ -185,12 +198,9 @@ const removeUndefined = (obj) => {
 };
 
 export const normalizeNameObject = (obj) => {
-    if (obj.validFrom) {
-        obj.validFrom = obj.validFrom.value !== null && obj.validFrom.value !== undefined ? obj.validFrom : null;
-    }
-    if (obj.validTo) {
-        obj.validTo = obj.validTo.value !== null && obj.validTo.value !== undefined ? obj.validTo : null;
-    }
+    obj.validFrom = normalizeDatation(obj.validFrom);
+    obj.validTo = normalizeDatation(obj.validTo)
+
 
     ['mainPart', 'otherPart', 'degreeBefore', 'degreeAfter'].each(i => {
         if (obj[i]) {
@@ -203,4 +213,20 @@ export const normalizeNameObject = (obj) => {
 
     return obj;
 };
+
+export const normalizeDatation = (obj) => {
+    if (!obj) {
+        return null;
+    }
+
+    if (obj.value != null && obj.value.trim().length === 0) {
+        obj.value = null;
+    }
+    if ((obj.value !== null && obj.value !== undefined) || (obj.textDate !== null && obj.textDate !== undefined) || (obj.note !== null && obj.note !== undefined)) {
+        return obj
+    }
+    return null;
+};
+
+console.log(normalizeDatation({calendarTypeId:1, value:null}));
 
