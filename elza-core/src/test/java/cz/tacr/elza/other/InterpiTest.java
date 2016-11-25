@@ -9,6 +9,7 @@ import java.util.List;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.JAXBIntrospector;
 import javax.xml.bind.Unmarshaller;
@@ -65,9 +66,11 @@ public class InterpiTest {
         SetTyp set = unmarshallData(stringReader, SetTyp.class);
         List<EntitaTyp> entita = set.getEntita();
         for (EntitaTyp entitaTyp : entita) {
-            entitaTyp.getContent();
+            entitaTyp.getContent().forEach(e -> {
+                JAXBElement element = (JAXBElement) e;
+                System.out.println(element.getName() + " " + element.getValue());
+            });
         }
-        System.out.println(set);
     }
 
     /**
@@ -80,9 +83,10 @@ public class InterpiTest {
     public static <T> T unmarshallData(final Reader reader, final Class<T> cls) throws JAXBException {
         Assert.notNull(reader);
 
-        Unmarshaller unmarshaller = createUnmarshaller(cls);
-
+//        Unmarshaller unmarshaller = createUnmarshaller(cls);
+//        return (T) unmarshaller.unmarshal(reader);
         JAXBContext jaxbContext = JAXBContext.newInstance(cls);
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         JAXBIntrospector jaxbIntrospector = jaxbContext.createJAXBIntrospector();
 
         Object unmarshal = unmarshaller.unmarshal(reader);

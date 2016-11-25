@@ -320,7 +320,7 @@
 <!--                 </executions> -->
 <!--                 <configuration> -->
 <!--                     <sources> -->
-<!--                         <source>src/main/resources/xsd/interpi/interpi_schema.xsd</source> -->
+<!--                         <source>src/main/resources/interpi/interpi_schema.xsd</source> -->
 <!--                     </sources> -->
 <!--                     <target>2.1</target> -->
 <!--                     <packageName>cz.tacr.elza.interpi.ws.wo</packageName> -->
@@ -345,7 +345,7 @@
 <!--                     <sourceRoot>${project.build.directory}/generated-sources/interpi</sourceRoot> -->
 <!--                       <wsdlOptions> -->
 <!--                         <wsdlOption> -->
-<!--                           <wsdl>src/main/resources/wsdl/interpi/interpi.ws.soap.wsdl</wsdl> -->
+<!--                           <wsdl>src/main/resources/interpi/interpi.ws.soap.wsdl</wsdl> -->
 <!--                           <packagenames> -->
 <!--                               <packagename>cz.tacr.elza.interpi.ws</packagename> -->
 <!--                           </packagenames> -->
