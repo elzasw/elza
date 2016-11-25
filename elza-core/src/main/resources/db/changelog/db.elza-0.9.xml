@@ -3,7 +3,20 @@
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
-        <changeSet id="20161124152303" author="compel">
-            <dropColumn tableName="par_relation" columnName="date_note" />
-        </changeSet>
+
+    <changeSet id="20161124152303" author="compel">
+        <dropColumn tableName="par_relation" columnName="date_note"/>
+    </changeSet>
+
+    <changeSet id="20161125090001" author="slapa">
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" type="varchar(255)" value="par_relation_role_type|role_type_id" />
+            <where>sequence_name='par_relation_role_type|relation_role_type_id'</where>
+        </update>
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" type="varchar(255)" value="par_party_name_form_type|name_form_type_id" />
+            <where>sequence_name='par_party_name_form_type|party_name_form_type_id'</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>
