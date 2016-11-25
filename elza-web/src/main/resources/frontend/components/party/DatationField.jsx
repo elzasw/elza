@@ -42,6 +42,16 @@ class DatationField extends AbstractReactComponent {
                     value: err && err.message ? err.message : ' '
                 };
             }
+
+            if (!val.calendarTypeId) {
+                if (errors) {
+                    errors.calendarTypeId = i18n('global.validation.required');
+                } else {
+                    errors = {
+                        calendarTypeId: i18n('global.validation.required')
+                    };
+                }
+            }
         }
         return errors;
     };

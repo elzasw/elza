@@ -649,7 +649,6 @@ var messages = {
     "party.relation.to.textDate": "Datum do - textově",
     "party.relation.to.note": "Datum do - poznámka",
     "party.relation.note": "Poznámka",
-    "party.relation.dateNote": "Poznámka k datumu",
     "party.relation.delete.confirm": "Opravdu chcete smazat tento vztah?",
     "party.relation.sources": "Zdroj informací",
     "party.relation.record": "Záznam",

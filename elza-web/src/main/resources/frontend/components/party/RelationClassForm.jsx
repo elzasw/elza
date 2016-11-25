@@ -3,7 +3,7 @@ import {WebApi} from 'actions/index.jsx';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, Autocomplete, i18n, Icon, FormInput, RegistryField, DatationField} from 'components/index.jsx';
-import {Modal, Button, Form, Radio} from 'react-bootstrap'
+import {Modal, Button, Form, Radio, FormGroup, HelpBlock} from 'react-bootstrap'
 import {indexById} from 'stores/app/utils.jsx'
 import {submitReduxForm} from 'components/form/FormUtils.jsx'
 import {objectById} from 'stores/app/utils.jsx'
@@ -80,13 +80,12 @@ class RelationClassForm extends AbstractReactComponent {
     };
 
     render() {
-        const {relationTypes, onClose, handleSubmit, fields: {from, to, relationEntities, dateNote, note, source, relationTypeId}, partyId, submitting} = this.props;
+        const {relationTypes, onClose, handleSubmit, fields: {from, to, relationEntities, note, source, relationTypeId}, partyId, submitting} = this.props;
 
         let relationType = null;
         if (relationTypeId.value !== null) {
             relationType = objectById(relationTypes, relationTypeId.value);
         }
-
         const roleTypesList = relationType ? relationType.relationRoleTypes : null;
         const usedRoles = relationEntities.map(i => parseInt(i.roleType.id.value));
 
@@ -95,7 +94,10 @@ class RelationClassForm extends AbstractReactComponent {
             <Modal.Body className="relation-form">
                 <div className="flex">
                     <div className="flex-2">
-                        <div className="relation-class-select">{relationTypes.map(i => <Radio inline {...relationTypeId} value={i.id}>{i.name}</Radio>)}</div>
+                        <FormGroup validationState={relationTypeId.touched && relationTypeId.invalid ? 'error' : null}>
+                            <div className="relation-class-select">{relationTypes.map(i => <Radio inline {...relationTypeId} value={i.id}>{i.name}</Radio>)}</div>
+                            {relationTypeId.touched && relationTypeId.invalid && <HelpBlock>{relationTypeId.error}</HelpBlock>}
+                        </FormGroup>
                         {relationType && <div className="relation-entities">
                             <label className="type">{i18n('party.relation.entityInRelation')}</label><Button bsStyle="action" onClick={() => relationEntities.addField({record:null, roleType: {id: null}})}><Icon glyph="fa-plus" /></Button>
                             {relationEntities.map((i,index) => <div className="relation-row" key={index}>
@@ -121,7 +123,6 @@ class RelationClassForm extends AbstractReactComponent {
                         </div>}
                     </div>}
                     <div className="flex-1">
-                        <FormInput type="text" label={i18n('party.relation.dateNote')}  {...dateNote} />
                         <FormInput type="text" label={i18n('party.relation.note')} {...note} />
                         <FormInput componentClass="textarea" label={i18n('party.relation.sources')} {...source} />
                     </div>

@@ -308,7 +308,7 @@ class PartyDetail extends AbstractReactComponent {
                                     <label>{i18n("party.detail.creators")}{canEdit && <NoFocusButton bsStyle="default" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></NoFocusButton>}</label>
                                     {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
                                         <PartyField {...creator} />
-                                        {canEdit && <NoFocusButton bsStyle="default" onClick={() => {
+                                        {canEdit && <NoFocusButton bsStyle="action" onClick={() => {
                                             if (confirm(i18n('party.detail.creator.delete'))) {
                                                 creators.removeField(index)
                                             }

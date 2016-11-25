@@ -73,7 +73,7 @@ class RelationForm extends AbstractReactComponent {
     };
 
     render() {
-        const {relationType, onClose, handleSubmit, fields: {from, to, relationEntities, dateNote, note, source}, partyId} = this.props;
+        const {relationType, onClose, handleSubmit, fields: {from, to, relationEntities, note, source}, partyId} = this.props;
         const {relationRoleTypes} = relationType;
         const roleTypesList = relationRoleTypes ? relationRoleTypes : null;
         const usedRoles = relationEntities.map(i => parseInt(i.roleType.id.value));
@@ -112,7 +112,6 @@ class RelationForm extends AbstractReactComponent {
                         </div>}
                     </div>}
                     <div className="flex-1 footer">
-                        <FormInput type="text" label={i18n('party.relation.dateNote')}  {...dateNote} />
                         <FormInput type="text" label={i18n('party.relation.note')} {...note} />
                         <FormInput componentClass="textarea" label={i18n('party.relation.sources')} {...source} />
                     </div>

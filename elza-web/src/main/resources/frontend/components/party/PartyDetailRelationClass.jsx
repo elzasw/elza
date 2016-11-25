@@ -5,7 +5,7 @@ import {FormControl} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {i18n, AbstractReactComponent, NoFocusButton, Icon, RelationClassForm, RelationForm} from 'components/index.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, RELATION_CLASS_RELATION_CODE} from 'actions/party/party.jsx'
+import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, RELATION_CLASS_RELATION_CODE, normalizeDatation} from 'actions/party/party.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {isNotBlankObject} from 'components/Utils.jsx'
 
@@ -56,8 +56,8 @@ class PartyDetailRelations extends AbstractReactComponent {
         this.dispatch(relationCreate({
             ...relation,
             partyId: party.id,
-            from: isNotBlankObject(relation.from) ? relation.from : null,
-            to: isNotBlankObject(relation.to) ? relation.to : null,
+            from: isNotBlankObject(relation.from) ? normalizeDatation(relation.from) : null,
+            to: isNotBlankObject(relation.to) ? normalizeDatation(relation.to) : null,
         }));
         this.dispatch(modalDialogHide());
     };
@@ -68,8 +68,8 @@ class PartyDetailRelations extends AbstractReactComponent {
             ...origRelation,
             ...newRelation,
             partyId: party.id,
-            from: isNotBlankObject(newRelation.from) ? newRelation.from : null,
-            to: isNotBlankObject(newRelation.to) ? newRelation.to : null,
+            from: isNotBlankObject(newRelation.from) ? normalizeDatation(newRelation.from) : null,
+            to: isNotBlankObject(newRelation.to) ? normalizeDatation(newRelation.to) : null,
         }));
         this.dispatch(modalDialogHide());
     };
@@ -130,8 +130,8 @@ class PartyDetailRelations extends AbstractReactComponent {
                     {relation.note && <div>{relation.note}</div>}
                 </div>
                 <div className="actions">
-                    <NoFocusButton onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></NoFocusButton>
-                    <NoFocusButton onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-times" /></NoFocusButton>
+                    <NoFocusButton bsStyle="action" onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></NoFocusButton>
+                    <NoFocusButton bsStyle="action" onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-times" /></NoFocusButton>
                 </div>
             </div>)}
         </div>

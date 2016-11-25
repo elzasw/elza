@@ -6,7 +6,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {i18n, AbstractReactComponent, NoFocusButton, Icon, RelationForm} from 'components/index.jsx'
 import {isNotBlankObject} from 'components/Utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, RELATION_CLASS_RELATION_CODE} from 'actions/party/party.jsx'
+import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, RELATION_CLASS_RELATION_CODE, normalizeDatation} from 'actions/party/party.jsx'
 
 import './PartyDetailRelations.less'
 
@@ -25,8 +25,8 @@ class PartyDetailRelations extends AbstractReactComponent {
             ...relation,
             relationTypeId: relationType.id,
             partyId: party.id,
-            from: isNotBlankObject(relation.from) ? relation.from : null,
-            to: isNotBlankObject(relation.to) ? relation.to : null,
+            from: isNotBlankObject(relation.from) ? normalizeDatation(relation.from) : null,
+            to: isNotBlankObject(relation.to) ? normalizeDatation(relation.to) : null,
         }));
         this.dispatch(modalDialogHide());
     };
@@ -38,8 +38,8 @@ class PartyDetailRelations extends AbstractReactComponent {
             ...newRelation,
             relationTypeId: relationType.id,
             partyId: party.id,
-            from: isNotBlankObject(newRelation.from) ? newRelation.from : null,
-            to: isNotBlankObject(newRelation.to) ? newRelation.to : null,
+            from: isNotBlankObject(newRelation.from) ? normalizeDatation(newRelation.from) : null,
+            to: isNotBlankObject(newRelation.to) ? normalizeDatation(newRelation.to) : null,
         }));
         this.dispatch(modalDialogHide());
     };
