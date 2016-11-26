@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
+<!-- 2016-10-03T03:05:54 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="intro" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="7dadc22d-1241-4907-8921-52170562f815">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<import value="org.apache.commons.lang.StringUtils"/>
+	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
+	<parameter name="output" class="cz.tacr.elza.print.Output"/>
+	<title>
+		<band height="340">
+			<staticText>
+				<reportElement x="0" y="10" width="480" height="30" uuid="90bc48f6-0e9d-40f5-8081-aecd1007a2ea"/>
+				<textElement>
+					<font size="16" isBold="true" pdfEncoding="Cp1250"/>
+				</textElement>
+				<text><![CDATA[I. Dějiny původce archivního souboru]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="70" width="480" height="24" uuid="36e61f98-0fec-4e4a-8891-6c3cfe572f53"/>
+				<textElement>
+					<font size="16" isBold="true" pdfEncoding="Cp1250"/>
+				</textElement>
+				<text><![CDATA[II. Dějiny archivního souboru]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="145" width="480" height="30" uuid="74ce4ef9-5fc7-4b8d-a888-c9fa8b4d29f2"/>
+				<textElement>
+					<font size="16" isBold="true" pdfEncoding="Cp1250"/>
+				</textElement>
+				<text><![CDATA[III. Archivní charakteristika archivního souboru]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="190" width="480" height="30" uuid="d160d599-6737-4bf0-a46d-e0e4a14a1f2b"/>
+				<textElement>
+					<font size="16" isBold="true" pdfEncoding="Cp1250"/>
+				</textElement>
+				<text><![CDATA[IV. Tematický popis archivního souboru]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="230" width="467" height="30" uuid="ceeacae0-fe9f-4350-bcf3-3872c70d43ae"/>
+				<textElement>
+					<font size="16" isBold="true" pdfEncoding="Cp1250"/>
+				</textElement>
+				<text><![CDATA[V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="0" y="119" width="560" height="14" uuid="244e4aa4-7468-47af-8920-417da956eebd">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_SOURCE" ))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Justified" markup="html">
+					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA["<b>Přímý zdroj akvizice: </b>"+$P{output}.getSingleItemValue( "ZP2015_UNIT_SOURCE" )]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="0" y="98" width="560" height="14" uuid="e5a9e916-8c13-48ff-8ac0-f8a1a0b1343b">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_HIST" ))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Justified" markup="html">
+					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA["<b>Dějiny archivního souboru: </b>"+$P{output}.getSingleItemValue( "ZP2015_UNIT_HIST" )]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageFooter>
+		<band height="30">
+			<textField evaluationTime="Master">
+				<reportElement x="0" y="10" width="560" height="19" uuid="a1fc10a8-222e-4b64-be2f-fe70b3963c2c"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{MASTER_CURRENT_PAGE}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>
