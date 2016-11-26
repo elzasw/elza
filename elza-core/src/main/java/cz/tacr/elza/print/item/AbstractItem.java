@@ -77,6 +77,10 @@ public abstract class AbstractItem implements Item {
         return type.cast(value);
     }
 
+    public Object getValue() {
+        return value;
+    }
+
     @Override
     public String serialize() {
         final String s = getType().getName();
