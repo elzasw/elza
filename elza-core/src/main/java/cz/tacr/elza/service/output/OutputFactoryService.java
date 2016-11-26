@@ -130,6 +130,15 @@ public class OutputFactoryService implements NodeLoader {
 
     private MapperFacade mapper;
 
+    private Map<Integer, Packet> packetMap = new HashMap<>();
+
+    private Map<Integer, Node> nodeMap = new HashMap<>();
+
+    public void reset() {
+        packetMap.clear();
+        nodeMap.clear();
+    }
+
     @Autowired
     private OutputGeneratorWorkerFactory outputGeneratorFactory;
 
@@ -187,6 +196,8 @@ public class OutputFactoryService implements NodeLoader {
      * @return struktura pro použití v šablonách
      */
     public Output createOutput(final ArrOutput arrOutput) {
+        reset();
+
         // naplnit output
         final Output output = outputGeneratorFactory.getOutput(arrOutput);
         output.setName(arrOutput.getOutputDefinition().getName());
@@ -436,7 +447,12 @@ public class OutputFactoryService implements NodeLoader {
      * @return Node pro tisk
      */
     public Node getNode(final NodeId nodeId, final Output output) {
-        return outputGeneratorFactory.getNode(nodeId, output);
+        Node node = nodeMap.get(nodeId.getArrNodeId());
+        if (node == null) {
+            node = outputGeneratorFactory.getNode(nodeId, output);
+            nodeMap.put(nodeId.getArrNodeId(), node);
+        }
+        return node;
     }
 
     /**
@@ -694,15 +710,19 @@ public class OutputFactoryService implements NodeLoader {
 
     private AbstractItem getItemUnitPacketRef(final NodeId nodeId, final ArrItemPacketRef itemData) {
         final ArrPacket arrPacket = itemData.getPacket();
-        Packet packet = new Packet();
-        RulPacketType packetType = arrPacket.getPacketType();
-        if (packetType != null) {
-            packet.setType(packetType.getName());
-            packet.setTypeCode(packetType.getCode());
-            packet.setTypeShortcut(packetType.getShortcut());
+        Packet packet = packetMap.get(arrPacket.getPacketId());
+        if (packet == null) {
+            packet = new Packet();
+            RulPacketType packetType = arrPacket.getPacketType();
+            if (packetType != null) {
+                packet.setType(packetType.getName());
+                packet.setTypeCode(packetType.getCode());
+                packet.setTypeShortcut(packetType.getShortcut());
+            }
+            packet.setStorageNumber(arrPacket.getStorageNumber());
+            packet.setState(arrPacket.getState().name());
+            packetMap.put(arrPacket.getPacketId(), packet);
         }
-        packet.setStorageNumber(arrPacket.getStorageNumber());
-        packet.setState(arrPacket.getState().name());
         return new ItemPacketRef(nodeId, packet);
     }
 
@@ -814,6 +834,7 @@ public class OutputFactoryService implements NodeLoader {
             List<ArrDescItem> descItems = descItemsByNode.get(arrNodeId);
 
             List<Item> items;
+            Node node = mapNodes.get(arrNodeId);
             if (descItems == null) {
                 items = Collections.<Item>emptyList();
             } else {
@@ -841,11 +862,14 @@ public class OutputFactoryService implements NodeLoader {
                             }
                             itemByType.setType(itemType);
 
+                            if (itemByType instanceof ItemPacketRef) {
+                                itemByType.getValue(Packet.class).addNode(node);
+                            }
+
                             return itemByType;
                         }).collect(Collectors.toList());
             }
             items.sort((i1,i2) -> (i1.compareToItemViewOrderPosition(i2)));
-            Node node = mapNodes.get(arrNodeId);
             node.setItems(items);
         }
     }
