@@ -18,6 +18,13 @@
 
     <dependencies>
 
+	    <!-- Dependency for javax - proper JDOC generation -->
+            <dependency>
+                <groupId>javax.interceptor</groupId>
+                <artifactId>javax.interceptor-api</artifactId>
+                <version>1.2</version>
+            </dependency>
+
         <!-- liquibase -->
         <dependency>
             <groupId>org.liquibase</groupId>
